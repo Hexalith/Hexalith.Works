@@ -19,3 +19,12 @@
 [submodule "Hexalith.Parties"]
 	path = Hexalith.Parties
 	url = https://github.com/Hexalith/Hexalith.Parties.git
+[submodule "Hexalith.Chatbot"]
+	path = Hexalith.Chatbot
+	url = https://github.com/Hexalith/Hexalith.Chatbot.git
+[submodule "Hexalith.Projects"]
+	path = Hexalith.Projects
+	url = https://github.com/Hexalith/Hexalith.Projects.git
+[submodule "Hexalith.Conversations"]
+	path = Hexalith.Conversations
+	url = https://github.com/Hexalith/Hexalith.Conversations.git

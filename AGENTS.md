@@ -40,4 +40,8 @@ versions across the tree, and is never required to build or work in this reposit
 - `Hexalith.PolymorphicSerializations`
 - `Hexalith.EventStore`
 - `Hexalith.FrontComposer`
+- `Hexalith.Parties`
 - `Hexalith.Tenants`
+- `Hexalith.Chatbot`
+- `Hexalith.Projects`
+- `Hexalith.Conversations`
