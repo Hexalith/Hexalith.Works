@@ -1,14 +1,14 @@
 ---
 title: "Hexalith.Works — Brief Addendum (downstream depth)"
-status: draft
+status: final
 created: 2026-06-14
 updated: 2026-06-14
 ---
 
 # Addendum — Hexalith.Works
 
-Depth that supports the brief but belongs in the PRD / Architecture rather than the brief itself.
-Source of record for the domain ideas: `_bmad-output/brainstorming/brainstorming-session-2026-06-14-0910.md`
+Depth that supports the brief but belongs in the PRD or Architecture rather than the brief itself.
+The source of record for the domain ideas is `_bmad-output/brainstorming/brainstorming-session-2026-06-14-0910.md`
 (44 ideas, 6 themes). This addendum carries the **foundation action plan**, the **deferred-theme backlog**,
 and the **competitive landscape digest** that grounds *What Makes This Different*.
 
@@ -59,7 +59,7 @@ Direct input for the PRD and the thin-core architecture decision record.
 2. **Answer-contract does triple duty** — UX accelerator → input validation → prompt-injection boundary.
 3. **Two parallel burn-downs** — effort and cost, sharing one tree roll-up.
 4. **Start-cheap-escalate ↔ budget-degrade** — the same ladder run up or down.
-5. **AI in the loop, never in the system-of-record** — raw act is the event; interpretation is a projection.
+5. **AI in the loop, never in the system of record** — the raw act is the event; interpretation is a projection.
 
 ## Competitive landscape digest
 
@@ -69,8 +69,8 @@ all mature; the **synthesis** is the whitespace.
 - **Durable execution (Temporal, Restate, DBOS):** own durable suspend/resume; Temporal's
   workflow/activity model mirrors the saga mechanic. No first-class "work item," no burn-down/cost roll-up,
   no party model, no human surface. ([Temporal docs](https://docs.temporal.io/workflow-execution))
-- **BPM (Camunda 8 / Zeebe):** "human task" / "external task" pattern = wait-for-human-then-resume, parent/
-  child process trees. Models predefined diagrams, not an event log of ad-hoc work.
+- **BPM (Camunda 8 / Zeebe):** "human task" / "external task" pattern = wait-for-human-then-resume, with
+  parent/child process trees. Models predefined diagrams, not an event log of ad-hoc work.
   ([Camunda human tasks](https://docs.camunda.io/docs/guides/orchestrate-human-tasks/))
 - **Task management (Jira Rovo, Asana AI Teammates, Linear):** as of 2025-26 you can assign tickets to AI
   agents like humans — closest competitor to "everything is a party," now table-stakes. But internal
@@ -88,7 +88,8 @@ all mature; the **synthesis** is the whitespace.
 
 ### Why now (sources)
 
-- ~62% of orgs experimenting with or scaling AI agents; 2026 framed as agents becoming "digital coworkers."
+- ~62% of organizations are experimenting with or scaling AI agents, and 2026 is framed as the year agents
+  become "digital coworkers."
   ([cflowapps](https://www.cflowapps.com/ai-workflow-automation-trends/))
 - Microsoft 2026 Work Trend Index — "agent boss" / "Frontier Firm": humans set direction, agents execute.
   ([Microsoft WTI 2026](https://www.microsoft.com/en-us/worklab/work-trend-index/agents-human-agency-and-the-opportunity-for-every-organization))
@@ -102,9 +103,15 @@ execution for agents · model routing / cascade · LLM FinOps / token budget. Cl
 *HumanLayer + Asana AI Teammates/Jira agents on Temporal-style durable execution, on an event-sourced
 multi-tenant substrate.*
 
-## Open questions for the user (drafted as `[ASSUMPTION]` in the brief)
+## Resolved during the brief session (2026-06-14)
 
-1. **Problem / why-now:** whose pain, and what does the status quo concretely cost?
-2. **First consumer:** which Hexalith module or scenario is the first real customer of the kernel?
-3. **Success criteria:** which product/business signals matter beyond the foundation build signals?
-4. **v1 scope line:** confirm Themes 1 & 2 in, Themes 3–6 out — or adjust.
+1. **Audience / consumers:** Hexalith builders **and** end users — both primary, both consuming the kernel
+   directly.
+2. **Capture channels:** email, the Hexalith Chatbot, LLM tools via MCP, and the CLI — creation is
+   omnichannel from day one; channel and executor are orthogonal.
+3. **Success criteria (product):** capture-in-seconds-no-app · external-one-tap-advance ·
+   one-number-(work+cost) · handoff-as-one-operation.
+4. **Vision:** both horizons — end-user "your work, captured from anywhere, done by whoever's best" +
+   ecosystem "agent-addressable queue / agent-boss era."
+5. **v1 scope:** Themes 1 & 2 in, Themes 3–6 deferred (ports, signed-act audit model, and cost-ready
+   burn-down laid in v1). Inherited from the brainstorm prioritization and confirmed.

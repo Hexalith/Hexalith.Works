@@ -1,47 +1,43 @@
 ---
 title: "Hexalith.Works — Product Brief"
-status: draft
+status: final
 created: 2026-06-14
 updated: 2026-06-14
 ---
 
 # Product Brief: Hexalith.Works
 
-> **Draft — Fast path.** `[ASSUMPTION]` tags mark inferences awaiting your correction; they cluster on
-> problem/why-now, first consumer, success criteria, and the v1 scope line. Domain and architecture
-> content is grounded in the 2026-06-14 brainstorming session and treated as settled.
-
 ## Executive Summary
 
 Hexalith.Works is a thin **work-item coordination kernel** for the Hexalith ecosystem: an event-sourced,
-multi-tenant domain module that tracks *work to be done* and coordinates *who does it* — whether that is
-the system (an AI agent or service), an internal user, or an external person reached by email. It is not
-a task database and not a workflow-diagram engine. It is the small, durable spine that owns an item's
-obligation, its burn-down, its schedule, its executor, and its suspend/resume lifecycle — and references
-everything else (identities, dialogue, persistence, isolation) rather than copying it.
+multi-tenant domain module that tracks *work to be done* and coordinates *who does it* — the system (an AI
+agent or service), an internal user, or an external person reached by email. It is not a task database and
+not a workflow-diagram engine. It is the small, durable spine that owns an item's obligation, burn-down,
+schedule, executor, and suspend/resume lifecycle, and references everything else — identities, dialogue,
+persistence, isolation — rather than copying it.
 
 The defining bet is **"everything is a Party."** System, user, and external-by-email collapse into one
 executor binding — `PartyId + Channel + AuthorityLevel` — so assignment, reassignment, human⇄AI handoff,
 and escalation run identically for a bot, a colleague, or a customer answering from their inbox. A work
 item burns down along two meters at once — **effort** and **cost/tokens** — and both roll up a
 parent→child tree, so the all-in effort and spend of a top-level objective is a single number. AI sits
-*in the loop but never in the system-of-record*: the canonical event is the raw signed act (a one-tap
-link click or a verbatim reply); the AI's interpretation is a recomputable projection.
+*in the loop but never in the system-of-record*: the canonical event is the raw signed act — a one-tap
+link click or a verbatim reply — and the AI's interpretation is a recomputable projection.
 
 Why now: 2026 is the year human+agent work surfaces go mainstream. Microsoft's Work Trend Index names the
 "agent boss" and the "Frontier Firm" — humans set direction, agents do tactical execution — and a majority
-of organizations are already scaling AI agents as "digital coworkers." The primitives needed to build this
-(durable execution, model routing, human-in-the-loop approvals) are all mature. What is missing is a single
+of organizations are already scaling AI agents as "digital coworkers." The primitives to build this
+(durable execution, model routing, human-in-the-loop approvals) are mature. What is missing is a single
 coordination object where a shared backlog of humans and AI agents, a durable saga, and an effort+cost
 ledger are the *same thing*. That is Works.
 
 ## The Problem
 
-> `[ASSUMPTION]` — confirm whose pain this is and what the status quo costs today.
-
-Coordinating real work in an AI-native system means juggling three kinds of doer at once: automated system
-tasks (increasingly LLM agents), internal users, and external people who will never log into your app.
-Today each is served by a different tool with a different model:
+Two problems share one root. **End users** who need to capture a task, a to-do, or a unit of work must stop
+and log into a dedicated task app — even though the work just surfaced in their inbox, a chat, an AI
+assistant, or a terminal. And **builders** coordinating that work across people and AI agents must juggle
+three kinds of doer — automated system tasks (increasingly LLM agents), internal users, and external people
+who will never log into the app — each served today by a different tool with a different model:
 
 - **Task/work managers** (Jira, Asana, Linear) assume a human behind a login and a UI. They are adding AI
   assignees — but only *internal* ones, with no external-person-by-email as a peer doer, no shared pull
@@ -52,11 +48,13 @@ Today each is served by a different tool with a different model:
 - **Human-in-the-loop tooling** (HumanLayer and peers) bolts approvals onto an agent run — but the human is
   an interruption to a run, not a peer executor in a durable backlog.
 
-For anyone building on Hexalith, the result is three integrations, three audit trails, three scheduling
-models, and bespoke glue every time work moves between a bot, a person, and a customer. Effort burn-down
-lives in one place, AI token spend in another, and "who actually did this, and when" is reconstructed by
-hand. `[ASSUMPTION]` The cost of the status quo is duplicated technical layers and no single trustworthy
-answer to *what is the remaining work and cost of this objective, and who is on the hook for the next step.*
+For end users, the friction means work never gets captured — it scatters into inboxes, chat threads, and
+shadow lists, or is lost. For builders, the result is three integrations, three audit trails, three
+scheduling models, and bespoke glue every time work moves between a bot, a person, and a customer. Effort
+burn-down lives in one place, AI token spend in another, and "who actually did this, and when" is
+reconstructed by hand. The cost of the status quo is work that slips through the cracks, duplicated
+technical layers, and no single trustworthy answer to *what is the remaining work and cost of this
+objective, and who is on the hook for the next step.*
 
 ## The Solution
 
@@ -76,15 +74,17 @@ Everything else is a **late-resolved reference**: identities → `Parties`, dial
 persistence/events → `EventStore`, isolation → `Tenants`, ids → `Commons`. The one pluggable seam is the
 **executor binding** (`PartyId + Channel + AuthorityLevel`) — the single place new doer kinds (MCP agent,
 Slack approver, IoT device) plug in. Work flows by **push** (assign to a specific executor) or **pull**
-(claim from a shared queue) and moves between modes; AI fleets and human teams draw from the same backlog.
-Routing starts cheap and escalates (small model → premium → human → external) on failure or low confidence,
-governed by per-type policy and cost caps.
+(claim from a shared queue) and moves between modes, so AI fleets and human teams draw from the same
+backlog. Routing starts cheap and escalates (small model → premium → human → external) on failure or low
+confidence, governed by per-type policy and cost caps.
 
-Interaction is LLM-native but trust-preserving: for an external party, the email *is* the UI. The AI reads
-the item and embeds constrained-safe, single-use, expiring signed links (one tap = work progressed), with a
-"none of these — answer in my words" escape hatch that maps free text onto the item's valid action space.
-The signed act is the event; the interpretation is a projection. The answer-contract does triple duty: UX
-accelerator, input validator, and prompt-injection boundary.
+A work item can be **created and advanced from any channel** — a one-line email, the Hexalith Chatbot, an
+LLM tool over MCP, or the CLI — all converging on one item; channel and executor are orthogonal. Interaction
+is LLM-native but trust-preserving: for an external party, the email *is* the UI. The AI reads the item and
+embeds constrained-safe, single-use, expiring signed links (one tap = work progressed), with a "none of
+these — answer in my words" escape hatch that maps free text onto the item's valid action space. The signed
+act is the event; the interpretation is a projection. The answer-contract does triple duty: UX accelerator,
+input validator, and prompt-injection boundary.
 
 ## What Makes This Different
 
@@ -94,49 +94,58 @@ HITL approvals (HumanLayer), signed single-use magic links. **The whitespace is 
 one part.
 
 - **Dual burn-down on one tree** — effort *and* cost/tokens as first-class quantities rolling up the same
-  parent→child tree. FinOps token budgeting and effort burndown exist separately everywhere; unifying them
+  parent→child tree. FinOps token budgeting and effort burn-down exist separately everywhere; unifying them
   on a work tree appears genuinely novel.
 - **AI in the loop, never in the system-of-record** — the signed human/AI act is the canonical event; AI
   interpretation is a recomputable projection. Durable-execution engines and HITL tools keep state and
   decisions inline; this clean separation makes disputes resolvable against the verbatim act.
 - **One uniform Party executor** spanning system, internal user, *and external-by-email*, with push and pull
-  coexisting. Assigning to an AI or human is now table-stakes (Jira Rovo, Asana AI Teammates); the fresh
+  coexisting. Assigning to an AI or a human is now table-stakes (Jira Rovo, Asana AI Teammates); the fresh
   part is the *external person reached by magic link as a peer executor in a shared pull queue.*
-- **A thin event-sourced domain kernel, not a product** — Works is roughly the union of HumanLayer (HITL) +
-  Asana/Jira AI-teammate assignment + Temporal-style durable execution, distilled to a small domain
+- **A thin event-sourced domain kernel, not a product** — Works is roughly the union of HumanLayer (HITL),
+  Asana/Jira AI-teammate assignment, and Temporal-style durable execution, distilled to a small domain
   aggregate on a multi-tenant event-sourced substrate, with the bloat factored into surrounding Hexalith
   modules.
 
 We deliberately do *not* claim a moat on durable execution or model routing. The advantage is coherence:
 one audited object where the backlog, the saga, and the effort+cost ledger are the same thing.
 
-## Who This Serves
+Two primary audiences consume the kernel directly:
 
-> `[ASSUMPTION]` — confirm the first real consuming module/scenario.
+- **Hexalith builders** — application and module developers who coordinate work across humans, AI agents,
+  and external people without stitching three systems together.
+- **End users** — people who create and advance tasks, to-dos, and work items *from wherever they already
+  are*, never through a separate task-app login.
 
-- **Builders on the Hexalith ecosystem** (primary) — application and module developers who need to
-  coordinate work across humans, AI agents, and external people without stitching three systems together.
+Served through them:
+
 - **The three executors** — *system / AI agents* (claim and advance work over MCP), *internal users* (do
-  and oversee work via UI/CLI), *external parties* (confirm or answer from their inbox, no login).
-- **Tenant admins** — set escalation ladders, authority levels, and AI-spend caps per work type/tenant.
+  and oversee work via chatbot/CLI), *external parties* (confirm or answer from their inbox, no login).
+- **Tenant admins** — set escalation ladders, authority levels, and AI-spend caps per work type and tenant.
 - **Auditors** — a non-repudiable, signed event record of who did what, when, against which item.
 
 ## Success Criteria
 
-> `[ASSUMPTION]` — these are foundation-first, build-oriented signals. Confirm, and add any product/business
-> signals you care about.
-
-**Foundation (v1):**
+**Foundation (v1) — build signals:**
 
 - A full event-sourced lifecycle runs end-to-end: create → progress → spawn child → suspend-on-event →
   resume → complete, with **correct effort roll-up** across the tree.
 - The domain assembly is **pure**: zero technical/infrastructure layers, all cross-module concerns behind
-  references and ports (`IExpectationResolver`, `IExecutorRouter`), green build + tests under the Aspire host.
+  references and ports (`IExpectationResolver`, `IExecutorRouter`), with a green build and tests under the
+  Aspire host.
 - "Everything is a Party" holds: assign / reassign / handoff work identically across system, user, and
   external bindings with **zero branching on executor type.**
 
-**Product (later themes):** `[ASSUMPTION]` a human⇄AI handoff is a single operation; an external party can
-advance work in one tap from email; the all-in effort and cost of any objective is one queryable number.
+**Product signals — Works is working when:**
+
+- **Capture in seconds, no app** — a user creates a work item from a one-line email or a single chatbot
+  sentence in seconds, never opening a task app.
+- **External one-tap advance** — an external person (reached by email) advances or completes work in a
+  single tap from their inbox, with no login.
+- **One number: work + cost** — any objective's remaining effort *and* spend is a single queryable,
+  rolled-up number across its whole tree.
+- **Handoff = one operation** — reassigning between a human and an AI agent, in either direction, is a
+  single symmetric operation, not a bespoke integration.
 
 ## Scope
 
@@ -160,11 +169,15 @@ advance work in one tap from email; the all-in effort and cost of any objective 
 
 ## Vision
 
-> `[ASSUMPTION]` — directional.
+Two horizons, one substrate.
 
-Works becomes the **agent-addressable work queue of the Hexalith ecosystem**: the durable substrate where
-human teams and AI fleets pull from one backlog, where any objective's remaining effort and spend is a
-single rolled-up number, and where every act — human tap, agent step, or external reply — is a signed,
+**For the person:** your work, captured from anywhere and done by whoever is best for it — you, a colleague,
+an AI agent, or someone you only reach by email. You never open a task app; you say what needs doing and
+watch it burn down.
+
+**For the ecosystem:** Works becomes the **agent-addressable work queue of Hexalith** — the durable
+substrate where human teams and AI fleets pull from one backlog, every objective's remaining effort and
+spend is a single rolled-up number, and every act (human tap, agent step, external reply) is a signed,
 non-repudiable event. As the "agent boss" operating model takes hold, Works is the coordination layer that
 lets a Frontier Firm hand any unit of work to the cheapest capable doer, escalate seamlessly to a human, and
 keep a clean audit of the whole burn-down — without ever putting the AI in the system of record.
