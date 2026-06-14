@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexalith.Works — What's next?</title>
+<style>
+/*
+  SPINE SECTIONS ILLUSTRATED BY THIS MOCK
+  =======================================
+  EXPERIENCE.md
+    - Information Architecture: "What's next" surface (queue console as the operator's landing/triage view)
+    - Component Patterns: Queue row, Party chip, Burn-down meter, Status pill
+    - Interaction Primitives: push/pull (Assigned to me vs Claimable tabs), claim (single-claim-wins)
+    - State Patterns: suspended (await-condition inline), lost-claim ("Someone else got there first.")
+  DESIGN.md
+    - Components: Burn-Down meter, Status pill, Party chip
+    - Colors: status vocabulary (queued / in-progress / suspended / completed / rejected)
+*/
+
+:root{
+  --page-bg:#FAF9F8;
+  --raised:#FFFFFF;
+  --border:#E1DFDD;
+  --divider:#EDEBE9;
+  --ink-1:#242424;
+  --ink-2:#616161;
+  --brand:#5B5FC7;
+  --bd-done:#107C10;
+  --bd-track:#EDEBE9;
+  --st-queued:#008272;
+  --st-progress:#5B5FC7;
+  --st-suspended:#C19C00;
+  --st-completed:#107C10;
+  --st-rejected:#C50F1F;
+  --radius-ctl:4px;
+  --radius-card:8px;
+}
+
+*{box-sizing:border-box;}
+
+html,body{margin:0;padding:0;}
+
+body{
+  font-family:-apple-system,"Segoe UI Variable","Segoe UI",Roboto,sans-serif;
+  background:#cfcfd6;
+  color:var(--ink-1);
+  font-size:14px;
+  line-height:1.4;
+  padding:24px;
+}
+
+/* ---------- Browser chrome frame ---------- */
+.browser{
+  width:1280px;
+  margin:0 auto;
+  background:var(--raised);
+  border-radius:10px;
+  box-shadow:0 14px 40px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.browser-bar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#ECEAE8;
+  border-bottom:1px solid var(--border);
+  padding:10px 14px;
+}
+.dots{display:flex;gap:7px;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot.r{background:#FF5F57;}
+.dot.y{background:#FEBC2E;}
+.dot.g{background:#28C840;}
+.url{
+  flex:1;
+  background:#FFFFFF;
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:5px 12px;
+  font-size:12.5px;
+  color:var(--ink-2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.url .lock{font-size:11px;color:#107C10;}
+
+/* ---------- App shell ---------- */
+.app{display:flex;min-height:760px;background:var(--page-bg);}
+
+/* ---------- FrontComposer left rail ---------- */
+.rail{
+  width:228px;
+  flex:0 0 228px;
+  background:var(--raised);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  padding:16px 12px;
+}
+.tenant{
+  font-size:11px;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+  padding:4px 10px 14px;
+  border-bottom:1px solid var(--divider);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.tenant .tmark{
+  width:22px;height:22px;border-radius:var(--radius-ctl);
+  background:linear-gradient(135deg,var(--brand),#7579e0);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;letter-spacing:0;
+}
+.tenant .tname{color:var(--ink-1);font-weight:600;text-transform:none;letter-spacing:0;font-size:12.5px;}
+.tenant .tlabel{color:var(--ink-2);text-transform:none;letter-spacing:0;font-size:12.5px;}
+
+.nav{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;}
+.nav-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:var(--radius-ctl);
+  color:var(--ink-1);
+  cursor:default;
+  font-size:13.5px;
+  position:relative;
+}
+.nav-item:hover{background:var(--divider);}
+.nav-item.active{
+  background:#EEEEFB;
+  color:var(--brand);
+  font-weight:600;
+}
+.nav-item.active::before{
+  content:"";
+  position:absolute;
+  left:0;top:7px;bottom:7px;
+  width:3px;border-radius:2px;
+  background:var(--brand);
+}
+.nav-ico{
+  width:18px;height:18px;flex:0 0 18px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-2);
+}
+.nav-item.active .nav-ico{color:var(--brand);}
+.nav-spacer{flex:1;}
+.rail-foot{
+  border-top:1px solid var(--divider);
+  padding-top:12px;margin-top:12px;
+  display:flex;align-items:center;gap:10px;
+  font-size:12.5px;color:var(--ink-2);
+}
+.rail-foot .me{
+  width:26px;height:26px;border-radius:50%;
+  background:#E8E6F8;color:var(--brand);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;
+}
+
+/* ---------- Main area ---------- */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.main-pad{padding:24px 28px 32px;}
+
+.head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.head h1{
+  margin:0;
+  font-size:26px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  color:var(--ink-1);
+}
+.subtitle{
+  margin:6px 0 0;
+  color:var(--ink-2);
+  font-size:13.5px;
+  font-variant-numeric:tabular-nums;
+}
+.subtitle b{color:var(--ink-1);font-weight:600;}
+.head-actions{display:flex;gap:8px;align-items:center;}
+.btn{
+  font:inherit;font-size:13px;
+  border-radius:var(--radius-ctl);
+  padding:7px 14px;cursor:default;
+  border:1px solid var(--border);
+  background:var(--raised);color:var(--ink-1);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff;}
+
+/* ---------- Tabs ---------- */
+.tabs{
+  display:flex;gap:4px;
+  margin:22px 0 0;
+  border-bottom:1px solid var(--border);
+}
+.tab{
+  position:relative;
+  padding:10px 14px 12px;
+  font-size:14px;color:var(--ink-2);
+  cursor:default;display:flex;align-items:center;gap:8px;
+}
+.tab:hover{color:var(--ink-1);}
+.tab.active{color:var(--brand);font-weight:600;}
+.tab.active::after{
+  content:"";position:absolute;left:10px;right:10px;bottom:-1px;
+  height:2.5px;border-radius:2px;background:var(--brand);
+}
+.tab .count{
+  font-size:11px;font-variant-numeric:tabular-nums;
+  background:var(--divider);color:var(--ink-2);
+  border-radius:10px;padding:1px 7px;font-weight:600;
+}
+.tab.active .count{background:#E8E6F8;color:var(--brand);}
+.tab-sub{font-size:11px;font-weight:400;color:var(--ink-2);}
+
+/* ---------- DataGrid card ---------- */
+.grid-card{
+  margin-top:18px;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:var(--radius-card);
+  overflow:hidden;
+}
+table.grid{width:100%;border-collapse:collapse;}
+.grid thead th{
+  text-align:left;
+  font-size:11.5px;
+  font-weight:600;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+  padding:12px 16px;
+  background:#FCFBFA;
+  border-bottom:1px solid var(--border);
+  white-space:nowrap;
+}
+.grid tbody td{
+  padding:14px 16px;
+  border-bottom:1px solid var(--divider);
+  vertical-align:middle;
+  font-size:13.5px;
+}
+.grid tbody tr:last-child td{border-bottom:none;}
+.grid tbody tr:hover{background:#FBFAFC;}
+
+/* obligation cell */
+.obl-title{font-weight:600;color:var(--ink-1);}
+.obl-meta{font-size:12px;color:var(--ink-2);margin-top:3px;display:flex;align-items:center;gap:6px;}
+.await{
+  margin-top:6px;
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;color:#8a6d00;
+  background:#FDF6DD;border:1px solid #F2E2A8;
+  border-radius:var(--radius-ctl);padding:4px 9px;
+}
+.await .glyph{font-size:12px;}
+
+/* burn-down meter */
+.burn{display:flex;align-items:center;gap:10px;min-width:150px;}
+.burn-bar{
+  position:relative;
+  width:84px;height:7px;border-radius:5px;
+  background:var(--bd-track);overflow:hidden;flex:0 0 84px;
+}
+.burn-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  background:var(--bd-done);border-radius:5px;
+}
+.burn-num{
+  font-variant-numeric:tabular-nums;
+  font-size:13px;color:var(--ink-1);white-space:nowrap;
+}
+.burn-num .unit{color:var(--ink-2);font-size:11.5px;}
+
+/* priority */
+.prio{display:inline-flex;align-items:center;gap:6px;font-size:13px;}
+.prio .pdot{width:8px;height:8px;border-radius:50%;}
+.prio.high .pdot{background:#C50F1F;}
+.prio.med .pdot{background:#C19C00;}
+.prio.low .pdot{background:#8A8886;}
+
+/* due */
+.due{font-variant-numeric:tabular-nums;font-size:13px;}
+.due.soon{color:#B42318;font-weight:600;}
+
+/* party chip */
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--page-bg);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:3px 10px 3px 3px;
+  max-width:200px;
+}
+.chip .av{
+  width:24px;height:24px;border-radius:50%;flex:0 0 24px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10.5px;font-weight:600;color:#fff;
+  background:#9A9A9A;
+}
+.chip .pname{
+  font-size:12.5px;color:var(--ink-1);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.chip .ch{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;color:var(--ink-2);white-space:nowrap;
+}
+.chip .ch .kglyph{font-size:11px;line-height:1;}
+.chip.unassigned{background:transparent;border-style:dashed;}
+.chip.unassigned .av{background:transparent;border:1.5px dashed var(--border);color:var(--ink-2);}
+.chip.unassigned .pname{color:var(--ink-2);font-style:italic;}
+
+/* status pill */
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:600;
+  border-radius:12px;padding:4px 11px;
+  white-space:nowrap;
+}
+.pill .sdot{width:7px;height:7px;border-radius:50%;}
+.pill.queued{background:#E0F2EF;color:#005a50;}
+.pill.queued .sdot{background:var(--st-queued);}
+.pill.progress{background:#E8E6F8;color:#3f43a0;}
+.pill.progress .sdot{background:var(--st-progress);}
+.pill.suspended{background:#FBF3D5;color:#8a6d00;}
+.pill.suspended .sdot{background:var(--st-suspended);}
+.pill.completed{background:#DEF2DE;color:#0b5c0b;}
+.pill.completed .sdot{background:var(--st-completed);}
+.pill.rejected{background:#FDE7E9;color:#a30d1a;}
+.pill.rejected .sdot{background:var(--st-rejected);}
+
+/* action cell */
+.col-action{text-align:right;white-space:nowrap;}
+.claim-btn{
+  font:inherit;font-size:12.5px;font-weight:600;
+  color:var(--brand);
+  background:transparent;
+  border:1px solid var(--brand);
+  border-radius:var(--radius-ctl);
+  padding:6px 16px;cursor:default;
+}
+.claim-btn:hover{background:#EEEEFB;}
+.row-action-note{
+  font-size:12.5px;color:var(--ink-2);font-style:italic;
+}
+.kebab{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:var(--radius-ctl);
+  color:var(--ink-2);font-size:16px;line-height:1;
+}
+.kebab:hover{background:var(--divider);}
+
+/* lost-claim row */
+tr.lost td{opacity:.5;}
+tr.lost td.col-action{opacity:1;}
+
+/* footnote */
+.grid-foot{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 16px;background:#FCFBFA;
+  border-top:1px solid var(--border);
+  font-size:12px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.legend{display:flex;gap:18px;flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+</style>
+</head>
+<body>
+<div class="browser">
+  <!-- browser chrome -->
+  <div class="browser-bar">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="url"><span class="lock">&#128274;</span> works.hexalith.app/whats-next</div>
+  </div>
+
+  <div class="app">
+    <!-- ============ FrontComposer left rail ============ -->
+    <aside class="rail">
+      <div class="tenant">
+        <span class="tmark">IT</span>
+        <span class="tlabel">Tenant:&nbsp;</span><span class="tname">Itaneo</span>
+      </div>
+      <ul class="nav">
+        <li class="nav-item active">
+          <span class="nav-ico">&#9889;</span> What's next
+        </li>
+        <li class="nav-item">
+          <span class="nav-ico">&#9745;</span> Work
+        </li>
+        <li class="nav-item">
+          <span class="nav-ico">&#10133;</span> Capture
+        </li>
+        <li class="nav-item">
+          <span class="nav-ico">&#9881;</span> Admin
+        </li>
+        <li class="nav-item">
+          <span class="nav-ico">&#128220;</span> Audit
+        </li>
+      </ul>
+      <div class="nav-spacer"></div>
+      <div class="rail-foot">
+        <span class="me">JP</span>
+        <span>Jérôme Piquot</span>
+      </div>
+    </aside>
+
+    <!-- ============ Main ============ -->
+    <main class="main">
+      <div class="main-pad">
+        <div class="head">
+          <div>
+            <h1>What's next?</h1>
+            <p class="subtitle"><b>3</b> in motion · <b>2</b> awaiting · <b>4</b> to claim</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn">Filters</button>
+            <button class="btn primary">+ Capture work</button>
+          </div>
+        </div>
+
+        <!-- push / pull segment -->
+        <div class="tabs">
+          <div class="tab">
+            Assigned to me <span class="count">3</span>
+          </div>
+          <div class="tab active">
+            Claimable <span class="count">4</span> <span class="tab-sub">(single claim wins)</span>
+          </div>
+        </div>
+
+        <!-- DataGrid -->
+        <div class="grid-card">
+          <table class="grid">
+            <thead>
+              <tr>
+                <th style="width:30%">Obligation</th>
+                <th style="width:16%">Burn-down</th>
+                <th>Priority</th>
+                <th>Due</th>
+                <th style="width:18%">Executor</th>
+                <th>Status</th>
+                <th style="width:12%"></th>
+              </tr>
+            </thead>
+            <tbody>
+
+              <!-- Row 1: Confirm Q3 delivery dates — Acme (claimable) -->
+              <tr>
+                <td>
+                  <div class="obl-title">Confirm Q3 delivery dates — Acme</div>
+                  <div class="obl-meta">Obligation · OBL-2041</div>
+                </td>
+                <td>
+                  <div class="burn">
+                    <span class="burn-bar"><span class="burn-fill" style="width:0%"></span></span>
+                    <span class="burn-num">3 <span class="unit">interactions</span></span>
+                  </div>
+                </td>
+                <td><span class="prio high"><span class="pdot"></span>High</span></td>
+                <td><span class="due soon">Today 17:00</span></td>
+                <td>
+                  <span class="chip">
+                    <span class="av" style="background:#7A7A7A;">AL</span>
+                    <span>
+                      <span class="pname">Acme Logistics</span><br>
+                      <span class="ch">&#9671;&nbsp;email</span>
+                    </span>
+                  </span>
+                </td>
+                <td><span class="pill queued"><span class="sdot"></span>Queued</span></td>
+                <td class="col-action"><button class="claim-btn">Claim</button></td>
+              </tr>
+
+              <!-- Row 2: Draft onboarding checklist (claimable) -->
+              <tr>
+                <td>
+                  <div class="obl-title">Draft onboarding checklist</div>
+                  <div class="obl-meta">Task · TSK-3120</div>
+                </td>
+                <td>
+                  <div class="burn">
+                    <span class="burn-bar"><span class="burn-fill" style="width:58%"></span></span>
+                    <span class="burn-num">5 <span class="unit">of 12 steps</span></span>
+                  </div>
+                </td>
+                <td><span class="prio med"><span class="pdot"></span>Med</span></td>
+                <td><span class="due">Fri</span></td>
+                <td>
+                  <span class="chip unassigned">
+                    <span class="av">&#43;</span>
+                    <span class="pname">Unassigned</span>
+                  </span>
+                </td>
+                <td><span class="pill queued"><span class="sdot"></span>Queued</span></td>
+                <td class="col-action"><button class="claim-btn">Claim</button></td>
+              </tr>
+
+              <!-- Row 3: Verify tax ID — Acme (in progress) -->
+              <tr>
+                <td>
+                  <div class="obl-title">Verify tax ID — Acme</div>
+                  <div class="obl-meta">Obligation · OBL-2039</div>
+                </td>
+                <td>
+                  <div class="burn">
+                    <span class="burn-bar"><span class="burn-fill" style="width:50%"></span></span>
+                    <span class="burn-num">1 <span class="unit">of 2 interactions</span></span>
+                  </div>
+                </td>
+                <td><span class="prio med"><span class="pdot"></span>Med</span></td>
+                <td><span class="due">Tomorrow</span></td>
+                <td>
+                  <span class="chip">
+                    <span class="av" style="background:#5B5FC7;">AT</span>
+                    <span>
+                      <span class="pname">Atlas</span><br>
+                      <span class="ch">&#9671;&nbsp;MCP</span>
+                    </span>
+                  </span>
+                </td>
+                <td><span class="pill progress"><span class="sdot"></span>In progress</span></td>
+                <td class="col-action"><span class="kebab">&#8943;</span></td>
+              </tr>
+
+              <!-- Row 4: Collect insurance certificate — Acme (suspended) -->
+              <tr>
+                <td>
+                  <div class="obl-title">Collect insurance certificate — Acme</div>
+                  <div class="obl-meta">Obligation · OBL-2044</div>
+                  <div class="await">
+                    <span class="glyph">&#9203;</span>
+                    Waiting on: reply from Acme Logistics (email)
+                  </div>
+                </td>
+                <td>
+                  <div class="burn">
+                    <span class="burn-bar"><span class="burn-fill" style="width:33%"></span></span>
+                    <span class="burn-num">2 <span class="unit">of 3 interactions</span></span>
+                  </div>
+                </td>
+                <td><span class="prio low"><span class="pdot"></span>Low</span></td>
+                <td><span class="due">Mon</span></td>
+                <td>
+                  <span class="chip">
+                    <span class="av" style="background:#7A7A7A;">AL</span>
+                    <span>
+                      <span class="pname">Acme Logistics</span><br>
+                      <span class="ch">&#9671;&nbsp;email</span>
+                    </span>
+                  </span>
+                </td>
+                <td><span class="pill suspended"><span class="sdot"></span>Suspended</span></td>
+                <td class="col-action"><span class="kebab">&#8943;</span></td>
+              </tr>
+
+              <!-- Row 5: Approve supplier terms (lost-claim) -->
+              <tr class="lost">
+                <td>
+                  <div class="obl-title">Approve supplier terms</div>
+                  <div class="obl-meta">Task · TSK-3104</div>
+                </td>
+                <td>
+                  <div class="burn">
+                    <span class="burn-bar"><span class="burn-fill" style="width:0%"></span></span>
+                    <span class="burn-num">4 <span class="unit">steps</span></span>
+                  </div>
+                </td>
+                <td><span class="prio med"><span class="pdot"></span>Med</span></td>
+                <td><span class="due">Wed</span></td>
+                <td>
+                  <span class="chip">
+                    <span class="av" style="background:#9A6FB0;">DA</span>
+                    <span>
+                      <span class="pname">Dana</span><br>
+                      <span class="ch">&#9671;&nbsp;chatbot</span>
+                    </span>
+                  </span>
+                </td>
+                <td><span class="pill queued"><span class="sdot"></span>Queued</span></td>
+                <td class="col-action"><span class="row-action-note">Someone else got there first.</span></td>
+              </tr>
+
+            </tbody>
+          </table>
+          <div class="grid-foot">
+            <span>Showing 5 of 4 claimable · refreshed 12:04</span>
+            <div class="legend">
+              <span><i style="background:var(--st-queued)"></i>Queued</span>
+              <span><i style="background:var(--st-progress)"></i>In progress</span>
+              <span><i style="background:var(--st-suspended)"></i>Suspended</span>
+              <span><i style="background:var(--st-completed)"></i>Completed</span>
+              <span><i style="background:var(--st-rejected)"></i>Rejected</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

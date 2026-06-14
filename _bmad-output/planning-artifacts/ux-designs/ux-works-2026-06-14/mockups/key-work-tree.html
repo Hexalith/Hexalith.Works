@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Tree — Onboard Acme as a supplier · Hexalith.Works</title>
+<style>
+/* ============================================================================
+   SPINE SECTIONS ILLUSTRATED BY THIS MOCK
+   ----------------------------------------------------------------------------
+   EXPERIENCE.md
+     · IA ............... Work / Work Tree (root work item + nested subtree)
+     · Component Patterns Work tree node · Burn-down meter · Roll-up ("one
+                          number") · Status pill · Party chip
+     · State Patterns ... Suspended (waiting-on reason) · Cascade on cancel
+                          (child cancelled, cascaded from parent)
+   DESIGN.md
+     · Components ....... Roll-Up "one number" (hero) · Burn-Down meter (mini)
+     · Typography ....... metric-hero (tabular-nums roll-up figures)
+     · Colors ........... status vocabulary (in-progress / suspended / queued /
+                          created / cancelled)
+   ----------------------------------------------------------------------------
+   Fluent UI v5 light tokens. Inline CSS only. No JS. No network requests.
+   ============================================================================ */
+
+:root{
+  --page-bg:#FAF9F8;
+  --raised:#FFFFFF;
+  --border:#E1DFDD;
+  --divider:#EDEBE9;
+  --ink-1:#242424;
+  --ink-2:#616161;
+  --brand:#5B5FC7;
+  --burn-done:#107C10;
+  --burn-track:#EDEBE9;
+
+  --st-inprogress:#5B5FC7;
+  --st-suspended:#C19C00;
+  --st-queued:#008272;
+  --st-created:#616161;
+  --st-cancelled:#8A8886;
+
+  --radius-sm:4px;
+  --radius-md:8px;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:#E6E4E2;
+  font-family:-apple-system,"Segoe UI Variable","Segoe UI",Roboto,sans-serif;
+  color:var(--ink-1);
+  -webkit-font-smoothing:antialiased;
+  padding:28px 0 56px;
+}
+
+/* ---- Browser frame ------------------------------------------------------- */
+.browser{
+  width:1100px;
+  margin:0 auto;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 12px 32px rgba(0,0,0,.16),0 2px 6px rgba(0,0,0,.08);
+}
+.chrome{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  background:#F3F2F1;
+  border-bottom:1px solid var(--border);
+}
+.dots{display:flex;gap:7px;}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot.r{background:#FF5F57;}
+.dot.y{background:#FEBC2E;}
+.dot.g{background:#28C840;}
+.omnibox{
+  flex:1;
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:6px 12px;
+  font-size:12.5px;
+  color:var(--ink-2);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.omnibox .lock{color:var(--burn-done);font-size:11px;}
+.omnibox .path{color:var(--ink-1);}
+
+/* ---- App canvas ---------------------------------------------------------- */
+.app{
+  background:var(--page-bg);
+  padding:24px 28px 30px;
+}
+
+/* ---- Header -------------------------------------------------------------- */
+.crumbs{
+  font-size:12px;
+  color:var(--ink-2);
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.crumbs .sep{color:#C8C6C4;}
+.header-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:4px;
+}
+.tree-icon{
+  width:28px;height:28px;flex:0 0 28px;
+  color:var(--brand);
+}
+.header-row h1{
+  font-size:24px;
+  font-weight:600;
+  letter-spacing:-.01em;
+  margin:0;
+}
+.subtitle{
+  font-size:13px;
+  color:var(--ink-2);
+  margin:2px 0 0 40px;
+}
+
+/* ---- Status pill (status vocabulary) ------------------------------------- */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11.5px;
+  font-weight:600;
+  line-height:1;
+  padding:5px 10px 5px 8px;
+  border-radius:999px;
+  white-space:nowrap;
+  border:1px solid transparent;
+}
+.pill .pip{width:7px;height:7px;border-radius:50%;flex:0 0 7px;}
+.pill.inprogress{color:#3E41A8;background:#ECEDF9;border-color:#D9DAF4;}
+.pill.inprogress .pip{background:var(--st-inprogress);}
+.pill.suspended{color:#8A6D00;background:#FBF4DA;border-color:#F1E4AE;}
+.pill.suspended .pip{background:var(--st-suspended);}
+.pill.queued{color:#0A6B5F;background:#DDF3EF;border-color:#B9E6DE;}
+.pill.queued .pip{background:var(--st-queued);}
+.pill.created{color:#4B4B4B;background:#F0F0EF;border-color:#E1DFDD;}
+.pill.created .pip{background:var(--st-created);}
+.pill.cancelled{color:#6E6C6A;background:#F0EFEE;border-color:#E1DFDD;}
+.pill.cancelled .pip{background:var(--st-cancelled);}
+.pill.lg{font-size:12.5px;padding:7px 14px 7px 11px;}
+.pill.lg .pip{width:8px;height:8px;flex:0 0 8px;}
+
+/* ---- Roll-up hero panel ("one number") ----------------------------------- */
+.rollup{
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:20px 24px 18px;
+  margin:18px 0 22px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.rollup-label{
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  color:var(--ink-2);
+  margin:0 0 14px;
+}
+.metrics{
+  display:flex;
+  align-items:stretch;
+  gap:0;
+}
+.metric{
+  padding:0 30px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.metric:first-child{padding-left:0;}
+.metric + .metric{border-left:1px solid var(--divider);}
+.metric .figure{
+  font-variant-numeric:tabular-nums;
+  font-size:46px;
+  line-height:1;
+  font-weight:650;
+  letter-spacing:-.02em;
+  color:var(--ink-1);
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.metric .figure .unit{
+  font-size:18px;
+  font-weight:500;
+  color:var(--ink-2);
+  letter-spacing:0;
+}
+.metric .figure-sub{
+  font-size:12px;
+  color:var(--ink-2);
+  margin-top:9px;
+}
+/* divider before the own-vs-subtree comparison */
+.metric.compare{
+  margin-left:auto;
+  padding-right:0;
+  align-items:flex-end;
+  text-align:right;
+}
+.metric.compare .own{
+  font-variant-numeric:tabular-nums;
+  font-size:20px;
+  font-weight:600;
+  color:var(--ink-1);
+}
+.metric.compare .own .u{font-size:13px;font-weight:500;color:var(--ink-2);}
+.metric.compare .own-label{
+  font-size:11px;
+  color:var(--ink-2);
+  margin-top:6px;
+}
+.metric.compare .vs{
+  font-size:11px;
+  color:#A19F9D;
+  margin-top:10px;
+  line-height:1.4;
+}
+.metric.compare .vs b{color:var(--ink-1);font-weight:600;}
+.rollup-caption{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--divider);
+  font-size:12px;
+  color:var(--ink-2);
+}
+.rollup-caption svg{color:var(--brand);flex:0 0 14px;}
+.rollup-caption b{color:var(--ink-1);font-weight:600;}
+
+/* ---- Tree section -------------------------------------------------------- */
+.tree-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  margin:0 2px 8px;
+}
+.tree-head h2{
+  font-size:13px;
+  font-weight:600;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--ink-2);
+  margin:0;
+}
+.tree-head .legend{
+  font-size:11px;color:var(--ink-2);
+  display:flex;gap:14px;align-items:center;
+}
+.tree-head .legend .lg-item{display:inline-flex;align-items:center;gap:5px;}
+.tree-head .legend .swatch{width:9px;height:9px;border-radius:2px;}
+.tree-head .legend .swatch.done{background:var(--burn-done);}
+.tree-head .legend .swatch.track{background:var(--burn-track);border:1px solid #DAD8D6;}
+
+.tree{
+  background:var(--raised);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+
+/* ---- Tree node row ------------------------------------------------------- */
+.node{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:13px 18px;
+  border-bottom:1px solid var(--divider);
+  position:relative;
+}
+.node:last-child{border-bottom:none;}
+.node:hover{background:#FCFCFB;}
+.node.parent{background:#FBFBFC;}
+.node.parent:hover{background:#F7F7FA;}
+
+/* indentation + disclosure */
+.disclosure-cell{
+  display:flex;
+  align-items:center;
+  flex:0 0 auto;
+}
+.guide{width:24px;flex:0 0 24px;}          /* one indent level */
+.tri{
+  width:18px;height:18px;flex:0 0 18px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--ink-2);
+  cursor:default;
+}
+.tri.leaf{visibility:hidden;}
+.node-icon{
+  width:18px;height:18px;flex:0 0 18px;
+  color:var(--ink-2);
+  margin-left:2px;
+}
+.node.parent .node-icon{color:var(--brand);}
+
+/* obligation (main label) */
+.oblig{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.oblig .title{
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink-1);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.node.parent .oblig .title{font-weight:600;}
+.oblig .note{
+  font-size:11.5px;
+  color:var(--ink-2);
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.oblig .note .warn-ico{color:var(--st-suspended);flex:0 0 12px;}
+
+/* mini burn-down meter */
+.burn{
+  flex:0 0 120px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.burn .bar{
+  height:6px;
+  width:100%;
+  background:var(--burn-track);
+  border-radius:999px;
+  overflow:hidden;
+}
+.burn .fill{height:100%;background:var(--burn-done);border-radius:999px;}
+.burn .burn-label{
+  font-size:10.5px;
+  color:var(--ink-2);
+  font-variant-numeric:tabular-nums;
+}
+.burn.muted .fill{background:#C8C6C4;}
+.burn.muted .burn-label{color:#A19F9D;}
+
+/* remaining figure */
+.remain{
+  flex:0 0 116px;
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.remain .num{
+  font-size:16px;
+  font-weight:650;
+  color:var(--ink-1);
+  letter-spacing:-.01em;
+}
+.remain .un{font-size:11.5px;color:var(--ink-2);font-weight:500;margin-left:3px;}
+.remain .rsub{font-size:10.5px;color:var(--ink-2);margin-top:2px;}
+.remain.dual .num{font-size:14.5px;}
+.remain.dual .line2{margin-top:2px;}
+
+/* status pill cell */
+.status-cell{flex:0 0 132px;display:flex;justify-content:flex-start;}
+
+/* party chip — SAME visual for all executor kinds */
+.party-cell{flex:0 0 168px;display:flex;justify-content:flex-start;}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  max-width:100%;
+  padding:4px 10px 4px 4px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--raised);
+  font-size:12px;
+  color:var(--ink-1);
+}
+.chip .avatar{
+  width:20px;height:20px;flex:0 0 20px;
+  border-radius:50%;
+  background:#EFEFEE;
+  color:var(--ink-2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:700;
+  position:relative;
+}
+.chip .name{
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:flex;flex-direction:column;line-height:1.25;
+}
+.chip .name .who{font-weight:500;}
+.chip .name .via{
+  font-size:10px;color:var(--ink-2);
+  display:flex;align-items:center;gap:3px;
+}
+.chip .via .kind-glyph{color:var(--ink-2);}   /* tiny glyph only, never color */
+.chip.unassigned{
+  border-style:dashed;
+  color:var(--ink-2);
+  background:transparent;
+}
+.chip.unassigned .avatar{background:transparent;border:1px dashed var(--border);}
+
+/* cancelled / cascaded node */
+.node.cancelled{background:#FBFBFA;}
+.node.cancelled .oblig .title{
+  color:var(--st-cancelled);
+  text-decoration:line-through;
+  text-decoration-color:#C8C6C4;
+}
+.node.cancelled .node-icon,
+.node.cancelled .tri{opacity:.5;}
+.node.cancelled .remain .num{color:var(--st-cancelled);text-decoration:line-through;}
+.node.cancelled .chip{opacity:.55;}
+.node.cancelled .cascade{
+  font-size:11px;color:var(--st-cancelled);
+  display:inline-flex;align-items:center;gap:4px;
+}
+
+/* footer note */
+.foot{
+  margin-top:14px;
+  font-size:11.5px;
+  color:var(--ink-2);
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+  padding:0 2px;
+}
+.foot .fkey{display:inline-flex;align-items:center;gap:6px;}
+.foot .fkey svg{color:var(--ink-2);flex:0 0 13px;}
+</style>
+</head>
+<body>
+<div class="browser">
+
+  <!-- Browser chrome -->
+  <div class="chrome">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="omnibox">
+      <span class="lock">🔒</span>
+      <span>works.hexalith.app</span>
+      <span class="path">/tenants/acme/work/onboard-acme-supplier/tree</span>
+    </div>
+  </div>
+
+  <!-- App canvas -->
+  <div class="app">
+
+    <!-- Breadcrumbs / IA: Work › Work Tree -->
+    <div class="crumbs">
+      <span>Work</span><span class="sep">›</span>
+      <span>Supplier onboarding</span><span class="sep">›</span>
+      <span style="color:var(--ink-1);font-weight:600;">Work Tree</span>
+    </div>
+
+    <!-- Header: root title + status pill -->
+    <div class="header-row">
+      <svg class="tree-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="6" rx="1.4"/>
+        <rect x="14" y="9" width="7" height="5" rx="1.4"/>
+        <rect x="14" y="16" width="7" height="5" rx="1.4"/>
+        <path d="M10 6h2.5a1.5 1.5 0 0 1 1.5 1.5v4M14 18.5h-1.5A1.5 1.5 0 0 1 11 17v-5"/>
+      </svg>
+      <h1>Onboard Acme as a supplier</h1>
+      <span class="pill inprogress lg"><span class="pip"></span>In progress</span>
+    </div>
+    <p class="subtitle">Root work item · 5 active sub-items across 2 branches · last activity 14 minutes ago</p>
+
+    <!-- ===== Roll-up "one number" hero ===================================== -->
+    <section class="rollup" aria-label="Rolled-up remaining work">
+      <p class="rollup-label">Remaining (rolled up across subtree)</p>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="figure">14<span class="unit">interactions</span></div>
+          <div class="figure-sub">Remaining (rolled up)</div>
+        </div>
+
+        <div class="metric">
+          <div class="figure">6<span class="unit">hours</span></div>
+          <div class="figure-sub">Remaining (rolled up)</div>
+        </div>
+
+        <!-- own vs subtree comparison -->
+        <div class="metric compare">
+          <div class="own">0 <span class="u">interactions</span></div>
+          <div class="own-label">this item's own Remaining</div>
+          <div class="vs">all work lives in children —<br>own <b>0</b> · subtree <b>14&nbsp;+ 6h</b></div>
+        </div>
+      </div>
+
+      <div class="rollup-caption">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <circle cx="8" cy="8" r="6.5"/><path d="M8 7.2v4M8 4.6h.01" stroke-linecap="round"/>
+        </svg>
+        <span><b>Heterogeneous units — shown separately, never summed.</b> Interactions and hours are different Units, so each rolls up as its own subtotal.</span>
+      </div>
+    </section>
+
+    <!-- ===== Indented work tree =========================================== -->
+    <div class="tree-head">
+      <h2>Work tree</h2>
+      <div class="legend">
+        <span class="lg-item"><span class="swatch done"></span>completed</span>
+        <span class="lg-item"><span class="swatch track"></span>remaining</span>
+      </div>
+    </div>
+
+    <div class="tree" role="tree" aria-label="Work tree for Onboard Acme as a supplier">
+
+      <!-- ROOT (parent) -->
+      <div class="node parent" role="treeitem" aria-expanded="true">
+        <div class="disclosure-cell">
+          <span class="tri" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><path d="M4 3l7 5-7 5z"/></svg>
+          </span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="6" rx="1.4"/><rect x="14" y="9" width="7" height="5" rx="1.4"/><rect x="14" y="16" width="7" height="5" rx="1.4"/><path d="M10 6h2.5a1.5 1.5 0 0 1 1.5 1.5v4M14 18.5h-1.5A1.5 1.5 0 0 1 11 17v-5"/>
+        </svg>
+        <div class="oblig">
+          <span class="title">Onboard Acme as a supplier</span>
+          <span class="note">Parent · rolls up all children</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:31%"></span></div>
+          <span class="burn-label">31% complete (subtree)</span>
+        </div>
+        <div class="remain dual">
+          <div class="num">14 <span class="un">interactions</span></div>
+          <div class="num line2">6 <span class="un">hours</span></div>
+        </div>
+        <div class="status-cell"><span class="pill inprogress"><span class="pip"></span>In progress</span></div>
+        <div class="party-cell"></div>
+      </div>
+
+      <!-- Child: Confirm Q3 delivery dates -->
+      <div class="node" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 12l3 3 5-6"/></svg>
+        <div class="oblig">
+          <span class="title">Confirm Q3 delivery dates — Acme</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">0 of 3 done</span>
+        </div>
+        <div class="remain"><div class="num">3 <span class="un">interactions</span></div></div>
+        <div class="status-cell"><span class="pill inprogress"><span class="pip"></span>In progress</span></div>
+        <div class="party-cell">
+          <span class="chip" title="Executor: Acme Logistics — via email">
+            <span class="avatar">AL</span>
+            <span class="name"><span class="who">Acme Logistics</span>
+              <span class="via">
+                <svg class="kind-glyph" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="4" width="12" height="8" rx="1.2"/><path d="M2.6 4.6 8 9l5.4-4.4"/></svg>◇ email</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Child: Verify tax ID -->
+      <div class="node" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 12l3 3 5-6"/></svg>
+        <div class="oblig">
+          <span class="title">Verify tax ID — Acme</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:50%"></span></div>
+          <span class="burn-label">1 of 2 done</span>
+        </div>
+        <div class="remain"><div class="num">1 <span class="un">interaction</span></div><div class="rsub">of 2</div></div>
+        <div class="status-cell"><span class="pill inprogress"><span class="pip"></span>In progress</span></div>
+        <div class="party-cell">
+          <span class="chip" title="Executor: Atlas (automation) — via MCP">
+            <span class="avatar">AT</span>
+            <span class="name"><span class="who">Atlas</span>
+              <span class="via">
+                <svg class="kind-glyph" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="5" width="10" height="7" rx="1.4"/><path d="M8 5V3M6 8h.01M10 8h.01M5.5 12v1.5M10.5 12v1.5" stroke-linecap="round"/></svg>◇ MCP</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Child: Collect insurance certificate — SUSPENDED -->
+      <div class="node" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M8 12l3 3 5-6"/></svg>
+        <div class="oblig">
+          <span class="title">Collect insurance certificate — Acme</span>
+          <span class="note">
+            <svg class="warn-ico" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M8 2 1.5 13.5h13z" stroke-linejoin="round"/><path d="M8 6.5v3.2M8 11.6h.01" stroke-linecap="round"/></svg>
+            Waiting on: reply (email)
+          </span>
+        </div>
+        <div class="burn muted">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">paused · 0 of 2 done</span>
+        </div>
+        <div class="remain"><div class="num">2 <span class="un">interactions</span></div></div>
+        <div class="status-cell"><span class="pill suspended"><span class="pip"></span>Suspended</span></div>
+        <div class="party-cell">
+          <span class="chip" title="Executor: Acme Logistics — via email">
+            <span class="avatar">AL</span>
+            <span class="name"><span class="who">Acme Logistics</span>
+              <span class="via">
+                <svg class="kind-glyph" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="4" width="12" height="8" rx="1.2"/><path d="M2.6 4.6 8 9l5.4-4.4"/></svg>◇ email</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Sub-parent: Set up payment terms -->
+      <div class="node parent" role="treeitem" aria-expanded="true">
+        <div class="disclosure-cell">
+          <span class="guide"></span>
+          <span class="tri" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="currentColor"><path d="M4 3l7 5-7 5z"/></svg>
+          </span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="6" rx="1.4"/><rect x="14" y="9" width="7" height="5" rx="1.4"/><rect x="14" y="16" width="7" height="5" rx="1.4"/><path d="M10 6h2.5a1.5 1.5 0 0 1 1.5 1.5v4M14 18.5h-1.5A1.5 1.5 0 0 1 11 17v-5"/></svg>
+        <div class="oblig">
+          <span class="title">Set up payment terms</span>
+          <span class="note">Parent · rolls up child hours</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">0% complete (subtree)</span>
+        </div>
+        <div class="remain"><div class="num">6 <span class="un">hours</span></div></div>
+        <div class="status-cell"><span class="pill inprogress"><span class="pip"></span>In progress</span></div>
+        <div class="party-cell"></div>
+      </div>
+
+      <!-- grandchild: Draft terms doc -->
+      <div class="node" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span><span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 16.5h6"/></svg>
+        <div class="oblig">
+          <span class="title">Draft terms doc</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">0 of 4 h logged</span>
+        </div>
+        <div class="remain"><div class="num">4 <span class="un">hours</span></div></div>
+        <div class="status-cell"><span class="pill queued"><span class="pip"></span>Queued</span></div>
+        <div class="party-cell">
+          <span class="chip unassigned" title="No executor assigned yet">
+            <span class="avatar">＋</span>
+            <span class="name"><span class="who">Unassigned</span></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- grandchild: Legal review -->
+      <div class="node" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span><span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 13h6M9 16.5h6"/></svg>
+        <div class="oblig">
+          <span class="title">Legal review</span>
+        </div>
+        <div class="burn">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">0 of 2 h logged</span>
+        </div>
+        <div class="remain"><div class="num">2 <span class="un">hours</span></div></div>
+        <div class="status-cell"><span class="pill created"><span class="pip"></span>Created</span></div>
+        <div class="party-cell">
+          <span class="chip unassigned" title="No executor assigned yet">
+            <span class="avatar">＋</span>
+            <span class="name"><span class="who">Unassigned</span></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- CANCELLED child (cascade-on-cancel state) -->
+      <div class="node cancelled" role="treeitem">
+        <div class="disclosure-cell">
+          <span class="guide"></span>
+          <span class="tri leaf"></span>
+        </div>
+        <svg class="node-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+        <div class="oblig">
+          <span class="title">Manual credit check — Acme</span>
+          <span class="cascade">
+            <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 3v5a3 3 0 0 0 3 3h6" stroke-linecap="round"/><path d="M11 8.5 13.5 11 11 13.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            cascaded from parent
+          </span>
+        </div>
+        <div class="burn muted">
+          <div class="bar"><span class="fill" style="width:0%"></span></div>
+          <span class="burn-label">cancelled — not counted</span>
+        </div>
+        <div class="remain"><div class="num">— <span class="un">interactions</span></div></div>
+        <div class="status-cell"><span class="pill cancelled"><span class="pip"></span>Cancelled</span></div>
+        <div class="party-cell">
+          <span class="chip" title="Executor: Priya Nathan (person) — via in-app">
+            <span class="avatar">PN</span>
+            <span class="name"><span class="who">Priya Nathan</span>
+              <span class="via">
+                <svg class="kind-glyph" viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="5.2" r="2.4"/><path d="M3.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke-linecap="round"/></svg>◇ in-app</span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+    </div><!-- /tree -->
+
+    <div class="foot">
+      <span class="fkey">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="5.2" r="2.4"/><path d="M3.5 13c0-2.5 2-4 4.5-4s4.5 1.5 4.5 4" stroke-linecap="round"/></svg>
+        person
+      </span>
+      <span class="fkey">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="3" y="5" width="10" height="7" rx="1.4"/><path d="M8 5V3M5.5 12v1.5M10.5 12v1.5" stroke-linecap="round"/></svg>
+        bot / automation
+      </span>
+      <span class="fkey">
+        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="2" y="4" width="12" height="8" rx="1.2"/><path d="M2.6 4.6 8 9l5.4-4.4"/></svg>
+        external party
+      </span>
+      <span style="margin-left:auto;">Executor kind shown by glyph only — chips share one neutral visual, never color-coded.</span>
+    </div>
+
+  </div><!-- /app -->
+</div><!-- /browser -->
+</body>
+</html>

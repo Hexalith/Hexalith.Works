@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hexalith.Works — Color Theme Variations (Fluent UI v5 brand deltas)</title>
+<style>
+/* =====================================================================
+   Hexalith.Works — Color Theme Variations
+   Fluent UI v5 brand-layer deltas over a neutral Fluent base.
+   All themes share the same neutral foundation; only the brand and
+   accent roles change per variation. Light + Dark shown side by side.
+
+   ----------------------------------------------------------------------
+   SHARED NEUTRAL FOUNDATION (Fluent neutral ramp)
+   ----------------------------------------------------------------------
+   LIGHT neutrals:
+     page bg        #faf9f8   (NeutralBackgroundCanvas)
+     raised         #ffffff   (NeutralBackground1 / card)
+     border         #e1dfdd   (NeutralStroke1)
+     ink-primary    #242424   (NeutralForeground1)
+     ink-secondary  #616161   (NeutralForeground2)
+   DARK neutrals:
+     page bg        #1b1a19   (NeutralBackgroundCanvas dark)
+     raised         #292827   (NeutralBackground1 dark / card)
+     border         #3b3a39   (NeutralStroke1 dark)
+     ink-primary    #f3f2f1   (NeutralForeground1 dark)
+     ink-secondary  #c8c6c4   (NeutralForeground2 dark)
+
+   ----------------------------------------------------------------------
+   VARIATION 1 — MOMENTUM (RECOMMENDED)
+   Register: AI-native, collaborative, momentum-forward.
+   ----------------------------------------------------------------------
+     brand-primary     #5B5FC7  (Fluent "blurple")   dark #9299F7
+     brand-foreground  #ffffff on brand   /  dark #1b1a19 on #9299F7
+     burndown-done     #107C10           dark #54B054
+     burndown-track    #e1dfdd           dark #3b3a39
+     cost-meter        #C19C00           dark #D9B500
+     Status:
+       created     #616161    assigned   #0F6CBD
+       queued      #008272    in-progress#5B5FC7
+       suspended   #C19C00    completed  #107C10
+       cancelled   #8A8886    rejected   #C50F1F
+       expired     #A4373A
+
+   ----------------------------------------------------------------------
+   VARIATION 2 — COMMUNICATION
+   Register: Conservative, neutral, enterprise-default.
+   ----------------------------------------------------------------------
+     brand-primary     #0F6CBD  (Fluent communication blue)  dark #479EF5
+     brand-foreground  #ffffff on brand   /  dark #1b1a19 on #479EF5
+     burndown-done     #107C10           dark #54B054
+     burndown-track    #e1dfdd           dark #3b3a39
+     cost-meter        #C19C00           dark #D9B500
+     Status:
+       created     #616161    assigned   #0F6CBD
+       queued      #008272    in-progress#0F6CBD  (blue)
+       suspended   #C19C00    completed  #107C10
+       cancelled   #8A8886    rejected   #C50F1F
+       expired     #A4373A
+
+   ----------------------------------------------------------------------
+   VARIATION 3 — FLOW
+   Register: Coordination, calm flow, operational.
+   ----------------------------------------------------------------------
+     brand-primary     #008272  (Fluent teal)        dark #4DC2B0
+     brand-foreground  #ffffff on brand   /  dark #1b1a19 on #4DC2B0
+     burndown-done     #107C10           dark #54B054
+     burndown-track    #e1dfdd           dark #3b3a39
+     cost-meter        #C19C00           dark #D9B500
+     Status:
+       created     #616161    assigned   #0F6CBD
+       queued      #008272    in-progress#008272  (teal)
+       suspended   #C19C00    completed  #107C10
+       cancelled   #8A8886    rejected   #C50F1F
+       expired     #A4373A
+
+   ----------------------------------------------------------------------
+   VARIATION 4 — FRONTIER
+   Register: Bold, frontier-firm, agent-forward.
+   ----------------------------------------------------------------------
+     brand-primary     #4F46E5  (deep indigo)        dark #818CF8
+     brand-foreground  #ffffff on brand   /  dark #1b1a19 on #818CF8
+     burndown-done     #107C10           dark #54B054
+     burndown-track    #e1dfdd           dark #3b3a39
+     cost-meter        #C19C00           dark #D9B500
+     Status:
+       created     #616161    assigned   #0F6CBD
+       queued      #008272    in-progress#4F46E5  (indigo)
+       suspended   #C19C00    completed  #107C10
+       cancelled   #8A8886    rejected   #C50F1F
+       expired     #A4373A
+   ===================================================================== */
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, "Segoe UI Variable", "Segoe UI", Roboto, sans-serif;
+    background: #f0eeec;
+    color: #242424;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page-head {
+    padding: 28px 32px 8px;
+  }
+  .page-head h1 {
+    margin: 0 0 4px;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .page-head p {
+    margin: 0;
+    font-size: 13px;
+    color: #616161;
+    max-width: 1100px;
+  }
+
+  /* ---- Layout: one variation block per row, two surfaces inside ---- */
+  .variation {
+    padding: 20px 32px 8px;
+  }
+  .variation-head {
+    margin-bottom: 14px;
+  }
+  .variation-head .vname {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .variation-head .vregister {
+    margin: 3px 0 0;
+    font-size: 13px;
+    font-style: italic;
+    color: #616161;
+  }
+  .reco-badge {
+    font-size: 11px;
+    font-weight: 700;
+    font-style: normal;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #107C10;
+    color: #ffffff;
+  }
+
+  .surfaces {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 960px) {
+    .surfaces { grid-template-columns: 1fr; }
+  }
+
+  /* A "surface" is a light or dark canvas. Tokens are read via inline
+     CSS custom properties set on the .surface element per variation. */
+  .surface {
+    border-radius: 12px;
+    padding: 16px 18px 18px;
+    border: 1px solid var(--border);
+    background: var(--page-bg);
+    color: var(--ink-primary);
+  }
+  .surface-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    margin-bottom: 12px;
+  }
+
+  /* ---- Token chips ---- */
+  .chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 5px 8px 5px 6px;
+    border-radius: 6px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    color: var(--ink-secondary);
+    white-space: nowrap;
+  }
+  .swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    flex: 0 0 auto;
+    border: 1px solid rgba(128,128,128,0.35);
+  }
+  .chip .label { font-weight: 600; color: var(--ink-primary); }
+  .chip .hex {
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-secondary);
+    letter-spacing: -0.01em;
+  }
+  .chip-section-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+    margin: 10px 0 6px;
+    width: 100%;
+  }
+
+  /* ===================== BURN-DOWN CARD SNIPPET ===================== */
+  .card {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink-primary);
+    max-width: 230px;
+  }
+  /* Status pill — uses in-progress status color; AA-legible text */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--status-inprogress-bg);
+    color: var(--status-inprogress-fg);
+    border: 1px solid var(--status-inprogress-border);
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--status-inprogress);
+  }
+
+  .card-metric {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .metric-number {
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--brand-primary);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .metric-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-secondary);
+  }
+  .metric-label {
+    font-size: 11px;
+    color: var(--ink-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-left: auto;
+    align-self: flex-end;
+  }
+
+  /* Burn-down bar: Done filled over a neutral track */
+  .burndown {
+    margin-bottom: 14px;
+  }
+  .burndown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-secondary);
+    margin-bottom: 5px;
+  }
+  .burndown-row .done-label {
+    font-weight: 600;
+    color: var(--burndown-done);
+  }
+  .burndown-row .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .burndown-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--burndown-track);
+    overflow: hidden;
+  }
+  .burndown-done {
+    height: 100%;
+    width: 70%; /* 7 of 10 done -> 3 remaining */
+    border-radius: 999px;
+    background: var(--burndown-done);
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  /* Party chip */
+  .party-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px 5px 6px;
+    border-radius: 999px;
+    background: var(--brand-tint);
+    color: var(--brand-on-tint);
+    border: 1px solid var(--brand-tint-border);
+  }
+  .party-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--brand-primary);
+    color: var(--brand-foreground);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    flex: 0 0 auto;
+  }
+  .channel-glyph {
+    display: inline-flex;
+    align-items: center;
+    color: var(--ink-secondary);
+  }
+  /* cost meter mini-indicator in footer */
+  .cost-meter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--ink-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .cost-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--cost-meter);
+  }
+
+  .foot-note {
+    padding: 16px 32px 40px;
+    font-size: 12px;
+    color: #8A8886;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>Hexalith.Works — Color Theme Variations</h1>
+  <p>Four brand-layer deltas on a shared neutral Fluent UI v5 base. Each variation shows light and dark surfaces side by side: semantic token chips for every role, plus a realistic burn-down card snippet. AA-legible status pills and burn-down numbers throughout.</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- VARIATION 1 — MOMENTUM (RECOMMENDED)                          -->
+<!-- ============================================================ -->
+<section class="variation">
+  <div class="variation-head">
+    <div class="vname">Momentum <span class="reco-badge">Recommended</span></div>
+    <p class="vregister">AI-native, collaborative, momentum-forward.</p>
+  </div>
+  <div class="surfaces">
+
+    <!-- LIGHT -->
+    <div class="surface" style="
+      --page-bg:#faf9f8; --raised:#ffffff; --border:#e1dfdd;
+      --ink-primary:#242424; --ink-secondary:#616161;
+      --brand-primary:#5B5FC7; --brand-foreground:#ffffff;
+      --brand-tint:#eceefb; --brand-on-tint:#3a3d99; --brand-tint-border:#d4d7f5;
+      --burndown-done:#107C10; --burndown-track:#e1dfdd; --cost-meter:#C19C00;
+      --status-inprogress:#5B5FC7; --status-inprogress-bg:#eceefb;
+      --status-inprogress-fg:#3a3d99; --status-inprogress-border:#d4d7f5;">
+      <div class="surface-label">Light</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#5B5FC7"></span><span class="label">brand-primary</span><span class="hex">#5B5FC7</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">brand-foreground</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">burndown-done</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">burndown-track</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">cost-meter</span><span class="hex">#C19C00</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">created</span><span class="hex">#616161</span></span>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">assigned</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">queued</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#5B5FC7"></span><span class="label">in-progress</span><span class="hex">#5B5FC7</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">suspended</span><span class="hex">#C19C00</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">completed</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#8A8886"></span><span class="label">cancelled</span><span class="hex">#8A8886</span></span>
+        <span class="chip"><span class="swatch" style="background:#C50F1F"></span><span class="label">rejected</span><span class="hex">#C50F1F</span></span>
+        <span class="chip"><span class="swatch" style="background:#A4373A"></span><span class="label">expired</span><span class="hex">#A4373A</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#faf9f8"></span><span class="label">page bg</span><span class="hex">#FAF9F8</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">raised</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">border</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#242424"></span><span class="label">ink-primary</span><span class="hex">#242424</span></span>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">ink-secondary</span><span class="hex">#616161</span></span>
+      </div>
+
+      <!-- Burn-down card -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="surface" style="
+      --page-bg:#1b1a19; --raised:#292827; --border:#3b3a39;
+      --ink-primary:#f3f2f1; --ink-secondary:#c8c6c4;
+      --brand-primary:#9299F7; --brand-foreground:#1b1a19;
+      --brand-tint:#2c2e4a; --brand-on-tint:#b8bcfa; --brand-tint-border:#3f4270;
+      --burndown-done:#54B054; --burndown-track:#3b3a39; --cost-meter:#D9B500;
+      --status-inprogress:#9299F7; --status-inprogress-bg:#2c2e4a;
+      --status-inprogress-fg:#b8bcfa; --status-inprogress-border:#3f4270;">
+      <div class="surface-label">Dark</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#9299F7"></span><span class="label">brand-primary</span><span class="hex">#9299F7</span></span>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">brand-foreground</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">burndown-done</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">burndown-track</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">cost-meter</span><span class="hex">#D9B500</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#a6a6a6"></span><span class="label">created</span><span class="hex">#A6A6A6</span></span>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">assigned</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">queued</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#9299F7"></span><span class="label">in-progress</span><span class="hex">#9299F7</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">suspended</span><span class="hex">#D9B500</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">completed</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#a19f9d"></span><span class="label">cancelled</span><span class="hex">#A19F9D</span></span>
+        <span class="chip"><span class="swatch" style="background:#F1707B"></span><span class="label">rejected</span><span class="hex">#F1707B</span></span>
+        <span class="chip"><span class="swatch" style="background:#D69CA5"></span><span class="label">expired</span><span class="hex">#D69CA5</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">page bg</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#292827"></span><span class="label">raised</span><span class="hex">#292827</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">border</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#f3f2f1"></span><span class="label">ink-primary</span><span class="hex">#F3F2F1</span></span>
+        <span class="chip"><span class="swatch" style="background:#c8c6c4"></span><span class="label">ink-secondary</span><span class="hex">#C8C6C4</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIATION 2 — COMMUNICATION                                   -->
+<!-- ============================================================ -->
+<section class="variation">
+  <div class="variation-head">
+    <div class="vname">Communication</div>
+    <p class="vregister">Conservative, neutral, enterprise-default.</p>
+  </div>
+  <div class="surfaces">
+
+    <!-- LIGHT -->
+    <div class="surface" style="
+      --page-bg:#faf9f8; --raised:#ffffff; --border:#e1dfdd;
+      --ink-primary:#242424; --ink-secondary:#616161;
+      --brand-primary:#0F6CBD; --brand-foreground:#ffffff;
+      --brand-tint:#e5f0fb; --brand-on-tint:#0a5394; --brand-tint-border:#cfe4f7;
+      --burndown-done:#107C10; --burndown-track:#e1dfdd; --cost-meter:#C19C00;
+      --status-inprogress:#0F6CBD; --status-inprogress-bg:#e5f0fb;
+      --status-inprogress-fg:#0a5394; --status-inprogress-border:#cfe4f7;">
+      <div class="surface-label">Light</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">brand-primary</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">brand-foreground</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">burndown-done</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">burndown-track</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">cost-meter</span><span class="hex">#C19C00</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">created</span><span class="hex">#616161</span></span>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">assigned</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">queued</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">in-progress</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">suspended</span><span class="hex">#C19C00</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">completed</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#8A8886"></span><span class="label">cancelled</span><span class="hex">#8A8886</span></span>
+        <span class="chip"><span class="swatch" style="background:#C50F1F"></span><span class="label">rejected</span><span class="hex">#C50F1F</span></span>
+        <span class="chip"><span class="swatch" style="background:#A4373A"></span><span class="label">expired</span><span class="hex">#A4373A</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#faf9f8"></span><span class="label">page bg</span><span class="hex">#FAF9F8</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">raised</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">border</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#242424"></span><span class="label">ink-primary</span><span class="hex">#242424</span></span>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">ink-secondary</span><span class="hex">#616161</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="surface" style="
+      --page-bg:#1b1a19; --raised:#292827; --border:#3b3a39;
+      --ink-primary:#f3f2f1; --ink-secondary:#c8c6c4;
+      --brand-primary:#479EF5; --brand-foreground:#1b1a19;
+      --brand-tint:#1d3a55; --brand-on-tint:#8cc4f8; --brand-tint-border:#2c5478;
+      --burndown-done:#54B054; --burndown-track:#3b3a39; --cost-meter:#D9B500;
+      --status-inprogress:#479EF5; --status-inprogress-bg:#1d3a55;
+      --status-inprogress-fg:#8cc4f8; --status-inprogress-border:#2c5478;">
+      <div class="surface-label">Dark</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">brand-primary</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">brand-foreground</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">burndown-done</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">burndown-track</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">cost-meter</span><span class="hex">#D9B500</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#a6a6a6"></span><span class="label">created</span><span class="hex">#A6A6A6</span></span>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">assigned</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">queued</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">in-progress</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">suspended</span><span class="hex">#D9B500</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">completed</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#a19f9d"></span><span class="label">cancelled</span><span class="hex">#A19F9D</span></span>
+        <span class="chip"><span class="swatch" style="background:#F1707B"></span><span class="label">rejected</span><span class="hex">#F1707B</span></span>
+        <span class="chip"><span class="swatch" style="background:#D69CA5"></span><span class="label">expired</span><span class="hex">#D69CA5</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">page bg</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#292827"></span><span class="label">raised</span><span class="hex">#292827</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">border</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#f3f2f1"></span><span class="label">ink-primary</span><span class="hex">#F3F2F1</span></span>
+        <span class="chip"><span class="swatch" style="background:#c8c6c4"></span><span class="label">ink-secondary</span><span class="hex">#C8C6C4</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIATION 3 — FLOW                                            -->
+<!-- ============================================================ -->
+<section class="variation">
+  <div class="variation-head">
+    <div class="vname">Flow</div>
+    <p class="vregister">Coordination, calm flow, operational.</p>
+  </div>
+  <div class="surfaces">
+
+    <!-- LIGHT -->
+    <div class="surface" style="
+      --page-bg:#faf9f8; --raised:#ffffff; --border:#e1dfdd;
+      --ink-primary:#242424; --ink-secondary:#616161;
+      --brand-primary:#008272; --brand-foreground:#ffffff;
+      --brand-tint:#e0f3f0; --brand-on-tint:#00665a; --brand-tint-border:#c4e8e2;
+      --burndown-done:#107C10; --burndown-track:#e1dfdd; --cost-meter:#C19C00;
+      --status-inprogress:#008272; --status-inprogress-bg:#e0f3f0;
+      --status-inprogress-fg:#00665a; --status-inprogress-border:#c4e8e2;">
+      <div class="surface-label">Light</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">brand-primary</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">brand-foreground</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">burndown-done</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">burndown-track</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">cost-meter</span><span class="hex">#C19C00</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">created</span><span class="hex">#616161</span></span>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">assigned</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">queued</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">in-progress</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">suspended</span><span class="hex">#C19C00</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">completed</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#8A8886"></span><span class="label">cancelled</span><span class="hex">#8A8886</span></span>
+        <span class="chip"><span class="swatch" style="background:#C50F1F"></span><span class="label">rejected</span><span class="hex">#C50F1F</span></span>
+        <span class="chip"><span class="swatch" style="background:#A4373A"></span><span class="label">expired</span><span class="hex">#A4373A</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#faf9f8"></span><span class="label">page bg</span><span class="hex">#FAF9F8</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">raised</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">border</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#242424"></span><span class="label">ink-primary</span><span class="hex">#242424</span></span>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">ink-secondary</span><span class="hex">#616161</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="surface" style="
+      --page-bg:#1b1a19; --raised:#292827; --border:#3b3a39;
+      --ink-primary:#f3f2f1; --ink-secondary:#c8c6c4;
+      --brand-primary:#4DC2B0; --brand-foreground:#1b1a19;
+      --brand-tint:#16403a; --brand-on-tint:#7fd9cc; --brand-tint-border:#235c53;
+      --burndown-done:#54B054; --burndown-track:#3b3a39; --cost-meter:#D9B500;
+      --status-inprogress:#4DC2B0; --status-inprogress-bg:#16403a;
+      --status-inprogress-fg:#7fd9cc; --status-inprogress-border:#235c53;">
+      <div class="surface-label">Dark</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">brand-primary</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">brand-foreground</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">burndown-done</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">burndown-track</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">cost-meter</span><span class="hex">#D9B500</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#a6a6a6"></span><span class="label">created</span><span class="hex">#A6A6A6</span></span>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">assigned</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">queued</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">in-progress</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">suspended</span><span class="hex">#D9B500</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">completed</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#a19f9d"></span><span class="label">cancelled</span><span class="hex">#A19F9D</span></span>
+        <span class="chip"><span class="swatch" style="background:#F1707B"></span><span class="label">rejected</span><span class="hex">#F1707B</span></span>
+        <span class="chip"><span class="swatch" style="background:#D69CA5"></span><span class="label">expired</span><span class="hex">#D69CA5</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">page bg</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#292827"></span><span class="label">raised</span><span class="hex">#292827</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">border</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#f3f2f1"></span><span class="label">ink-primary</span><span class="hex">#F3F2F1</span></span>
+        <span class="chip"><span class="swatch" style="background:#c8c6c4"></span><span class="label">ink-secondary</span><span class="hex">#C8C6C4</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- VARIATION 4 — FRONTIER                                        -->
+<!-- ============================================================ -->
+<section class="variation">
+  <div class="variation-head">
+    <div class="vname">Frontier</div>
+    <p class="vregister">Bold, frontier-firm, agent-forward.</p>
+  </div>
+  <div class="surfaces">
+
+    <!-- LIGHT -->
+    <div class="surface" style="
+      --page-bg:#faf9f8; --raised:#ffffff; --border:#e1dfdd;
+      --ink-primary:#242424; --ink-secondary:#616161;
+      --brand-primary:#4F46E5; --brand-foreground:#ffffff;
+      --brand-tint:#ebeafb; --brand-on-tint:#3730b3; --brand-tint-border:#d6d4f6;
+      --burndown-done:#107C10; --burndown-track:#e1dfdd; --cost-meter:#C19C00;
+      --status-inprogress:#4F46E5; --status-inprogress-bg:#ebeafb;
+      --status-inprogress-fg:#3730b3; --status-inprogress-border:#d6d4f6;">
+      <div class="surface-label">Light</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#4F46E5"></span><span class="label">brand-primary</span><span class="hex">#4F46E5</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">brand-foreground</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">burndown-done</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">burndown-track</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">cost-meter</span><span class="hex">#C19C00</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">created</span><span class="hex">#616161</span></span>
+        <span class="chip"><span class="swatch" style="background:#0F6CBD"></span><span class="label">assigned</span><span class="hex">#0F6CBD</span></span>
+        <span class="chip"><span class="swatch" style="background:#008272"></span><span class="label">queued</span><span class="hex">#008272</span></span>
+        <span class="chip"><span class="swatch" style="background:#4F46E5"></span><span class="label">in-progress</span><span class="hex">#4F46E5</span></span>
+        <span class="chip"><span class="swatch" style="background:#C19C00"></span><span class="label">suspended</span><span class="hex">#C19C00</span></span>
+        <span class="chip"><span class="swatch" style="background:#107C10"></span><span class="label">completed</span><span class="hex">#107C10</span></span>
+        <span class="chip"><span class="swatch" style="background:#8A8886"></span><span class="label">cancelled</span><span class="hex">#8A8886</span></span>
+        <span class="chip"><span class="swatch" style="background:#C50F1F"></span><span class="label">rejected</span><span class="hex">#C50F1F</span></span>
+        <span class="chip"><span class="swatch" style="background:#A4373A"></span><span class="label">expired</span><span class="hex">#A4373A</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#faf9f8"></span><span class="label">page bg</span><span class="hex">#FAF9F8</span></span>
+        <span class="chip"><span class="swatch" style="background:#ffffff"></span><span class="label">raised</span><span class="hex">#FFFFFF</span></span>
+        <span class="chip"><span class="swatch" style="background:#e1dfdd"></span><span class="label">border</span><span class="hex">#E1DFDD</span></span>
+        <span class="chip"><span class="swatch" style="background:#242424"></span><span class="label">ink-primary</span><span class="hex">#242424</span></span>
+        <span class="chip"><span class="swatch" style="background:#616161"></span><span class="label">ink-secondary</span><span class="hex">#616161</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DARK -->
+    <div class="surface" style="
+      --page-bg:#1b1a19; --raised:#292827; --border:#3b3a39;
+      --ink-primary:#f3f2f1; --ink-secondary:#c8c6c4;
+      --brand-primary:#818CF8; --brand-foreground:#1b1a19;
+      --brand-tint:#2a2c52; --brand-on-tint:#aab1fb; --brand-tint-border:#3d4180;
+      --burndown-done:#54B054; --burndown-track:#3b3a39; --cost-meter:#D9B500;
+      --status-inprogress:#818CF8; --status-inprogress-bg:#2a2c52;
+      --status-inprogress-fg:#aab1fb; --status-inprogress-border:#3d4180;">
+      <div class="surface-label">Dark</div>
+
+      <div class="chip-grid">
+        <div class="chip-section-title">Brand &amp; meters</div>
+        <span class="chip"><span class="swatch" style="background:#818CF8"></span><span class="label">brand-primary</span><span class="hex">#818CF8</span></span>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">brand-foreground</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">burndown-done</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">burndown-track</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">cost-meter</span><span class="hex">#D9B500</span></span>
+
+        <div class="chip-section-title">Status</div>
+        <span class="chip"><span class="swatch" style="background:#a6a6a6"></span><span class="label">created</span><span class="hex">#A6A6A6</span></span>
+        <span class="chip"><span class="swatch" style="background:#479EF5"></span><span class="label">assigned</span><span class="hex">#479EF5</span></span>
+        <span class="chip"><span class="swatch" style="background:#4DC2B0"></span><span class="label">queued</span><span class="hex">#4DC2B0</span></span>
+        <span class="chip"><span class="swatch" style="background:#818CF8"></span><span class="label">in-progress</span><span class="hex">#818CF8</span></span>
+        <span class="chip"><span class="swatch" style="background:#D9B500"></span><span class="label">suspended</span><span class="hex">#D9B500</span></span>
+        <span class="chip"><span class="swatch" style="background:#54B054"></span><span class="label">completed</span><span class="hex">#54B054</span></span>
+        <span class="chip"><span class="swatch" style="background:#a19f9d"></span><span class="label">cancelled</span><span class="hex">#A19F9D</span></span>
+        <span class="chip"><span class="swatch" style="background:#F1707B"></span><span class="label">rejected</span><span class="hex">#F1707B</span></span>
+        <span class="chip"><span class="swatch" style="background:#D69CA5"></span><span class="label">expired</span><span class="hex">#D69CA5</span></span>
+
+        <div class="chip-section-title">Neutrals</div>
+        <span class="chip"><span class="swatch" style="background:#1b1a19"></span><span class="label">page bg</span><span class="hex">#1B1A19</span></span>
+        <span class="chip"><span class="swatch" style="background:#292827"></span><span class="label">raised</span><span class="hex">#292827</span></span>
+        <span class="chip"><span class="swatch" style="background:#3b3a39"></span><span class="label">border</span><span class="hex">#3B3A39</span></span>
+        <span class="chip"><span class="swatch" style="background:#f3f2f1"></span><span class="label">ink-primary</span><span class="hex">#F3F2F1</span></span>
+        <span class="chip"><span class="swatch" style="background:#c8c6c4"></span><span class="label">ink-secondary</span><span class="hex">#C8C6C4</span></span>
+      </div>
+
+      <div class="card">
+        <div class="card-top">
+          <div class="card-title">Confirm Q3 delivery dates — Acme</div>
+          <span class="status-pill"><span class="status-dot"></span>In progress</span>
+        </div>
+        <div class="card-metric">
+          <span class="metric-number">3</span>
+          <span class="metric-unit">interactions</span>
+          <span class="metric-label">Remaining</span>
+        </div>
+        <div class="burndown">
+          <div class="burndown-row">
+            <span class="done-label">Done <span class="num">7</span>/<span class="num">10</span></span>
+            <span class="num">70%</span>
+          </div>
+          <div class="burndown-track"><div class="burndown-done"></div></div>
+        </div>
+        <div class="card-foot">
+          <span class="party-chip">
+            <span class="party-avatar">AL</span>
+            Acme Logistics
+            <span class="channel-glyph" title="Email channel" aria-label="Email channel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            </span>
+          </span>
+          <span class="cost-meter"><span class="cost-dot"></span>$0.42 spent</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<p class="foot-note">All four variations share one neutral Fluent UI v5 base; brand, in-progress status, and accent tints are the only deltas. Status pills, party chips, and the headline Remaining metric (tabular figures) are tuned for AA contrast on both surfaces. No JavaScript, no network requests.</p>
+
+</body>
+</html>
