@@ -4,6 +4,19 @@ This repository aggregates Hexalith components as **git submodules located at th
 repository. Each root submodule (for example `Hexalith.Builds`, `Hexalith.Commons`,
 `Hexalith.EventStore`) is itself a repository that declares its **own** submodules nested inside it.
 
+## Repository responsibility
+
+This repository should contain primarily domain code for managing work items. Do not add technical
+layers here unless they are absolutely required for work items and are not common to other domain
+modules.
+
+Factor technical concerns into the relevant shared Hexalith modules. For example, persistence belongs
+in `Hexalith.EventStore`, and unique identifier generation belongs in `Hexalith.Commons`.
+
+The .NET Aspire Host is an acceptable technical component in this repository because each Hexalith
+module needs a repository-specific host with servers and dependencies tailored to that module. Aspire
+is required to run both manual and automated tests.
+
 ## Submodule rules — READ BEFORE RUNNING ANY `git submodule` COMMAND
 
 Only the submodules at the **root** of this repository may be initialized and updated. The submodules
