@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "subagent": "api-tests",
+  "tests": [],
+  "fixture_needs": [],
+  "knowledge_fragments_used": [
+    "api-request",
+    "data-factories",
+    "contract-testing"
+  ],
+  "provider_scrutiny": "not_applicable",
+  "provider_files_read": [],
+  "test_count": 0,
+  "priority_coverage": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "summary": "No root-owned Works API endpoints, route handlers, OpenAPI specs, or Swagger specs exist yet. API endpoint test generation is intentionally a successful no-op until a Works API surface is introduced."
+}

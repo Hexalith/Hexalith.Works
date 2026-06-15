@@ -1,0 +1,35 @@
+{
+  "detected_stack": "fullstack",
+  "total_tests": 6,
+  "api_tests": 0,
+  "e2e_tests": 0,
+  "backend_tests": 6,
+  "fixtures_created": 0,
+  "api_test_files": 0,
+  "e2e_test_files": 0,
+  "backend_test_files": 4,
+  "priority_coverage": {
+    "P0": 4,
+    "P1": 2,
+    "P2": 0,
+    "P3": 0
+  },
+  "knowledge_fragments_used": [
+    "api-request",
+    "data-factories",
+    "contract-testing",
+    "playwright-cli",
+    "fixtures-composition",
+    "network-error-monitor",
+    "test-levels-framework",
+    "test-priorities-matrix",
+    "test-quality"
+  ],
+  "subagent_execution": "SEQUENTIAL (API then E2E then backend workers)",
+  "performance_gain": "baseline (no parallel speedup)",
+  "notes": [
+    "API and E2E generation were successful no-ops because no Works API or UI surface exists yet.",
+    "Backend generated staged Story 1.1 architecture-governance artifacts under _bmad-output/test-artifacts/generated-tests because the root Works scaffold does not exist yet.",
+    "No fixture files were created because the generated staged tests do not require runtime fixtures."
+  ]
+}

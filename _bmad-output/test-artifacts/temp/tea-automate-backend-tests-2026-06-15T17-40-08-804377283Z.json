@@ -1,0 +1,67 @@
+{
+  "subagentType": "backend",
+  "testsGenerated": [
+    {
+      "file": "_bmad-output/test-artifacts/generated-tests/Hexalith.Works.Architecture.Tests/FitnessTests/RepositoryRoot.cs",
+      "content": "namespace Hexalith.Works.Architecture.Tests.FitnessTests;\n\ninternal static class RepositoryRoot\n{\n    public static string Locate()\n    {\n        DirectoryInfo? directory = new(AppContext.BaseDirectory);\n        while (directory is not null)\n        {\n            if (File.Exists(Path.Combine(directory.FullName, \"AGENTS.md\"))\n                && File.Exists(Path.Combine(directory.FullName, \".gitmodules\")))\n            {\n                return directory.FullName;\n            }\n\n            directory = directory.Parent;\n        }\n\n        throw new InvalidOperationException($\"Could not locate Hexalith.Works repository root above '{AppContext.BaseDirectory}'.\");\n    }\n\n    public static string PathFromRoot(params string[] segments)\n        => Path.Combine([Locate(), .. segments]);\n}\n",
+      "description": "Shared root locator for staged Works architecture fitness tests.",
+      "priority_coverage": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      }
+    },
+    {
+      "file": "_bmad-output/test-artifacts/generated-tests/Hexalith.Works.Architecture.Tests/FitnessTests/ScaffoldGovernanceTests.cs",
+      "content": "using System.Xml.Linq;\n\nusing Shouldly;\n\nnamespace Hexalith.Works.Architecture.Tests.FitnessTests;\n\npublic sealed class ScaffoldGovernanceTests\n{\n    private static readonly string[] RequiredProjects =\n    [\n        \"Hexalith.Works.Contracts\",\n        \"Hexalith.Works.Server\",\n        \"Hexalith.Works.Projections\",\n        \"Hexalith.Works.Reactor\",\n        \"Hexalith.Works.ServiceDefaults\",\n        \"Hexalith.Works.AppHost\",\n        \"Hexalith.Works.Testing\",\n    ];\n\n    private static readonly string[] ForbiddenProjectFragments =\n    [\n        \".UI\",\n        \".Mcp\",\n        \".AdminPortal\",\n        \".ConsumerPortal\",\n        \".Security\",\n        \".Routing\",\n        \".Llm\",\n        \".LLM\",\n        \".CostGovernance\",\n        \".Email\",\n        \".Channel\",\n    ];\n\n    [Fact]\n    public void P0_ScaffoldContainsOnlyTheV1ProjectSet()\n    {\n        string root = RepositoryRoot.Locate();\n        string[] projectFiles = Directory.GetFiles(root, \"Hexalith.Works*.csproj\", SearchOption.AllDirectories)\n            .Where(path => !path.Contains($\"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}\", StringComparison.Ordinal))\n            .ToArray();\n\n        string[] projectNames = [.. projectFiles.Select(path => Path.GetFileNameWithoutExtension(path))];\n\n        foreach (string requiredProject in RequiredProjects)\n        {\n            projectNames.ShouldContain(requiredProject, $\"Story 1.1 requires '{requiredProject}' in the Works scaffold.\");\n        }\n\n        string[] forbiddenProjects = [.. projectNames.Where(name => ForbiddenProjectFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))];\n        forbiddenProjects.ShouldBeEmpty(\"Story 1.1 excludes UI, MCP, portal, security, routing, LLM, cost-governance, and production channel-adapter projects.\");\n    }\n\n    [Fact]\n    public void P0_ScaffoldUsesSlnxAndCentralPackageManagement()\n    {\n        string root = RepositoryRoot.Locate();\n\n        File.Exists(Path.Combine(root, \"Hexalith.Works.slnx\")).ShouldBeTrue(\"Story 1.1 requires Hexalith.Works.slnx.\");\n        File.Exists(Path.Combine(root, \"Hexalith.Works.sln\")).ShouldBeFalse(\"Use .slnx, not .sln.\");\n        File.Exists(Path.Combine(root, \"Directory.Packages.props\")).ShouldBeTrue(\"Central package management must define package versions outside project files.\");\n\n        string[] projectFiles = Directory.GetFiles(root, \"Hexalith.Works*.csproj\", SearchOption.AllDirectories)\n            .Where(path => !path.Contains($\"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}\", StringComparison.Ordinal))\n            .ToArray();\n\n        foreach (string projectFile in projectFiles)\n        {\n            XDocument project = XDocument.Load(projectFile);\n            string[] inlineVersions = [.. project.Descendants()\n                .Where(element => element.Name.LocalName == \"PackageReference\")\n                .Where(element => element.Attribute(\"Version\") is not null || element.Element(\"Version\") is not null)\n                .Select(element => element.Attribute(\"Include\")?.Value ?? element.Attribute(\"Update\")?.Value ?? projectFile)];\n\n            inlineVersions.ShouldBeEmpty($\"Package versions must be managed centrally, not inline in '{projectFile}'.\");\n        }\n    }\n\n    [Fact]\n    public void P0_KernelProjectsStayInfrastructureFree()\n    {\n        string root = RepositoryRoot.Locate();\n        string[] kernelProjects =\n        [\n            \"Hexalith.Works.Contracts\",\n            \"Hexalith.Works.Server\",\n            \"Hexalith.Works.Projections\",\n        ];\n\n        string[] forbiddenReferences =\n        [\n            \"Dapr.Actors.AspNetCore\",\n            \"Dapr.Client\",\n            \"ModelContextProtocol\",\n            \"Microsoft.AspNetCore.Components\",\n            \"Microsoft.AspNetCore.OpenApi\",\n            \"Swashbuckle\",\n            \"OpenAI\",\n            \"SemanticKernel\",\n        ];\n\n        foreach (string project in kernelProjects)\n        {\n            string path = Path.Combine(root, \"src\", project, project + \".csproj\");\n            File.Exists(path).ShouldBeTrue($\"Project file not found at '{path}'.\");\n\n            string text = File.ReadAllText(path);\n            foreach (string forbidden in forbiddenReferences)\n            {\n                text.ShouldNotContain(forbidden, Case.Insensitive, $\"{project} must remain kernel code and not reference adapter, Dapr runtime, UI, MCP, LLM, or OpenAPI packages.\");\n            }\n        }\n    }\n\n    [Fact]\n    public void P0_NestedSubmodulesRemainUninitialized()\n    {\n        string root = RepositoryRoot.Locate();\n        string[] nestedGitDirectories = Directory.GetDirectories(root, \".git\", SearchOption.AllDirectories)\n            .Where(path => !string.Equals(path, Path.Combine(root, \".git\"), StringComparison.Ordinal))\n            .Where(path => path.Split(Path.DirectorySeparatorChar).Count(segment => segment.StartsWith(\"Hexalith.\", StringComparison.Ordinal)) > 1)\n            .ToArray();\n\n        nestedGitDirectories.ShouldBeEmpty(\"Nested submodules inside root submodules must remain uninitialized; never run recursive submodule commands for this repository.\");\n    }\n}\n",
+      "description": "P0 scaffold governance tests for Story 1.1 structure, package management, kernel purity, and submodule safety.",
+      "priority_coverage": {
+        "P0": 4,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      }
+    },
+    {
+      "file": "_bmad-output/test-artifacts/generated-tests/Hexalith.Works.Architecture.Tests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs",
+      "content": "using Shouldly;\n\nnamespace Hexalith.Works.Architecture.Tests.FitnessTests;\n\npublic sealed class EventStoreApiSurfaceCharacterizationTests\n{\n    [Fact]\n    public void P1_EventStoreExposesConcurrencyAndProjectionRebuildSurfacesNeededByWorks()\n    {\n        string eventStoreRoot = RepositoryRoot.PathFromRoot(\"Hexalith.EventStore\");\n        Directory.Exists(eventStoreRoot).ShouldBeTrue(\"The root Hexalith.EventStore submodule must be initialized non-recursively before Works implementation depends on it.\");\n\n        File.Exists(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Server\", \"Commands\", \"ConcurrencyConflictException.cs\"))\n            .ShouldBeTrue(\"Works claim/expected-version behavior needs an EventStore concurrency-conflict surface.\");\n\n        File.Exists(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Server\", \"Actors\", \"AggregateActor.cs\"))\n            .ShouldBeTrue(\"Works command handling depends on the EventStore aggregate actor pipeline.\");\n\n        File.Exists(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Contracts\", \"Streams\", \"ProjectionRebuildOperation.cs\"))\n            .ShouldBeTrue(\"Works projection rebuild planning depends on the EventStore rebuild operation contract.\");\n\n        File.Exists(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Contracts\", \"Streams\", \"ProjectionRebuildCheckpoint.cs\"))\n            .ShouldBeTrue(\"Works online rebuild planning depends on checkpointed projection rebuild support.\");\n\n        File.Exists(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Contracts\", \"Projections\", \"ProjectionChangedNotification.cs\"))\n            .ShouldBeTrue(\"Works read-model freshness depends on projection-change notification support.\");\n    }\n\n    [Fact]\n    public void P1_EventStoreExposesETagBackedProjectionInvalidationSurfaces()\n    {\n        string eventStoreRoot = RepositoryRoot.PathFromRoot(\"Hexalith.EventStore\");\n\n        string projectionWriteActor = File.ReadAllText(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Server\", \"Actors\", \"IProjectionWriteActor.cs\"));\n        projectionWriteActor.ShouldContain(\"UpdateProjectionAsync\");\n        projectionWriteActor.ShouldContain(\"ETag\", Case.Insensitive);\n\n        string etagActor = File.ReadAllText(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Server\", \"Actors\", \"IETagActor.cs\"));\n        etagActor.ShouldContain(\"GetCurrentETagAsync\");\n        etagActor.ShouldContain(\"RegenerateAsync\");\n\n        string notifier = File.ReadAllText(Path.Combine(eventStoreRoot, \"src\", \"Hexalith.EventStore.Server\", \"Projections\", \"DaprProjectionChangeNotifier.cs\"));\n        notifier.ShouldContain(\"ProjectionChangedNotification\");\n        notifier.ShouldContain(\"RegenerateAsync\");\n    }\n}\n",
+      "description": "P1 characterization tests for EventStore surfaces that Works Story 1.1 must verify before later domain stories depend on them.",
+      "priority_coverage": {
+        "P0": 0,
+        "P1": 2,
+        "P2": 0,
+        "P3": 0
+      }
+    },
+    {
+      "file": "_bmad-output/test-artifacts/generated-tests/README.md",
+      "content": "# Generated Works Test Automation Artifacts\n\nThese files are staged because the root `Hexalith.Works` scaffold does not exist yet. Promote the C# files into the focused Story 1.1 architecture test project after the scaffold creates `Hexalith.Works.slnx`, `Directory.Packages.props`, and the Works test project structure.\n\nThe generated tests intentionally cover scaffold governance and EventStore API-surface readiness only. Domain behavior tests for `CreateWorkItem` should be generated after `Hexalith.Works.Contracts` and `Hexalith.Works.Server` exist.\n",
+      "description": "Staging note for generated test artifacts.",
+      "priority_coverage": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0,
+        "P3": 0
+      }
+    }
+  ],
+  "coverageSummary": {
+    "totalTests": 6,
+    "testLevels": [
+      "architecture-fitness",
+      "integration-characterization"
+    ],
+    "fixtureNeeds": []
+  },
+  "status": "complete",
+  "success": true,
+  "subagent": "backend-tests",
+  "knowledge_fragments_used": [
+    "test-levels-framework",
+    "test-priorities-matrix",
+    "data-factories",
+    "test-quality"
+  ],
+  "summary": "Generated 6 staged backend governance/characterization tests for Story 1.1. Files are staged under _bmad-output/test-artifacts/generated-tests because the root Works scaffold and focused test project do not exist yet."
+}
