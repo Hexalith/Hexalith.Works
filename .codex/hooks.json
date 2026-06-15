@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "env PROJECT_ROOT=/home/administrator/projects/hexalith/works /home/administrator/projects/hexalith/works/.agents/skills/bmad-story-automator/scripts/story-automator stop-hook",
+            "timeout": 10,
+            "statusMessage": "Checking story automator state"
+          }
+        ]
+      }
+    ]
+  }
+}
