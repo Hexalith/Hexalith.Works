@@ -13,9 +13,13 @@ public sealed class DependencyDirectionTests
 
         ProjectReferenceNames(root, "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj")
             .ShouldBe(
-                ["Hexalith.EventStore.Contracts"],
+                [
+                    "Hexalith.EventStore.Contracts",
+                    "Hexalith.PolymorphicSerializations",
+                    "Hexalith.PolymorphicSerializations.CodeGenerators",
+                ],
                 ignoreOrder: true,
-                customMessage: "Contracts may reference only EventStore.Contracts.");
+                customMessage: "Contracts may reference EventStore.Contracts plus the PolymorphicSerializations library and its code generator (analyzer) that register the v1 event/command catalog.");
 
         ProjectReferenceNames(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj")
             .ShouldBe(

@@ -1,3 +1,4 @@
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Commands;
@@ -7,6 +8,7 @@ namespace Hexalith.Works.Contracts.Commands;
 /// adapter-fired signal — handling reads no clock (deadlines are advisory-until-fired). TTL/date
 /// sourcing and the scheduled signal that fires this command are out of scope here (Story 4.6).
 /// </summary>
-public sealed record ExpireWorkItem(
+[PolymorphicSerialization]
+public sealed partial record ExpireWorkItem(
     TenantId TenantId,
     WorkItemId WorkItemId);

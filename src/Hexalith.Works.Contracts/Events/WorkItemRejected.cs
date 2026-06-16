@@ -1,4 +1,5 @@
 using Hexalith.EventStore.Contracts.Events;
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Events;
@@ -8,7 +9,8 @@ namespace Hexalith.Works.Contracts.Events;
 /// the resting status: <c>true</c> rests at <c>Queued</c>, <c>false</c> reaches terminal
 /// <c>Rejected</c>. This is distinct from a <c>WorkItemTransitionRejected</c> rejection event.
 /// </summary>
-public sealed record WorkItemRejected(
+[PolymorphicSerialization]
+public sealed partial record WorkItemRejected(
     string AggregateId,
     long Sequence,
     TenantId TenantId,

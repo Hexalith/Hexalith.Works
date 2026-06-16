@@ -1,4 +1,5 @@
 using Hexalith.EventStore.Contracts.Events;
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Events.Rejections;
@@ -10,7 +11,8 @@ namespace Hexalith.Works.Contracts.Events.Rejections;
 /// caller rather than appended to the stream, so it has no sequence. This is distinct from the
 /// terminal <c>Rejected</c> status reached by <c>RejectWorkItem(Requeue: false)</c>.
 /// </summary>
-public sealed record WorkItemTransitionRejected(
+[PolymorphicSerialization]
+public sealed partial record WorkItemTransitionRejected(
     TenantId TenantId,
     WorkItemId WorkItemId,
     WorkItemStatus FromStatus,

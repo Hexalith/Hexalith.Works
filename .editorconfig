@@ -62,3 +62,11 @@ dotnet_diagnostic.CA2007.severity = warning
 
 # Suppress specific analyzers that conflict with scaffolding
 dotnet_diagnostic.CA1014.severity = none
+
+# Vendored Hexalith.PolymorphicSerializations submodule (consumed via ProjectReference from
+# Hexalith.Works.Contracts). Its own .editorconfig is root=false, so the Works using-placement rule
+# above leaks into it, and it keeps using directives inside the file-scoped namespace. Do not impose
+# the Works style on external submodule source. (The reference also builds with
+# TreatWarningsAsErrors=false as a safety net for any other rule drift.)
+[Hexalith.PolymorphicSerializations/**.cs]
+dotnet_diagnostic.IDE0065.severity = none

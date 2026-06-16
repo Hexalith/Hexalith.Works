@@ -1,5 +1,6 @@
 using System.Text.Json;
 
+using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
@@ -58,6 +59,51 @@ public sealed class WorkItemLifecycleContractFlowTests
 
         // The full six-event stream replays from its serialized form to the terminal status with a
         // monotonic, gap-free sequence — identical to the authoritative write-side state.
+        replay.Status.ShouldBe(WorkItemStatus.Completed);
+        replay.Sequence.ShouldBe(6);
+        replay.Sequence.ShouldBe(write.Sequence);
+    }
+
+    [Fact]
+    public void Out_of_order_event_stream_replays_to_completed_when_resorted_by_sequence()
+    {
+        // AC #2: every event carries (AggregateId, Sequence) FOR ORDER-TOLERANT PROJECTIONS. Prove the
+        // Sequence alone is sufficient to recover the canonical order: persist the full lifecycle stream
+        // through serialization, deliver it OUT OF ORDER, and let a projection re-sort purely by Sequence
+        // and replay to the identical terminal state.
+        var write = new WorkItemState();
+        var stream = new List<(long Sequence, IEventPayload Event)>();
+
+        void Collect<T>(T emitted)
+            where T : class
+        {
+            // Advancing the write state assigns write.Sequence the event's own Sequence (the field is
+            // declared per concrete record, not on the IEventPayload marker), so we read the
+            // authoritative sequence back from the state rather than reflecting over the payload.
+            ApplyEvent(write, emitted);
+            stream.Add((write.Sequence, (IEventPayload)RoundTripEvent(emitted)));
+        }
+
+        Collect(HandleCreate(write));
+        Collect(Handle<WorkItemAssigned>(new AssignWorkItem(Tenant, Item, Binding), write));
+        Collect(Handle<WorkItemClaimed>(new ClaimWorkItem(Tenant, Item, Binding), write));
+        Collect(Handle<WorkItemSuspended>(new SuspendWorkItem(Tenant, Item), write));
+        Collect(Handle<WorkItemResumed>(new ResumeWorkItem(Tenant, Item), write));
+        Collect(Handle<WorkItemCompleted>(new CompleteWorkItem(Tenant, Item), write));
+
+        stream.Count.ShouldBe(6); // Guard: never assert order-tolerance over an empty or short stream.
+
+        // The persisted sequences are exactly the contiguous, gap-free 1..6 a projection can sort on.
+        stream.Select(t => t.Sequence).OrderBy(s => s).ShouldBe(new long[] { 1, 2, 3, 4, 5, 6 });
+
+        // Deliver the stream OUT OF ORDER (deterministic reverse — no RNG), then recover order from
+        // Sequence and replay into an independent state.
+        var replay = new WorkItemState();
+        foreach ((long _, IEventPayload e) in stream.AsEnumerable().Reverse().OrderBy(t => t.Sequence))
+        {
+            ApplyEvent(replay, e);
+        }
+
         replay.Status.ShouldBe(WorkItemStatus.Completed);
         replay.Sequence.ShouldBe(6);
         replay.Sequence.ShouldBe(write.Sequence);

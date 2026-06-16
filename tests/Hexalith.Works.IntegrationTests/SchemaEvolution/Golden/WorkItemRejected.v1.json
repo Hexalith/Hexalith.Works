@@ -1,0 +1,11 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 9,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "requeue": false
+}

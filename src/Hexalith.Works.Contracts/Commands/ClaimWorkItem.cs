@@ -1,3 +1,4 @@
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Commands;
@@ -7,7 +8,8 @@ namespace Hexalith.Works.Contracts.Commands;
 /// catalog's single <c>WorkItemClaimed</c> event. Single-claim-wins concurrency and expected-version
 /// conflict are out of scope here — this models the transition only (Story 4.3).
 /// </summary>
-public sealed record ClaimWorkItem(
+[PolymorphicSerialization]
+public sealed partial record ClaimWorkItem(
     TenantId TenantId,
     WorkItemId WorkItemId,
     ExecutorBinding Binding);

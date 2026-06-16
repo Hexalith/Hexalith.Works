@@ -22,6 +22,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Frozen golden-payload corpus (RR-6 / NFR-12): copied verbatim so the schema-evolution tests
+         read the exact checked-in bytes from the test output directory. -->
+    <None Include="SchemaEvolution\Golden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

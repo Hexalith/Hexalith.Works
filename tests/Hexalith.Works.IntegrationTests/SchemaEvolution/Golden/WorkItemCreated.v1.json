@@ -1,0 +1,46 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 1,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "obligation": {
+    "description": "Prepare the first tenant-scoped work item",
+    "reference": {
+      "value": "expectation-ref-001"
+    }
+  },
+  "initialEffort": {
+    "estimated": 13,
+    "unit": {
+      "value": "point"
+    },
+    "done": 0,
+    "remaining": 13
+  },
+  "schedule": {
+    "priority": "High",
+    "dueDate": "2026-07-15"
+  },
+  "parent": {
+    "tenantId": {
+      "value": "tenant-alpha"
+    },
+    "workItemId": {
+      "value": "parent-001"
+    }
+  },
+  "executorBinding": {
+    "partyId": {
+      "value": "party-123"
+    },
+    "channel": "Mcp",
+    "authorityLevel": "Coordinate"
+  },
+  "conversationCorrelationId": {
+    "value": "conversation-456"
+  }
+}

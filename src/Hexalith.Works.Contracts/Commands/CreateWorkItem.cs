@@ -1,8 +1,10 @@
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Commands;
 
-public sealed record CreateWorkItem(
+[PolymorphicSerialization]
+public sealed partial record CreateWorkItem(
     TenantId TenantId,
     WorkItemId WorkItemId,
     string? Obligation,

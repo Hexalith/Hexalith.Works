@@ -1,9 +1,11 @@
 using Hexalith.EventStore.Contracts.Events;
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Events;
 
-public sealed record WorkItemCreated(
+[PolymorphicSerialization]
+public sealed partial record WorkItemCreated(
     string AggregateId,
     long Sequence,
     TenantId TenantId,

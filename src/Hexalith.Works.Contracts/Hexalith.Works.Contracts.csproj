@@ -9,6 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Contracts\Hexalith.EventStore.Contracts.csproj" AdditionalProperties="NuGetAudit=false" />
+    <!-- The PolymorphicSerializations submodule keeps its using directives inside the file-scoped
+         namespace (its own .editorconfig is root=false). Under the Works root .editorconfig
+         (outside_namespace:warning) + the submodule's warnings-as-errors that surfaces as IDE0065.
+         Build the referenced submodule projects with TreatWarningsAsErrors disabled so its own source
+         style does not break the Works build; Works' own sources remain warnings-as-errors. -->
+    <ProjectReference Include="$(HexalithPolymorphicSerializationsRoot)\src\libraries\Hexalith.PolymorphicSerializations\Hexalith.PolymorphicSerializations.csproj" AdditionalProperties="TreatWarningsAsErrors=false" />
+    <ProjectReference Include="$(HexalithPolymorphicSerializationsRoot)\src\libraries\Hexalith.PolymorphicSerializations.CodeGenerators\Hexalith.PolymorphicSerializations.CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" AdditionalProperties="TreatWarningsAsErrors=false" />
   </ItemGroup>
 
 </Project>

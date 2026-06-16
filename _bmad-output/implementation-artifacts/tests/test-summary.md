@@ -1,45 +1,110 @@
-# Test Automation Summary — Story 2.1 (Define the Lifecycle State Machine)
+# Test Automation Summary — Story 2.2 (Record Raw-Act Events and Replay State)
 
-## Generated Tests
+Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code
+review or story validation). Baseline before this run (dev-authored, green): **221** tests
+(UnitTests 166, IntegrationTests 28, ArchitectureTests 26, PropertyTests 1).
+Framework detected and reused: **xUnit v3 + Shouldly**, Tier-1 (no Dapr/Aspire/containers/network).
+All tests auto-applied this run; all green.
 
-### API / Contract Tests (gaps auto-applied this run)
-- [x] `tests/Hexalith.Works.IntegrationTests/WorkItemLifecycleContractFlowTests.cs` — **+5 tests** filling the discovered serialization-boundary gap. The dev-authored unit suite exercises every `(status, command)` cell in-memory (`Handle`/`Apply`), but **no lifecycle event crossed the JSON serialization boundary** that event-sourcing depends on (NFR-2). These tests drive accepted commands → emitted event → `System.Text.Json` round-trip → replay into an independent `WorkItemState`:
-  - `Full_lifecycle_round_trips_through_serialization_to_completed` — the canonical happy path `Created → Assigned → InProgress(Claim) → Suspended → InProgress(Resume) → Completed`, six events; the replay state (rebuilt only from round-tripped JSON) converges to `Completed` with a monotonic, gap-free `Sequence = 6` identical to the write-side state.
-  - `Created_branch_events_round_trip_and_replay_to_their_target_status` — `WorkItemQueued`, `WorkItemCancelled`, `WorkItemExpired` (the success events off the happy path) each survive serialization and replay to `Queued` / `Cancelled` / `Expired`, so **all nine success events** cross the boundary.
-  - `Reject_event_round_trips_and_the_requeue_flag_drives_the_resting_status` — AC #5 across the boundary: the `Requeue` flag on `WorkItemRejected` round-trips and still steers replay to `Queued` (requeue) vs terminal `Rejected` (non-requeue).
-  - `Illegal_transition_serializes_a_transition_rejection_only` — an illegal `Claim` from `Created` yields a rejection-only result; `WorkItemTransitionRejected` round-trips carrying `FromStatus` + `AttemptedAct` + tenant/work-item, and serializes **no `sequence`** (rejections are returned to the caller, never appended to the stream).
-  - `Assigned_event_round_trips_with_minimal_envelope_free_binding_payload` — AR-4 contract guard: the `ExecutorBinding` is the only enriched field, `(aggregateId, sequence)` lead the serialized shape, and no transport envelope leaks.
+## Generated Tests (gaps auto-applied this run)
+
+### API / Contract & Serialization Tests
+
+- [x] `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden/*.v1.json` — **+7 frozen golden
+  fixtures**, completing the RR-6 / NFR-12 back-compatibility corpus. The dev started the corpus with
+  3 of the 10 durable success events (`WorkItemCreated`, `WorkItemAssigned`, `WorkItemCompleted`), yet
+  the corpus README states *"Every event ever produced must remain deserializable forever."* The seven
+  unfrozen events — including the two that carry distinguishing payload (`WorkItemClaimed` → executor
+  binding, `WorkItemRejected` → the `Requeue` resting-status flag) — were not gated. Added frozen v1
+  fixtures for `WorkItemQueued`, `WorkItemClaimed`, `WorkItemSuspended`, `WorkItemResumed`,
+  `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`. **Generated from the production serializer**
+  (a temporary emitter, run once then deleted — not hand-authored), so camelCase, enum-name casing, and
+  property order are byte-accurate to the EventStore-persisted concrete form (no `$type`).
+- [x] `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/SchemaEvolutionGoldenCorpusTests.cs` —
+  **+5 tests** wiring the new fixtures into the gate (now 10/10 durable success events):
+  - `WorkItemClaimed_DeserializesFromFrozenBytesAndRoundTrips` — deserialize-from-frozen asserts every
+    field incl. the binding (`partyId` / `channel=Mcp` / `authorityLevel=Coordinate`); re-serialize →
+    deserialize round-trips to an equal record.
+  - `WorkItemRejected_DeserializesFromFrozenBytesAndRoundTrips` — asserts the frozen `requeue: false`
+    discriminator survives exactly (it steers replay to `Rejected` vs `Queued`).
+  - `Base_shape_lifecycle_events_deserialize_from_frozen_bytes_and_round_trip` — the five
+    `(AggregateId, Sequence, TenantId, WorkItemId)` events (`Queued`/`Suspended`/`Resumed`/`Cancelled`/
+    `Expired`), each frozen independently so a future per-event field addition is gated by its own entry.
+  - `WorkItemClaimed_ToleratesAdditiveUnknownField` / `WorkItemRejected_ToleratesAdditiveUnknownField` —
+    inject an unknown `futureField` into the frozen bytes; the enriched events still deserialize (additive,
+    no-`V2` tolerance). Vacuous-pass guard: `File.Exists(path)` inside `ReadGolden` reports a missing
+    fixture as the root cause before any value assertion.
+- [x] `tests/Hexalith.Works.IntegrationTests/WorkItemLifecycleContractFlowTests.cs` — **+1 test** closing
+  the AC #2 *"order-tolerant projections"* gap (previously only implicit — every existing replay test
+  applied events in arrival order):
+  - `Out_of_order_event_stream_replays_to_completed_when_resorted_by_sequence` — persists the six-event
+    lifecycle stream through JSON, delivers it **out of order** (deterministic reverse — no RNG), then a
+    projection recovers the canonical order purely from `Sequence` and replays into an independent
+    `WorkItemState`, converging to `Completed` / `Sequence = 6` identical to the write side. Guards: the
+    delivered sequences are asserted to be the contiguous, gap-free `1..6` and the stream count `== 6`
+    before the order-tolerance claim is made.
 
 ### E2E Tests
-- [x] Browser/UI E2E is **not applicable** for Story 2.1: the slice is a pure event-sourced domain state machine with no UI, MCP, public route, or command-pipeline host surface (the lifecycle host/Aspire proof is deferred to Stories 4.5/4.6). The executable end-to-end path here is **command → `WorkItemAggregate.Handle` → event → JSON transport shape → replayed `WorkItemState`**, exercised end-to-end by the contract-flow tests above.
+
+- [x] Browser/UI E2E is **not applicable** to Story 2.2: the slice is pure `Contracts` + Tier-1 tests —
+  serialization registration and the raw-act event catalog, with no UI, MCP, public route, or host
+  surface (host/Dapr/Aspire wiring is deferred to Stories 4.5/4.6). The executable end-to-end path is
+  **command → `WorkItemAggregate.Handle` → raw-act event → JSON transport shape → replayed
+  `WorkItemState`**, exercised end-to-end by the contract-flow + golden-corpus tests above.
 
 ### Pre-existing coverage (dev-authored, verified green — not regenerated)
-- [x] `tests/Hexalith.Works.UnitTests/WorkItemLifecycleTests.cs` — exhaustive matrix: every `(status, command)` cell across the 9 statuses (Accept/Reject/NoOp), the flag-dependent `Reject` column for both requeue values, uncreated-state rejection, AC #1–#5 scenarios, and sequence monotonicity (incl. "a rejection does not advance the sequence").
-- [x] `tests/Hexalith.Works.ArchitectureTests/FitnessTests/LifecycleTransitionMatrixDocTests.cs` — vacuous-pass-guarded fitness test asserting `docs/lifecycle-transition-matrix.md` enumerates all 9 statuses, all 9 commands, and both the `NoOp` and `WorkItemTransitionRejected` outcomes (AC #4/#6).
-- [x] `ScaffoldGovernanceTests` — `P0_WorkItemKernelRemainsPure` (clock/RNG/I/O/Dapr-free) and the renamed deferred-runtime guard (`BurnDown`/`RollUp`/`Reminder` still banned) stay green (AC #7).
+
+- [x] `WorkItemSerializationRegistrationTests` — AC #5: every one of the 23 v1 types resolves through the
+  empty `Polymorphic` base, emits `$type` == type name (no version suffix), and round-trips to the
+  concrete type. Two vacuous-pass guards (catalog count == 23; resolver reports ≥23 derived types).
+- [x] `WorkItemRawActAdditivityTests` — AC #1/#2/#3 regression guard: concrete-type serialization emits
+  **no** `$type` and **no** EventStore envelope fields, and a concrete `WorkItemCreated` still replays to
+  `Created` (proves the polymorphic registration is purely additive).
+- [x] `WorkItemCreateContractFlowTests` / `WorkItemLifecycleContractFlowTests` — create + full-lifecycle
+  serialized write → persist → replay, reference-only payloads, the requeue flag steering replay, and
+  rejection-only results (`WorkItemTransitionRejected`, cross-tenant-parent, missing-obligation) that
+  carry context but no `sequence`.
 
 ## Coverage
 
-Mapped against the implemented Story 2.1 surface (9-state `WorkItemStatus`, 9 commands, 9 success events, `WorkItemTransitionRejected`, the pure `WorkItemLifecycle` table, `WorkItemState.Sequence`):
+Mapped against the Story 2.2 surface (10 success events + 10 commands + 3 rejection events; the
+PolymorphicSerializations registration; the golden corpus):
 
-- **AC #1–#5 (legal/illegal/idempotent transitions):** every matrix cell covered in-memory (unit) — **added** the serialization-boundary slice so accepted transitions and the reject-requeue flag survive write → JSON → replay.
-- **AC #4 (terminal idempotency / rejection):** terminal-duplicate `NoOp` and illegal-transition `Reject` covered in-memory — **added** the serialized `WorkItemTransitionRejected` contract (context-carrying, sequence-free).
-- **AC #6 (matrix doc is the single source of truth):** doc fitness test (pre-existing).
-- **AC #7 (deterministic tests + handler purity):** matrix theories + kernel-purity guard (pre-existing) — **added** a gap-free monotonic-sequence assertion across a full six-event lifecycle *reconstructed from serialized events* (NFR-2 event-sourcing invariant).
-- **AR-4 (event member order / minimal payload):** **added** `(aggregateId, sequence)`-first + envelope-free serialization guards on every round-tripped event (`messageId`/`causationId`/`correlationId`/`userId`/`metadata`/`cloudEvent` asserted absent).
+| AC | What it requires | Status |
+|----|------------------|--------|
+| #1 | Accepted act → past-tense v1 event carrying verbatim replay values | Pre-existing (create/lifecycle flow + additivity); **reinforced** by 7 new frozen fixtures |
+| #2 | Event carries `(AggregateId, Sequence)` for **order-tolerant** projections; no envelope spoofing | **Gap closed** — added out-of-order-resort-by-`Sequence` replay test; envelope-absence already guarded |
+| #3 | In-order replay through `Apply` reconstructs state deterministically; no interpreted/AI/sibling data | Pre-existing (full-lifecycle serialized replay; reference-only payloads) |
+| #4 | Rejection → `IRejectionEvent`; result never mixes success + rejection payloads | Pre-existing (per-path `IsRejection`/`IsSuccess` exclusivity; mixed-payload throw guarded in EventStore lib) |
+| #5 | Catalog registered & resolvable by PolymorphicSerializations; golden corpus started, additive/no-`V2` | Pre-existing registration + **gap closed**: corpus completed to **10/10** durable success events |
 
-- API/contract events covered: **10/10** (9 success events + `WorkItemTransitionRejected`) now cross the serialization boundary; previously **1/10** (`WorkItemCreated` only, Story 1.x).
-- UI features: 0/0 (no UI surface in this slice).
+**Durable-event corpus coverage: 10 / 10** success events frozen (was 3 / 10).
+**Not corpus candidates (by design):** the 10 commands and 3 rejection events are not appended to the
+event stream (commands are transient inputs; rejections are returned to the caller with no `Sequence`),
+so they are not part of the persisted-bytes back-compat gate — they remain covered by the resolution and
+contract-flow tests.
+
+### Test counts (built Release, warnings-as-errors → 0 warnings / 0 errors)
+
+| Suite | Before | After | Δ |
+|-------|-------:|------:|--:|
+| UnitTests | 166 | 166 | — |
+| IntegrationTests | 28 | **34** | +6 |
+| ArchitectureTests | 26 | 26 | — |
+| PropertyTests | 1 | 1 | — |
+| **Total** | **221** | **227** | **+6** |
 
 ## Validation
 
-- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -v minimal` — **0 warnings, 0 errors** (warnings-as-errors).
-- Generated xUnit v3 executables run directly (Microsoft.Testing.Platform named-pipe is blocked in this sandbox, per the Story 1.x pattern):
-  - **UnitTests: 166/166** (unchanged — matrix already exhaustive)
-  - **IntegrationTests: 18/18** (was 13/13 → **+5** contract-flow tests)
-  - **ArchitectureTests: 26/26** (unchanged)
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  **0 warnings, 0 errors** (warnings-as-errors).
+- Generated xUnit v3 executables run directly (Microsoft.Testing.Platform named-pipe is blocked in this
+  sandbox, per the established pattern):
+  - **UnitTests: 166/166** (unchanged)
+  - **IntegrationTests: 34/34** (was 28/28 → **+6**)
+  - **ArchitectureTests: 26/26** (unchanged — the `DependencyDirectionTests` update was dev-authored)
   - **PropertyTests: 1/1** (unchanged)
-  - Total: **211/211**, 0 failures.
+  - Total: **227/227**, 0 failures.
 
 ```bash
 DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
@@ -52,19 +117,29 @@ tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTe
 
 ## Checklist
 
-- [x] API/contract tests generated (serialization-boundary contract flow for all lifecycle events).
-- [x] E2E/UI tests marked not applicable (Story 2.1 has no UI/browser surface).
+- [x] API/contract tests generated (golden-corpus completion + order-tolerance replay).
+- [x] E2E/UI tests marked not applicable (Story 2.2 is pure Contracts + Tier-1; no UI/browser surface).
 - [x] Tests use standard project framework APIs (xUnit v3 + Shouldly; no raw `Assert.*`, Moq, or FluentAssertions).
-- [x] Tests cover happy path (full Created→Completed lifecycle).
-- [x] Tests cover critical error cases (illegal transition → serialized rejection; reject-non-requeue → terminal `Rejected`).
-- [x] All generated tests run successfully (211/211).
+- [x] Tests cover happy path (full out-of-order lifecycle replay to `Completed`; all 10 durable events deserialize from frozen bytes).
+- [x] Tests cover critical error/edge cases (additive unknown-field tolerance on enriched events; out-of-order delivery recovered by `Sequence`).
+- [x] All generated tests run successfully (227/227).
 - [x] Tests use semantic assertions and clear descriptions.
-- [x] No hardcoded waits or sleeps (pure in-memory + JSON; no Dapr/Aspire/containers/network/file I/O).
-- [x] Tests are independent (no order dependency; each builds its own state via `Handle`/`Apply`).
+- [x] No hardcoded waits or sleeps (pure in-memory + JSON; the corpus reads copied-to-output fixtures only).
+- [x] Tests are independent (no order dependency; each builds its own state; registration is an idempotent static ctor).
 - [x] Test summary created with coverage metrics.
 
 ## Notes
 
-- This run is **QA gap-filling only** — no production code was changed. The single discovered gap was that the nine lifecycle events and `WorkItemTransitionRejected` were exercised purely in-memory and never round-tripped through `System.Text.Json`, leaving the event-sourcing write/replay invariant (NFR-2) and the AR-4 minimal/envelope-free payload shape unguarded for the new events.
-- New tests follow the existing `WorkItemCreateContractFlowTests` pattern (`JsonSerializerDefaults.Web`, envelope-field absence checks, replay-into-`WorkItemState`). They reference only `Hexalith.Works.Server` (transitively Contracts) — no new project reference and no PolymorphicSerializations registration (deferred to Story 2.2; these remain plain `System.Text.Json` records).
-- One iteration was required: the first draft of the full-lifecycle test did not advance the write-side state before issuing the next command (the second command was correctly rejected by the production state machine) — a test-harness bug, fixed by replaying each emitted event into the write state. The production lifecycle code was not touched.
+- This run is **QA gap-filling only** — no production code was changed; only test files and frozen
+  fixtures were added/modified.
+- Two genuine gaps were discovered and auto-applied: (1) the back-compat golden corpus gated only 3 of
+  the 10 durable success events despite its own "every event ever produced must remain deserializable"
+  rule — completed to 10/10; (2) AC #2's *order-tolerant projections* claim was only implicit (all replay
+  tests applied events in arrival order) — added a shuffle-then-resort-by-`Sequence` replay proof.
+- Golden fixtures were generated from the production serializer (temporary emitter, deleted after the run)
+  rather than hand-authored, matching the dev's established methodology so casing/ordering are exact. The
+  existing `SchemaEvolution\Golden\**\*.json` `<None>` glob copies the new files to output — no csproj
+  change was needed.
+- The 10 commands and 3 rejection events are intentionally **not** in the persisted-bytes corpus
+  (transient inputs / caller-returned, never stream-appended); they stay covered by the polymorphic
+  resolution test and the contract-flow rejection tests.

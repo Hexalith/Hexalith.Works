@@ -1,3 +1,4 @@
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Commands;
@@ -7,6 +8,7 @@ namespace Hexalith.Works.Contracts.Commands;
 /// <c>InProgress</c> only — there is no resting <c>Resumed</c> status. Correlation-key matching is
 /// out of scope here (Story 3.5).
 /// </summary>
-public sealed record ResumeWorkItem(
+[PolymorphicSerialization]
+public sealed partial record ResumeWorkItem(
     TenantId TenantId,
     WorkItemId WorkItemId);

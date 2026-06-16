@@ -1,0 +1,17 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 2,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "binding": {
+    "partyId": {
+      "value": "party-123"
+    },
+    "channel": "Mcp",
+    "authorityLevel": "Coordinate"
+  }
+}
