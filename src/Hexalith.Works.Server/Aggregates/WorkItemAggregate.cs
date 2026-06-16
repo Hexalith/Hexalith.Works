@@ -22,6 +22,14 @@ public static class WorkItemAggregate
             ]);
         }
 
+        // Sole enforcement point for the cross-tenant parent invariant; events are trusted on replay.
+        if (command.Parent is not null && command.Parent.TenantId != command.TenantId)
+        {
+            return DomainResult.Rejection([
+                new WorkItemCannotReferenceParentFromAnotherTenant(command.TenantId, command.WorkItemId, command.Parent),
+            ]);
+        }
+
         var created = new WorkItemCreated(
             command.WorkItemId.Value,
             state is null ? 1 : 2,

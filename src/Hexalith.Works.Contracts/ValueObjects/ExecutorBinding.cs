@@ -2,14 +2,24 @@ namespace Hexalith.Works.Contracts.ValueObjects;
 
 public sealed record ExecutorBinding
 {
-    public ExecutorBinding(string executorId, AuthorityLevel authorityLevel)
+    public ExecutorBinding(PartyId partyId, Channel channel, AuthorityLevel authorityLevel)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(executorId);
-        ExecutorId = executorId;
+        ArgumentNullException.ThrowIfNull(partyId);
+        if (channel == Channel.Unknown || !Enum.IsDefined(channel))
+        {
+            throw new ArgumentException(
+                "Executor channel must be a known channel; Unknown is a deserialization sentinel only.",
+                nameof(channel));
+        }
+
+        PartyId = partyId;
+        Channel = channel;
         AuthorityLevel = authorityLevel;
     }
 
-    public string ExecutorId { get; }
+    public PartyId PartyId { get; }
+
+    public Channel Channel { get; }
 
     public AuthorityLevel AuthorityLevel { get; }
 }
