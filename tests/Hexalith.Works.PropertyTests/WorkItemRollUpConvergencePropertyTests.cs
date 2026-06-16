@@ -14,6 +14,8 @@ public sealed class WorkItemRollUpConvergencePropertyTests
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly TenantId OtherTenant = new("tenant-beta");
     private static readonly Unit Hour = new("hour");
+    private static readonly Unit Point = new("point");
+    private static readonly Unit Day = new("day");
     private static readonly WorkItemId Parent = new("parent");
 
     [Fact]
@@ -31,6 +33,8 @@ public sealed class WorkItemRollUpConvergencePropertyTests
                 WorkItemRollUp actual = Replay(scenario.Delivery).Get(Tenant, Parent).ShouldNotBeNull();
 
                 return SameRollUp(actual, expected)
+                    && expected.Degraded
+                    && expected.ProjectionDiagnostics.Count > 0
                     && actual.ChildWorkItemIds.All(id => id.Value.StartsWith("child-", StringComparison.Ordinal))
                     && Replay(scenario.Delivery).Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
             }));
@@ -44,33 +48,38 @@ public sealed class WorkItemRollUpConvergencePropertyTests
         int grandchildCount = 1 + Pick(values, 1, 2);
         decimal parentEstimate = 5m + Pick(values, 2, 5);
 
-        List<WorkItemRollUpEvent> canonical = [Envelope(Created(Parent, 1, parentEstimate, null, Tenant))];
+        List<WorkItemRollUpEvent> canonical = [Envelope(Created(Parent, 1, parentEstimate, null, Tenant, Hour))];
         List<WorkItemId> children = [.. Enumerable.Range(0, childCount).Select(index => new WorkItemId($"child-{index}"))];
 
         for (int index = 0; index < children.Count; index++)
         {
             WorkItemId child = children[index];
             decimal estimate = 3m + Pick(values, 3 + index, 7);
-            canonical.Add(Envelope(Created(child, 1, estimate, Parent, Tenant)));
-            canonical.Add(Envelope(new ReEstimated(child.Value, 2, Tenant, child, estimate + Pick(values, 8 + index, 4), Hour)));
-            canonical.Add(Envelope(new ProgressReported(child.Value, 3, Tenant, child, 1m + Pick(values, 13 + index, 3), Hour)));
+            Unit unit = PickUnit(values, index);
+            canonical.Add(Envelope(Created(child, 1, estimate, Parent, Tenant, unit)));
+            canonical.Add(Envelope(new ReEstimated(child.Value, 2, Tenant, child, estimate + Pick(values, 8 + index, 4), unit)));
+            canonical.Add(Envelope(new ProgressReported(child.Value, 3, Tenant, child, 1m + Pick(values, 13 + index, 3), unit)));
 
-            if (Pick(values, 18 + index, 5) == 0)
+            if (index != children.Count - 1 && Pick(values, 18 + index, 5) == 0)
             {
                 canonical.Add(Envelope(new WorkItemCompleted(child.Value, 4, Tenant, child)));
             }
         }
 
+        WorkItemId degradedChild = children[^1];
+        canonical.Add(Envelope(new ReEstimated(degradedChild.Value, 9, Tenant, degradedChild, 99m, DifferentUnit(PickUnit(values, children.Count - 1)))));
+
         for (int index = 0; index < grandchildCount; index++)
         {
             WorkItemId grandchild = new($"grandchild-{index}");
             decimal estimate = 2m + Pick(values, 24 + index, 5);
-            canonical.Add(Envelope(Created(grandchild, 1, estimate, children[0], Tenant)));
-            canonical.Add(Envelope(new ProgressReported(grandchild.Value, 2, Tenant, grandchild, 1m + Pick(values, 29 + index, 2), Hour)));
+            Unit unit = PickUnit(values, 32 + index);
+            canonical.Add(Envelope(Created(grandchild, 1, estimate, children[0], Tenant, unit)));
+            canonical.Add(Envelope(new ProgressReported(grandchild.Value, 2, Tenant, grandchild, 1m + Pick(values, 29 + index, 2), unit)));
         }
 
         WorkItemId collidingForeignChild = children[0];
-        WorkItemRollUpEvent foreignCollision = Envelope(Created(collidingForeignChild, 1, 99m, Parent, OtherTenant));
+        WorkItemRollUpEvent foreignCollision = Envelope(Created(collidingForeignChild, 1, 99m, Parent, OtherTenant, Hour));
         canonical.Add(foreignCollision);
 
         int[] duplicateIndexes = [.. values.Select(value => Math.Abs(value) % canonical.Count)];
@@ -89,7 +98,9 @@ public sealed class WorkItemRollUpConvergencePropertyTests
             && actual.RolledRemainingByUnit.SequenceEqual(expected.RolledRemainingByUnit)
             && actual.ChildWorkItemIds.OrderBy(id => id.Value).SequenceEqual(expected.ChildWorkItemIds.OrderBy(id => id.Value))
             && actual.ChildContributionCount == expected.ChildContributionCount
-            && actual.LatestAcceptedSourceSequence == expected.LatestAcceptedSourceSequence;
+            && actual.LatestAcceptedSourceSequence == expected.LatestAcceptedSourceSequence
+            && actual.Degraded == expected.Degraded
+            && actual.ProjectionDiagnostics.SequenceEqual(expected.ProjectionDiagnostics);
 
     private static WorkItemRollUpProjection Replay(IEnumerable<WorkItemRollUpEvent> events)
     {
@@ -102,14 +113,14 @@ public sealed class WorkItemRollUpConvergencePropertyTests
         return projection;
     }
 
-    private static WorkItemCreated Created(WorkItemId workItemId, long sequence, decimal remaining, WorkItemId? parent, TenantId tenantId)
+    private static WorkItemCreated Created(WorkItemId workItemId, long sequence, decimal remaining, WorkItemId? parent, TenantId tenantId, Unit unit)
         => new(
             workItemId.Value,
             sequence,
             tenantId,
             workItemId,
             new Obligation($"obligation-{workItemId.Value}"),
-            new WorkItemEffort(remaining, Hour),
+            new WorkItemEffort(remaining, unit),
             Parent: parent is null ? null : new ParentWorkItemReference(Tenant, parent));
 
     private static WorkItemRollUpEvent Envelope(object payload)
@@ -124,6 +135,17 @@ public sealed class WorkItemRollUpConvergencePropertyTests
 
     private static int Pick(IReadOnlyList<int> values, int index, int modulo)
         => values.Count == 0 ? 0 : Math.Abs(values[index % values.Count]) % modulo;
+
+    private static Unit PickUnit(IReadOnlyList<int> values, int index)
+        => Pick(values, index, 3) switch
+        {
+            0 => Hour,
+            1 => Point,
+            _ => Day,
+        };
+
+    private static Unit DifferentUnit(Unit unit)
+        => unit == Hour ? Point : Hour;
 
     private sealed record RollUpScenario(
         WorkItemRollUpEvent[] Canonical,

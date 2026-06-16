@@ -144,10 +144,22 @@ public sealed class WorkItemRollUpProjection
                 node.Parent = created.Parent;
                 node.Terminal = false;
                 break;
-            case ProgressReported progress when !node.Terminal && node.OwnEffort is not null && node.OwnEffort.Unit == progress.Unit:
+            case ProgressReported progress when !node.Terminal && node.OwnEffort is not null:
+                if (node.OwnEffort.Unit != progress.Unit)
+                {
+                    node.RefuseIncompatibleUnit(nameof(ProgressReported), progress.Sequence);
+                    break;
+                }
+
                 node.OwnEffort = node.OwnEffort.Report(progress.DoneDelta);
                 break;
             case ReEstimated reEstimated when !node.Terminal:
+                if (node.OwnEffort is not null && node.OwnEffort.Unit != reEstimated.Unit)
+                {
+                    node.RefuseIncompatibleUnit(nameof(ReEstimated), reEstimated.Sequence);
+                    break;
+                }
+
                 node.OwnEffort = node.OwnEffort is null
                     ? new WorkItemEffort(reEstimated.Estimated, reEstimated.Unit)
                     : node.OwnEffort.ReEstimate(reEstimated.Estimated);
@@ -208,7 +220,11 @@ public sealed class WorkItemRollUpProjection
                 .Where(key => string.Equals(key.TenantId, node.TenantId.Value, StringComparison.Ordinal))
                 .Select(key => _nodes[key].WorkItemId)],
             node.ChildKeys.Count(key => string.Equals(key.TenantId, node.TenantId.Value, StringComparison.Ordinal)),
-            node.LatestAcceptedSourceSequence);
+            node.LatestAcceptedSourceSequence)
+        {
+            Degraded = IsDegraded(node, []),
+            ProjectionDiagnostics = CollectDiagnostics(node, []),
+        };
     }
 
     private static OwnRemaining? ToOwnRemaining(RollUpNode node)
@@ -256,6 +272,66 @@ public sealed class WorkItemRollUpProjection
         return buckets;
     }
 
+    private IReadOnlyList<RollUpProjectionDiagnostic> CollectDiagnostics(RollUpNode node, HashSet<NodeKey> traversal)
+    {
+        if (!traversal.Add(node.Key))
+        {
+            return [];
+        }
+
+        List<RollUpProjectionDiagnostic> diagnostics = [.. node.ProjectionDiagnostics];
+        if (!node.Terminal)
+        {
+            foreach (NodeKey childKey in node.ChildKeys)
+            {
+                if (!string.Equals(childKey.TenantId, node.TenantId.Value, StringComparison.Ordinal)
+                    || !_nodes.TryGetValue(childKey, out RollUpNode? child))
+                {
+                    continue;
+                }
+
+                diagnostics.AddRange(CollectDiagnostics(child, traversal));
+            }
+        }
+
+        traversal.Remove(node.Key);
+        return [.. diagnostics
+            .OrderBy(diagnostic => diagnostic.WorkItemId.Value, StringComparer.Ordinal)
+            .ThenBy(diagnostic => diagnostic.Sequence)
+            .ThenBy(diagnostic => diagnostic.EventType, StringComparer.Ordinal)];
+    }
+
+    private bool IsDegraded(RollUpNode node, HashSet<NodeKey> traversal)
+    {
+        if (!traversal.Add(node.Key))
+        {
+            return false;
+        }
+
+        if (node.Degraded)
+        {
+            traversal.Remove(node.Key);
+            return true;
+        }
+
+        if (!node.Terminal)
+        {
+            foreach (NodeKey childKey in node.ChildKeys)
+            {
+                if (string.Equals(childKey.TenantId, node.TenantId.Value, StringComparison.Ordinal)
+                    && _nodes.TryGetValue(childKey, out RollUpNode? child)
+                    && IsDegraded(child, traversal))
+                {
+                    traversal.Remove(node.Key);
+                    return true;
+                }
+            }
+        }
+
+        traversal.Remove(node.Key);
+        return false;
+    }
+
     private readonly record struct NodeKey(string TenantId, string WorkItemId)
     {
         public static NodeKey From(TenantId tenantId, WorkItemId workItemId)
@@ -283,6 +359,10 @@ public sealed class WorkItemRollUpProjection
         public WorkItemEffort? OwnEffort { get; set; }
 
         public bool Terminal { get; set; }
+
+        public bool Degraded { get; private set; }
+
+        public List<RollUpProjectionDiagnostic> ProjectionDiagnostics { get; } = [];
 
         public long LatestAcceptedSourceSequence { get; set; }
 
@@ -319,7 +399,15 @@ public sealed class WorkItemRollUpProjection
             Status = WorkItemStatus.Unknown;
             OwnEffort = null;
             Terminal = false;
+            Degraded = false;
+            ProjectionDiagnostics.Clear();
             LatestAcceptedSourceSequence = 0;
+        }
+
+        public void RefuseIncompatibleUnit(string eventType, long sequence)
+        {
+            Degraded = true;
+            ProjectionDiagnostics.Add(new RollUpProjectionDiagnostic(TenantId, WorkItemId, eventType, sequence));
         }
     }
 

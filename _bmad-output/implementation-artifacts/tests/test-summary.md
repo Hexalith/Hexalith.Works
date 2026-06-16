@@ -1,3 +1,119 @@
+# Test Automation Summary — Story 3.4 (Preserve Heterogeneous Unit Subtotals)
+
+Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework
+reused: **xUnit v3 + Shouldly** for focused unit/architecture coverage and **FsCheck** for convergence
+coverage. Story 3.4 hardens Story 3.3 roll-up behavior by making heterogeneous-unit subtotals explicit
+and adding read-side fail-closed handling for already persisted unit-incompatible events. There is no
+UI/HTTP surface for this story; the executable end-to-end path is command handling (write-side guard)
+and projection delivery facts into the pure recursive roll-up strategy, then consumer read-model
+inspection — that is the layer the QA pass targets.
+
+Story 3.3 final baseline was **404** green tests (UnitTests 325, IntegrationTests 52,
+ArchitectureTests 26, PropertyTests 1). The Story 3.4 dev-story pass added **+7** unit tests, **+1**
+architecture fitness test, and extended the existing property test to generate mixed-unit trees plus
+deterministic degraded-event convergence (subtotal **412**). The QA gap-filling pass then added **+3**
+unit tests and **+1** architecture fitness test to close residual AC coverage gaps, raising the total to
+**416** green tests.
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+All four were genuine, non-redundant gaps verified against the six acceptance criteria:
+
+- [x] **AC #2 — within-unit summation vs cross-unit separation.** Every prior mixed-unit test had each
+  Unit appear once. `Same_unit_children_sum_within_bucket_while_a_different_unit_child_stays_separate`
+  proves two same-Unit children fold into one subtotal (5+3 ⇒ 8 hour) while a different-Unit child stays
+  separate (4 point) and no coerced single value appears.
+- [x] **AC #5 — sticky-degraded continuation.**
+  `Degraded_node_refuses_only_the_bad_event_then_applies_a_later_matching_unit_event` proves fail-closed
+  refuses *only* the unit-incompatible event, a later matching-unit progress still burns down from the
+  last valid value, and the node stays degraded with exactly one re-derived diagnostic.
+- [x] **AC #4 — write-side-to-read-side bridge.**
+  `Rejected_unit_mismatched_command_emits_no_event_so_projection_stays_fresh_and_not_degraded` ties the
+  aggregate rejection (no `ProgressReported` emitted) to the projection staying unchanged and **not**
+  degraded — the end-to-end contrast with the AC #5 persisted-bad-event path.
+- [x] **AC #5 — diagnostic metadata-only structural guard.**
+  `P0_RollUpProjectionDiagnosticExposesOnlyMetadataNeverPayloadValues` locks `RollUpProjectionDiagnostic`
+  to exactly `TenantId`, `WorkItemId`, `EventType`, `Sequence` so a future change cannot reintroduce a
+  payload-bearing field — the drift guard mirroring the existing no-coerced-total guard.
+
+## Gaps closed this run
+
+### Contracts and projections
+
+- [x] Added `RollUpProjectionDiagnostic` and additive `WorkItemRollUp.Degraded` /
+  `ProjectionDiagnostics` read-model properties.
+- [x] `WorkItemRollUpProjection` now refuses persisted `ProgressReported` and `ReEstimated` events whose
+  unit disagrees with an established node unit, retaining the last valid value and surfacing
+  metadata-only diagnostics.
+- [x] Degraded state and diagnostics are re-derived during replay and remain pure data; no logging,
+  clocks, ids, filesystem, Dapr, or runtime I/O were introduced.
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] Added explicit same-unit subtotal coverage: one unit produces one labeled subtotal and a non-null
+  single `RolledRemaining`.
+- [x] Added deeper three-unit mixed-tree coverage proving per-unit grouping and no coerced all-unit total.
+- [x] Added same-unit progress/re-estimate mixed-tree coverage proving matching-unit updates leave other
+  units untouched.
+- [x] Added fail-closed coverage for unit-mismatched `ProgressReported` and `ReEstimated`, including
+  retain-last-valid values, degraded marking, metadata-only diagnostics, and duplicate/out-of-order
+  convergence.
+- [x] Added establishment boundary and terminal precedence coverage.
+- [x] Tightened command-side unit mismatch tests to assert no `ProgressReported`/`ReEstimated` event is
+  emitted from rejected commands.
+
+### Property tests (`tests/Hexalith.Works.PropertyTests`)
+
+- [x] Extended the convergence property to generate heterogeneous-unit trees and compare
+  `RolledRemainingByUnit`, `Degraded`, and `ProjectionDiagnostics` under duplicate/permuted delivery.
+- [x] Included a deterministic post-establishment unit mismatch in generated scenarios and asserted the
+  degraded outcome converges.
+
+### Architecture and documentation
+
+- [x] Updated `docs/work-roll-up-projection.md` with heterogeneous-unit semantics, command-side unit
+  rejection, read-side fail-closed behavior, retain-last-valid degraded marking, and metadata-only
+  diagnostic rules.
+- [x] Architecture fitness remains inside the existing roll-up owned locations:
+  `src/Hexalith.Works.Contracts/Models` and `src/Hexalith.Works.Projections`.
+
+## Story 3.4 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **335/335** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **52/52** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **28/28** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed; FsCheck reported **100** generated cases.
+
+### Story 3.4 Test Counts
+
+| Suite | Story 3.3 Final | Story 3.4 dev-story | Story 3.4 + QA pass | Delta |
+|-------|----------------:|--------------------:|--------------------:|------:|
+| UnitTests | 325 | 332 | **335** | +10 |
+| IntegrationTests | 52 | 52 | **52** | — |
+| ArchitectureTests | 26 | 27 | **28** | +2 |
+| PropertyTests | 1 | 1 | **1** | extended |
+| **Total** | **404** | **412** | **416** | **+12** |
+
+### Checklist
+
+- [x] Same-unit and mixed-unit roll-up subtotals are explicitly verified.
+- [x] Projection fail-closed behavior is covered for persisted incompatible progress and re-estimate
+  events.
+- [x] Degraded diagnostics expose only tenant, work item, event type, and sequence metadata.
+- [x] Command-side unit mismatch guards are verified to emit no deliverable projection event.
+- [x] Property coverage verifies heterogeneous-unit and degraded convergence under duplicate/permuted
+  delivery.
+- [x] Documentation, build, architecture tests, and all runtime test binaries passed.
+
+---
+
 # Test Automation Summary — Story 3.3 (Maintain Recursive Roll-Up with Per-Child Sequence)
 
 Workflow: `bmad-qa-generate-e2e-tests` (QA gap-filling pass) after `bmad-dev-story`. Framework reused:

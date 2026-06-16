@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 
+using Hexalith.Works.Contracts.Models;
 using Shouldly;
 
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
@@ -224,6 +225,59 @@ public sealed class ScaffoldGovernanceTests
                 .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
 
         violations.ShouldBeEmpty("Work item command handling, expiry, projection, and replay must remain deterministic: no clocks, timers, generated IDs, Dapr, EventStore envelope APIs, or I/O in the domain kernel.");
+    }
+
+    [Fact]
+    public void P0_WorkItemRollUpDoesNotExposeCoercedAllUnitTotal()
+    {
+        string[] forbiddenPropertyNames =
+        [
+            "Total",
+            "AllUnit",
+            "Combined",
+            "Coerced",
+        ];
+
+        string[] violations = [.. typeof(WorkItemRollUp)
+            .GetProperties()
+            .Select(property => property.Name)
+            .Where(name => forbiddenPropertyNames.Any(forbidden => name.Contains(forbidden, StringComparison.OrdinalIgnoreCase)))];
+
+        violations.ShouldBeEmpty("WorkItemRollUp must expose labeled per-unit subtotals and no coerced all-unit total surface.");
+    }
+
+    [Fact]
+    public void P0_RollUpProjectionDiagnosticExposesOnlyMetadataNeverPayloadValues()
+    {
+        // AC #5: "logs include only tenant, work item, event type, and sequence metadata, never payload
+        // values." Lock the diagnostic contract structurally so a future change cannot reintroduce a
+        // payload-bearing field (DoneDelta, Estimated, Unit, Note, ...) onto the metadata-only record.
+        string[] allowedPropertyNames =
+        [
+            nameof(RollUpProjectionDiagnostic.TenantId),
+            nameof(RollUpProjectionDiagnostic.WorkItemId),
+            nameof(RollUpProjectionDiagnostic.EventType),
+            nameof(RollUpProjectionDiagnostic.Sequence),
+        ];
+
+        string[] forbiddenPayloadTokens =
+        [
+            "Delta",
+            "Estimated",
+            "Unit",
+            "Note",
+            "Done",
+            "Remaining",
+            "Payload",
+            "Value",
+        ];
+
+        string[] propertyNames = [.. typeof(RollUpProjectionDiagnostic).GetProperties().Select(property => property.Name)];
+
+        propertyNames.ShouldBe(allowedPropertyNames, ignoreOrder: true);
+        propertyNames
+            .Where(name => forbiddenPayloadTokens.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase)))
+            .ShouldBeEmpty("RollUpProjectionDiagnostic must carry only tenant, work item, event type, and sequence metadata — never payload values.");
     }
 
     [Fact]

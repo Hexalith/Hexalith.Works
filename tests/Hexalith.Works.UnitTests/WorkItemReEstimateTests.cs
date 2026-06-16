@@ -51,6 +51,7 @@ public sealed class WorkItemReEstimateTests
         result.IsRejection.ShouldBeTrue();
         WorkItemReEstimateRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemReEstimateRejected>();
         rejection.Reason.ShouldBe("Re-estimate unit must match the established effort unit.");
+        result.Events.OfType<ReEstimated>().ShouldBeEmpty();
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(8m);
         state.InitialEffort.ShouldNotBeNull().Unit.ShouldBe(Hour);
         state.Sequence.ShouldBe(sequenceBefore);
@@ -127,6 +128,7 @@ public sealed class WorkItemReEstimateTests
         result.IsRejection.ShouldBeTrue();
         WorkItemReEstimateRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemReEstimateRejected>();
         rejection.Reason.ShouldBe("Re-estimate unit must match the established effort unit.");
+        result.Events.OfType<ReEstimated>().ShouldBeEmpty();
         state.InitialEffort.ShouldNotBeNull().Unit.ShouldBe(Hour);
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(5m);
         state.Sequence.ShouldBe(sequenceAfterEstablish);

@@ -12,4 +12,9 @@ public sealed record WorkItemRollUp(
     IReadOnlyList<RolledRemaining> RolledRemainingByUnit,
     IReadOnlyList<WorkItemId> ChildWorkItemIds,
     int ChildContributionCount,
-    long LatestAcceptedSourceSequence);
+    long LatestAcceptedSourceSequence)
+{
+    public bool Degraded { get; init; }
+
+    public IReadOnlyList<RollUpProjectionDiagnostic> ProjectionDiagnostics { get; init; } = [];
+}

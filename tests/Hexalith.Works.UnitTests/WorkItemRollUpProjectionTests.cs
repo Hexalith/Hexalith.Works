@@ -1,8 +1,12 @@
+using Hexalith.EventStore.Contracts.Results;
+using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Models;
+using Hexalith.Works.Contracts.State;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
 using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Server.Aggregates;
 using Shouldly;
 
 namespace Hexalith.Works.UnitTests;
@@ -221,6 +225,224 @@ public sealed class WorkItemRollUpProjectionTests
     }
 
     [Fact]
+    public void Single_unit_subtree_exposes_single_labeled_subtotal()
+    {
+        WorkItemRollUpProjection projection = new();
+
+        Project(projection, Created(Parent, 1, 5m, unit: Hour));
+        Project(projection, Created(Child, 1, 3m, Parent, Hour));
+
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.RolledRemaining.ShouldBe(new RolledRemaining(8m, Hour));
+        parent.RolledRemainingByUnit.ShouldBe([new RolledRemaining(8m, Hour)]);
+        foreach (RolledRemaining entry in parent.RolledRemainingByUnit)
+        {
+            entry.Unit.ShouldNotBeNull();
+        }
+    }
+
+    [Fact]
+    public void Deeper_mixed_unit_tree_exposes_each_unit_without_coerced_total()
+    {
+        WorkItemRollUpProjection projection = new();
+        Unit day = new("day");
+
+        Project(projection, Created(Parent, 1, 5m, unit: Hour));
+        Project(projection, Created(Child, 1, 3m, Parent, Point));
+        Project(projection, Created(Grandchild, 1, 2m, Child, day));
+
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.RolledRemaining.ShouldBeNull();
+        parent.RolledRemainingByUnit.ShouldBe([
+            new RolledRemaining(2m, day),
+            new RolledRemaining(5m, Hour),
+            new RolledRemaining(3m, Point),
+        ]);
+        foreach (RolledRemaining entry in parent.RolledRemainingByUnit)
+        {
+            entry.Unit.ShouldNotBeNull();
+        }
+    }
+
+    [Fact]
+    public void Same_unit_progress_and_reestimate_update_only_matching_unit_subtotal()
+    {
+        WorkItemRollUpProjection projection = new();
+
+        Project(projection, Created(Parent, 1, 5m, unit: Hour));
+        Project(projection, Created(Child, 1, 3m, Parent, Point));
+        Project(projection, new ProgressReported(Child.Value, 2, Tenant, Child, 1m, Point));
+        Project(projection, new ReEstimated(Child.Value, 3, Tenant, Child, 5m, Point));
+
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.RolledRemaining.ShouldBeNull();
+        parent.RolledRemainingByUnit.ShouldBe([new RolledRemaining(5m, Hour), new RolledRemaining(4m, Point)]);
+    }
+
+    [Fact]
+    public void Same_unit_children_sum_within_bucket_while_a_different_unit_child_stays_separate()
+    {
+        // AC #2: summation is legitimate *within* a Unit (two hour children fold into one hour subtotal)
+        // but must never happen *across* Units (the point child is never blended into the hour bucket and
+        // no coerced single value appears). This is the contrast the per-Unit map exists to guarantee.
+        WorkItemRollUpProjection projection = new();
+        WorkItemId hourChild = new("child-hour");
+        WorkItemId pointChild = new("child-point");
+
+        Project(projection, Created(Parent, 1, 5m, unit: Hour));
+        Project(projection, Created(hourChild, 1, 3m, Parent, Hour));
+        Project(projection, Created(pointChild, 1, 4m, Parent, Point));
+
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.RolledRemaining.ShouldBeNull();
+        parent.RolledRemainingByUnit.ShouldBe([new RolledRemaining(8m, Hour), new RolledRemaining(4m, Point)]);
+    }
+
+    [Fact]
+    public void Degraded_node_refuses_only_the_bad_event_then_applies_a_later_matching_unit_event()
+    {
+        // AC #5: fail-closed refuses *only* the unit-incompatible event. A later matching-unit progress
+        // still burns down from the last valid value, and the node stays degraded because the bad event
+        // remains in the ordered log and re-derives the same single diagnostic on every rebuild.
+        WorkItemRollUpProjection projection = new();
+
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+        Project(projection, new ProgressReported(Child.Value, 2, Tenant, Child, 1m, Hour));   // 4 -> 3 (valid)
+        Project(projection, new ProgressReported(Child.Value, 3, Tenant, Child, 2m, Point));  // refused + degraded
+        Project(projection, new ProgressReported(Child.Value, 4, Tenant, Child, 1m, Hour));   // 3 -> 2 (still applied)
+
+        WorkItemRollUp child = projection.Get(Tenant, Child).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(2m, Hour));
+        child.Degraded.ShouldBeTrue();
+        child.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Child, nameof(ProgressReported), 3),
+        ]);
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(7m, Hour));
+    }
+
+    [Fact]
+    public void Rejected_unit_mismatched_command_emits_no_event_so_projection_stays_fresh_and_not_degraded()
+    {
+        // AC #4 end-to-end: the write-side guard rejects a unit-incompatible ReportProgress before any
+        // ProgressReported is emitted, so nothing is ever delivered to the projection. Unlike AC #5 (a
+        // persisted bad event reaching the read side and degrading it), the projection here never even sees
+        // the invalid act, so the roll-up stays fresh — unchanged value, not degraded, no diagnostics.
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m, unit: Hour));
+        Project(projection, Created(Child, 1, 4m, Parent, Hour));
+        WorkItemRollUp before = projection.Get(Tenant, Child).ShouldNotBeNull();
+
+        WorkItemState child = EstablishedInProgressChild();
+        DomainResult rejected = WorkItemAggregate.Handle(new ReportProgress(Tenant, Child, 1m, Point), child);
+
+        rejected.IsRejection.ShouldBeTrue();
+        rejected.Events.OfType<ProgressReported>().ShouldBeEmpty();
+
+        // No ProgressReported emitted => no roll-up delivery fact => read model is byte-for-byte unchanged.
+        WorkItemRollUp after = projection.Get(Tenant, Child).ShouldNotBeNull();
+        after.OwnRemaining.ShouldBe(before.OwnRemaining);
+        after.RolledRemaining.ShouldBe(before.RolledRemaining);
+        after.Degraded.ShouldBeFalse();
+        after.ProjectionDiagnostics.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Unit_mismatched_progress_retains_last_valid_value_and_marks_metadata_diagnostic()
+    {
+        WorkItemRollUpProjection natural = new();
+        WorkItemRollUpProjection duplicatedAndOutOfOrder = new();
+        WorkItemRollUpEvent[] events =
+        [
+            Envelope(Created(Parent, 1, 5m)),
+            Envelope(Created(Child, 1, 4m, Parent)),
+            Envelope(new ProgressReported(Child.Value, 2, Tenant, Child, 1m, Hour)),
+            Envelope(new ProgressReported(Child.Value, 3, Tenant, Child, 2m, Point, "bad payload note")),
+        ];
+
+        foreach (WorkItemRollUpEvent e in events)
+        {
+            natural.Project(e);
+        }
+
+        foreach (WorkItemRollUpEvent e in events.Reverse().Concat([events[3], events[3]]))
+        {
+            duplicatedAndOutOfOrder.Project(e);
+        }
+
+        WorkItemRollUp expected = natural.Get(Tenant, Parent).ShouldNotBeNull();
+        WorkItemRollUp actual = duplicatedAndOutOfOrder.Get(Tenant, Parent).ShouldNotBeNull();
+        expected.RolledRemaining.ShouldBe(new RolledRemaining(8m, Hour));
+        expected.Degraded.ShouldBeTrue();
+        expected.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Child, nameof(ProgressReported), 3),
+        ]);
+        actual.RolledRemaining.ShouldBe(expected.RolledRemaining);
+        actual.RolledRemainingByUnit.ShouldBe(expected.RolledRemainingByUnit);
+        actual.Degraded.ShouldBe(expected.Degraded);
+        actual.ProjectionDiagnostics.ShouldBe(expected.ProjectionDiagnostics);
+    }
+
+    [Fact]
+    public void Unit_mismatched_reestimate_retains_last_valid_value_and_marks_metadata_diagnostic()
+    {
+        WorkItemRollUpProjection projection = new();
+
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+        Project(projection, new ReEstimated(Child.Value, 2, Tenant, Child, 9m, Point, "bad payload note"));
+
+        WorkItemRollUp child = projection.Get(Tenant, Child).ShouldNotBeNull();
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(4m, Hour));
+        child.Degraded.ShouldBeTrue();
+        child.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Child, nameof(ReEstimated), 2),
+        ]);
+        parent.RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
+        parent.Degraded.ShouldBeTrue();
+        parent.ProjectionDiagnostics.ShouldBe(child.ProjectionDiagnostics);
+    }
+
+    [Fact]
+    public void First_estimate_establishes_unit_and_later_mismatch_degrades()
+    {
+        WorkItemRollUpProjection projection = new();
+        WorkItemId unestimated = new("child-unestimated");
+
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(unestimated, 1, null, Parent));
+        Project(projection, new ReEstimated(unestimated.Value, 2, Tenant, unestimated, 3m, Point));
+        Project(projection, new ProgressReported(unestimated.Value, 3, Tenant, unestimated, 1m, Point));
+        projection.Get(Tenant, unestimated).ShouldNotBeNull().Degraded.ShouldBeFalse();
+
+        Project(projection, new ReEstimated(unestimated.Value, 4, Tenant, unestimated, 8m, Hour));
+
+        WorkItemRollUp child = projection.Get(Tenant, unestimated).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(2m, Point));
+        child.Degraded.ShouldBeTrue();
+        child.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, unestimated, nameof(ReEstimated), 4),
+        ]);
+    }
+
+    [Fact]
+    public void Terminal_degraded_child_contributes_zero()
+    {
+        WorkItemRollUpProjection projection = new();
+
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+        Project(projection, new ProgressReported(Child.Value, 2, Tenant, Child, 1m, Point));
+        Project(projection, new WorkItemCompleted(Child.Value, 3, Tenant, Child));
+
+        WorkItemRollUp child = projection.Get(Tenant, Child).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(0m, Hour));
+        child.Degraded.ShouldBeTrue();
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(5m, Hour));
+    }
+
+    [Fact]
     public void Unestimated_child_contributes_after_reestimate_and_terminal_unestimated_child_stays_zero()
     {
         WorkItemRollUpProjection projection = new();
@@ -332,6 +554,16 @@ public sealed class WorkItemRollUpProjectionTests
             new Obligation($"obligation-{workItemId.Value}"),
             remaining is null ? null : new WorkItemEffort(remaining.Value, unit ?? Hour),
             Parent: parent is null ? null : new ParentWorkItemReference(Tenant, parent));
+
+    private static WorkItemState EstablishedInProgressChild()
+    {
+        ExecutorBinding binding = new(new PartyId("party-123"), Channel.Mcp, AuthorityLevel.Contribute);
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(Child.Value, 1, Tenant, Child, new Obligation("child work"), new WorkItemEffort(4m, Hour)));
+        state.Apply(new WorkItemAssigned(Child.Value, 2, Tenant, Child, binding));
+        state.Apply(new WorkItemClaimed(Child.Value, 3, Tenant, Child, binding));
+        return state;
+    }
 
     private static void Project(WorkItemRollUpProjection projection, object payload)
         => projection.Project(Envelope(payload));

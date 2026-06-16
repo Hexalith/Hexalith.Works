@@ -94,6 +94,7 @@ public sealed class WorkItemProgressTests
         result.IsRejection.ShouldBeTrue();
         WorkItemProgressRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemProgressRejected>();
         rejection.Reason.ShouldBe("Progress unit must match the established effort unit.");
+        result.Events.OfType<ProgressReported>().ShouldBeEmpty();
         state.Sequence.ShouldBe(sequenceBefore);
         state.Remaining.ShouldBe(8m);
     }
