@@ -146,6 +146,69 @@ public sealed class WorkItemCreateTests
     }
 
     [Fact]
+    public void CreateWorkItem_with_self_parent_reference_returns_cycle_rejection_without_mutating_state()
+    {
+        WorkItemId workItemId = new("work-001");
+        CreateWorkItem command = CreateCommand(
+            workItemId: workItemId,
+            parent: new ParentWorkItemReference(new TenantId("tenant-alpha"), workItemId));
+
+        var result = WorkItemAggregate.Handle(command, null);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemTreeCycleRejected rejection = result.Events.Single().ShouldBeOfType<WorkItemTreeCycleRejected>();
+        rejection.TenantId.ShouldBe(command.TenantId);
+        rejection.WorkItemId.ShouldBe(command.WorkItemId);
+        rejection.CycleWorkItemId.ShouldBe(command.WorkItemId);
+
+        var state = new WorkItemState();
+        state.Apply(rejection);
+
+        state.Sequence.ShouldBe(0);
+        state.Status.ShouldBe(WorkItemStatus.Unknown);
+        state.AggregateIdentity.ShouldBeNull();
+    }
+
+    [Fact]
+    public void CreateWorkItem_with_existing_different_parent_returns_second_parent_rejection_and_leaves_state_unchanged()
+    {
+        TenantId tenantId = new("tenant-alpha");
+        var existingParent = new ParentWorkItemReference(tenantId, new WorkItemId("parent-001"));
+        var proposedParent = new ParentWorkItemReference(tenantId, new WorkItemId("parent-002"));
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(
+            "work-001",
+            7,
+            tenantId,
+            new WorkItemId("work-001"),
+            new Obligation("Existing work item"),
+            Parent: existingParent));
+        CreateWorkItem command = CreateCommand(
+            tenantId: tenantId,
+            workItemId: new WorkItemId("work-001"),
+            parent: proposedParent);
+
+        var result = WorkItemAggregate.Handle(command, state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemCannotReferenceSecondParent rejection = result.Events
+            .Single()
+            .ShouldBeOfType<WorkItemCannotReferenceSecondParent>();
+        rejection.ExistingParent.ShouldBe(existingParent);
+        rejection.ProposedParent.ShouldBe(proposedParent);
+
+        state.Apply(rejection);
+
+        state.Sequence.ShouldBe(7);
+        state.Parent.ShouldBe(existingParent);
+        state.Status.ShouldBe(WorkItemStatus.Created);
+    }
+
+    [Fact]
     public void WorkItemCreated_replay_preserves_foreign_parent_tenant_as_foreign_reference()
     {
         TenantId workTenant = new("tenant-alpha");

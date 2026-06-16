@@ -22,12 +22,12 @@ public static class WorkItemAggregate
             ]);
         }
 
-        // Sole enforcement point for the cross-tenant parent invariant; events are trusted on replay.
-        if (command.Parent is not null && command.Parent.TenantId != command.TenantId)
+        // Events are trusted on replay; command handling is the write-side tree-shape boundary.
+        WorkTreeAttachmentValidationResult treeValidation = WorkTreeAttachmentGuard.Validate(
+            new WorkTreeAttachmentFacts(command.TenantId, command.WorkItemId, command.Parent, state?.Parent, [], 1));
+        if (!treeValidation.IsAccepted)
         {
-            return DomainResult.Rejection([
-                new WorkItemCannotReferenceParentFromAnotherTenant(command.TenantId, command.WorkItemId, command.Parent),
-            ]);
+            return DomainResult.Rejection([treeValidation.Rejection!]);
         }
 
         var created = new WorkItemCreated(

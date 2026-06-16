@@ -53,6 +53,21 @@ public sealed class WorkItemState
 #pragma warning restore CA1822
 
 #pragma warning disable CA1822 // EventStore replay convention requires an Apply overload for rejection events.
+    public void Apply(WorkItemCannotReferenceSecondParent e)
+        => ArgumentNullException.ThrowIfNull(e);
+#pragma warning restore CA1822
+
+#pragma warning disable CA1822 // EventStore replay convention requires an Apply overload for rejection events.
+    public void Apply(WorkItemTreeCycleRejected e)
+        => ArgumentNullException.ThrowIfNull(e);
+#pragma warning restore CA1822
+
+#pragma warning disable CA1822 // EventStore replay convention requires an Apply overload for rejection events.
+    public void Apply(WorkItemTreeDepthExceeded e)
+        => ArgumentNullException.ThrowIfNull(e);
+#pragma warning restore CA1822
+
+#pragma warning disable CA1822 // EventStore replay convention requires an Apply overload for rejection events.
     public void Apply(WorkItemProgressRejected e)
         => ArgumentNullException.ThrowIfNull(e);
 #pragma warning restore CA1822

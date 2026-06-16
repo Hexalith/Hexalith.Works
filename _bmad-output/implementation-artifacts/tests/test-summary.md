@@ -1,3 +1,90 @@
+# Test Automation Summary — Story 3.1 (Guard Tenant-Safe Work Tree Shape)
+
+Workflow: `bmad-qa-generate-e2e-tests` after `bmad-dev-story`. Framework reused: **xUnit v3 +
+Shouldly**, pure domain unit tests, contract-flow integration tests, and existing
+architecture/property guardrails. Story 3.1 adds a pure caller-fed tree attachment guard, specific
+rejection payloads for second-parent/cycle/depth failures, create-path delegation for parent
+validation, and documentation of the work-tree shape rules.
+
+Story 2.5 final baseline was **332** green tests (UnitTests 260, IntegrationTests 45,
+ArchitectureTests 26, PropertyTests 1). Story 3.1 adds **+18** unit tests and **+1** integration test,
+raising the total to **351** green. `WorkItemV1Catalog.Count` is now **34** (13 success events, 13
+commands, 8 rejection events). No durable success event shape changed, so no golden fixtures were added.
+
+## Gaps closed this run
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkTreeAttachmentGuardTests` covers valid root items, valid first parent attachment,
+  idempotent same-parent validation, same-tenant casing normalization, second-parent rejection,
+  self-parent cycle rejection, ancestor-chain cycle rejection, cross-tenant parent rejection,
+  cross-tenant ancestor rejection, default max-depth boundary acceptance, one-over-depth rejection, and
+  uncapped breadth.
+- [x] QA-generated gap tests cover same-tenant ancestor casing normalization, same-parent idempotency
+  with different tenant casing, policy override acceptance above the default depth, and policy override
+  rejection below the default depth.
+- [x] `WorkItemCreateTests.CreateWorkItem_with_self_parent_reference_returns_cycle_rejection_without_mutating_state`
+  proves create-time self-parenting returns a rejection-only result and leaves replay state at sequence
+  `0`.
+- [x] `WorkItemCreateTests.CreateWorkItem_with_existing_different_parent_returns_second_parent_rejection_and_leaves_state_unchanged`
+  proves supplied current child state with a different parent rejects without advancing sequence or
+  replacing the stored parent.
+
+### Integration tests (`tests/Hexalith.Works.IntegrationTests`)
+
+- [x] `WorkItemCreateContractFlowTests.CreateWorkItem_with_invalid_tree_shape_serializes_specific_rejection_payloads_without_envelope`
+  round-trips the new rejection payloads and proves EventStore envelope metadata remains absent.
+- [x] `WorkItemV1Catalog` now includes the three new public rejection payloads so polymorphic
+  registration and concrete additivity tests cannot drift.
+
+### Documentation
+
+- [x] `docs/work-tree-shape-guard.md` records single-parent, acyclic, single-tenant, max-depth default
+  `32`, policy-supplied override, uncapped breadth, and Story 3.1 exclusions.
+
+## Story 3.1 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **278/278** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **46/46** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed.
+
+### Story 3.1 Test Counts
+
+| Suite | Story 2.5 Final | Story 3.1 Final | Delta |
+|-------|----------------:|----------------:|------:|
+| UnitTests | 260 | **278** | +18 |
+| IntegrationTests | 45 | **46** | +1 |
+| ArchitectureTests | 26 | **26** | — |
+| PropertyTests | 1 | **1** | — |
+| **Total** | **332** | **351** | **+19** |
+
+### Checklist
+
+- [x] API/contract tests generated for guard decisions and public rejection payload serialization.
+- [x] E2E/UI tests marked not applicable (Story 3.1 is pure Contracts + Server + docs; no UI/browser
+  surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly).
+- [x] Tests cover happy paths (root, first parent, same-parent idempotency, same-tenant casing,
+  at-limit depth, policy override above default, uncapped breadth).
+- [x] Tests cover critical error/edge cases (second parent, self cycle, ancestor cycle, cross tenant,
+  one-over-depth, smaller policy override).
+- [x] All generated tests run successfully (351/351).
+- [x] Tests use clear descriptions and semantic assertions.
+- [x] No hardcoded waits or sleeps.
+- [x] Tests are independent and arrange their own facts/state.
+- [x] Tests saved to the appropriate existing project directories.
+- [x] Test summary includes coverage metrics.
+
+---
+
 # Test Automation Summary — Story 2.5 (Complete, Cancel, Reject, and Expire Work)
 
 Workflow: `bmad-qa-generate-e2e-tests`. Framework reused: **xUnit v3 + Shouldly**, Tier-1 domain and

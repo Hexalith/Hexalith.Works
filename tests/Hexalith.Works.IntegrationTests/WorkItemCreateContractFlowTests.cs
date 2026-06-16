@@ -204,6 +204,36 @@ public sealed class WorkItemCreateContractFlowTests
     }
 
     [Fact]
+    public void CreateWorkItem_with_invalid_tree_shape_serializes_specific_rejection_payloads_without_envelope()
+    {
+        TenantId tenantId = new("tenant-alpha");
+        ParentWorkItemReference existingParent = new(tenantId, new WorkItemId("parent-001"));
+        ParentWorkItemReference proposedParent = new(tenantId, new WorkItemId("parent-002"));
+        IEventPayload[] rejections =
+        [
+            new WorkItemCannotReferenceSecondParent(tenantId, new WorkItemId("work-001"), existingParent, proposedParent),
+            new WorkItemTreeCycleRejected(tenantId, new WorkItemId("work-001"), proposedParent, new WorkItemId("work-001")),
+            new WorkItemTreeDepthExceeded(tenantId, new WorkItemId("work-001"), proposedParent, 32, 33),
+        ];
+
+        foreach (IEventPayload rejection in rejections)
+        {
+            string json = JsonSerializer.Serialize(rejection, rejection.GetType(), JsonOptions);
+            using JsonDocument document = JsonDocument.Parse(json);
+
+            foreach (string envelopeField in WorkItemV1Catalog.EnvelopeFields)
+            {
+                document.RootElement.TryGetProperty(envelopeField, out _)
+                    .ShouldBeFalse($"{rejection.GetType().Name} must not embed EventStore envelope metadata.");
+            }
+
+            IEventPayload roundTripped = (IEventPayload)JsonSerializer.Deserialize(json, rejection.GetType(), JsonOptions)
+                .ShouldNotBeNull();
+            roundTripped.ShouldBe(rejection);
+        }
+    }
+
+    [Fact]
     public void CreateWorkItem_without_estimate_round_trips_without_materializing_remaining()
     {
         WorkItemCreated created = WorkItemAggregate.Handle(CreateCommand(initialEffort: null), null)
