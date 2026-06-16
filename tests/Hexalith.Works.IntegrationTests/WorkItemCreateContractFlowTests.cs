@@ -4,6 +4,7 @@ using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
+using Hexalith.Works.Contracts.Ports;
 using Hexalith.Works.Contracts.State;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Server.Aggregates;
@@ -271,6 +272,50 @@ public sealed class WorkItemCreateContractFlowTests
         state.Apply(roundTripped);
 
         state.Obligation.ShouldNotBeNull().Description.ShouldBe("Prepare the padded obligation");
+    }
+
+    [Fact]
+    public void WorkItemCreated_carries_expectation_reference_and_never_an_interpreted_expectation()
+    {
+        var reference = new ExpectationReference("expectation-ref-001");
+        var created = new WorkItemCreated(
+            "work-001",
+            1,
+            new TenantId("tenant-alpha"),
+            new WorkItemId("work-001"),
+            new Obligation("Prepare the first tenant-scoped work item", reference));
+
+        string json = JsonSerializer.Serialize(created, JsonOptions);
+
+        // The stable expectation reference is carried on the obligation...
+        json.ShouldContain("\"reference\"");
+        json.ShouldContain("\"value\":\"expectation-ref-001\"");
+
+        // ...but the interpreted-on-demand Expectation (InterpretedValue) is never serialized into the event.
+        json.ShouldNotContain("interpretedValue");
+
+        WorkItemCreated roundTripped = JsonSerializer.Deserialize<WorkItemCreated>(json, JsonOptions)
+            .ShouldNotBeNull();
+        var state = new WorkItemState();
+        state.Apply(roundTripped);
+
+        Obligation obligation = state.Obligation.ShouldNotBeNull();
+        obligation.Reference.ShouldBe(reference);
+        obligation.Reference.ShouldNotBeNull().Value.ShouldBe("expectation-ref-001");
+    }
+
+    [Fact]
+    public void Obligation_payload_without_expectation_reference_field_deserializes_as_reference_only()
+    {
+        // A WorkItemCreated/Obligation payload written before the optional expectation reference
+        // existed must still deserialize: the additive, nullable field reconstructs as a null reference.
+        const string legacyObligationJson = "{\"description\":\"Prepare the first tenant-scoped work item\"}";
+
+        Obligation obligation = JsonSerializer.Deserialize<Obligation>(legacyObligationJson, JsonOptions)
+            .ShouldNotBeNull();
+
+        obligation.Description.ShouldBe("Prepare the first tenant-scoped work item");
+        obligation.Reference.ShouldBeNull();
     }
 
     private static CreateWorkItem CreateCommand(

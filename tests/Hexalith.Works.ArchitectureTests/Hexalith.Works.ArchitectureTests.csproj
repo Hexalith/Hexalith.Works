@@ -16,6 +16,15 @@
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
+  <!-- Reflection-based boundary-port fitness tests load the kernel assemblies. Referencing the
+       kernel projects (Contracts/Server/Projections) from a test project violates no dependency-
+       direction rule. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
+    <ProjectReference Include="..\..\src\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
