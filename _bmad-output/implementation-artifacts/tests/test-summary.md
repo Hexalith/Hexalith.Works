@@ -1,3 +1,173 @@
+# Test Automation Summary — Story 3.6 (Cascade Terminal Work Through Active Descendants)
+
+Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework
+reused: **xUnit v3 + Shouldly** for unit, integration, and
+architecture lanes. Story 3.6 realizes the pure-domain and pure-reactor portion of FR-10 cascade
+semantics: a parent cancel/expire terminal event is translated into same-kind terminal command intents
+for caller-supplied, still-active descendants, and each descendant aggregate applies its own lifecycle
+table. Duplicate/redelivered cascade commands stay safe through **target-aggregate idempotency** — no
+out-of-band dedup store. There is no UI/HTTP surface; the executable end-to-end path is **parent terminal
+event → `JsonSerializerDefaults.Web` JSON → pure `TerminalCascadeTranslator` → descendant command intent →
+`WorkItemAggregate.Handle` → descendant terminal event → replayed `WorkItemState` / roll-up projection**.
+
+Runtime cascade dispatch, checkpoint persistence, retry loops, durable continuation, AppHost restart
+recovery, reminder reconciliation, and Aspire crash/recovery proof are **out of scope** and deferred to
+Story 4.6.
+
+Story 3.5 final baseline was **457** green tests (UnitTests 368, IntegrationTests 60, ArchitectureTests
+28, PropertyTests 1). The Story 3.6 dev-story pass added **+20** tests (+18 unit, +2 integration), raising
+the total to **477** green: UnitTests 386, IntegrationTests 62, ArchitectureTests 28, PropertyTests 1. The
+follow-up `bmad-qa-generate-e2e-tests` QA pass then added **+4** tests (+3 unit, +1 integration) to close
+residual defensive-contract and cross-terminal-through-serialization gaps, raising the total to **481**
+green: UnitTests 389, IntegrationTests 63, ArchitectureTests 28, PropertyTests 1. **No production code was
+changed by the QA pass** — only test files were extended; the v1 catalog (`WorkItemV1Catalog.Count` 36)
+and golden corpus are unchanged.
+
+**No durable wire shape changed.** The cascade reuses the existing terminal commands (`CancelWorkItem`,
+`ExpireWorkItem`) and terminal events (`WorkItemCancelled`, `WorkItemExpired`); `WorkItemV1Catalog.Count`
+remains **36** and the golden corpus is unchanged. The new Reactor types (`CascadeDescendant`,
+`TerminalCascadeTranslator`) are Reactor-local, pure, and **not** decorated for polymorphic serialization,
+so the frozen v1 catalog is untouched. No aggregate/lifecycle code changed — the existing AR-13 transition
+table already satisfies AC #2/#3 — so `docs/lifecycle-transition-matrix.md` is left intact and referenced
+from the cascade doc.
+
+## Production code added (pure reactor slice)
+
+- [x] `src/Hexalith.Works.Reactor/CascadeDescendant.cs` — **new.** Reactor-local input record carrying
+  only `TenantId`, `WorkItemId`, and an `IsTerminal` marker (no EventStore envelope, Dapr metadata,
+  checkpoint state, parent status decision, roll-up total, Party data, or adapter detail). Mirrors the
+  `AwaitingParent` style.
+- [x] `src/Hexalith.Works.Reactor/TerminalCascadeTranslator.cs` — **new.** Pure, mechanical translator
+  mirroring `ChildCompletionResumeTranslator`: maps a parent `WorkItemCancelled` to descendant
+  `CancelWorkItem` intents and a parent `WorkItemExpired` to descendant `ExpireWorkItem` intents.
+  Fail-closed tenant equality (D3), explicit terminal-candidate skip (D2), input-order preserving, no tree
+  traversal, no acceptance decision (D1/D4). `Hexalith.Works.Reactor` still references
+  `Hexalith.Works.Contracts` only — `DependencyDirectionTests` unchanged and green.
+
+## Tests added
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemTerminalCascadeIdempotencyTests` — **new file, +8 cases (2 facts + Theory ×6)** (AC #2/#3).
+  Proves the cascade-delivery contract at the transition table: duplicate `CancelWorkItem` against
+  `Cancelled` and duplicate `ExpireWorkItem` against `Expired` return `DomainResult.NoOp` with no terminal
+  event, no rejection event, and no sequence burn; and cross-terminal commands (cancel of
+  `Expired`/`Completed`/`Rejected`, expire of `Cancelled`/`Completed`/`Rejected`) return
+  `WorkItemTransitionRejected` with no terminal success event and no state/sequence change.
+- [x] `TerminalCascadeTranslatorTests` — **new file, +8 facts** (AC #1/#4/#5/#6). Proves cancelled/expired
+  parents emit the matching command intents for same-tenant active descendants in input order;
+  already-terminal candidates are skipped (no duplicate terminal intent); cross-tenant descendants are
+  ignored even when work item ids collide; empty input yields no commands; and the input model carries no
+  status acceptance decision (redelivery yields one intent per entry — idempotency is the target
+  aggregate's job, not a translator dedup).
+- [x] `WorkItemRollUpProjectionTests` — **+2 facts** (AC #1/#2/#3). A cascade-cancelled parent/child
+  subtree zeros each descendant's contribution and drops the open subtree from a still-active ancestor's
+  rolled Remaining; duplicate/stale cascade-expire delivery converges to zero contribution (replay-safe).
+
+### Integration tests (`tests/Hexalith.Works.IntegrationTests`)
+
+- [x] `TerminalCascadeContractFlowTests` — **new file, +2 facts** (AC #1/#2/#3/#6). A parent terminal
+  event crosses the real `System.Text.Json` boundary, the pure translator produces the descendant command
+  intent, that intent crosses the boundary, and an independent descendant aggregate applies its own
+  terminal transition; redelivery of the same cascade command to the now-terminal descendant is an
+  idempotent no-op (no duplicate event, no sequence burn). Cross-tenant (colliding id) and already-terminal
+  descendants are never targeted.
+- [x] `Hexalith.Works.IntegrationTests.csproj` — added `Hexalith.Works.Reactor` and `Hexalith.Works.Testing`
+  project references (test project only; not governed by the `src/`-scoped dependency-direction fitness).
+
+## Documentation
+
+- [x] `docs/work-tree-shape-guard.md` — added a **Terminal Cascade Through Active Descendants** section:
+  tenant-safe descendant discovery is supplied to the pure translator, the translator emits only
+  mechanical command intents, tenant equality fails closed, target aggregates decide outcomes via AR-13,
+  idempotency lives on both sides, and runtime checkpoint/recovery is deferred to Story 4.6.
+- [x] `docs/lifecycle-transition-matrix.md` — **unchanged.** Code behavior did not change; the AR-13
+  per-state Cancel/Expire table and idempotent no-op list remain the single source of truth, referenced
+  from the cascade doc.
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+All four additions are genuine, non-redundant gaps verified against AC #1–#6 and design decisions D1–D4.
+The dev-story baseline already covered happy-path cancel/expire translation, active-vs-terminal filtering,
+fail-closed cross-tenant ignore, the aggregate idempotency/cross-terminal matrix, roll-up zeroing, and
+*same-kind* cascade redelivery through serialization. The residual gaps were the translator's **defensive
+contract** (no null-guard coverage — the QA checklist's required critical-error path), an **interleaved
+filter-and-order** case, and the **cross-terminal cascade through the real serialization boundary**:
+
+- [x] **Defensive contract — null guards (unit, +2 facts).**
+  `Null_parent_terminal_event_or_null_descendant_list_throws_for_both_cascade_kinds` and
+  `Null_descendant_element_fails_closed_with_argument_null_exception` prove the pure translator's
+  `ArgumentNullException.ThrowIfNull` guards fire for a null trigger event, a null candidate list, and a
+  null element inside the list, across both the cancel and expire overloads. A null candidate fails closed
+  (eager materialization throws) rather than emitting a partial cascade. The baseline had no
+  critical-error-path coverage on the translator.
+- [x] **AC #1/#6 — interleaved filter and input order (unit, +1 fact).**
+  `Mixed_batch_preserves_active_target_order_while_skipping_terminal_and_cross_tenant_candidates` proves
+  active targets keep their relative input order when terminal and foreign-tenant (colliding-id) candidates
+  are interleaved between them — the baseline only proved order with contiguous active candidates.
+- [x] **AC #3 — cross-terminal cascade through serialization (integration, +1 fact).**
+  `Parent_cancel_cascade_reaching_an_already_expired_descendant_rejects_through_serialization_without_a_duplicate_terminal_event`
+  models a stale snapshot: the caller marks a descendant active, the translator emits a `CancelWorkItem`
+  intent, but by delivery time the descendant has already Expired on its own. Across the real
+  `JsonSerializerDefaults.Web` boundary the cross-terminal cascade command rejects
+  (`WorkItemTransitionRejected`, `FromStatus=Expired`, `AttemptedAct="Cancel"`) with no duplicate terminal
+  event and no status/sequence change — asserting persisted descendant end-state, not just a result flag.
+  The baseline integration flow proved only *same-kind* redelivery no-op, not cross-terminal rejection
+  through the pipeline.
+
+## Story 3.6 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` — passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **389/389** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **63/63** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **28/28** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed (`Ok, passed 100 tests.`).
+
+### Story 3.6 Test Counts
+
+| Suite | Story 3.5 Final | Story 3.6 dev-story | QA gap pass | QA Delta |
+|-------|----------------:|--------------------:|------------:|---------:|
+| UnitTests | 368 | 386 | **389** | +3 |
+| IntegrationTests | 60 | 62 | **63** | +1 |
+| ArchitectureTests | 28 | 28 | **28** | — |
+| PropertyTests | 1 | 1 | **1** | — |
+| **Total** | **457** | **477** | **481** | **+4** |
+
+### Not-applicable runtime / E2E surfaces
+
+- No Dapr dispatch, EventStore stream reads, runtime checkpoint persistence, retry loops, durable cascade
+  continuation, AppHost restart recovery, reminder reconciliation, timer/clock, or Aspire crash/recovery
+  surface — deliberately deferred to Story 4.6, so the AppHost/Aspire integration lane was **not exercised**
+  for cascade in this story.
+- No UI/MCP/HTTP/browser surface (Story 3.6 is a pure Contracts + Server + Reactor + Projections + docs
+  slice), so browser/UI E2E is **not applicable**.
+
+### Checklist
+
+- [x] Unit tests cover the aggregate cascade-delivery idempotency contract (duplicate self-terminal no-op,
+  cross-terminal rejection) close to the transition table.
+- [x] Unit tests cover the pure reactor translation (cancel/expire kinds, active vs terminal filtering,
+  fail-closed tenant equality, no acceptance decision, input-order determinism).
+- [x] Integration tests cover the cascade across the serialization boundary into descendant aggregates with
+  idempotent redelivery.
+- [x] Roll-up regression proves cascade terminal events zero descendant contribution and remove the open
+  subtree from ancestor roll-ups.
+- [x] No new durable event/command types; `WorkItemV1Catalog.Count` stays 36 and the golden corpus is
+  unchanged.
+- [x] `Hexalith.Works.Reactor` stays Contracts-only (no Dapr/Aspire/EventStore-runtime/clock/IO);
+  `DependencyDirectionTests` unchanged and green.
+- [x] Documentation updated (cascade section in `docs/work-tree-shape-guard.md`); AR-13 matrix left intact.
+- [x] Build clean (0 warnings / 0 errors) and all four test binaries green (481/481 after the QA pass).
+- [x] QA gap pass added defensive null-guard, interleaved filter/order, and cross-terminal-through-
+  serialization coverage; no production code changed.
+
+---
+
 # Test Automation Summary — Story 3.5 (Suspend and Resume on Await-Conditions)
 
 Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework

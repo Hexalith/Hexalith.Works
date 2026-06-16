@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-06-16T23:59:00+02:00
+last_updated: 2026-06-17
 project: works
 project_key: NOKEY
 tracking_system: file-system
@@ -61,7 +61,7 @@ development_status:
   3-3-maintain-recursive-roll-up-with-per-child-sequence: done
   3-4-preserve-heterogeneous-unit-subtotals: done
   3-5-suspend-and-resume-on-await-conditions: done
-  3-6-cascade-terminal-work-through-active-descendants: backlog
+  3-6-cascade-terminal-work-through-active-descendants: done
   epic-3-retrospective: optional
   epic-4: backlog
   4-1-bind-work-to-a-uniform-party-executor: backlog

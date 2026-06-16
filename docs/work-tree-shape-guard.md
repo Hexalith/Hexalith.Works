@@ -48,3 +48,39 @@ clears the full suspension condition set, and records the consumed condition in 
 duplicate resume can no-op after replay. The reactor translation is mechanical; it can turn a completed
 child event plus explicit awaiting-parent input into a parent `ResumeWorkItem` intent, but the aggregate
 decides whether that intent is current, accepted, rejected, or duplicate.
+
+## Terminal Cascade Through Active Descendants
+
+Story 3.6 realizes the pure-domain and pure-reactor portion of FR-10 cascade semantics: when a parent
+Work Item is cancelled or expired, the still-active descendant subtree must not keep burning down. The
+cascade is split across two pure layers, with the runtime layer deferred.
+
+- **Tenant-safe descendant discovery is supplied to the translator, not performed by it.** A caller
+  hands the pure `TerminalCascadeTranslator` a list of `CascadeDescendant` candidates (each carrying only
+  `TenantId`, `WorkItemId`, and an `IsTerminal` marker). The translator never reads EventStore,
+  projections, files, Dapr state, clocks, or in-memory globals, and never walks the tree itself.
+- **The translator emits mechanical command intents only.** A parent `WorkItemCancelled` maps to
+  descendant `CancelWorkItem` intents and a parent `WorkItemExpired` maps to descendant `ExpireWorkItem`
+  intents. Input order may determine output order. The translator chooses the terminal command *kind*
+  from the parent event but makes no domain outcome decision.
+- **Tenant equality fails closed.** A candidate whose tenant differs from the parent terminal event's
+  tenant produces no command, even when work item ids collide across tenants. Key-prefixing is not
+  enough; the equality check is explicit in the pure selection step — the same cross-tenant fail-closed
+  rule that governs parent attachment (see [Rules](#rules)).
+- **Target aggregates decide outcomes.** Whether a descendant accepts, rejects, or no-ops the cascade
+  command is owned by `WorkItemAggregate.Handle` through the lifecycle table — never by the translator.
+  An active descendant transitions to the matching terminal status; an already-terminal descendant that
+  receives the same-kind terminal command returns `DomainResult.NoOp` (no duplicate terminal event, no
+  sequence burn); a cross-terminal command is a `WorkItemTransitionRejected`. These outcomes are the
+  per-state Cancel/Expire decision (AR-13) and the idempotent no-op list in
+  `docs/lifecycle-transition-matrix.md`, which remains the single source of truth — Story 3.6 adds no
+  second cascade-specific transition table.
+- **Idempotency lives on both sides.** The translator skips candidates explicitly marked terminal, but
+  duplicate or redelivered intents stay safe regardless because the target terminal commands are
+  idempotent. The roll-up projection reuses the descendant `WorkItemCancelled`/`WorkItemExpired` events
+  to zero the now-terminal subtree, so the open subtree drops out of ancestors' rolled Remaining with no
+  cascade-specific subtraction path.
+
+Runtime cascade dispatch, checkpoint persistence, retry loops, durable continuation, AppHost restart
+recovery, reminder reconciliation, and Aspire crash/recovery proof are **out of scope** for Story 3.6
+and deferred to Story 4.6.

@@ -565,6 +565,56 @@ public sealed class WorkItemRollUpProjectionTests
         projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
     }
 
+    [Fact]
+    public void Cascade_terminal_descendants_zero_their_contribution_and_drop_the_open_subtree_from_an_active_ancestor()
+    {
+        // Story 3.6 AC #1: a parent terminating cascades same-kind terminal commands into still-active
+        // descendants; each descendant applies its own terminal transition, the resulting terminal events
+        // zero its contribution, and the whole open subtree drops out of a still-active ancestor's rolled
+        // Remaining. The roll-up consumes the same WorkItemCancelled events the cascade command handling
+        // produces — it adds no cascade-specific subtraction path.
+        WorkItemRollUpProjection projection = new();
+        WorkItemId root = new("root-001");
+
+        Project(projection, Created(root, 1, 5m));
+        Project(projection, Created(Parent, 1, 4m, root));
+        Project(projection, Created(Child, 1, 3m, Parent));
+        projection.Get(Tenant, root).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(12m, Hour));
+
+        // Parent is the cascade trigger; the still-active child applies its own cascade-driven cancel.
+        Project(projection, new WorkItemCancelled(Parent.Value, 2, Tenant, Parent));
+        Project(projection, new WorkItemCancelled(Child.Value, 2, Tenant, Child));
+
+        projection.Get(Tenant, Child).ShouldNotBeNull().OwnRemaining.ShouldBe(new OwnRemaining(0m, Hour));
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.Status.ShouldBe(WorkItemStatus.Cancelled);
+        parent.OwnRemaining.ShouldBe(new OwnRemaining(0m, Hour));
+
+        // The root stays active but its rolled Remaining no longer includes the cancelled parent/child subtree.
+        WorkItemRollUp rootRollUp = projection.Get(Tenant, root).ShouldNotBeNull();
+        rootRollUp.Status.ShouldBe(WorkItemStatus.Created);
+        rootRollUp.RolledRemaining.ShouldBe(new RolledRemaining(5m, Hour));
+    }
+
+    [Fact]
+    public void Cascade_expire_descendants_are_replay_safe_and_redelivery_keeps_zero_contribution()
+    {
+        // Story 3.6 AC #2/#3 at the read side: a cascade may deliver the descendant ExpireWorkItem more
+        // than once, so the produced WorkItemExpired may arrive duplicated/out of order. Terminal nodes
+        // converge to zero contribution regardless, so the parent roll never resurrects the subtree.
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+
+        WorkItemExpired childExpired = new(Child.Value, 2, Tenant, Child);
+        Project(projection, childExpired);
+        Project(projection, childExpired); // duplicate cascade delivery
+        Project(projection, new ProgressReported(Child.Value, 3, Tenant, Child, 1m, Hour)); // stale, post-terminal
+
+        projection.Get(Tenant, Child).ShouldNotBeNull().OwnRemaining.ShouldBe(new OwnRemaining(0m, Hour));
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(5m, Hour));
+    }
+
     private static WorkItemCreated Created(
         WorkItemId workItemId,
         long sequence,
