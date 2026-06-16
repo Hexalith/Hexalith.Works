@@ -7,7 +7,7 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 public sealed class DependencyDirectionTests
 {
     [Fact]
-    public void P0_SourceProjectReferencesFollowStoryElevenArchitectureDirection()
+    public void P0_SourceProjectReferencesFollowWorksArchitectureDirection()
     {
         string root = RepositoryRoot.Locate();
 
@@ -15,29 +15,29 @@ public sealed class DependencyDirectionTests
             .ShouldBe(
                 ["Hexalith.EventStore.Contracts"],
                 ignoreOrder: true,
-                customMessage: "Contracts may reference only EventStore.Contracts in Story 1.1.");
+                customMessage: "Contracts may reference only EventStore.Contracts.");
 
         ProjectReferenceNames(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj")
             .ShouldBe(
                 ["Hexalith.Works.Contracts"],
                 ignoreOrder: true,
-                customMessage: "Server must reference inward to Contracts only in Story 1.1.");
+                customMessage: "Server must reference inward to Contracts only.");
 
         ProjectReferenceNames(root, "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj")
             .ShouldBe(
                 ["Hexalith.Works.Contracts"],
                 ignoreOrder: true,
-                customMessage: "Projections must reference Contracts only in Story 1.1.");
+                customMessage: "Projections must reference Contracts only.");
 
         ProjectReferenceNames(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj")
             .ShouldBe(
                 ["Hexalith.Works.Contracts"],
                 ignoreOrder: true,
-                customMessage: "Reactor is an adapter-ring project and must reference inward to Contracts only in Story 1.1.");
+                customMessage: "Reactor is an adapter-ring project and must reference inward to Contracts only.");
     }
 
     [Fact]
-    public void P0_AppHostReferencesOnlyStoryElevenTopologyProjects()
+    public void P0_AppHostReferencesOnlyWorksTopologyProjects()
     {
         string root = RepositoryRoot.Locate();
 
@@ -52,7 +52,7 @@ public sealed class DependencyDirectionTests
                     "Hexalith.EventStore.Aspire",
                 ],
                 ignoreOrder: true,
-                customMessage: "AppHost should wire only the Story 1.1 Works topology and EventStore Aspire support.");
+                customMessage: "AppHost should wire only the Works topology and EventStore Aspire support.");
     }
 
     private static string[] ProjectReferenceNames(string root, string relativeProjectPath)

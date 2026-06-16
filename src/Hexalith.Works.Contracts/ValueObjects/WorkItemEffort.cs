@@ -1,0 +1,27 @@
+namespace Hexalith.Works.Contracts.ValueObjects;
+
+public sealed record WorkItemEffort
+{
+    public WorkItemEffort(decimal estimated, Unit unit, decimal done = 0)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(estimated);
+        ArgumentOutOfRangeException.ThrowIfNegative(done);
+        ArgumentNullException.ThrowIfNull(unit);
+        if (done > estimated)
+        {
+            throw new ArgumentOutOfRangeException(nameof(done), done, "Done effort cannot exceed estimated effort.");
+        }
+
+        Estimated = estimated;
+        Unit = unit;
+        Done = done;
+    }
+
+    public decimal Estimated { get; }
+
+    public Unit Unit { get; }
+
+    public decimal Done { get; }
+
+    public decimal Remaining => Estimated - Done;
+}

@@ -53,11 +53,11 @@ public sealed class ScaffoldGovernanceTests
 
         foreach (string requiredProject in RequiredSourceProjects)
         {
-            projectNames.ShouldContain(requiredProject, $"Story 1.1 requires '{requiredProject}' in the Works scaffold.");
+            projectNames.ShouldContain(requiredProject, $"Works requires '{requiredProject}' in the bounded-context project set.");
         }
 
         string[] forbiddenProjects = [.. projectNames.Where(name => ForbiddenProjectFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))];
-        forbiddenProjects.ShouldBeEmpty("Story 1.1 excludes UI, MCP, portal, security, routing, LLM, cost-governance, and production channel-adapter projects.");
+        forbiddenProjects.ShouldBeEmpty("Works excludes UI, MCP, portal, security, routing, LLM, cost-governance, and production channel-adapter projects.");
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public sealed class ScaffoldGovernanceTests
 
         foreach (string requiredProject in RequiredTestProjectSet())
         {
-            projectNames.ShouldContain(requiredProject, $"Story 1.1 requires focused test project '{requiredProject}'.");
+            projectNames.ShouldContain(requiredProject, $"Works requires focused test project '{requiredProject}'.");
         }
     }
 
@@ -79,7 +79,7 @@ public sealed class ScaffoldGovernanceTests
     {
         string root = RepositoryRoot.Locate();
 
-        File.Exists(Path.Combine(root, "Hexalith.Works.slnx")).ShouldBeTrue("Story 1.1 requires Hexalith.Works.slnx.");
+        File.Exists(Path.Combine(root, "Hexalith.Works.slnx")).ShouldBeTrue("Works requires Hexalith.Works.slnx.");
         File.Exists(Path.Combine(root, "Hexalith.Works.sln")).ShouldBeFalse("Use .slnx, not .sln.");
         File.Exists(Path.Combine(root, "Directory.Packages.props")).ShouldBeTrue("Central package management must define package versions outside project files.");
 
@@ -164,21 +164,21 @@ public sealed class ScaffoldGovernanceTests
     }
 
     [Fact]
-    public void P0_StoryElevenRemainsScaffoldOnly()
+    public void P0_WorkItemSliceDoesNotIntroduceDeferredRuntimeBehavior()
     {
         string root = RepositoryRoot.Locate();
         string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsBuildOutput(path))];
         string[] deferredDomainTerms =
         [
-            "WorkItem",
             "BurnDown",
             "Burndown",
             "RollUp",
             "Suspend",
             "Resume",
-            "ExecutorBinding",
             "Reminder",
+            "Claim",
+            "Queue",
         ];
 
         string[] filesWithDeferredBehavior = [.. sourceFiles
@@ -187,10 +187,66 @@ public sealed class ScaffoldGovernanceTests
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.AppHost", "Program.cs"), StringComparison.Ordinal))
             .Where(path => deferredDomainTerms.Any(term => File.ReadAllText(path).Contains(term, StringComparison.OrdinalIgnoreCase)))];
 
-        filesWithDeferredBehavior.ShouldBeEmpty("Story 1.1 is scaffold-only and must not introduce Work Item lifecycle, burn-down, roll-up, suspend/resume, executor-binding, or reactor runtime behavior.");
+        filesWithDeferredBehavior.ShouldBeEmpty("Story 1.2 permits create/replay only and must not introduce lifecycle, burn-down, roll-up, suspend/resume, queueing, claim, reminder, or reactor runtime behavior.");
+    }
+
+    [Fact]
+    public void P0_WorkItemKernelRemainsPure()
+    {
+        string root = RepositoryRoot.Locate();
+        string serverRoot = Path.Combine(root, "src", "Hexalith.Works.Server");
+        string[] bannedSymbols =
+        [
+            "DateTime.Now",
+            "DateTime.UtcNow",
+            "DateTimeOffset.Now",
+            "DateTimeOffset.UtcNow",
+            "Stopwatch",
+            "Guid.NewGuid",
+            "UniqueIdHelper.Generate",
+            "File.",
+            "Directory.",
+            "HttpClient",
+            "Dapr",
+        ];
+
+        string[] violations = [.. Directory.GetFiles(serverRoot, "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .SelectMany(path => bannedSymbols
+                .Where(symbol => File.ReadAllText(path).Contains(symbol, StringComparison.Ordinal))
+                .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
+
+        violations.ShouldBeEmpty("Work item command handling and replay must remain deterministic: no clocks, generated IDs, Dapr, EventStore envelope APIs, or I/O in the server kernel.");
+    }
+
+    [Fact]
+    public void P0_WorkItemServerDependsOnlyOnContracts()
+    {
+        string root = RepositoryRoot.Locate();
+        string projectFile = Path.Combine(root, "src", "Hexalith.Works.Server", "Hexalith.Works.Server.csproj");
+        XDocument project = XDocument.Load(projectFile);
+
+        string[] projectReferences = [.. project.Descendants()
+            .Where(element => element.Name.LocalName == "ProjectReference")
+            .Select(element => element.Attribute("Include")?.Value)
+            .OfType<string>()
+            .Select(ProjectNameFromReference)];
+
+        projectReferences.ShouldBe(
+            ["Hexalith.Works.Contracts"],
+            ignoreOrder: true,
+            customMessage: "Story 1.2 keeps EventStore.Client out of the Works server kernel until a later command-pipeline/Aspire story owns the Dapr dependency decision.");
     }
 
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;
+
+    private static string ProjectNameFromReference(string include)
+    {
+        string normalized = include.Replace('\\', '/');
+        string fileName = normalized[(normalized.LastIndexOf('/') + 1)..];
+
+        return Path.GetFileNameWithoutExtension(fileName)!;
+    }
 
     private static bool IsBuildOutput(string path)
         => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
