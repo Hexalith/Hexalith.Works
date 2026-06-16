@@ -1,0 +1,64 @@
+<Solution>
+  <Folder Name="/samples/">
+    <File Path="samples/Hexalith.Works.SampleHost/Hexalith.Works.SampleHost.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path=".gitmodules" />
+    <File Path="AGENTS.md" />
+    <File Path="CLAUDE.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="Directory.Packages.props" />
+    <File Path="aspire.config.json" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+    <File Path="CHANGELOG.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Builds/">
+    <File Path="Hexalith.Builds/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Commons/">
+    <File Path="Hexalith.Commons/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.PolymorphicSerializations/">
+    <File Path="Hexalith.PolymorphicSerializations/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.EventStore/">
+    <File Path="Hexalith.EventStore/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.FrontComposer/">
+    <File Path="Hexalith.FrontComposer/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Parties/">
+    <File Path="Hexalith.Parties/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Tenants/">
+    <File Path="Hexalith.Tenants/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Chatbot/">
+    <File Path="Hexalith.Chatbot/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Projects/">
+    <File Path="Hexalith.Projects/README.md" />
+  </Folder>
+  <Folder Name="/Hexalith.Conversations/">
+    <File Path="Hexalith.Conversations/README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj" />
+    <File Path="src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" />
+    <File Path="src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj" />
+    <File Path="src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj" />
+    <File Path="src/Hexalith.Works.Server/Hexalith.Works.Server.csproj" />
+    <File Path="src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <File Path="tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj" />
+    <File Path="tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" />
+    <File Path="tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj" />
+    <File Path="tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj" />
+    <File Path="tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj" />
+  </Folder>
+</Solution>

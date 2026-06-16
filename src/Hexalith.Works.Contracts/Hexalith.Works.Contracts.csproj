@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Stable Hexalith Works contract types for work item commands, events, query models, results, and value objects.</Description>
+    <PackageTags>works;contracts;work-items;eventsourcing;dotnet</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Contracts\Hexalith.EventStore.Contracts.csproj" Condition="'$(EnableEventStoreContractsReference)' == 'true'" AdditionalProperties="NuGetAudit=false" />
+  </ItemGroup>
+
+</Project>

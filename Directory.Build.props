@@ -1,0 +1,48 @@
+<Project>
+
+  <PropertyGroup>
+    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)Hexalith.EventStore</HexalithEventStoreRoot>
+    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.EventStore</HexalithEventStoreRoot>
+    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.Tenants</HexalithTenantsRoot>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>false</NuGetAudit>
+    <NoWarn>$(NoWarn);NU5118;NU5128</NoWarn>
+
+    <IsPackable>true</IsPackable>
+    <IsPublishable>false</IsPublishable>
+
+    <Authors>Hexalith Contributors</Authors>
+    <Company>Hexalith</Company>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/Hexalith/Hexalith.Works</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Hexalith/Hexalith.Works</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Description>Hexalith work item domain module for .NET</Description>
+    <PackageTags>works;work-items;dapr;eventsourcing;cqrs;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+    <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <Target Name="RemoveDuplicateLoggingSourceGenerator" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Gen.Logging'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

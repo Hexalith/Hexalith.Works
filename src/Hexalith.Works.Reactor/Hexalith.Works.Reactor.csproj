@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

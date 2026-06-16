@@ -1,0 +1,495 @@
+{
+  "epic_path": "/home/administrator/projects/hexalith/works/_bmad-output/planning-artifacts/epics.md",
+  "epic_name": "Hexalith.Works - Epic Breakdown",
+  "story_count": 21,
+  "story_ids_csv": "1.1,1.2,1.3,1.4,2.1,2.2,2.3,2.4,2.5,3.1,3.2,3.3,3.4,3.5,3.6,4.1,4.2,4.3,4.4,4.5,4.6",
+  "range_json": {
+    "ok": true,
+    "indices": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21
+    ],
+    "storyIds": [
+      "1.1",
+      "1.2",
+      "1.3",
+      "1.4",
+      "2.1",
+      "2.2",
+      "2.3",
+      "2.4",
+      "2.5",
+      "3.1",
+      "3.2",
+      "3.3",
+      "3.4",
+      "3.5",
+      "3.6",
+      "4.1",
+      "4.2",
+      "4.3",
+      "4.4",
+      "4.5",
+      "4.6"
+    ],
+    "count": 21
+  },
+  "selected_ids": [
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4",
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "3.1",
+    "3.2",
+    "3.3",
+    "3.4",
+    "3.5",
+    "3.6",
+    "4.1",
+    "4.2",
+    "4.3",
+    "4.4",
+    "4.5",
+    "4.6"
+  ],
+  "selected_count": 21,
+  "stories_json": [
+    {
+      "storyId": "1.1",
+      "title": "Set Up Initial Project from Starter Template",
+      "complexity": {
+        "score": 9,
+        "level": "High",
+        "reasons": [
+          "Backend + Frontend combined",
+          "Infrastructure changes",
+          "Accessibility requirements",
+          "Integration testing required",
+          "Configuration/feature flags",
+          "High AC count (26)"
+        ]
+      }
+    },
+    {
+      "storyId": "1.2",
+      "title": "Create a Tenant-Scoped Work Item",
+      "complexity": {
+        "score": 7,
+        "level": "Medium",
+        "reasons": [
+          "Complex database operations",
+          "Complex forms",
+          "Integration testing required",
+          "Configuration/feature flags",
+          "High AC count (22)"
+        ]
+      }
+    },
+    {
+      "storyId": "1.3",
+      "title": "Reference Sibling Modules Without Copying Data",
+      "complexity": {
+        "score": 9,
+        "level": "High",
+        "reasons": [
+          "Complex database operations",
+          "Authorization/permissions",
+          "Infrastructure changes",
+          "Performance optimization",
+          "Integration testing required",
+          "Configuration/feature flags",
+          "Documentation/config only",
+          "High AC count (22)"
+        ]
+      }
+    },
+    {
+      "storyId": "1.4",
+      "title": "Expose Boundary Ports and Decision Record",
+      "complexity": {
+        "score": 10,
+        "level": "High",
+        "reasons": [
+          "Authorization/permissions",
+          "Infrastructure changes",
+          "Charts/visualization",
+          "Integration testing required",
+          "Complex test setup",
+          "Configuration/feature flags",
+          "High AC count (21)"
+        ]
+      }
+    },
+    {
+      "storyId": "2.1",
+      "title": "Define the Lifecycle State Machine",
+      "complexity": {
+        "score": 5,
+        "level": "Medium",
+        "reasons": [
+          "Complex state management",
+          "Complex error handling",
+          "Configuration/feature flags",
+          "High AC count (29)"
+        ]
+      }
+    },
+    {
+      "storyId": "2.2",
+      "title": "Record Raw-Act Events and Replay State",
+      "complexity": {
+        "score": 8,
+        "level": "High",
+        "reasons": [
+          "Complex database operations",
+          "Accessibility requirements",
+          "Integration testing required",
+          "Logging/monitoring/observability",
+          "Configuration/feature flags",
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "2.3",
+      "title": "Report Progress with Unit-Tagged Burn-Down",
+      "complexity": {
+        "score": 2,
+        "level": "Low",
+        "reasons": [
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "2.4",
+      "title": "Re-Estimate and Reschedule Work",
+      "complexity": {
+        "score": 3,
+        "level": "Low",
+        "reasons": [
+          "Accessibility requirements",
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "2.5",
+      "title": "Complete, Cancel, Reject, and Expire Work",
+      "complexity": {
+        "score": 5,
+        "level": "Medium",
+        "reasons": [
+          "Complex database operations",
+          "Complex error handling",
+          "High AC count (29)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.1",
+      "title": "Guard Tenant-Safe Work Tree Shape",
+      "complexity": {
+        "score": 7,
+        "level": "Medium",
+        "reasons": [
+          "Real-time communication",
+          "Authorization/permissions",
+          "Complex forms",
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.2",
+      "title": "Spawn Child Work from a Parent",
+      "complexity": {
+        "score": 5,
+        "level": "Medium",
+        "reasons": [
+          "Authorization/permissions",
+          "Configuration/feature flags",
+          "High AC count (19)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.3",
+      "title": "Maintain Recursive Roll-Up with Per-Child Sequence",
+      "complexity": {
+        "score": 7,
+        "level": "Medium",
+        "reasons": [
+          "Real-time communication",
+          "Complex database operations",
+          "Integration testing required",
+          "High AC count (24)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.4",
+      "title": "Preserve Heterogeneous Unit Subtotals",
+      "complexity": {
+        "score": 4,
+        "level": "Medium",
+        "reasons": [
+          "Real-time communication",
+          "High AC count (23)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.5",
+      "title": "Suspend and Resume on Await-Conditions",
+      "complexity": {
+        "score": 5,
+        "level": "Medium",
+        "reasons": [
+          "Complex database operations",
+          "Internationalization",
+          "High AC count (29)"
+        ]
+      }
+    },
+    {
+      "storyId": "3.6",
+      "title": "Cascade Terminal Work Through Active Descendants",
+      "complexity": {
+        "score": 8,
+        "level": "High",
+        "reasons": [
+          "Real-time communication",
+          "Complex database operations",
+          "Complex error handling",
+          "Internationalization",
+          "High AC count (24)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.1",
+      "title": "Bind Work to a Uniform Party Executor",
+      "complexity": {
+        "score": 5,
+        "level": "Medium",
+        "reasons": [
+          "Complex forms",
+          "Accessibility requirements",
+          "Integration testing required",
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.2",
+      "title": "Assign, Reassign, and Hand Off Work",
+      "complexity": {
+        "score": 3,
+        "level": "Low",
+        "reasons": [
+          "Configuration/feature flags",
+          "High AC count (20)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.3",
+      "title": "Claim Queued Work with Single-Claim-Wins",
+      "complexity": {
+        "score": 4,
+        "level": "Medium",
+        "reasons": [
+          "Logging/monitoring/observability",
+          "Configuration/feature flags",
+          "High AC count (19)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.4",
+      "title": "Resolve the Tenant's What's Next Queue",
+      "complexity": {
+        "score": 4,
+        "level": "Medium",
+        "reasons": [
+          "Authorization/permissions",
+          "High AC count (19)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.5",
+      "title": "Prove the Command/Event Pipeline Under Aspire",
+      "complexity": {
+        "score": 7,
+        "level": "Medium",
+        "reasons": [
+          "Infrastructure changes",
+          "Integration testing required",
+          "Logging/monitoring/observability",
+          "Configuration/feature flags",
+          "High AC count (16)"
+        ]
+      }
+    },
+    {
+      "storyId": "4.6",
+      "title": "Prove Reminder and Reactor Recovery",
+      "complexity": {
+        "score": 11,
+        "level": "High",
+        "reasons": [
+          "Real-time communication",
+          "Complex database operations",
+          "Infrastructure changes",
+          "Complex error handling",
+          "Internationalization",
+          "Configuration/feature flags",
+          "High AC count (25)"
+        ]
+      }
+    }
+  ],
+  "epic_id": "1",
+  "first_story_id": "1.1",
+  "custom_instructions": "",
+  "preflight_file": "/home/administrator/projects/hexalith/works/_bmad-output/story-automator/preflight-1-20260615T181738Z.md",
+  "skip_automate": false,
+  "max_parallel": 1,
+  "primary_agent": "claude",
+  "agent_config_json": {
+    "complexityBased": false,
+    "uniform": {
+      "create": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "dev": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "auto": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "review": {
+        "primary": "claude",
+        "fallback": "codex"
+      }
+    },
+    "low": {
+      "create": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "dev": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "auto": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "review": {
+        "primary": "claude",
+        "fallback": "codex"
+      }
+    },
+    "medium": {
+      "create": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "dev": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "auto": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "review": {
+        "primary": "claude",
+        "fallback": "codex"
+      }
+    },
+    "high": {
+      "create": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "dev": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "auto": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "review": {
+        "primary": "claude",
+        "fallback": "codex"
+      }
+    },
+    "auto": {
+      "skip": false
+    }
+  },
+  "state_path": "/home/administrator/projects/hexalith/works/_bmad-output/story-automator/orchestration-1-20260615-182114.md",
+  "normalized_agent_config": {
+    "defaultPrimary": "claude",
+    "defaultFallback": "codex",
+    "perTask": {
+      "create": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "dev": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "auto": {
+        "primary": "claude",
+        "fallback": "codex"
+      },
+      "review": {
+        "primary": "claude",
+        "fallback": "codex"
+      }
+    }
+  },
+  "complexity_path": "/home/administrator/projects/hexalith/works/_bmad-output/story-automator/complexity-orchestration-1-20260615-182114.json",
+  "agents_path": "/home/administrator/projects/hexalith/works/_bmad-output/story-automator/agents/agents-orchestration-1-20260615-182114.md",
+  "marker_info": {
+    "file": "/home/administrator/projects/hexalith/works/.agents/.story-automator-active",
+    "entry": ".agents/.story-automator-active"
+  },
+  "marker_entry": ".agents/.story-automator-active",
+  "project_slug": "works",
+  "marker_heartbeat": "2026-06-15T18:23:01Z"
+}

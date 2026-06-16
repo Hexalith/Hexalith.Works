@@ -1,0 +1,63 @@
+# Top-most EditorConfig file
+root = true
+
+# All files
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# C# files
+[*.cs]
+# Naming conventions
+dotnet_naming_rule.interface_should_begin_with_i.severity = warning
+dotnet_naming_rule.interface_should_begin_with_i.symbols = interface
+dotnet_naming_rule.interface_should_begin_with_i.style = begins_with_i
+
+dotnet_naming_symbols.interface.applicable_kinds = interface
+dotnet_naming_symbols.interface.applicable_accessibilities = *
+
+dotnet_naming_style.begins_with_i.required_prefix = I
+dotnet_naming_style.begins_with_i.capitalization = pascal_case
+
+dotnet_naming_rule.private_field_should_begin_with_underscore.severity = warning
+dotnet_naming_rule.private_field_should_begin_with_underscore.symbols = private_field
+dotnet_naming_rule.private_field_should_begin_with_underscore.style = underscore_camel_case
+
+dotnet_naming_symbols.private_field.applicable_kinds = field
+dotnet_naming_symbols.private_field.applicable_accessibilities = private
+
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+
+dotnet_naming_rule.async_methods_should_end_with_async.severity = warning
+dotnet_naming_rule.async_methods_should_end_with_async.symbols = async_methods
+dotnet_naming_rule.async_methods_should_end_with_async.style = ends_with_async
+
+dotnet_naming_symbols.async_methods.applicable_kinds = method
+dotnet_naming_symbols.async_methods.required_modifiers = async
+
+dotnet_naming_style.ends_with_async.required_suffix = Async
+dotnet_naming_style.ends_with_async.capitalization = pascal_case
+
+# Code style
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_using_directive_placement = outside_namespace:warning
+dotnet_sort_system_directives_first = true
+
+# Formatting
+csharp_new_line_before_open_brace = all:warning
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Analyzer severity: warning (not error) for scaffolding phase
+# These can be escalated to error once codebase matures
+dotnet_diagnostic.CA1062.severity = warning
+dotnet_diagnostic.CA1822.severity = warning
+dotnet_diagnostic.CA2007.severity = warning
+
+# Suppress specific analyzers that conflict with scaffolding
+dotnet_diagnostic.CA1014.severity = none
