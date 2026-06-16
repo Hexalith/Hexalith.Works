@@ -1,3 +1,107 @@
+# Test Automation Summary — Story 2.5 (Complete, Cancel, Reject, and Expire Work)
+
+Workflow: `bmad-qa-generate-e2e-tests`. Framework reused: **xUnit v3 + Shouldly**, Tier-1 domain and
+contract-flow tests. Story 2.5 required no new production payloads or lifecycle table changes: the
+existing aggregate and `docs/lifecycle-transition-matrix.md` already matched the terminal-state
+semantics. This run strengthened focused verification around completion, cancel, terminal rejection,
+planning-act guards, and expiry purity.
+
+Story 2.4 final baseline was **289** green tests (UnitTests 217, IntegrationTests 45,
+ArchitectureTests 26, PropertyTests 1). Story 2.5 adds **+43** unit test cases and keeps integration,
+architecture, and property counts stable, raising the total to **332** green. (The automated review
+added 8 cases on top of the original 35 to close a reject-disambiguation coverage gap; see below.)
+
+## Gaps closed this run
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemLifecycleTests.Cancel_from_each_non_terminal_status_emits_cancelled_and_replay_rests_terminal`
+  — covers cancel from `Created`, `Assigned`, `Queued`, `InProgress`, and `Suspended`, asserting
+  `WorkItemCancelled`, `Sequence + 1`, and replay to terminal `Cancelled`.
+- [x] `WorkItemLifecycleTests.Expire_from_each_non_terminal_status_emits_expired_and_replay_rests_terminal`
+  — covers expiry from `Created`, `Assigned`, `Queued`, `InProgress`, and `Suspended`, asserting
+  `WorkItemExpired`, `Sequence + 1`, and replay to terminal `Expired` without aggregate clock input.
+- [x] `WorkItemLifecycleTests.Commands_after_cancel_are_rejected_and_leave_state_unchanged`
+  — covers post-cancel progress, reschedule, assign, queue, claim, suspend, resume, complete, reject,
+  and expire; every command returns `WorkItemTransitionRejected` and preserves status, effort,
+  schedule, binding, and sequence.
+- [x] `WorkItemLifecycleTests.Planning_acts_from_terminal_statuses_are_transition_rejections`
+  — proves `ReEstimate` and `RescheduleWorkItem` reject from `Completed`, `Cancelled`, `Rejected`,
+  and `Expired` without sequence advancement.
+- [x] `WorkItemLifecycleTests.Noop_results_have_no_events_and_rejections_never_mix_success_payloads`
+  — confirms terminal no-op results carry no events and illegal terminal commands return rejection-only
+  payloads.
+- [x] `WorkItemLifecycleTests.Reject_without_explicit_requeue_uses_default_requeue_and_rests_at_queued`
+  — proves the public default `RejectWorkItem(TenantId, WorkItemId)` path emits `WorkItemRejected`
+  with `Requeue = true`, advances sequence once, and replays to `Queued` for reassignment.
+- [x] `WorkItemProgressTests.Progress_driven_completion_rejects_later_non_idempotent_terminal_commands`
+  — after Remaining reaches zero and `WorkItemCompleted` replays, later progress, assignment,
+  reschedule, and suspend commands are rejected and do not advance sequence.
+- [x] `WorkItemProgressTests.Progress_driven_completion_noops_only_exact_duplicate_complete`
+  — confirms exact duplicate completion is the idempotent no-op after progress-driven completion.
+- [x] `WorkItemLifecycleTests.Default_reject_from_any_non_assigned_status_is_a_transition_rejection_and_never_reopens`
+  — **(added by automated review)** proves a default `RejectWorkItem` from `Created`, `Queued`,
+  `InProgress`, `Suspended`, `Completed`, `Cancelled`, `Rejected`, and `Expired` returns a
+  `WorkItemTransitionRejected` (never a `WorkItemRejected`, never a no-op) and leaves status/sequence
+  unchanged. Closes the gap where the data-driven matrix Theory excludes the `Reject` act, so the
+  Task 4 claim that a requeue reject of an already-`Rejected` item never reopens it was unverified.
+
+### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`)
+
+- [x] `ScaffoldGovernanceTests.P0_WorkItemKernelRemainsPure` now scans `Contracts`, `Server`, and
+  `Projections`, and explicitly bans clock/timer APIs, generated IDs, Dapr, HTTP, and filesystem
+  calls in the domain kernel. This covers expiry as an adapter-fired signal with no aggregate clock.
+
+## Story 2.5 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **260/260** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **45/45** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed.
+
+### Story 2.5 Test Counts
+
+| Suite | Story 2.4 Final | Story 2.5 Final | Delta |
+|-------|----------------:|----------------:|------:|
+| UnitTests | 217 | **260** | +43 |
+| IntegrationTests | 45 | **45** | — |
+| ArchitectureTests | 26 | **26** | — |
+| PropertyTests | 1 | **1** | — |
+| **Total** | **289** | **332** | **+43** |
+
+## Notes
+
+- No production code or documentation matrix changes were required; Story 2.5 behavior was already
+  encoded in `WorkItemLifecycle`, `WorkItemAggregate`, `WorkItemState`, and
+  `docs/lifecycle-transition-matrix.md`.
+- `WorkItemV1Catalog.Count` remains **31**. Terminal events and commands already existed in the v1
+  catalog and golden corpus, so no new fixtures were generated.
+
+### Checklist
+
+- [x] API/contract tests generated (work-item command -> aggregate -> event/rejection -> replay; JSON
+  contract-flow coverage already exists for terminal success and rejection payloads).
+- [x] E2E/UI tests marked not applicable (Story 2.5 is pure Contracts + Server + Tier-1; no UI/browser
+  surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly).
+- [x] Tests cover happy paths (complete, cancel, reject default requeue/non-requeue, expire).
+- [x] Tests cover critical error/edge cases (post-terminal rejections, closed no-op list, post-cancel
+  rejection, planning-act terminal guards, expiry purity).
+- [x] All generated tests run successfully (332/332).
+- [x] Tests use clear descriptions and semantic assertions.
+- [x] No hardcoded waits or sleeps.
+- [x] Tests are independent and arrange their own replayed state.
+- [x] Test summary includes coverage metrics.
+
+---
+
 # Test Automation Summary — Story 2.4 (Re-Estimate and Reschedule Work)
 
 Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code

@@ -191,7 +191,12 @@ public sealed class ScaffoldGovernanceTests
     public void P0_WorkItemKernelRemainsPure()
     {
         string root = RepositoryRoot.Locate();
-        string serverRoot = Path.Combine(root, "src", "Hexalith.Works.Server");
+        string[] kernelRoots =
+        [
+            Path.Combine(root, "src", "Hexalith.Works.Contracts"),
+            Path.Combine(root, "src", "Hexalith.Works.Server"),
+            Path.Combine(root, "src", "Hexalith.Works.Projections"),
+        ];
         string[] bannedSymbols =
         [
             "DateTime.Now",
@@ -199,6 +204,9 @@ public sealed class ScaffoldGovernanceTests
             "DateTimeOffset.Now",
             "DateTimeOffset.UtcNow",
             "Stopwatch",
+            "PeriodicTimer",
+            "Task.Delay",
+            "System.Threading.Timer",
             "Guid.NewGuid",
             "UniqueIdHelper.Generate",
             "File.",
@@ -207,13 +215,14 @@ public sealed class ScaffoldGovernanceTests
             "Dapr",
         ];
 
-        string[] violations = [.. Directory.GetFiles(serverRoot, "*.cs", SearchOption.AllDirectories)
+        string[] violations = [.. kernelRoots
+            .SelectMany(path => Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories))
             .Where(path => !IsBuildOutput(path))
             .SelectMany(path => bannedSymbols
                 .Where(symbol => File.ReadAllText(path).Contains(symbol, StringComparison.Ordinal))
                 .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
 
-        violations.ShouldBeEmpty("Work item command handling and replay must remain deterministic: no clocks, generated IDs, Dapr, EventStore envelope APIs, or I/O in the server kernel.");
+        violations.ShouldBeEmpty("Work item command handling, expiry, projection, and replay must remain deterministic: no clocks, timers, generated IDs, Dapr, EventStore envelope APIs, or I/O in the domain kernel.");
     }
 
     [Fact]

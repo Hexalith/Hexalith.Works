@@ -223,6 +223,46 @@ public sealed class WorkItemProgressTests
         state.Sequence.ShouldBe(sequenceBefore + 2);
     }
 
+    [Theory]
+    [InlineData(nameof(ReportProgress), nameof(ReportProgress))]
+    [InlineData(nameof(AssignWorkItem), "Assign")]
+    [InlineData(nameof(RescheduleWorkItem), nameof(RescheduleWorkItem))]
+    [InlineData(nameof(SuspendWorkItem), "Suspend")]
+    public void Progress_driven_completion_rejects_later_non_idempotent_terminal_commands(string commandName, string expectedAct)
+    {
+        WorkItemState state = EstimatedInProgress(estimated: 8m, done: 5m);
+        DomainResult completion = WorkItemAggregate.Handle(new ReportProgress(Tenant, Item, 3m, Hour), state);
+        state.Apply(completion.Events[0].ShouldBeOfType<ProgressReported>());
+        state.Apply(completion.Events[1].ShouldBeOfType<WorkItemCompleted>());
+        long sequenceAfterCompletion = state.Sequence;
+
+        DomainResult result = InvokeNamed(commandName, state);
+
+        result.IsRejection.ShouldBeTrue();
+        WorkItemTransitionRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(WorkItemStatus.Completed);
+        rejection.AttemptedAct.ShouldBe(expectedAct);
+        state.Status.ShouldBe(WorkItemStatus.Completed);
+        state.Sequence.ShouldBe(sequenceAfterCompletion);
+    }
+
+    [Fact]
+    public void Progress_driven_completion_noops_only_exact_duplicate_complete()
+    {
+        WorkItemState state = EstimatedInProgress(estimated: 8m, done: 5m);
+        DomainResult completion = WorkItemAggregate.Handle(new ReportProgress(Tenant, Item, 3m, Hour), state);
+        state.Apply(completion.Events[0].ShouldBeOfType<ProgressReported>());
+        state.Apply(completion.Events[1].ShouldBeOfType<WorkItemCompleted>());
+        long sequenceAfterCompletion = state.Sequence;
+
+        DomainResult duplicateComplete = WorkItemAggregate.Handle(new CompleteWorkItem(Tenant, Item), state);
+
+        duplicateComplete.IsNoOp.ShouldBeTrue();
+        duplicateComplete.Events.ShouldBeEmpty();
+        state.Status.ShouldBe(WorkItemStatus.Completed);
+        state.Sequence.ShouldBe(sequenceAfterCompletion);
+    }
+
     private static WorkItemState EstimatedInProgress(decimal estimated = 8m, decimal done = 0m)
     {
         var state = new WorkItemState();
@@ -240,4 +280,14 @@ public sealed class WorkItemProgressTests
         state.Apply(new WorkItemClaimed(Item.Value, 3, Tenant, Item, WorkItemStateBuilder.DefaultBinding()));
         return state;
     }
+
+    private static DomainResult InvokeNamed(string commandName, WorkItemState state)
+        => commandName switch
+        {
+            nameof(ReportProgress) => WorkItemAggregate.Handle(new ReportProgress(Tenant, Item, 1m, Hour), state),
+            nameof(AssignWorkItem) => WorkItemAggregate.Handle(new AssignWorkItem(Tenant, Item, WorkItemStateBuilder.DefaultBinding()), state),
+            nameof(RescheduleWorkItem) => WorkItemAggregate.Handle(new RescheduleWorkItem(Tenant, Item, new WorkItemSchedule(Priority.Normal)), state),
+            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state),
+            _ => throw new ArgumentOutOfRangeException(nameof(commandName), commandName, "Unhandled test command."),
+        };
 }

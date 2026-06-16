@@ -286,6 +286,123 @@ public sealed class WorkItemLifecycleTests
         WorkItemAggregate.Handle(new RejectWorkItem(Tenant, Item, Requeue: false), rejected).IsNoOp.ShouldBeTrue();
     }
 
+    [Theory]
+    [InlineData(WorkItemStatus.Created)]
+    [InlineData(WorkItemStatus.Assigned)]
+    [InlineData(WorkItemStatus.Queued)]
+    [InlineData(WorkItemStatus.InProgress)]
+    [InlineData(WorkItemStatus.Suspended)]
+    public void Cancel_from_each_non_terminal_status_emits_cancelled_and_replay_rests_terminal(WorkItemStatus status)
+    {
+        WorkItemState state = WorkItemStateBuilder.InStatus(status, Tenant, Item);
+        long sequenceBefore = state.Sequence;
+
+        DomainResult result = WorkItemAggregate.Handle(new CancelWorkItem(Tenant, Item), state);
+
+        result.IsSuccess.ShouldBeTrue();
+        WorkItemCancelled cancelled = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemCancelled>();
+        cancelled.Sequence.ShouldBe(sequenceBefore + 1);
+        state.Apply(cancelled);
+        state.Status.ShouldBe(WorkItemStatus.Cancelled);
+        state.Sequence.ShouldBe(sequenceBefore + 1);
+    }
+
+    [Theory]
+    [InlineData(WorkItemStatus.Created)]
+    [InlineData(WorkItemStatus.Assigned)]
+    [InlineData(WorkItemStatus.Queued)]
+    [InlineData(WorkItemStatus.InProgress)]
+    [InlineData(WorkItemStatus.Suspended)]
+    public void Expire_from_each_non_terminal_status_emits_expired_and_replay_rests_terminal(WorkItemStatus status)
+    {
+        WorkItemState state = WorkItemStateBuilder.InStatus(status, Tenant, Item);
+        long sequenceBefore = state.Sequence;
+
+        DomainResult result = WorkItemAggregate.Handle(new ExpireWorkItem(Tenant, Item), state);
+
+        result.IsSuccess.ShouldBeTrue();
+        WorkItemExpired expired = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemExpired>();
+        expired.Sequence.ShouldBe(sequenceBefore + 1);
+        state.Apply(expired);
+        state.Status.ShouldBe(WorkItemStatus.Expired);
+        state.Sequence.ShouldBe(sequenceBefore + 1);
+    }
+
+    [Theory]
+    [InlineData(nameof(ReportProgress))]
+    [InlineData(nameof(RescheduleWorkItem))]
+    [InlineData(nameof(AssignWorkItem))]
+    [InlineData(nameof(QueueWorkItem))]
+    [InlineData(nameof(ClaimWorkItem))]
+    [InlineData(nameof(SuspendWorkItem))]
+    [InlineData(nameof(ResumeWorkItem))]
+    [InlineData(nameof(CompleteWorkItem))]
+    [InlineData(nameof(RejectWorkItem))]
+    [InlineData(nameof(ExpireWorkItem))]
+    public void Commands_after_cancel_are_rejected_and_leave_state_unchanged(string commandName)
+    {
+        WorkItemState state = RichCancelledState();
+        long sequenceBefore = state.Sequence;
+        WorkItemEffort effortBefore = state.InitialEffort.ShouldNotBeNull();
+        WorkItemSchedule scheduleBefore = state.Schedule.ShouldNotBeNull();
+        ExecutorBinding bindingBefore = state.ExecutorBinding.ShouldNotBeNull();
+
+        DomainResult result = InvokeNamed(commandName, state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        WorkItemTransitionRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(WorkItemStatus.Cancelled);
+        state.Status.ShouldBe(WorkItemStatus.Cancelled);
+        state.InitialEffort.ShouldBe(effortBefore);
+        state.Schedule.ShouldBe(scheduleBefore);
+        state.ExecutorBinding.ShouldBe(bindingBefore);
+        state.Sequence.ShouldBe(sequenceBefore);
+    }
+
+    [Theory]
+    [InlineData(WorkItemStatus.Completed, nameof(ReEstimate))]
+    [InlineData(WorkItemStatus.Completed, nameof(RescheduleWorkItem))]
+    [InlineData(WorkItemStatus.Cancelled, nameof(ReEstimate))]
+    [InlineData(WorkItemStatus.Cancelled, nameof(RescheduleWorkItem))]
+    [InlineData(WorkItemStatus.Rejected, nameof(ReEstimate))]
+    [InlineData(WorkItemStatus.Rejected, nameof(RescheduleWorkItem))]
+    [InlineData(WorkItemStatus.Expired, nameof(ReEstimate))]
+    [InlineData(WorkItemStatus.Expired, nameof(RescheduleWorkItem))]
+    public void Planning_acts_from_terminal_statuses_are_transition_rejections(WorkItemStatus status, string commandName)
+    {
+        WorkItemState state = WorkItemStateBuilder.InStatus(status, Tenant, Item);
+        long sequenceBefore = state.Sequence;
+
+        DomainResult result = InvokeNamed(commandName, state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        WorkItemTransitionRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(status);
+        rejection.AttemptedAct.ShouldBe(commandName);
+        rejection.GetType().GetProperty("Sequence").ShouldBeNull();
+        state.Status.ShouldBe(status);
+        state.Sequence.ShouldBe(sequenceBefore);
+    }
+
+    [Fact]
+    public void Noop_results_have_no_events_and_rejections_never_mix_success_payloads()
+    {
+        WorkItemState completed = WorkItemStateBuilder.InStatus(WorkItemStatus.Completed, Tenant, Item);
+
+        DomainResult noop = WorkItemAggregate.Handle(new CompleteWorkItem(Tenant, Item), completed);
+        noop.IsNoOp.ShouldBeTrue();
+        noop.Events.ShouldBeEmpty();
+
+        DomainResult rejection = WorkItemAggregate.Handle(new CancelWorkItem(Tenant, Item), completed);
+        rejection.IsRejection.ShouldBeTrue();
+        rejection.IsSuccess.ShouldBeFalse();
+        rejection.Events.ShouldHaveSingleItem().ShouldBeAssignableTo<IRejectionEvent>();
+        rejection.Events.Any(e => e is WorkItemCompleted or WorkItemCancelled or WorkItemRejected or WorkItemExpired).ShouldBeFalse();
+        completed.Status.ShouldBe(WorkItemStatus.Completed);
+    }
+
     // AC #5 — reject-with-requeue rests at Queued; reject-without-requeue reaches terminal Rejected.
     [Fact]
     public void Reject_requeue_rests_at_queued_and_non_requeue_reaches_terminal_rejected()
@@ -303,6 +420,54 @@ public sealed class WorkItemLifecycleTests
         terminalEvent.Requeue.ShouldBeFalse();
         terminal.Apply(terminalEvent);
         terminal.Status.ShouldBe(WorkItemStatus.Rejected);
+    }
+
+    [Fact]
+    public void Reject_without_explicit_requeue_uses_default_requeue_and_rests_at_queued()
+    {
+        WorkItemState state = Assigned();
+        long sequenceBefore = state.Sequence;
+
+        WorkItemRejected rejected = WorkItemAggregate.Handle(new RejectWorkItem(Tenant, Item), state)
+            .Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemRejected>();
+
+        rejected.Requeue.ShouldBeTrue();
+        rejected.Sequence.ShouldBe(sequenceBefore + 1);
+        state.Apply(rejected);
+        state.Status.ShouldBe(WorkItemStatus.Queued);
+        state.Sequence.ShouldBe(sequenceBefore + 1);
+    }
+
+    // AC #4/#5 — Reject is legal only from Assigned. The data-driven matrix Theory deliberately excludes
+    // the flag-dependent Reject act, so this is the only place that proves a default (requeue) reject from
+    // every other status is a WorkItemTransitionRejected — never a WorkItemRejected and never a reopen.
+    // In particular, a requeue reject of an already-Rejected item must NOT no-op or reopen the terminal item
+    // (matrix: "Rejected + Reject(requeue) = R"); the closed no-op list only covers Reject(requeue: false).
+    [Theory]
+    [InlineData(WorkItemStatus.Created)]
+    [InlineData(WorkItemStatus.Queued)]
+    [InlineData(WorkItemStatus.InProgress)]
+    [InlineData(WorkItemStatus.Suspended)]
+    [InlineData(WorkItemStatus.Completed)]
+    [InlineData(WorkItemStatus.Cancelled)]
+    [InlineData(WorkItemStatus.Rejected)]
+    [InlineData(WorkItemStatus.Expired)]
+    public void Default_reject_from_any_non_assigned_status_is_a_transition_rejection_and_never_reopens(WorkItemStatus status)
+    {
+        WorkItemState state = WorkItemStateBuilder.InStatus(status, Tenant, Item);
+        long sequenceBefore = state.Sequence;
+
+        // RejectWorkItem(Tenant, Item) defaults Requeue = true.
+        DomainResult result = WorkItemAggregate.Handle(new RejectWorkItem(Tenant, Item), state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.IsNoOp.ShouldBeFalse();
+        WorkItemTransitionRejected rejection = result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(status);
+        result.Events.Any(e => e is WorkItemRejected).ShouldBeFalse();
+        state.Status.ShouldBe(status);
+        state.Sequence.ShouldBe(sequenceBefore);
     }
 
     // Sequence tracking: a multi-event lifecycle assigns monotonically increasing sequence numbers.
@@ -358,6 +523,23 @@ public sealed class WorkItemLifecycleTests
 
     private static CreateWorkItem CreateCommand() => new(Tenant, Item, "Prepare the lifecycle work item");
 
+    private static WorkItemState RichCancelledState()
+    {
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(
+            Item.Value,
+            1,
+            Tenant,
+            Item,
+            new Obligation("Cancelled work item"),
+            new WorkItemEffort(8m, new Unit("hour"), 2m),
+            new WorkItemSchedule(Priority.High, new DateOnly(2026, 7, 15)),
+            null,
+            Binding));
+        state.Apply(new WorkItemCancelled(Item.Value, 2, Tenant, Item));
+        return state;
+    }
+
     private static DomainResult Invoke(Act act, WorkItemState? state)
         => act switch
         {
@@ -370,6 +552,23 @@ public sealed class WorkItemLifecycleTests
             Act.Cancel => WorkItemAggregate.Handle(new CancelWorkItem(Tenant, Item), state),
             Act.Expire => WorkItemAggregate.Handle(new ExpireWorkItem(Tenant, Item), state),
             _ => throw new ArgumentOutOfRangeException(nameof(act)),
+        };
+
+    private static DomainResult InvokeNamed(string commandName, WorkItemState state)
+        => commandName switch
+        {
+            nameof(ReportProgress) => WorkItemAggregate.Handle(new ReportProgress(Tenant, Item, 1m, new Unit("hour")), state),
+            nameof(ReEstimate) => WorkItemAggregate.Handle(new ReEstimate(Tenant, Item, 5m, new Unit("hour")), state),
+            nameof(RescheduleWorkItem) => WorkItemAggregate.Handle(new RescheduleWorkItem(Tenant, Item, new WorkItemSchedule(Priority.Normal)), state),
+            nameof(AssignWorkItem) => WorkItemAggregate.Handle(new AssignWorkItem(Tenant, Item, Binding), state),
+            nameof(QueueWorkItem) => WorkItemAggregate.Handle(new QueueWorkItem(Tenant, Item), state),
+            nameof(ClaimWorkItem) => WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, Binding), state),
+            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state),
+            nameof(ResumeWorkItem) => WorkItemAggregate.Handle(new ResumeWorkItem(Tenant, Item), state),
+            nameof(CompleteWorkItem) => WorkItemAggregate.Handle(new CompleteWorkItem(Tenant, Item), state),
+            nameof(RejectWorkItem) => WorkItemAggregate.Handle(new RejectWorkItem(Tenant, Item), state),
+            nameof(ExpireWorkItem) => WorkItemAggregate.Handle(new ExpireWorkItem(Tenant, Item), state),
+            _ => throw new ArgumentOutOfRangeException(nameof(commandName), commandName, "Unhandled test command."),
         };
 
     private static void AssertOutcome(DomainResult result, Expect expect, WorkItemStatus from, WorkItemStatus target, WorkItemState state, long sequenceBefore)
