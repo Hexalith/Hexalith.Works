@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+    <ProjectReference Include="..\..\src\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
   </ItemGroup>

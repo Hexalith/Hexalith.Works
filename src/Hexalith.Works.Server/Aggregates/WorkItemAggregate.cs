@@ -111,7 +111,7 @@ public static class WorkItemAggregate
                 sequence + 1,
                 command.TenantId,
                 command.WorkItemId,
-                new AwaitCondition(command.ChildWorkItemId)),
+                [new AwaitCondition(command.ChildWorkItemId)]),
         ]);
     }
 
@@ -175,11 +175,16 @@ public static class WorkItemAggregate
         ArgumentNullException.ThrowIfNull(command.WorkItemId);
 
         WorkItemStatus from = CurrentStatus(state);
+        if (command.AwaitConditions is not { Count: > 0 } || command.AwaitConditions.Any(static condition => condition is null))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Suspend));
+        }
+
         LifecycleOutcome outcome = WorkItemLifecycle.Decide(from, LifecycleAct.Suspend);
         return outcome.Decision switch
         {
             LifecycleDecision.Accept => DomainResult.Success([
-                new WorkItemSuspended(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId)]),
+                new WorkItemSuspended(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId, command.AwaitConditions)]),
             LifecycleDecision.NoOp => DomainResult.NoOp(),
             _ => Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Suspend)),
         };
@@ -192,11 +197,24 @@ public static class WorkItemAggregate
         ArgumentNullException.ThrowIfNull(command.WorkItemId);
 
         WorkItemStatus from = CurrentStatus(state);
+        if (from == WorkItemStatus.InProgress
+            && command.AwaitCondition is not null
+            && command.AwaitCondition == state?.LastConsumedAwaitCondition)
+        {
+            return DomainResult.NoOp();
+        }
+
+        if (from == WorkItemStatus.Suspended
+            && (command.AwaitCondition is null || state?.AwaitConditions.Contains(command.AwaitCondition) != true))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Resume));
+        }
+
         LifecycleOutcome outcome = WorkItemLifecycle.Decide(from, LifecycleAct.Resume);
         return outcome.Decision switch
         {
             LifecycleDecision.Accept => DomainResult.Success([
-                new WorkItemResumed(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId)]),
+                new WorkItemResumed(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId, command.AwaitCondition)]),
             LifecycleDecision.NoOp => DomainResult.NoOp(),
             _ => Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Resume)),
         };

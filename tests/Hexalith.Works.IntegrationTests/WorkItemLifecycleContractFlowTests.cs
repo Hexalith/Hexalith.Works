@@ -26,6 +26,7 @@ public sealed class WorkItemLifecycleContractFlowTests
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly WorkItemId Item = new("work-001");
     private static readonly ExecutorBinding Binding = new(new PartyId("party-exec"), Channel.Mcp, AuthorityLevel.Administer);
+    private static readonly AwaitCondition ResumeSignal = AwaitCondition.ExternalSignal("contract-resume-signal");
 
     // Envelope / transport fields that must never leak into a persisted domain event payload.
     private static readonly string[] EnvelopeFields =
@@ -49,10 +50,10 @@ public sealed class WorkItemLifecycleContractFlowTests
         Advance(Handle<WorkItemClaimed>(new ClaimWorkItem(Tenant, Item, Binding), write), write, replay);
         replay.Status.ShouldBe(WorkItemStatus.InProgress);
 
-        Advance(Handle<WorkItemSuspended>(new SuspendWorkItem(Tenant, Item), write), write, replay);
+        Advance(Handle<WorkItemSuspended>(SuspendCommand(), write), write, replay);
         replay.Status.ShouldBe(WorkItemStatus.Suspended);
 
-        Advance(Handle<WorkItemResumed>(new ResumeWorkItem(Tenant, Item), write), write, replay);
+        Advance(Handle<WorkItemResumed>(ResumeCommand(), write), write, replay);
         replay.Status.ShouldBe(WorkItemStatus.InProgress);
 
         Advance(Handle<WorkItemCompleted>(new CompleteWorkItem(Tenant, Item), write), write, replay);
@@ -87,8 +88,8 @@ public sealed class WorkItemLifecycleContractFlowTests
         Collect(HandleCreate(write));
         Collect(Handle<WorkItemAssigned>(new AssignWorkItem(Tenant, Item, Binding), write));
         Collect(Handle<WorkItemClaimed>(new ClaimWorkItem(Tenant, Item, Binding), write));
-        Collect(Handle<WorkItemSuspended>(new SuspendWorkItem(Tenant, Item), write));
-        Collect(Handle<WorkItemResumed>(new ResumeWorkItem(Tenant, Item), write));
+        Collect(Handle<WorkItemSuspended>(SuspendCommand(), write));
+        Collect(Handle<WorkItemResumed>(ResumeCommand(), write));
         Collect(Handle<WorkItemCompleted>(new CompleteWorkItem(Tenant, Item), write));
 
         stream.Count.ShouldBe(6); // Guard: never assert order-tolerance over an empty or short stream.
@@ -222,6 +223,10 @@ public sealed class WorkItemLifecycleContractFlowTests
             .Events
             .Single()
             .ShouldBeOfType<WorkItemCreated>();
+
+    private static SuspendWorkItem SuspendCommand() => new(Tenant, Item, [ResumeSignal]);
+
+    private static ResumeWorkItem ResumeCommand() => new(Tenant, Item, ResumeSignal);
 
     private static T Handle<T>(object command, WorkItemState state)
         where T : class

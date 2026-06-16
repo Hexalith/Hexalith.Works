@@ -178,15 +178,44 @@ public sealed class SchemaEvolutionGoldenCorpusTests
 
         WorkItemSuspended suspended = RoundTrip<WorkItemSuspended>("WorkItemSuspended.v1.json");
         AssertCommonShape(suspended.AggregateId, suspended.Sequence, suspended.TenantId, suspended.WorkItemId, 5);
+        suspended.AwaitConditions.ShouldBe([new AwaitCondition(new WorkItemId("child-001"))]);
 
         WorkItemResumed resumed = RoundTrip<WorkItemResumed>("WorkItemResumed.v1.json");
         AssertCommonShape(resumed.AggregateId, resumed.Sequence, resumed.TenantId, resumed.WorkItemId, 6);
+        resumed.ConsumedAwaitCondition.ShouldBe(new AwaitCondition(new WorkItemId("child-001")));
 
         WorkItemCancelled cancelled = RoundTrip<WorkItemCancelled>("WorkItemCancelled.v1.json");
         AssertCommonShape(cancelled.AggregateId, cancelled.Sequence, cancelled.TenantId, cancelled.WorkItemId, 8);
 
         WorkItemExpired expired = RoundTrip<WorkItemExpired>("WorkItemExpired.v1.json");
         AssertCommonShape(expired.AggregateId, expired.Sequence, expired.TenantId, expired.WorkItemId, 10);
+    }
+
+    [Fact]
+    public void Legacy_suspend_resume_payloads_without_story35_fields_deserialize_tolerantly()
+    {
+        const string suspendedJson = """
+            {
+              "aggregateId": "work-001",
+              "sequence": 5,
+              "tenantId": { "value": "tenant-alpha" },
+              "workItemId": { "value": "work-001" }
+            }
+            """;
+        const string resumedJson = """
+            {
+              "aggregateId": "work-001",
+              "sequence": 6,
+              "tenantId": { "value": "tenant-alpha" },
+              "workItemId": { "value": "work-001" }
+            }
+            """;
+
+        WorkItemSuspended suspended = JsonSerializer.Deserialize<WorkItemSuspended>(suspendedJson, Options).ShouldNotBeNull();
+        WorkItemResumed resumed = JsonSerializer.Deserialize<WorkItemResumed>(resumedJson, Options).ShouldNotBeNull();
+
+        suspended.AwaitConditions.ShouldBeEmpty();
+        resumed.ConsumedAwaitCondition.ShouldBeNull();
     }
 
     [Fact]

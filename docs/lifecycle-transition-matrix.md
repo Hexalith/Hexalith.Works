@@ -25,8 +25,8 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 | `AssignWorkItem` | Assign | `WorkItemAssigned` | Binds/rebinds an executor. |
 | `QueueWorkItem` | Queue | `WorkItemQueued` | Places into the shared pool. |
 | `ClaimWorkItem` | Claim | `WorkItemClaimed` | The only `InProgress`-entry event in the v1 catalog. |
-| `SuspendWorkItem` | Suspend | `WorkItemSuspended` | No await payload in v1 (Story 3.5). |
-| `ResumeWorkItem` | Resume | `WorkItemResumed` | Resume is a transition back to `InProgress` — there is no resting `Resumed` status. |
+| `SuspendWorkItem` | Suspend | `WorkItemSuspended` | Requires one or more await conditions and records the full set. |
+| `ResumeWorkItem` | Resume | `WorkItemResumed` | Requires a current await-condition match while `Suspended`; records the consumed condition and returns to `InProgress`. |
 | `CompleteWorkItem` | Complete | `WorkItemCompleted` | Explicit complete act. |
 | `ReportProgress` | ReportProgress | `ProgressReported` / `WorkItemCompleted` | Progress act accepted only from `InProgress` with estimated effort and matching Unit; completion is emitted when Remaining reaches zero. |
 | `ReEstimate` | ReEstimate | `ReEstimated` | Planning act accepted from every non-terminal status; records the new absolute estimate without changing `Status`. |
@@ -118,6 +118,28 @@ spend, or numeric weight field.
 
 Reschedule has no schedule-content rejection: both nullable fields may be absent. Status failures
 return `WorkItemTransitionRejected`.
+
+## Suspend / Resume Await Conditions
+
+`SuspendWorkItem` is accepted only from `InProgress` and only when the command carries at least one
+await condition. The accepted `WorkItemSuspended` event records the full await-condition set and replay
+sets `Status = Suspended` without changing own effort or roll-up contribution.
+
+Await conditions are kind-aware keys. The v1 cases are `ChildCompleted(childId)`,
+`DateReached(instant)`, and `ExternalSignal(correlationId)`. Matching compares kind plus stable
+correlation key exactly; an external signal whose key text equals a child id is still not a child
+completion condition.
+
+`ResumeWorkItem` while `Suspended` is accepted only when the supplied await condition matches one of
+the current conditions. The accepted `WorkItemResumed` consumes that one condition, clears the full
+condition set from that suspension, records the consumed condition for replay, and rests at
+`InProgress`.
+
+If a resume condition does not match the current suspended set, the command returns
+`WorkItemTransitionRejected`, emits no `WorkItemResumed`, burns no sequence number, and leaves the
+condition set intact. After a successful resume, repeating the consumed condition is the only resume
+no-op; a different post-resume condition is rejected. Date and external resumes arrive as command data;
+the aggregate never reads a clock or calls an adapter.
 
 ## Transition matrix
 

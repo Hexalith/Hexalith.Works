@@ -506,8 +506,8 @@ public sealed class WorkItemRollUpProjectionTests
             Envelope(new WorkItemAssigned(Child.Value, 2, Tenant, Child, binding)),
             Envelope(new WorkItemQueued(Child.Value, 3, Tenant, Child)),
             Envelope(new WorkItemClaimed(Child.Value, 4, Tenant, Child, binding)),
-            Envelope(new WorkItemSuspended(Child.Value, 5, Tenant, Child)),
-            Envelope(new WorkItemResumed(Child.Value, 6, Tenant, Child)),
+            Envelope(new WorkItemSuspended(Child.Value, 5, Tenant, Child, [AwaitCondition.ExternalSignal("rollup-resume")])),
+            Envelope(new WorkItemResumed(Child.Value, 6, Tenant, Child, AwaitCondition.ExternalSignal("rollup-resume"))),
             Envelope(new WorkItemRescheduled(Child.Value, 7, Tenant, Child, new WorkItemSchedule(Priority.Normal))),
         ];
 
@@ -538,6 +538,31 @@ public sealed class WorkItemRollUpProjectionTests
         projection.Get(Tenant, Child).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(4m, Hour));
         projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
         projection.Get(OtherTenant, Child).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Suspended_child_keeps_contributing_remaining_and_resume_only_flips_status()
+    {
+        // AC #2: parking a child on an await-condition is status-only. While Suspended the child still
+        // contributes its current Remaining to the parent roll-up, and a later resume changes only the
+        // status back to InProgress — it never alters Remaining.
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+
+        Project(projection, new WorkItemSuspended(Child.Value, 2, Tenant, Child, [AwaitCondition.ExternalSignal("await-approval")]));
+
+        WorkItemRollUp suspendedChild = projection.Get(Tenant, Child).ShouldNotBeNull();
+        suspendedChild.Status.ShouldBe(WorkItemStatus.Suspended);
+        suspendedChild.OwnRemaining.ShouldBe(new OwnRemaining(4m, Hour));
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
+
+        Project(projection, new WorkItemResumed(Child.Value, 3, Tenant, Child, AwaitCondition.ExternalSignal("await-approval")));
+
+        WorkItemRollUp resumedChild = projection.Get(Tenant, Child).ShouldNotBeNull();
+        resumedChild.Status.ShouldBe(WorkItemStatus.InProgress);
+        resumedChild.OwnRemaining.ShouldBe(new OwnRemaining(4m, Hour));
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
     }
 
     private static WorkItemCreated Created(

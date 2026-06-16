@@ -80,7 +80,7 @@ public sealed class WorkItemSpawnChildTests
 
         spawned.Sequence.ShouldBe(state.Sequence + 1);
         suspended.Sequence.ShouldBe(spawned.Sequence + 1);
-        suspended.AwaitCondition.ShouldBe(new AwaitCondition(Child));
+        suspended.AwaitConditions.ShouldBe([new AwaitCondition(Child)]);
 
         state.Apply(spawned);
         state.Apply(suspended);

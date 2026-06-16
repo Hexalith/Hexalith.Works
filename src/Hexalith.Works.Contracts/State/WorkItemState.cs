@@ -44,6 +44,8 @@ public sealed class WorkItemState
 
     public IReadOnlyList<AwaitCondition> AwaitConditions => _awaitConditions;
 
+    public AwaitCondition? LastConsumedAwaitCondition { get; private set; }
+
     public AggregateIdentity? AggregateIdentity => TenantId is null || WorkItemId is null
         ? null
         : new AggregateIdentity(TenantId.Value, Domain, WorkItemId.Value);
@@ -135,10 +137,8 @@ public sealed class WorkItemState
         Status = WorkItemStatus.Suspended;
         Sequence = e.Sequence;
         _awaitConditions.Clear();
-        if (e.AwaitCondition is not null)
-        {
-            _awaitConditions.Add(e.AwaitCondition);
-        }
+        _awaitConditions.AddRange(e.AwaitConditions);
+        LastConsumedAwaitCondition = null;
     }
 
     public void Apply(WorkItemResumed e)
@@ -147,6 +147,7 @@ public sealed class WorkItemState
         Status = WorkItemStatus.InProgress;
         Sequence = e.Sequence;
         _awaitConditions.Clear();
+        LastConsumedAwaitCondition = e.ConsumedAwaitCondition;
     }
 
     public void Apply(ChildSpawned e)

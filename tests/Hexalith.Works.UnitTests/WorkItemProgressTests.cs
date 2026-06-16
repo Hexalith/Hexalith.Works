@@ -16,6 +16,7 @@ public sealed class WorkItemProgressTests
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly WorkItemId Item = new("work-001");
     private static readonly Unit Hour = new("hour");
+    private static readonly AwaitCondition ResumeSignal = WorkItemStateBuilder.DefaultAwaitCondition();
 
     [Fact]
     public void ReportProgress_with_positive_delta_reduces_remaining_and_advances_sequence()
@@ -288,7 +289,7 @@ public sealed class WorkItemProgressTests
             nameof(ReportProgress) => WorkItemAggregate.Handle(new ReportProgress(Tenant, Item, 1m, Hour), state),
             nameof(AssignWorkItem) => WorkItemAggregate.Handle(new AssignWorkItem(Tenant, Item, WorkItemStateBuilder.DefaultBinding()), state),
             nameof(RescheduleWorkItem) => WorkItemAggregate.Handle(new RescheduleWorkItem(Tenant, Item, new WorkItemSchedule(Priority.Normal)), state),
-            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state),
+            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item, [ResumeSignal]), state),
             _ => throw new ArgumentOutOfRangeException(nameof(commandName), commandName, "Unhandled test command."),
         };
 }

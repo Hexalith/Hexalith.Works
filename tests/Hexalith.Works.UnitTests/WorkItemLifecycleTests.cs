@@ -37,6 +37,7 @@ public sealed class WorkItemLifecycleTests
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly WorkItemId Item = new("work-001");
     private static readonly ExecutorBinding Binding = WorkItemStateBuilder.DefaultBinding();
+    private static readonly AwaitCondition ResumeSignal = WorkItemStateBuilder.DefaultAwaitCondition();
 
     // Every (status, non-reject-command) cell of docs/lifecycle-transition-matrix.md. The Reject act is
     // exercised separately because it is the only flag-dependent column.
@@ -259,10 +260,10 @@ public sealed class WorkItemLifecycleTests
     {
         WorkItemState inProgress = WorkItemStateBuilder.InStatus(WorkItemStatus.InProgress, Tenant, Item);
 
-        WorkItemState suspended = Replay(inProgress, WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), inProgress));
+        WorkItemState suspended = Replay(inProgress, WorkItemAggregate.Handle(SuspendCommand(), inProgress));
         suspended.Status.ShouldBe(WorkItemStatus.Suspended);
 
-        WorkItemState resumed = Replay(suspended, WorkItemAggregate.Handle(new ResumeWorkItem(Tenant, Item), suspended));
+        WorkItemState resumed = Replay(suspended, WorkItemAggregate.Handle(ResumeCommand(), suspended));
         resumed.Status.ShouldBe(WorkItemStatus.InProgress);
 
         Enum.GetNames<WorkItemStatus>().ShouldNotContain("Resumed");
@@ -492,7 +493,7 @@ public sealed class WorkItemLifecycleTests
         claimed.Sequence.ShouldBe(3);
         state.Apply(claimed);
 
-        WorkItemSuspended suspended = WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state)
+        WorkItemSuspended suspended = WorkItemAggregate.Handle(SuspendCommand(), state)
             .Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemSuspended>();
         suspended.Sequence.ShouldBe(4);
         state.Apply(suspended);
@@ -506,7 +507,7 @@ public sealed class WorkItemLifecycleTests
         long before = created.Sequence;
 
         // Resume is illegal from Created -> rejection, which must not advance the stream sequence.
-        WorkItemAggregate.Handle(new ResumeWorkItem(Tenant, Item), created).IsRejection.ShouldBeTrue();
+        WorkItemAggregate.Handle(ResumeCommand(), created).IsRejection.ShouldBeTrue();
         created.Sequence.ShouldBe(before);
 
         // The next legal command therefore still claims sequence before + 1.
@@ -522,6 +523,10 @@ public sealed class WorkItemLifecycleTests
     private static WorkItemState Queued() => WorkItemStateBuilder.InStatus(WorkItemStatus.Queued, Tenant, Item);
 
     private static CreateWorkItem CreateCommand() => new(Tenant, Item, "Prepare the lifecycle work item");
+
+    private static SuspendWorkItem SuspendCommand() => new(Tenant, Item, [ResumeSignal]);
+
+    private static ResumeWorkItem ResumeCommand() => new(Tenant, Item, ResumeSignal);
 
     private static WorkItemState RichCancelledState()
     {
@@ -546,8 +551,8 @@ public sealed class WorkItemLifecycleTests
             Act.Assign => WorkItemAggregate.Handle(new AssignWorkItem(Tenant, Item, Binding), state),
             Act.Queue => WorkItemAggregate.Handle(new QueueWorkItem(Tenant, Item), state),
             Act.Claim => WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, Binding), state),
-            Act.Suspend => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state),
-            Act.Resume => WorkItemAggregate.Handle(new ResumeWorkItem(Tenant, Item), state),
+            Act.Suspend => WorkItemAggregate.Handle(SuspendCommand(), state),
+            Act.Resume => WorkItemAggregate.Handle(ResumeCommand(), state),
             Act.Complete => WorkItemAggregate.Handle(new CompleteWorkItem(Tenant, Item), state),
             Act.Cancel => WorkItemAggregate.Handle(new CancelWorkItem(Tenant, Item), state),
             Act.Expire => WorkItemAggregate.Handle(new ExpireWorkItem(Tenant, Item), state),
@@ -563,8 +568,8 @@ public sealed class WorkItemLifecycleTests
             nameof(AssignWorkItem) => WorkItemAggregate.Handle(new AssignWorkItem(Tenant, Item, Binding), state),
             nameof(QueueWorkItem) => WorkItemAggregate.Handle(new QueueWorkItem(Tenant, Item), state),
             nameof(ClaimWorkItem) => WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, Binding), state),
-            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(new SuspendWorkItem(Tenant, Item), state),
-            nameof(ResumeWorkItem) => WorkItemAggregate.Handle(new ResumeWorkItem(Tenant, Item), state),
+            nameof(SuspendWorkItem) => WorkItemAggregate.Handle(SuspendCommand(), state),
+            nameof(ResumeWorkItem) => WorkItemAggregate.Handle(ResumeCommand(), state),
             nameof(CompleteWorkItem) => WorkItemAggregate.Handle(new CompleteWorkItem(Tenant, Item), state),
             nameof(RejectWorkItem) => WorkItemAggregate.Handle(new RejectWorkItem(Tenant, Item), state),
             nameof(ExpireWorkItem) => WorkItemAggregate.Handle(new ExpireWorkItem(Tenant, Item), state),

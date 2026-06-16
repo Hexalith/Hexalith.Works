@@ -1,3 +1,139 @@
+# Test Automation Summary — Story 3.5 (Suspend and Resume on Await-Conditions)
+
+Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework
+reused: **xUnit v3 + Shouldly** for unit, integration, architecture, and property lanes. Story 3.5
+implements first-match await-condition suspension and resume in the pure domain slice, with no runtime
+dispatch, reminders, clocks, Dapr, HTTP, filesystem, or adapter I/O. There is no UI/HTTP surface; the
+executable end-to-end path is **command → `WorkItemAggregate.Handle` → durable event → concrete
+`JsonSerializerDefaults.Web` JSON → replayed `WorkItemState`** (plus the pure reactor translation), and
+that is the layer the QA pass targets.
+
+Story 3.4 baseline was **416** green tests. The Story 3.5 dev-story pass finished at **435** green tests
+(UnitTests 352, IntegrationTests 54, ArchitectureTests 28, PropertyTests 1). The QA gap-filling pass
+then added **+22** tests (+16 unit, +6 integration) to close residual branch/AC coverage gaps, raising
+the total to **457** green tests: UnitTests 368, IntegrationTests 60, ArchitectureTests 28,
+PropertyTests 1. **No production code was changed** — only test files were added/extended; the v1
+catalog and golden corpus are unchanged (the new tests exercise existing durable types through the
+aggregate, reactor, and replay, not new wire shapes).
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+All were genuine, non-redundant gaps verified against AC #1–#7 and design decisions D1–D6. The dev
+baseline already covered multi-condition suspend, invalid-source suspend rejection, keyless suspend
+rejection, suspended-progress rejection, matching/non-matching resume, the duplicate consumed-key
+no-op, kind-aware construction validation, the matching/non-matching reactor translation, and the
+ChildCompleted/ExternalSignal serialization flows. The genuine gaps were uncovered **branches**, the
+**date seam never crossing serialization**, and one explicit **AC #2 clause**:
+
+- [x] **AC #1/#3 — resume from non-suspended statuses (unit).**
+  `Resume_from_any_non_suspended_status_is_rejected_and_burns_no_sequence` (Theory ×8) proves
+  `ResumeWorkItem` is a transition rejection from `Created`, `Assigned`, `Queued`, **`InProgress`**,
+  and the four terminals, burning no sequence. The baseline only proved the suspended sources; the
+  never-suspended-`InProgress` reject branch (key ≠ a still-null last-consumed key) was uncovered.
+- [x] **AC #4 — keyless resume while suspended (unit).**
+  `Resume_while_suspended_with_no_supplied_condition_is_rejected_and_preserves_await_set` covers the
+  `AwaitCondition is null` reject branch while `Suspended` (the baseline only sent a *different* key).
+- [x] **AC #7 / D3 / D5 — the `DateReached` seam (unit + integration).** Date awaits were never
+  resumed-by-match nor serialized anywhere. Added
+  `Date_reached_resume_matches_the_same_instant_in_a_different_offset_and_replays_to_in_progress` and
+  `Date_reached_resume_one_second_off_does_not_match_and_keeps_the_item_suspended` (unit), plus a new
+  `AwaitConditionSerializationContractFlowTests` integration class proving all three kinds round-trip
+  through `System.Text.Json`, the `DateReached` UTC-normalized correlation key survives round-trip,
+  kind-aware inequality survives the boundary, and a full suspend(`DateReached`)→resume(`DateReached`)
+  flow converges to `InProgress` across serialization with UTC-offset-equivalent keys.
+- [x] **D1 — first-match consuming the child key from a mixed suspension (unit).**
+  `Matching_resume_can_consume_the_child_completion_condition_from_a_mixed_suspension` proves first-match
+  is not external-signal-specific: the child-completion key releases a multi-kind suspension and still
+  clears the whole set.
+- [x] **AC #6 / D3 / D4 — reactor translator edges (unit).** Added empty-list, multi-parent (one
+  matching / one not / one matching → two intents), and kind-collision (`ExternalSignal(child-id)` must
+  **not** match `ChildCompleted`) cases so the mechanical, kind-aware fan-out is locked in.
+- [x] **AC #2 — explicit suspended-child roll-up regression (unit).**
+  `Suspended_child_keeps_contributing_remaining_and_resume_only_flips_status` asserts the *intermediate*
+  suspended state contributes its current Remaining (parent rolled 9) and that resume changes only the
+  status — the baseline asserted only the final post-resume state.
+
+## Gaps closed by the dev-story baseline
+
+### Contracts and aggregate behavior
+
+- [x] `AwaitCondition` now carries kind-aware stable keys for `ChildCompleted(childId)`,
+  `DateReached(instant)`, and `ExternalSignal(correlationId)`.
+- [x] `SuspendWorkItem` carries one or more await conditions; the aggregate rejects keyless suspend
+  attempts and leaves state/sequence unchanged.
+- [x] `ResumeWorkItem` carries a matching condition; the aggregate accepts only current suspended-set
+  matches, rejects mismatches without sequence burn, and no-ops only duplicate consumed keys after replay.
+- [x] `WorkItemSuspended` records the full condition set and still tolerates legacy single/null payloads.
+- [x] `WorkItemResumed` records the consumed condition so duplicate detection survives rehydration.
+
+### Unit tests
+
+- [x] Added focused suspend/resume coverage for multiple conditions, invalid lifecycle sources,
+  keyless suspend rejection, suspended progress rejection with Remaining retained, matching resume,
+  non-matching resume, duplicate consumed-key no-op, and kind-aware construction validation.
+- [x] Added pure reactor tests proving child-completion input translates to parent `ResumeWorkItem`
+  intents only for matching `ChildCompleted(childId)` conditions and carries no parent-status decision.
+- [x] Updated lifecycle, progress, spawn-child, and roll-up regression tests to use condition-carrying
+  suspend/resume events while preserving Story 3.2/3.3/3.4 behavior.
+
+### Integration, serialization, and docs
+
+- [x] Updated lifecycle contract-flow tests to serialize real await-condition suspend/resume commands.
+- [x] Updated polymorphic catalog samples and golden corpus files for condition-carrying
+  `WorkItemSuspended` and consumed-key `WorkItemResumed`.
+- [x] Added explicit legacy payload tolerance for older suspend/resume JSON.
+- [x] Updated `docs/lifecycle-transition-matrix.md` and `docs/work-tree-shape-guard.md` with the
+  first-match suspend/resume policy and mechanical child-completion reactor rule.
+
+## Story 3.5 Validation (after QA pass)
+
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **368/368** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **60/60** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **28/28** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed (`Ok, passed 100 tests.`).
+
+### Story 3.5 Test Counts
+
+| Suite | Story 3.4 Final | Story 3.5 dev-story | Story 3.5 + QA pass | QA Delta |
+|-------|----------------:|--------------------:|--------------------:|---------:|
+| UnitTests | 335 | 352 | **368** | +16 |
+| IntegrationTests | 52 | 54 | **60** | +6 |
+| ArchitectureTests | 28 | 28 | **28** | — |
+| PropertyTests | 1 | 1 | **1** | — |
+| **Total** | **416** | **435** | **457** | **+22** |
+
+### Files touched by the QA pass
+
+- `tests/Hexalith.Works.UnitTests/WorkItemSuspendResumeTests.cs` — +4 methods (one Theory ×8) = +11 cases.
+- `tests/Hexalith.Works.UnitTests/ChildCompletionResumeTranslatorTests.cs` — +3 reactor edge cases.
+- `tests/Hexalith.Works.UnitTests/WorkItemRollUpProjectionTests.cs` — +1 AC #2 suspended-child regression.
+- `tests/Hexalith.Works.IntegrationTests/AwaitConditionSerializationContractFlowTests.cs` — **new file**,
+  +6 cases (one Theory ×3) covering the `AwaitCondition` value object and the `DateReached` serialization seam.
+
+### Checklist
+
+- [x] API/contract tests cover suspend/resume command → aggregate → event → JSON → replay, including the
+  previously-unserialized `DateReached` await-condition seam.
+- [x] E2E/UI tests marked not applicable (Story 3.5 is pure Contracts + Server + Reactor + docs; no
+  UI/browser surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly; no raw `Assert.*`).
+- [x] Tests cover happy paths (multi-kind suspend, matching resume across all three kinds, date-seam
+  round-trip).
+- [x] Tests cover critical error/edge cases (resume from every non-suspended status, keyless resume,
+  date near-miss, kind-collision in the reactor).
+- [x] All generated tests run successfully (457/457).
+- [x] Tests use clear descriptions and semantic assertions.
+- [x] No hardcoded waits or sleeps — `DateReached` is command-delivered data; no wall-clock is read.
+- [x] Tests are independent (each arranges its own replayed state).
+- [x] Test summary updated with coverage metrics.
+
+---
+
 # Test Automation Summary — Story 3.4 (Preserve Heterogeneous Unit Subtotals)
 
 Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework

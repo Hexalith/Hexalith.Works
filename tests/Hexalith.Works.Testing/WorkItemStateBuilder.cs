@@ -61,7 +61,7 @@ public static class WorkItemStateBuilder
             case WorkItemStatus.Suspended:
                 state.Apply(new WorkItemAssigned(aggregateId, ++sequence, tenantId, workItemId, resolvedBinding));
                 state.Apply(new WorkItemClaimed(aggregateId, ++sequence, tenantId, workItemId, resolvedBinding));
-                state.Apply(new WorkItemSuspended(aggregateId, ++sequence, tenantId, workItemId));
+                state.Apply(new WorkItemSuspended(aggregateId, ++sequence, tenantId, workItemId, [DefaultAwaitCondition()]));
                 break;
 
             case WorkItemStatus.Completed:
@@ -93,4 +93,7 @@ public static class WorkItemStateBuilder
     /// <summary>A known, valid executor binding for arranging states that require one.</summary>
     public static ExecutorBinding DefaultBinding()
         => new(new PartyId("party-exec"), Channel.Mcp, AuthorityLevel.Administer);
+
+    public static AwaitCondition DefaultAwaitCondition()
+        => AwaitCondition.ExternalSignal("default-resume-signal");
 }

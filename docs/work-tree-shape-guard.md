@@ -40,3 +40,11 @@ any known existing child parent fact; the aggregate does not read EventStore or 
 whether the child edge is valid. When accepted, the parent records only the child work item id and the
 facts needed for the command pipeline to create the child with
 `ParentWorkItemReference(parentTenant, parentWorkItemId)`.
+
+When `SuspendParentUntilChildCompletes` is true, the parent emits `ChildSpawned` followed by
+`WorkItemSuspended` with a `ChildCompleted(childId)` await condition. Resuming follows the same
+first-match policy as direct suspend/resume: a matching child-completion resume consumes that condition,
+clears the full suspension condition set, and records the consumed condition in `WorkItemResumed` so a
+duplicate resume can no-op after replay. The reactor translation is mechanical; it can turn a completed
+child event plus explicit awaiting-parent input into a parent `ResumeWorkItem` intent, but the aggregate
+decides whether that intent is current, accepted, rejected, or duplicate.

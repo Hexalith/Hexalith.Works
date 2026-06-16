@@ -9,4 +9,5 @@ public sealed partial record WorkItemResumed(
     string AggregateId,
     long Sequence,
     TenantId TenantId,
-    WorkItemId WorkItemId) : IEventPayload;
+    WorkItemId WorkItemId,
+    AwaitCondition? ConsumedAwaitCondition = null) : IEventPayload;

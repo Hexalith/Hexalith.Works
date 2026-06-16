@@ -105,7 +105,7 @@ public sealed class WorkItemSpawnChildContractFlowTests
             .ShouldBeOfType<WorkItemSuspended>();
 
         string json = JsonSerializer.Serialize(suspended, JsonOptions);
-        json.ShouldContain("\"awaitCondition\"");
+        json.ShouldContain("\"awaitConditions\"");
         json.ShouldContain("\"childWorkItemId\"");
         foreach (string envelopeField in WorkItemV1Catalog.EnvelopeFields)
         {
@@ -113,7 +113,7 @@ public sealed class WorkItemSpawnChildContractFlowTests
         }
 
         WorkItemSuspended roundTripped = JsonSerializer.Deserialize<WorkItemSuspended>(json, JsonOptions).ShouldNotBeNull();
-        roundTripped.AwaitCondition.ShouldBe(new AwaitCondition(Child));
+        roundTripped.AwaitConditions.ShouldBe([new AwaitCondition(Child)]);
 
         state.Apply(roundTripped);
         state.Status.ShouldBe(WorkItemStatus.Suspended);
@@ -136,6 +136,28 @@ public sealed class WorkItemSpawnChildContractFlowTests
             .ShouldNotBeNull();
 
         suspended.AwaitCondition.ShouldBeNull();
+        suspended.AwaitConditions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void WorkItemSuspended_legacy_single_await_condition_payload_deserializes_to_condition_set()
+    {
+        const string legacyJson = """
+            {
+              "aggregateId": "parent-001",
+              "sequence": 5,
+              "tenantId": { "value": "tenant-alpha" },
+              "workItemId": { "value": "parent-001" },
+              "awaitCondition": {
+                "childWorkItemId": { "value": "child-001" }
+              }
+            }
+            """;
+
+        WorkItemSuspended suspended = JsonSerializer.Deserialize<WorkItemSuspended>(legacyJson, JsonOptions)
+            .ShouldNotBeNull();
+
+        suspended.AwaitConditions.ShouldBe([new AwaitCondition(Child)]);
     }
 
     private static WorkItemState CreatedParent()

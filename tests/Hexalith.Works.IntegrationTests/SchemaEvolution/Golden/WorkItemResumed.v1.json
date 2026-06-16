@@ -6,5 +6,12 @@
   },
   "workItemId": {
     "value": "work-001"
+  },
+  "consumedAwaitCondition": {
+    "kind": "ChildCompleted",
+    "correlationKey": "child-001",
+    "childWorkItemId": {
+      "value": "child-001"
+    }
   }
 }
