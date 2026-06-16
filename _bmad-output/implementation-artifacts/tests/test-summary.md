@@ -1,3 +1,116 @@
+# Test Automation Summary — Story 2.4 (Re-Estimate and Reschedule Work)
+
+Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code
+review or story validation). Framework detected and reused: **xUnit v3 + Shouldly**, Tier-1 (no
+Dapr/Aspire/containers/network/clock). Story 2.4 is a pure `Contracts` + `Server` domain slice with **no
+UI, MCP, public route, AppHost, Dapr, projection, or adapter surface**, so browser/UI E2E is **not
+applicable**; the executable end-to-end path is **command → `WorkItemAggregate.Handle` → raw-act event →
+concrete `JsonSerializerDefaults.Web` JSON → replayed `WorkItemState`**, exercised by the unit +
+contract-flow tests below.
+
+The dev-authored Story 2.4 baseline was **285** green tests (UnitTests 213, IntegrationTests 45,
+ArchitectureTests 26, PropertyTests 1). This QA run mapped the dev coverage against AC #1–#5 and the five
+recorded Key Design Decisions (D1–D5), discovered four genuine gaps, and auto-applied **+4** unit tests,
+raising the total to **289** green. **No production code was changed** — only test files were extended.
+
+## Gaps auto-applied this run
+
+The dev baseline already covered, per AC: same-Unit re-estimate up + replay (AC #1), the
+created-with-effort Unit-mismatch rejection (AC #2), negative-estimate rejection, the below-Done clamp
+with no completion (D5), first-estimate establishment on an unestimated item (D2), terminal/Unknown
+rejection, schedule replacement with Priority + Due Date (AC #3), both-null "sorts last" acceptance
+(AC #4), acceptance from every live status, the `WorkItemEffort.ReEstimate` value-object contract, the
+AC #5 reflection guard, the golden-corpus freeze/round-trip/additive trio for both new events, and the
+JSON contract-flow convergence for both. The genuine gaps were the **D2→AC #2 interaction** (Unit
+immutability after establishing the first estimate *via* re-estimate), the **zero re-estimate boundary**
+(lower bound of "non-negative" + D5), the **D3 whole-replacement clear** (distinct from a per-field
+patch), and the **due-date-only partial schedule** — each closed below.
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemReEstimateTests.ReEstimate_after_establishing_first_estimate_rejects_a_different_unit_and_preserves_it`
+  (D2 → AC #2) — establishes the Unit on a previously-unestimated item via `ReEstimate`, then a
+  subsequent different-Unit re-estimate is rejected with `WorkItemReEstimateRejected`, the established
+  Unit + Estimated are preserved, and `Sequence` does not advance. The story mandates that the AC #2
+  immutability rejection "still applies once a Unit is established"; the baseline only covered the
+  created-with-effort path, not the D2 establish-then-reject path.
+- [x] `WorkItemReEstimateTests.ReEstimate_to_zero_clamps_done_and_remaining_without_completing`
+  (AC #1 boundary + D5) — zero is the lower boundary of the AC #1 "non-negative value": it is accepted,
+  Done clamps to 0, Remaining derives to 0, and the act emits **only** `ReEstimated` — never
+  `WorkItemCompleted`. The baseline covered a below-Done clamp (4 of done 6) but not the exact-zero
+  boundary.
+- [x] `WorkItemRescheduleTests.Reschedule_with_empty_schedule_clears_a_previously_set_schedule_whole`
+  (D3) — replacing a fully-populated schedule with an empty one clears **both** `Priority` and `DueDate`,
+  proving whole-replacement rather than the rejected per-field-patch alternative (where null would mean
+  "leave unchanged"). The baseline's both-null test started from an item that never had a schedule, so it
+  did not exercise the clear-an-existing-schedule semantic.
+- [x] `WorkItemRescheduleTests.Reschedule_with_only_a_due_date_is_accepted_and_replayed`
+  (AC #3/#4 partial schedule) — a due date with no priority is accepted and replayed without coercing the
+  missing priority into a default band. The inverse partial (priority, no due date) was already exercised
+  by the live-status theory; the due-date-only partial was untested.
+
+### Pre-existing coverage (dev-authored, verified green — not regenerated)
+
+- [x] `WorkItemReEstimateRescheduleContractFlowTests` — command → `WorkItemAggregate.Handle` → concrete
+  `JsonSerializerDefaults.Web` JSON → replay for both `ReEstimated` and `WorkItemRescheduled`, asserting
+  convergence of effort/schedule and absence of `$type` plus EventStore envelope fields.
+- [x] `WorkItemV1Catalog` — catalog count **26 → 31** (13 success events, 13 commands, 5 rejection
+  events); new payloads resolve through the empty `Polymorphic` base.
+- [x] `SchemaEvolutionGoldenCorpusTests` — frozen deserialize + round-trip + additive unknown-field
+  tolerance for `ReEstimated.v1.json` and `WorkItemRescheduled.v1.json`.
+- [x] `docs/lifecycle-transition-matrix.md` + `LifecycleTransitionMatrixDocTests` — both new commands
+  documented as non-lifecycle planning acts and gated in `RequiredCommands`.
+
+## Story 2.4 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -v minimal` — passed with
+  **0 warnings and 0 errors** (warnings-as-errors).
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **217/217** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **45/45** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed.
+
+### Story 2.4 Test Counts
+
+| Suite | Story 2.3 Final | Dev 2.4 Baseline | QA Final | QA Delta |
+|-------|----------------:|-----------------:|---------:|---------:|
+| UnitTests | 188 | 213 | **217** | +4 |
+| IntegrationTests | 39 | 45 | **45** | — |
+| ArchitectureTests | 26 | 26 | 26 | — |
+| PropertyTests | 1 | 1 | 1 | — |
+| **Total** | **254** | **285** | **289** | **+4** |
+
+### Checklist
+
+- [x] API/contract tests generated (re-estimate/reschedule command → aggregate → JSON → replay).
+- [x] E2E/UI tests marked not applicable (Story 2.4 is pure Contracts + Server + Tier-1; no UI/browser surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly; no raw `Assert.*`, Moq, or FluentAssertions).
+- [x] Tests cover happy path (re-estimate up/establish; schedule replace + partial schedule replay).
+- [x] Tests cover critical error/edge cases (D2→AC #2 Unit immutability; zero boundary; whole-replacement clear).
+- [x] All generated tests run successfully (289/289).
+- [x] Tests use semantic assertions and clear descriptions.
+- [x] No hardcoded waits or sleeps (pure in-memory + JSON; no clock/RNG/IO).
+- [x] Tests are independent (each arranges its own state via replay; no order dependency).
+- [x] Test summary updated with coverage metrics.
+
+## Notes
+
+- This run is **QA gap-filling only** — no production code was changed; only `WorkItemReEstimateTests.cs`
+  and `WorkItemRescheduleTests.cs` were extended (+2 tests each).
+- Four genuine, AC/design-decision-anchored gaps were closed: (1) Unit immutability (AC #2) reached via
+  the D2 establish-then-reject path, not just created-with-effort; (2) the zero lower boundary of the
+  AC #1 "non-negative" estimate, reinforcing D5 (no completion on a planning act); (3) D3
+  whole-schedule-replacement proven by clearing an existing schedule (distinguishes it from the rejected
+  per-field patch); (4) the due-date-only partial schedule (the priority-only partial was already
+  covered).
+- The new tests need no golden fixture or catalog change (`Count` stays **31**) — they exercise existing
+  durable event types through the aggregate and replay, not new wire shapes.
+
+---
+
 # Test Automation Summary — Story 2.3 (Report Progress with Unit-Tagged Burn-Down)
 
 Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code

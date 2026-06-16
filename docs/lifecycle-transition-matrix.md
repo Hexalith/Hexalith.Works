@@ -29,6 +29,8 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 | `ResumeWorkItem` | Resume | `WorkItemResumed` | Resume is a transition back to `InProgress` — there is no resting `Resumed` status. |
 | `CompleteWorkItem` | Complete | `WorkItemCompleted` | Explicit complete act. |
 | `ReportProgress` | ReportProgress | `ProgressReported` / `WorkItemCompleted` | Progress act accepted only from `InProgress` with estimated effort and matching Unit; completion is emitted when Remaining reaches zero. |
+| `ReEstimate` | ReEstimate | `ReEstimated` | Planning act accepted from every non-terminal status; records the new absolute estimate without changing `Status`. |
+| `RescheduleWorkItem` | RescheduleWorkItem | `WorkItemRescheduled` | Planning act accepted from every non-terminal status; replaces Priority/Due-Date schedule facts without changing `Status`. |
 | `CancelWorkItem` | Cancel | `WorkItemCancelled` | Terminal cancel. |
 | `RejectWorkItem` | Reject | `WorkItemRejected` | `Requeue=true` (default) rests at `Queued`; `Requeue=false` reaches terminal `Rejected`. |
 | `ExpireWorkItem` | Expire | `WorkItemExpired` | Command-driven; handling reads no clock (advisory-until-fired). |
@@ -61,6 +63,61 @@ If replaying that delta makes own Remaining reach zero, the same accepted result
 Progress-specific validation failures (`DoneDelta <= 0`, missing estimated effort, or mismatched
 `Unit`) return `WorkItemProgressRejected` and produce no state change. Status failures return
 `WorkItemTransitionRejected`.
+
+## Re-estimate act
+
+`ReEstimate` is a planning act, not a lifecycle reclassification command. It is accepted from every
+non-terminal status (`Created`, `Assigned`, `Queued`, `InProgress`, `Suspended`) and emits
+`ReEstimated` with the raw reported absolute `Estimated` value and `Unit`. It does **not** change
+`Status`, and it never emits `WorkItemCompleted` even when replay clamps Remaining to zero. Completion
+remains owned by `ReportProgress` and explicit `CompleteWorkItem`.
+
+The first accepted `ReEstimate` on an unestimated item establishes the first estimate and its Unit.
+After that, the established Unit is immutable: a re-estimate in a different Unit is rejected and the
+existing Unit/Estimated values remain unchanged.
+
+| From | `ReEstimate` outcome |
+|---|---|
+| `Created` | `→Created` |
+| `Assigned` | `→Assigned` |
+| `Queued` | `→Queued` |
+| `InProgress` | `→InProgress` |
+| `Suspended` | `→Suspended` |
+| `Completed` | R |
+| `Cancelled` | R |
+| `Rejected` | R |
+| `Expired` | R |
+
+Re-estimate-specific invariant failures (`Estimated < 0`, or mismatched established `Unit`) return
+`WorkItemReEstimateRejected` and produce no state change. Status failures return
+`WorkItemTransitionRejected`.
+
+## Reschedule act
+
+`RescheduleWorkItem` is a planning act, not a lifecycle reclassification command. It is accepted from
+every non-terminal status (`Created`, `Assigned`, `Queued`, `InProgress`, `Suspended`) and emits
+`WorkItemRescheduled` with the new end-state `WorkItemSchedule`. Replay replaces the whole schedule
+fact and does **not** change `Status`.
+
+Any `Priority?` and any `DateOnly?` are valid, including a schedule with both values null. The
+both-null schedule is the explicit "sorts last" fact for the future what-next projection. v1 priority
+remains the ordered enum shape only; there is no routing score, escalation band, confidence, cost,
+spend, or numeric weight field.
+
+| From | `RescheduleWorkItem` outcome |
+|---|---|
+| `Created` | `→Created` |
+| `Assigned` | `→Assigned` |
+| `Queued` | `→Queued` |
+| `InProgress` | `→InProgress` |
+| `Suspended` | `→Suspended` |
+| `Completed` | R |
+| `Cancelled` | R |
+| `Rejected` | R |
+| `Expired` | R |
+
+Reschedule has no schedule-content rejection: both nullable fields may be absent. Status failures
+return `WorkItemTransitionRejected`.
 
 ## Transition matrix
 

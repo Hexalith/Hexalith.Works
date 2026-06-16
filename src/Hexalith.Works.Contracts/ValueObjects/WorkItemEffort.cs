@@ -34,4 +34,14 @@ public sealed record WorkItemEffort
 
         return new WorkItemEffort(Estimated, Unit, Math.Min(Estimated, Done + doneDelta));
     }
+
+    // Re-estimate to a new absolute estimate while preserving the established (immutable) Unit. Done is
+    // clamped down to the new estimate so the derived Remaining is never negative — re-estimating below
+    // current Done lands Remaining on zero without re-deriving or storing it.
+    public WorkItemEffort ReEstimate(decimal newEstimated)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(newEstimated);
+
+        return new WorkItemEffort(newEstimated, Unit, Math.Min(Done, newEstimated));
+    }
 }

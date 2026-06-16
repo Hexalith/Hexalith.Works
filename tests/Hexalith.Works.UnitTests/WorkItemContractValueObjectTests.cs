@@ -1,3 +1,5 @@
+using Hexalith.Works.Contracts.Commands;
+using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
 
 using Shouldly;
@@ -30,7 +32,37 @@ public sealed class WorkItemContractValueObjectTests
 
     [Fact]
     public void Priority_order_matches_documented_queue_precedence()
-        => ((int)Priority.Critical).ShouldBeLessThan((int)Priority.High);
+    {
+        ((int)Priority.Critical).ShouldBeLessThan((int)Priority.High);
+        ((int)Priority.High).ShouldBeLessThan((int)Priority.Normal);
+        ((int)Priority.Normal).ShouldBeLessThan((int)Priority.Low);
+    }
+
+    [Fact]
+    public void Reschedule_contract_exposes_only_ordered_priority_and_due_date_schedule_facts()
+    {
+        string[] scheduleProperties = typeof(WorkItemSchedule).GetProperties()
+            .Select(p => p.Name)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        scheduleProperties.ShouldBe(["DueDate", "Priority"], ignoreOrder: false);
+        typeof(WorkItemSchedule).GetProperty(nameof(WorkItemSchedule.Priority)).ShouldNotBeNull().PropertyType.ShouldBe(typeof(Priority?));
+        typeof(WorkItemSchedule).GetProperty(nameof(WorkItemSchedule.DueDate)).ShouldNotBeNull().PropertyType.ShouldBe(typeof(DateOnly?));
+        typeof(RescheduleWorkItem).GetProperty(nameof(RescheduleWorkItem.Schedule)).ShouldNotBeNull().PropertyType.ShouldBe(typeof(WorkItemSchedule));
+        typeof(WorkItemRescheduled).GetProperty(nameof(WorkItemRescheduled.Schedule)).ShouldNotBeNull().PropertyType.ShouldBe(typeof(WorkItemSchedule));
+
+        string[] forbiddenTerms = ["Score", "Band", "Confidence", "Cost", "Spend", "Weight"];
+        foreach (string propertyName in scheduleProperties
+            .Concat(typeof(RescheduleWorkItem).GetProperties().Select(p => p.Name))
+            .Concat(typeof(WorkItemRescheduled).GetProperties().Select(p => p.Name)))
+        {
+            foreach (string forbidden in forbiddenTerms)
+            {
+                propertyName.ShouldNotContain(forbidden, Case.Insensitive);
+            }
+        }
+    }
 
     [Fact]
     public void AuthorityLevel_exposes_documented_carried_not_enforced_catalog()

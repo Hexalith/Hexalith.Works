@@ -200,6 +200,66 @@ public static class WorkItemAggregate
         return DomainResult.Success([progressReported]);
     }
 
+    public static DomainResult Handle(ReEstimate command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        ArgumentNullException.ThrowIfNull(command.Unit);
+
+        WorkItemStatus from = CurrentStatus(state);
+        if (!IsLive(from))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(ReEstimate));
+        }
+
+        if (command.Estimated < 0)
+        {
+            return RejectReEstimate(command.TenantId, command.WorkItemId, "Estimated effort must be non-negative.");
+        }
+
+        WorkItemEffort? effort = state?.InitialEffort;
+        if (effort is not null && command.Unit != effort.Unit)
+        {
+            return RejectReEstimate(command.TenantId, command.WorkItemId, "Re-estimate unit must match the established effort unit.");
+        }
+
+        return DomainResult.Success([
+            new ReEstimated(
+                command.WorkItemId.Value,
+                NextSequence(state),
+                command.TenantId,
+                command.WorkItemId,
+                command.Estimated,
+                command.Unit,
+                command.Note),
+        ]);
+    }
+
+    public static DomainResult Handle(RescheduleWorkItem command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        ArgumentNullException.ThrowIfNull(command.Schedule);
+
+        WorkItemStatus from = CurrentStatus(state);
+        if (!IsLive(from))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(RescheduleWorkItem));
+        }
+
+        return DomainResult.Success([
+            new WorkItemRescheduled(
+                command.WorkItemId.Value,
+                NextSequence(state),
+                command.TenantId,
+                command.WorkItemId,
+                command.Schedule,
+                command.Note),
+        ]);
+    }
+
     public static DomainResult Handle(CancelWorkItem command, WorkItemState? state)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -260,11 +320,21 @@ public static class WorkItemAggregate
     private static long NextSequence(WorkItemState? state)
         => (state?.Sequence ?? 0) + 1;
 
+    private static bool IsLive(WorkItemStatus status)
+        => status is WorkItemStatus.Created
+            or WorkItemStatus.Assigned
+            or WorkItemStatus.Queued
+            or WorkItemStatus.InProgress
+            or WorkItemStatus.Suspended;
+
     private static DomainResult Reject(TenantId tenantId, WorkItemId workItemId, WorkItemStatus from, string attemptedAct)
         => DomainResult.Rejection([new WorkItemTransitionRejected(tenantId, workItemId, from, attemptedAct)]);
 
     private static DomainResult RejectProgress(TenantId tenantId, WorkItemId workItemId, string reason)
         => DomainResult.Rejection([new WorkItemProgressRejected(tenantId, workItemId, reason)]);
+
+    private static DomainResult RejectReEstimate(TenantId tenantId, WorkItemId workItemId, string reason)
+        => DomainResult.Rejection([new WorkItemReEstimateRejected(tenantId, workItemId, reason)]);
 
     private static WorkItemEffort? NormalizeInitialEffort(WorkItemEffort? effort)
         => effort is null || effort.Done == 0

@@ -109,6 +109,34 @@ public sealed class SchemaEvolutionGoldenCorpusTests
     }
 
     [Fact]
+    public void ReEstimated_DeserializesFromFrozenBytesAndRoundTrips()
+    {
+        ReEstimated deserialized = RoundTrip<ReEstimated>("ReEstimated.v1.json");
+
+        deserialized.AggregateId.ShouldBe("work-001");
+        deserialized.Sequence.ShouldBe(8);
+        deserialized.TenantId.Value.ShouldBe("tenant-alpha");
+        deserialized.WorkItemId.Value.ShouldBe("work-001");
+        deserialized.Estimated.ShouldBe(13m);
+        deserialized.Unit.Value.ShouldBe("point");
+        deserialized.Note.ShouldBe("new estimate");
+    }
+
+    [Fact]
+    public void WorkItemRescheduled_DeserializesFromFrozenBytesAndRoundTrips()
+    {
+        WorkItemRescheduled deserialized = RoundTrip<WorkItemRescheduled>("WorkItemRescheduled.v1.json");
+
+        deserialized.AggregateId.ShouldBe("work-001");
+        deserialized.Sequence.ShouldBe(9);
+        deserialized.TenantId.Value.ShouldBe("tenant-alpha");
+        deserialized.WorkItemId.Value.ShouldBe("work-001");
+        deserialized.Schedule.Priority.ShouldBe(Priority.High);
+        deserialized.Schedule.DueDate.ShouldBe(new DateOnly(2026, 7, 15));
+        deserialized.Note.ShouldBe("deadline moved");
+    }
+
+    [Fact]
     public void WorkItemClaimed_DeserializesFromFrozenBytesAndRoundTrips()
     {
         WorkItemClaimed deserialized = RoundTrip<WorkItemClaimed>("WorkItemClaimed.v1.json");
@@ -212,6 +240,28 @@ public sealed class SchemaEvolutionGoldenCorpusTests
         ProgressReported deserialized = JsonSerializer.Deserialize<ProgressReported>(withFutureField, Options).ShouldNotBeNull();
         deserialized.DoneDelta.ShouldBe(3m);
         deserialized.Unit.Value.ShouldBe("point");
+    }
+
+    [Fact]
+    public void ReEstimated_ToleratesAdditiveUnknownField()
+    {
+        string frozen = ReadGolden("ReEstimated.v1.json");
+        string withFutureField = frozen.TrimEnd().TrimEnd('}') + ",\n  \"futureField\": \"ignored\"\n}";
+
+        ReEstimated deserialized = JsonSerializer.Deserialize<ReEstimated>(withFutureField, Options).ShouldNotBeNull();
+        deserialized.Estimated.ShouldBe(13m);
+        deserialized.Unit.Value.ShouldBe("point");
+    }
+
+    [Fact]
+    public void WorkItemRescheduled_ToleratesAdditiveUnknownField()
+    {
+        string frozen = ReadGolden("WorkItemRescheduled.v1.json");
+        string withFutureField = frozen.TrimEnd().TrimEnd('}') + ",\n  \"futureField\": \"ignored\"\n}";
+
+        WorkItemRescheduled deserialized = JsonSerializer.Deserialize<WorkItemRescheduled>(withFutureField, Options).ShouldNotBeNull();
+        deserialized.Schedule.Priority.ShouldBe(Priority.High);
+        deserialized.Schedule.DueDate.ShouldBe(new DateOnly(2026, 7, 15));
     }
 
     // Deserializes a frozen file via the production path and proves it re-serializes and round-trips to

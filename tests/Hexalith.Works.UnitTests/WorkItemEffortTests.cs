@@ -67,4 +67,21 @@ public sealed class WorkItemEffortTests
     [InlineData(0)]
     public void WorkItemEffort_report_rejects_non_positive_delta(int delta)
         => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour")).Report(delta));
+
+    [Fact]
+    public void WorkItemEffort_re_estimate_preserves_unit_and_clamps_done_to_new_estimated()
+    {
+        var effort = new WorkItemEffort(8m, new Unit("hour"), 6m);
+
+        WorkItemEffort reEstimated = effort.ReEstimate(4m);
+
+        reEstimated.Estimated.ShouldBe(4m);
+        reEstimated.Unit.ShouldBe(effort.Unit);
+        reEstimated.Done.ShouldBe(4m);
+        reEstimated.Remaining.ShouldBe(0m);
+    }
+
+    [Fact]
+    public void WorkItemEffort_re_estimate_rejects_negative_estimated()
+        => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour")).ReEstimate(-1m));
 }

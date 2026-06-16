@@ -57,6 +57,11 @@ public sealed class WorkItemState
         => ArgumentNullException.ThrowIfNull(e);
 #pragma warning restore CA1822
 
+#pragma warning disable CA1822 // EventStore replay convention requires an Apply overload for rejection events.
+    public void Apply(WorkItemReEstimateRejected e)
+        => ArgumentNullException.ThrowIfNull(e);
+#pragma warning restore CA1822
+
     // Trust boundary: WorkItemAggregate.Handle is the sole writer of WorkItemCreated and enforces
     // the cross-tenant parent invariant before the event is emitted. Replay therefore trusts the
     // stored event and applies Parent verbatim — a persisted foreign-tenant parent is preserved as a
@@ -121,6 +126,22 @@ public sealed class WorkItemState
     {
         ArgumentNullException.ThrowIfNull(e);
         InitialEffort = InitialEffort!.Report(e.DoneDelta);
+        Sequence = e.Sequence;
+    }
+
+    public void Apply(ReEstimated e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        InitialEffort = InitialEffort is null
+            ? new WorkItemEffort(e.Estimated, e.Unit)
+            : InitialEffort.ReEstimate(e.Estimated);
+        Sequence = e.Sequence;
+    }
+
+    public void Apply(WorkItemRescheduled e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        Schedule = e.Schedule;
         Sequence = e.Sequence;
     }
 

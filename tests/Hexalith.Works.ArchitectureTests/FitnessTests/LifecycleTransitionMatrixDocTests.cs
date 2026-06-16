@@ -26,6 +26,8 @@ public sealed class LifecycleTransitionMatrixDocTests
         "ResumeWorkItem",
         "CompleteWorkItem",
         "ReportProgress",
+        "ReEstimate",
+        "RescheduleWorkItem",
         "CancelWorkItem",
         "RejectWorkItem",
         "ExpireWorkItem",

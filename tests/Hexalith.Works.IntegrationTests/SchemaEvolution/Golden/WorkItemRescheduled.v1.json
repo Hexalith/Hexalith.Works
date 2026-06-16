@@ -1,0 +1,15 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 9,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "schedule": {
+    "priority": "High",
+    "dueDate": "2026-07-15"
+  },
+  "note": "deadline moved"
+}

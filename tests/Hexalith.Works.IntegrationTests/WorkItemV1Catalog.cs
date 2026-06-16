@@ -7,15 +7,15 @@ using Hexalith.Works.Contracts.ValueObjects;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Shared, frozen sample of the v1 catalog (established in Story 2.2, extended by Story 2.3): one
+/// Shared, frozen sample of the v1 catalog (established in Story 2.2, extended by Story 2.3/2.4): one
 /// instance of every decorated success event,
 /// command, and rejection event. Used by both the polymorphic-resolution test (AC #5) and the
 /// concrete-shape additivity guard (AC #1/#2/#3) so the two views cannot drift apart.
 /// </summary>
 internal static class WorkItemV1Catalog
 {
-    /// <summary>11 success events + 11 commands + 4 rejection events.</summary>
-    internal const int Count = 26;
+    /// <summary>13 success events + 13 commands + 5 rejection events.</summary>
+    internal const int Count = 31;
 
     /// <summary>
     /// Envelope / transport fields owned by EventStore that must never leak into a domain payload
@@ -38,7 +38,7 @@ internal static class WorkItemV1Catalog
     /// <summary>The full v1 catalog as base-typed payloads.</summary>
     internal static IReadOnlyList<Polymorphic> All =>
     [
-        // 11 success events.
+        // 13 success events.
         new WorkItemCreated("work-001", 1, Tenant, Item, Obligation),
         new WorkItemAssigned("work-001", 2, Tenant, Item, Binding),
         new WorkItemQueued("work-001", 3, Tenant, Item),
@@ -46,12 +46,14 @@ internal static class WorkItemV1Catalog
         new WorkItemSuspended("work-001", 5, Tenant, Item),
         new WorkItemResumed("work-001", 6, Tenant, Item),
         new ProgressReported("work-001", 7, Tenant, Item, 3m, new Unit("point"), "first progress"),
-        new WorkItemCompleted("work-001", 8, Tenant, Item),
-        new WorkItemCancelled("work-001", 9, Tenant, Item),
-        new WorkItemRejected("work-001", 10, Tenant, Item, Requeue: false),
-        new WorkItemExpired("work-001", 11, Tenant, Item),
+        new ReEstimated("work-001", 8, Tenant, Item, 13m, new Unit("point"), "new estimate"),
+        new WorkItemRescheduled("work-001", 9, Tenant, Item, new WorkItemSchedule(Priority.High, new DateOnly(2026, 7, 15)), "deadline moved"),
+        new WorkItemCompleted("work-001", 10, Tenant, Item),
+        new WorkItemCancelled("work-001", 11, Tenant, Item),
+        new WorkItemRejected("work-001", 12, Tenant, Item, Requeue: false),
+        new WorkItemExpired("work-001", 13, Tenant, Item),
 
-        // 11 commands.
+        // 13 commands.
         new CreateWorkItem(Tenant, Item, "Prepare the first tenant-scoped work item"),
         new AssignWorkItem(Tenant, Item, Binding),
         new QueueWorkItem(Tenant, Item),
@@ -59,14 +61,17 @@ internal static class WorkItemV1Catalog
         new SuspendWorkItem(Tenant, Item),
         new ResumeWorkItem(Tenant, Item),
         new ReportProgress(Tenant, Item, 3m, new Unit("point"), "first progress"),
+        new ReEstimate(Tenant, Item, 13m, new Unit("point"), "new estimate"),
+        new RescheduleWorkItem(Tenant, Item, new WorkItemSchedule(Priority.High, new DateOnly(2026, 7, 15)), "deadline moved"),
         new CompleteWorkItem(Tenant, Item),
         new CancelWorkItem(Tenant, Item),
         new RejectWorkItem(Tenant, Item),
         new ExpireWorkItem(Tenant, Item),
 
-        // 4 rejection events.
+        // 5 rejection events.
         new WorkItemTransitionRejected(Tenant, Item, WorkItemStatus.Created, "Assign"),
         new WorkItemProgressRejected(Tenant, Item, "Progress unit must match the established effort unit."),
+        new WorkItemReEstimateRejected(Tenant, Item, "Re-estimate unit must match the established effort unit."),
         new WorkItemCannotBeCreatedWithoutObligation(Tenant, Item),
         new WorkItemCannotReferenceParentFromAnotherTenant(Tenant, Item, Parent),
     ];
