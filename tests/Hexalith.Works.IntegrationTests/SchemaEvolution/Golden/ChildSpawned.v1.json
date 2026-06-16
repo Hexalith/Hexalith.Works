@@ -1,0 +1,40 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 14,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "childWorkItemId": {
+    "value": "child-001"
+  },
+  "obligation": {
+    "description": "Break out child work",
+    "reference": null
+  },
+  "initialEffort": {
+    "estimated": 5,
+    "unit": {
+      "value": "point"
+    },
+    "done": 0,
+    "remaining": 5
+  },
+  "schedule": {
+    "priority": "Normal",
+    "dueDate": "2026-08-20"
+  },
+  "executorBinding": {
+    "partyId": {
+      "value": "party-123"
+    },
+    "channel": "Mcp",
+    "authorityLevel": "Coordinate"
+  },
+  "conversationCorrelationId": {
+    "value": "conversation-456"
+  },
+  "suspendParentUntilChildCompletes": true
+}

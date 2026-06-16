@@ -45,6 +45,76 @@ public static class WorkItemAggregate
         return DomainResult.Success([created]);
     }
 
+    public static DomainResult Handle(SpawnChild command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        ArgumentNullException.ThrowIfNull(command.ChildWorkItemId);
+
+        WorkItemStatus from = CurrentStatus(state);
+        if (!IsLive(from))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(SpawnChild));
+        }
+
+        if (command.SuspendParentUntilChildCompletes && from != WorkItemStatus.InProgress)
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(SpawnChild));
+        }
+
+        if (string.IsNullOrWhiteSpace(command.Obligation))
+        {
+            return DomainResult.Rejection([
+                new WorkItemCannotBeCreatedWithoutObligation(command.TenantId, command.ChildWorkItemId),
+            ]);
+        }
+
+        ParentWorkItemReference proposedParent = new(command.TenantId, command.WorkItemId);
+        WorkTreeAttachmentValidationResult treeValidation = WorkTreeAttachmentGuard.Validate(
+            new WorkTreeAttachmentFacts(
+                command.TenantId,
+                command.ChildWorkItemId,
+                proposedParent,
+                command.ExistingChildParent,
+                command.ProposedParentAncestors ?? [],
+                command.ProposedParentDepth,
+                command.MaxDepth));
+        if (!treeValidation.IsAccepted)
+        {
+            return DomainResult.Rejection([treeValidation.Rejection!]);
+        }
+
+        long sequence = NextSequence(state);
+        var spawned = new ChildSpawned(
+            command.WorkItemId.Value,
+            sequence,
+            command.TenantId,
+            command.WorkItemId,
+            command.ChildWorkItemId,
+            new Obligation(command.Obligation),
+            NormalizeInitialEffort(command.InitialEffort),
+            command.Schedule,
+            command.ExecutorBinding,
+            command.ConversationCorrelationId,
+            command.SuspendParentUntilChildCompletes);
+
+        if (!command.SuspendParentUntilChildCompletes)
+        {
+            return DomainResult.Success([spawned]);
+        }
+
+        return DomainResult.Success([
+            spawned,
+            new WorkItemSuspended(
+                command.WorkItemId.Value,
+                sequence + 1,
+                command.TenantId,
+                command.WorkItemId,
+                new AwaitCondition(command.ChildWorkItemId)),
+        ]);
+    }
+
     public static DomainResult Handle(AssignWorkItem command, WorkItemState? state)
     {
         ArgumentNullException.ThrowIfNull(command);

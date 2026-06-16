@@ -264,6 +264,39 @@ public sealed class SchemaEvolutionGoldenCorpusTests
         deserialized.Schedule.DueDate.ShouldBe(new DateOnly(2026, 7, 15));
     }
 
+    [Fact]
+    public void ChildSpawned_DeserializesFromFrozenBytesAndRoundTrips()
+    {
+        ChildSpawned deserialized = RoundTrip<ChildSpawned>("ChildSpawned.v1.json");
+
+        deserialized.AggregateId.ShouldBe("work-001");
+        deserialized.Sequence.ShouldBe(14);
+        deserialized.TenantId.Value.ShouldBe("tenant-alpha");
+        deserialized.WorkItemId.Value.ShouldBe("work-001");
+        deserialized.ChildWorkItemId.Value.ShouldBe("child-001");
+        deserialized.Obligation.Description.ShouldBe("Break out child work");
+        deserialized.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(5m);
+        deserialized.InitialEffort.ShouldNotBeNull().Unit.Value.ShouldBe("point");
+        deserialized.Schedule.ShouldNotBeNull().Priority.ShouldBe(Priority.Normal);
+        deserialized.Schedule.ShouldNotBeNull().DueDate.ShouldBe(new DateOnly(2026, 8, 20));
+        deserialized.ExecutorBinding.ShouldNotBeNull().PartyId.Value.ShouldBe("party-123");
+        deserialized.ExecutorBinding.ShouldNotBeNull().Channel.ShouldBe(Channel.Mcp);
+        deserialized.ExecutorBinding.ShouldNotBeNull().AuthorityLevel.ShouldBe(AuthorityLevel.Coordinate);
+        deserialized.ConversationCorrelationId.ShouldNotBeNull().Value.ShouldBe("conversation-456");
+        deserialized.SuspendParentUntilChildCompletes.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ChildSpawned_ToleratesAdditiveUnknownField()
+    {
+        string frozen = ReadGolden("ChildSpawned.v1.json");
+        string withFutureField = frozen.TrimEnd().TrimEnd('}') + ",\n  \"futureField\": \"ignored\"\n}";
+
+        ChildSpawned deserialized = JsonSerializer.Deserialize<ChildSpawned>(withFutureField, Options).ShouldNotBeNull();
+        deserialized.ChildWorkItemId.Value.ShouldBe("child-001");
+        deserialized.SuspendParentUntilChildCompletes.ShouldBeTrue();
+    }
+
     // Deserializes a frozen file via the production path and proves it re-serializes and round-trips to
     // an equal record. The File.Exists vacuous-pass guard lives in ReadGolden, so a missing fixture is
     // reported as the root cause rather than a downstream null.

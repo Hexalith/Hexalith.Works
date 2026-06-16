@@ -1,3 +1,138 @@
+# Test Automation Summary — Story 3.2 (Spawn Child Work from a Parent)
+
+Workflow: `bmad-qa-generate-e2e-tests` (QA gap-filling pass) after `bmad-dev-story`. Framework reused:
+**xUnit v3 + Shouldly**, pure aggregate unit tests, contract-flow integration tests, schema-evolution
+golden corpus, and existing architecture/property guardrails. Story 3.2 adds `SpawnChild`,
+`ChildSpawned`, parent replay of spawned child references, and the minimal child-completion await
+condition used when a spawn suspends its parent. This is a pure `Contracts` + `Server` + docs slice
+with **no UI/browser surface**, so the executable end-to-end path is **command →
+`WorkItemAggregate.Handle` → durable event → concrete `JsonSerializerDefaults.Web` JSON → replayed
+`WorkItemState`**; browser/UI E2E is **not applicable**.
+
+The dev-authored Story 3.2 baseline was **375** green tests (UnitTests 296, IntegrationTests 52,
+ArchitectureTests 26, PropertyTests 1). This QA run mapped the dev coverage against AC #1–#5 and the
+recorded design decisions (D1–D5), discovered **5 genuine branch-level gaps**, and auto-applied
+**+11** unit test cases (5 new test methods; two are Theories), raising the total to **386** green.
+**No production code was changed** — only `WorkItemSpawnChildTests.cs` was extended.
+`WorkItemV1Catalog.Count` remains **36** (14 success events, 14 commands, 8 rejection events) and the
+`ChildSpawned.v1.json` golden fixture is unchanged — the new tests exercise existing durable types
+through the aggregate and replay, not new wire shapes.
+
+## Gaps auto-applied this QA run
+
+Mapped against AC #1–#5, the dev baseline already covered spawn from `Created`, spawn-with-await from
+`InProgress`, suspended-parent progress rejection, the four tree-guard rejection paths, missing/terminal
+parent rejection, await-requires-`InProgress`, replay determinism, caller-supplied child ids, and the
+full serialization/golden/legacy round-trips. The genuine gaps were uncovered **branches** and one
+explicit **AC clause** — each closed below in `tests/Hexalith.Works.UnitTests/WorkItemSpawnChildTests.cs`:
+
+- [x] `SpawnChild_without_suspension_is_accepted_from_every_live_status` (AC #1 / Task 4, Theory ×5) —
+  plain spawn is **accepted** from `Created`, `Assigned`, `Queued`, `InProgress`, **and** `Suspended`,
+  each emitting one `ChildSpawned` at `Sequence + 1`, replaying the child reference, and leaving the
+  parent's lifecycle status unchanged. The baseline only proved acceptance from `Created`; for the other
+  live statuses it proved only the *negative* (await-requires-`InProgress`), never that a plain spawn
+  succeeds.
+- [x] `SpawnChild_without_obligation_returns_missing_obligation_rejection_for_the_child` (AC #1
+  CreateWorkItem semantics, Theory `null`/`""`/`"   "`) — a missing obligation returns
+  `WorkItemCannotBeCreatedWithoutObligation` raised against the **child** id, rejection-only, with no
+  `ChildSpawned`. This Handle branch had zero coverage (every prior test supplied an obligation).
+- [x] `SpawnChild_tree_guard_rejection_is_replay_safe_and_burns_no_parent_sequence` (AC #4 "the
+  rejection is replay-safe") — proves a rejected spawn mutates no parent state and **consumes no
+  sequence number**: re-handling is deterministic, and a subsequent valid spawn still receives the next
+  contiguous sequence. The explicit AC #4 replay-safety clause was previously unverified for spawn.
+- [x] `SpawnChild_duplicate_event_replay_is_idempotent_and_distinct_children_accumulate_in_order`
+  (AC #5 / Task 3 determinism) — applying the same `ChildSpawned` twice yields a single child reference
+  (exercises the `Apply(ChildSpawned)` `Contains` dedup branch), while two distinct events accumulate
+  both ids in order. The dedup branch and multi-child accumulation were untested.
+- [x] `SpawnChild_retry_with_existing_child_parent_equal_to_proposed_parent_is_accepted` (D3 guard
+  idempotency) — a retry whose `ExistingChildParent` equals the proposed parent is **accepted** (not a
+  second-parent rejection), exercising the guard's same-parent-idempotency branch. The baseline's
+  second-parent case supplied a *different* existing parent, so the accept-on-same-parent branch was
+  uncovered.
+
+## Gaps closed by the dev-story baseline
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemSpawnChildTests` covers successful spawn from an existing parent, replay of parent-owned
+  child id references, and construction of equivalent child `CreateWorkItem` facts with the same tenant
+  and `ParentWorkItemReference`.
+- [x] Spawn with await intent emits `ChildSpawned` then `WorkItemSuspended`, advances parent sequences
+  monotonically, and replays to `Suspended` with `AwaitCondition(childWorkItemId)`.
+- [x] Suspended parents reject `ReportProgress` through the existing lifecycle rejection path.
+- [x] Tree-guard rejection paths cover cross-tenant ancestor facts, self/cycle facts, second-parent
+  facts, and max-depth overflow, each returning rejection-only results.
+- [x] Missing/terminal parent states reject `SpawnChild`; await intent is accepted only from
+  `InProgress`.
+- [x] Replay determinism verifies sequence, status, child references, and await conditions reconstruct
+  identically; caller-supplied child ids are preserved.
+
+### Integration tests (`tests/Hexalith.Works.IntegrationTests`)
+
+- [x] `WorkItemSpawnChildContractFlowTests` round-trips `SpawnChild`, `ChildSpawned`,
+  `WorkItemSuspended.AwaitCondition`, and legacy `WorkItemSuspended` JSON without the new optional field.
+- [x] `WorkItemV1Catalog` now includes `SpawnChild`, `ChildSpawned`, and an await-condition sample on
+  `WorkItemSuspended` for polymorphic registration coverage.
+- [x] `SchemaEvolutionGoldenCorpusTests` now freezes and round-trips `ChildSpawned.v1.json`, including
+  additive unknown-field tolerance.
+
+### Documentation
+
+- [x] `docs/work-tree-shape-guard.md` records that `SpawnChild` reuses the pure caller-fed tree guard and
+  stores only lightweight parent-owned child references.
+
+## Story 3.2 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **307/307** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **52/52** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed.
+
+### Story 3.2 Test Counts
+
+| Suite | Story 3.1 Final | Dev 3.2 Baseline | QA Final | QA Delta |
+|-------|----------------:|-----------------:|---------:|---------:|
+| UnitTests | 278 | 296 | **307** | +11 |
+| IntegrationTests | 46 | 52 | **52** | — |
+| ArchitectureTests | 26 | 26 | **26** | — |
+| PropertyTests | 1 | 1 | **1** | — |
+| **Total** | **351** | **375** | **386** | **+11** |
+
+### Checklist
+
+- [x] API/contract tests cover spawn command/event flow, await-condition payloads, and envelope omission.
+- [x] E2E/UI tests marked not applicable (Story 3.2 is pure Contracts + Server + docs; no UI/browser
+  surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly).
+- [x] Tests cover happy paths (spawn, spawn with await, replay, child-create facts).
+- [x] Tests cover critical error/edge cases (missing/terminal parent, await from non-`InProgress`,
+  cross-tenant ancestor, self/cycle, second parent, depth overflow).
+- [x] All generated tests run successfully (386/386).
+- [x] Tests use clear descriptions and semantic assertions.
+- [x] No hardcoded waits or sleeps.
+- [x] Tests are independent and arrange their own facts/state.
+- [x] Tests saved to the appropriate existing project directories.
+- [x] Test summary includes coverage metrics.
+
+## Notes
+
+- This QA run is **gap-filling only** — no production code was changed; only
+  `tests/Hexalith.Works.UnitTests/WorkItemSpawnChildTests.cs` was extended (+5 test methods / +11
+  cases). No golden fixture or catalog change was needed (`Count` stays **36**).
+- The five gaps were each an uncovered branch or explicit AC clause: (1) plain-spawn acceptance from the
+  four live statuses beyond `Created`; (2) the missing-obligation child rejection branch; (3) AC #4's
+  replay-safety clause (rejected spawn burns no sequence); (4) the `Apply(ChildSpawned)` dedup branch
+  plus multi-child accumulation; (5) the guard's same-parent idempotency accept branch on retry.
+
+---
+
 # Test Automation Summary — Story 3.1 (Guard Tenant-Safe Work Tree Shape)
 
 Workflow: `bmad-qa-generate-e2e-tests` after `bmad-dev-story`. Framework reused: **xUnit v3 +

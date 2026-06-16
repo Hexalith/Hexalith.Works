@@ -9,4 +9,5 @@ public sealed partial record WorkItemSuspended(
     string AggregateId,
     long Sequence,
     TenantId TenantId,
-    WorkItemId WorkItemId) : IEventPayload;
+    WorkItemId WorkItemId,
+    AwaitCondition? AwaitCondition = null) : IEventPayload;

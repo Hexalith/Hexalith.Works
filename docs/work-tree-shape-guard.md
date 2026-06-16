@@ -31,3 +31,12 @@ configuration stores, clocks, files, HTTP, databases, Dapr, or generated IDs.
 Story 3.1 does not implement `ChildSpawned`, roll-up, await conditions, cascade traversal,
 projections, query-side authorization, reactor behavior, runtime reminders, or AppHost wiring. Later
 stories must supply their own caller facts and reuse this guard before writing new tree edges.
+
+## Spawned Child Work
+
+`SpawnChild` reuses the same guard before the parent records a `ChildSpawned` event. The command
+supplies the child id, proposed parent depth, proposed parent ancestor chain, max-depth policy, and
+any known existing child parent fact; the aggregate does not read EventStore or projections to decide
+whether the child edge is valid. When accepted, the parent records only the child work item id and the
+facts needed for the command pipeline to create the child with
+`ParentWorkItemReference(parentTenant, parentWorkItemId)`.

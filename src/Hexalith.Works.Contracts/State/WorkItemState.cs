@@ -8,6 +8,8 @@ namespace Hexalith.Works.Contracts.State;
 public sealed class WorkItemState
 {
     private const string Domain = "work";
+    private readonly List<WorkItemId> _spawnedChildWorkItemIds = [];
+    private readonly List<AwaitCondition> _awaitConditions = [];
 
     public TenantId? TenantId { get; private set; }
 
@@ -37,6 +39,10 @@ public sealed class WorkItemState
     public ExecutorBinding? ExecutorBinding { get; private set; }
 
     public ConversationCorrelationId? ConversationCorrelationId { get; private set; }
+
+    public IReadOnlyList<WorkItemId> SpawnedChildWorkItemIds => _spawnedChildWorkItemIds;
+
+    public IReadOnlyList<AwaitCondition> AwaitConditions => _awaitConditions;
 
     public AggregateIdentity? AggregateIdentity => TenantId is null || WorkItemId is null
         ? null
@@ -98,8 +104,8 @@ public sealed class WorkItemState
 
     // Lifecycle replay: each success event is trusted (WorkItemAggregate.Handle is the sole writer and
     // enforces the transition table before emitting) and applied by setting the target status and the
-    // monotonic sequence. Only the minimal field this story owns is touched — burn-down, await
-    // conditions, and roll-up are deferred to later stories and are not mutated here.
+    // monotonic sequence. Only the minimal fields owned by current stories are touched: own effort,
+    // child-completion awaits, and lightweight child references. Roll-up remains deferred.
     public void Apply(WorkItemAssigned e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -128,12 +134,29 @@ public sealed class WorkItemState
         ArgumentNullException.ThrowIfNull(e);
         Status = WorkItemStatus.Suspended;
         Sequence = e.Sequence;
+        _awaitConditions.Clear();
+        if (e.AwaitCondition is not null)
+        {
+            _awaitConditions.Add(e.AwaitCondition);
+        }
     }
 
     public void Apply(WorkItemResumed e)
     {
         ArgumentNullException.ThrowIfNull(e);
         Status = WorkItemStatus.InProgress;
+        Sequence = e.Sequence;
+        _awaitConditions.Clear();
+    }
+
+    public void Apply(ChildSpawned e)
+    {
+        ArgumentNullException.ThrowIfNull(e);
+        if (!_spawnedChildWorkItemIds.Contains(e.ChildWorkItemId))
+        {
+            _spawnedChildWorkItemIds.Add(e.ChildWorkItemId);
+        }
+
         Sequence = e.Sequence;
     }
 
