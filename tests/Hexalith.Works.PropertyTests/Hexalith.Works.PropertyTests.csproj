@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 </Project>

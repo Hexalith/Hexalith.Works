@@ -164,27 +164,28 @@ public sealed class ScaffoldGovernanceTests
     }
 
     [Fact]
-    public void P0_WorkItemSliceDoesNotIntroduceDeferredBurnDownRollUpOrReminderBehavior()
+    public void P0_WorkItemSliceAllowsRollUpOnlyInProjectionAndContractReadModelsAndKeepsRemindersDeferred()
     {
         string root = RepositoryRoot.Locate();
         string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsBuildOutput(path))];
 
-        // Story 2.3 legitimately introduces own-effort progress/burn-down math. Recursive roll-up
-        // (Epic 3) and reminders (Story 4.6) remain deferred and must not appear in src yet.
-        string[] deferredDomainTerms =
-        [
-            "RollUp",
-            "Reminder",
-        ];
+        // Story 3.3 owns recursive roll-up, but only as explicit read-model contracts and pure
+        // projection logic. Reminder/reactor recovery remains deferred to Story 4.6.
+        string[] rollUpOutsideOwnedLocations = [.. sourceFiles
+            .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
+            .Where(path => !IsOwnedRollUpLocation(root, path))
+            .Where(path => File.ReadAllText(path).Contains("RollUp", StringComparison.OrdinalIgnoreCase))];
 
-        string[] filesWithDeferredBehavior = [.. sourceFiles
+        rollUpOutsideOwnedLocations.ShouldBeEmpty("Story 3.3 permits roll-up only in Contracts read models and Projections strategy/input code.");
+
+        string[] filesWithReminderBehavior = [.. sourceFiles
             .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.ServiceDefaults", "Extensions.cs"), StringComparison.Ordinal))
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.AppHost", "Program.cs"), StringComparison.Ordinal))
-            .Where(path => deferredDomainTerms.Any(term => File.ReadAllText(path).Contains(term, StringComparison.OrdinalIgnoreCase)))];
+            .Where(path => File.ReadAllText(path).Contains("Reminder", StringComparison.OrdinalIgnoreCase))];
 
-        filesWithDeferredBehavior.ShouldBeEmpty("Recursive roll-up (Epic 3) and reminder/reactor recovery (Story 4.6) remain deferred and must not be introduced in src.");
+        filesWithReminderBehavior.ShouldBeEmpty("Reminder/reactor recovery (Story 4.6) remains deferred and must not be introduced in src.");
     }
 
     [Fact]
@@ -257,4 +258,11 @@ public sealed class ScaffoldGovernanceTests
     private static bool IsBuildOutput(string path)
         => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
             || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
+    private static bool IsOwnedRollUpLocation(string root, string path)
+    {
+        string relative = Path.GetRelativePath(root, path);
+        return relative.StartsWith(Path.Combine("src", "Hexalith.Works.Contracts", "Models"), StringComparison.Ordinal)
+            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.Projections"), StringComparison.Ordinal);
+    }
 }

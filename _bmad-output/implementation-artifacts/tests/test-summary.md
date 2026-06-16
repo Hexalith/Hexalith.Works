@@ -1,3 +1,100 @@
+# Test Automation Summary — Story 3.3 (Maintain Recursive Roll-Up with Per-Child Sequence)
+
+Workflow: `bmad-qa-generate-e2e-tests` (QA gap-filling pass) after `bmad-dev-story`. Framework reused:
+**xUnit v3 + Shouldly** for focused projection/unit coverage and **FsCheck** for convergence coverage.
+Story 3.3 adds explicit roll-up read-model contracts, a pure recursive projection strategy,
+tenant-safe traversal, duplicate/out-of-order convergence, terminal zero-contribution behavior,
+mixed-unit single-value protection, and a narrowed architecture guard that permits roll-up only in the
+owned contracts/projections locations. There is no UI/browser surface for this story; the executable
+end-to-end path is projection delivery facts into the pure recursive roll-up strategy and consumer
+read-model inspection.
+
+Story 3.2 final baseline was **386** green tests (UnitTests 307, IntegrationTests 52,
+ArchitectureTests 26, PropertyTests 1). Story 3.3 adds **+18** unit tests and replaces the scaffold
+property with a real FsCheck convergence property, raising the total to **404** green tests.
+
+## Gaps closed this run
+
+### Contracts and projections
+
+- [x] Added `OwnRemaining`, `RolledRemaining`, and `WorkItemRollUp` read-model contracts under
+  `src/Hexalith.Works.Contracts/Models`.
+- [x] Added `WorkItemRollUpEvent` delivery facts and `WorkItemRollUpProjection` pure strategy under
+  `src/Hexalith.Works.Projections`.
+- [x] Projection derives own remaining from create/progress/re-estimate events, assigns terminal
+  contribution to zero, recomputes recursive rolled remaining, and exposes mixed units as per-unit
+  values without fabricating a single total.
+- [x] Tenant equality is checked at edge creation and traversal so cross-tenant/colliding ids cannot
+  leak child totals.
+
+### QA gap-fill tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] Added child-before-edge convergence coverage so progress delivered before parent edge
+  materialization still rolls up when `ChildSpawned` later establishes the relationship.
+- [x] Added stale-after-terminal coverage proving a lower-sequence non-terminal child event cannot
+  resurrect contribution after completion.
+- [x] Added non-roll-up lifecycle event coverage for assignment, queue, claim, suspend, resume, and
+  reschedule events so they remain tolerated without changing effort totals.
+- [x] Added invalid delivery-fact coverage for non-positive sequence and tenant/payload mismatches.
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemRollUpProjectionTests` covers one parent/child, nested descendants, own-vs-rolled type
+  distinction, duplicate delivery, out-of-order delivery, all terminal zero-contribution events,
+  `Requeue: true` non-terminal behavior, edge materialization from both `WorkItemCreated.Parent` and
+  `ChildSpawned`, child-before-edge delivery, stale-after-terminal ordering, ignored non-roll-up
+  lifecycle events, invalid delivery facts, tenant isolation, mixed units, and unestimated items.
+
+### Property tests (`tests/Hexalith.Works.PropertyTests`)
+
+- [x] Replaced the scaffold FsCheck availability test with `WorkItemRollUpConvergencePropertyTests`.
+- [x] FsCheck generates bounded tenant-safe tree shapes with nested descendants, optional terminal child
+  events, duplicate/permuted delivery, and a cross-tenant colliding id; each generated case converges to
+  canonical sequence-order replay without leaking foreign-tenant totals.
+
+### Architecture and documentation
+
+- [x] Updated `ScaffoldGovernanceTests` so roll-up is allowed only in Contracts read-models and
+  Projections implementation/input code while reminders remain deferred.
+- [x] Added `docs/work-roll-up-projection.md` describing the per-child latest-state rule, tenant
+  equality assertion, terminal zero contribution, and own-vs-rolled remaining distinction.
+
+## Story 3.3 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **325/325** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **52/52** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed; FsCheck reported **100** generated cases.
+
+### Story 3.3 Test Counts
+
+| Suite | Story 3.2 Final | Story 3.3 Final | Delta |
+|-------|----------------:|----------------:|------:|
+| UnitTests | 307 | **325** | +18 |
+| IntegrationTests | 52 | **52** | — |
+| ArchitectureTests | 26 | **26** | — |
+| PropertyTests | 1 | **1** | replaced scaffold |
+| **Total** | **386** | **404** | **+18** |
+
+### Checklist
+
+- [x] Read-model contracts distinguish own remaining from eventual rolled remaining.
+- [x] Projection tests cover recursive propagation, duplicates, out-of-order delivery, terminal events,
+  non-terminal requeue, tenant isolation, mixed units, and unestimated items.
+- [x] Property coverage verifies convergence under generated tree shapes with duplicate/permuted delivery
+  and tenant-collision noise.
+- [x] Architecture fitness and documentation updated for Story 3.3 roll-up scope.
+- [x] All validation commands passed.
+
+---
+
 # Test Automation Summary — Story 3.2 (Spawn Child Work from a Parent)
 
 Workflow: `bmad-qa-generate-e2e-tests` (QA gap-filling pass) after `bmad-dev-story`. Framework reused:
