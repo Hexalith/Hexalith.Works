@@ -1,4 +1,111 @@
-# Test Automation Summary — Story 2.2 (Record Raw-Act Events and Replay State)
+# Test Automation Summary — Story 2.3 (Report Progress with Unit-Tagged Burn-Down)
+
+Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code
+review or story validation). Framework detected and reused: **xUnit v3 + Shouldly**, Tier-1 (no
+Dapr/Aspire/containers/network). Story 2.3 is a pure `Contracts` + `Server` domain slice with **no UI,
+MCP, public route, or host surface**, so browser/UI E2E is **not applicable**; the executable
+end-to-end path is **command → `WorkItemAggregate.Handle` → raw-act event → concrete JSON transport
+shape → replayed `WorkItemState`**, exercised by the unit + contract-flow tests below.
+
+The dev-authored Story 2.3 baseline was **247** green tests (UnitTests 183, IntegrationTests 37,
+ArchitectureTests 26, PropertyTests 1). This QA run discovered AC-aligned coverage gaps and
+auto-applied **+7** tests, raising the total to **254** green. **No production code was changed** —
+only test files were added/extended.
+
+## Gaps auto-applied this run
+
+Mapped against AC #1–#5, the dev baseline already covered single-report progress, over-progress
+clamping, completion event order, the rejection paths (non-positive delta, Unit mismatch, unestimated,
+out-of-`InProgress`), explicit completion for unestimated work, schema-evolution freeze/round-trip, and
+the auto-complete JSON flow. The genuine gaps were the **multi-report burn-down ("burns down as a
+fact")** behavior, the **exact-zero completion boundary**, the **`WorkItemEffort.Report` value-object
+contract**, and the **non-completing JSON round-trip** — each closed below:
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`)
+
+- [x] `WorkItemProgressTests.ReportProgress_applied_repeatedly_accumulates_done_and_burns_down_remaining`
+  (AC #2) — two sequential reports (3 then 2 of 8) each append a `ProgressReported` at the next
+  sequence, accumulate replayed `Done` (3 → 5) and burn down `Remaining` (5 → 3), and do **not**
+  auto-complete while `Remaining` stays positive (asserts a single event per report, omitted `Note`
+  replays as `null`). Previously only a single report was tested.
+- [x] `WorkItemProgressTests.ReportProgress_with_delta_exactly_equal_to_remaining_completes_in_order`
+  (AC #3 boundary) — a delta that lands `Remaining` **exactly** on zero (not over) completes
+  synchronously, emitting `ProgressReported` then `WorkItemCompleted` at `+1`/`+2`. The pre-existing
+  unit test only covered the over-shoot (clamp) path; exact-equal was implicit (integration only).
+- [x] `WorkItemEffortTests.WorkItemEffort_report_accumulates_done_and_re_derives_remaining`
+  (AC #1/#2) — chained `Report(3).Report(2)` advances `Done` and re-derives `Remaining` without
+  storing it.
+- [x] `WorkItemEffortTests.WorkItemEffort_report_rejects_non_positive_delta` (AC #2/#5, theory `-1`/`0`)
+  — the value object's own positive-delta guard throws `ArgumentOutOfRangeException`. The guard existed
+  but was only enforced indirectly via the aggregate; it is now directly gated.
+
+### Integration / contract-flow tests (`tests/Hexalith.Works.IntegrationTests`)
+
+- [x] `WorkItemProgressContractFlowTests.Partial_progress_round_trips_through_json_and_burns_down_without_completing`
+  (AC #1/#2) — a single sub-completion report (3 of 8) survives concrete `JsonSerializerDefaults.Web`
+  serialization and replays to `Done=3` / `Remaining=5` / `InProgress` / `Sequence=4`, with `Note`
+  preserved and **no** `WorkItemCompleted`. The only prior integration test exercised the auto-complete
+  path (8 of 8); the non-completing burn-down path through JSON was untested.
+- [x] `WorkItemProgressContractFlowTests.Repeated_progress_round_trips_through_json_and_accumulates_then_completes`
+  (AC #2/#3) — two reports delivered through concrete JSON accumulate `Done` across reports (3 then 5),
+  and the report that lands `Remaining` on zero round-trips with its paired `WorkItemCompleted` to a
+  `Completed` / `Sequence=6` replay that matches the write side.
+
+## Story 2.3 Validation
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` —
+  passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors** (warnings-as-errors).
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **188/188** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **39/39** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **26/26** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed.
+
+### Story 2.3 Test Counts
+
+| Suite | Story 2.2 Baseline | Dev 2.3 Baseline | QA Final | QA Delta |
+|-------|-------------------:|-----------------:|---------:|---------:|
+| UnitTests | 166 | 183 | **188** | +5 |
+| IntegrationTests | 34 | 37 | **39** | +2 |
+| ArchitectureTests | 26 | 26 | 26 | — |
+| PropertyTests | 1 | 1 | 1 | — |
+| **Total** | **227** | **247** | **254** | **+7** |
+
+### Story 2.3 Coverage Notes
+
+- Unit tests cover positive progress, **cumulative multi-report burn-down**, over-progress clamping,
+  **exact-zero completion boundary**, progress-driven completion event order, negative/zero delta
+  rejection, Unit mismatch rejection, unestimated progress rejection, status-based rejection outside
+  `InProgress`, explicit completion for unestimated `InProgress`/`Suspended` work, and the
+  `WorkItemEffort.Report` accumulation/guard contract.
+- Integration tests cover command → aggregate → concrete JSON → replay for **partial (non-completing)**,
+  **repeated/accumulating**, and **auto-complete** progress, keeping EventStore envelope fields out of
+  concrete payloads.
+- Schema tests cover frozen `ProgressReported.v1.json`, round-trip deserialization, and additive unknown
+  field tolerance.
+- Architecture tests verify the lifecycle matrix mentions `ReportProgress`, kernel purity still passes,
+  and roll-up/reminder terms remain banned from `src`.
+
+### Checklist
+
+- [x] API/contract tests generated (partial-burn-down + repeated-accumulate JSON round-trips).
+- [x] E2E/UI tests marked not applicable (Story 2.3 is pure Contracts + Server + Tier-1; no UI/browser surface).
+- [x] Tests use standard project framework APIs (xUnit v3 + Shouldly; no raw `Assert.*`, Moq, or FluentAssertions).
+- [x] Tests cover happy path (single + cumulative burn-down; partial + completing JSON replay).
+- [x] Tests cover critical error/edge cases (exact-zero boundary; non-positive `Report` delta guard).
+- [x] All generated tests run successfully (254/254).
+- [x] Tests use semantic assertions and clear descriptions.
+- [x] No hardcoded waits or sleeps (pure in-memory + JSON; no clock/RNG/IO).
+- [x] Tests are independent (each arranges its own state via replay; no order dependency).
+- [x] Test summary updated with coverage metrics.
+
+---
+
+# Historical Test Automation Summary — Story 2.2 (Record Raw-Act Events and Replay State)
 
 Workflow: `bmad-qa-generate-e2e-tests`. Role: QA automation engineer (test generation only — no code
 review or story validation). Baseline before this run (dev-authored, green): **221** tests

@@ -170,14 +170,10 @@ public sealed class ScaffoldGovernanceTests
         string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsBuildOutput(path))];
 
-        // Story 2.1 legitimately introduces the lifecycle state machine — including the Queued/Suspended
-        // statuses and the Suspend/Resume/Claim/Queue lifecycle commands and events — so those terms are
-        // no longer banned. Burn-down (Story 2.3), roll-up (Epic 3), and reminders (Story 4.6) remain the
-        // still-deferred runtime behaviors and must not appear in src yet.
+        // Story 2.3 legitimately introduces own-effort progress/burn-down math. Recursive roll-up
+        // (Epic 3) and reminders (Story 4.6) remain deferred and must not appear in src yet.
         string[] deferredDomainTerms =
         [
-            "BurnDown",
-            "Burndown",
             "RollUp",
             "Reminder",
         ];
@@ -188,7 +184,7 @@ public sealed class ScaffoldGovernanceTests
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.AppHost", "Program.cs"), StringComparison.Ordinal))
             .Where(path => deferredDomainTerms.Any(term => File.ReadAllText(path).Contains(term, StringComparison.OrdinalIgnoreCase)))];
 
-        filesWithDeferredBehavior.ShouldBeEmpty("Burn-down math (Story 2.3), recursive roll-up (Epic 3), and reminder/reactor recovery (Story 4.6) remain deferred and must not be introduced in src.");
+        filesWithDeferredBehavior.ShouldBeEmpty("Recursive roll-up (Epic 3) and reminder/reactor recovery (Story 4.6) remain deferred and must not be introduced in src.");
     }
 
     [Fact]

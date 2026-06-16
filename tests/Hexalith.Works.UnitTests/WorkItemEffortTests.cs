@@ -47,4 +47,24 @@ public sealed class WorkItemEffortTests
     [Fact]
     public void WorkItemEffort_rejects_null_unit()
         => Should.Throw<ArgumentNullException>(() => new WorkItemEffort(8m, null!));
+
+    [Fact]
+    public void WorkItemEffort_report_accumulates_done_and_re_derives_remaining()
+    {
+        // AC #1/#2: Report returns a new effort with Done advanced by the delta and Remaining re-derived;
+        // chaining reports accumulates without ever storing Remaining.
+        WorkItemEffort first = new WorkItemEffort(8m, new Unit("hour")).Report(3m);
+        first.Done.ShouldBe(3m);
+        first.Remaining.ShouldBe(5m);
+
+        WorkItemEffort second = first.Report(2m);
+        second.Done.ShouldBe(5m);
+        second.Remaining.ShouldBe(3m);
+    }
+
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(0)]
+    public void WorkItemEffort_report_rejects_non_positive_delta(int delta)
+        => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour")).Report(delta));
 }

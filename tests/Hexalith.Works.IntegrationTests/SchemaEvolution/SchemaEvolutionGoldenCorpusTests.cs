@@ -90,6 +90,25 @@ public sealed class SchemaEvolutionGoldenCorpusTests
     }
 
     [Fact]
+    public void ProgressReported_DeserializesFromFrozenBytesAndRoundTrips()
+    {
+        string frozen = ReadGolden("ProgressReported.v1.json");
+
+        ProgressReported deserialized = JsonSerializer.Deserialize<ProgressReported>(frozen, Options).ShouldNotBeNull();
+
+        deserialized.AggregateId.ShouldBe("work-001");
+        deserialized.Sequence.ShouldBe(7);
+        deserialized.TenantId.Value.ShouldBe("tenant-alpha");
+        deserialized.WorkItemId.Value.ShouldBe("work-001");
+        deserialized.DoneDelta.ShouldBe(3m);
+        deserialized.Unit.Value.ShouldBe("point");
+        deserialized.Note.ShouldBe("first progress");
+
+        string reserialized = JsonSerializer.Serialize(deserialized, Options);
+        JsonSerializer.Deserialize<ProgressReported>(reserialized, Options).ShouldBe(deserialized);
+    }
+
+    [Fact]
     public void WorkItemClaimed_DeserializesFromFrozenBytesAndRoundTrips()
     {
         WorkItemClaimed deserialized = RoundTrip<WorkItemClaimed>("WorkItemClaimed.v1.json");
@@ -182,6 +201,17 @@ public sealed class SchemaEvolutionGoldenCorpusTests
 
         WorkItemCompleted deserialized = JsonSerializer.Deserialize<WorkItemCompleted>(withFutureField, Options).ShouldNotBeNull();
         deserialized.Sequence.ShouldBe(7);
+    }
+
+    [Fact]
+    public void ProgressReported_ToleratesAdditiveUnknownField()
+    {
+        string frozen = ReadGolden("ProgressReported.v1.json");
+        string withFutureField = frozen.TrimEnd().TrimEnd('}') + ",\n  \"futureField\": \"ignored\"\n}";
+
+        ProgressReported deserialized = JsonSerializer.Deserialize<ProgressReported>(withFutureField, Options).ShouldNotBeNull();
+        deserialized.DoneDelta.ShouldBe(3m);
+        deserialized.Unit.Value.ShouldBe("point");
     }
 
     // Deserializes a frozen file via the production path and proves it re-serializes and round-trips to

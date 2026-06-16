@@ -27,7 +27,8 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 | `ClaimWorkItem` | Claim | `WorkItemClaimed` | The only `InProgress`-entry event in the v1 catalog. |
 | `SuspendWorkItem` | Suspend | `WorkItemSuspended` | No await payload in v1 (Story 3.5). |
 | `ResumeWorkItem` | Resume | `WorkItemResumed` | Resume is a transition back to `InProgress` — there is no resting `Resumed` status. |
-| `CompleteWorkItem` | Complete | `WorkItemCompleted` | Explicit complete act (Remaining=0 auto-completion is Story 2.3). |
+| `CompleteWorkItem` | Complete | `WorkItemCompleted` | Explicit complete act. |
+| `ReportProgress` | ReportProgress | `ProgressReported` / `WorkItemCompleted` | Progress act accepted only from `InProgress` with estimated effort and matching Unit; completion is emitted when Remaining reaches zero. |
 | `CancelWorkItem` | Cancel | `WorkItemCancelled` | Terminal cancel. |
 | `RejectWorkItem` | Reject | `WorkItemRejected` | `Requeue=true` (default) rests at `Queued`; `Requeue=false` reaches terminal `Rejected`. |
 | `ExpireWorkItem` | Expire | `WorkItemExpired` | Command-driven; handling reads no clock (advisory-until-fired). |
@@ -36,6 +37,30 @@ An illegal transition emits no success event and produces **no state change**; t
 `WorkItemTransitionRejected` rejection event (carrying `FromStatus` + `AttemptedAct`) to the caller.
 This is distinct from the terminal `Rejected` **status**, which is reached only by
 `RejectWorkItem(Requeue: false)`.
+
+## Progress act
+
+`ReportProgress` is a progress act, not a lifecycle reclassification command. It is accepted only when
+the work item is already `InProgress`, has estimated effort, carries a positive `DoneDelta`, and uses
+the established effort `Unit`. Accepted progress emits `ProgressReported` with the raw reported delta.
+If replaying that delta makes own Remaining reach zero, the same accepted result also emits
+`WorkItemCompleted` as the next success event.
+
+| From | `ReportProgress` outcome |
+|---|---|
+| `Created` | R |
+| `Assigned` | R |
+| `Queued` | R |
+| `InProgress` | `→InProgress` while Remaining > 0; `→Completed` when Remaining = 0 |
+| `Suspended` | R |
+| `Completed` | R |
+| `Cancelled` | R |
+| `Rejected` | R |
+| `Expired` | R |
+
+Progress-specific validation failures (`DoneDelta <= 0`, missing estimated effort, or mismatched
+`Unit`) return `WorkItemProgressRejected` and produce no state change. Status failures return
+`WorkItemTransitionRejected`.
 
 ## Transition matrix
 

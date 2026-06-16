@@ -24,4 +24,14 @@ public sealed record WorkItemEffort
     public decimal Done { get; }
 
     public decimal Remaining => Estimated - Done;
+
+    public WorkItemEffort Report(decimal doneDelta)
+    {
+        if (doneDelta <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(doneDelta), doneDelta, "Done delta must be positive.");
+        }
+
+        return new WorkItemEffort(Estimated, Unit, Math.Min(Estimated, Done + doneDelta));
+    }
 }

@@ -149,6 +149,57 @@ public static class WorkItemAggregate
         };
     }
 
+    public static DomainResult Handle(ReportProgress command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        ArgumentNullException.ThrowIfNull(command.Unit);
+
+        WorkItemStatus from = CurrentStatus(state);
+        if (from != WorkItemStatus.InProgress)
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(ReportProgress));
+        }
+
+        if (command.DoneDelta <= 0)
+        {
+            return RejectProgress(command.TenantId, command.WorkItemId, "Done delta must be positive.");
+        }
+
+        WorkItemEffort? effort = state?.InitialEffort;
+        if (effort is null)
+        {
+            return RejectProgress(command.TenantId, command.WorkItemId, "Progress requires estimated effort.");
+        }
+
+        if (command.Unit != effort.Unit)
+        {
+            return RejectProgress(command.TenantId, command.WorkItemId, "Progress unit must match the established effort unit.");
+        }
+
+        long progressSequence = NextSequence(state);
+        var progressReported = new ProgressReported(
+            command.WorkItemId.Value,
+            progressSequence,
+            command.TenantId,
+            command.WorkItemId,
+            command.DoneDelta,
+            command.Unit,
+            command.Note);
+
+        WorkItemEffort updatedEffort = effort.Report(command.DoneDelta);
+        if (updatedEffort.Remaining == 0)
+        {
+            return DomainResult.Success([
+                progressReported,
+                new WorkItemCompleted(command.WorkItemId.Value, progressSequence + 1, command.TenantId, command.WorkItemId),
+            ]);
+        }
+
+        return DomainResult.Success([progressReported]);
+    }
+
     public static DomainResult Handle(CancelWorkItem command, WorkItemState? state)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -211,6 +262,9 @@ public static class WorkItemAggregate
 
     private static DomainResult Reject(TenantId tenantId, WorkItemId workItemId, WorkItemStatus from, string attemptedAct)
         => DomainResult.Rejection([new WorkItemTransitionRejected(tenantId, workItemId, from, attemptedAct)]);
+
+    private static DomainResult RejectProgress(TenantId tenantId, WorkItemId workItemId, string reason)
+        => DomainResult.Rejection([new WorkItemProgressRejected(tenantId, workItemId, reason)]);
 
     private static WorkItemEffort? NormalizeInitialEffort(WorkItemEffort? effort)
         => effort is null || effort.Done == 0

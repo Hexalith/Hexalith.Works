@@ -1,0 +1,15 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 7,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "doneDelta": 3,
+  "unit": {
+    "value": "point"
+  },
+  "note": "first progress"
+}
