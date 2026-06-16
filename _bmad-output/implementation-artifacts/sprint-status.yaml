@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-06-16T00:00:00+02:00
+last_updated: 2026-06-16T18:30:00+02:00
 project: works
 project_key: NOKEY
 tracking_system: file-system
@@ -48,8 +48,8 @@ development_status:
   1-3-reference-sibling-modules-without-copying-data: done
   1-4-expose-boundary-ports-and-decision-record: done
   epic-1-retrospective: optional
-  epic-2: backlog
-  2-1-define-the-lifecycle-state-machine: backlog
+  epic-2: in-progress
+  2-1-define-the-lifecycle-state-machine: done
   2-2-record-raw-act-events-and-replay-state: backlog
   2-3-report-progress-with-unit-tagged-burn-down: backlog
   2-4-re-estimate-and-reschedule-work: backlog
