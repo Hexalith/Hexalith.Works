@@ -62,10 +62,28 @@ public sealed class DependencyDirectionTests
 
         return [.. project.Descendants()
             .Where(element => element.Name.LocalName == "ProjectReference")
+            .Where(element => !IsConditionallyExcluded(element))
             .Select(element => element.Attribute("Include")?.Value)
             .OfType<string>()
             .Where(include => !string.IsNullOrWhiteSpace(include))
             .Select(ProjectNameFromReference)];
+    }
+
+    // The fitness test must reflect the *realized* default build graph, not the raw XML. A reference
+    // gated by a Condition (on the element itself or an ancestor ItemGroup) is excluded from the
+    // unconditional build, so it must not be counted as present. This prevents a disabled (decorative)
+    // reference from making the dependency-direction assertion pass while the real build omits it.
+    private static bool IsConditionallyExcluded(XElement element)
+    {
+        for (XElement? current = element; current is not null; current = current.Parent)
+        {
+            if (current.Attribute("Condition") is not null)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static string ProjectNameFromReference(string include)

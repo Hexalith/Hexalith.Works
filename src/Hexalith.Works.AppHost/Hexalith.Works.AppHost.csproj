@@ -4,12 +4,11 @@
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsPublishable>true</IsPublishable>
-    <EnableAppHostProjectReferences Condition="'$(EnableAppHostProjectReferences)' == ''">false</EnableAppHostProjectReferences>
-    <HexalithEventStoreBasePath>$(MSBuildThisFileDirectory)..\..\Hexalith.EventStore\src</HexalithEventStoreBasePath>
-    <HexalithTenantsBasePath>$(MSBuildThisFileDirectory)..\..\Hexalith.Tenants\src</HexalithTenantsBasePath>
+    <HexalithEventStoreBasePath>$(HexalithEventStoreRoot)\src</HexalithEventStoreBasePath>
+    <HexalithTenantsBasePath>$(HexalithTenantsRoot)\src</HexalithTenantsBasePath>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(EnableAppHostProjectReferences)' == 'true'">
+  <ItemGroup>
     <ProjectReference Include="..\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" IsAspireProjectResource="false" />
     <ProjectReference Include="..\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" IsAspireProjectResource="false" />

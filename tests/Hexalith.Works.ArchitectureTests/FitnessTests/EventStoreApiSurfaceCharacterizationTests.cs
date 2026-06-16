@@ -31,17 +31,27 @@ public sealed class EventStoreApiSurfaceCharacterizationTests
     public void P1_EventStoreExposesETagBackedProjectionInvalidationSurfaces()
     {
         string eventStoreRoot = RepositoryRoot.PathFromRoot("Hexalith.EventStore");
-        string projectionWriteActor = File.ReadAllText(Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Server", "Actors", "IProjectionWriteActor.cs"));
 
+        Directory.Exists(eventStoreRoot).ShouldBeTrue("The root Hexalith.EventStore submodule must be initialized non-recursively before Works implementation depends on it.");
+
+        string projectionWriteActor = ReadEventStoreSource(eventStoreRoot, "Hexalith.EventStore.Server", "Actors", "IProjectionWriteActor.cs");
         projectionWriteActor.ShouldContain("UpdateProjectionAsync");
         projectionWriteActor.ShouldContain("ETag", Case.Insensitive);
 
-        string etagActor = File.ReadAllText(Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Server", "Actors", "IETagActor.cs"));
+        string etagActor = ReadEventStoreSource(eventStoreRoot, "Hexalith.EventStore.Server", "Actors", "IETagActor.cs");
         etagActor.ShouldContain("GetCurrentETagAsync");
         etagActor.ShouldContain("RegenerateAsync");
 
-        string notifier = File.ReadAllText(Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Server", "Projections", "DaprProjectionChangeNotifier.cs"));
+        string notifier = ReadEventStoreSource(eventStoreRoot, "Hexalith.EventStore.Server", "Projections", "DaprProjectionChangeNotifier.cs");
         notifier.ShouldContain("ProjectionChangedNotification");
         notifier.ShouldContain("RegenerateAsync");
+    }
+
+    private static string ReadEventStoreSource(string eventStoreRoot, params string[] relativeSegments)
+    {
+        string path = Path.Combine([eventStoreRoot, "src", .. relativeSegments]);
+        File.Exists(path).ShouldBeTrue($"Expected EventStore source '{path}' to exist; the API-surface contract Works depends on may have moved or been renamed upstream.");
+
+        return File.ReadAllText(path);
     }
 }

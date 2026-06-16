@@ -4,7 +4,7 @@ baseline_commit: 0fe247f165ec622ec077fa193e4bf6721ecf12c1
 
 # Story 1.1: Set Up Initial Project from Starter Template
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -86,6 +86,34 @@ so that I can implement the Work Item kernel in a verified, buildable module wit
   - [x] Confirm **no** `--recursive` submodule command and **no** nested-submodule init were needed.
 - [x] **Task 7 — Scope guard: confirm scaffold-only (AC: #6)**
   - [x] Confirm projects contain only scaffolding (project files + minimal markers), **no** Work Item lifecycle, burn-down, roll-up, suspend/resume, executor-binding, or reactor runtime behavior. Those remain in their later stories.
+
+### Review Findings
+
+_Code review 2026-06-16 — diff `0fe247f..beba4f2` (scaffold deliverables; BMAD process metadata excluded). Layers: Blind Hunter, Edge Case Hunter, Acceptance Auditor. Result: **2 decision-needed, 6 patch, 3 defer, 8 dismissed.**_
+
+_**Resolution 2026-06-16:** both decisions resolved → patches; **all 8 patches applied and verified.** `dotnet restore` + `dotnet build Hexalith.Works.slnx -c Release` now green (**0 warnings / 0 errors**) with the EventStore references **active** — the SDK/submodule metadata failure did not recur (submodules initialized). Tests run individually: ArchitectureTests **15/15**, UnitTests 1/1, PropertyTests 1/1, IntegrationTests 1/1. The dependency-direction tests are now genuinely green (references present + condition-aware so re-gating would fail them). Minor note: the cross-submodule EventStore projects build under their own `bin/Debug` when referenced — green, left as-is._
+
+**Decision-needed — RESOLVED 2026-06-16:**
+
+- [x] [Review][Decision] Gated-off project references leave the scaffold's real build graph empty (AC#1/#3/#5 wiring never compiled; `EnableEventStoreContractsReference` defined nowhere, `EnableAppHostProjectReferences` defaults false). → **Resolved: option (a) — enable the references and fix the build.** Converted to patch below.
+- [x] [Review][Decision] `NuGet.Config` commits a machine-specific, local-only feed (`/home/administrator/.nuget/packages`, all sources + audit cleared) that breaks restore elsewhere. → **Resolved: remove the file and rely on SDK defaults** (defaults work on any networked machine/CI). Converted to patch below.
+
+**Patch (unambiguous fixes):**
+
+- [x] [Review][Patch] Un-gate the EventStore.Contracts + AppHost topology references so the real build wires the AC#1/#3/#5 graph — remove the `EnableEventStoreContractsReference` / `EnableAppHostProjectReferences` condition gates (or default them on when `$(HexalithEventStoreRoot)` resolves), matching the donor's unconditional references, then confirm `dotnet build Hexalith.Works.slnx` builds green with the references active. Reconcile the AppHost validation target (`..\..\Hexalith.EventStore\src`) with the `$(HexalithEventStoreRoot)`-based reference path. [src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj:11; src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj:7,12] _(resolved from D1)_
+- [x] [Review][Patch] Remove `NuGet.Config` (machine-specific local feed) and rely on the SDK defaults (nuget.org + global packages cache). Revisit `NuGetAudit=false` in `Directory.Build.props`/`Directory.Solution.props` once references build — re-enabling audit under `TreatWarningsAsErrors=true` can turn a package advisory into a build error, so verify before flipping. [NuGet.Config; Directory.Build.props:12] _(resolved from D2)_
+- [x] [Review][Patch] `.slnx` registers 11 of 12 Works projects as `<File>` (passive solution items) instead of `<Project>`, so `dotnet build Hexalith.Works.slnx` (Task 6's literal command) compiles only the AppHost — change the `/src/` and `/tests/` csproj entries to `<Project Path="…"/>` (donor uses `<Project>` for all). [Hexalith.Works.slnx:51-55,58-62]
+- [x] [Review][Patch] Dependency fitness tests parse raw csproj XML and ignore MSBuild `Condition`, so `DependencyDirectionTests` stay green while the build omits the gated references (false "6/6 passed"); `P0_ScaffoldUsesSlnxAndCentralPackageManagement` also never checks `<Project>` vs `<File>`. Make the tests reflect the **realized** build graph (evaluate conditions / assert the Enable flags / inspect `project.assets.json`) and assert every v1 csproj is a `<Project>` in the `.slnx`. (Reconcile expected topology with the decision above.) [tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:58-69; ScaffoldGovernanceTests.cs:76-98]
+- [x] [Review][Patch] Fitness-test file globs exclude only `_bmad-output`, not `bin/`/`obj/` — `P0_StoryElevenRemainsScaffoldOnly` scans generated `obj/**/*.cs` and the `Hexalith.Works*.csproj` globs recurse build output; add a `bin`/`obj` segment exclusion. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:47-49,66-67,84-86,152]
+- [x] [Review][Patch] `EventStoreApiSurfaceCharacterizationTests` throw a raw `FileNotFoundException` (not a clean assertion/skip) when the EventStore submodule is uninitialized — guard with `Directory.Exists`/`File.Exists` and emit a clear skip-or-fail message. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs]
+- [x] [Review][Patch] `.editorconfig` `csharp_new_line_before_open_brace = all:warning` is malformed — that option takes a context list, not a `:severity` suffix, so the rule is effectively ignored. Use `= all` and set `dotnet_diagnostic.IDE0055.severity` separately if a severity is wanted. [.editorconfig:52]
+- [x] [Review][Patch] `.gitignore` is missing the Aspire-generated ignores from Dev Notes (`manifest.json`, `aspirate-state.json`) — only `.agents/.story-automator-active` was added. [.gitignore]
+
+**Defer (real, not actionable in 1.1):**
+
+- [x] [Review][Defer] Kernel-purity test `P0_KernelProjectsStayInfrastructureFree` string-matches csproj text and is blind to transitive Dapr via a `ProjectReference` to `EventStore.Client` [tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:100-134] — deferred, documented in Dev Notes and assigned to Story 1.2 (Server stays Contracts-only in 1.1).
+- [x] [Review][Defer] `TreatWarningsAsErrors=true` silently promotes the CA1062/CA1822/CA2007 `severity=warning` settings to build errors (no `WarningsNotAsErrors` escape hatch); the `.editorconfig` comment states an intent the build config defeats [.editorconfig:56-60; Directory.Build.props:11] — deferred, latent while the scaffold is empty; bites when real kernel code triggers a CA rule.
+- [x] [Review][Defer] Placeholder tests prove little — `ScaffoldIntegrationTests`/`ScaffoldPropertyTests` assert only that their own assembly loads (no Aspire boot, no `Prop.ForAll`); some governance assertions can't fire [tests/Hexalith.Works.ArchitectureTests/FitnessTests; tests/Hexalith.Works.IntegrationTests; tests/Hexalith.Works.PropertyTests] — deferred, scaffold-appropriate; real coverage belongs to later stories.
 
 ## Dev Notes
 

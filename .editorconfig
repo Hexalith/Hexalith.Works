@@ -49,7 +49,8 @@ csharp_using_directive_placement = outside_namespace:warning
 dotnet_sort_system_directives_first = true
 
 # Formatting
-csharp_new_line_before_open_brace = all:warning
+csharp_new_line_before_open_brace = all
+dotnet_diagnostic.IDE0055.severity = warning
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 

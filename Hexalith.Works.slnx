@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/samples/">
-    <File Path="samples/Hexalith.Works.SampleHost/Hexalith.Works.SampleHost.csproj" />
+    <Project Path="samples/Hexalith.Works.SampleHost/Hexalith.Works.SampleHost.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
@@ -48,17 +48,17 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj" />
-    <File Path="src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" />
-    <File Path="src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj" />
-    <File Path="src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj" />
-    <File Path="src/Hexalith.Works.Server/Hexalith.Works.Server.csproj" />
-    <File Path="src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj" />
+    <Project Path="src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" />
+    <Project Path="src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj" />
+    <Project Path="src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj" />
+    <Project Path="src/Hexalith.Works.Server/Hexalith.Works.Server.csproj" />
+    <Project Path="src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <File Path="tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj" />
-    <File Path="tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" />
-    <File Path="tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj" />
-    <File Path="tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj" />
-    <File Path="tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj" />
+    <Project Path="tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj" />
+    <Project Path="tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" />
+    <Project Path="tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj" />
+    <Project Path="tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj" />
+    <Project Path="tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj" />
   </Folder>
 </Solution>

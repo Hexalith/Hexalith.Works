@@ -46,6 +46,7 @@ public sealed class ScaffoldGovernanceTests
         string root = RepositoryRoot.Locate();
         string[] projectFiles = Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !IsBuildOutput(path))
             .ToArray();
 
         string[] projectNames = [.. projectFiles.Select(path => Path.GetFileNameWithoutExtension(path)!)];
@@ -64,6 +65,7 @@ public sealed class ScaffoldGovernanceTests
     {
         string root = RepositoryRoot.Locate();
         string[] projectNames = [.. Directory.GetFiles(Path.Combine(root, "tests"), "Hexalith.Works*.csproj", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
             .Select(path => Path.GetFileNameWithoutExtension(path)!)];
 
         foreach (string requiredProject in RequiredTestProjectSet())
@@ -83,6 +85,7 @@ public sealed class ScaffoldGovernanceTests
 
         string[] projectFiles = Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !IsBuildOutput(path))
             .ToArray();
 
         foreach (string projectFile in projectFiles)
@@ -95,6 +98,21 @@ public sealed class ScaffoldGovernanceTests
 
             inlineVersions.ShouldBeEmpty($"Package versions must be managed centrally, not inline in '{projectFile}'.");
         }
+    }
+
+    [Fact]
+    public void P0_SlnxRegistersWorksProjectsAsBuildableProjects()
+    {
+        string root = RepositoryRoot.Locate();
+        XDocument slnx = XDocument.Load(Path.Combine(root, "Hexalith.Works.slnx"));
+
+        string[] csprojRegisteredAsFile = [.. slnx.Descendants()
+            .Where(element => element.Name.LocalName == "File")
+            .Select(element => element.Attribute("Path")?.Value)
+            .OfType<string>()
+            .Where(path => path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))];
+
+        csprojRegisteredAsFile.ShouldBeEmpty("Every Works .csproj must be registered as <Project> (not a passive <File>) so 'dotnet build Hexalith.Works.slnx' actually compiles it.");
     }
 
     [Fact]
@@ -149,7 +167,8 @@ public sealed class ScaffoldGovernanceTests
     public void P0_StoryElevenRemainsScaffoldOnly()
     {
         string root = RepositoryRoot.Locate();
-        string[] sourceFiles = Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories);
+        string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))];
         string[] deferredDomainTerms =
         [
             "WorkItem",
@@ -172,4 +191,8 @@ public sealed class ScaffoldGovernanceTests
     }
 
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;
+
+    private static bool IsBuildOutput(string path)
+        => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
 }

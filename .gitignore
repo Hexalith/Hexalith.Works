@@ -428,3 +428,8 @@ FodyWeavers.xsd
 *.msm
 *.msp
 .agents/.story-automator-active
+
+# Aspire publisher output
+# Aspirate intermediate Aspire manifest (regenerated each run alongside K8s output)
+src/Hexalith.Works.AppHost/manifest.json
+src/Hexalith.Works.AppHost/aspirate-state.json
