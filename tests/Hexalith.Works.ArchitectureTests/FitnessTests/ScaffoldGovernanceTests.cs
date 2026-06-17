@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 using Hexalith.Works.Contracts.Models;
@@ -297,6 +298,59 @@ public sealed class ScaffoldGovernanceTests
             ["Hexalith.Works.Contracts"],
             ignoreOrder: true,
             customMessage: "Story 1.2 keeps EventStore.Client out of the Works server kernel until a later command-pipeline/Aspire story owns the Dapr dependency decision.");
+    }
+
+    // AC #1/#3/#5 + SM-3: every executor is one ExecutorBinding shape and no domain behavior branches on
+    // executor kind. Scans production src for switch/if/pattern branching over Channel, AuthorityLevel, or
+    // PartyId. AuthorityLevel is an ordered set (Read < Contribute < Coordinate < Administer), so the
+    // realistic way to *enforce* authority is a relational comparison (e.g. authority >= Coordinate);
+    // those operators are forbidden alongside equality/case/switch/is so "carried-not-enforced" stays
+    // guarded. The value-object definitions own the catalogs and ExecutorBinding's construction-time
+    // validation (Unknown/undefined rejection), so they are excluded; everything else — aggregate,
+    // projections, reactor, read models — must treat the binding as opaque data, never branching on it.
+    [Fact]
+    public void P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority()
+    {
+        string root = RepositoryRoot.Locate();
+
+        string[] allowedDefinitionFiles =
+        [
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "ExecutorBinding.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "Channel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "AuthorityLevel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "PartyId.cs"),
+        ];
+
+        string[] forbiddenBranchPatterns =
+        [
+            @"case\s+Channel\.",
+            @"case\s+AuthorityLevel\.",
+            @"switch\s*\([^)]*\.\s*Channel\b",
+            @"switch\s*\([^)]*\.\s*AuthorityLevel\b",
+            @"(==|!=)\s*Channel\.",
+            @"Channel\.[A-Za-z]+\s*(==|!=)",
+            @"(==|!=|>=|<=|>|<)\s*AuthorityLevel\.",
+            @"AuthorityLevel\.[A-Za-z]+\s*(==|!=|>=|<=|>|<)",
+            @"\bis\s+Channel\.",
+            @"\bis\s+AuthorityLevel\.",
+            @"\.PartyId\s*(==|!=)",
+        ];
+
+        string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))
+            .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
+            .Where(path => allowedDefinitionFiles.All(allowed => !Path.GetRelativePath(root, path).EndsWith(allowed, StringComparison.Ordinal)))];
+
+        sourceFiles.ShouldNotBeEmpty("Expected to discover Works src files to govern for executor-kind branching.");
+
+        string[] violations = [.. sourceFiles
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .SelectMany(file => forbiddenBranchPatterns
+                .Where(pattern => Regex.IsMatch(file.Text, pattern))
+                .Select(pattern => $"{Path.GetRelativePath(root, file.Path)} matches forbidden executor-kind branch /{pattern}/"))];
+
+        violations.ShouldBeEmpty("Domain behavior must not branch on executor kind, channel, authority, or party identity — everything is one ExecutorBinding shape (SM-3 zero branching on executor kind).");
     }
 
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;

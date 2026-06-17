@@ -1,3 +1,178 @@
+# Test Automation Summary — Story 4.1 (Bind Work to a Uniform Party Executor)
+
+Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework
+reused: **xUnit v3 + Shouldly** for unit, integration, and
+architecture lanes. Story 4.1 is a contract / replay / read-model / guardrail story for FR-17 and
+FR-19: every executor (system agent, internal user, external party) is represented by one
+`ExecutorBinding` (`PartyId` + `Channel` + `AuthorityLevel`) and **no domain behavior branches on
+executor kind**. There is no UI/HTTP/MCP surface; the executable path is **command →
+`WorkItemAggregate.Handle` → durable event → concrete `JsonSerializerDefaults.Web` JSON → replayed
+`WorkItemState` → read-model view**.
+
+Story 3.6 final baseline was **481** green tests (UnitTests 389, IntegrationTests 63, ArchitectureTests
+28, PropertyTests 1). The Story 4.1 dev-story pass added **+35** tests (+25 unit, +9 integration, +1
+architecture), reaching **516** green (UnitTests 414, IntegrationTests 72, ArchitectureTests 29,
+PropertyTests 1). The follow-up `bmad-qa-generate-e2e-tests` QA pass then added **+12** tests (+5 unit,
++7 integration) to close residual end-to-end, fourth-binding-carrier, and binding-shape gaps, raising the
+total to **528** green: UnitTests 419, IntegrationTests 79, ArchitectureTests 29, PropertyTests 1. **No
+production code was changed by the QA pass** — only test files were added/extended; the v1 catalog
+(`WorkItemV1Catalog.Count` 36) and golden corpus are unchanged.
+
+**Reconciliation (Task 1) — confirmed before any change.** The `ExecutorBinding(PartyId, Channel,
+AuthorityLevel)` shape was already used uniformly across `CreateWorkItem`, `AssignWorkItem`,
+`ClaimWorkItem`, `SpawnChild`, their events (`WorkItemCreated`, `WorkItemAssigned`, `WorkItemClaimed`,
+`ChildSpawned`), `WorkItemState` replay, and `WorkItemAggregate` (which passes the binding through
+without inspecting `Channel`/`AuthorityLevel`). There is no legacy `ExecutorId`, `BindingKind`,
+`BotExecutor`/`HumanExecutor`/`ExternalExecutor`, or `ExecutorKind`/`PartyKind` discriminator in
+production code. The one real gap was that `ExecutorBinding` rejected unknown `Channel` but not unknown
+`AuthorityLevel`.
+
+**No durable wire shape changed.** No new events or commands were added; `WorkItemV1Catalog.Count`
+remains **36** and the golden corpus is unchanged. The new read-model `WorkItemExecutorBindingView` is a
+plain `Contracts/Models` record (not polymorphic-serialized), and the `ExecutorBinding` validation
+hardening tightens construction only — every existing payload carries a valid `AuthorityLevel`.
+
+## Production code changed (small, in-scope)
+
+- [x] `src/Hexalith.Works.Contracts/ValueObjects/ExecutorBinding.cs` — **modified.** Added
+  `AuthorityLevel.Unknown` / undefined-enum rejection mirroring the existing `Channel` guard
+  (Task 2, AC #1/#3), plus an XML summary documenting the one-shape, carried-not-enforced, no-kind
+  contract. Public shape (`PartyId`, `Channel`, `AuthorityLevel`) unchanged.
+- [x] `src/Hexalith.Works.Contracts/Models/WorkItemExecutorBindingView.cs` — **new.** Smallest
+  contract-level read model exposing executor data uniformly (`TenantId`, `WorkItemId`, nullable
+  `ExecutorBinding`). No executor-kind discriminator, display name, party profile, contact detail, UI
+  type, SignalR/query wiring, or queue projection (Story 4.4 owns the queue projection) (Task 4, AC
+  #3/#4).
+
+## Tests added
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`) — +25 cases
+
+- [x] `WorkItemContractValueObjectTests` — **+6 cases** (Task 2, AC #1/#3). `AuthorityLevel.Unknown`
+  rejection, undefined `(AuthorityLevel)999` rejection, and a Theory ×4 proving every known authority
+  level (`Read`/`Contribute`/`Coordinate`/`Administer`) is carried.
+- [x] `WorkItemUniformExecutorBindingTests` — **new file, +13 cases** (Task 3, AC #1–#3). Table-driven
+  system-agent / internal-user / external-party bindings flow through the identical
+  create/assign/claim handlers; the event and replayed state preserve `PartyId`, `Channel`, and
+  `AuthorityLevel` verbatim. A reassignment fact proves a second `AssignWorkItem` makes the latest
+  binding authoritative with no dedicated handoff command.
+- [x] `WorkItemExecutorBindingViewTests` — **new file, +6 cases** (Task 4, AC #3/#4). `AuthorityLevel`
+  survives projection from replayed state into `WorkItemExecutorBindingView`; the view reflects the
+  latest binding after reassignment, carries a null binding when none is bound, and exposes only
+  identity + `ExecutorBinding` (a structural guard rejects any kind/display/contact property drift).
+
+### Integration tests (`tests/Hexalith.Works.IntegrationTests`) — +9 cases
+
+- [x] `UniformExecutorBindingSerializationTests` — **new file, +9 cases** (Task 3, AC #1–#3). The three
+  representative bindings round-trip through concrete `JsonSerializerDefaults.Web` serialization on
+  `WorkItemCreated`, `WorkItemAssigned`, and `WorkItemClaimed`; `channel` and `authorityLevel` are
+  asserted present in the JSON and equal after round-trip (and into replayed state for the created event).
+
+### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +1 case
+
+- [x] `ScaffoldGovernanceTests.P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority` —
+  **new fitness test** (Task 5, AC #1/#3/#5, SM-3). Scans production `src/**/*.cs` (excluding
+  `bin`/`obj`, `*.g.cs`, `*Assembly.cs`, and the value-object definition files) for `switch`/`case`/
+  equality/pattern branching over `Channel`, `AuthorityLevel`, or `PartyId` — plus relational operators
+  (`>`/`>=`/`<`/`<=`) on the ordered `AuthorityLevel` enum, the realistic carried-not-enforced
+  enforcement shape (hardened during the senior-developer review). Validation inside
+  `ExecutorBinding` itself is allowed; the aggregate, projections, reactor, and read models must treat
+  the binding as opaque data. Forbidden adapter/LLM/routing/email/MCP/UI/security/cost-governance
+  project and package introduction into the kernel remains enforced by the existing
+  `P0_ScaffoldContainsOnlyTheV1ProjectSet` (project-name fragments) and
+  `P0_KernelProjectsStayInfrastructureFree` (csproj reference) guards, which were preserved unchanged.
+
+## Documentation
+
+- [x] `docs/boundary-decision-record.md` — added a Story 4.1 note in *Notes and cross-references*: one
+  `ExecutorBinding` shape, Party identity is a reference, `Channel` is an interaction medium,
+  `AuthorityLevel` is carried-not-enforced, no executor-kind branch discriminator, and the new
+  `WorkItemExecutorBindingView` exposes only that data. The existing module/seam enumeration was
+  preserved (`BoundaryDecisionRecordTests` still green).
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+All three additions are genuine, non-redundant gaps verified against AC #1–#5 and the design
+guardrails. The dev-story baseline already proved value-object rejection, uniform create/assign/claim
+binding through event + replay, reassignment-latest-wins, view projection (incl. null/structural), the
+three representative bindings round-tripping `WorkItemCreated`/`WorkItemAssigned`/`WorkItemClaimed`, and
+the zero-executor-kind-branch fitness scan. The residual gaps were the **full write-path-to-view chain**
+through the real aggregate, the **fourth binding-carrying pair** (`SpawnChild`/`ChildSpawned`), and a
+**structural shape lock** on `ExecutorBinding` itself:
+
+- [x] **AC #2/#3/#4 — end-to-end aggregate → serialize → replay → view (integration, +7 cases).**
+  `UniformExecutorBindingLifecycleFlowTests` (**new file**). A Theory ×3 drives each representative
+  executor through the real `WorkItemAggregate.Handle` write path (Create → Assign → Claim), replays each
+  event round-tripped through `JsonSerializerDefaults.Web` into an independent state, and asserts the full
+  binding + `AuthorityLevel` surfaces in the `WorkItemExecutorBindingView`. A reassignment fact rebinds
+  system → internal → external mid-lifecycle through the same `AssignWorkItem` path and proves the latest
+  authority is authoritative through claim and complete and in the view — not the create-time authority.
+  The dev baseline called handlers in isolation/synthetic state and never projected the view from a
+  serialized chain; the one existing full-lifecycle flow used a single binding.
+- [x] **AC #2/#3 — `SpawnChild`/`ChildSpawned` uniform binding (unit + integration, +5 cases).**
+  `WorkItemUniformExecutorBindingTests.SpawnChild_carries_the_uniform_child_binding_through_the_spawned_event`
+  (Theory ×4) proves the fourth binding-carrying command/event preserves the uniform shape for every
+  representative executor through the real aggregate, and
+  `UniformExecutorBindingSerializationTests.ChildSpawned_round_trips_the_uniform_child_binding_with_authority`
+  (Theory ×3) proves the nested child `authorityLevel` survives the EventStore-persisted JSON form. The
+  uniform-binding proof previously covered only create/assign/claim, omitting the spawn carrier.
+- [x] **AC #1 — `ExecutorBinding` structural shape lock (unit, +1 case).**
+  `WorkItemContractValueObjectTests.ExecutorBinding_exposes_exactly_party_channel_and_authority_with_no_executor_kind_discriminator`
+  asserts the value object exposes exactly `PartyId`, `Channel`, `AuthorityLevel`, stays sealed (no
+  bot/human/external subtype hierarchy), and carries no `Kind`/`Subtype`/`Discriminator`/`Type` property
+  — locking AC #1's "no executor-kind-specific subtype or branch discriminator" on the binding itself
+  (only the read-model view had such a guard before).
+
+## Story 4.1 Validation (after QA pass)
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` — passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **419/419** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **79/79** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **29/29** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed (`Ok, passed 100 tests.`).
+
+### Story 4.1 Test Counts
+
+| Suite | Story 3.6 Final | Story 4.1 dev-story | QA gap pass | QA Delta |
+|-------|----------------:|--------------------:|------------:|---------:|
+| UnitTests | 389 | 414 | **419** | +5 |
+| IntegrationTests | 63 | 72 | **79** | +7 |
+| ArchitectureTests | 28 | 29 | **29** | — |
+| PropertyTests | 1 | 1 | **1** | — |
+| **Total** | **481** | **516** | **528** | **+12** |
+
+### Not-applicable runtime / E2E surfaces
+
+- No production UI, MCP/chatbot/email adapter, executor routing, eligibility filtering, escalation,
+  `AuthorityLevel` enforcement, signed links, security hardening, LLM/NL parsing, or cost governance —
+  all out of scope and deferred (Stories 4.2–4.6 / Themes 4–6). The AppHost/Aspire runtime lane was
+  **not exercised** (no command/event pipeline proof here — Story 4.5).
+- No Dapr dispatch, EventStore stream reads, clock/timer, or reminder/reactor recovery surface, so the
+  integration lane is contract-flow + serialization only; browser/UI E2E is **not applicable**.
+
+### Checklist
+
+- [x] Reconciled the existing executor-binding surface before changing code; confirmed one shape and no
+  kind discriminator.
+- [x] `ExecutorBinding` rejects `AuthorityLevel.Unknown` and undefined authority; public shape unchanged.
+- [x] One binding shape proven for system/internal/external through create/assign/claim and reassignment.
+- [x] `AuthorityLevel` survives concrete `System.Text.Json` round-trip and projection/replay into the view.
+- [x] Read-model contract exposes executor data with no UI/routing/kind scope.
+- [x] Fitness test asserts zero executor-kind branching; kernel-purity and dependency-direction tests
+  preserved unchanged.
+- [x] No new durable event/command types; `WorkItemV1Catalog.Count` stays 36 and the golden corpus is
+  unchanged.
+- [x] QA gap pass added end-to-end (aggregate → serialize → replay → view), fourth-binding-carrier
+  (`SpawnChild`/`ChildSpawned`), and `ExecutorBinding` structural-shape coverage; no production code changed.
+- [x] Build clean (0 warnings / 0 errors) and all four test binaries green (528/528 after the QA pass).
+
+---
+
 # Test Automation Summary — Story 3.6 (Cascade Terminal Work Through Active Descendants)
 
 Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework

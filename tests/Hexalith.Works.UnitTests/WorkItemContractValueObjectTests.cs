@@ -123,6 +123,47 @@ public sealed class WorkItemContractValueObjectTests
         => Should.Throw<ArgumentException>(() => new ExecutorBinding(new PartyId("party-123"), (Channel)999, AuthorityLevel.Contribute));
 
     [Fact]
+    public void ExecutorBinding_rejects_the_unknown_authority_level_sentinel()
+        => Should.Throw<ArgumentException>(() => new ExecutorBinding(new PartyId("party-123"), Channel.Mcp, AuthorityLevel.Unknown));
+
+    [Fact]
+    public void ExecutorBinding_rejects_an_undefined_authority_level_value()
+        => Should.Throw<ArgumentException>(() => new ExecutorBinding(new PartyId("party-123"), Channel.Mcp, (AuthorityLevel)999));
+
+    [Theory]
+    [InlineData(AuthorityLevel.Read)]
+    [InlineData(AuthorityLevel.Contribute)]
+    [InlineData(AuthorityLevel.Coordinate)]
+    [InlineData(AuthorityLevel.Administer)]
+    public void ExecutorBinding_carries_every_known_authority_level(AuthorityLevel authorityLevel)
+        => new ExecutorBinding(new PartyId("party-123"), Channel.Mcp, authorityLevel).AuthorityLevel.ShouldBe(authorityLevel);
+
+    [Fact]
+    public void ExecutorBinding_exposes_exactly_party_channel_and_authority_with_no_executor_kind_discriminator()
+    {
+        // AC #1 — the binding "contains PartyId, Channel, and AuthorityLevel" and "does not contain an
+        // executor-kind-specific subtype or branch discriminator." Lock the shape structurally so a future
+        // change cannot reintroduce a Kind/Subtype/IsBot field, and keep the value object sealed so there
+        // is no executor-kind subtype hierarchy.
+        string[] propertyNames = [.. typeof(ExecutorBinding).GetProperties().Select(p => p.Name)];
+
+        propertyNames.ShouldBe(
+            [nameof(ExecutorBinding.PartyId), nameof(ExecutorBinding.Channel), nameof(ExecutorBinding.AuthorityLevel)],
+            ignoreOrder: true);
+
+        typeof(ExecutorBinding).IsSealed.ShouldBeTrue("ExecutorBinding must stay sealed: there is no bot / human / external subtype hierarchy.");
+
+        string[] forbidden = ["Kind", "Subtype", "Discriminator", "Bot", "Human", "External", "Type", "Branch", "Category", "Variant"];
+        foreach (string name in propertyNames)
+        {
+            foreach (string token in forbidden)
+            {
+                name.ShouldNotContain(token, Case.Insensitive);
+            }
+        }
+    }
+
+    [Fact]
     public void ParentWorkItemReference_requires_a_parent_tenant_id()
         => Should.Throw<ArgumentNullException>(() => new ParentWorkItemReference(null!, new WorkItemId("parent-001")));
 

@@ -92,6 +92,14 @@ ownership model. None of them is implemented or wired in v1.
 - Dependency direction is enforced by fitness tests: `Contracts` references only
   `EventStore.Contracts`; `Server`, `Projections`, and `Reactor` reference inward to `Contracts`
   only. The new `Ports/` (Contracts) and `Resolvers/` (Server) folders add no forbidden reference.
+- **Story 4.1 (uniform executor binding).** Every executor — system agent, internal user, external
+  party — is represented by one `ExecutorBinding` (`PartyId` + `Channel` + `AuthorityLevel`); the
+  cases differ only by field values. Party identity is a **reference** (`PartyId`), `Channel` is an
+  **interaction medium**, `AuthorityLevel` is **carried-not-enforced**, and there is **no
+  executor-kind branch discriminator** in Works contracts or domain behavior (a fitness test asserts
+  zero branching on channel/authority/party). The contract-level read model
+  `WorkItemExecutorBindingView` (`Contracts/Models`) exposes only this binding data so future Party
+  chips render any executor uniformly; "bot / person / external" is resolved outside the kernel.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
