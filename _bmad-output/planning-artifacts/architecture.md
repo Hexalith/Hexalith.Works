@@ -166,7 +166,8 @@ themes) by **not** scaffolding any UI/channel/portal/security surface.
 | `Hexalith.Works.Projections` | Roll-Up (per-child-sequence accounting) + "what's next" query | ✅ |
 | `Hexalith.Works.Reactor` | Pure event→command translators outside the kernel: child-completion→resume (`ChildCompletionResumeTranslator`) and terminal cascade→descendant cancel/expire (`TerminalCascadeTranslator`); references `Contracts` only, no dispatch/clock/infra. Realized in Epic 3 (resolves D-1). | ✅ |
 | `Hexalith.Works.Testing` | Fakes/builders: `InMemoryEventLog`, `ReorderingProjectionDriver`, `RollUpProjectionBuilder` (tenant-required) | ✅ |
-| `Hexalith.Works.AppHost` + `Hexalith.Works.ServiceDefaults` | Aspire topology + service defaults/health/telemetry for manual + automated tests | ✅ |
+| `Hexalith.Works` | **ADAPTER-EDGE runnable domain-service host** (realized Epic 4, Story 4.5/4.6): subclasses EventStore's `EventStoreAggregate<WorkItemState>` (`WorkItemEventStoreAggregate`, one `Handle` wrapper per command delegating to the pure kernel), and owns the runtime layer — Dapr date-resume reminders (`Reminders/`), cascade dispatch + checkpoints (`Recovery/`), recovery reconciliation/command submission (`Runtime/`), and the `/project`/`/query` adapter endpoints (`Projections/`, `Queries/`). Not a library; the only Works project permitted to reference EventStore runtime, Dapr, and ASP.NET hosting. | ✅ |
+| `Hexalith.Works.AppHost` + `Hexalith.Works.ServiceDefaults` | Aspire topology + service defaults/health/telemetry for manual + automated tests (per the EventStore domain-module contract the host does **not** fork `ServiceDefaults`) | ✅ |
 | `.Client` | Consumer-facing integration | ◐ minimal/optional |
 | `.UI` / `.Mcp` / `.AdminPortal` / `.ConsumerPortal` / `.Picker` / `.Security` | Channel & surface adapters | ❌ Themes 3–6 |
 
@@ -176,7 +177,10 @@ project), never in `Server` or `Contracts`. `Server`/`Projections` stay clock-fr
 **Resolved (Epic 3):** D-1 was settled in favor of a dedicated pure project, `Hexalith.Works.Reactor`,
 holding mechanical event→command translators only (`ChildCompletionResumeTranslator`,
 `TerminalCascadeTranslator`); `DependencyDirectionTests` enforces that it references `Contracts` only.
-Runtime dispatch, checkpointing, and timer/reminder wiring remain deferred to Epic 4 (Story 4.6).
+**Realized (Epic 4, Story 4.5/4.6):** runtime dispatch, checkpointing, and timer/reminder wiring landed in
+the new runnable host `src/Hexalith.Works` (folders `Reminders/`, `Recovery/Cascade/`, `Runtime/`) — *not*
+inside `Hexalith.Works.Reactor`, which stays pure (`Contracts` only). The reactor translators are consumed
+unchanged by the host's at-least-once dispatcher; every decision still round-trips through `Handle`.
 
 **Repo scaffolding (umbrella root, mirror siblings):** `global.json` (SDK pinned),
 `Directory.Build.props`/`.targets`, `Directory.Packages.props`, `Directory.Solution.props`/`.targets`,
@@ -193,7 +197,7 @@ month-old `project-context.md` snapshot:**
 |---|---|---|
 | .NET SDK | `10.0.301`, `rollForward: latestPatch` | global.json |
 | Dapr | `1.18.2` | only permitted infra abstraction |
-| .NET Aspire | `13.4.3` | released 2026-06-01; test host only |
+| .NET Aspire | `13.4.5` | bumped from 13.4.3 in Epic 4 (Story 4.5) to match `Hexalith.EventStore.Aspire` (requires ≥13.4.5), pulled transitively through the Works AppHost; test host only |
 | xUnit | v3 `3.2.2` + Microsoft.Testing.Platform | match siblings (v3, not v2) |
 | Serialization | `Hexalith.PolymorphicSerializations` | event/command payloads |
 | Fluent UI Blazor | `5.0.0-rc.3` | inherited but **unused in v1** (headless); still RC/high-risk |
@@ -262,7 +266,7 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 - **C3 — Deadline semantics:** **adapter event, "advisory-until-fired"** — the kernel may hold a "live" item that is, in reality, overdue; no v1 query detects this without the timer firing. Recorded; **re-validate against Theme 5** (cost-aware scheduling) before that theme builds, since adding a logical clock later is a redesign.
 - **E1 — Projection rebuild:** **online / non-disruptive** (shadow projection + atomic swap, or versioned projection key), **per-tenant partitionable** so one large tenant's rebuild doesn't block others; produces state identical to a cold rebuild with no partial-state leak to readers. *Resolves OQ-5.*
 - **E2 — Validation domains:** `ProgressReported` delta ≥ 0 with `Remaining` clamped ≥ 0; `Estimated` ≥ 0; Unit immutable after first set; Due-Date/TTL sourced from **per-work-type/tenant policy** (configurable default). *Resolves OQ-6.*
-- **Aspire host:** repository-specific AppHost + ServiceDefaults (health/telemetry) for manual + automated tests; **clock-free purity + no-branch-on-executor-kind enforced as build-time architecture fitness functions** (RR-5). Versions inherit the current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.3 · xUnit v3 3.2.2) via central package management.
+- **Aspire host:** repository-specific AppHost + ServiceDefaults (health/telemetry) for manual + automated tests; **clock-free purity + no-branch-on-executor-kind enforced as build-time architecture fitness functions** (RR-5). Versions inherit the current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.5 · xUnit v3 3.2.2) via central package management.
 
 ### Decision Impact Analysis
 
@@ -470,24 +474,33 @@ works/                                        # umbrella repo root = Hexalith.Wo
 │   │   └── Registration/                      # DI/service registration extensions
 │   │
 │   ├── Hexalith.Works.Projections/            # KERNEL · read side · PURE handlers
-│   │   ├── Abstractions/
-│   │   ├── Handlers/                          # RollUpHandler, WhatsNextHandler (idempotent)
-│   │   ├── Strategies/                        # per-(childId,childSequence) LWW accounting
-│   │   ├── Actors/                            # caching projection actors (EventStore infra)
-│   │   ├── Services/                          # rebuild (shadow+swap, per-tenant) services
-│   │   └── Configuration/
+│   │   ├── Strategies/                        # WorkItemRollUpProjection (per-(childId,childSequence) LWW),
+│   │   │                                      #   WhatsNextQueueProjection, WhatsNextOrdering, WhatsNextQueryAuthorization
+│   │   └── Models/                            # pure read-model strategy types + WhatsNextProjectionChange signal
+│   │                                          # (online rebuild is checkpoint-per-aggregate in the EventStore
+│   │                                          #  substrate — NOT shadow+swap; caching/rebuild actors are not here)
 │   │
-│   ├── Hexalith.Works.Reactor/                # ADAPTER (outside kernel) · process-manager + timer
-│   │   ├── WorkItemReactor.cs                 #   PURE react(event)→command-intent[] (unit-testable)
-│   │   ├── Dispatch/                          #   at-least-once delivery + checkpoint (Dapr-bound)
-│   │   ├── Cascade/                           #   checkpoint-driven resumable cancel/expire cascade
-│   │   └── Timer/                             #   Dapr actor-reminder adapter → ResumeWorkItem(date)
+│   ├── Hexalith.Works.Reactor/                # PURE (outside kernel) · mechanical event→command translators only
+│   │   ├── ChildCompletionResumeTranslator.cs #   child-completion → ResumeWorkItem intent
+│   │   ├── TerminalCascadeTranslator.cs       #   parent-terminal → descendant cancel/expire intents
+│   │   ├── CascadeDescendant.cs / AwaitingParent.cs   #   pure value types for the translators
+│   │   └── WorksReactorAssembly.cs            #   references Contracts only — no dispatch/clock/infra
 │   │
-│   ├── Hexalith.Works.ServiceDefaults/        # health/telemetry/service discovery
+│   ├── Hexalith.Works/                         # ADAPTER-EDGE runnable host (Story 4.5/4.6) · owns the RUNTIME layer
+│   │   ├── Program.cs                         #   Dapr command/event pipeline host; maps /process /project /query /replay-state
+│   │   ├── WorkItemEventStoreAggregate.cs     #   EventStoreAggregate<WorkItemState> · 1 Handle wrapper/command → pure kernel
+│   │   ├── Reminders/                         #   DateReminderActor, deterministic names, startup reconciliation
+│   │   ├── Recovery/Cascade/                  #   at-least-once cascade dispatch + bounded checkpoints + replay
+│   │   ├── Runtime/                           #   EventStore command-gateway submitter, recovery options, actor registration
+│   │   ├── Projections/                       #   /project dispatcher → pure WhatsNext/RollUp projections → IReadModelStore
+│   │   └── Queries/                           #   WhatsNextQueryHandler : IDomainQueryHandler
+│   │
+│   ├── Hexalith.Works.ServiceDefaults/        # health/telemetry/service discovery (host does not fork this)
 │   └── Hexalith.Works.AppHost/               # the one acceptable technical component here
 │       ├── DaprComponents/                    # pub/sub, state store, scheduler config
 │       ├── Properties/
-│       └── AppHost.cs                         # wires kernel + reactor + reminders + topology
+│       └── AppHost.cs                         # orchestrates topology: EventStore + shared state store + the Works host
+│                                              #   (reminders/cascade/recovery runtime live in the Works host, not here)
 │
 ├── tests/
 │   ├── Hexalith.Works.Testing/                # reusable: InMemoryEventLog, ReorderingProjectionDriver,
@@ -580,7 +593,7 @@ Status are synchronous on the aggregate; rolled-Remaining and "what's next" are 
 Event-sourcing on `EventStore` · Dapr-only infrastructure · pure kernel + adapter ring ·
 per-child-sequence LWW roll-up · expected-version optimistic concurrency · Dapr actor reminders for
 date resumes · explicit *do-not-rely-on-pub/sub-ordering* posture. Versions are mutually compatible
-and inherited from current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.3 · xUnit v3 3.2.2).
+and inherited from current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.5 · xUnit v3 3.2.2).
 
 **Pattern Consistency:** Implementation patterns (raw-act events carrying `(AggregateId, Sequence)`;
 pure `Handle`/`Apply`/reactor; idempotent order-tolerant projections; zero branching on executor
