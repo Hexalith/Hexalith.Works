@@ -65,7 +65,7 @@ development_status:
   epic-3-retrospective: done
   epic-4: in-progress
   4-1-bind-work-to-a-uniform-party-executor: done
-  4-2-assign-reassign-and-hand-off-work: backlog
+  4-2-assign-reassign-and-hand-off-work: done
   4-3-claim-queued-work-with-single-claim-wins: backlog
   4-4-resolve-the-tenant-s-what-s-next-queue: backlog
   4-5-prove-the-command-event-pipeline-under-aspire: backlog

@@ -1,6 +1,8 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
+using Hexalith.PolymorphicSerializations;
+using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Models;
 using Shouldly;
 
@@ -351,6 +353,72 @@ public sealed class ScaffoldGovernanceTests
                 .Select(pattern => $"{Path.GetRelativePath(root, file.Path)} matches forbidden executor-kind branch /{pattern}/"))];
 
         violations.ShouldBeEmpty("Domain behavior must not branch on executor kind, channel, authority, or party identity — everything is one ExecutorBinding shape (SM-3 zero branching on executor kind).");
+    }
+
+    // Story 4.2 / FR-17: assign, reassign, and human↔system hand-off are one uniform AssignWorkItem
+    // operation; the only variation is ExecutorBinding field values. There must be NO executor-kind-
+    // specific handoff/reassign/unassign/return-to-pool command or event. This guards the *vocabulary*
+    // (mirroring P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority, which guards branching):
+    // it matches on declared TYPE names — not raw substrings — so AssignWorkItem, LifecycleAct.Reject,
+    // and XML-comment "Assign"/"Reject" mentions stay legitimate. It is paired with a frozen-catalog
+    // assertion: Story 4.2 introduces no new event, command, or rejection, so the v1 catalog stays 36.
+    [Fact]
+    public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36()
+    {
+        string root = RepositoryRoot.Locate();
+
+        // Reuse the existing exclusion set: build output, generated code, assembly-info, and the
+        // value-object definition files (which legitimately spell "Assign"/"Reject" in names/XML docs).
+        string[] allowedDefinitionFiles =
+        [
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "ExecutorBinding.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "Channel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "AuthorityLevel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "PartyId.cs"),
+        ];
+
+        string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))
+            .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
+            .Where(path => allowedDefinitionFiles.All(allowed => !Path.GetRelativePath(root, path).EndsWith(allowed, StringComparison.Ordinal)))];
+
+        sourceFiles.ShouldNotBeEmpty("Expected to discover Works src files to govern for hand-off/reassign vocabulary.");
+
+        // A declared type whose NAME matches one of these is an executor-kind-specific hand-off, reassign,
+        // unassign, or return-to-pool command/event — exactly the vocabulary FR-17 forbids in favor of the
+        // uniform AssignWorkItem / QueueWorkItem / ClaimWorkItem trio.
+        string[] forbiddenTypeNamePatterns =
+        [
+            "HandoffTo",        // HandoffToBot, HandoffToHuman, ...
+            "ReassignTo",       // ReassignToHuman, ReassignToExternalParty, ...
+            "AssignTo[A-Z]",    // AssignToBot / AssignToHuman / AssignToExternalParty kind-specific commands
+            "HandedOff",        // WorkItemHandedOff and similar events
+            "^Unassign",        // UnassignWorkItem and similar
+            "^ReturnToPool",    // ReturnToPool* commands/events
+        ];
+
+        // Capture declared type names (record / record class|struct / class / enum / interface / struct),
+        // ignoring leading modifiers, so we test the type identity rather than any substring of the file.
+        var declarationRegex = new Regex(
+            @"\b(?:public\s+|internal\s+|private\s+|protected\s+|sealed\s+|partial\s+|abstract\s+|static\s+|readonly\s+|file\s+)*(?:record(?:\s+(?:class|struct))?|class|enum|interface|struct)\s+([A-Za-z_]\w*)");
+
+        string[] violations = [.. sourceFiles
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .SelectMany(file => declarationRegex.Matches(file.Text)
+                .Select(match => match.Groups[1].Value)
+                .Where(typeName => forbiddenTypeNamePatterns.Any(pattern => Regex.IsMatch(typeName, pattern)))
+                .Select(typeName => $"{Path.GetRelativePath(root, file.Path)} declares forbidden hand-off/reassign type '{typeName}'"))];
+
+        violations.ShouldBeEmpty("Assign/reassign/hand-off is one uniform AssignWorkItem operation (FR-17): no HandoffTo*/ReassignTo*/AssignTo<Kind>*/HandedOff*/Unassign*/ReturnToPool* command or event may exist.");
+
+        // The durable v1 wire surface stays frozen at 36 (14 success events + 14 commands + 8 rejection
+        // events). Every catalog member derives from the empty Polymorphic base; Story 4.2 adds none. This
+        // is the architecture-project-local equivalent of the IntegrationTests' WorkItemV1Catalog.Count.
+        int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
+            .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
+
+        polymorphicCatalogCount.ShouldBe(36, "Story 4.2 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
     }
 
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;

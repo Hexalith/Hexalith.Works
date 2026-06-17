@@ -171,6 +171,21 @@ Notes:
   cannot un-terminal it, so it is `R`.
 - **`Claim` is the single `InProgress`-entry act** for both `Assigned→InProgress` and
   `Queued→InProgress`. There is no `WorkItemStarted` event. Single-claim-wins concurrency is Story 4.3.
+- **Active work is not directly reassigned or requeued (D4 — finalizes Story 2.1's deferred edge cell).**
+  The `InProgress` and `Suspended` rows keep `Assign = R` and `Queue = R`: hand-off in v1 happens while the
+  item is `Assigned` (a rebind — `Assigned → Assign`, latest binding wins) or via
+  `Assigned → Queue → (re)Claim` by the new executor. To change hands, active work is completed/cancelled
+  or requeued first; there is deliberately **no** `InProgress → Assigned` transition. Story 2.1 deferred
+  only *reassign of `InProgress` (Assign)* to Story 4.2 (`InProgress → Queue = R` was already decided);
+  Story 4.2 finalizes it as `R`. The matrix is the single source of truth — later stories must not add a
+  local active-hand-off path (SM-C2). (Owner: Story 4.2; FR-17.)
+- **Requeue is `QueueWorkItem`/`WorkItemQueued`, and the queued item keeps its last binding in state.**
+  Returning assigned work to the shared pool is `Assigned → Queue` (FR-18); every queue entry — from
+  `Created` or `Assigned` — emits the one `WorkItemQueued` event, which carries **no** binding. Queueing is
+  not an executor-binding act, so `Apply(WorkItemQueued)` leaves `WorkItemState.ExecutorBinding` at its last
+  value (the last raw act); "who currently owns a `Queued` item" is presentation owned by the Story 4.4
+  what's-next projection, not an aggregate-state mutation (D2/D6). This is distinct from Story 2.5's
+  `RejectWorkItem(Requeue: true) → WorkItemRejected` decline-and-rest-at-`Queued` path.
 
 ## Per-state Cancel / Expire decision (AR-13)
 

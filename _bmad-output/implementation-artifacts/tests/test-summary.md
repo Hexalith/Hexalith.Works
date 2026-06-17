@@ -1,3 +1,209 @@
+# Test Automation Summary — Story 4.2 (Assign, Reassign, and Hand Off Work)
+
+Workflow: `bmad-dev-story`. Framework reused: **xUnit v3 + Shouldly** for unit, integration, and
+architecture lanes. Story 4.2 is a **behavioral-proof, edge-cell-finalization, and guardrail** story for
+**FR-17** (bind / reassign / hand off via one uniform operation) and **FR-18** (push/pull coexist;
+requeue re-emits `WorkItemQueued`). The lifecycle mechanics it asserts were already built by Story 2.1
+(`AssignWorkItem`/`WorkItemAssigned`, `QueueWorkItem`/`WorkItemQueued`, `ClaimWorkItem`/`WorkItemClaimed`,
+the `WorkItemTransitionRejected` rejection, and the pure `WorkItemLifecycle.Decide` table) and hardened by
+Story 4.1 (uniform `ExecutorBinding`, reassignment-latest-wins). There is no UI/HTTP/MCP surface; the
+executable path is **command → `WorkItemAggregate.Handle` → durable event → concrete
+`JsonSerializerDefaults.Web` JSON → replayed `WorkItemState`**.
+
+Story 4.1 final baseline was **528** green tests (UnitTests 419, IntegrationTests 79, ArchitectureTests
+29, PropertyTests 1). The Story 4.2 dev-story pass added **+19** tests (+17 unit, +1 integration, +1
+architecture), reaching **547** green: UnitTests 436, IntegrationTests 80, ArchitectureTests 30,
+PropertyTests 1.
+
+**No production code was changed.** Story 4.2 adds **no** event, command, rejection, or value-object type.
+The reconciliation (Task 1) confirmed the uniform surface already existed exactly as specified, and the
+deferred `InProgress`-reassignment edge cell (Task 2/D4) was already `Reject` in `WorkItemLifecycle.cs` and
+in the matrix doc — so only a finalization **note** was added, not a code or cell change. The durable wire
+surface is frozen: `WorkItemV1Catalog.Count` stays **36** (14 events / 14 commands / 8 rejections) and the
+golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/` is byte-unchanged.
+
+**Reconciliation (Task 1) — confirmed before any change.**
+
+- `AssignWorkItem(TenantId, WorkItemId, ExecutorBinding)` is the single bind/rebind/hand-off command;
+  `QueueWorkItem(TenantId, WorkItemId)` (no binding) is the single requeue path; `ClaimWorkItem(…,
+  ExecutorBinding)` is the single `InProgress`-entry command.
+- There is **no** executor-kind-specific hand-off command/event (`HandoffToBot`, `ReassignToHuman`,
+  `WorkItemHandedOff`, …) and `ExecutorBinding` carries no kind discriminator — reassignment and hand-off
+  differ only by `ExecutorBinding` field values.
+- `WorkItemLifecycle.Decide` already returns `Reject` for `InProgress`/`Suspended` → `Assign`/`Queue`
+  (the `_ => Reject` arm); `Apply(WorkItemQueued)` does not clear `ExecutorBinding` (D2);
+  `Apply(WorkItemTransitionRejected)` is a no-op (D5).
+
+## Production code changed
+
+- **None.** This is a proof/finalization/guardrail story; the kernel, lifecycle table, and catalog are
+  unchanged.
+
+## Tests added
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`) — +19 cases (+17 dev-story, +2 QA gap-fill)
+
+> The QA gap-fill pass added two more `[Fact]` cases to this same `WorkItemHandoffTests` file
+> (`Reassign_to_the_same_binding_…_not_a_noop` and `Assign_from_the_pool_overrides_the_binding_requeue_left_in_state_…`)
+> and strengthened the AC #1 and terminal-rejection theories in place — see **Gaps closed by the QA pass** below.
+
+- [x] `WorkItemHandoffTests` — **new file, +19 cases** (Tasks 3–5 + QA gap-fill, AC #1–#5). Builds on (does not
+  duplicate) Story 4.1's `WorkItemUniformExecutorBindingTests` and the exhaustive `WorkItemLifecycleTests`
+  matrix:
+  - **Task 3 / D2 (1):** `Requeue_keeps_the_last_executor_binding_in_replayed_state` — after
+    `Assigned(bindingA) → Queue`, replayed `Status == Queued`, `Sequence` advanced by exactly 1, and
+    `ExecutorBinding` still equals `bindingA`. Locks the deliberate choice (queueing is not a binding act;
+    ownership presentation is Story 4.4) so a future change is a visible break.
+  - **AC #1 (Theory ×2):** `Assign_from_an_assignable_status_emits_one_assigned_act_carrying_the_supplied_binding`
+    — `AssignWorkItem` from `Created` and `Queued` emits exactly one `WorkItemAssigned` at `Sequence + 1`
+    carrying the supplied binding; replay rests at `Assigned` with that binding.
+  - **AC #2 (Theory ×3):** `Reassign_from_assigned_with_a_different_binding_is_a_fresh_act_through_the_same_handler_and_latest_wins`
+    — a second `AssignWorkItem` with a different binding from `Assigned` is accepted through the same
+    handler (`Assigned → Assigned` rebind), emits a fresh `WorkItemAssigned` (a distinct raw act, **not** a
+    NoOp), and replay makes the second binding authoritative — across the three representative executors
+    (system agent `Mcp`, internal user `Cli`, external party `Email`), differing only by field values.
+  - **AC #3, the novel assertion (2):** `Human_to_system_to_human_handoff…` and
+    `System_to_human_to_system_handoff…` drive a hand-off chain (covered both directions per FR-17) and
+    assert the **ordered event history** preserves each hand-off as raw-act evidence — three contiguous
+    `WorkItemAssigned` events at consecutive sequences, each with its own binding, not collapsed — then
+    that the **latest** binding is authoritative for the next executor act (the most-recent party's
+    `ClaimWorkItem`/`WorkItemClaimed` binds that party).
+  - **AC #4 (1):** `Requeue_returns_work_to_the_pool_so_a_different_executor_can_claim_it` — the full
+    `Assigned(bindingA) → QueueWorkItem → WorkItemQueued (Queued) → ClaimWorkItem(bindingB) → WorkItemClaimed
+    (InProgress)` path; a **different** executor claims the requeued item (the `QueueWorkItem` requeue path,
+    distinct from Story 2.5's `RejectWorkItem` decline — D6).
+  - **AC #5 (Theory ×4 + Theory ×4):** `Assign_from_each_terminal_status_is_rejected_with_no_binding_mutation_and_no_sequence_burn`
+    and `Queue_from_each_terminal_status_is_rejected_so_the_shared_pool_cannot_reopen_a_closed_item` — for
+    each terminal (`Completed`, `Cancelled`, `Rejected`, `Expired`, each arranged carrying a known
+    binding), `AssignWorkItem`/`QueueWorkItem` returns `WorkItemTransitionRejected(FromStatus = <terminal>,
+    AttemptedAct = "Assign"|"Queue")`, emits no success event, and applying the result leaves `Status`,
+    `Sequence`, and `ExecutorBinding` unchanged.
+
+### Integration tests (`tests/Hexalith.Works.IntegrationTests`) — +1 case
+
+- [x] `WorkItemHandoffChainContractFlowTests` — **new file, +1 case** (Task 4, AC #3). A human → system →
+  human hand-off chain crosses the real write path (`WorkItemAggregate.Handle`) and `JsonSerializerDefaults.Web`
+  serialization into an independent replay rebuilt only from round-tripped events: each `WorkItemAssigned`
+  raw act survives the wire in order (contiguous sequences, distinct bindings, not collapsed), the latest
+  binding is authoritative at every step, and the most-recent party's claim binds that party.
+
+### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +1 case
+
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`
+  — **new fitness test** (Task 6, AC #2/#5, FR-17). Mirrors
+  `P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority`: scans production `src/**/*.cs`
+  (excluding `bin`/`obj`, `*.g.cs`, `*Assembly.cs`, and the value-object definition files) for **declared
+  type names** (not raw substrings) matching `HandoffTo*`, `ReassignTo*`, `AssignTo<Kind>*`, `*HandedOff`,
+  `Unassign*`, or `ReturnToPool*` — the executor-kind-specific hand-off/reassign vocabulary FR-17 forbids —
+  and asserts none exist. Paired with a frozen-catalog assertion: the count of `Polymorphic`-derived
+  concrete types in the `Hexalith.Works.Contracts` assembly is **36** (the architecture-project-local
+  equivalent of `WorkItemV1Catalog.Count`, which ArchitectureTests cannot reference directly). The existing
+  guardrails (`P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority`,
+  `P0_ScaffoldContainsOnlyTheV1ProjectSet`, `P0_KernelProjectsStayInfrastructureFree`,
+  `DependencyDirectionTests`, `BoundaryDecisionRecordTests`, `LifecycleTransitionMatrixDocTests`) are
+  preserved unchanged and green.
+
+## Documentation
+
+- [x] `docs/lifecycle-transition-matrix.md` — added two notes to the Transition-matrix section (no cell
+  changed): **D4** finalizing Story 2.1's deferred `InProgress`-reassignment edge cell (active work is not
+  directly reassigned/requeued in v1; `InProgress`/`Suspended` rows stay `Assign = R`/`Queue = R`; hand-off
+  is via `Assigned` rebind or `Assigned → Queue → (re)Claim`; no `InProgress → Assigned` transition), and a
+  note that `QueueWorkItem`/`WorkItemQueued` is the requeue path and the queued item retains its last
+  binding in state while ownership presentation is a Story 4.4 projection concern (D2/D6).
+- [x] `docs/boundary-decision-record.md` — added a one-line Story 4.2 note in *Notes and cross-references*:
+  assign/reassign/hand-off/requeue/claim are one uniform vocabulary with no executor-kind-specific
+  command/event; hand-off is symmetric and auditable through the raw-act event history; the v1 catalog
+  stays 36. The existing module/seam enumeration is preserved (`BoundaryDecisionRecordTests` still green).
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+All four additions are genuine, non-redundant gaps traced against AC #1–#5 and design decisions D2/D3/D5
+— each closes a behaviour the dev-story pass left under-asserted, and none duplicates the existing
+`WorkItemHandoffTests`/`WorkItemLifecycleTests`/`WorkItemUniformExecutorBindingTests` coverage. This is a
+pure event-sourced domain library: there is **no HTTP/API or UI surface**, so the "API" lane is the
+aggregate command handlers and the "E2E" lane is the serialization-flow integration test — both already
+present; the gaps were assertion-level, not new-surface. Two are new `[Fact]` cases (UnitTests 436 →
+**438**); two strengthen existing theories in place. No production code changed; catalog stays **36**.
+
+- [x] **AC #5 — emitted payload is an `IRejectionEvent` (unit, strengthened, +0 cases).** The two
+  terminal-rejection theories asserted the concrete `WorkItemTransitionRejected` type and `IsRejection`,
+  but never the interface contract the AC names verbatim ("the command emits an `IRejectionEvent`"). Both
+  `Assign_from_each_terminal_status_…` and `Queue_from_each_terminal_status_…` now assert the emitted
+  `IEventPayload` `ShouldBeAssignableTo<IRejectionEvent>()` directly — decoupled from the `IsRejection`
+  helper's own `is IRejectionEvent` implementation — locking the rejection-as-event payload contract (D5).
+- [x] **AC #2 / D3 — same-binding reassignment is still a fresh raw act (unit, +1 case).**
+  `Reassign_to_the_same_binding_from_assigned_is_still_a_fresh_raw_act_not_a_noop` proves D3's stronger
+  claim that the dev baseline left untested: the existing reassign theory only used a *different* binding,
+  so "even to the same binding, `Assigned → Assign` emits a new `WorkItemAssigned` at `Sequence + 1` and
+  is never collapsed to a NoOp" was unproven. The test pins `IsNoOp == false`, the fresh event/sequence,
+  and the advanced stream — so a future "collapse identical rebinds" optimization is a visible break.
+- [x] **FR-18 / D2×AC #3 — push-from-pool overrides the requeue-retained binding (unit, +1 case).**
+  `Assign_from_the_pool_overrides_the_binding_requeue_left_in_state_and_the_pushed_binding_wins` proves
+  the untested interplay of D2 (requeue keeps the last binding in state) and AC #3 (latest binding is
+  authoritative): `Assigned(bindingA) → Queue` leaves `bindingA` as a stale-by-design carryover, then a
+  push `AssignWorkItem(bindingC)` from `Queued` makes `bindingC` authoritative on replay — proving the
+  "push" half of FR-18 coexists with "pull" (claim) and that latest-act-wins holds even over a stale
+  in-state value, not just a freshly cleared field.
+- [x] **AC #1 — emitted `WorkItemAssigned` is correctly addressed (unit, strengthened, +0 cases).** The
+  AC #1 theory asserted only `Sequence` and `Binding`; it now also asserts `AggregateId == WorkItemId.Value`,
+  `TenantId`, and `WorkItemId` on the emitted event, so a misrouted emission can no longer pass on the
+  binding/sequence alone.
+
+## Story 4.2 Validation (after QA pass)
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` — passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` —
+  passed with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **438/438** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` —
+  **80/80** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` —
+  **30/30** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **1/1**
+  passed (`Ok, passed 100 tests.`).
+
+### Story 4.2 Test Counts
+
+| Suite | Story 4.1 Final | Story 4.2 dev-story | Story 4.2 after QA pass | Delta vs 4.1 |
+|-------|----------------:|--------------------:|------------------------:|------:|
+| UnitTests | 419 | 436 | **438** | +19 |
+| IntegrationTests | 79 | 80 | **80** | +1 |
+| ArchitectureTests | 29 | 30 | **30** | +1 |
+| PropertyTests | 1 | 1 | **1** | — |
+| **Total** | **528** | 547 | **549** | **+21** |
+
+### Not-applicable runtime / E2E surfaces
+
+- No production UI, MCP/chatbot/email adapter, executor router, eligibility filter, escalation ladder,
+  authority gate, routing score, signed link, LLM/NL parsing, or cost-governance package — all out of
+  scope and deferred (single-claim-wins → Story 4.3; what's-next queue projection/query → Story 4.4; Aspire
+  command/event pipeline → Story 4.5; reminder/reactor recovery → Story 4.6). The AppHost/Aspire runtime
+  lane was **not exercised** (no command/event pipeline proof here).
+- No Dapr dispatch, EventStore stream reads, clock/timer, or reminder/reactor recovery surface, so the
+  integration lane is contract-flow + serialization only; browser/UI E2E is **not applicable**.
+
+### Checklist
+
+- [x] Reconciled the existing assign/requeue/claim/reject surface before changing code; confirmed the
+  uniform path and that no executor-kind-specific hand-off command/event exists.
+- [x] Finalized the `InProgress`-reassignment edge cell as `Reject` (D4) — matrix doc note added; code and
+  cells unchanged because they were already correct.
+- [x] Locked requeue binding-in-state semantics (D2) with a focused unit test.
+- [x] Proved assign/reassign/hand-off symmetry and ordered raw-act hand-off history (both directions), the
+  full requeue→reclaim-by-a-different-executor path, and terminal-state assignment/queue rejection with no
+  binding mutation / no sequence burn across all four terminals.
+- [x] Added a fitness guard asserting no executor-kind-specific hand-off/reassign type and that the v1
+  catalog stays 36; existing guardrails preserved unchanged and green.
+- [x] No new durable event/command/rejection types; `WorkItemV1Catalog.Count` stays 36 and the golden
+  corpus is unchanged.
+- [x] Build clean (0 warnings / 0 errors) and all four test binaries green (549/549 after the QA pass; 547 at dev-story).
+- [x] QA gap-fill pass (`bmad-qa-generate-e2e-tests`) closed four AC/design-decision gaps (AC #5
+  `IRejectionEvent` payload contract; AC #2/D3 same-binding fresh raw act; FR-18/D2×AC #3 push-from-pool
+  overrides retained binding; AC #1 emitted-event identity) — +2 unit cases, no production change.
+
+---
+
 # Test Automation Summary — Story 4.1 (Bind Work to a Uniform Party Executor)
 
 Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework

@@ -100,6 +100,14 @@ ownership model. None of them is implemented or wired in v1.
   zero branching on channel/authority/party). The contract-level read model
   `WorkItemExecutorBindingView` (`Contracts/Models`) exposes only this binding data so future Party
   chips render any executor uniformly; "bot / person / external" is resolved outside the kernel.
+- **Story 4.2 (assign / reassign / hand off).** Assign, reassign, human↔system hand-off, requeue, and
+  claim are **one uniform vocabulary** — `AssignWorkItem` (bind/rebind/hand-off), `QueueWorkItem`
+  (return-to-pool), `ClaimWorkItem` (`InProgress` entry) — with **no** executor-kind-specific command or
+  event (`HandoffToBot`, `ReassignToHuman`, `WorkItemHandedOff`, …); reassignment and hand-off differ only
+  by `ExecutorBinding` field values. Hand-off is symmetric in both directions and **auditable** through the
+  ordered raw-act event history (each `WorkItemAssigned` is a distinct act, never collapsed). The frozen v1
+  catalog stays 36 — Story 4.2 adds no contract type (a fitness test asserts both the no-kind-vocabulary
+  rule and the catalog size).
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
