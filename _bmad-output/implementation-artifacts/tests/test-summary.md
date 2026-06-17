@@ -1,3 +1,185 @@
+# Test Automation Summary — Story 4.3 (Claim Queued Work with Single-Claim-Wins)
+
+Workflow: `bmad-dev-story`. Framework reused: **xUnit v3 + Shouldly** (unit, integration, architecture) and
+**FsCheck** (property). Story 4.3 is a **deterministic-concurrency-proof + guardrail** story for **FR-18**
+(push/pull coexist; single-claim-wins), **NFR-3** (single-writer/optimistic; two claims → one success +
+domain rejection), and **AR-10/B1** (single-aggregate claim under expected-version). The claim transition
+(`ClaimWorkItem`/`WorkItemClaimed`), the rejection (`WorkItemTransitionRejected`), and the pure
+`WorkItemLifecycle.Decide` table were all built in Story 2.1 and proved uniform across executor kinds in
+Story 4.1; the **expected-version optimistic-concurrency mechanism is owned by `Hexalith.EventStore`** (the
+`AggregateActor → EventPersister → ETag SaveStateAsync` pipeline). There is no UI/HTTP/MCP surface; the
+executable path is **command → `WorkItemAggregate.Handle` → durable event → replayed `WorkItemState`**.
+
+Story 4.2 final baseline was **549** green tests (UnitTests 438, IntegrationTests 80, ArchitectureTests 30,
+PropertyTests 1). The Story 4.3 dev-story pass added **+12** tests (+10 unit, +1 architecture, +1 property),
+reaching **561** green: UnitTests 448, IntegrationTests 80, ArchitectureTests 31, PropertyTests 2.
+
+**No production code was changed (DC3).** Story 4.3 adds **no** event, command, rejection, or value-object
+type. The reconciliation (Task 1) confirmed the claim path and the substrate-concurrency surface already
+exist exactly as specified, so single-claim-wins is *proved and guarded*, not re-shaped. The durable wire
+surface is frozen: `WorkItemV1Catalog.Count` stays **36** (14 events / 14 commands / 8 rejections) and the
+golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden/` (incl.
+`WorkItemClaimed.v1.json`) is byte-unchanged.
+
+**Reconciliation (Task 1) — confirmed before any change.**
+
+- `Queued → Claim = Accept(InProgress)` and `Assigned → Claim = Accept(InProgress)`; **every other status —
+  including `InProgress` and `Suspended` — rejects `Claim`**. `Handle(ClaimWorkItem)` emits
+  `WorkItemClaimed(WorkItemId.Value, NextSequence(state), TenantId, WorkItemId, Binding)` on accept and
+  `WorkItemTransitionRejected(FromStatus, "Claim")` otherwise.
+- The EventStore substrate surface 4.3 relies on exists (`ConcurrencyConflictException`, `AggregateActor`),
+  asserted by `EventStoreApiSurfaceCharacterizationTests`; `MaxPersistenceConflictRetries` default is 1.
+- `IExecutorRouter` remains an abstraction with **no** wired impl (asserted by `BoundaryPortTests`);
+  `Handle(ClaimWorkItem)` validates only `TenantId`/`WorkItemId`/`Binding` and the lifecycle cell — no
+  eligibility/authority/routing input. `AuthorityLevel` stays carried-not-enforced (DC4).
+
+## Production code changed
+
+- **None.** This is a proof/guardrail story; the kernel, lifecycle table, and catalog are unchanged.
+
+## Tests added
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`) — +10 cases
+
+- [x] `WorkItemClaimConcurrencyTests` — **new file, +10 cases** (Tasks 2–3, AC #1–#5). Builds on (does not
+  duplicate) Story 4.1's `WorkItemUniformExecutorBindingTests` and the exhaustive `WorkItemLifecycleTests`
+  (status, Claim) matrix:
+  - **Task 2 / AC #2/#5 (1):** `Two_claims_at_the_same_expected_version_collide_and_exactly_one_wins_with_the_loser_domain_rejected`
+    — a `Queued` item at version `N`; two claims with **different** valid bindings are handled against the
+    same observed state and **both** emit a `WorkItemClaimed` at sequence `N+1` (the expected-version
+    collision — only one append can land). Applying the winner advances to `InProgress` at `N+1` bound to A;
+    re-handling the loser against the now-advanced state (exactly what the substrate's conflict-retry does)
+    yields a single `WorkItemTransitionRejected(InProgress, "Claim")`, applying it is a no-op, and there is
+    exactly one accepted `WorkItemClaimed` and exactly one observable `IRejectionEvent`. **Deterministic —
+    no threads/Task.Run/sleeps (RR-3);** a class XML-doc records that the live ETag append/retry/exhaustion
+    path is exercised under Aspire in Story 4.5.
+  - **Task 3 / AC #1 (Theory ×2):** `Claim_from_a_claimable_status_emits_one_claimed_act_binding_the_claimant_and_transitions_to_in_progress`
+    — from both claimable entries (`Queued` and `Assigned`), one `WorkItemClaimed` at `Sequence + 1`
+    carrying the supplied binding, replay rests `InProgress` bound to the claimant, plus an identity
+    assertion (`AggregateId == WorkItemId.Value`, `TenantId`, `WorkItemId`).
+  - **Task 3 / AC #3 (Theory ×7):** `Claim_from_a_non_claimable_status_is_rejected_with_no_binding_status_or_sequence_mutation`
+    — for each non-claimable status (`Created`, `InProgress`, `Suspended`, and the four terminals
+    `Completed`/`Cancelled`/`Rejected`/`Expired`), each arranged **carrying a known binding**, a
+    `ClaimWorkItem` returns `WorkItemTransitionRejected(FromStatus = <status>, AttemptedAct = "Claim")`,
+    emits **no** `WorkItemClaimed`, and applying the result leaves `Status`, `Sequence`, and
+    `ExecutorBinding` unchanged.
+
+### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +1 case
+
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays36`
+  — **new fitness test** (Task 4, AC #4 + DC1/DC4). Mirrors
+  `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`: scans declared
+  **type names** under `src/` (reusing the `declarationRegex` + exclusion set) for a forbidden claim/routing
+  vocabulary (`ClaimEligibility*`, `EligibilityFilter*`, `EligibilityEngine*`, `ClaimRouter*`,
+  `RoutingScore*`, `ExecutorRanking*`, `EscalationLadder*`, `ClaimDecisionRecord*`, and the DC1-forbidden
+  `ClaimRejected`/`ConcurrencyRejected`) and asserts none exist; paired with the reflection-based
+  frozen-catalog assertion (`polymorphicCatalogCount.ShouldBe(36)`). The existing guardrails
+  (`P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority`, `P0_ScaffoldContainsOnlyTheV1ProjectSet`,
+  `P0_KernelProjectsStayInfrastructureFree`, both `EventStoreApiSurfaceCharacterizationTests` facts,
+  `DependencyDirectionTests`, `BoundaryDecisionRecordTests`, `LifecycleTransitionMatrixDocTests`,
+  `BoundaryPortTests`) are preserved unchanged and green.
+
+### Property tests (`tests/Hexalith.Works.PropertyTests`) — +1 case
+
+- [x] `WorkItemClaimConvergencePropertyTests` — **new file, +1 property** (Task 5, AC #2/#5; FsCheck wiring
+  mirrors `WorkItemRollUpConvergencePropertyTests`). For a `Queued` item and any generated set of `K ≥ 2`
+  distinct claims, all `K` compute a claim at the same `N+1` (collision); applying **any** chosen winner
+  advances to `InProgress`, and the other `K−1` re-handle to `WorkItemTransitionRejected(InProgress,
+  "Claim")` — proving single-claim-wins is **order-independent** (exactly one accepted, `K−1` rejected,
+  whoever won). A test-class comment records that *duplicate-delivery* idempotency is a **substrate** concern
+  (CausationId/offset dedup; NFR-9/AR-11), not the kernel — a duplicate claim at the domain level is a
+  rejection, never `DomainResult.NoOp` (DC5). `Hexalith.Works.Server` + `Hexalith.Works.Testing`
+  `ProjectReference`s were added to the PropertyTests project (no Hexalith `PackageReference`; dependency
+  direction unchanged).
+
+## Documentation
+
+- [x] `docs/lifecycle-transition-matrix.md` — finalized the claim note (replacing "Single-claim-wins
+  concurrency is Story 4.3"): single-claim-wins is the composition of the pure lifecycle and the EventStore
+  substrate's expected-version (ETag) optimistic concurrency; the loser of a same-expected-version race
+  re-handles to `WorkItemTransitionRejected(InProgress, "Claim")` (DC1); no new rejection type; catalog stays
+  36; retry-exhaustion is infra (Story 4.5). **No cell changed** (still 1:1 with `WorkItemLifecycle.cs`).
+- [x] `docs/boundary-decision-record.md` — added a Story 4.3 note in *Notes and cross-references*:
+  single-claim-wins is the kernel lifecycle + EventStore-owned expected-version composition; Works adds no
+  claim-eligibility/routing/escalation/ranking/AI type and no `ClaimRejected`/`ConcurrencyRejected`; claim is
+  unconditional in v1 (eligibility deferred to the Theme-4 `IExecutorRouter` seam); the claimable pool is a
+  Story 4.4 read projection. The module/seam enumeration is preserved (`BoundaryDecisionRecordTests` green).
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+The QA pass traced AC #1–#5 and design decisions DC1–DC5 against the dev-story coverage. Most of the
+surface was already well-asserted: AC #1 (claim emits/binds/transitions), AC #2/#5 (deterministic
+single-claim-wins, unit + order-independent property), AC #3 (not-claimable rejection with no mutation),
+and AC #4 (claim-eligibility/routing fitness guard + catalog-stays-36) are all covered, and the candidate
+"authority-unconditional claim" gap proved already covered — `WorkItemUniformExecutorBindingTests` already
+drives a `Read`-authority external party through claim (DC4, carried-not-enforced). This is a pure
+event-sourced domain library with **no HTTP/API or UI surface**, so the "API" lane is the aggregate command
+handlers and the "E2E" lane is the serialization-flow integration test — both already present; the gap was
+assertion-level, not new-surface. One genuine gap was found and auto-applied as a new `[Fact]` (UnitTests
+448 → **449**). No production code changed; catalog stays **36**.
+
+- [x] **DC5 — a duplicate claim by the *current holder* of an InProgress item is a rejection, not a NoOp
+  (unit, +1 case).** `Duplicate_claim_by_the_current_holder_of_an_in_progress_item_is_rejected_not_a_no_op`
+  proves the DC5 invariant the dev-story pass documented only in a property-test *comment* and never
+  asserted. The AC #3 theory re-claims `InProgress` with a **different** party and never pins `IsNoOp`;
+  duplicate-delivery idempotency is a **substrate** concern (the `AggregateActor` CausationId/offset dedup,
+  NFR-9/AR-11), but at the kernel a second claim against an already-`InProgress` item — *even from the
+  executor that already holds it* — must surface `WorkItemTransitionRejected(InProgress, "Claim")`, never
+  `DomainResult.NoOp` (the lifecycle returns NoOp only on the terminal self-duplicate diagonals). The test
+  pins `IsRejection`, **`IsNoOp == false`**, no `WorkItemClaimed`, the rejection identity, and that applying
+  it mutates nothing — so a future "collapse duplicate claim into a NoOp" change is a visible build break.
+
+## Story 4.3 Validation (after QA pass)
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` — passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` — passed
+  with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **449/449** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` — **80/80** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` — **31/31** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **2/2** passed
+  (`Ok, passed 100 tests.` ×2).
+
+### Story 4.3 Test Counts
+
+| Suite | Story 4.2 Final | Story 4.3 dev-story | Story 4.3 after QA pass | Delta vs 4.2 |
+|-------|----------------:|--------------------:|------------------------:|------:|
+| UnitTests | 438 | 448 | **449** | +11 |
+| IntegrationTests | 80 | 80 | **80** | — |
+| ArchitectureTests | 30 | 31 | **31** | +1 |
+| PropertyTests | 1 | 2 | **2** | +1 |
+| **Total** | **549** | 561 | **562** | **+13** |
+
+### Not-applicable runtime / E2E surfaces
+
+- No production UI, MCP/chatbot/email adapter, executor router, eligibility filter, escalation ladder,
+  authority gate, routing score, AI decision record, signed link, LLM/NL parsing, or cost-governance
+  package — all out of scope and deferred (claimable-pool "what's-next" queue projection/query → Story 4.4;
+  the **live** ETag append/retry/exhaustion behavior under the Aspire command/event pipeline → Story 4.5;
+  reminder/reactor recovery → Story 4.6).
+- No Dapr dispatch, EventStore stream reads, clock/timer, or actor runtime here: the single-claim-wins proof
+  is the **deterministic domain outcome** of the expected-version collision (RR-3), modelled with no
+  threads/sleeps; the AppHost/Aspire runtime lane was **not exercised**. Browser/UI E2E is **not applicable**.
+
+### Checklist
+
+- [x] Reconciled the existing claim + substrate-concurrency surface before changing code; confirmed the
+  claim path, the EventStore expected-version mechanism ownership, and that no eligibility/routing type exists.
+- [x] Proved deterministic single-claim-wins via expected-version collision (two claims → one
+  `WorkItemClaimed`, loser → `WorkItemTransitionRejected(InProgress, "Claim")`), with no thread race (RR-3).
+- [x] Proved the focused happy-path claim (AC #1) and the not-claimable rejection with no mutation (AC #3).
+- [x] Added an AC #4 fitness guard (no claim-eligibility/routing/escalation/ranking/AI type; no
+  `ClaimRejected`/`ConcurrencyRejected`; catalog stays 36); existing guardrails preserved unchanged and green.
+- [x] Added an optional order-independent single-claim-wins property test (Task 5; falsifiable value beyond
+  the two-claimant unit proof).
+- [x] No new durable event/command/rejection types; `WorkItemV1Catalog.Count` stays 36 and the golden
+  corpus is byte-unchanged.
+- [x] QA pass closed the under-asserted DC5 gap (duplicate claim by the holder is a rejection, never a NoOp).
+- [x] Build clean (0 warnings / 0 errors) and all four test binaries green (562/562).
+- [x] Left the unrelated `Hexalith.Tenants` gitlink change untouched; ran no recursive submodule commands.
+
+---
+
 # Test Automation Summary — Story 4.2 (Assign, Reassign, and Hand Off Work)
 
 Workflow: `bmad-dev-story`. Framework reused: **xUnit v3 + Shouldly** for unit, integration, and

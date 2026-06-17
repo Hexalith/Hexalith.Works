@@ -170,7 +170,19 @@ Notes:
   already-`Rejected` item is the idempotent duplicate (`NoOp`); a requeue reject of a terminal item
   cannot un-terminal it, so it is `R`.
 - **`Claim` is the single `InProgress`-entry act** for both `Assigned→InProgress` and
-  `Queued→InProgress`. There is no `WorkItemStarted` event. Single-claim-wins concurrency is Story 4.3.
+  `Queued→InProgress`. There is no `WorkItemStarted` event. **Single-claim-wins (Story 4.3; FR-18/NFR-3)**
+  is realized as the *composition* of two separately-owned layers, with **no cell change** here: (1) the
+  pure lifecycle above — `Queued/Assigned → Claim = Accept(InProgress)`, every other status (including
+  `InProgress` and `Suspended`) `R` — and (2) the EventStore substrate's **expected-version (ETag)
+  optimistic concurrency** (`AggregateActor → EventPersister → SaveStateAsync`). When two executors claim
+  the same item at expected version `N`, both compute `WorkItemClaimed` at sequence `N+1`; the store admits
+  exactly one append (the winner → `InProgress`), and the loser's commit conflicts, so on retry it
+  re-handles against the now-`InProgress` state and lands on the existing `InProgress + Claim = R` cell →
+  `WorkItemTransitionRejected(InProgress, "Claim")`. The loser's observable rejection is therefore the
+  **existing** `WorkItemTransitionRejected` (DC1) — **no** `ClaimRejected`/`ConcurrencyRejected` type is
+  added and the v1 catalog stays **36**. Retry-exhaustion under hot contention is an infrastructure failure
+  (exception/dead-letter), not a domain rejection; the live ETag append/retry path is exercised under
+  Aspire in Story 4.5.
 - **Active work is not directly reassigned or requeued (D4 — finalizes Story 2.1's deferred edge cell).**
   The `InProgress` and `Suspended` rows keep `Assign = R` and `Queue = R`: hand-off in v1 happens while the
   item is `Assigned` (a rebind — `Assigned → Assign`, latest binding wins) or via

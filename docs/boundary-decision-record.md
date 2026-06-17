@@ -108,6 +108,17 @@ ownership model. None of them is implemented or wired in v1.
   ordered raw-act event history (each `WorkItemAssigned` is a distinct act, never collapsed). The frozen v1
   catalog stays 36 — Story 4.2 adds no contract type (a fitness test asserts both the no-kind-vocabulary
   rule and the catalog size).
+- **Story 4.3 (claim queued work / single-claim-wins).** Single-claim-wins is the **composition** of the
+  Works kernel lifecycle (`Queued/Assigned → Claim = Accept(InProgress)`; all else `R`) and the
+  **EventStore-owned expected-version (ETag) optimistic concurrency** mechanism (see the EventStore row
+  above — Works references persistence/concurrency, it does **not** own the mechanism): two claims at the
+  same expected version both target sequence `N+1`, one append wins, and the loser re-handles against the
+  now-`InProgress` state to the existing `WorkItemTransitionRejected(InProgress, "Claim")`. Works adds **no**
+  claim-eligibility, routing, escalation, ranking, or AI-decision type, and **no** new
+  `ClaimRejected`/`ConcurrencyRejected` rejection — claim is **unconditional** in v1 (any tenant Executor
+  may claim a queued item; eligibility is the deferred Theme-4 executor-routing seam `IExecutorRouter`
+  above), `AuthorityLevel` stays carried-not-enforced, and the v1 catalog stays 36 (fitness-asserted). The
+  claimable pool itself is a read projection (Story 4.4), not an authoritative queue aggregate.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
