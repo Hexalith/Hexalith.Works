@@ -492,6 +492,118 @@ public sealed class ScaffoldGovernanceTests
         polymorphicCatalogCount.ShouldBe(36, "Story 4.3 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
     }
 
+    // Story 4.4 / AC #1+#4 + DC1/DC2/DC3: the tenant "what's next" queue is a pure read projection +
+    // query-shaping over Works' own events — no routing engine, eligibility scoring, escalation ladder, or
+    // executor ranking, and no web/DataGrid/SignalR/MCP/chatbot/email surface ships in v1 (those are
+    // Theme-3/Theme-4 concerns). This mirrors the 4.2/4.3 guards: it matches on declared TYPE names (not raw
+    // substrings) so legitimate WhatsNext*/IExecutorRouter (the abstraction-only Ports seam) and XML-comment
+    // "routing"/"SignalR" mentions stay valid, and it is paired with the frozen-catalog assertion so adding a
+    // durable what's-next type breaks the build.
+    [Fact]
+    public void P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays36()
+    {
+        string root = RepositoryRoot.Locate();
+
+        // Reuse the value-object exclusion set and additionally exclude the abstraction-only IExecutorRouter
+        // port (Theme-4 seam, asserted impl-free by BoundaryPortTests) so the "*Router impl" scan does not
+        // flag the legitimately-named abstraction itself.
+        string[] allowedDefinitionFiles =
+        [
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "ExecutorBinding.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "Channel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "AuthorityLevel.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "ValueObjects", "PartyId.cs"),
+            Path.Combine("src", "Hexalith.Works.Contracts", "Ports", "IExecutorRouter.cs"),
+        ];
+
+        string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))
+            .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
+            .Where(path => allowedDefinitionFiles.All(allowed => !Path.GetRelativePath(root, path).EndsWith(allowed, StringComparison.Ordinal)))];
+
+        sourceFiles.ShouldNotBeEmpty("Expected to discover Works src files to govern for what's-next routing/surface vocabulary.");
+
+        // A declared type whose NAME matches one of these is a routing/eligibility engine, escalation ladder,
+        // executor ranking, a concrete *Router implementation, or a live web/DataGrid/SignalR/MCP/chatbot/email
+        // surface — exactly the vocabulary FR-20 (projection/query only, "no routing engine") and AC #4
+        // (no surface in v1) forbid in the Works kernel.
+        string[] forbiddenTypeNamePatterns =
+        [
+            "RoutingEngine",
+            "EligibilityScore",
+            "EligibilityEngine",
+            "EligibilityFilter",
+            "EscalationLadder",
+            "ExecutorRanking",
+            "Router",        // a concrete *Router impl (the IExecutorRouter abstraction file is excluded)
+            "DataGrid",
+            "Hub",           // SignalR *Hub surface
+            "SignalR",
+            "WebShell",
+            "MailSurface",
+            "EmailSurface",
+            "McpTool",
+            "Chatbot",
+        ];
+
+        var declarationRegex = new Regex(
+            @"\b(?:public\s+|internal\s+|private\s+|protected\s+|sealed\s+|partial\s+|abstract\s+|static\s+|readonly\s+|file\s+)*(?:record(?:\s+(?:class|struct))?|class|enum|interface|struct)\s+([A-Za-z_]\w*)");
+
+        string[] violations = [.. sourceFiles
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .SelectMany(file => declarationRegex.Matches(file.Text)
+                .Select(match => match.Groups[1].Value)
+                .Where(typeName => forbiddenTypeNamePatterns.Any(pattern => Regex.IsMatch(typeName, pattern)))
+                .Select(typeName => $"{Path.GetRelativePath(root, file.Path)} declares forbidden what's-next routing/surface type '{typeName}'"))];
+
+        violations.ShouldBeEmpty("The what's-next queue is projection/query only (FR-20): no RoutingEngine*/Eligibility*/EscalationLadder*/ExecutorRanking*/*Router impl and no *DataGrid/*Hub/*SignalR*/*WebShell/*MailSurface/*EmailSurface/*McpTool/*Chatbot surface may exist in the Works kernel (AC #1/#4).");
+
+        // The durable v1 wire surface stays frozen at 36 (14 success events + 14 commands + 8 rejection
+        // events). WhatsNextItem is a plain read-model record, not a [PolymorphicSerialization] catalog type;
+        // Story 4.4 adds no durable type (DC3).
+        int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
+            .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
+
+        polymorphicCatalogCount.ShouldBe(36, "Story 4.4 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
+    }
+
+    // Story 4.4 / AC #5 + NFR-6: the pure kernel performs no logging — it never references ILogger or a log
+    // sink, so it cannot leak payloads, PII, or obligation text. The read models carry data for consumers;
+    // they must not be *logged* by the kernel. A runtime adapter (Stories 4.5/4.6) owns structured logging.
+    [Fact]
+    public void P0_WorkItemKernelDoesNotLogPayloadsOrPii()
+    {
+        string root = RepositoryRoot.Locate();
+        string[] kernelRoots =
+        [
+            Path.Combine(root, "src", "Hexalith.Works.Contracts"),
+            Path.Combine(root, "src", "Hexalith.Works.Server"),
+            Path.Combine(root, "src", "Hexalith.Works.Projections"),
+        ];
+        string[] bannedLoggingSymbols =
+        [
+            "ILogger",
+            "LoggerMessage",
+            "LogInformation",
+            "LogWarning",
+            "LogError",
+            "LogDebug",
+            "LogTrace",
+            "LogCritical",
+            "Console.Write",
+        ];
+
+        string[] violations = [.. kernelRoots
+            .SelectMany(path => Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories))
+            .Where(path => !IsBuildOutput(path))
+            .SelectMany(path => bannedLoggingSymbols
+                .Where(symbol => File.ReadAllText(path).Contains(symbol, StringComparison.Ordinal))
+                .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
+
+        violations.ShouldBeEmpty("The Works kernel (Contracts, Server, Projections) must perform no logging: no ILogger or log sink may appear, so payloads/PII/obligation text can never be logged from the pure core (NFR-6 / AC #5).");
+    }
+
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;
 
     private static string ProjectNameFromReference(string include)

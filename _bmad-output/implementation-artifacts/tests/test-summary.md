@@ -1,3 +1,242 @@
+# Test Automation Summary — Story 4.4 (Resolve the Tenant's What's Next Queue)
+
+Workflow: `bmad-dev-story` followed by a `bmad-qa-generate-e2e-tests` QA gap-filling pass. Framework reused:
+**xUnit v3 + Shouldly** (unit, architecture) and **FsCheck**
+(property). Story 4.4 is the **pure read-side** realization of **FR-20** (the tenant "what's next" query): a
+tenant-scoped projection + read model + query-shaping that returns a tenant's `Queued`+`Assigned` items
+ordered by Priority → earliest Due Date → identity (neither sorts last), with a pure query-side
+authorization seam and a notifier change-signal. Following the Epic-3 pattern, it ships the **pure**
+projection logic now and defers the runtime adapter (live `IDomainQueryHandler`/`IReadModelStore`/
+`IProjectionChangeNotifier` wiring → Stories 4.5/4.6, gated on the EventStore projection-model
+reconciliation). The claimable pool **is** a read projection (AR-10/B1), not an authoritative queue
+aggregate. There is no UI/HTTP/MCP surface.
+
+Story 4.3 final baseline was **562** green tests (UnitTests 449, IntegrationTests 80, ArchitectureTests 31,
+PropertyTests 2). The Story 4.4 dev-story pass added **+28** tests (+25 unit, +2 architecture, +1 property),
+reaching **590** green: UnitTests 474, IntegrationTests 80, ArchitectureTests 33, PropertyTests 3. The
+follow-up `bmad-qa-generate-e2e-tests` QA pass then added **+9** unit tests to close residual AC/design-
+decision gaps, raising the total to **599** green: UnitTests 483, IntegrationTests 80, ArchitectureTests 33,
+PropertyTests 3. **No production code was changed by the QA pass** — only the unit-test file was extended;
+the v1 catalog (`WorkItemV1Catalog.Count` 36) and golden corpus are unchanged.
+
+**Production code is read-side only.** Story 4.4 adds three pure production types plus a change-signal
+record — **no** event, command, rejection, or value-object type. The durable wire surface is frozen:
+`WorkItemV1Catalog.Count` stays **36** (14 events / 14 commands / 8 rejections) and the golden corpus is
+byte-unchanged (DC3). `WhatsNextItem` is a plain `System.Text.Json` record, not a
+`[PolymorphicSerialization]` catalog type.
+
+**Reconciliation (Task 1) — confirmed before any change.**
+
+- The canonical pure read-side precedent is `WorkItemRollUpProjection` (per-item
+  `SortedDictionary<long, IEventPayload>` LWW, tenant-ordinal guards, `EventMatchesDelivery`,
+  rebuild-on-change) + the `WorkItemRollUp`/`OwnRemaining`/`RolledRemaining` read models — mirrored here.
+- The delivery envelope `WorkItemRollUpEvent(TenantId, WorkItemId, long Sequence, IEventPayload)` is reused
+  unchanged (DC6); no parallel envelope was forked.
+- `WorkItemId.Value` is the **raw inner id** (`AggregateIdentity(...).AggregateId`), **not** tenant-composed
+  — so colliding inner ids across tenants are byte-identical, making the explicit `(tenant, id)` key
+  essential and the id tiebreak a strict total order *within* a tenant.
+- `WorkItemExecutorBindingView`'s XML doc named Story 4.4 as its scaled populator; the what's-next read
+  model carries `ExecutorBinding?` directly (no executor-kind discriminator).
+- `IExecutorRouter` remains an abstraction with **no** wired impl (`BoundaryPortTests`); the what's-next
+  query takes **no** routing/eligibility/authority input; `Projections` still references only `Contracts`
+  (+ `EventStore.Contracts`) — the live query/notifier runtime stays in the deferred substrate adapter.
+
+## Production code changed
+
+- **New:** `src/Hexalith.Works.Contracts/Models/WhatsNextItem.cs` — the read-model contract (Task 2): a
+  plain `System.Text.Json` `sealed record` exposing tenant/work-item identity, status, the ordering inputs
+  (Priority + DueDate), `ExecutorBinding?` (zero kind branching), `OwnRemaining?`, distinct
+  `RolledRemaining?` + `RolledRemainingByUnit` (composed where available), `AwaitConditions`, and a
+  `LatestAcceptedSourceSequence` watermark. No UI-specific types.
+- **New:** `src/Hexalith.Works.Projections/Strategies/WhatsNextQueueProjection.cs` — the pure projection
+  (Tasks 3/6): `Project(delivery) → WhatsNextProjectionChange` and
+  `WhatsNext(tenant, rollUpLookup?) → IReadOnlyList<WhatsNextItem>`. Per-item `(tenant, id)` key,
+  `SortedDictionary` LWW, eligibility = `{Queued, Assigned}`, queued items keep their last binding,
+  cross-tenant ordinal guard, rolled-remaining composed only from a supplied roll-up (DC7), and a stable
+  `ProjectionType = "works-whats-next"` token.
+- **New:** `src/Hexalith.Works.Projections/Strategies/WhatsNextOrdering.cs` — the total ordering comparator
+  (Task 4, DC2): Priority rank (absent/`Unknown` last) → Due Date (absent last) → `WorkItemId.Value`
+  ordinal.
+- **New:** `src/Hexalith.Works.Projections/Strategies/WhatsNextQueryAuthorization.cs` — the pure query-side
+  authorization filter (Task 5, DC4): authoritative-tenant check + optional caller predicate, fail-closed,
+  mirroring `ProjectQueryTenantFilter`.
+- **New:** `src/Hexalith.Works.Projections/Models/WhatsNextProjectionChange.cs` — the notifier change-signal
+  record (Task 6, DC1).
+
+## Tests added
+
+### Unit tests (`tests/Hexalith.Works.UnitTests`) — +25 cases
+
+- [x] `WhatsNextQueueProjectionTests` — **new file, +25 cases** covering Tasks 2–6:
+  - **Task 2 (AC #3):** own/rolled remaining stay distinct types on the model; the read model exposes only
+    owned data with no UI/executor-kind property surface.
+  - **Task 3 (AC #1/#3/#5):** only `Queued`+`Assigned` are returned; requeued rejection is eligible while a
+    non-requeue rejection is not; a queued item keeps its last `ExecutorBinding`; own-remaining is derived
+    and rolled-remaining is composed only where a roll-up lookup is supplied (else null/empty); a
+    unit-mismatched progress retains the last valid own-remaining; **colliding inner ids across two tenants
+    with identical schedules never cross and flip with the queried tenant**; tenant/id-mismatched payloads
+    and non-positive sequences are ignored; out-of-order + duplicated delivery converge to the same queue
+    and order.
+  - **Task 4 (AC #2):** priority ordering across all four ranks; earliest-due-date within one priority;
+    `WorkItemId.Value` ordinal tiebreak within identical priority+due-date; only-priority before only-due-
+    date; **neither-present sorts last**; absent/`Unknown` priority both rank last.
+  - **Task 5 (AC #1):** wrong-tenant items dropped; a caller predicate removes only the rejected item;
+    null/empty authoritative tenant is fail-closed (empty list / null single).
+  - **Task 6 (AC #4):** a change is reported when an item enters or leaves the pool or is rescheduled to a
+    new priority; **no** change for binding- or remaining-only updates, or duplicate-sequence delivery;
+    the `"works-whats-next"` projection token is stable.
+
+### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +2 cases
+
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays36`
+  — **new fitness test** (Task 8, AC #1/#4 + DC3). Mirrors the 4.2/4.3 declared-type-name scans: forbids a
+  what's-next routing/surface vocabulary (`RoutingEngine`, `EligibilityScore`/`EligibilityEngine`/
+  `EligibilityFilter`, `EscalationLadder`, `ExecutorRanking`, a concrete `*Router` impl with the
+  abstraction-only `IExecutorRouter` port excluded, and surface types `*DataGrid`/`*Hub`/`*SignalR*`/
+  `*WebShell`/`*MailSurface`/`*EmailSurface`/`*McpTool`/`*Chatbot`) and is paired with the reflection-based
+  frozen-catalog assertion `polymorphicCatalogCount.ShouldBe(36)`.
+- [x] `ScaffoldGovernanceTests.P0_WorkItemKernelDoesNotLogPayloadsOrPii` — **new fitness test** (Task 7,
+  AC #5/NFR-6). Scans the kernel (`Contracts`, `Server`, `Projections`) for any logging symbol (`ILogger`,
+  `LoggerMessage`, `Log*`, `Console.Write`) and asserts none exist, so payloads/PII/obligation text can
+  never be logged from the pure core. The existing guardrails (`BoundaryPortTests`,
+  `DependencyDirectionTests`, `EventStoreApiSurfaceCharacterizationTests`, `BoundaryDecisionRecordTests`,
+  `LifecycleTransitionMatrixDocTests`, the rest of `ScaffoldGovernanceTests`) are preserved unchanged and
+  green.
+
+### Property tests (`tests/Hexalith.Works.PropertyTests`) — +1 case
+
+- [x] `WhatsNextOrderingConvergencePropertyTests` — **new file, +1 property** (Task 9, AC #2/#5; FsCheck
+  wiring mirrors `WorkItemRollUpConvergencePropertyTests`). For any generated set of items (random
+  priorities, due dates, and eligibility) and any permutation + duplication of their delivery, the tenant
+  what's-next queue converges to the **same ordered list** (order-tolerant), the ordering is a **strict
+  total order** (every adjacent pair compares strictly less — no two distinct items compare equal under the
+  full comparator including the id tiebreak), and a colliding foreign-tenant item never leaks across
+  tenants.
+
+## Documentation
+
+- [x] `docs/whats-next-projection.md` — **new** (mirrors `docs/work-roll-up-projection.md`): the eligible
+  set, the ordering rule + exact comparator (DC2), the read-model field contract, rolled-remaining
+  composition (DC7), tenant scoping + query-side authorization as distinct controls, the idempotent/order-
+  tolerant rebuild posture (checkpoint-per-aggregate), the notifier seam + deferred runtime wiring, and the
+  no-logging privacy posture.
+- [x] `docs/boundary-decision-record.md` — added a Story 4.4 note in *Notes and cross-references*: the
+  what's-next queue is a pure read projection + query-shaping; ordering is Priority→DueDate→identity
+  (neither last); tenant scoping + query-side authorization are distinct controls; Works adds no
+  routing/eligibility type and no durable catalog type (stays 36); the notifier requirement references the
+  substrate seam; live query/notifier runtime is the deferred Aspire wiring (4.5/4.6). The module/seam
+  enumeration is preserved (`BoundaryDecisionRecordTests` green).
+
+## Gaps closed by the QA pass (`bmad-qa-generate-e2e-tests`)
+
+The QA pass traced AC #1–#5 and design decisions DC1/DC4/DC5/DC7 against the dev-story coverage. The
+dev-story pass already covered the eligibility set, the full ordering matrix, colliding-id cross-tenant
+isolation, the authorization filter *in isolation*, and the change-signal basics. Nine genuine,
+non-redundant gaps were found and auto-applied as new `[Fact]` cases (UnitTests 474 → **483**). This is a
+pure event-sourced read-side library with **no HTTP/API or UI surface**, so the "API" lane is the
+projection/query methods (`Project`/`WhatsNext`/`WhatsNextQueryAuthorization`) and the "E2E" lane is the
+deterministic event-delivery → read-model flow — both already present; the gaps were assertion-level. No
+production code changed; catalog stays **36**.
+
+- [x] **AC #1 — query-side authorization composes with tenant scoping as a *distinct* control (unit, +1).**
+  `Query_side_authorization_composes_with_tenant_scoping_as_a_distinct_control` projects two tenants with
+  *colliding* inner ids, confirms the projection's own tenant scoping returns only tenant A, then proves the
+  authorization filter independently drops a foreign item that reached the list (preserving survivor order)
+  and a caller predicate narrows further — AC #1's "query-side authorization is applied *in addition to*
+  tenant scoping" verbatim, which the dev-story pass only tested with the two controls in isolation.
+- [x] **AC #1/#3 — suspend → resume keeps an item out of the pool until re-queued (unit, +1).**
+  `A_suspended_then_resumed_item_stays_out_of_the_pool_until_it_is_re_queued` adds the missing
+  `WorkItemResumed` projection coverage: Claim→Suspend→Resume leaves the item InProgress (ineligible) with
+  its await conditions cleared, and a later `WorkItemAssigned` legitimately re-admits it (resume is not
+  terminal).
+- [x] **DC5/AC #3 — ReEstimated own-remaining derivation (unit, +1).**
+  `Re_estimate_establishes_then_updates_own_remaining_and_a_unit_mismatch_retains_it` covers the ReEstimated
+  effort path the dev-story pass left untested in this projection (only ProgressReported's mismatch path was
+  exercised): establish-from-nothing, a matching-unit re-estimate, and a unit-mismatched ReEstimated that
+  retains the last valid own-remaining (refuse-don't-coerce).
+- [x] **AC #1/#5 — a terminal item never re-enters the pool (unit, +1).**
+  `A_terminal_item_never_re_enters_the_pool_even_under_a_later_requeue_or_assign` pins the safety invariant
+  that a closed item can never reappear in the claimable pool: the terminal guard absorbs a later requeue
+  rejection and assignment and reports **no** queue change.
+- [x] **AC #4 — change-signal due-date dimension + ineligible boundary (unit, +2).**
+  `Project_reports_a_change_when_an_eligible_item_is_rescheduled_to_a_new_due_date` extends the change-signal
+  proof along the due-date axis (the dev-story pass covered only the priority axis), and
+  `Project_reports_no_change_when_an_ineligible_item_is_rescheduled` pins the boundary that the signal tracks
+  the *eligible* set/order only.
+- [x] **AC #3 — `LatestAcceptedSourceSequence` freshness watermark (unit, +1).**
+  `Latest_accepted_source_sequence_reflects_the_highest_accepted_sequence_under_out_of_order_delivery`
+  asserts the AC-named watermark is surfaced on the read model and is order-tolerant (max accepted sequence).
+- [x] **DC7 — rolled-remaining "where available" is *per item* (unit, +1).**
+  `Rolled_remaining_is_composed_per_item_only_where_a_roll_up_is_available` proves a lookup that resolves one
+  of two eligible items leaves the other's rolled remaining null/empty — not all-or-nothing.
+- [x] **AC #1 — authorization filter order/trim/null-set contract (unit, +1).**
+  `Authorization_filter_preserves_order_trims_the_tenant_and_rejects_a_null_result_set` locks the documented
+  behaviours: survivor order is preserved, the authoritative tenant id is trimmed before the ordinal
+  comparison, and a null result set fail-fasts (distinct from the fail-closed empty-tenant path).
+
+## Story 4.4 Validation (after QA pass)
+
+- `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` — passed.
+- `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` — passed
+  with **0 warnings and 0 errors**.
+- `tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests` — **483/483** passed.
+- `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests` — **80/80** passed.
+- `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` — **33/33** passed.
+- `tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests` — **3/3** passed
+  (`Ok, passed 100 tests.` ×3).
+
+### Story 4.4 Test Counts
+
+| Suite | Story 4.3 Final | Story 4.4 dev-story | Story 4.4 after QA pass | Delta vs 4.3 |
+|-------|----------------:|--------------------:|------------------------:|------:|
+| UnitTests | 449 | 474 | **483** | +34 |
+| IntegrationTests | 80 | 80 | **80** | — |
+| ArchitectureTests | 31 | 33 | **33** | +2 |
+| PropertyTests | 2 | 3 | **3** | +1 |
+| **Total** | **562** | 590 | **599** | **+37** |
+
+### Not-applicable runtime / UI surfaces
+
+- No production UI, DataGrid, SignalR hub, MCP/chatbot/email adapter, routing engine, eligibility filter,
+  escalation ladder, executor ranking, authority gate, or AI decision record — all out of scope and
+  deferred (the **live** `IDomainQueryHandler`/`/query` endpoint, `IReadModelStore` persistence, and
+  `IProjectionChangeNotifier`/SignalR broadcast → Stories 4.5/4.6, gated on the EventStore projection-model
+  reconciliation; reminder/reactor recovery → Story 4.6).
+- No Dapr dispatch, EventStore stream reads, clock/timer, or actor runtime here: the projection is the
+  **deterministic** in-memory derivation of eligibility + ordering from event deliveries, modelled with no
+  threads/sleeps/network/containers. Browser/UI E2E is **not applicable**.
+
+### Checklist
+
+- [x] Reconciled the existing roll-up read-side precedent and substrate seams before writing code; reused
+  the delivery envelope (DC6) and confirmed `Projections` references only `Contracts` (+ EventStore.Contracts).
+- [x] Defined the `WhatsNextItem` read-model contract (plain STJ record, distinct own/rolled types, no UI/
+  executor-kind surface; AC #3).
+- [x] Built the pure `WhatsNextQueueProjection`: eligibility `{Queued, Assigned}`, queued keeps last
+  binding, cross-tenant `(tenant, id)` isolation, rolled-remaining composed where available (AC #1/#3/#5).
+- [x] Implemented the total, deterministic, order-tolerant comparator (Priority→DueDate→identity, neither
+  last; AC #2).
+- [x] Added the pure query-side authorization filter as a distinct control, fail-closed (AC #1).
+- [x] Satisfied the notifier requirement via the substrate seam + a pure change-signal and a stable
+  `"works-whats-next"` token; no live surface wired (AC #4).
+- [x] Added cross-tenant + privacy guards: mutation-validated colliding-id isolation test + a no-logging
+  fitness check (AC #5).
+- [x] Added the catalog-stays-36 / no-routing / no-surface fitness guard; existing guardrails preserved
+  green (AC #1/#4).
+- [x] Added the optional order-independent convergence + total-order property test (Task 9).
+- [x] Authored `docs/whats-next-projection.md` and the boundary-record + test-summary updates.
+- [x] No new durable event/command/rejection types; `WorkItemV1Catalog.Count` stays 36 and the golden
+  corpus is byte-unchanged.
+- [x] QA gap-fill pass (`bmad-qa-generate-e2e-tests`) closed nine AC/design-decision gaps (AC #1
+  authorization-composes-with-scoping + filter order/trim/null contract; AC #1/#3 suspend→resume eligibility;
+  DC5/AC #3 ReEstimated own-remaining; AC #1/#5 terminal-never-re-enters; AC #4 due-date change-signal +
+  ineligible boundary; AC #3 freshness watermark; DC7 per-item rolled composition) — +9 unit cases, no
+  production change.
+- [x] Build clean (0 warnings / 0 errors) and all four test binaries green (599/599 after the QA pass; 590 at dev-story).
+- [x] Left the unrelated `Hexalith.Tenants` gitlink change untouched; ran no recursive submodule commands.
+
+---
+
 # Test Automation Summary — Story 4.3 (Claim Queued Work with Single-Claim-Wins)
 
 Workflow: `bmad-dev-story`. Framework reused: **xUnit v3 + Shouldly** (unit, integration, architecture) and

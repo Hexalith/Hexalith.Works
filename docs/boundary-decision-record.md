@@ -119,6 +119,21 @@ ownership model. None of them is implemented or wired in v1.
   may claim a queued item; eligibility is the deferred Theme-4 executor-routing seam `IExecutorRouter`
   above), `AuthorityLevel` stays carried-not-enforced, and the v1 catalog stays 36 (fitness-asserted). The
   claimable pool itself is a read projection (Story 4.4), not an authoritative queue aggregate.
+- **Story 4.4 (resolve the tenant's what's-next queue).** The tenant "what's next" queue is realized as a
+  **pure read projection + query-shaping** over Works' own events (`WhatsNextQueueProjection` +
+  `WhatsNextItem` in `Projections`/`Contracts`), **not** an authoritative queue aggregate (AR-10/B1, the
+  EventStore row above — Works references persistence, it does not own a second source of truth). The
+  eligible set is `{Queued, Assigned}`; ordering is **Priority → earliest Due Date → identity** (absent
+  priority/due-date last, so an item with **neither** sorts last). Tenant key-scoping and the pure
+  **query-side authorization** filter (`WhatsNextQueryAuthorization`, mirroring `Hexalith.Projects`
+  `ProjectQueryTenantFilter`) are **distinct controls** (defense-in-depth, D2/NFR-1); `AuthorityLevel`
+  stays carried-not-enforced (no `IExecutorRouter` impl — the Theme-4 routing/eligibility seam above is
+  still abstraction-only). Works adds **no** routing/eligibility/escalation/ranking type and **no** durable
+  catalog type — the v1 catalog stays 36 (fitness-asserted) and the golden corpus is byte-compatible. The
+  notifier requirement is met by **referencing** the substrate seam
+  `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore
+  owns the SignalR broadcast); the live query/notifier runtime is the deferred Aspire wiring (Stories
+  4.5/4.6), and **no web shell, DataGrid, MCP, chatbot, or email surface** ships in v1.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
