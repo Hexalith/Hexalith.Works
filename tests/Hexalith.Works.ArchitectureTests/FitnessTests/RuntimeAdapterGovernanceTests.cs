@@ -1,6 +1,9 @@
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
+using Hexalith.PolymorphicSerializations;
+using Hexalith.Works.Contracts.Commands;
+
 using Shouldly;
 
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
@@ -27,6 +30,8 @@ public sealed class RuntimeAdapterGovernanceTests
 
         string[] hostPackages = PackageReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
         hostPackages.ShouldContain("Dapr.AspNetCore", "The runnable Works host owns the Dapr dependency for the proof.");
+        hostPackages.ShouldContain("Dapr.Actors", "Story 4.6 date-resume reminders are Dapr actor reminders owned by the runnable Works host.");
+        hostPackages.ShouldContain("Dapr.Actors.AspNetCore", "Story 4.6 maps actor reminder callbacks only in the runnable Works host.");
 
         // The pure kernel + Reactor must never reach EventStore runtime (anything beyond EventStore.Contracts)
         // or take a Dapr dependency. The host is the only Works src project allowed those.
@@ -50,6 +55,93 @@ public sealed class RuntimeAdapterGovernanceTests
                 .Where(name => name.StartsWith("Dapr", StringComparison.Ordinal))];
             daprPackages.ShouldBeEmpty($"{project} must not take a Dapr dependency; the runtime adapter lives in {RunnableHost}.");
         }
+    }
+
+    [Fact]
+    public void P0_ReminderActorAndCascadeCheckpointRuntimeAreConfinedToHostEdge()
+    {
+        string root = RepositoryRoot.Locate();
+
+        string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
+            .Where(path => !IsBuildOutput(path))
+            .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))];
+
+        string[] runtimeTokens =
+        [
+            "IRemindable",
+            "RegisterReminderAsync",
+            "UnregisterReminderAsync",
+            "DateReminderActor",
+            "DateReminderReconciler",
+            "CascadeCheckpoint",
+            "CascadeDispatcher",
+            "IWorkCommandSubmitter",
+            "IEventStoreGatewayClient",
+            "IReadModelStore",
+        ];
+
+        string[] misplaced = [.. sourceFiles
+            .Where(path => !IsAllowedRuntimeAdapterLocation(root, path))
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .SelectMany(file => runtimeTokens
+                .Where(token => file.Text.Contains(token, StringComparison.Ordinal))
+                .Select(token => $"{Path.GetRelativePath(root, file.Path)} contains host-edge runtime token '{token}'"))];
+
+        misplaced.ShouldBeEmpty("Story 4.6 reminder actors, command submission, stream reads, and checkpoint persistence must stay in src/Hexalith.Works or AppHost/config/test/docs locations, not in pure kernel projects.");
+    }
+
+    [Fact]
+    public void P0_PureProjectsRemainFreeOfActorClockLoggingNetworkFileAndEventStoreRuntimeApis()
+    {
+        string root = RepositoryRoot.Locate();
+        string[] pureProjects =
+        [
+            "Hexalith.Works.Contracts",
+            "Hexalith.Works.Server",
+            "Hexalith.Works.Projections",
+            "Hexalith.Works.Reactor",
+        ];
+
+        string[] bannedSourcePatterns =
+        [
+            @"^\s*using\s+Dapr\.",
+            @"\bIRemindable\b",
+            @"\bRegisterReminderAsync\b",
+            @"\bUnregisterReminderAsync\b",
+            @"\bTimeProvider\b",
+            @"\bDateTimeOffset\.UtcNow\b",
+            @"\bDateTimeOffset\.Now\b",
+            @"\bDateTime\.UtcNow\b",
+            @"\bDateTime\.Now\b",
+            @"\bILogger\b",
+            @"\bLoggerMessage\b",
+            @"\bHttpClient\b",
+            @"\bIEventStoreGatewayClient\b",
+            @"\bIReadModelStore\b",
+            @"\bFile\.",
+            @"\bDirectory\.",
+        ];
+
+        string[] violations = [.. pureProjects
+            .Select(project => Path.Combine(root, "src", project))
+            .SelectMany(projectRoot => Directory.GetFiles(projectRoot, "*.cs", SearchOption.AllDirectories))
+            .Where(path => !IsBuildOutput(path))
+            .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))
+            .Select(path => (Path: path, Text: File.ReadAllText(path)))
+            .SelectMany(file => bannedSourcePatterns
+                .Where(pattern => Regex.IsMatch(file.Text, pattern, RegexOptions.Multiline))
+                .Select(pattern => $"{Path.GetRelativePath(root, file.Path)} matches forbidden pure-project runtime pattern /{pattern}/"))];
+
+        violations.ShouldBeEmpty("Contracts, Server, Projections, and the pure Reactor must remain free of Dapr actors, clocks, logging, network/filesystem I/O, read-model stores, and EventStore gateway/runtime APIs.");
+    }
+
+    [Fact]
+    public void P0_ReminderAndCheckpointRecordsDoNotExpandDurablePolymorphicCatalog()
+    {
+        int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
+            .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
+
+        polymorphicCatalogCount.ShouldBe(36, "Story 4.6 reminder/checkpoint/read-model records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
     }
 
     [Fact]
@@ -200,4 +292,11 @@ public sealed class RuntimeAdapterGovernanceTests
     private static bool IsBuildOutput(string path)
         => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
             || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
+    private static bool IsAllowedRuntimeAdapterLocation(string root, string path)
+    {
+        string relative = Path.GetRelativePath(root, path);
+        return relative.StartsWith(Path.Combine("src", RunnableHost) + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.AppHost") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+    }
 }

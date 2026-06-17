@@ -5,6 +5,7 @@ using Hexalith.EventStore.DomainService;
 using Hexalith.Works;
 using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,6 +28,12 @@ _ = builder.AddEventStoreDomainService(typeof(WorkItemEventStoreAggregate).Assem
 builder.Services.AddDaprClient();
 _ = builder.Services.AddEventStoreReadModelStore();
 
+// Story 4.6 recovery edge: date-resume reminder reconciliation and terminal-cascade dispatch/checkpoint/
+// replay. The Dapr actor reminders, gateway command path, stores, and clock all live here at the host edge;
+// the pure kernel stays clock-/Dapr-free. The reconciliation pass is gated by Works:Recovery configuration.
+_ = builder.Services.AddWorksDateReminderActors();
+_ = builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
+
 WebApplication app = builder.Build();
 
 // Bespoke /project handler: translate a single work item's replayed events into the tenant-scoped what's-next
@@ -47,5 +54,8 @@ _ = app.MapPost("/project", static async (
 });
 
 app.UseEventStoreDomainService();
+
+// Map the Dapr actor-runtime endpoints so the date-resume reminder actor receives reminder callbacks.
+app.MapActorsHandlers();
 
 await app.RunAsync().ConfigureAwait(false);

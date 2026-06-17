@@ -4,7 +4,9 @@
 # roll-up read models. actorStateStore: "true" enables DAPR actor state management.
 #
 # Component scoping: EventStore owns aggregate actor state; Works writes its read models; Admin reads
-# diagnostics.
+# diagnostics. Story 4.6: Works stays in scope because it now also hosts the date-resume reminder actor
+# (its reminder/registration state needs the actor-capable store) and persists terminal-cascade checkpoints
+# here. One actor-capable state store is shared across app-ids (DAPR uses a single actor state store).
 apiVersion: dapr.io/v1alpha1
 kind: Component
 metadata:

@@ -14,10 +14,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Pure kernel projects consumed unchanged. -->
+    <!-- Pure kernel projects consumed unchanged. The host is the adapter edge that drives the pure Reactor
+         translators (Story 4.6 cascade dispatch) at runtime; Reactor itself stays pure (references Contracts
+         only). -->
     <ProjectReference Include="..\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+    <ProjectReference Include="..\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" />
     <!-- EventStore domain-service SDK (pulls Client/Contracts/ServiceDefaults transitively). The platform
          service defaults are supplied by AddEventStoreDomainService(); per the EventStore domain-module
          contract (Hexalith.EventStore/CLAUDE.md) a domain module must NOT fork its own ServiceDefaults,
@@ -26,7 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Story 4.5 owns the Dapr command/event pipeline; Story 4.6 adds Dapr actor reminders (date-resume
+         recovery) and the actor-runtime endpoints. These actor packages live ONLY in the runnable host,
+         never in the pure kernel (Contracts/Server/Projections/Reactor) — fitness-asserted. -->
     <PackageReference Include="Dapr.AspNetCore" />
+    <PackageReference Include="Dapr.Actors" />
+    <PackageReference Include="Dapr.Actors.AspNetCore" />
   </ItemGroup>
 
 </Project>

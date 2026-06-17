@@ -59,3 +59,41 @@ verified EventStore domain-service surface is:
 Aspire package pins were reconciled from 13.4.3 to **13.4.5** (and `Aspire.AppHost.Sdk` to 13.4.5) to match the
 checked-out `Hexalith.EventStore` submodule, which `Hexalith.EventStore.Aspire` requires. This is a submodule-drift
 alignment forced by the ProjectReference rule, not a discretionary upgrade.
+
+## Story 4.6 — Reminder and Reactor Recovery (adapter-edge proof)
+
+Story 4.6 keeps the Works kernel clock-free and infrastructure-free while proving two recovery concerns at the
+runnable host edge:
+
+- **Date resumes use Dapr actor reminders.** `src/Hexalith.Works` registers a `DateReminderActor` through
+  `AddActors`/`MapActorsHandlers`; reminder names are deterministic from `(tenantId, workItemId,
+  AwaitCondition.CorrelationKey)`. A fired reminder rebuilds `ResumeWorkItem(TenantId, WorkItemId,
+  AwaitCondition.DateReached(instant))` and submits it through the EventStore command gateway. Duplicate
+  reminder registration targets the same actor/reminder name; duplicate firings reissue the same deterministic
+  command and converge through EventStore/aggregate idempotency.
+- **Scheduler/state-store dependency is explicit.** Local proof uses the existing Redis-backed `statestore`
+  component with `actorStateStore: "true"` and `works` in scope. Dapr Scheduler, placement, and Redis are
+  prerequisites for the live Tier-3 lane; deterministic tests cover the adapter logic without those services.
+- **Reminder reconciliation is bounded by the per-aggregate stream-read route.** On startup, the Works host
+  rescans configured `Works:Recovery:Tenants`, reads `work` streams through the EventStore gateway, derives
+  pending `DateReached` awaits, re-registers future reminders, and reissues already-due resumes. The gateway's
+  `POST /api/v1/streams/read` route currently **requires an `AggregateId`** — `StreamReadRequest.AggregateId` is
+  contract-optional ("omit only for domain-wide rebuild reads") but `StreamsController` rejects a null id today —
+  so neither tenant-wide nor domain-wide enumeration is available. Broad auto-discovery is therefore a documented
+  substrate limitation, not a faked proof. The gated Tier-3 lane (`WorksReminderRecoveryPipelineSmokeTests`)
+  proves the restart→reissue→exactly-once-resume outcome end-to-end by reissuing through the adapter's own
+  deterministic `DateResume` command factory and verifying via a per-aggregate stream read; the reconciliation
+  decision logic itself is proven deterministically by `DateReminderRecoveryRuntimeTests`.
+- **Cascade checkpoints are host-edge read-model state.** The terminal-cascade runtime uses the pure
+  `TerminalCascadeTranslator`, persists bounded checkpoint records in the shared state store via
+  `IReadModelStore`, and submits descendant terminal commands through the EventStore command gateway. Checkpoint
+  state is written before each target attempt and again after dispatch; replay reuses the persisted checkpoint,
+  not an in-memory descendant list. If a process stops after submit but before completion is recorded, replay
+  resubmits the same deterministic command, which remains safe under aggregate idempotency.
+- **Descendant discovery limitation.** Production discovery reads direct children from the parent stream. Already
+  terminal descendants can be skipped when the re-readable candidate source marks them terminal; otherwise a
+  duplicate terminal command remains safe because domain acceptance still round-trips through `Handle`. A richer
+  subtree/status projection would improve skip-before-dispatch fidelity without changing the kernel boundary.
+
+No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable polymorphic command/event/rejection
+catalog type. `WorkItemV1Catalog.Count` remains **36** and the golden corpus is byte-compatible.

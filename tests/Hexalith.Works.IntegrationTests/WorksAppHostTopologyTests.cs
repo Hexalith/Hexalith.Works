@@ -37,6 +37,18 @@ public sealed class WorksAppHostTopologyTests
         int daprComponents = builder.Resources.Count(resource => resource.GetType().Name.Contains("DaprComponent", StringComparison.Ordinal));
         daprComponents.ShouldBeGreaterThanOrEqualTo(2, "Expected the shared Dapr state store and pub/sub components.");
 
+        string root = LocateRepositoryRoot();
+        string statestore = File.ReadAllText(Path.Combine(root, "src", "Hexalith.Works.AppHost", "DaprComponents", "statestore.yaml"));
+        statestore.ShouldContain("actorStateStore", Case.Sensitive, "Story 4.6 date reminders require an actor-capable state store.");
+        statestore.ShouldContain("value: \"true\"", Case.Sensitive, "The shared state store must be marked as the Dapr actor state store.");
+        statestore.ShouldContain("- works", Case.Sensitive, "The Works app-id must stay scoped to the actor-capable state store for reminders and cascade checkpoints.");
+
+        string appHostProgram = File.ReadAllText(Path.Combine(root, "src", "Hexalith.Works.AppHost", "Program.cs"));
+        appHostProgram.ShouldContain(
+            "EventStore__CommandGateway__BaseAddress",
+            Case.Sensitive,
+            "The Works recovery runtime must receive the EventStore command gateway base address for reminder/cascade reissue.");
+
         // No production UI / MCP / chatbot / email / routing / cost / security-hardening adapters.
         string[] forbiddenFragments = ["mcp", "chatbot", "email", "mail", "datagrid", "webshell", "routing", "cost", "keycloak", "signalr"];
         string[] forbiddenSurfaces = [.. names.Where(name => forbiddenFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))];
@@ -44,5 +56,21 @@ public sealed class WorksAppHostTopologyTests
 
         string[] uiSurfaces = [.. names.Where(name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase))];
         uiSurfaces.ShouldBeEmpty($"No UI surface is composed in the pipeline proof: {string.Join(", ", uiSurfaces)}");
+    }
+
+    private static string LocateRepositoryRoot()
+    {
+        DirectoryInfo? directory = new(Directory.GetCurrentDirectory());
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "Hexalith.Works.slnx")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new DirectoryNotFoundException("Could not locate Hexalith.Works.slnx from the test working directory.");
     }
 }

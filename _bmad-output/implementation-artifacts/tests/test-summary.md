@@ -2097,3 +2097,128 @@ tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.Integra
 tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests     # 38
 tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests             # 3
 ```
+
+---
+
+# Test Automation Summary — Story 4.6 (Prove Reminder and Reactor Recovery)
+
+Workflow: `bmad-dev-story`. Story 4.6 adds the adapter-edge runtime proof for date-based reminders and
+terminal-cascade restart recovery. Runtime code is confined to `src/Hexalith.Works` and AppHost/config; the pure
+kernel projects (`Contracts`, `Server`, `Projections`, `Reactor`) remain free of Dapr actors, clocks, logging,
+network/filesystem I/O, EventStore gateway/runtime APIs, and checkpoint stores.
+
+**Baseline (Story 4.5 final, commit `d5cf5c7`): 608 green + 1 skipped**, catalog **36**.
+
+**Story 4.6 final: 620 green + 2 skipped** — UnitTests **483** (unchanged), IntegrationTests **95**
+(93 green + 2 Tier-3 skips; +9 deterministic recovery cases, the existing topology case strengthened, and the
+gated Aspire reminder-recovery lane added), ArchitectureTests **41** (38 + 3 recovery-governance guards),
+PropertyTests **3** (unchanged). Catalog stays **36**; golden corpus byte-compatible; no durable
+command/event/rejection type added.
+
+> Senior Developer Review (AI) follow-up resolution: the gated Tier-3 Aspire reminder-recovery lane the review
+> flagged as missing is now authored (`WorksReminderRecoveryPipelineSmokeTests`), and the two LOW review fixes
+> (stream paging `+1`; date-reminder scheduler honors its `CancellationToken`) are applied. The IntegrationTests
+> count therefore rises from 94 (93 + 1 skip) to 95 (93 + 2 skips) — the new lane skips when Docker/Dapr are absent.
+
+## Production code changed
+
+- **Date-reminder runtime** under `src/Hexalith.Works/Reminders`: deterministic reminder/actor naming,
+  Dapr actor reminder registration/fire handling, date-resume command construction, pending-date-await
+  projection, stream-reading pending-await source, and startup reconciliation service.
+- **Cascade recovery runtime** under `src/Hexalith.Works/Recovery/Cascade`: bounded checkpoint records,
+  deterministic target command construction, at-least-once dispatch, checkpoint replay, read-model checkpoint
+  store, and stream-reading direct-descendant source.
+- **Runtime composition** under `src/Hexalith.Works/Runtime` plus `Program.cs`: EventStore command-gateway
+  submitter, event decoder, recovery options, bounded `LoggerMessage` definitions, actor registration, recovery
+  service registration, and actor endpoint mapping.
+- **AppHost/config**: Works receives the EventStore command-gateway base address; `statestore.yaml` documents why
+  `works` remains scoped to the actor-capable state store for reminder state and cascade checkpoints.
+
+## Tests added/updated
+
+### IntegrationTests (`tests/Hexalith.Works.IntegrationTests`) — +9 deterministic adapter tests
+
+- [x] `DateReminderRecoveryRuntimeTests` — deterministic reminder naming, date-resume command construction,
+  pending-date-await projection/clearing, and reconciliation behavior for due vs. future awaits. Duplicate
+  reconciliation overwrites the same deterministic reminder registration and reissues the same deterministic
+  resume id.
+- [x] `CascadeRecoveryRuntimeTests` — checkpoint creation, active-vs-terminal descendant filtering via the pure
+  translator, target command determinism, attempted/completed checkpoint transitions, replay after an injected
+  mid-cascade failure, and duplicate parent-terminal redelivery reusing the persisted checkpoint without
+  rediscovery.
+
+### IntegrationTests (`tests/Hexalith.Works.IntegrationTests`) — strengthened existing model lane
+
+- [x] `WorksAppHostTopologyTests` now also asserts the shared Dapr state store is actor-capable, `works` remains
+  scoped to it, and the AppHost injects the EventStore command-gateway base address used by reminder/cascade
+  recovery. This remains a model/file-inspection lane and runs without Docker.
+- [x] `WorksCommandPipelineSmokeTests` remains the Tier-3 Aspire command-pipeline lane and skipped in this run
+  because Redis/Dapr placement/scheduler prerequisites were absent.
+
+### IntegrationTests (`tests/Hexalith.Works.IntegrationTests`) — +1 gated Tier-3 reminder-recovery lane
+
+- [x] `WorksReminderRecoveryPipelineSmokeTests` — the gated Tier-3 Aspire reminder-recovery lane (AC #1/#3): it
+  starts the Works AppHost, parks a work item on a past `DateReached` await (Create → Assign → Claim → Suspend),
+  **restarts the AppHost** against the same `dapr init` Redis, reissues the date resume through the production
+  `DateResume.BuildSubmission` command factory on `POST /api/v1/commands`, and proves **exactly one** accepted
+  `WorkItemResumed` from the re-readable per-aggregate stream (`POST /api/v1/streams/read`), idempotent under a
+  second pass (the duplicate deterministic resume no-ops). It **skips cleanly** (mirroring the command-pipeline
+  lane) when Redis :6379 / Dapr placement :50005 / scheduler :50006 are absent. **Substrate limitation, documented
+  not faked:** the restarted host's `ReminderReconciliationService` runs, but its tenant-wide
+  `StreamReadingPendingDateAwaitSource` scan is bounded by the EventStore stream-read gateway (per-aggregate route
+  only; domain-wide reads are contract-defined but not yet enabled by `StreamsController`), so the lane reissues
+  via the adapter's own deterministic command factory rather than tenant-wide auto-discovery. The reconciliation
+  **decision logic** (discover due awaits → reissue idempotently) stays proven deterministically by
+  `DateReminderRecoveryRuntimeTests`.
+
+### ArchitectureTests (`tests/Hexalith.Works.ArchitectureTests`) — +3 and one guard updated
+
+- [x] `ScaffoldGovernanceTests` replaced the old "reminders deferred" assertion with the Story 4.6 ownership
+  assertion: reminder/recovery code is allowed only in the runnable Works host and AppHost/config/test/docs
+  locations, not in pure projects.
+- [x] `RuntimeAdapterGovernanceTests` now asserts Dapr actor packages are confined to the runnable host;
+  reminder actor, command gateway, stream-read, and checkpoint tokens do not appear in pure projects; pure
+  projects stay free of Dapr actors, clocks, logging, network/filesystem I/O, read-model stores, and EventStore
+  gateway/runtime APIs; reminder/checkpoint records do not expand the durable polymorphic catalog; runtime logs
+  retain bounded metadata-only templates.
+
+## Skipped infrastructure conditions
+
+- Two Tier-3 Aspire lanes are present and both **skipped** in this run because Redis :6379, Dapr placement
+  :50005, and Dapr scheduler :50006 were not all reachable in the sandbox: Story 4.5's **command-pipeline** lane
+  (`WorksCommandPipelineSmokeTests`, `CreateWorkItem → Completed`) and Story 4.6's **reminder-recovery** lane
+  (`WorksReminderRecoveryPipelineSmokeTests`, park-on-`DateReached` → AppHost restart → exactly-one
+  `WorkItemResumed`, idempotent). Start Docker, run `dapr init`, and start Dapr placement/scheduler services to
+  run both live AppHost lanes.
+- No claim is made that either live lane ran in this sandbox — both `Assert.Skip(...)` with a clear reason. The
+  reminder reconciliation/reissue decision logic and cascade replay remain proven **deterministically** as well
+  (adapter tests with fakes + injected `TimeProvider`, no sleeps, Dapr, or containers), so the behavior is
+  covered whether or not the live lanes are exercised.
+
+## Verification commands
+
+```
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal   # 0 warn / 0 err
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests                     # 483
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests       # 95 (2 skipped)
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests     # 41
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests             # 3
+```
+
+## Checklist
+
+- [x] Deterministic reminder names and duplicate registration behavior are tested.
+- [x] Reminder fire/reconciliation command construction is tested; the aggregate receives a deterministic
+  `DateReached` await condition and remains clock-free.
+- [x] Reminder reconciliation is idempotent and tested with an injected `TimeProvider`; no sleeps or timing races.
+- [x] Cascade checkpoint transitions and replay are tested with in-memory stores.
+- [x] Duplicate/redelivered parent terminal events reuse persisted checkpoints.
+- [x] Already-terminal descendant candidates are skipped before dispatch when the re-readable source marks them
+  terminal; duplicate terminal commands remain aggregate-idempotent.
+- [x] AppHost/config model lane asserts actor-capable state store scope and command-gateway configuration.
+- [x] Governance tests enforce runtime placement, log privacy, and catalog size **36**.
+- [x] Tier-3 prerequisites and skipped live lanes are documented honestly.
+- [x] The gated Tier-3 Aspire reminder-recovery lane is authored (park-on-`DateReached` → AppHost restart →
+  exactly-one `WorkItemResumed`, idempotent), skips cleanly without Docker/Dapr, and its substrate limitation is
+  documented. Two LOW review fixes applied (stream paging `+1`; scheduler honors its `CancellationToken`).

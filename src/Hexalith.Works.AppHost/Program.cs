@@ -38,11 +38,35 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
 
 // The runnable Works domain service. Its Dapr sidecar shares the EventStore state store + pub/sub; it waits for
 // EventStore and the shared state store before serving /process, /query, and /project.
+//
+// Story 4.6 recovery proof: the Works host now also hosts the date-resume reminder actor and the terminal-
+// cascade checkpoint store. Dapr actor reminders are persisted by the Dapr Scheduler and their state lives in
+// the shared actor-capable state store (statestore.yaml, actorStateStore: "true", scoped to works), so no new
+// component is added — only the existing shared topology is reused. The EventStore command gateway endpoint is
+// injected so a fired reminder / cascade target reissues its command through the same /api/v1/commands path
+// Story 4.5 proved. No Works UI, MCP, chatbot, email, routing, cost, SignalR, or IExecutorRouter surface is
+// composed for this recovery proof.
 IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("works")
     .AddEventStoreDomainModule(eventStoreResources, "works", worksAccessControlConfigPath)
     .WithReference(eventStore)
+    .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))
     .WaitFor(eventStore)
     .WaitFor(eventStoreResources.StateStore);
+
+// Story 4.6 recovery scope: the date-reminder reconciliation pass is bounded to a known tenant set because
+// the EventStore stream-read gateway exposes no tenant-wide enumeration (per-aggregate route only). The scope
+// stays empty by default — reconciliation is disabled — so the standard pipeline/topology proofs are
+// unchanged. The gated Aspire reminder-recovery lane opts in with --Works:Recovery:Tenants=<comma-separated>,
+// which forwards the bounded scope to the Works host so its startup reconciler actually runs.
+string? recoveryTenants = builder.Configuration["Works:Recovery:Tenants"];
+if (!string.IsNullOrWhiteSpace(recoveryTenants))
+{
+    string[] tenants = recoveryTenants.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    for (int index = 0; index < tenants.Length; index++)
+    {
+        works = works.WithEnvironment($"Works__Recovery__Tenants__{index}", tenants[index]);
+    }
+}
 
 await builder
     .Build()

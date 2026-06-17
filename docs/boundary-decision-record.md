@@ -147,6 +147,27 @@ ownership model. None of them is implemented or wired in v1.
   stays carried-not-enforced, there is still no `IExecutorRouter` implementation, and **no** production UI, MCP,
   chatbot, email, routing, cost, or security-hardening surface is composed. The v1 catalog stays **36** and the
   golden corpus is byte-unchanged (no durable type added by the adapter/query/read-model code).
+- **Story 4.6 (prove reminder and reactor recovery).** Date-based resumes and terminal-cascade restart recovery
+  are still **adapter-edge orchestration**, not new kernel behavior. Works owns only deterministic reminder
+  naming, Dapr actor reminder registration/fire handling, startup reconciliation over configured tenant streams,
+  terminal-cascade delivery sequencing, and bounded checkpoint records in the shared state store. **EventStore
+  still owns** persistence, envelopes, optimistic concurrency, command submission/status, stream reads, and
+  projection/read-model substrate; every reminder resume and cascade target command is submitted through the
+  EventStore command gateway and round-trips through `WorkItemAggregate.Handle` for acceptance/no-op/rejection.
+  The kernel (`Contracts`, `Server`, `Projections`, `Reactor`) remains free of Dapr actors, clocks, logging,
+  network/filesystem I/O, command gateways, and checkpoint stores (fitness-asserted). The current recovery scan
+  is bounded to configured tenants because the EventStore/Dapr surfaces do not expose cross-tenant enumeration;
+  this is documented as a substrate limitation, not hidden in the domain. No reminder/checkpoint/read-model
+  runtime type enters the polymorphic catalog, so the v1 catalog stays **36** and the golden corpus remains
+  byte-compatible. **Recovery trigger decision:** reminders/resumes are reconciliation-on-recovery only —
+  registered/reissued when the host (re)starts and scans pending date awaits — not registered at suspend time by
+  an event-driven subscriber. This matches the ACs (AC #1 = fire behavior, AC #3 = reconciliation) and avoids a
+  new steady-state subscriber; a host restart is the trigger that re-establishes pending reminders. The gated
+  Tier-3 Aspire lane (`WorksReminderRecoveryPipelineSmokeTests`) proves this restart→reissue→exactly-once-resume
+  path; because the gateway stream-read route requires a per-aggregate id (no tenant/domain-wide enumeration), the
+  lane reissues through the adapter's own deterministic `DateResume` factory rather than tenant-wide
+  auto-discovery, and the reconciliation decision logic is proven deterministically by
+  `DateReminderRecoveryRuntimeTests`.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate

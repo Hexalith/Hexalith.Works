@@ -69,5 +69,5 @@ development_status:
   4-3-claim-queued-work-with-single-claim-wins: done
   4-4-resolve-the-tenant-s-what-s-next-queue: done
   4-5-prove-the-command-event-pipeline-under-aspire: done
-  4-6-prove-reminder-and-reactor-recovery: backlog
+  4-6-prove-reminder-and-reactor-recovery: done
   epic-4-retrospective: optional

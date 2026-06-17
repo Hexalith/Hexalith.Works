@@ -168,14 +168,15 @@ public sealed class ScaffoldGovernanceTests
     }
 
     [Fact]
-    public void P0_WorkItemSliceAllowsRollUpOnlyInProjectionAndContractReadModelsAndKeepsRemindersDeferred()
+    public void P0_WorkItemSliceAllowsRollUpOnlyInProjectionAndOwnsReminderRecoveryOnlyAtAdapterEdge()
     {
         string root = RepositoryRoot.Locate();
         string[] sourceFiles = [.. Directory.GetFiles(Path.Combine(root, "src"), "*.cs", SearchOption.AllDirectories)
             .Where(path => !IsBuildOutput(path))];
 
         // Story 3.3 owns recursive roll-up, but only as explicit read-model contracts and pure
-        // projection logic. Reminder/reactor recovery remains deferred to Story 4.6.
+        // projection logic. Story 4.6 owns reminder/reactor recovery, but only at the runnable host edge
+        // and AppHost/config/test/docs locations; the pure kernel projects remain recovery-runtime free.
         string[] rollUpOutsideOwnedLocations = [.. sourceFiles
             .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
             .Where(path => !IsOwnedRollUpLocation(root, path))
@@ -183,13 +184,13 @@ public sealed class ScaffoldGovernanceTests
 
         rollUpOutsideOwnedLocations.ShouldBeEmpty("Story 3.3 permits roll-up only in Contracts read models and Projections strategy/input code.");
 
-        string[] filesWithReminderBehavior = [.. sourceFiles
+        string[] filesWithMisplacedReminderBehavior = [.. sourceFiles
             .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.ServiceDefaults", "Extensions.cs"), StringComparison.Ordinal))
-            .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.AppHost", "Program.cs"), StringComparison.Ordinal))
+            .Where(path => !IsOwnedReminderRecoveryLocation(root, path))
             .Where(path => File.ReadAllText(path).Contains("Reminder", StringComparison.OrdinalIgnoreCase))];
 
-        filesWithReminderBehavior.ShouldBeEmpty("Reminder/reactor recovery (Story 4.6) remains deferred and must not be introduced in src.");
+        filesWithMisplacedReminderBehavior.ShouldBeEmpty("Story 4.6 reminder/recovery code is allowed only in the runnable host/AppHost edge, not in Contracts, Server, Projections, Reactor, or ServiceDefaults.");
     }
 
     [Fact]
@@ -628,5 +629,12 @@ public sealed class ScaffoldGovernanceTests
             // separator keeps this scoped to the host project and excludes the Contracts/Server/Projections
             // siblings whose directory names also begin with "Hexalith.Works".
             || relative.StartsWith(Path.Combine("src", "Hexalith.Works") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+    }
+
+    private static bool IsOwnedReminderRecoveryLocation(string root, string path)
+    {
+        string relative = Path.GetRelativePath(root, path);
+        return relative.StartsWith(Path.Combine("src", "Hexalith.Works") + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.AppHost") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }
