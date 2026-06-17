@@ -62,7 +62,7 @@ development_status:
   3-4-preserve-heterogeneous-unit-subtotals: done
   3-5-suspend-and-resume-on-await-conditions: done
   3-6-cascade-terminal-work-through-active-descendants: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
   epic-4: backlog
   4-1-bind-work-to-a-uniform-party-executor: backlog
   4-2-assign-reassign-and-hand-off-work: backlog

@@ -164,6 +164,7 @@ themes) by **not** scaffolding any UI/channel/portal/security surface.
 | `Hexalith.Works.Contracts` | Events, commands, value objects (ExecutorBinding, effort Meter, AwaitCondition), Reference Value Objects, port interfaces — low-dependency, no infra | ✅ |
 | `Hexalith.Works.Server` | Aggregate `Handle`/`Apply`, lifecycle state machine, no-LLM `IExpectationResolver` impl, domain services | ✅ |
 | `Hexalith.Works.Projections` | Roll-Up (per-child-sequence accounting) + "what's next" query | ✅ |
+| `Hexalith.Works.Reactor` | Pure event→command translators outside the kernel: child-completion→resume (`ChildCompletionResumeTranslator`) and terminal cascade→descendant cancel/expire (`TerminalCascadeTranslator`); references `Contracts` only, no dispatch/clock/infra. Realized in Epic 3 (resolves D-1). | ✅ |
 | `Hexalith.Works.Testing` | Fakes/builders: `InMemoryEventLog`, `ReorderingProjectionDriver`, `RollUpProjectionBuilder` (tenant-required) | ✅ |
 | `Hexalith.Works.AppHost` + `Hexalith.Works.ServiceDefaults` | Aspire topology + service defaults/health/telemetry for manual + automated tests | ✅ |
 | `.Client` | Consumer-facing integration | ◐ minimal/optional |
@@ -172,6 +173,10 @@ themes) by **not** scaffolding any UI/channel/portal/security surface.
 **Reactor placement note (ties to open decision D-1):** the reactor / process-manager lives
 **outside the kernel** — in `Hexalith.Works.AppHost`/adapter layer (or a dedicated adapter
 project), never in `Server` or `Contracts`. `Server`/`Projections` stay clock-free and infra-free.
+**Resolved (Epic 3):** D-1 was settled in favor of a dedicated pure project, `Hexalith.Works.Reactor`,
+holding mechanical event→command translators only (`ChildCompletionResumeTranslator`,
+`TerminalCascadeTranslator`); `DependencyDirectionTests` enforces that it references `Contracts` only.
+Runtime dispatch, checkpointing, and timer/reminder wiring remain deferred to Epic 4 (Story 4.6).
 
 **Repo scaffolding (umbrella root, mirror siblings):** `global.json` (SDK pinned),
 `Directory.Build.props`/`.targets`, `Directory.Packages.props`, `Directory.Solution.props`/`.targets`,
