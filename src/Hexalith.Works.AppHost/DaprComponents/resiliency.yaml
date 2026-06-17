@@ -1,0 +1,60 @@
+apiVersion: dapr.io/v1alpha1
+kind: Resiliency
+metadata:
+  name: resiliency
+spec:
+  policies:
+    retries:
+      defaultRetry:
+        policy: constant
+        duration: 1s
+        maxRetries: 3
+      # Pub/sub outbound: publisher -> sidecar -> broker
+      pubsubRetryOutbound:
+        policy: exponential
+        maxInterval: 10s
+        maxRetries: 3
+      # Pub/sub inbound: broker -> sidecar -> subscriber app
+      pubsubRetryInbound:
+        policy: exponential
+        maxInterval: 30s
+        maxRetries: 10
+    timeouts:
+      daprSidecar:
+        general: 5s
+      pubsubTimeout: 10s
+      subscriberTimeout: 30s
+    circuitBreakers:
+      defaultBreaker:
+        maxRequests: 1
+        interval: 10s
+        timeout: 30s
+        trip: consecutiveFailures > 3
+      pubsubBreaker:
+        maxRequests: 1
+        interval: 10s
+        timeout: 30s
+        trip: consecutiveFailures > 5
+  targets:
+    apps:
+      eventstore:
+        retry: defaultRetry
+        timeout: daprSidecar
+        circuitBreaker: defaultBreaker
+      works:
+        retry: defaultRetry
+        timeout: daprSidecar
+        circuitBreaker: defaultBreaker
+    components:
+      pubsub:
+        outbound:
+          retry: pubsubRetryOutbound
+          timeout: pubsubTimeout
+          circuitBreaker: pubsubBreaker
+        inbound:
+          retry: pubsubRetryInbound
+          timeout: subscriberTimeout
+      statestore:
+        retry: defaultRetry
+        timeout: daprSidecar
+        circuitBreaker: defaultBreaker

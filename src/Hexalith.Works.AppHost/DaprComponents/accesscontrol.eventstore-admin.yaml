@@ -1,0 +1,23 @@
+# DAPR Access Control Configuration for the Admin.Server sidecar
+# ================================================================================
+# WARNING: Local development only.
+# Loaded only by the eventstore-admin sidecar; governs which CALLERS may invoke Admin.Server through Dapr
+# service invocation. The Admin.UI is not composed in this command/event pipeline proof, so no caller is
+# allow-listed beyond the local-development default action.
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: accesscontrol-eventstore-admin
+spec:
+  accessControl:
+    defaultAction: allow
+    trustDomain: "public"
+    policies:
+      - appId: eventstore-admin-ui
+        defaultAction: deny
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /**
+            httpVerb: ['GET', 'POST', 'PUT', 'DELETE']
+            action: allow

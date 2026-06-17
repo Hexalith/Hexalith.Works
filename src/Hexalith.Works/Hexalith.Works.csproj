@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Runnable Works domain-service host (Story 4.5): the adapter-edge runtime proof that lets
+       EventStore invoke the pure Works kernel through Dapr. It is NOT a packable library and NOT
+       part of the pure kernel; it is the only Works project allowed to reference EventStore runtime
+       / domain-service packages, Dapr, and ASP.NET hosting. -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsPublishable>true</IsPublishable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hexalith.Works.IntegrationTests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pure kernel projects consumed unchanged. -->
+    <ProjectReference Include="..\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
+    <ProjectReference Include="..\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
+    <ProjectReference Include="..\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+    <!-- EventStore domain-service SDK (pulls Client/Contracts/ServiceDefaults transitively). The platform
+         service defaults are supplied by AddEventStoreDomainService(); per the EventStore domain-module
+         contract (Hexalith.EventStore/CLAUDE.md) a domain module must NOT fork its own ServiceDefaults,
+         so the host does not reference Hexalith.Works.ServiceDefaults. -->
+    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapr.AspNetCore" />
+  </ItemGroup>
+
+</Project>

@@ -622,6 +622,11 @@ public sealed class ScaffoldGovernanceTests
     {
         string relative = Path.GetRelativePath(root, path);
         return relative.StartsWith(Path.Combine("src", "Hexalith.Works.Contracts", "Models"), StringComparison.Ordinal)
-            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.Projections"), StringComparison.Ordinal);
+            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.Projections"), StringComparison.Ordinal)
+            // Story 4.5: the runnable Works domain-service host (src/Hexalith.Works) is the runtime adapter
+            // that consumes the pure WorkItemRollUpProjection/WorkItemRollUpEvent at the edge. The trailing
+            // separator keeps this scoped to the host project and excludes the Contracts/Server/Projections
+            // siblings whose directory names also begin with "Hexalith.Works".
+            || relative.StartsWith(Path.Combine("src", "Hexalith.Works") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

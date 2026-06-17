@@ -12,14 +12,18 @@
         <PackageVersion Include="Dapr.Actors" Version="1.18.2" />
         <PackageVersion Include="Dapr.Actors.AspNetCore" Version="1.18.2" />
     </ItemGroup>
+    <!-- Aspire pinned to 13.4.5 to match the checked-out Hexalith.EventStore submodule
+         (Hexalith.EventStore.Aspire requires Aspire.Hosting >= 13.4.5). Story 4.5 references
+         EventStore.Aspire through the Works AppHost, so the Works pins must align with the submodule
+         source per the ProjectReference rule (CLAUDE.md). -->
     <ItemGroup Label="Aspire">
-        <PackageVersion Include="Aspire.Hosting" Version="13.4.3" />
-        <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.4.3" />
-        <PackageVersion Include="Aspire.Hosting.Docker" Version="13.4.3" />
-        <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.4.3-preview.1.26305.13" />
-        <PackageVersion Include="Aspire.Hosting.Kubernetes" Version="13.4.3-preview.1.26305.13" />
-        <PackageVersion Include="Aspire.Hosting.Redis" Version="13.4.3" />
-        <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.3" />
+        <PackageVersion Include="Aspire.Hosting" Version="13.4.5" />
+        <PackageVersion Include="Aspire.Hosting.Azure.AppContainers" Version="13.4.5" />
+        <PackageVersion Include="Aspire.Hosting.Docker" Version="13.4.5" />
+        <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.4.5-preview.1.26316.12" />
+        <PackageVersion Include="Aspire.Hosting.Kubernetes" Version="13.4.5-preview.1.26316.12" />
+        <PackageVersion Include="Aspire.Hosting.Redis" Version="13.4.5" />
+        <PackageVersion Include="Aspire.Hosting.Testing" Version="13.4.5" />
         <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Dapr" Version="13.4.0-preview.1.260602-0230" />
     </ItemGroup>
     <ItemGroup Label="Aspire ServiceDefaults">
@@ -69,5 +73,6 @@
         <PackageVersion Include="NSubstitute" Version="6.0.0-rc.1" />
         <PackageVersion Include="Testcontainers" Version="4.12.0" />
         <PackageVersion Include="YamlDotNet" Version="18.0.0" />
+        <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.19.0" />
     </ItemGroup>
 </Project>

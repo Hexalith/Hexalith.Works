@@ -47,6 +47,7 @@
     <File Path="Hexalith.Conversations/README.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Hexalith.Works/Hexalith.Works.csproj" />
     <Project Path="src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj" />
     <Project Path="src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" />
     <Project Path="src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj" />

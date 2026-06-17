@@ -1,0 +1,25 @@
+# DAPR Access Control Configuration for the EventStore sidecar
+# ================================================================================
+# WARNING: Local development only.
+# Production MUST use receiver-specific deny-by-default configs with mTLS. See deploy/dapr/ for templates.
+#
+# Loaded only by the eventstore sidecar; governs which CALLERS may invoke EventStore through Dapr service
+# invocation. In the local Works topology the Works domain service calls back into the EventStore command
+# gateway, so `works` is the named allowed caller.
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: accesscontrol
+spec:
+  accessControl:
+    defaultAction: allow
+    trustDomain: "public"
+    policies:
+      - appId: works
+        defaultAction: deny
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /**
+            httpVerb: ['POST']
+            action: allow

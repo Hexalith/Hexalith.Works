@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.4.3">
+<Project Sdk="Aspire.AppHost.Sdk/13.4.5">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -21,6 +21,12 @@
     <PackageReference Include="Aspire.Hosting.Docker" />
     <PackageReference Include="Aspire.Hosting.Redis" />
     <PackageReference Include="CommunityToolkit.Aspire.Hosting.Dapr" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Local-development Dapr components/access-control. Resolved primarily through builder.AppHostDirectory
+         (source dir) so `dotnet run` and Aspire.Hosting.Testing both find them; copied to output as fallback. -->
+    <None Include="DaprComponents\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="ValidateHexalithWorksBasePath" BeforeTargets="ResolveProjectReferences">

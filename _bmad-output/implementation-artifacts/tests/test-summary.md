@@ -2010,3 +2010,90 @@ tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTe
 - The 10 commands and 3 rejection events are intentionally **not** in the persisted-bytes corpus
   (transient inputs / caller-returned, never stream-appended); they stay covered by the polymorphic
   resolution test and the contract-flow rejection tests.
+
+---
+
+# Test Automation Summary — Story 4.5 (Prove the Command/Event Pipeline Under Aspire)
+
+Workflow: `bmad-dev-story`. Story 4.5 is the first **runtime adapter-edge** proof: it adds a runnable Works
+domain-service host (`src/Hexalith.Works`), the Works AppHost topology, local Dapr components, and runtime
+projection/query adapters that consume the deferred Story 4.4 seams — without shipping any production adapter.
+The pure kernel (`Contracts`, `Server`, `Projections`, `Reactor`) is unchanged.
+
+**Baseline (Story 4.4 final, commit `60b3230`): 599 green** (UnitTests 483, IntegrationTests 80,
+ArchitectureTests 33, PropertyTests 3), catalog **36**.
+
+**Story 4.5 final: 608 green + 1 skipped** — UnitTests **483** (unchanged), IntegrationTests **85**
+(80 + 3 adapter convergence + 1 topology model-inspection + 1 Aspire smoke that **skips** without
+Docker/Dapr), ArchitectureTests **38** (33 + 5 runtime-adapter governance guards), PropertyTests **3**
+(unchanged). Catalog stays **36**; golden corpus byte-unchanged; no production code in `Contracts`/`Server`/
+`Projections`/`Reactor` changed.
+
+## Production code changed
+
+- **New runnable host** `src/Hexalith.Works/` (Web SDK, non-packable): `Program.cs` (canonical
+  `AddEventStoreDomainService` + bespoke async `/project` + `UseEventStoreDomainService`),
+  `WorkItemEventStoreAggregate` (the `EventStoreAggregate<WorkItemState>` adapter, `[EventStoreDomain("work")]`,
+  14 `Handle` wrappers delegating to the pure kernel), `Projections/WorksWhatsNextReadModel.cs` (keys + tenant
+  index read model), `Projections/WorkItemProjectionDispatcher.cs` (event-decode → pure projections → persisted
+  tenant index + roll-up + notifier), `Queries/WhatsNextQueryHandler.cs` (`IDomainQueryHandler`, pure ordering +
+  authorization).
+- **AppHost topology** `src/Hexalith.Works.AppHost/`: `Program.cs` (`AddHexalithEventStore` +
+  `AddEventStoreDomainModule`, `work` domain-service registration via the K8s-safe `wildcard_work_v1` key),
+  cross-repo `IProjectMetadata` classes, and `DaprComponents/*.yaml` (statestore, accesscontrol[.works]
+  [.eventstore-admin], resiliency).
+
+## Tests added
+
+### IntegrationTests (`tests/Hexalith.Works.IntegrationTests`) — +5 (4 run, 1 skipped)
+
+- [x] `WorkItemProjectionQueryAdapterTests` — **+3 deterministic Tier-1 cases** (in-memory `IReadModelStore`,
+  no Docker): an Assigned/Queued item is projected into the tenant `works-whats-next` index and returned by the
+  query; a Completed item falls out of the eligible set; the query fails closed to empty when no index exists.
+  Proves AC #2 projection convergence at the adapter edge using the same concrete (no-`$type`) event form
+  EventStore persists.
+- [x] `WorksAppHostTopologyTests` — **+1 model-inspection case** (runs without Docker): asserts the AppHost
+  resource graph composes `eventstore`, `eventstore-admin`, and a Dapr-sidecar `works` domain service with the
+  shared Dapr components, and composes **no** UI/MCP/chatbot/email/routing/cost/security surface (AC #1/#3).
+- [x] `WorksCommandPipelineSmokeTests` — **+1 Tier-3 case, SKIPPED in this run.** Starts the full topology and
+  submits an authenticated `CreateWorkItem` through `/api/v1/commands`, polling `/api/v1/commands/status/{id}`
+  to a terminal status (AC #2 persist-then-publish). Prerequisite-gated on Docker + Redis + Dapr placement(50005)
+  + scheduler(50006); placement/scheduler are not running in the sandbox so it skips with a clear reason.
+
+### ArchitectureTests (`tests/Hexalith.Works.ArchitectureTests`) — +5 governance guards
+
+- [x] `RuntimeAdapterGovernanceTests` — the runnable host is the only Works project allowed EventStore-runtime /
+  Dapr references; the AppHost uses the platform `AddHexalithEventStore`/`AddEventStoreDomainModule` (no
+  hand-rolled Dapr wiring); `WorkItemAggregate` stays pure static while the `EventStoreAggregate<…>` adapter lives
+  in the host; no production-surface vocabulary (Mcp/Chatbot/EmailSurface/MailSurface/DataGrid/WebShell/
+  RoutingEngine/EligibilityScore/EscalationLadder/CostMeter/SpendGovernance) and no `IExecutorRouter`
+  implementation in Works source; adapter logs carry only bounded metadata (no payload/obligation/secret/token
+  placeholders, no interpolated log calls).
+- The `ScaffoldGovernanceTests` roll-up-location guard was extended to allow the runtime adapter host (it
+  legitimately consumes `WorkItemRollUpProjection`/`WorkItemRollUpEvent`); `BuildConfigurationTests` Aspire SDK
+  pin was reconciled to 13.4.5.
+
+## Skipped infrastructure conditions
+
+- The Tier-3 Aspire command-pipeline lane (`WorksCommandPipelineSmokeTests`) **skipped** — Dapr placement(50005)
+  and scheduler(50006) are not running in the sandbox. It runs in a Docker + `dapr init` environment with those
+  services started. The model-inspection topology test and the deterministic adapter-convergence tests run and
+  pass without containers, so a miswired topology or adapter still fails the build.
+
+## Reconciliation / drift
+
+- Aspire pins were bumped 13.4.3 → **13.4.5** (and `Aspire.AppHost.Sdk` to 13.4.5) to match the checked-out
+  `Hexalith.EventStore` submodule, which `Hexalith.EventStore.Aspire` requires — a ProjectReference-rule
+  alignment, not a discretionary upgrade. `Microsoft.IdentityModel.JsonWebTokens` 8.19.0 was added centrally for
+  the smoke test's dev JWT.
+
+## Verification commands
+
+```
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal   # 0 warn / 0 err
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests                     # 483
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests       # 85 (1 skipped)
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests     # 38
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests             # 3
+```

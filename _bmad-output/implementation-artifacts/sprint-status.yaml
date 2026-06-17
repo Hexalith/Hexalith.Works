@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-06-15T18:47:50+02:00
+# last_updated: 2026-06-17
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -68,6 +68,6 @@ development_status:
   4-2-assign-reassign-and-hand-off-work: done
   4-3-claim-queued-work-with-single-claim-wins: done
   4-4-resolve-the-tenant-s-what-s-next-queue: done
-  4-5-prove-the-command-event-pipeline-under-aspire: backlog
+  4-5-prove-the-command-event-pipeline-under-aspire: done
   4-6-prove-reminder-and-reactor-recovery: backlog
   epic-4-retrospective: optional

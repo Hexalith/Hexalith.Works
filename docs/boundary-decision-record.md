@@ -134,6 +134,19 @@ ownership model. None of them is implemented or wired in v1.
   `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore
   owns the SignalR broadcast); the live query/notifier runtime is the deferred Aspire wiring (Stories
   4.5/4.6), and **no web shell, DataGrid, MCP, chatbot, or email surface** ships in v1.
+- **Story 4.5 (prove the command/event pipeline under Aspire).** The new runnable host (`src/Hexalith.Works`)
+  and the Works AppHost are an **adapter-edge runtime proof only** — they consume the deferred Story 4.4 seams,
+  they do not move behavior into the kernel. The boundary stays exactly as the EventStore row above states:
+  **EventStore owns** persistence, the expected-version/ETag concurrency mechanism, envelopes/metadata, and the
+  public command/query gateway (`/api/v1/commands`, `/api/v1/queries`); **Works owns** only domain behavior (the
+  pure static `WorkItemAggregate`, wrapped at the edge by `WorkItemEventStoreAggregate : EventStoreAggregate<…>`
+  for discovery) and the read-model transformations (the pure `WhatsNext`/roll-up projections, persisted by a
+  host-edge `/project` adapter + `WhatsNextQueryHandler`). The kernel (`Contracts`, `Server`, `Projections`,
+  `Reactor`) remains free of Dapr, ASP.NET hosting, EventStore runtime, clocks, I/O, and logging
+  (fitness-asserted); the host is the **only** Works source project allowed those adapters. `AuthorityLevel`
+  stays carried-not-enforced, there is still no `IExecutorRouter` implementation, and **no** production UI, MCP,
+  chatbot, email, routing, cost, or security-hardening surface is composed. The v1 catalog stays **36** and the
+  golden corpus is byte-unchanged (no durable type added by the adapter/query/read-model code).
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
