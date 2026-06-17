@@ -1,5 +1,10 @@
 # Hexalith.Works
 
+## Shared Hexalith LLM Instructions
+
+Before starting any work in this repository, read and follow
+[`Hexalith.AI.Tools\hexalith-llm-instructions.md`](./Hexalith.AI.Tools/hexalith-llm-instructions.md).
+
 This repository aggregates Hexalith components as **git submodules located at the root** of the
 repository. Each root submodule (for example `Hexalith.Builds`, `Hexalith.Commons`,
 `Hexalith.EventStore`) is itself a repository that declares its **own** submodules nested inside it.
