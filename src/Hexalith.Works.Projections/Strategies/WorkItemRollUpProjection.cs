@@ -224,6 +224,7 @@ public sealed class WorkItemRollUpProjection
         {
             Degraded = IsDegraded(node, []),
             ProjectionDiagnostics = CollectDiagnostics(node, []),
+            OwnEffort = node.OwnEffort,
         };
     }
 

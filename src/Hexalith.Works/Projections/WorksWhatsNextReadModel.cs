@@ -16,6 +16,10 @@ internal static class WorksReadModelKeys
     /// Story 4.4-pinned pure constant so the adapter can never drift from the token the projection reports.</summary>
     public const string WhatsNextProjectionType = Strategies.WhatsNextQueueProjection.ProjectionType;
 
+    /// <summary>The stable projection-type token for the per-work-item consumer read model returned by the
+    /// <c>get-work-item</c> query.</summary>
+    public const string WorkItemViewProjectionType = "works-work-item-view";
+
     /// <summary>Builds the singleton-per-tenant "what's next" index key.</summary>
     public static string WhatsNextIndexKey(string tenantId) => $"projection:works:whats-next:{tenantId}";
 
