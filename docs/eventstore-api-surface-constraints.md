@@ -56,7 +56,7 @@ verified EventStore domain-service surface is:
 
 ### Build reconciliation
 
-Aspire package pins were reconciled from 13.4.3 to **13.4.5** (and `Aspire.AppHost.Sdk` to 13.4.5) to match the
+Aspire package pins were reconciled from 13.4.3 to **13.4.6** (and `Aspire.AppHost.Sdk` to 13.4.6) to match the
 checked-out `Hexalith.EventStore` submodule, which `Hexalith.EventStore.Aspire` requires. This is a submodule-drift
 alignment forced by the ProjectReference rule, not a discretionary upgrade.
 

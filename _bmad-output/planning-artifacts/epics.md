@@ -262,7 +262,7 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
 - **AR-19 Boundary decision record (FR-23)** — `docs/boundary-decision-record.md` is a tracked v1
   deliverable enumerating owns-vs-references per sibling module.
 - **AR-20 Pinned versions via central package management** — SDK `10.0.301` (rollForward
-  latestPatch), Dapr `1.18.2`, .NET Aspire `13.4.3`, xUnit **v3** `3.2.2` + Microsoft.Testing.Platform;
+  latestPatch), Dapr `1.18.4`, .NET Aspire `13.4.6`, xUnit **v3** `3.2.2` + Microsoft.Testing.Platform;
   ecosystem-pinned by policy (align to current sibling pins, do not casually upgrade).
 - **AR-21 Test taxonomy & build gates** — *unit* (pure `Handle`/`Apply`/validators); *property*
   (FsCheck roll-up convergence under permutation + duplication — RR-1); *architecture-fitness*

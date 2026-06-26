@@ -16,8 +16,8 @@ public sealed class BuildConfigurationTests
         globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.301");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
-        // Aspire reconciled to 13.4.5 to match the checked-out Hexalith.EventStore submodule (Story 4.5).
-        globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>().ShouldBe("13.4.5");
+        // Aspire reconciled to 13.4.6 to match the checked-out Hexalith.EventStore submodule.
+        globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>().ShouldBe("13.4.6");
     }
 
     [Fact]

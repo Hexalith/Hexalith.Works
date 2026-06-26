@@ -196,8 +196,8 @@ month-old `project-context.md` snapshot:**
 | Component | Pin (align to current sibling pins) | Note |
 |---|---|---|
 | .NET SDK | `10.0.301`, `rollForward: latestPatch` | global.json |
-| Dapr | `1.18.2` | only permitted infra abstraction |
-| .NET Aspire | `13.4.5` | bumped from 13.4.3 in Epic 4 (Story 4.5) to match `Hexalith.EventStore.Aspire` (requires ≥13.4.5), pulled transitively through the Works AppHost; test host only |
+| Dapr | `1.18.4` | only permitted infra abstraction |
+| .NET Aspire | `13.4.6` | bumped from 13.4.3 in Epic 4 and aligned again on 2026-06-26 to match `Hexalith.EventStore.Aspire` (requires >=13.4.6), pulled transitively through the Works AppHost; test host only |
 | xUnit | v3 `3.2.2` + Microsoft.Testing.Platform | match siblings (v3, not v2) |
 | Serialization | `Hexalith.PolymorphicSerializations` | event/command payloads |
 | Fluent UI Blazor | `5.0.0-rc.3` | inherited but **unused in v1** (headless); still RC/high-risk |
@@ -262,11 +262,11 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 
 ### Infrastructure & Deployment
 
-- **C2 — Timer/scheduler adapter:** **Dapr actor reminders via the Scheduler service** (Dapr ≥ 1.15 default; Works on 1.18.2). A `WorkItem` parked on `DateReached` registers a **self-targeted, durable reminder**; on fire it raises an internal `ResumeWorkItem(date)` command — `Handle` never reads a clock. Durable across crash/restart by construction; **reconciliation-on-recovery** covers firings lost before being recorded. The general Jobs API is *not* needed in v1 (cross-service scheduling is deferred). *Resolves OQ-4.*
+- **C2 — Timer/scheduler adapter:** **Dapr actor reminders via the Scheduler service** (Dapr >= 1.15 default; Works on 1.18.4). A `WorkItem` parked on `DateReached` registers a **self-targeted, durable reminder**; on fire it raises an internal `ResumeWorkItem(date)` command — `Handle` never reads a clock. Durable across crash/restart by construction; **reconciliation-on-recovery** covers firings lost before being recorded. The general Jobs API is *not* needed in v1 (cross-service scheduling is deferred). *Resolves OQ-4.*
 - **C3 — Deadline semantics:** **adapter event, "advisory-until-fired"** — the kernel may hold a "live" item that is, in reality, overdue; no v1 query detects this without the timer firing. Recorded; **re-validate against Theme 5** (cost-aware scheduling) before that theme builds, since adding a logical clock later is a redesign.
 - **E1 — Projection rebuild:** **online / non-disruptive** (shadow projection + atomic swap, or versioned projection key), **per-tenant partitionable** so one large tenant's rebuild doesn't block others; produces state identical to a cold rebuild with no partial-state leak to readers. *Resolves OQ-5.*
 - **E2 — Validation domains:** `ProgressReported` delta ≥ 0 with `Remaining` clamped ≥ 0; `Estimated` ≥ 0; Unit immutable after first set; Due-Date/TTL sourced from **per-work-type/tenant policy** (configurable default). *Resolves OQ-6.*
-- **Aspire host:** repository-specific AppHost + ServiceDefaults (health/telemetry) for manual + automated tests; **clock-free purity + no-branch-on-executor-kind enforced as build-time architecture fitness functions** (RR-5). Versions inherit the current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.5 · xUnit v3 3.2.2) via central package management.
+- **Aspire host:** repository-specific AppHost + ServiceDefaults (health/telemetry) for manual + automated tests; **clock-free purity + no-branch-on-executor-kind enforced as build-time architecture fitness functions** (RR-5). Versions inherit the current sibling pins (SDK 10.0.301 · Dapr 1.18.4 · Aspire 13.4.6 · xUnit v3 3.2.2) via central package management.
 
 ### Decision Impact Analysis
 
@@ -593,7 +593,7 @@ Status are synchronous on the aggregate; rolled-Remaining and "what's next" are 
 Event-sourcing on `EventStore` · Dapr-only infrastructure · pure kernel + adapter ring ·
 per-child-sequence LWW roll-up · expected-version optimistic concurrency · Dapr actor reminders for
 date resumes · explicit *do-not-rely-on-pub/sub-ordering* posture. Versions are mutually compatible
-and inherited from current sibling pins (SDK 10.0.301 · Dapr 1.18.2 · Aspire 13.4.5 · xUnit v3 3.2.2).
+and inherited from current sibling pins (SDK 10.0.301 · Dapr 1.18.4 · Aspire 13.4.6 · xUnit v3 3.2.2).
 
 **Pattern Consistency:** Implementation patterns (raw-act events carrying `(AggregateId, Sequence)`;
 pure `Handle`/`Apply`/reactor; idempotent order-tolerant projections; zero branching on executor

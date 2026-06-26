@@ -1,6 +1,8 @@
 using Hexalith.EventStore.Aspire;
 using Hexalith.Works.AppHost;
 
+using Projects;
+
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 // Resolve local-development Dapr component / access-control paths. builder.AppHostDirectory keeps this working
@@ -11,10 +13,23 @@ string adminServerAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHos
 string resiliencyConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "resiliency.yaml");
 string stateStoreComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "statestore.yaml");
 
+// Local security service for JWT/OIDC authentication. The EventStore Aspire helper owns the Keycloak resource
+// and exposes it under the shared "security" resource name. Set EnableKeycloak=false to keep the symmetric-key
+// development fallback used by the AppHost topology smoke tests.
+HexalithEventStoreSecurityResources? security = builder.AddHexalithEventStoreSecurity(
+    new HexalithEventStoreSecurityOptions
+    {
+        RealmImportPath = ProjectMetadataPaths.GetProjectPath(
+            "Hexalith.EventStore",
+            "src",
+            "Hexalith.EventStore.AppHost",
+            "KeycloakRealms"),
+    });
+
 // EventStore command gateway + Admin.Server (cross-repo project metadata; no UI, MCP, chatbot, email, routing,
-// cost, or Keycloak realm work is composed for this command/event pipeline proof). The Works domain-service
-// mapping routes "work" commands for any tenant at v1 to the "works" app's /process endpoint via the
-// Kubernetes-safe sanitized wildcard registration key (wildcard_<domain>_<version>).
+// cost, or production security-hardening surface is composed for this command/event pipeline proof). The Works
+// domain-service mapping routes "work" commands for any tenant at v1 to the "works" app's /process endpoint via
+// the Kubernetes-safe sanitized wildcard registration key (wildcard_<domain>_<version>).
 IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventStore>("eventstore");
 _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__AppId", "works")
@@ -52,6 +67,15 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
     .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))
     .WaitFor(eventStore)
     .WaitFor(eventStoreResources.StateStore);
+
+if (security is not null)
+{
+    _ = eventStore.WithJwtBearerSecurity(security);
+    _ = adminServer.WithJwtBearerSecurity(security);
+    _ = works
+        .WithJwtBearerSecurity(security)
+        .WithEventStoreClientCredentials(security);
+}
 
 // Story 4.6 recovery scope: the date-reminder reconciliation pass is bounded to a known tenant set because
 // the EventStore stream-read gateway exposes no tenant-wide enumeration (per-aggregate route only). The scope
