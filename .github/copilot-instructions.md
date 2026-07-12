@@ -1,7 +1,7 @@
 # AI assistant instructions
 
 Before working in this repository, read
-[`hexalith-llm-instructions.md`](./references/Hexalith.AI.Tools/hexalith-llm-instructions.md)
+[`hexalith-llm-instructions.md`](../references/Hexalith.AI.Tools/hexalith-llm-instructions.md)
 (in the `references/Hexalith.AI.Tools` submodule) and follow it.
 
 ## Git Submodules
