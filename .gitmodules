@@ -1,30 +1,33 @@
 [submodule "Hexalith.Builds"]
-	path = Hexalith.Builds
+	path = references/Hexalith.Builds
 	url = https://github.com/Hexalith/Hexalith.Builds.git
 [submodule "Hexalith.Commons"]
-	path = Hexalith.Commons
+	path = references/Hexalith.Commons
 	url = https://github.com/Hexalith/Hexalith.Commons.git
 [submodule "Hexalith.PolymorphicSerializations"]
-	path = Hexalith.PolymorphicSerializations
+	path = references/Hexalith.PolymorphicSerializations
 	url = https://github.com/Hexalith/Hexalith.PolymorphicSerializations.git
 [submodule "Hexalith.EventStore"]
-	path = Hexalith.EventStore
+	path = references/Hexalith.EventStore
 	url = https://github.com/Hexalith/Hexalith.EventStore.git
 [submodule "Hexalith.FrontComposer"]
-	path = Hexalith.FrontComposer
+	path = references/Hexalith.FrontComposer
 	url = https://github.com/Hexalith/Hexalith.FrontComposer.git
 [submodule "Hexalith.Tenants"]
-	path = Hexalith.Tenants
+	path = references/Hexalith.Tenants
 	url = https://github.com/Hexalith/Hexalith.Tenants.git
 [submodule "Hexalith.Parties"]
-	path = Hexalith.Parties
+	path = references/Hexalith.Parties
 	url = https://github.com/Hexalith/Hexalith.Parties.git
 [submodule "Hexalith.Chatbot"]
-	path = Hexalith.Chatbot
+	path = references/Hexalith.Chatbot
 	url = https://github.com/Hexalith/Hexalith.Chatbot.git
 [submodule "Hexalith.Projects"]
-	path = Hexalith.Projects
+	path = references/Hexalith.Projects
 	url = https://github.com/Hexalith/Hexalith.Projects.git
 [submodule "Hexalith.Conversations"]
-	path = Hexalith.Conversations
+	path = references/Hexalith.Conversations
 	url = https://github.com/Hexalith/Hexalith.Conversations.git
+[submodule "references/Hexalith.AI.Tools"]
+	path = references/Hexalith.AI.Tools
+	url = https://github.com/Hexalith/Hexalith.AI.Tools.git
