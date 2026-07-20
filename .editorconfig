@@ -68,5 +68,5 @@ dotnet_diagnostic.CA1014.severity = none
 # above leaks into it, and it keeps using directives inside the file-scoped namespace. Do not impose
 # the Works style on external submodule source. (The reference also builds with
 # TreatWarningsAsErrors=false as a safety net for any other rule drift.)
-[Hexalith.PolymorphicSerializations/**.cs]
+[references/Hexalith.PolymorphicSerializations/**.cs]
 dotnet_diagnostic.IDE0065.severity = none

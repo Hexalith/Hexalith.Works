@@ -16,35 +16,35 @@
     <File Path="README.md" />
     <File Path="CHANGELOG.md" />
   </Folder>
-  <Folder Name="/Hexalith.Builds/">
-    <File Path="Hexalith.Builds/README.md" />
+  <Folder Name="/references/Hexalith.Builds/">
+    <File Path="references/Hexalith.Builds/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Commons/">
-    <File Path="Hexalith.Commons/README.md" />
+  <Folder Name="/references/Hexalith.Commons/">
+    <File Path="references/Hexalith.Commons/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.PolymorphicSerializations/">
-    <File Path="Hexalith.PolymorphicSerializations/README.md" />
+  <Folder Name="/references/Hexalith.PolymorphicSerializations/">
+    <File Path="references/Hexalith.PolymorphicSerializations/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.EventStore/">
-    <File Path="Hexalith.EventStore/README.md" />
+  <Folder Name="/references/Hexalith.EventStore/">
+    <File Path="references/Hexalith.EventStore/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.FrontComposer/">
-    <File Path="Hexalith.FrontComposer/README.md" />
+  <Folder Name="/references/Hexalith.FrontComposer/">
+    <File Path="references/Hexalith.FrontComposer/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Parties/">
-    <File Path="Hexalith.Parties/README.md" />
+  <Folder Name="/references/Hexalith.Parties/">
+    <File Path="references/Hexalith.Parties/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Tenants/">
-    <File Path="Hexalith.Tenants/README.md" />
+  <Folder Name="/references/Hexalith.Tenants/">
+    <File Path="references/Hexalith.Tenants/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Chatbot/">
-    <File Path="Hexalith.Chatbot/README.md" />
+  <Folder Name="/references/Hexalith.Chatbot/">
+    <File Path="references/Hexalith.Chatbot/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Projects/">
-    <File Path="Hexalith.Projects/README.md" />
+  <Folder Name="/references/Hexalith.Projects/">
+    <File Path="references/Hexalith.Projects/README.md" />
   </Folder>
-  <Folder Name="/Hexalith.Conversations/">
-    <File Path="Hexalith.Conversations/README.md" />
+  <Folder Name="/references/Hexalith.Conversations/">
+    <File Path="references/Hexalith.Conversations/README.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Hexalith.Works/Hexalith.Works.csproj" />

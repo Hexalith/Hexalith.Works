@@ -7,7 +7,7 @@ public sealed class EventStoreApiSurfaceCharacterizationTests
     [Fact]
     public void P1_EventStoreExposesConcurrencyAndProjectionRebuildSurfacesNeededByWorks()
     {
-        string eventStoreRoot = RepositoryRoot.PathFromRoot("Hexalith.EventStore");
+        string eventStoreRoot = RepositoryRoot.PathFromRoot("references", "Hexalith.EventStore");
 
         Directory.Exists(eventStoreRoot).ShouldBeTrue("The root Hexalith.EventStore submodule must be initialized non-recursively before Works implementation depends on it.");
 
@@ -30,7 +30,7 @@ public sealed class EventStoreApiSurfaceCharacterizationTests
     [Fact]
     public void P1_EventStoreExposesETagBackedProjectionInvalidationSurfaces()
     {
-        string eventStoreRoot = RepositoryRoot.PathFromRoot("Hexalith.EventStore");
+        string eventStoreRoot = RepositoryRoot.PathFromRoot("references", "Hexalith.EventStore");
 
         Directory.Exists(eventStoreRoot).ShouldBeTrue("The root Hexalith.EventStore submodule must be initialized non-recursively before Works implementation depends on it.");
 

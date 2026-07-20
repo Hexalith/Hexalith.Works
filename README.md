@@ -8,7 +8,7 @@ Initialize only the root submodules the build references. These are the three He
 consumed as `ProjectReference` (see `Directory.Build.props`):
 
 ```bash
-git submodule update --init Hexalith.EventStore Hexalith.PolymorphicSerializations Hexalith.Tenants
+git submodule update --init references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants
 ```
 
 Do not use recursive submodule initialization.
@@ -31,3 +31,6 @@ dotnet test tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.cspr
 
 In restricted sandboxes where the Microsoft.Testing.Platform named pipes are blocked, run the built
 xUnit v3 executables directly from each project's `bin/Release/net10.0/` instead of `dotnet test`.
+
+Root-declared Hexalith submodules are stored under `references/`. Initialize only the needed
+`references/Hexalith.*` submodules and do not use recursive submodule initialization.

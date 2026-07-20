@@ -1,12 +1,10 @@
 <Project>
 
   <PropertyGroup>
-    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)Hexalith.EventStore</HexalithEventStoreRoot>
-    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.EventStore</HexalithEventStoreRoot>
-    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)Hexalith.Tenants</HexalithTenantsRoot>
-    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.Tenants</HexalithTenantsRoot>
-    <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
-    <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
+    <!-- Detect only root-declared sibling modules under references/; nested submodules are intentionally not required. -->
+    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
+    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
