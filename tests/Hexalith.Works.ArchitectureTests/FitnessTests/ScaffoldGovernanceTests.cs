@@ -202,6 +202,7 @@ public sealed class ScaffoldGovernanceTests
             Path.Combine(root, "src", "Hexalith.Works.Contracts"),
             Path.Combine(root, "src", "Hexalith.Works.Server"),
             Path.Combine(root, "src", "Hexalith.Works.Projections"),
+            Path.Combine(root, "src", "Hexalith.Works.Reactor"),
         ];
         string[] bannedSymbols =
         [
@@ -214,6 +215,16 @@ public sealed class ScaffoldGovernanceTests
             "Task.Delay",
             "System.Threading.Timer",
             "Guid.NewGuid",
+            // ULID-only identities: identity fields are opaque ULID strings, so the kernel must never
+            // parse or construct a Guid from them.
+            "Guid.Parse",
+            "Guid.TryParse",
+            "new Guid(",
+            // Determinism: no randomness and no ambient environment access in the pure kernel.
+            "new Random",
+            "Random.Shared",
+            "RandomNumberGenerator",
+            "Environment.",
             "UniqueIdHelper.Generate",
             "File.",
             "Directory.",
@@ -221,14 +232,17 @@ public sealed class ScaffoldGovernanceTests
             "Dapr",
         ];
 
+        // XML doc comments legitimately name banned infrastructure when documenting purity guarantees
+        // (e.g. the Reactor's "no EventStore/projection/Dapr/file/clock read" contract), so the scan
+        // strips '///' lines and matches executable source only.
         string[] violations = [.. kernelRoots
             .SelectMany(path => Directory.GetFiles(path, "*.cs", SearchOption.AllDirectories))
             .Where(path => !IsBuildOutput(path))
             .SelectMany(path => bannedSymbols
-                .Where(symbol => File.ReadAllText(path).Contains(symbol, StringComparison.Ordinal))
+                .Where(symbol => SourceWithoutXmlDocComments(path).Contains(symbol, StringComparison.Ordinal))
                 .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
 
-        violations.ShouldBeEmpty("Work item command handling, expiry, projection, and replay must remain deterministic: no clocks, timers, generated IDs, Dapr, EventStore envelope APIs, or I/O in the domain kernel.");
+        violations.ShouldBeEmpty("Work item command handling, expiry, projection, cascade reaction, and replay must remain deterministic: no clocks, timers, generated or parsed Guids, randomness, environment access, Dapr, EventStore envelope APIs, or I/O in the domain kernel (Contracts, Server, Projections, Reactor).");
     }
 
     [Fact]
@@ -362,7 +376,8 @@ public sealed class ScaffoldGovernanceTests
     // (mirroring P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority, which guards branching):
     // it matches on declared TYPE names — not raw substrings — so AssignWorkItem, LifecycleAct.Reject,
     // and XML-comment "Assign"/"Reject" mentions stay legitimate. It is paired with a frozen-catalog
-    // assertion: Story 4.2 introduces no new event, command, or rejection, so the v1 catalog stays 36.
+    // assertion: Story 4.2 introduces no new event, command, or rejection, so the v1 catalog stays at
+    // its frozen count (37 since the F-KERNEL-1 audit fix added WorkItemInitialEffortRejected).
     [Fact]
     public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36()
     {
@@ -413,13 +428,13 @@ public sealed class ScaffoldGovernanceTests
 
         violations.ShouldBeEmpty("Assign/reassign/hand-off is one uniform AssignWorkItem operation (FR-17): no HandoffTo*/ReassignTo*/AssignTo<Kind>*/HandedOff*/Unassign*/ReturnToPool* command or event may exist.");
 
-        // The durable v1 wire surface stays frozen at 36 (14 success events + 14 commands + 8 rejection
+        // The durable v1 wire surface stays frozen at 37 (14 success events + 14 commands + 9 rejection
         // events). Every catalog member derives from the empty Polymorphic base; Story 4.2 adds none. This
         // is the architecture-project-local equivalent of the IntegrationTests' WorkItemV1Catalog.Count.
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(36, "Story 4.2 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
+        polymorphicCatalogCount.ShouldBe(37, "Story 4.2 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 37.");
     }
 
     // Story 4.3 / AC #4 + DC1/DC4: claim is unconditional in v1 — any tenant Executor may claim a Queued
@@ -485,12 +500,12 @@ public sealed class ScaffoldGovernanceTests
 
         violations.ShouldBeEmpty("Claim is unconditional in v1 (AC #4): no ClaimEligibility*/EligibilityFilter*/ClaimRouter*/RoutingScore*/ExecutorRanking*/EscalationLadder*/ClaimDecisionRecord* type, and no new ClaimRejected/ConcurrencyRejected rejection (DC1) — single-claim-wins reuses WorkItemTransitionRejected + the EventStore expected-version substrate.");
 
-        // The durable v1 wire surface stays frozen at 36 (14 success events + 14 commands + 8 rejection
+        // The durable v1 wire surface stays frozen at 37 (14 success events + 14 commands + 9 rejection
         // events). Every catalog member derives from the empty Polymorphic base; Story 4.3 adds none.
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(36, "Story 4.3 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
+        polymorphicCatalogCount.ShouldBe(37, "Story 4.3 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 37.");
     }
 
     // Story 4.4 / AC #1+#4 + DC1/DC2/DC3: the tenant "what's next" queue is a pure read projection +
@@ -560,13 +575,13 @@ public sealed class ScaffoldGovernanceTests
 
         violations.ShouldBeEmpty("The what's-next queue is projection/query only (FR-20): no RoutingEngine*/Eligibility*/EscalationLadder*/ExecutorRanking*/*Router impl and no *DataGrid/*Hub/*SignalR*/*WebShell/*MailSurface/*EmailSurface/*McpTool/*Chatbot surface may exist in the Works kernel (AC #1/#4).");
 
-        // The durable v1 wire surface stays frozen at 36 (14 success events + 14 commands + 8 rejection
+        // The durable v1 wire surface stays frozen at 37 (14 success events + 14 commands + 9 rejection
         // events). WhatsNextItem is a plain read-model record, not a [PolymorphicSerialization] catalog type;
         // Story 4.4 adds no durable type (DC3).
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(36, "Story 4.4 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 36.");
+        polymorphicCatalogCount.ShouldBe(37, "Story 4.4 adds no event, command, or rejection type; the v1 catalog (WorkItemV1Catalog.Count) stays 37.");
     }
 
     // Story 4.4 / AC #5 + NFR-6: the pure kernel performs no logging — it never references ILogger or a log
@@ -618,6 +633,9 @@ public sealed class ScaffoldGovernanceTests
     private static bool IsBuildOutput(string path)
         => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
             || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
+    private static string SourceWithoutXmlDocComments(string path)
+        => string.Join('\n', File.ReadLines(path).Where(line => !line.TrimStart().StartsWith("///", StringComparison.Ordinal)));
 
     private static bool IsOwnedRollUpLocation(string root, string path)
     {

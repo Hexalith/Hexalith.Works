@@ -1147,3 +1147,72 @@ So that date resumes and cascade continuation survive restarts without making th
 **When** parent terminal events or child-completion events are processed
 **Then** the reactor emits only mechanical command intents
 **And** all domain decisions still round-trip through aggregate `Handle`.
+
+### Story 4.7: Trigger Reactor Translators from the Live Event Stream
+
+_Added by the 2026-07-21 correct-course: the cascade dispatcher, child-completion resume
+translator, and cascade checkpoint replay proved by Stories 3.6/4.6 have no production
+trigger — the host maps no event consumption, so no reactor-driven behavior executes in the
+live topology (audit findings F-RT-1, F-RT-2, F-RT-4, F-RT-7)._
+
+As a Hexalith builder,
+I want the running Works host to consume the domain event stream and drive the reactor translators,
+So that cascade and child-completion resume actually execute in the live topology instead of only in component tests.
+
+**Acceptance Criteria:**
+
+**Given** the Works host runs under the Aspire topology
+**When** a parent Work Item reaches `Cancelled` or `Expired`
+**Then** an at-least-once event consumption path invokes the cascade dispatcher
+**And** active descendants receive idempotent terminal commands discovered from a re-readable projection
+**And** already-terminal descendants are identified from the persisted roll-up read model, not hardcoded as active.
+
+**Given** a parent is suspended on a `ChildCompleted` await-condition
+**When** the child completes in the running topology
+**Then** a `WorkItemCompleted` consumer feeds the unchanged `ChildCompletionResumeTranslator` from a re-readable awaiting-parents source
+**And** the parent resumes via an idempotent `ResumeWorkItem` submission
+**And** every decision still round-trips through aggregate `Handle`.
+
+**Given** the host crashes mid-cascade
+**When** it restarts
+**Then** a startup recovery pass discovers incomplete cascade checkpoints from a durable index and drives checkpoint replay
+**And** the cascade converges without duplicate terminal effects (live SM-1b lane).
+
+**Given** the new consumption path is inspected
+**When** fitness and governance tests run
+**Then** the kernel and reactor projects remain free of any new dependency
+**And** the host contains no shadow-kernel conditional a pure `Handle` could not have produced.
+
+### Story 4.8: Register and Reconcile Date Reminders Durably
+
+_Added by the 2026-07-21 correct-course: no suspend-time reminder registration exists, the
+reconciliation stream scan uses a gateway route that unconditionally rejects tenant-wide reads,
+and reconciliation is off unless tenants are hand-configured — so no date-based resume executes
+in the live topology (audit findings F-RT-3, F-RT-5)._
+
+As a Hexalith builder,
+I want date reminders registered when an item suspends and reconciled from a working pending-await source,
+So that date-based resumes execute in steady state and survive recovery without hand configuration.
+
+**Acceptance Criteria:**
+
+**Given** an item suspends with a `DateReached` await-condition in the running topology
+**When** the event path observes the suspension
+**Then** a self-targeted durable Dapr reminder is registered with the deterministic name
+**And** duplicate registration remains idempotent
+**And** the item resumes when the date fires without requiring a host restart.
+
+**Given** the reconciliation-on-recovery pass runs
+**When** pending `DateReached` awaits are scanned
+**Then** the scan reads a tenant-scoped pending-date-await index read model maintained by the projection dispatcher plus per-aggregate stream reads
+**And** it never issues the tenant-wide null-aggregate stream read the gateway rejects.
+
+**Given** the host restarts after reminder firings were lost before recording
+**When** recovery completes
+**Then** overdue awaits are reissued as idempotent resume commands and future awaits are re-registered
+**And** reconciliation operates without per-tenant hand configuration (live SM-1 lane).
+
+**Given** the kernel is inspected
+**When** fitness tests run
+**Then** `Handle` and the reactor remain clock-free
+**And** all time enters as commands from the reminder adapter.

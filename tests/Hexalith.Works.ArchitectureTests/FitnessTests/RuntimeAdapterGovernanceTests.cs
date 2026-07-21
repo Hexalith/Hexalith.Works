@@ -141,7 +141,7 @@ public sealed class RuntimeAdapterGovernanceTests
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(36, "Story 4.6 reminder/checkpoint/read-model records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
+        polymorphicCatalogCount.ShouldBe(37, "Story 4.6 reminder/checkpoint/read-model records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
     }
 
     [Fact]

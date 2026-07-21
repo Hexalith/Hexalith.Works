@@ -6,6 +6,7 @@ using Hexalith.Works.Contracts.Events.Rejections;
 using Hexalith.Works.Contracts.State;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Server.Aggregates;
+using Hexalith.Works.Testing;
 using Shouldly;
 
 namespace Hexalith.Works.UnitTests;
@@ -172,8 +173,12 @@ public sealed class WorkItemCreateTests
     }
 
     [Fact]
-    public void CreateWorkItem_with_existing_different_parent_returns_second_parent_rejection_and_leaves_state_unchanged()
+    public void CreateWorkItem_with_existing_different_parent_returns_transition_rejection_and_leaves_state_unchanged()
     {
+        // The create status guard runs before the tree guard: an item that already carries a parent is
+        // by definition an established item (Created or later), so a re-create with a different parent
+        // is stopped as an illegal transition — the second-parent tree rejection now belongs to the
+        // SpawnChild/attachment path, where an existing item can legitimately be re-attached.
         TenantId tenantId = new("tenant-alpha");
         var existingParent = new ParentWorkItemReference(tenantId, new WorkItemId("parent-001"));
         var proposedParent = new ParentWorkItemReference(tenantId, new WorkItemId("parent-002"));
@@ -195,17 +200,106 @@ public sealed class WorkItemCreateTests
         result.IsRejection.ShouldBeTrue();
         result.IsSuccess.ShouldBeFalse();
         result.Events.Count.ShouldBe(1);
-        WorkItemCannotReferenceSecondParent rejection = result.Events
+        WorkItemTransitionRejected rejection = result.Events
             .Single()
-            .ShouldBeOfType<WorkItemCannotReferenceSecondParent>();
-        rejection.ExistingParent.ShouldBe(existingParent);
-        rejection.ProposedParent.ShouldBe(proposedParent);
+            .ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(WorkItemStatus.Created);
+        rejection.AttemptedAct.ShouldBe(nameof(CreateWorkItem));
 
         state.Apply(rejection);
 
         state.Sequence.ShouldBe(7);
         state.Parent.ShouldBe(existingParent);
         state.Status.ShouldBe(WorkItemStatus.Created);
+    }
+
+    [Fact]
+    public void Duplicate_create_against_an_existing_created_item_is_rejected_and_does_not_reset_the_lifecycle()
+    {
+        TenantId tenantId = new("tenant-alpha");
+        WorkItemId workItemId = new("work-001");
+        WorkItemState state = WorkItemStateBuilder.InStatus(WorkItemStatus.Created, tenantId, workItemId);
+        long sequenceBefore = state.Sequence;
+
+        var result = WorkItemAggregate.Handle(CreateCommand(tenantId: tenantId, workItemId: workItemId), state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemTransitionRejected rejection = result.Events.Single().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.TenantId.ShouldBe(tenantId);
+        rejection.WorkItemId.ShouldBe(workItemId);
+        rejection.FromStatus.ShouldBe(WorkItemStatus.Created);
+        rejection.AttemptedAct.ShouldBe(nameof(CreateWorkItem));
+
+        state.Apply(rejection);
+
+        state.Sequence.ShouldBe(sequenceBefore);
+        state.Status.ShouldBe(WorkItemStatus.Created);
+    }
+
+    [Fact]
+    public void Create_retry_against_a_completed_item_is_rejected_and_cannot_unterminal_the_closed_item()
+    {
+        TenantId tenantId = new("tenant-alpha");
+        WorkItemId workItemId = new("work-001");
+        WorkItemState state = WorkItemStateBuilder.InStatus(WorkItemStatus.Completed, tenantId, workItemId);
+        long sequenceBefore = state.Sequence;
+
+        var result = WorkItemAggregate.Handle(CreateCommand(tenantId: tenantId, workItemId: workItemId), state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemTransitionRejected rejection = result.Events.Single().ShouldBeOfType<WorkItemTransitionRejected>();
+        rejection.FromStatus.ShouldBe(WorkItemStatus.Completed);
+        rejection.AttemptedAct.ShouldBe(nameof(CreateWorkItem));
+
+        state.Apply(rejection);
+
+        // The terminal status survives the retry: no WorkItemCreated was re-emitted and no sequence burned.
+        state.Sequence.ShouldBe(sequenceBefore);
+        state.Status.ShouldBe(WorkItemStatus.Completed);
+    }
+
+    [Fact]
+    public void Create_under_a_depth_limit_parent_returns_tree_depth_exceeded_from_caller_fed_facts()
+    {
+        // Mirrors the guard-test boundary: a parent already resting at the 32-deep cap makes the child
+        // land on depth 33 — the caller-fed facts (not a hardcoded root depth) must reach the guard.
+        CreateWorkItem command = CreateCommand(
+            parent: new ParentWorkItemReference(new TenantId("tenant-alpha"), new WorkItemId("parent-001")),
+            proposedParentDepth: 32,
+            maxDepth: 32);
+
+        var result = WorkItemAggregate.Handle(command, null);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemTreeDepthExceeded rejection = result.Events.Single().ShouldBeOfType<WorkItemTreeDepthExceeded>();
+        rejection.MaxDepth.ShouldBe(32);
+        rejection.ResultingDepth.ShouldBe(33);
+    }
+
+    [Fact]
+    public void Create_whose_proposed_parent_ancestors_contain_its_own_id_returns_cycle_rejection()
+    {
+        TenantId tenantId = new("tenant-alpha");
+        WorkItemId workItemId = new("work-001");
+        CreateWorkItem command = CreateCommand(
+            workItemId: workItemId,
+            parent: new ParentWorkItemReference(tenantId, new WorkItemId("parent-001")),
+            proposedParentAncestors: [new ParentWorkItemReference(tenantId, workItemId)]);
+
+        var result = WorkItemAggregate.Handle(command, null);
+
+        result.IsRejection.ShouldBeTrue();
+        result.IsSuccess.ShouldBeFalse();
+        result.Events.Count.ShouldBe(1);
+        WorkItemTreeCycleRejected rejection = result.Events.Single().ShouldBeOfType<WorkItemTreeCycleRejected>();
+        rejection.WorkItemId.ShouldBe(workItemId);
+        rejection.CycleWorkItemId.ShouldBe(workItemId);
     }
 
     [Fact]
@@ -308,14 +402,17 @@ public sealed class WorkItemCreateTests
     }
 
     [Fact]
-    public void CreateWorkItem_initial_effort_starts_with_no_done_progress()
+    public void CreateWorkItem_stores_an_unstarted_initial_effort_verbatim()
     {
-        WorkItemEffort suppliedEffort = new(8m, new Unit("hour"), 3m);
+        // The accepted effort is stored exactly as supplied (no normalization step remains); an effort
+        // already carrying done progress is rejected instead — see WorkItemInitialEffortRejectionTests.
+        WorkItemEffort suppliedEffort = new(8m, new Unit("hour"));
         WorkItemCreated created = WorkItemAggregate.Handle(CreateCommand(initialEffort: suppliedEffort), null)
             .Events
             .Single()
             .ShouldBeOfType<WorkItemCreated>();
 
+        created.InitialEffort.ShouldBe(suppliedEffort);
         created.InitialEffort.ShouldNotBeNull().Done.ShouldBe(0m);
         created.InitialEffort.Remaining.ShouldBe(8m);
     }
@@ -353,7 +450,10 @@ public sealed class WorkItemCreateTests
         WorkItemSchedule? schedule = null,
         ParentWorkItemReference? parent = null,
         ExecutorBinding? executorBinding = null,
-        ConversationCorrelationId? conversationCorrelationId = null)
+        ConversationCorrelationId? conversationCorrelationId = null,
+        IReadOnlyList<ParentWorkItemReference>? proposedParentAncestors = null,
+        int proposedParentDepth = 1,
+        int maxDepth = 32)
         => new(
             tenantId ?? new TenantId("tenant-alpha"),
             workItemId ?? new WorkItemId("work-001"),
@@ -362,5 +462,8 @@ public sealed class WorkItemCreateTests
             schedule,
             parent,
             executorBinding,
-            conversationCorrelationId);
+            conversationCorrelationId,
+            proposedParentAncestors,
+            proposedParentDepth,
+            maxDepth);
 }

@@ -11,11 +11,13 @@ using FSharpFuncConvert = Microsoft.FSharp.Core.FuncConvert;
 namespace Hexalith.Works.PropertyTests;
 
 /// <summary>
-/// Story 4.4 (Task 9 / AC #2/#5): for any generated set of items and any permutation + duplication of
-/// their delivery, the tenant what's-next queue converges to the same ordered list (order-tolerant), the
-/// ordering is a strict total order (every adjacent pair compares strictly less — no two distinct items
-/// compare equal under the full comparator including the id tiebreak), and a colliding foreign-tenant item
-/// never leaks across tenants. Falsifiable value beyond the fixed-case Task 4 matrix: random permutations.
+/// Story 4.4 (Task 9 / AC #2/#5): for any generated set of items and a sampled permutation + duplication
+/// of their delivery, the tenant what's-next queue converges to the same ordered list (order-tolerant),
+/// the ordering is a strict total order (every adjacent pair compares strictly less — no two distinct
+/// items compare equal under the full comparator including the id tiebreak), and a colliding
+/// foreign-tenant item never leaks across tenants. Falsifiable value beyond the fixed-case Task 4 matrix:
+/// the delivery order is a random permutation of the canonical facts plus duplicates, drawn from
+/// FsCheck's generator space (Gen.Shuffle) and replayable from the seed FsCheck prints on failure.
 /// FsCheck wiring mirrors <c>WorkItemRollUpConvergencePropertyTests</c>.
 /// </summary>
 public sealed class WhatsNextOrderingConvergencePropertyTests
@@ -28,20 +30,30 @@ public sealed class WhatsNextOrderingConvergencePropertyTests
     [Fact]
     public void What_s_next_queue_converges_and_is_a_total_order_under_permuted_and_duplicate_delivery()
     {
+        // The delivery order is a genuine random permutation of `canonical ++ duplicates`, drawn from
+        // FsCheck's generator space via Gen.Shuffle over the deliverable indexes — not a fixed reversal.
+        // BuildScenario is a pure function of `values`, so re-deriving the scenario inside the property
+        // sees exactly the deliverable multiset the permutation was generated for. Failures replay from
+        // the seed FsCheck prints; no wall clock or ambient randomness is involved.
         FsCheck.Gen<int[]> generatedCases = FsCheck.Fluent.Gen.ArrayOf(FsCheck.Fluent.Gen.Choose(0, 127));
-        Arbitrary<int[]> arbitraryCases = FsCheck.Fluent.Arb.ToArbitrary(generatedCases);
+        FsCheck.Gen<DeliveryCase> generatedDeliveries = FsCheck.Fluent.Gen.SelectMany(
+            generatedCases,
+            values => FsCheck.Fluent.Gen.Shuffle(Enumerable.Range(0, BuildScenario(values).Deliverable.Length)),
+            (values, order) => new DeliveryCase(values, order));
+        Arbitrary<DeliveryCase> arbitraryCases = FsCheck.Fluent.Arb.ToArbitrary(generatedDeliveries);
         Property property = FsCheck.FSharp.Prop.ForAll(
             arbitraryCases,
-            FSharpFuncConvert.FromFunc<int[], bool>(values =>
+            FSharpFuncConvert.FromFunc<DeliveryCase, bool>(deliveryCase =>
             {
-                Scenario scenario = BuildScenario(values);
+                Scenario scenario = BuildScenario(deliveryCase.Values);
+                WorkItemRollUpEvent[] delivery = [.. deliveryCase.Order.Select(index => scenario.Deliverable[index])];
                 IReadOnlyList<WhatsNextItem> expected = Replay(scenario.Canonical).WhatsNext(Tenant);
-                IReadOnlyList<WhatsNextItem> actual = Replay(scenario.Delivery).WhatsNext(Tenant);
+                IReadOnlyList<WhatsNextItem> actual = Replay(delivery).WhatsNext(Tenant);
 
                 return SameOrder(expected, actual)
                     && IsStrictTotalOrder(actual)
                     && actual.All(item => item.TenantId == Tenant)
-                    && Replay(scenario.Delivery).WhatsNext(OtherTenant).All(item => item.TenantId == OtherTenant);
+                    && Replay(delivery).WhatsNext(OtherTenant).All(item => item.TenantId == OtherTenant);
             }));
 
         Check.One(Config.QuickThrowOnFailure, property);
@@ -80,10 +92,12 @@ public sealed class WhatsNextOrderingConvergencePropertyTests
         canonical.Add(Envelope(Created(OtherTenant, colliding, new WorkItemSchedule(Priority.Critical, new DateOnly(2026, 1, 1)))));
         canonical.Add(Envelope(new WorkItemQueued(colliding.Value, 2, OtherTenant, colliding)));
 
+        // The deliverable multiset is every canonical fact plus value-derived duplicates, in canonical
+        // order; the generated permutation in the test decides the actual delivery order.
         int[] duplicateIndexes = [.. values.Select(value => Math.Abs(value) % canonical.Count)];
-        WorkItemRollUpEvent[] delivery = [.. duplicateIndexes.Select(index => canonical[index]), .. canonical.Reverse<WorkItemRollUpEvent>()];
+        WorkItemRollUpEvent[] deliverable = [.. canonical, .. duplicateIndexes.Select(index => canonical[index])];
 
-        return new Scenario([.. canonical], delivery);
+        return new Scenario([.. canonical], deliverable);
     }
 
     private static bool SameOrder(IReadOnlyList<WhatsNextItem> expected, IReadOnlyList<WhatsNextItem> actual)
@@ -158,5 +172,7 @@ public sealed class WhatsNextOrderingConvergencePropertyTests
             _ => new DateOnly(2026, 9, 30),
         };
 
-    private sealed record Scenario(WorkItemRollUpEvent[] Canonical, WorkItemRollUpEvent[] Delivery);
+    private sealed record Scenario(WorkItemRollUpEvent[] Canonical, WorkItemRollUpEvent[] Deliverable);
+
+    private sealed record DeliveryCase(int[] Values, int[] Order);
 }

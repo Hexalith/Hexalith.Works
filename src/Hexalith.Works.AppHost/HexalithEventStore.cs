@@ -9,6 +9,7 @@ public sealed class HexalithEventStore : IProjectMetadata
 {
     /// <inheritdoc/>
     public string ProjectPath => ProjectMetadataPaths.GetProjectPath(
+        "references",
         "Hexalith.EventStore",
         "src",
         "Hexalith.EventStore",

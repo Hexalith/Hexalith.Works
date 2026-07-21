@@ -15,6 +15,15 @@ public static class WorkItemAggregate
         ArgumentNullException.ThrowIfNull(command.TenantId);
         ArgumentNullException.ThrowIfNull(command.WorkItemId);
 
+        // Pre-creation (null state or the Unknown sentinel) is the only entry point for Create: a
+        // create handled against any established status — non-terminal or terminal — is rejected, so a
+        // duplicate or late create can never re-emit WorkItemCreated and reset an existing lifecycle.
+        WorkItemStatus from = CurrentStatus(state);
+        if (from != WorkItemStatus.Unknown)
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(CreateWorkItem));
+        }
+
         if (string.IsNullOrWhiteSpace(command.Obligation))
         {
             return DomainResult.Rejection([
@@ -22,9 +31,23 @@ public static class WorkItemAggregate
             ]);
         }
 
-        // Events are trusted on replay; command handling is the write-side tree-shape boundary.
+        if (command.InitialEffort is not null && command.InitialEffort.Done != 0)
+        {
+            return RejectInitialEffort(command.TenantId, command.WorkItemId, command.InitialEffort.Done);
+        }
+
+        // Events are trusted on replay; command handling is the write-side tree-shape boundary. The
+        // ancestor/depth facts are caller-fed (mirroring SpawnChild) so the depth-cap and ancestor-cycle
+        // checks hold for parented creates without the aggregate reading EventStore or projections.
         WorkTreeAttachmentValidationResult treeValidation = WorkTreeAttachmentGuard.Validate(
-            new WorkTreeAttachmentFacts(command.TenantId, command.WorkItemId, command.Parent, state?.Parent, [], 1));
+            new WorkTreeAttachmentFacts(
+                command.TenantId,
+                command.WorkItemId,
+                command.Parent,
+                state?.Parent,
+                command.ProposedParentAncestors ?? [],
+                command.ProposedParentDepth,
+                command.MaxDepth));
         if (!treeValidation.IsAccepted)
         {
             return DomainResult.Rejection([treeValidation.Rejection!]);
@@ -36,7 +59,7 @@ public static class WorkItemAggregate
             command.TenantId,
             command.WorkItemId,
             new Obligation(command.Obligation),
-            NormalizeInitialEffort(command.InitialEffort),
+            command.InitialEffort,
             command.Schedule,
             command.Parent,
             command.ExecutorBinding,
@@ -70,6 +93,13 @@ public static class WorkItemAggregate
             ]);
         }
 
+        if (command.InitialEffort is not null && command.InitialEffort.Done != 0)
+        {
+            // Child creation follows CreateWorkItem semantics: the rejection is raised against the
+            // child id the caller supplied — never the parent.
+            return RejectInitialEffort(command.TenantId, command.ChildWorkItemId, command.InitialEffort.Done);
+        }
+
         ParentWorkItemReference proposedParent = new(command.TenantId, command.WorkItemId);
         WorkTreeAttachmentValidationResult treeValidation = WorkTreeAttachmentGuard.Validate(
             new WorkTreeAttachmentFacts(
@@ -93,7 +123,7 @@ public static class WorkItemAggregate
             command.WorkItemId,
             command.ChildWorkItemId,
             new Obligation(command.Obligation),
-            NormalizeInitialEffort(command.InitialEffort),
+            command.InitialEffort,
             command.Schedule,
             command.ExecutorBinding,
             command.ConversationCorrelationId,
@@ -424,8 +454,6 @@ public static class WorkItemAggregate
     private static DomainResult RejectReEstimate(TenantId tenantId, WorkItemId workItemId, string reason)
         => DomainResult.Rejection([new WorkItemReEstimateRejected(tenantId, workItemId, reason)]);
 
-    private static WorkItemEffort? NormalizeInitialEffort(WorkItemEffort? effort)
-        => effort is null || effort.Done == 0
-            ? effort
-            : new WorkItemEffort(effort.Estimated, effort.Unit);
+    private static DomainResult RejectInitialEffort(TenantId tenantId, WorkItemId workItemId, decimal done)
+        => DomainResult.Rejection([new WorkItemInitialEffortRejected(tenantId, workItemId, done)]);
 }

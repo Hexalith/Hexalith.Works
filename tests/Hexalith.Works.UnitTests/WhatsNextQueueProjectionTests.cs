@@ -199,6 +199,44 @@ public sealed class WhatsNextQueueProjectionTests
     }
 
     [Fact]
+    public void Poisoned_non_positive_done_delta_retains_own_remaining_and_a_later_valid_fact_still_applies()
+    {
+        // Read-side defense against a corrupted stream: the write side validates DoneDelta > 0, but a
+        // persisted non-positive delta must be refused (retain the last valid value, mirroring the
+        // unit-mismatch path) instead of throwing inside WorkItemEffort.Report and wedging every rebuild.
+        WhatsNextQueueProjection projection = new();
+        Deliver(projection, Created(Work1, 1, effort: 4m));
+        Deliver(projection, new WorkItemQueued(Work1.Value, 2, Tenant, Work1));
+        Deliver(projection, new ProgressReported(Work1.Value, 3, Tenant, Work1, 1m, Hour));   // 4 -> 3
+
+        WorkItemRollUpEvent poisoned = Envelope(new ProgressReported(Work1.Value, 4, Tenant, Work1, 0m, Hour));
+        _ = projection.Project(poisoned);
+        _ = projection.Project(poisoned);                                                    // idempotent redelivery
+        Deliver(projection, new ProgressReported(Work1.Value, 5, Tenant, Work1, 1m, Hour));  // 3 -> 2 (still applied)
+
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().OwnRemaining.ShouldBe(new OwnRemaining(2m, Hour));
+    }
+
+    [Fact]
+    public void Poisoned_negative_estimate_is_refused_and_never_establishes_or_updates_own_remaining()
+    {
+        // A persisted negative estimate would throw inside the WorkItemEffort constructor (establish
+        // path) or ReEstimate (update path); both are refused, and later valid facts still apply.
+        WhatsNextQueueProjection projection = new();
+        Deliver(projection, Created(Work1, 1));   // no initial effort
+        Deliver(projection, new WorkItemQueued(Work1.Value, 2, Tenant, Work1));
+
+        Deliver(projection, new ReEstimated(Work1.Value, 3, Tenant, Work1, -5m, Hour));   // refused (establish path)
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().OwnRemaining.ShouldBeNull();
+
+        Deliver(projection, new ReEstimated(Work1.Value, 4, Tenant, Work1, 7m, Hour));    // valid still applies
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().OwnRemaining.ShouldBe(new OwnRemaining(7m, Hour));
+
+        Deliver(projection, new ReEstimated(Work1.Value, 5, Tenant, Work1, -1m, Hour));   // refused (update path)
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().OwnRemaining.ShouldBe(new OwnRemaining(7m, Hour));
+    }
+
+    [Fact]
     public void Colliding_inner_ids_across_tenants_with_similar_schedules_never_cross_and_flip_with_the_queried_tenant()
     {
         WhatsNextQueueProjection projection = new();
@@ -236,6 +274,38 @@ public sealed class WhatsNextQueueProjectionTests
 
         projection.WhatsNext(Tenant).ShouldHaveSingleItem().Status.ShouldBe(WorkItemStatus.Queued);
         projection.WhatsNext(OtherTenant).ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void Tenant_mismatched_child_spawned_payload_is_refused_and_does_not_poison_its_sequence_slot()
+    {
+        WhatsNextQueueProjection projection = new();
+        Deliver(projection, Created(Work1, 1));
+
+        // The envelope header matches (Tenant, Work1) but the payload carries a foreign tenant —
+        // fail-closed, so the sequence-2 slot stays free for the legitimate queue fact below.
+        _ = projection.Project(new WorkItemRollUpEvent(Tenant, Work1, 2, new ChildSpawned(
+            Work1.Value, 2, OtherTenant, Work1, Work2, new Obligation("spawned child work"))));
+
+        Deliver(projection, new WorkItemQueued(Work1.Value, 2, Tenant, Work1));
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().Status.ShouldBe(WorkItemStatus.Queued);
+    }
+
+    [Fact]
+    public void Matching_child_spawned_fact_is_accepted_and_reports_no_queue_change()
+    {
+        // ChildSpawned is part of the fourteen-event delivery stream this projection shares with the
+        // roll-up: a header-consistent ChildSpawned must pass the fail-closed match (it owns its
+        // aggregate-local sequence slot) even though it never affects eligibility or ordering.
+        WhatsNextQueueProjection projection = new();
+        Deliver(projection, Created(Work1, 1));
+        Deliver(projection, new WorkItemQueued(Work1.Value, 2, Tenant, Work1));
+
+        WhatsNextProjectionChange change = projection.Project(new WorkItemRollUpEvent(Tenant, Work1, 3, new ChildSpawned(
+            Work1.Value, 3, Tenant, Work1, Work2, new Obligation("spawned child work"))));
+
+        change.Changed.ShouldBeFalse();
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().Status.ShouldBe(WorkItemStatus.Queued);
     }
 
     [Fact]

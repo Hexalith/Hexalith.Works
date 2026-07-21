@@ -18,6 +18,17 @@ Terminal: `Completed`, `Cancelled`, `Rejected`, `Expired`.
 state — "not created") is **rejected**; the sole way to leave the pre-creation state is `CreateWorkItem`
 (owned by Story 1.2, not a lifecycle transition listed here).
 
+> **Reconciliation note (audit fix F-DOMAIN-1 / F-KERNEL-1).** The matrix has no `Create` row because
+> pre-creation is Create's **only** entry point: `CreateWorkItem` handled against **any** established
+> status — non-terminal or terminal — is rejected with
+> `WorkItemTransitionRejected(FromStatus, "CreateWorkItem")` and emits no `WorkItemCreated`, so a
+> duplicate or late create can never reset an existing lifecycle (a retry cannot un-terminal a closed
+> item). Additionally, a command-supplied `InitialEffort` whose `Done` is not zero on
+> `CreateWorkItem`/`SpawnChild` is refused with the additive rejection `WorkItemInitialEffortRejected`
+> instead of being coerced to zero (refuse-don't-coerce), which extends the frozen v1 catalog
+> additively from 36 to **37** types (14 success events + 14 commands + 9 rejection events); mentions
+> of the pre-fix count of 36 elsewhere in this document and in older decision records predate this fix.
+
 ## Lifecycle commands → events
 
 | Command | Trigger (act) | Success event | Notes |

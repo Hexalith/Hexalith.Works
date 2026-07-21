@@ -24,6 +24,11 @@ _ = builder.Services.AddHexalithWorksContractsPolymorphicMappers();
 // only adapter edge that may reference EventStore runtime, Dapr, and ASP.NET hosting.
 _ = builder.AddEventStoreDomainService(typeof(WorkItemEventStoreAggregate).Assembly);
 
+// Unhandled endpoint failures (e.g. read-model store outages inside the bespoke /project handler) must
+// surface as RFC 9457 application/problem+json — never a bare 500. The default service carries the
+// traceId correlation extension; payload-bearing detail stays out per the logging/privacy rules.
+_ = builder.Services.AddProblemDetails();
+
 // Dapr-backed persisted read models for the what's-next projection/query adapter.
 builder.Services.AddDaprClient();
 _ = builder.Services.AddEventStoreReadModelStore();
@@ -35,6 +40,10 @@ _ = builder.Services.AddWorksDateReminderActors();
 _ = builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
 
 WebApplication app = builder.Build();
+
+// Route unhandled exceptions through the registered ProblemDetails service (RFC 9457).
+_ = app.UseExceptionHandler();
+_ = app.UseStatusCodePages();
 
 // Bespoke /project handler: translate a single work item's replayed events into the tenant-scoped what's-next
 // index + per-item roll-up and notify on a real eligibility/order change. Mapping it before

@@ -14,8 +14,8 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 internal static class WorkItemV1Catalog
 {
-    /// <summary>14 success events + 14 commands + 8 rejection events.</summary>
-    internal const int Count = 36;
+    /// <summary>14 success events + 14 commands + 9 rejection events.</summary>
+    internal const int Count = 37;
 
     /// <summary>
     /// Envelope / transport fields owned by EventStore that must never leak into a domain payload
@@ -72,10 +72,11 @@ internal static class WorkItemV1Catalog
         new ExpireWorkItem(Tenant, Item),
         new SpawnChild(Tenant, Item, Child, "Break out child work", SuspendParentUntilChildCompletes: true),
 
-        // 8 rejection events.
+        // 9 rejection events.
         new WorkItemTransitionRejected(Tenant, Item, WorkItemStatus.Created, "Assign"),
         new WorkItemProgressRejected(Tenant, Item, "Progress unit must match the established effort unit."),
         new WorkItemReEstimateRejected(Tenant, Item, "Re-estimate unit must match the established effort unit."),
+        new WorkItemInitialEffortRejected(Tenant, Item, 3m),
         new WorkItemCannotBeCreatedWithoutObligation(Tenant, Item),
         new WorkItemCannotReferenceParentFromAnotherTenant(Tenant, Item, Parent),
         new WorkItemCannotReferenceSecondParent(Tenant, Item, Parent, new ParentWorkItemReference(Tenant, new WorkItemId("parent-002"))),

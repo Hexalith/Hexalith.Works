@@ -265,7 +265,8 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 - **C2 — Timer/scheduler adapter:** **Dapr actor reminders via the Scheduler service** (Dapr >= 1.15 default; Works on 1.18.4). A `WorkItem` parked on `DateReached` registers a **self-targeted, durable reminder**; on fire it raises an internal `ResumeWorkItem(date)` command — `Handle` never reads a clock. Durable across crash/restart by construction; **reconciliation-on-recovery** covers firings lost before being recorded. The general Jobs API is *not* needed in v1 (cross-service scheduling is deferred). *Resolves OQ-4.*
 - **C3 — Deadline semantics:** **adapter event, "advisory-until-fired"** — the kernel may hold a "live" item that is, in reality, overdue; no v1 query detects this without the timer firing. Recorded; **re-validate against Theme 5** (cost-aware scheduling) before that theme builds, since adding a logical clock later is a redesign.
 - **E1 — Projection rebuild:** **online / non-disruptive** (shadow projection + atomic swap, or versioned projection key), **per-tenant partitionable** so one large tenant's rebuild doesn't block others; produces state identical to a cold rebuild with no partial-state leak to readers. *Resolves OQ-5.*
-- **E2 — Validation domains:** `ProgressReported` delta ≥ 0 with `Remaining` clamped ≥ 0; `Estimated` ≥ 0; Unit immutable after first set; Due-Date/TTL sourced from **per-work-type/tenant policy** (configurable default). *Resolves OQ-6.*
+- **E2 — Validation domains:** `ProgressReported` delta > 0 (zero/negative deltas rejected;
+  `docs/lifecycle-transition-matrix.md` is authoritative) with `Remaining` clamped ≥ 0; `Estimated` ≥ 0; Unit immutable after first set; Due-Date/TTL sourced from **per-work-type/tenant policy** (configurable default). *Resolves OQ-6.*
 - **Aspire host:** repository-specific AppHost + ServiceDefaults (health/telemetry) for manual + automated tests; **clock-free purity + no-branch-on-executor-kind enforced as build-time architecture fitness functions** (RR-5). Versions inherit the current sibling pins (SDK 10.0.301 · Dapr 1.18.4 · Aspire 13.4.6 · xUnit v3 3.2.2) via central package management.
 
 ### Decision Impact Analysis
@@ -400,7 +401,9 @@ secrets, raw tokens, or full command bodies.
 
 **All AI agents MUST:**
 - Keep `Handle`/`Apply`/reactor pure (no clock/RNG/I/O); take IDs as input.
-- Carry `(AggregateId, Sequence)` on every event; store the raw act; keep success/rejection
+- Carry `(AggregateId, Sequence)` on every stream-appended event (rejection events are returned
+  to the caller, never appended, and therefore carry no sequence — see the deferred-work ledger
+  entry on rejection-event sequencing); store the raw act; keep success/rejection
   payloads separate; rejections implement `IRejectionEvent`.
 - Use per-child-sequence LWW for roll-up (never additive deltas); assert tenant-equality per hop.
 - Never branch on executor kind; never reference a clock/Dapr/LLM/infra type from

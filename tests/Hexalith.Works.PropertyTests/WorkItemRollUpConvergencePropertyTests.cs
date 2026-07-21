@@ -21,22 +21,32 @@ public sealed class WorkItemRollUpConvergencePropertyTests
     [Fact]
     public void Roll_up_projection_converges_for_generated_tenant_safe_trees_with_permuted_and_duplicate_delivery()
     {
+        // The delivery order is a genuine random permutation of `canonical ++ duplicates`, drawn from
+        // FsCheck's generator space via Gen.Shuffle over the deliverable indexes — not a fixed reversal.
+        // BuildScenario is a pure function of `values`, so re-deriving the scenario inside the property
+        // sees exactly the deliverable multiset the permutation was generated for. Failures replay from
+        // the seed FsCheck prints; no wall clock or ambient randomness is involved.
         FsCheck.Gen<int[]> generatedCases = FsCheck.Fluent.Gen.ArrayOf(FsCheck.Fluent.Gen.Choose(0, 127));
-        Arbitrary<int[]> arbitraryCases = FsCheck.Fluent.Arb.ToArbitrary(generatedCases);
+        FsCheck.Gen<DeliveryCase> generatedDeliveries = FsCheck.Fluent.Gen.SelectMany(
+            generatedCases,
+            values => FsCheck.Fluent.Gen.Shuffle(Enumerable.Range(0, BuildScenario(values).Deliverable.Length)),
+            (values, order) => new DeliveryCase(values, order));
+        Arbitrary<DeliveryCase> arbitraryCases = FsCheck.Fluent.Arb.ToArbitrary(generatedDeliveries);
         Property property = FsCheck.FSharp.Prop.ForAll(
             arbitraryCases,
-            FSharpFuncConvert.FromFunc<int[], bool>(values =>
+            FSharpFuncConvert.FromFunc<DeliveryCase, bool>(deliveryCase =>
             {
-                RollUpScenario scenario = BuildScenario(values);
+                RollUpScenario scenario = BuildScenario(deliveryCase.Values);
+                WorkItemRollUpEvent[] delivery = [.. deliveryCase.Order.Select(index => scenario.Deliverable[index])];
                 WorkItemRollUpProjection canonicalProjection = Replay(scenario.Canonical);
                 WorkItemRollUp expected = canonicalProjection.Get(Tenant, Parent).ShouldNotBeNull();
-                WorkItemRollUp actual = Replay(scenario.Delivery).Get(Tenant, Parent).ShouldNotBeNull();
+                WorkItemRollUp actual = Replay(delivery).Get(Tenant, Parent).ShouldNotBeNull();
 
                 return SameRollUp(actual, expected)
                     && expected.Degraded
                     && expected.ProjectionDiagnostics.Count > 0
                     && actual.ChildWorkItemIds.All(id => id.Value.StartsWith("child-", StringComparison.Ordinal))
-                    && Replay(scenario.Delivery).Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
+                    && Replay(delivery).Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
             }));
 
         Check.One(Config.QuickThrowOnFailure, property);
@@ -82,10 +92,12 @@ public sealed class WorkItemRollUpConvergencePropertyTests
         WorkItemRollUpEvent foreignCollision = Envelope(Created(collidingForeignChild, 1, 99m, Parent, OtherTenant, Hour));
         canonical.Add(foreignCollision);
 
+        // The deliverable multiset is every canonical fact plus value-derived duplicates, in canonical
+        // order; the generated permutation in the test decides the actual delivery order.
         int[] duplicateIndexes = [.. values.Select(value => Math.Abs(value) % canonical.Count)];
-        WorkItemRollUpEvent[] delivery = [.. duplicateIndexes.Select(index => canonical[index]), .. canonical.Reverse<WorkItemRollUpEvent>()];
+        WorkItemRollUpEvent[] deliverable = [.. canonical, .. duplicateIndexes.Select(index => canonical[index])];
 
-        return new RollUpScenario([.. canonical], delivery, collidingForeignChild);
+        return new RollUpScenario([.. canonical], deliverable, collidingForeignChild);
     }
 
     private static bool SameRollUp(WorkItemRollUp actual, WorkItemRollUp expected)
@@ -149,6 +161,8 @@ public sealed class WorkItemRollUpConvergencePropertyTests
 
     private sealed record RollUpScenario(
         WorkItemRollUpEvent[] Canonical,
-        WorkItemRollUpEvent[] Delivery,
+        WorkItemRollUpEvent[] Deliverable,
         WorkItemId CollidingForeignChild);
+
+    private sealed record DeliveryCase(int[] Values, int[] Order);
 }

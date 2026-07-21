@@ -90,6 +90,7 @@ public sealed class WhatsNextQueueProjection
         => delivery.Payload switch
         {
             WorkItemCreated e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
+            ChildSpawned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemAssigned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemQueued e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemClaimed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
@@ -102,7 +103,10 @@ public sealed class WhatsNextQueueProjection
             WorkItemCancelled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemExpired e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemRejected e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            _ => true,
+
+            // Fail closed: an event type this projection does not know cannot prove its payload agrees
+            // with the delivery header, so it must never be accepted into a sequence slot.
+            _ => false,
         };
 
     private static bool IsEligible(WorkItemStatus status)
@@ -159,16 +163,23 @@ public sealed class WhatsNextQueueProjection
                 break;
 
             // Own burn-down mirrors the roll-up's own-effort derivation, refuse-don't-coerce on a unit
-            // mismatch (retain the last valid value). There is no Degraded surface on the what's-next
-            // read model — the roll-up read model owns degradation diagnostics.
+            // mismatch (retain the last valid value). A non-positive delta or negative estimate from a
+            // corrupted stream is refused the same way — read-side defense, because WorkItemEffort would
+            // throw and wedge every rebuild of this aggregate. There is no Degraded surface on the
+            // what's-next read model — the roll-up read model owns degradation diagnostics.
             case ProgressReported progress when !node.Terminal && node.OwnEffort is { } reported:
-                if (reported.Unit == progress.Unit)
+                if (reported.Unit == progress.Unit && progress.DoneDelta > 0)
                 {
                     node.OwnEffort = reported.Report(progress.DoneDelta);
                 }
 
                 break;
             case ReEstimated reEstimated when !node.Terminal:
+                if (reEstimated.Estimated < 0)
+                {
+                    break;
+                }
+
                 if (node.OwnEffort is { } estimated)
                 {
                     if (estimated.Unit == reEstimated.Unit)

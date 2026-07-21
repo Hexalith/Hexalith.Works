@@ -20,6 +20,7 @@ HexalithEventStoreSecurityResources? security = builder.AddHexalithEventStoreSec
     new HexalithEventStoreSecurityOptions
     {
         RealmImportPath = ProjectMetadataPaths.GetProjectPath(
+            "references",
             "Hexalith.EventStore",
             "src",
             "Hexalith.EventStore.AppHost",

@@ -207,8 +207,20 @@ public sealed class WorkItemRollUpProjectionTests
             new WorkItemEffort(10m, Hour),
             Parent: new ParentWorkItemReference(Tenant, Parent)));
 
-        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(5m, Hour));
-        projection.Get(OtherTenant, colliding).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(10m, Hour));
+        WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
+        parent.RolledRemaining.ShouldBe(new RolledRemaining(5m, Hour));
+        parent.Degraded.ShouldBeFalse();
+        parent.ProjectionDiagnostics.ShouldBeEmpty();
+
+        // The refused cross-tenant edge is not silent: the child that declared the foreign parent carries
+        // a deterministic metadata-only diagnostic, without being degraded — tenant isolation is by-design
+        // behavior, not a stale retained value.
+        WorkItemRollUp foreignChild = projection.Get(OtherTenant, colliding).ShouldNotBeNull();
+        foreignChild.RolledRemaining.ShouldBe(new RolledRemaining(10m, Hour));
+        foreignChild.Degraded.ShouldBeFalse();
+        foreignChild.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(OtherTenant, colliding, nameof(WorkItemCreated), 1),
+        ]);
     }
 
     [Fact]
@@ -427,6 +439,50 @@ public sealed class WorkItemRollUpProjectionTests
     }
 
     [Fact]
+    public void Poisoned_non_positive_done_delta_refuses_degrades_and_does_not_wedge_the_projection()
+    {
+        // Read-side defense: the write side validates DoneDelta > 0, but a corrupted persisted fact must
+        // refuse-and-diagnose instead of throwing inside WorkItemEffort.Report and wedging every rebuild.
+        // Redelivery of the poisoned fact converges, and a later valid fact still applies.
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+        Project(projection, new ProgressReported(Child.Value, 2, Tenant, Child, 1m, Hour));   // 4 -> 3 (valid)
+
+        ProgressReported poisoned = new(Child.Value, 3, Tenant, Child, 0m, Hour);             // corrupted stream
+        Project(projection, poisoned);
+        Project(projection, poisoned);                                                        // idempotent redelivery
+        Project(projection, new ProgressReported(Child.Value, 4, Tenant, Child, 1m, Hour));   // 3 -> 2 (still applied)
+
+        WorkItemRollUp child = projection.Get(Tenant, Child).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(2m, Hour));
+        child.Degraded.ShouldBeTrue();
+        child.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Child, nameof(ProgressReported), 3),
+        ]);
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(7m, Hour));
+    }
+
+    [Fact]
+    public void Poisoned_negative_estimate_refuses_degrades_and_retains_last_valid_effort()
+    {
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m));
+        Project(projection, Created(Child, 1, 4m, Parent));
+
+        Project(projection, new ReEstimated(Child.Value, 2, Tenant, Child, -1m, Hour));       // corrupted stream
+        Project(projection, new ProgressReported(Child.Value, 3, Tenant, Child, 1m, Hour));   // 4 -> 3 (still applied)
+
+        WorkItemRollUp child = projection.Get(Tenant, Child).ShouldNotBeNull();
+        child.OwnRemaining.ShouldBe(new OwnRemaining(3m, Hour));
+        child.Degraded.ShouldBeTrue();
+        child.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Child, nameof(ReEstimated), 2),
+        ]);
+        projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(8m, Hour));
+    }
+
+    [Fact]
     public void Terminal_degraded_child_contributes_zero()
     {
         WorkItemRollUpProjection projection = new();
@@ -538,6 +594,21 @@ public sealed class WorkItemRollUpProjectionTests
         projection.Get(Tenant, Child).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(4m, Hour));
         projection.Get(Tenant, Parent).ShouldNotBeNull().RolledRemaining.ShouldBe(new RolledRemaining(9m, Hour));
         projection.Get(OtherTenant, Child).ShouldBeNull();
+    }
+
+    [Fact]
+    public void Mismatched_delivery_leaves_no_phantom_node_in_get_or_snapshot()
+    {
+        WorkItemRollUpProjection projection = new();
+        Project(projection, Created(Parent, 1, 5m));
+
+        // The envelope header (Tenant, Child) disagrees with the payload tenant/id — refused before any
+        // node is allocated, so no empty phantom (Tenant, Child) node appears in Get or Snapshot.
+        projection.Project(new WorkItemRollUpEvent(Tenant, Child, 1, new ProgressReported(Child.Value, 1, OtherTenant, Child, 1m, Hour)));
+        projection.Project(new WorkItemRollUpEvent(Tenant, Child, 1, new ProgressReported(Grandchild.Value, 1, Tenant, Grandchild, 1m, Hour)));
+
+        projection.Get(Tenant, Child).ShouldBeNull();
+        projection.Snapshot().ShouldHaveSingleItem().WorkItemId.ShouldBe(Parent);
     }
 
     [Fact]

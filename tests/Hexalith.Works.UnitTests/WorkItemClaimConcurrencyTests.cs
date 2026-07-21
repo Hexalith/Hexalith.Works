@@ -35,7 +35,7 @@ namespace Hexalith.Works.UnitTests;
 /// exercised under the Aspire runtime in <b>Story 4.5</b>, not here; this Tier-1 test proves the pure
 /// <i>domain outcome</i> of the collision (no Dapr/Aspire/network). No new event, command, or rejection
 /// type is introduced — the loser's observable rejection is the existing
-/// <see cref="WorkItemTransitionRejected"/> (DC1), and the v1 catalog stays 36.
+/// <see cref="WorkItemTransitionRejected"/> (DC1), and claim adds nothing to the frozen v1 catalog.
 /// </para>
 /// </summary>
 public sealed class WorkItemClaimConcurrencyTests

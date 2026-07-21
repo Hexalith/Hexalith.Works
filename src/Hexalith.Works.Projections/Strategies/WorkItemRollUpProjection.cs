@@ -15,18 +15,15 @@ public sealed class WorkItemRollUpProjection
         ArgumentNullException.ThrowIfNull(delivery);
         ArgumentNullException.ThrowIfNull(delivery.Payload);
 
-        if (delivery.Sequence <= 0)
+        // Refuse a mismatched delivery before any node is allocated: a payload whose tenant/id disagrees
+        // with the delivery header must not fabricate an empty phantom node in Get()/Snapshot().
+        if (delivery.Sequence <= 0 || !EventMatchesDelivery(delivery))
         {
             return;
         }
 
         NodeKey key = NodeKey.From(delivery.TenantId, delivery.WorkItemId);
         RollUpNode node = GetOrAdd(key, delivery.TenantId, delivery.WorkItemId);
-
-        if (!EventMatchesDelivery(delivery))
-        {
-            return;
-        }
 
         if (!node.Accept(delivery.Sequence, delivery.Payload))
         {
@@ -81,7 +78,10 @@ public sealed class WorkItemRollUpProjection
             WorkItemSuspended e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemResumed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
             WorkItemRescheduled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            _ => true,
+
+            // Fail closed: an event type this projection does not know cannot prove its payload agrees
+            // with the delivery header, so it must never be accepted into a sequence slot.
+            _ => false,
         };
 
     private RollUpNode GetOrAdd(NodeKey key, TenantId tenantId, WorkItemId workItemId)
@@ -98,6 +98,9 @@ public sealed class WorkItemRollUpProjection
 
     private void AddEdge(NodeKey parentKey, NodeKey childKey)
     {
+        // A cross-tenant edge is refused and never materializes graph state. The refusal is not silent:
+        // ApplyPayload re-derives a metadata-only diagnostic from the WorkItemCreated fact on every
+        // rebuild, so the trace is deterministic and survives replay.
         if (!string.Equals(parentKey.TenantId, childKey.TenantId, StringComparison.Ordinal))
         {
             return;
@@ -143,11 +146,28 @@ public sealed class WorkItemRollUpProjection
                 node.OwnEffort = created.InitialEffort;
                 node.Parent = created.Parent;
                 node.Terminal = false;
+                if (created.Parent is not null && created.Parent.TenantId != node.TenantId)
+                {
+                    // AddEdge refuses the cross-tenant parent edge; surface that refusal as a
+                    // deterministic metadata-only diagnostic without degrading the node — tenant
+                    // isolation is by-design behavior, not a stale retained value.
+                    node.Diagnose(nameof(WorkItemCreated), created.Sequence);
+                }
+
                 break;
             case ProgressReported progress when !node.Terminal && node.OwnEffort is not null:
                 if (node.OwnEffort.Unit != progress.Unit)
                 {
-                    node.RefuseIncompatibleUnit(nameof(ProgressReported), progress.Sequence);
+                    node.Refuse(nameof(ProgressReported), progress.Sequence);
+                    break;
+                }
+
+                // Read-side defense against a corrupted stream: the write side rejects non-positive
+                // deltas, but a persisted one must refuse-and-diagnose instead of throwing inside
+                // WorkItemEffort.Report and wedging every rebuild of this aggregate.
+                if (progress.DoneDelta <= 0)
+                {
+                    node.Refuse(nameof(ProgressReported), progress.Sequence);
                     break;
                 }
 
@@ -156,7 +176,15 @@ public sealed class WorkItemRollUpProjection
             case ReEstimated reEstimated when !node.Terminal:
                 if (node.OwnEffort is not null && node.OwnEffort.Unit != reEstimated.Unit)
                 {
-                    node.RefuseIncompatibleUnit(nameof(ReEstimated), reEstimated.Sequence);
+                    node.Refuse(nameof(ReEstimated), reEstimated.Sequence);
+                    break;
+                }
+
+                // Read-side defense against a corrupted stream: a persisted negative estimate would
+                // throw inside WorkItemEffort and wedge every rebuild of this aggregate.
+                if (reEstimated.Estimated < 0)
+                {
+                    node.Refuse(nameof(ReEstimated), reEstimated.Sequence);
                     break;
                 }
 
@@ -405,11 +433,18 @@ public sealed class WorkItemRollUpProjection
             LatestAcceptedSourceSequence = 0;
         }
 
-        public void RefuseIncompatibleUnit(string eventType, long sequence)
+        // Refuse an incompatible contribution (unit mismatch or corrupted effort value): retain the last
+        // valid projected effort, flag the read model as degraded, and record the metadata diagnostic.
+        public void Refuse(string eventType, long sequence)
         {
             Degraded = true;
-            ProjectionDiagnostics.Add(new RollUpProjectionDiagnostic(TenantId, WorkItemId, eventType, sequence));
+            Diagnose(eventType, sequence);
         }
+
+        // Record a metadata-only diagnostic without degrading the node (for example a refused
+        // cross-tenant edge, where the skip itself is by-design isolation, not data loss).
+        public void Diagnose(string eventType, long sequence)
+            => ProjectionDiagnostics.Add(new RollUpProjectionDiagnostic(TenantId, WorkItemId, eventType, sequence));
     }
 
     private sealed class RemainingBuckets
