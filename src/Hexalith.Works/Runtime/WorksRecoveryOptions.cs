@@ -28,6 +28,14 @@ public sealed class WorksRecoveryOptions
     /// <summary>
     /// Optional pacing interval between cascade targets. Zero dispatches immediately; a positive value lets
     /// operators bound burst pressure and lets the live recovery lane stop at a deterministic checkpoint boundary.
+    /// Clamped to a supported maximum by <c>CascadeDispatcher</c> so a misconfigured value cannot block a
+    /// dispatch indefinitely.
     /// </summary>
     public int CascadeTargetIntervalMilliseconds { get; init; }
+
+    /// <summary>
+    /// How long an incomplete-cascade-checkpoint index entry with no matching checkpoint (the documented
+    /// crash window between index-add and checkpoint-write) is retried before it is pruned as abandoned.
+    /// </summary>
+    public int CascadeCheckpointIndexStaleAfterHours { get; init; } = 24;
 }

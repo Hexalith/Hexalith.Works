@@ -2305,7 +2305,7 @@ aggregate id, closing the warm-Redis collision debt.
 DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
 DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal   # 0 warn / 0 err
 tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests                     # 496/496
-tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests       # 110/113; 3 live failures
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests       # 114/114 (0 skipped)
 tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests     # 44/44
 tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests             # 3/3
 ```

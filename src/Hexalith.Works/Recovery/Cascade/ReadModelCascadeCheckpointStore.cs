@@ -13,6 +13,7 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// </summary>
 public sealed class ReadModelCascadeCheckpointStore(
     IReadModelStore store,
+    TimeProvider timeProvider,
     ILogger<ReadModelCascadeCheckpointStore> logger) : ICascadeCheckpointStore, ICascadeCheckpointIndex
 {
     // Shared with the Story 4.5 read-model adapter and the actor state store (statestore.yaml).
@@ -21,6 +22,7 @@ public sealed class ReadModelCascadeCheckpointStore(
 
     private readonly ILogger<ReadModelCascadeCheckpointStore> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IReadModelStore _store = store ?? throw new ArgumentNullException(nameof(store));
+    private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
     /// <inheritdoc/>
     public async Task<CascadeCheckpoint?> GetAsync(string tenantId, string parentWorkItemId, string parentTerminalEventType, CancellationToken cancellationToken = default)
@@ -63,7 +65,7 @@ public sealed class ReadModelCascadeCheckpointStore(
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<CascadeCheckpointIdentity>> GetIncompleteAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<CascadeCheckpointIndexEntry>> GetIncompleteAsync(CancellationToken cancellationToken = default)
     {
         ReadModelEntry<CascadeCheckpointIndex> entry = await _store
             .GetAsync<CascadeCheckpointIndex>(StateStoreName, IndexKey, cancellationToken)
@@ -93,18 +95,18 @@ public sealed class ReadModelCascadeCheckpointStore(
             current =>
             {
                 var entries = (current?.Entries ?? [])
-                    .Where(value => value != identity)
+                    .Where(value => value.Identity != identity)
                     .ToList();
                 if (add)
                 {
-                    entries.Add(identity);
+                    entries.Add(new CascadeCheckpointIndexEntry(identity, _timeProvider.GetUtcNow()));
                 }
 
                 return new CascadeCheckpointIndex
                 {
-                    Entries = [.. entries.OrderBy(static value => value.TenantId, StringComparer.Ordinal)
-                        .ThenBy(static value => value.ParentWorkItemId, StringComparer.Ordinal)
-                        .ThenBy(static value => value.ParentTerminalEventType, StringComparer.Ordinal)],
+                    Entries = [.. entries.OrderBy(static value => value.Identity.TenantId, StringComparer.Ordinal)
+                        .ThenBy(static value => value.Identity.ParentWorkItemId, StringComparer.Ordinal)
+                        .ThenBy(static value => value.Identity.ParentTerminalEventType, StringComparer.Ordinal)],
                 };
             },
             new ReadModelWriteContext(

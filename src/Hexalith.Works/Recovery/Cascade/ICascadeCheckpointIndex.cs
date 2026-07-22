@@ -5,8 +5,8 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// </summary>
 public interface ICascadeCheckpointIndex
 {
-    /// <summary>Reads the current incomplete checkpoint identities.</summary>
-    Task<IReadOnlyList<CascadeCheckpointIdentity>> GetIncompleteAsync(CancellationToken cancellationToken = default);
+    /// <summary>Reads the current incomplete checkpoint entries.</summary>
+    Task<IReadOnlyList<CascadeCheckpointIndexEntry>> GetIncompleteAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Removes a completed or otherwise reconciled identity idempotently.</summary>
     Task RemoveIncompleteAsync(CascadeCheckpointIdentity identity, CancellationToken cancellationToken = default);

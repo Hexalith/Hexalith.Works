@@ -15,7 +15,6 @@ namespace Hexalith.Works.IntegrationTests;
 
 public sealed class DateReminderRecoveryRuntimeTests
 {
-    private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
     private static readonly DateTimeOffset DueInstant = new(2026, 7, 15, 10, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset FutureInstant = new(2026, 7, 16, 10, 0, 0, TimeSpan.Zero);
 
@@ -47,7 +46,7 @@ public sealed class DateReminderRecoveryRuntimeTests
         submission.CommandType.ShouldBe(nameof(ResumeWorkItem));
         submission.CorrelationId.ShouldBe(submission.CausationId);
 
-        ResumeWorkItem command = submission.Payload.Deserialize<ResumeWorkItem>(Web)!;
+        ResumeWorkItem command = submission.Payload.Deserialize<ResumeWorkItem>()!;
         AwaitCondition condition = AwaitCondition.DateReached(DueInstant);
         command.TenantId.Value.ShouldBe("tenant-alpha");
         command.WorkItemId.Value.ShouldBe("work-001");

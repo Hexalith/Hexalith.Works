@@ -82,6 +82,10 @@ internal sealed class WorksDomainEventProcessor
                 return EventStoreDomainEventProcessingResult.SkippedNoHandlers;
             }
 
+            // workItemId (the strongly-typed WorkItemId) and aggregateId (the record's raw AggregateId string)
+            // are definitionally equal for every consumed event today, but are independent constructor
+            // parameters at the type level — checking both is defense-in-depth against a future consumed event
+            // whose AggregateId is not WorkItemId-keyed, not redundant copy-paste.
             if (!string.Equals(envelope.TenantId, tenantId, StringComparison.Ordinal)
                 || !string.Equals(envelope.AggregateId, workItemId, StringComparison.Ordinal)
                 || !string.Equals(envelope.AggregateId, aggregateId, StringComparison.Ordinal))
@@ -127,19 +131,30 @@ internal sealed class WorksDomainEventProcessor
         }
     }
 
-    private static async Task<int> DispatchAsync(
+    // Single source of truth for which event types this processor consumes: both identity extraction and
+    // dispatch key off this one table, keyed by concrete event type, so adding a consumed event type (e.g.
+    // Story 4.8's WorkItemSuspended) only requires one new entry instead of two independently-maintained
+    // switch statements that can silently drift out of sync.
+    private static readonly IReadOnlyDictionary<Type, ConsumedEventDescriptor> s_consumedEvents =
+        new Dictionary<Type, ConsumedEventDescriptor>
+        {
+            [typeof(WorkItemCancelled)] = ConsumedEventDescriptor.For<WorkItemCancelled>(
+                value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
+            [typeof(WorkItemExpired)] = ConsumedEventDescriptor.For<WorkItemExpired>(
+                value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
+            [typeof(WorkItemCompleted)] = ConsumedEventDescriptor.For<WorkItemCompleted>(
+                value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
+        };
+
+    private static Task<int> DispatchAsync(
         IServiceProvider serviceProvider,
         IEventPayload @event,
         EventStoreDomainEventContext context,
         CancellationToken cancellationToken)
     {
-        return @event switch
-        {
-            WorkItemCancelled value => await DispatchAsync(serviceProvider, value, context, cancellationToken).ConfigureAwait(false),
-            WorkItemExpired value => await DispatchAsync(serviceProvider, value, context, cancellationToken).ConfigureAwait(false),
-            WorkItemCompleted value => await DispatchAsync(serviceProvider, value, context, cancellationToken).ConfigureAwait(false),
-            _ => 0,
-        };
+        return s_consumedEvents.TryGetValue(@event.GetType(), out ConsumedEventDescriptor? descriptor)
+            ? descriptor.DispatchAsync(serviceProvider, @event, context, cancellationToken)
+            : Task.FromResult(0);
     }
 
     private static async Task<int> DispatchAsync<TEvent>(
@@ -166,15 +181,45 @@ internal sealed class WorksDomainEventProcessor
         out string? workItemId,
         out string? aggregateId)
     {
-        (tenantId, workItemId, aggregateId) = @event switch
+        if (s_consumedEvents.TryGetValue(@event.GetType(), out ConsumedEventDescriptor? descriptor))
         {
-            WorkItemCancelled value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId),
-            WorkItemExpired value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId),
-            WorkItemCompleted value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId),
-            _ => (null, null, null),
-        };
+            (tenantId, workItemId, aggregateId) = descriptor.GetIdentity(@event);
+            return true;
+        }
 
-        return tenantId is not null;
+        (tenantId, workItemId, aggregateId) = (null, null, null);
+        return false;
+    }
+
+    /// <summary>Binds one consumed event type's identity extraction and handler dispatch together.</summary>
+    private sealed class ConsumedEventDescriptor
+    {
+        private readonly Func<IEventPayload, (string TenantId, string WorkItemId, string AggregateId)> _identity;
+        private readonly Func<IServiceProvider, IEventPayload, EventStoreDomainEventContext, CancellationToken, Task<int>> _dispatch;
+
+        private ConsumedEventDescriptor(
+            Func<IEventPayload, (string TenantId, string WorkItemId, string AggregateId)> identity,
+            Func<IServiceProvider, IEventPayload, EventStoreDomainEventContext, CancellationToken, Task<int>> dispatch)
+        {
+            _identity = identity;
+            _dispatch = dispatch;
+        }
+
+        public static ConsumedEventDescriptor For<TEvent>(Func<TEvent, (string TenantId, string WorkItemId, string AggregateId)> identity)
+            where TEvent : IEventPayload
+            => new(
+                @event => identity((TEvent)@event),
+                (serviceProvider, @event, context, cancellationToken) =>
+                    WorksDomainEventProcessor.DispatchAsync(serviceProvider, (TEvent)@event, context, cancellationToken));
+
+        public (string TenantId, string WorkItemId, string AggregateId) GetIdentity(IEventPayload @event) => _identity(@event);
+
+        public Task<int> DispatchAsync(
+            IServiceProvider serviceProvider,
+            IEventPayload @event,
+            EventStoreDomainEventContext context,
+            CancellationToken cancellationToken)
+            => _dispatch(serviceProvider, @event, context, cancellationToken);
     }
 
     private static bool ValidateEnvelope(EventStoreDomainEventEnvelope envelope)
@@ -196,8 +241,11 @@ internal sealed class WorksDomainEventProcessor
             _ = UniqueIdHelper.ToGuid(value);
             return true;
         }
-        catch (Exception exception) when (exception is FormatException or ArgumentException or OverflowException)
+        catch (Exception)
         {
+            // This is a pure syntactic-validity check: any failure to parse the id, regardless of exception
+            // type, means the id is invalid. A narrower type filter here would be fragile against unhandled
+            // exception types escaping this validation and defeating poison-message protection.
             return false;
         }
     }

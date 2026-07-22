@@ -2,6 +2,7 @@ using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using Shouldly;
@@ -25,14 +26,15 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         var readModels = new Story47InMemoryReadModelStore();
         var store = new ReadModelCascadeCheckpointStore(
             readModels,
+            TimeProvider.System,
             NullLogger<ReadModelCascadeCheckpointStore>.Instance);
         CascadeCheckpoint incomplete = CreateCheckpoint(CascadeTargetStatus.Pending, completed: false);
 
         await store.SaveAsync(incomplete, TestContext.Current.CancellationToken);
 
-        CascadeCheckpointIdentity identity = (await store.GetIncompleteAsync(TestContext.Current.CancellationToken))
+        CascadeCheckpointIndexEntry entry = (await store.GetIncompleteAsync(TestContext.Current.CancellationToken))
             .ShouldHaveSingleItem();
-        identity.ShouldBe(new CascadeCheckpointIdentity(Tenant, Parent, TerminalType));
+        entry.Identity.ShouldBe(new CascadeCheckpointIdentity(Tenant, Parent, TerminalType));
 
         await store.SaveAsync(incomplete with { Completed = true }, TestContext.Current.CancellationToken);
 
@@ -46,6 +48,7 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         var readModels = new Story47InMemoryReadModelStore();
         var store = new ReadModelCascadeCheckpointStore(
             readModels,
+            TimeProvider.System,
             NullLogger<ReadModelCascadeCheckpointStore>.Instance);
         await store.SaveAsync(
             CreateCheckpoint(CascadeTargetStatus.Attempted, completed: false),
@@ -57,6 +60,8 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         var reconciler = new CascadeRecoveryReconciler(
             store,
             dispatcher,
+            TimeProvider.System,
+            Options.Create(new WorksRecoveryOptions()),
             NullLogger<CascadeRecoveryReconciler>.Instance);
 
         int first = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
@@ -75,6 +80,47 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         recovered.Targets.ShouldHaveSingleItem().Status.ShouldBe(CascadeTargetStatus.Completed);
     }
 
+    /// <summary>An index entry with no matching checkpoint (the documented crash window) is pruned only once stale.</summary>
+    [Fact]
+    public async Task Stale_index_entry_with_no_checkpoint_is_pruned_after_threshold()
+    {
+        var readModels = new Story47InMemoryReadModelStore();
+        var timeProvider = new ManualTimeProvider();
+        var store = new ReadModelCascadeCheckpointStore(readModels, timeProvider, NullLogger<ReadModelCascadeCheckpointStore>.Instance);
+
+        // Simulate the crash window documented in ReadModelCascadeCheckpointStore.SaveAsync: the index entry
+        // was added but its checkpoint was never written, by seeding the index directly without a checkpoint.
+        var identity = new CascadeCheckpointIdentity(Tenant, Parent, TerminalType);
+        await readModels.SaveAsync(
+            "statestore",
+            "projection:works:cascade-checkpoint-index",
+            new CascadeCheckpointIndex { Entries = [new CascadeCheckpointIndexEntry(identity, timeProvider.GetUtcNow())] },
+            TestContext.Current.CancellationToken);
+
+        ICascadeDescendantSource source = Substitute.For<ICascadeDescendantSource>();
+        IWorkCommandSubmitter submitter = Substitute.For<IWorkCommandSubmitter>();
+        var dispatcher = new CascadeDispatcher(store, source, submitter, NullLogger<CascadeDispatcher>.Instance);
+        IOptions<WorksRecoveryOptions> options = Options.Create(new WorksRecoveryOptions { CascadeCheckpointIndexStaleAfterHours = 24 });
+        var reconciler = new CascadeRecoveryReconciler(
+            store,
+            dispatcher,
+            timeProvider,
+            options,
+            NullLogger<CascadeRecoveryReconciler>.Instance);
+
+        int tooSoon = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
+
+        tooSoon.ShouldBe(0);
+        (await store.GetIncompleteAsync(TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+
+        timeProvider.Advance(TimeSpan.FromHours(25));
+        int afterThreshold = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
+
+        afterThreshold.ShouldBe(0, "pruning a stale entry is not a completed replay");
+        (await store.GetIncompleteAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+        await submitter.DidNotReceiveWithAnyArgs().SubmitAsync(default!, Arg.Any<CancellationToken>());
+    }
+
     private static CascadeCheckpoint CreateCheckpoint(CascadeTargetStatus status, bool completed)
     {
         return new CascadeCheckpoint(
@@ -84,5 +130,14 @@ public sealed class CascadeCheckpointIndexRecoveryTests
             7,
             [new CascadeTargetCheckpoint(Child, CascadeCheckpoint.CancelKind, status, "cascade-cancel-tenant-alpha-parent-001-7-child-001")],
             completed);
+    }
+
+    private sealed class ManualTimeProvider : TimeProvider
+    {
+        private DateTimeOffset _now = new(2026, 7, 22, 0, 0, 0, TimeSpan.Zero);
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan delta) => _now += delta;
     }
 }

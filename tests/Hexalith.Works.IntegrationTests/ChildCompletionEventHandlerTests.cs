@@ -18,7 +18,6 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 public sealed class ChildCompletionEventHandlerTests
 {
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
     private static readonly TenantId s_tenant = new("tenant-alpha");
     private static readonly WorkItemId s_parent = new("parent-001");
     private static readonly WorkItemId s_child = new("child-001");
@@ -49,7 +48,7 @@ public sealed class ChildCompletionEventHandlerTests
         submission.AggregateId.ShouldBe(s_parent.Value);
         submission.CommandType.ShouldBe(nameof(ResumeWorkItem));
         submission.CausationId.ShouldBe(submission.CorrelationId);
-        ResumeWorkItem command = submission.Payload.Deserialize<ResumeWorkItem>(s_web).ShouldNotBeNull();
+        ResumeWorkItem command = submission.Payload.Deserialize<ResumeWorkItem>().ShouldNotBeNull();
         command.TenantId.ShouldBe(s_tenant);
         command.WorkItemId.ShouldBe(s_parent);
         command.AwaitCondition.ShouldBe(AwaitCondition.ChildCompleted(s_child));

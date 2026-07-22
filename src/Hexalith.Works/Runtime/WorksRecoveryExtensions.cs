@@ -39,10 +39,18 @@ public static class WorksRecoveryExtensions
         IHttpClientBuilder gatewayClient = services.AddEventStoreGatewayClient(options =>
         {
             string? baseAddress = configuration["EventStore:CommandGateway:BaseAddress"];
-            string effectiveAddress = !string.IsNullOrWhiteSpace(daprHttpEndpoint)
-                ? daprHttpEndpoint
-                : string.IsNullOrWhiteSpace(baseAddress) ? "http://eventstore" : baseAddress;
-            options.BaseAddress = new Uri(effectiveAddress);
+            (string effectiveAddress, string effectiveAddressSource) = !string.IsNullOrWhiteSpace(daprHttpEndpoint)
+                ? (daprHttpEndpoint, "DAPR_HTTP_ENDPOINT")
+                : string.IsNullOrWhiteSpace(baseAddress)
+                    ? ("http://eventstore", "EventStore:CommandGateway:BaseAddress default")
+                    : (baseAddress, "EventStore:CommandGateway:BaseAddress");
+            if (!Uri.TryCreate(effectiveAddress, UriKind.Absolute, out Uri? gatewayBaseAddress))
+            {
+                throw new InvalidOperationException(
+                    $"Configuration value '{effectiveAddressSource}' is not a valid absolute URI: '{effectiveAddress}'.");
+            }
+
+            options.BaseAddress = gatewayBaseAddress;
         });
         if (!string.IsNullOrWhiteSpace(daprHttpEndpoint))
         {

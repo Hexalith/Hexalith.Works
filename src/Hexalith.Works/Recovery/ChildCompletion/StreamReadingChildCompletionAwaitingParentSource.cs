@@ -116,6 +116,7 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
         var events = new List<(long Sequence, IEventPayload Payload)>();
         ReplayContinuationToken? continuation = null;
         long from = 0;
+        bool stillTruncated = false;
 
         for (int page = 0; page < _options.MaxStreamPagesPerTenant; page++)
         {
@@ -142,13 +143,23 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
                 }
             }
 
-            if (!result.Metadata.IsTruncated)
+            stillTruncated = result.Metadata.IsTruncated;
+            if (!stillTruncated)
             {
                 break;
             }
 
             continuation = result.Metadata.NextContinuationToken;
             from = result.Metadata.LastSequenceReturned is { } lastSequence ? lastSequence + 1 : from;
+        }
+
+        if (stillTruncated)
+        {
+            // The stream still has unread pages after exhausting the configured page budget: rebuilding await
+            // state from what was read would be silently partial. Fail closed instead of risking a wrong
+            // resume/no-resume decision.
+            throw new InvalidOperationException(
+                $"Stream for aggregate '{workItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerTenant)} page budget while still truncated.");
         }
 
         return [.. events.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];

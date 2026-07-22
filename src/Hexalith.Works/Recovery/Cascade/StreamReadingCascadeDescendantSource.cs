@@ -109,6 +109,12 @@ public sealed class StreamReadingCascadeDescendantSource(
                 or WorkItemStatus.Rejected
                 or WorkItemStatus.Expired;
         }
+        catch (OperationCanceledException)
+        {
+            // Shutdown/timeout cancellation is not a read failure: let it propagate instead of being
+            // swallowed into the fail-closed "active" result below.
+            throw;
+        }
         catch (Exception exception)
         {
             WorksRecoveryLog.RecoveryStepFailed(_logger, "read-cascade-descendant-rollup", exception);

@@ -29,7 +29,14 @@ public sealed class CascadeDispatcher(
     private readonly ICascadeDescendantSource _descendantSource = descendantSource ?? throw new ArgumentNullException(nameof(descendantSource));
     private readonly IWorkCommandSubmitter _submitter = submitter ?? throw new ArgumentNullException(nameof(submitter));
     private readonly ILogger<CascadeDispatcher> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly TimeSpan _targetInterval = TimeSpan.FromMilliseconds(Math.Max(0, options?.Value.CascadeTargetIntervalMilliseconds ?? 0));
+    private readonly TimeSpan _targetInterval = ComputeTargetInterval(options, logger);
+
+    /// <summary>
+    /// Upper bound for <see cref="WorksRecoveryOptions.CascadeTargetIntervalMilliseconds"/>: a misconfigured
+    /// very large value must not be able to block a dispatch (and hold the Dapr message/marker in-progress)
+    /// indefinitely.
+    /// </summary>
+    private const int MaxTargetIntervalMilliseconds = 60_000;
 
     /// <summary>Dispatches the cancel cascade for a parent <see cref="WorkItemCancelled"/>.</summary>
     public async Task DispatchAsync(WorkItemCancelled parentCancelled, CancellationToken cancellationToken = default)
@@ -83,6 +90,18 @@ public sealed class CascadeDispatcher(
 
         await DriveAsync(checkpoint, cancellationToken).ConfigureAwait(false);
         return true;
+    }
+
+    private static TimeSpan ComputeTargetInterval(IOptions<WorksRecoveryOptions>? options, ILogger<CascadeDispatcher> logger)
+    {
+        int configured = options?.Value.CascadeTargetIntervalMilliseconds ?? 0;
+        int clamped = Math.Clamp(configured, 0, MaxTargetIntervalMilliseconds);
+        if (clamped != configured)
+        {
+            WorksRecoveryLog.CascadeTargetIntervalClamped(logger, configured, clamped);
+        }
+
+        return TimeSpan.FromMilliseconds(clamped);
     }
 
     private async Task<CascadeCheckpoint> EnsureCheckpointAsync(

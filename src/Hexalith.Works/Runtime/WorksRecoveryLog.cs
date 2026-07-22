@@ -53,6 +53,18 @@ internal static class WorksRecoveryLog
             new EventId(4702, "CascadeReplayResumed"),
             "Replayed cascade checkpoint for parent {ParentWorkItemId} in tenant {TenantId}; {OutstandingCount} outstanding descendants remain.");
 
+    private static readonly Action<ILogger, int, int, Exception?> s_cascadeTargetIntervalClamped =
+        LoggerMessage.Define<int, int>(
+            LogLevel.Warning,
+            new EventId(4703, "CascadeTargetIntervalClamped"),
+            "Configured CascadeTargetIntervalMilliseconds {ConfiguredMilliseconds} is out of the supported range; clamped to {ClampedMilliseconds}.");
+
+    private static readonly Action<ILogger, string, string, Exception?> s_cascadeIndexEntryPruned =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(4704, "CascadeIndexEntryPruned"),
+            "Pruned a stale incomplete-cascade-checkpoint index entry for parent {ParentWorkItemId} in tenant {TenantId}; no checkpoint was ever written for it.");
+
     public static void DateReminderScheduled(ILogger logger, string tenantId, string workItemId, string reminderName)
         => s_reminderScheduled(logger, reminderName, workItemId, tenantId, null);
 
@@ -73,4 +85,10 @@ internal static class WorksRecoveryLog
 
     public static void CascadeReplayResumed(ILogger logger, string tenantId, string parentWorkItemId, int outstandingCount)
         => s_cascadeReplayResumed(logger, parentWorkItemId, tenantId, outstandingCount, null);
+
+    public static void CascadeTargetIntervalClamped(ILogger logger, int configuredMilliseconds, int clampedMilliseconds)
+        => s_cascadeTargetIntervalClamped(logger, configuredMilliseconds, clampedMilliseconds, null);
+
+    public static void CascadeIndexEntryPruned(ILogger logger, string tenantId, string parentWorkItemId)
+        => s_cascadeIndexEntryPruned(logger, parentWorkItemId, tenantId, null);
 }

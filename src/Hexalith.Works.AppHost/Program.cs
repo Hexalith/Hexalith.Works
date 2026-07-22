@@ -99,9 +99,15 @@ if (!string.IsNullOrWhiteSpace(recoveryTenants))
 }
 
 string? cascadeTargetInterval = builder.Configuration["Works:Recovery:CascadeTargetIntervalMilliseconds"];
-if (int.TryParse(cascadeTargetInterval, out int cascadeTargetIntervalMilliseconds)
-    && cascadeTargetIntervalMilliseconds >= 0)
+if (!string.IsNullOrWhiteSpace(cascadeTargetInterval))
 {
+    if (!int.TryParse(cascadeTargetInterval, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out int cascadeTargetIntervalMilliseconds)
+        || cascadeTargetIntervalMilliseconds < 0)
+    {
+        throw new InvalidOperationException(
+            $"Configuration value 'Works:Recovery:CascadeTargetIntervalMilliseconds' must be a non-negative integer; got '{cascadeTargetInterval}'.");
+    }
+
     works = works.WithEnvironment(
         "Works__Recovery__CascadeTargetIntervalMilliseconds",
         cascadeTargetIntervalMilliseconds.ToString(System.Globalization.CultureInfo.InvariantCulture));

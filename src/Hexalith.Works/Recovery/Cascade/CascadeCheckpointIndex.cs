@@ -5,6 +5,6 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// </summary>
 public sealed class CascadeCheckpointIndex
 {
-    /// <summary>Gets the unique incomplete checkpoint identities.</summary>
-    public IReadOnlyList<CascadeCheckpointIdentity> Entries { get; init; } = [];
+    /// <summary>Gets the unique incomplete checkpoint entries.</summary>
+    public IReadOnlyList<CascadeCheckpointIndexEntry> Entries { get; init; } = [];
 }

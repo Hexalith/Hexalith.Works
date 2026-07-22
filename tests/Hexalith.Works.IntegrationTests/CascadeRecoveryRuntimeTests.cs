@@ -15,7 +15,6 @@ namespace Hexalith.Works.IntegrationTests;
 
 public sealed class CascadeRecoveryRuntimeTests
 {
-    private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly WorkItemId Parent = new("parent-001");
     private static readonly WorkItemId ActiveChild = new("child-active");
@@ -42,7 +41,7 @@ public sealed class CascadeRecoveryRuntimeTests
         submission.CommandType.ShouldBe(nameof(CancelWorkItem));
         submission.AggregateId.ShouldBe(ActiveChild.Value);
         submission.CorrelationId.ShouldBe(CascadeCommands.CorrelationId(Tenant.Value, Parent.Value, 7, ActiveChild.Value, CascadeCheckpoint.CancelKind));
-        submission.Payload.Deserialize<CancelWorkItem>(Web)!.WorkItemId.ShouldBe(ActiveChild);
+        submission.Payload.Deserialize<CancelWorkItem>()!.WorkItemId.ShouldBe(ActiveChild);
 
         CascadeCheckpoint checkpoint = store.LastSaved.ShouldNotBeNull();
         checkpoint.Completed.ShouldBeTrue();

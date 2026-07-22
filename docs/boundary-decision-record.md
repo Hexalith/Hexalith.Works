@@ -187,6 +187,16 @@ ownership model. None of them is implemented or wired in v1.
   the pinned EventStore aggregate adapter deserializes command payloads with default, case-sensitive JSON
   options; camel-case Web JSON would otherwise silently bind zero-valued tenant and work-item identities.
 
+  **This casing fix is not new to Story 4.7's own command paths** — `CascadeCommands.BuildSubmission` (new this
+  story) and `DateResume.BuildSubmission` (Story 4.6, unchanged signature, only its serialization options
+  changed here) both switched from `JsonSerializerDefaults.Web` to default/case-sensitive serialization. Because
+  `DateResume.BuildSubmission` is also called from the pre-existing `DateReminderReconciler` and
+  `DateReminderActor` (Stories 4.5/4.6, not touched by this diff), this means **date-resume command submissions
+  from those already-shipped stories were serializing with the wrong casing for the live gateway the entire
+  time** — undetected because no prior story exercised that path against the live EventStore aggregate adapter
+  end-to-end. Story 4.7's live-topology proof surfaced it. No other consumer of either `BuildSubmission` method
+  was found (verified by repo-wide search); the fix is confined to these two command-payload builders.
+
   The live AppHost gate distinguishes host liveness from command-path readiness. Aspire waits on `/alive` for
   both HTTP hosts, then the tests inspect EventStore's `/ready` response until the load-bearing
   `dapr-actor-placement` check is healthy and allow one Dapr app-health probe interval for Works. EventStore's
