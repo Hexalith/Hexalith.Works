@@ -2222,3 +2222,84 @@ tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTe
 - [x] The gated Tier-3 Aspire reminder-recovery lane is authored (park-on-`DateReached` → AppHost restart →
   exactly-one `WorkItemResumed`, idempotent), skips cleanly without Docker/Dapr, and its substrate limitation is
   documented. Two LOW review fixes applied (stream paging `+1`; scheduler honors its `CancellationToken`).
+
+---
+
+# Test Automation Summary — Story 4.7 (Trigger Reactor Translators from the Live Event Stream)
+
+Workflow: `bmad-dev-story`. Story 4.7 adds a durable, host-edge Works event subscription; mechanically feeds
+parent-terminal events into cascade dispatch and child-completion events into the unchanged pure resume
+translator; derives descendant terminality from persisted roll-ups; and discovers incomplete cascade checkpoints
+through an ETag-safe durable index on startup.
+
+**Reconciled baseline (correct-course commit `9526c31`):** UnitTests **496**, IntegrationTests **96/98**
+(the command and reminder Tier-3 lanes were already red at their first gateway submission), ArchitectureTests
+**44**, PropertyTests **3**, catalog **37**. This supersedes the older Story 4.6 ledger of 620 green + 2 skipped.
+
+**Story 4.7 validation checkpoint: 653 green + 3 failed broad-gate lanes** — UnitTests **496/496**,
+IntegrationTests **110/113**, ArchitectureTests **44/44**, PropertyTests **3/3**. Catalog remains **37**.
+The 15 new Integration tests comprise **14 green deterministic cases** and **1 authored live cascade-recovery
+lane** that fails at the same pre-existing first-command gateway boundary as the two older live lanes. Story
+status remains `in-progress`; no live delivery or restart-convergence pass is claimed.
+
+## Production/runtime coverage
+
+- The AppHost overrides the EventStore `work` publisher topic to the shared `work.events` topic. Works registers
+  the EventStore subscription options, durable Dapr marker store, and typed handler contracts, then maps a
+  host-local Web-JSON endpoint plus `MapSubscribeHandler`/`UseCloudEvents`.
+- The generic SDK decode trap is characterized with real catalog bytes: its default serializer silently
+  misbinds camel-case Works records. `WorksDomainEventProcessor` instead uses `WorksEventDecoder`, validates
+  envelope/payload identity, preserves terminal-ack versus retry outcomes, and deduplicates completed deliveries.
+- Cancellation/expiration handlers delegate mechanically to `CascadeDispatcher`. Descendant discovery reads
+  each child's roll-up status, treating missing/unreadable entries as active; stale rolled-remaining is never
+  trusted.
+- Child completion re-reads the child's stream for its same-tenant parent and the parent's stream for current
+  awaits, feeds `ChildCompletionResumeTranslator` unchanged, and submits deterministic `ResumeWorkItem` commands.
+- The checkpoint store maintains an ETag-updated incomplete index, and a startup hosted service drives
+  `ReplayAsync` from that index without tenant hand-configuration or descendant rediscovery.
+
+## Tests added — IntegrationTests +15
+
+- `WorksDomainEventProcessorTests` — **3**: generic silent misbind characterization; all three consumed Web-JSON
+  events dispatch; completed marker deduplicates; malformed known bytes are acknowledged and marked complete.
+- `TerminalCascadeEventHandlerTests` — **2**: cancellation and expiration consumers delegate to the dispatcher.
+- `StreamReadingCascadeDescendantSourceTests` — **2**: terminal roll-up skips, active and missing roll-ups target;
+  transient parent-stream failures propagate so the durable delivery remains retryable.
+- `ChildCompletionEventHandlerTests` — **1**: completed child drives the unchanged translator and deterministic
+  resume submission.
+- `StreamReadingChildCompletionAwaitingParentSourceTests` — **4**: current await is rebuilt; resume clears it;
+  cross-tenant parent references fail closed; transient gateway failures propagate for subscription retry.
+- `CascadeCheckpointIndexRecoveryTests` — **2**: incomplete/completed index lifecycle and interrupted-attempt
+  startup convergence with an idempotent second pass and no descendant rediscovery.
+- `WorksCascadeRecoveryPipelineSmokeTests` — **1 gated Tier-3 lane**: authored parent/children cancellation,
+  paced mid-cascade stop, AppHost restart, index replay, and exactly-one terminal-event assertions.
+
+Existing focused recovery/translator lanes remained green: `CascadeRecoveryRuntimeTests`,
+`TerminalCascadeTranslatorTests` (**11**), `ChildCompletionResumeTranslatorTests` (**5**), and
+`DateReminderRecoveryRuntimeTests` (**5**). The two Reactor translator source files remain byte-identical.
+
+## Live broad-gate result
+
+Redis :6379, Dapr placement :50005, and scheduler :50006 were reachable, so none of the three Tier-3 tests
+skipped. Both suppressed EventStore hosts were explicitly built Release first (0 warnings, 0 errors). Focused
+runs and the full Integration binary then produced the same result:
+
+- `WorksCommandPipelineSmokeTests`: failed at its first `POST /api/v1/commands` after the configured 60-second
+  `HttpClient.Timeout`.
+- `WorksReminderRecoveryPipelineSmokeTests`: failed at its first `POST /api/v1/commands` after 60 seconds.
+- `WorksCascadeRecoveryPipelineSmokeTests`: failed while creating its first work item through the same POST
+  after 60 seconds, before any event could be published or consumed.
+
+The fixed-id debt is nevertheless closed: `WorksCommandPipelineSmokeTests` now uses a per-run-unique aggregate
+id. The live gate was neither weakened nor converted to a skip.
+
+## Verification commands and results
+
+```
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal   # 0 warn / 0 err
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests                     # 496/496
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests       # 110/113; 3 live failures
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests     # 44/44
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests             # 3/3
+```

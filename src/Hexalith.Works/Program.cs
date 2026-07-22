@@ -3,9 +3,13 @@ using Hexalith.EventStore.Client.Registration;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.DomainService;
 using Hexalith.Works;
+using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Recovery.Cascade;
+using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Runtime;
+using Hexalith.Works.Runtime.Events;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -33,6 +37,20 @@ _ = builder.Services.AddProblemDetails();
 builder.Services.AddDaprClient();
 _ = builder.Services.AddEventStoreReadModelStore();
 
+// EventStore publishes Works events as Web JSON on one shared work.events topic. Register the SDK's durable
+// Dapr marker store, but route the payload through the Works-local Web JSON processor so malformed deliveries
+// are terminally acknowledged instead of becoming a poison-message retry loop.
+_ = builder.Services.AddEventStoreDomainEvents(typeof(WorkItemCreated).Assembly, static options =>
+{
+    options.TopicName = "work.events";
+    options.SubscriptionRoute = "/work/events";
+});
+_ = builder.Services.AddDaprEventStoreDomainEventMarkerStore();
+_ = builder.Services.AddSingleton<WorksDomainEventProcessor>();
+_ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCancelled, WorkItemCancelledCascadeHandler>();
+_ = builder.Services.AddEventStoreDomainEventHandler<WorkItemExpired, WorkItemExpiredCascadeHandler>();
+_ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCompleted, WorkItemCompletedResumeHandler>();
+
 // Story 4.6 recovery edge: date-resume reminder reconciliation and terminal-cascade dispatch/checkpoint/
 // replay. The Dapr actor reminders, gateway command path, stores, and clock all live here at the host edge;
 // the pure kernel stays clock-/Dapr-free. The reconciliation pass is gated by Works:Recovery configuration.
@@ -44,6 +62,7 @@ WebApplication app = builder.Build();
 // Route unhandled exceptions through the registered ProblemDetails service (RFC 9457).
 _ = app.UseExceptionHandler();
 _ = app.UseStatusCodePages();
+app.UseCloudEvents();
 
 // Bespoke /project handler: translate a single work item's replayed events into the tenant-scoped what's-next
 // index + per-item roll-up and notify on a real eligibility/order change. Mapping it before
@@ -63,6 +82,10 @@ _ = app.MapPost("/project", static async (
 });
 
 app.UseEventStoreDomainService();
+
+// Programmatic Dapr subscription discovery and the Works-local Web JSON endpoint form one subscription edge.
+app.MapWorksDomainEvents();
+app.MapSubscribeHandler();
 
 // Map the Dapr actor-runtime endpoints so the date-resume reminder actor receives reminder callbacks.
 app.MapActorsHandlers();

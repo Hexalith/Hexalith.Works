@@ -37,7 +37,8 @@ _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName", "process")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId", "*")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Domain", "work")
-    .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Version", "v1");
+    .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Version", "v1")
+    .WithEnvironment("EventStore__Publisher__TopicOverrides__work", "work.events");
 
 IResourceBuilder<ProjectResource> adminServer = builder.AddProject<HexalithEventStoreAdminServerHost>("eventstore-admin");
 
@@ -91,6 +92,15 @@ if (!string.IsNullOrWhiteSpace(recoveryTenants))
     {
         works = works.WithEnvironment($"Works__Recovery__Tenants__{index}", tenants[index]);
     }
+}
+
+string? cascadeTargetInterval = builder.Configuration["Works:Recovery:CascadeTargetIntervalMilliseconds"];
+if (int.TryParse(cascadeTargetInterval, out int cascadeTargetIntervalMilliseconds)
+    && cascadeTargetIntervalMilliseconds >= 0)
+{
+    works = works.WithEnvironment(
+        "Works__Recovery__CascadeTargetIntervalMilliseconds",
+        cascadeTargetIntervalMilliseconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
 }
 
 await builder

@@ -9,7 +9,7 @@ using Shouldly;
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 /// <summary>
-/// Story 4.5 governance guardrails for the runtime adapter edge. These keep the pure kernel pure and confine
+/// Runtime-adapter governance guardrails introduced by Stories 4.5-4.7. These keep the pure kernel pure and confine
 /// every EventStore-runtime / Dapr / ASP.NET-hosting concern to the single runnable host project
 /// (<c>src/Hexalith.Works</c>) and the AppHost, while freezing the production-surface vocabulary out of Works
 /// source. All assertions are source/XML text based so the ArchitectureTests lane stays pure (no Dapr/Aspire).
@@ -58,7 +58,7 @@ public sealed class RuntimeAdapterGovernanceTests
     }
 
     [Fact]
-    public void P0_ReminderActorAndCascadeCheckpointRuntimeAreConfinedToHostEdge()
+    public void P0_ReminderCascadeAndDomainEventRuntimeAreConfinedToHostEdge()
     {
         string root = RepositoryRoot.Locate();
 
@@ -74,10 +74,14 @@ public sealed class RuntimeAdapterGovernanceTests
             "DateReminderActor",
             "DateReminderReconciler",
             "CascadeCheckpoint",
+            "ICascadeCheckpointIndex",
             "CascadeDispatcher",
+            "IChildCompletionAwaitingParentSource",
+            "IEventStoreDomainEventHandler",
             "IWorkCommandSubmitter",
             "IEventStoreGatewayClient",
             "IReadModelStore",
+            "WorksDomainEventProcessor",
         ];
 
         string[] misplaced = [.. sourceFiles
@@ -87,7 +91,7 @@ public sealed class RuntimeAdapterGovernanceTests
                 .Where(token => file.Text.Contains(token, StringComparison.Ordinal))
                 .Select(token => $"{Path.GetRelativePath(root, file.Path)} contains host-edge runtime token '{token}'"))];
 
-        misplaced.ShouldBeEmpty("Story 4.6 reminder actors, command submission, stream reads, and checkpoint persistence must stay in src/Hexalith.Works or AppHost/config/test/docs locations, not in pure kernel projects.");
+        misplaced.ShouldBeEmpty("Reminder actors, domain-event consumption, command submission, stream reads, and checkpoint persistence must stay in src/Hexalith.Works or AppHost/config/test/docs locations, not in pure kernel projects.");
     }
 
     [Fact]
@@ -136,12 +140,12 @@ public sealed class RuntimeAdapterGovernanceTests
     }
 
     [Fact]
-    public void P0_ReminderAndCheckpointRecordsDoNotExpandDurablePolymorphicCatalog()
+    public void P0_RuntimeSubscriptionAndRecoveryRecordsDoNotExpandDurablePolymorphicCatalog()
     {
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(37, "Story 4.6 reminder/checkpoint/read-model records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
+        polymorphicCatalogCount.ShouldBe(37, "Subscription envelopes, reminder/checkpoint/index records, and source records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
     }
 
     [Fact]

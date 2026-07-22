@@ -24,4 +24,10 @@ public sealed class WorksRecoveryOptions
 
     /// <summary>The maximum stream pages a single reconciliation scan reads per tenant (a runaway backstop).</summary>
     public int MaxStreamPagesPerTenant { get; init; } = 1000;
+
+    /// <summary>
+    /// Optional pacing interval between cascade targets. Zero dispatches immediately; a positive value lets
+    /// operators bound burst pressure and lets the live recovery lane stop at a deterministic checkpoint boundary.
+    /// </summary>
+    public int CascadeTargetIntervalMilliseconds { get; init; }
 }

@@ -168,6 +168,27 @@ ownership model. None of them is implemented or wired in v1.
   lane reissues through the adapter's own deterministic `DateResume` factory rather than tenant-wide
   auto-discovery, and the reconciliation decision logic is proven deterministically by
   `DateReminderRecoveryRuntimeTests`.
+- **Story 4.7 (live reactor consumption and durable cascade discovery).** Works uses the EventStore SDK's
+  subscription registration, handler contracts, and durable Dapr marker store, but maps an equivalent host-local
+  endpoint instead of the SDK's generic processor. The checked-out generic processor uses default JSON options;
+  real camel-case Works Web JSON silently binds to a zero-valued record and can be acknowledged as processed.
+  The local processor reuses `WorksEventDecoder`, verifies envelope/payload tenant and aggregate identity, and
+  preserves the SDK result contract: terminal skips are acknowledged, handler failures remain retryable, and a
+  completed marker makes redelivery a duplicate. EventStore receives
+  `EventStore__Publisher__TopicOverrides__work=work.events`, so every tenant's Works event reaches the one
+  programmatic `pubsub` subscription without introducing a second component. The `WorkItemCompleted` handler
+  re-reads the completed child's aggregate stream to find its same-tenant `WorkItemCreated.Parent`, then replays
+  that parent's stream to rebuild only its current suspended await conditions; mismatch or read failure returns
+  no candidate. The unchanged pure translator emits `ResumeWorkItem`, and the EventStore gateway plus aggregate
+  `Handle` remain the acceptance and idempotency boundary.
+
+  Incomplete cascade checkpoints are discoverable after restart through one ETag-updated singleton index in the
+  same `statestore`; Dapr key enumeration is neither assumed nor emulated. An incomplete identity is indexed
+  before its checkpoint write, while a completed identity is removed only after the completed checkpoint is
+  durable, making crash windows fail safe. Checkpoints persisted before Story 4.7 have no index entry and are not
+  auto-discovered; this is acceptable because the dispatcher had no production caller before the live
+  subscription added by this story. The checkpoint record shape, key, replay signature, false-on-missing result,
+  and attempt-before-submit ordering remain unchanged.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate

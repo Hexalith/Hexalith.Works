@@ -3,6 +3,7 @@ using Hexalith.Works.Reactor;
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Recovery.Cascade;
 
@@ -21,12 +22,14 @@ public sealed class CascadeDispatcher(
     ICascadeCheckpointStore checkpointStore,
     ICascadeDescendantSource descendantSource,
     IWorkCommandSubmitter submitter,
-    ILogger<CascadeDispatcher> logger)
+    ILogger<CascadeDispatcher> logger,
+    IOptions<WorksRecoveryOptions>? options = null)
 {
     private readonly ICascadeCheckpointStore _checkpointStore = checkpointStore ?? throw new ArgumentNullException(nameof(checkpointStore));
     private readonly ICascadeDescendantSource _descendantSource = descendantSource ?? throw new ArgumentNullException(nameof(descendantSource));
     private readonly IWorkCommandSubmitter _submitter = submitter ?? throw new ArgumentNullException(nameof(submitter));
     private readonly ILogger<CascadeDispatcher> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly TimeSpan _targetInterval = TimeSpan.FromMilliseconds(Math.Max(0, options?.Value.CascadeTargetIntervalMilliseconds ?? 0));
 
     /// <summary>Dispatches the cancel cascade for a parent <see cref="WorkItemCancelled"/>.</summary>
     public async Task DispatchAsync(WorkItemCancelled parentCancelled, CancellationToken cancellationToken = default)
@@ -167,6 +170,12 @@ public sealed class CascadeDispatcher(
             targets[i] = targets[i] with { Status = CascadeTargetStatus.Completed };
             checkpoint = checkpoint with { Targets = [.. targets] };
             await _checkpointStore.SaveAsync(checkpoint, cancellationToken).ConfigureAwait(false);
+
+            if (_targetInterval > TimeSpan.Zero
+                && targets.Skip(i + 1).Any(static value => value.Status != CascadeTargetStatus.Completed))
+            {
+                await Task.Delay(_targetInterval, cancellationToken).ConfigureAwait(false);
+            }
         }
 
         checkpoint = checkpoint with { Completed = true };

@@ -48,6 +48,10 @@ public sealed class WorksAppHostTopologyTests
             "EventStore__CommandGateway__BaseAddress",
             Case.Sensitive,
             "The Works recovery runtime must receive the EventStore command gateway base address for reminder/cascade reissue.");
+        appHostProgram.ShouldContain(
+            "EventStore__Publisher__TopicOverrides__work",
+            Case.Sensitive,
+            "Works events must publish to the shared work.events subscription topic.");
 
         // No production UI / MCP / chatbot / email / routing / cost / security-hardening adapters.
         string[] forbiddenFragments = ["mcp", "chatbot", "email", "mail", "datagrid", "webshell", "routing", "cost", "keycloak", "signalr"];

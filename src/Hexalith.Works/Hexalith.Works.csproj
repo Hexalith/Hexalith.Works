@@ -7,6 +7,9 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsPublishable>true</IsPublishable>
+    <!-- The telemetry package disables the framework LoggerMessage generator in favor of Microsoft.Gen.Logging,
+         while the workspace removes that duplicate analyzer. Re-enable the framework generator for this host. -->
+    <DisableMicrosoftExtensionsLoggingSourceGenerator>false</DisableMicrosoftExtensionsLoggingSourceGenerator>
   </PropertyGroup>
 
   <ItemGroup>

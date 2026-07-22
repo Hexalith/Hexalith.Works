@@ -40,7 +40,8 @@ public sealed class WorksCommandPipelineSmokeTests
 {
     private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
     private const string Tenant = "tenant-alpha";
-    private const string WorkItem = "work-smoke-1";
+    // Unique per run so persistent dapr-init Redis cannot turn a rerun into duplicate-create rejection.
+    private static readonly string WorkItem = "work-smoke-" + Guid.NewGuid().ToString("N")[..12];
 
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 

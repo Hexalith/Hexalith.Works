@@ -1,5 +1,6 @@
 using Hexalith.EventStore.Client.Registration;
 using Hexalith.Works.Recovery.Cascade;
+using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.Configuration;
@@ -45,9 +46,16 @@ public static class WorksRecoveryExtensions
         _ = services.AddHostedService<ReminderReconciliationService>();
 
         // Terminal-cascade dispatch, checkpoints, and replay.
-        services.TryAddSingleton<ICascadeCheckpointStore, ReadModelCascadeCheckpointStore>();
+        services.TryAddSingleton<ReadModelCascadeCheckpointStore>();
+        services.TryAddSingleton<ICascadeCheckpointStore>(static services => services.GetRequiredService<ReadModelCascadeCheckpointStore>());
+        services.TryAddSingleton<ICascadeCheckpointIndex>(static services => services.GetRequiredService<ReadModelCascadeCheckpointStore>());
         services.TryAddSingleton<ICascadeDescendantSource, StreamReadingCascadeDescendantSource>();
         services.TryAddSingleton<CascadeDispatcher>();
+        services.TryAddSingleton<CascadeRecoveryReconciler>();
+        _ = services.AddHostedService<CascadeRecoveryService>();
+
+        // Re-readable child-to-parent lookup for live child-completion resume translation.
+        services.TryAddSingleton<IChildCompletionAwaitingParentSource, StreamReadingChildCompletionAwaitingParentSource>();
 
         return services;
     }

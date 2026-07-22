@@ -1,7 +1,11 @@
 using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Models;
+using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Reactor;
 using Hexalith.Works.Runtime;
 
@@ -14,18 +18,20 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// Production <see cref="ICascadeDescendantSource"/> that discovers a parent's <em>direct</em> children by
 /// reading its persisted stream for <see cref="ChildSpawned"/> events (Story 4.6, AC #4/#5). Only direct
 /// children are returned: each child's own terminal event drives the next cascade level, so the subtree
-/// converges by event propagation. Candidates are marked non-terminal — the pure translator still issues a
-/// command and the aggregate no-ops an already-terminal descendant — so the discovery never needs to read
-/// each child's current status. This lane runs only under Aspire; the deterministic tests fake the seam.
+/// converges by event propagation. Each child's terminal flag comes from its persisted per-item roll-up;
+/// a missing or unreadable roll-up fails closed as active so the aggregate remains the final authority.
+/// This lane runs only under Aspire; the deterministic tests fake the seam.
 /// </summary>
 public sealed class StreamReadingCascadeDescendantSource(
     IEventStoreGatewayClient gateway,
+    IReadModelStore store,
     IOptions<WorksRecoveryOptions> options,
     ILogger<StreamReadingCascadeDescendantSource> logger) : ICascadeDescendantSource
 {
     private const int PageSize = 200;
 
     private readonly IEventStoreGatewayClient _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
+    private readonly IReadModelStore _store = store ?? throw new ArgumentNullException(nameof(store));
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
     private readonly ILogger<StreamReadingCascadeDescendantSource> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
@@ -57,7 +63,11 @@ public sealed class StreamReadingCascadeDescendantSource(
                     if (WorksEventDecoder.Decode(streamEvent.EventTypeName, streamEvent.Payload) is ChildSpawned childSpawned
                         && seen.Add(childSpawned.ChildWorkItemId.Value))
                     {
-                        children.Add(new CascadeDescendant(childSpawned.TenantId, childSpawned.ChildWorkItemId, IsTerminal: false));
+                        bool isTerminal = await IsTerminalAsync(
+                            tenantId,
+                            childSpawned.ChildWorkItemId.Value,
+                            cancellationToken).ConfigureAwait(false);
+                        children.Add(new CascadeDescendant(childSpawned.TenantId, childSpawned.ChildWorkItemId, isTerminal));
                     }
                 }
 
@@ -77,8 +87,32 @@ public sealed class StreamReadingCascadeDescendantSource(
         catch (Exception ex)
         {
             WorksRecoveryLog.RecoveryStepFailed(_logger, "discover-cascade-descendants", ex);
+            throw;
         }
 
         return children;
+    }
+
+    private async Task<bool> IsTerminalAsync(string tenantId, string workItemId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            ReadModelEntry<WorkItemRollUp> entry = await _store
+                .GetAsync<WorkItemRollUp>(
+                    WorksReadModelKeys.StateStoreName,
+                    WorksReadModelKeys.RollUpKey(tenantId, workItemId),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            return entry.Value?.Status is WorkItemStatus.Completed
+                or WorkItemStatus.Cancelled
+                or WorkItemStatus.Rejected
+                or WorkItemStatus.Expired;
+        }
+        catch (Exception exception)
+        {
+            WorksRecoveryLog.RecoveryStepFailed(_logger, "read-cascade-descendant-rollup", exception);
+            return false;
+        }
     }
 }

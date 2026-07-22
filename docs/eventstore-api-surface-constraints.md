@@ -97,3 +97,37 @@ runnable host edge:
 
 No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable polymorphic command/event/rejection
 catalog type. `WorkItemV1Catalog.Count` remains **36** and the golden corpus is byte-compatible.
+
+## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
+
+Story 4.7 verified the checked-out subscription and publisher surfaces at EventStore commit `c6b72caa`:
+
+- **Tenant topic composition must be resolved explicitly.** Without an override, the publisher composes
+  `{tenantId}.work.events`, while `EventStoreDomainEventsOptions.ForDomain("work")` subscribes to the static
+  `work.events` topic. The AppHost therefore injects
+  `EventStore__Publisher__TopicOverrides__work=work.events` into EventStore. Works continues to use the existing
+  shared `pubsub` component and declares one programmatic subscription through `MapSubscribeHandler`.
+- **The generic processor is not Web-JSON compatible for Works records at this revision.** A deterministic test
+  feeds real `WorkItemV1Catalog` camel-case Web JSON to `EventStoreDomainEventProcessor`; default
+  `JsonSerializer` options silently construct a zero-valued Works record and the processor reports `Processed`
+  rather than `FailedInvalidPayload`. Works therefore maps a host-local equivalent endpoint that decodes with
+  the existing `WorksEventDecoder` (`JsonSerializerDefaults.Web`) and validates tenant, work-item, and aggregate
+  identity before dispatch. Malformed known-event bytes and unhandled types are terminally marked complete and
+  acknowledged so they cannot become poison-message retry loops.
+- **Durable markers provide restart dedup, not broker ordering.** The Dapr marker key includes the configured
+  topic, subscription route, and EventStore message id. A completed marker makes a redelivery `Duplicate` across
+  host restarts. Handler failures do not write completion and remain retryable; after handlers finish, marker
+  completion is the durable side-effect boundary. Dapr pub/sub remains at-least-once and unordered, so target
+  commands retain deterministic ids and aggregate `Handle` remains authoritative.
+- **Stream re-reads remain per aggregate.** Child-completion recovery reads the child stream for its parent
+  reference, then reads that parent stream to rebuild current await conditions. Cascade discovery reads the
+  parent stream and consults each child's persisted roll-up only for terminal status; it deliberately does not
+  treat the stale cross-aggregate `RolledRemaining` value as authoritative.
+- **The live gateway blocker persists.** After explicit Release builds of both suppressed EventStore hosts, the
+  command, reminder-recovery, and new cascade-recovery Tier-3 lanes all reached healthy AppHost resources but
+  timed out after 60 seconds on their first `POST /api/v1/commands`. No lane reached event publication or this
+  subscription path. The local processor, handlers, projections, checkpoint index, and restart replay therefore
+  have deterministic coverage, while live delivery remains a broad substrate gate rather than a claimed pass.
+
+No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog;
+`WorkItemV1Catalog.Count` remains **37** after the prior correct-course addition.
