@@ -11,8 +11,6 @@ namespace Hexalith.Works.Recovery.ChildCompletion;
 /// </summary>
 internal static class ChildCompletionResume
 {
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
-
     /// <summary>Builds the submission while leaving acceptance to the target aggregate's Handle method.</summary>
     internal static WorkCommandSubmission BuildSubmission(WorkItemCompleted childCompleted, ResumeWorkItem resume)
     {
@@ -24,7 +22,7 @@ internal static class ChildCompletionResume
             resume.TenantId.Value,
             resume.WorkItemId.Value,
             nameof(ResumeWorkItem),
-            JsonSerializer.SerializeToElement(resume, s_web),
+            JsonSerializer.SerializeToElement(resume),
             id,
             id);
     }

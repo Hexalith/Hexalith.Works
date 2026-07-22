@@ -51,6 +51,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// carries no <c>eventstore:permission</c> claims, so the same token authorizes command submission and the
 /// per-aggregate replay read; only the tenant claim is load-bearing.</para>
 /// </remarks>
+[Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksReminderRecoveryPipelineSmokeTests
 {
     private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
@@ -62,8 +63,6 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
     // Unique per run so a re-run against a persistent dapr-init Redis starts from a clean aggregate stream.
     private static readonly string WorkItem = "work-reminder-" + Guid.NewGuid().ToString("N")[..12];
-
-    private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     [Fact]
     public async Task A_pending_date_resume_survives_an_apphost_restart_and_resumes_exactly_once()
@@ -118,6 +117,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false", $"--Works:Recovery:Tenants={Tenant}"], startupCts.Token)
             .ConfigureAwait(true);
 
+        WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
         try
         {
@@ -127,6 +127,9 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
+            await WorksAppHostTestReadiness
+                .WaitForEventStoreCommandRuntimeAsync(client, startupCts.Token)
+                .ConfigureAwait(true);
             await body(client, startupCts.Token).ConfigureAwait(true);
         }
         finally
@@ -160,7 +163,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             client,
             messageId: Guid.NewGuid().ToString(),
             commandType: commandType,
-            payload: JsonSerializer.SerializeToElement(command, Web),
+            payload: JsonSerializer.SerializeToElement(command),
             correlationId: null,
             cancellationToken).ConfigureAwait(false);
 

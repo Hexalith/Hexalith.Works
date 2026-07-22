@@ -14,8 +14,6 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// </summary>
 public static class CascadeCommands
 {
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
-
     /// <summary>The deterministic correlation/causation id for one cascade target command.</summary>
     public static string CorrelationId(string tenantId, string parentWorkItemId, long parentSequence, string descendantWorkItemId, string kind)
         => $"cascade-{kind}-{tenantId}-{parentWorkItemId}-{parentSequence}-{descendantWorkItemId}";
@@ -41,7 +39,7 @@ public static class CascadeCommands
             Tenant: tenant.Value,
             AggregateId: descendant.Value,
             CommandType: intent.CommandType,
-            Payload: JsonSerializer.SerializeToElement(intent.Command, s_web),
+            Payload: JsonSerializer.SerializeToElement(intent.Command),
             CorrelationId: correlationId,
             CausationId: correlationId);
     }

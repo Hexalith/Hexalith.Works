@@ -32,7 +32,8 @@ public interface IWorkCommandSubmitter
 /// <param name="Tenant">The tenant id (raw <c>TenantId.Value</c>).</param>
 /// <param name="AggregateId">The work item aggregate id (raw <c>WorkItemId.Value</c>).</param>
 /// <param name="CommandType">The command type discriminator (e.g. <c>nameof(ResumeWorkItem)</c>).</param>
-/// <param name="Payload">The command serialized with <c>JsonSerializerDefaults.Web</c>.</param>
+/// <param name="Payload">The command serialized with case-preserving property names, matching the
+/// EventStore aggregate adapter's default <see cref="JsonSerializer"/> deserializer.</param>
 /// <param name="CorrelationId">A deterministic correlation id so a redelivery reuses the same id.</param>
 /// <param name="CausationId">A deterministic causation id so the substrate can dedup a redelivery.</param>
 public sealed record WorkCommandSubmission(

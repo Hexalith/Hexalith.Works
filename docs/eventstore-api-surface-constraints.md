@@ -123,11 +123,26 @@ Story 4.7 verified the checked-out subscription and publisher surfaces at EventS
   reference, then reads that parent stream to rebuild current await conditions. Cascade discovery reads the
   parent stream and consults each child's persisted roll-up only for terminal status; it deliberately does not
   treat the stale cross-aggregate `RolledRemaining` value as authoritative.
-- **The live gateway blocker persists.** After explicit Release builds of both suppressed EventStore hosts, the
-  command, reminder-recovery, and new cascade-recovery Tier-3 lanes all reached healthy AppHost resources but
-  timed out after 60 seconds on their first `POST /api/v1/commands`. No lane reached event publication or this
-  subscription path. The local processor, handlers, projections, checkpoint index, and restart replay therefore
-  have deterministic coverage, while live delivery remains a broad substrate gate rather than a claimed pass.
+- **Command payload casing is an adapter contract.** The pinned EventStore aggregate adapter deserializes the
+  inner command payload with default, case-sensitive `JsonSerializer` options. Recovery submissions therefore
+  serialize with case-preserving CLR property names. Camel-case Web JSON is accepted by the outer gateway but
+  silently produces zero-valued command identities at the aggregate adapter.
+- **Internal Works gateway calls use Dapr authentication.** Under Aspire, the EventStore gateway client targets
+  `DAPR_HTTP_ENDPOINT` and applies `AddEventStoreDaprServiceInvocation("eventstore")`; EventStore explicitly
+  allow-lists `works` through `Authentication:DaprInternal:AllowedCallers`. Direct configured HTTP remains only
+  the fallback for hosts composed without Dapr. This gives child-completion reads, cascade reads, and generated
+  commands the supported `dapr-caller-app-id=works` system identity.
+- **Readiness is dependency-specific.** Aspire's EventStore and Works resources expose `/alive` health checks so
+  their HTTP processes and Dapr app channels are established before tests submit commands. The live lanes then
+  wait for the `dapr-actor-placement` entry inside EventStore's `/ready` response and one Works app-health probe
+  interval. They intentionally do not require overall `/ready`=200 because the same response contains the
+  independent `projection-delivery-writer-protocol` cutover, which can remain unhealthy while aggregate command
+  actors are ready.
+- **The live gate passes at this revision.** After explicit Release builds of both suppressed EventStore hosts,
+  all three Tier-3 lanes completed without skips. The reactor lane proved the shared `work.events` delivery path
+  for both translators: child completion resumed its awaiting parent, parent cancellation dispatched its first
+  descendant, and a fresh AppHost replayed the durable incomplete checkpoint to cancel the outstanding
+  descendant with exactly one terminal event on each.
 
 No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog;
 `WorkItemV1Catalog.Count` remains **37** after the prior correct-course addition.

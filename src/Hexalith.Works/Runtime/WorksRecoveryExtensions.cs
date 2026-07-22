@@ -32,11 +32,25 @@ public static class WorksRecoveryExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         // The command path back into the EventStore gateway that Story 4.5 proved (POST /api/v1/commands).
-        _ = services.AddEventStoreGatewayClient(options =>
+        // In the AppHost, route all gateway traffic through the local Dapr sidecar. EventStore then receives
+        // the sidecar-authenticated dapr-caller-app-id=works identity and applies its explicit internal-caller
+        // allow-list. The direct address remains a fallback for hosts that compose recovery without Dapr.
+        string? daprHttpEndpoint = configuration["DAPR_HTTP_ENDPOINT"];
+        IHttpClientBuilder gatewayClient = services.AddEventStoreGatewayClient(options =>
         {
             string? baseAddress = configuration["EventStore:CommandGateway:BaseAddress"];
-            options.BaseAddress = new Uri(string.IsNullOrWhiteSpace(baseAddress) ? "http://eventstore" : baseAddress);
+            string effectiveAddress = !string.IsNullOrWhiteSpace(daprHttpEndpoint)
+                ? daprHttpEndpoint
+                : string.IsNullOrWhiteSpace(baseAddress) ? "http://eventstore" : baseAddress;
+            options.BaseAddress = new Uri(effectiveAddress);
         });
+        if (!string.IsNullOrWhiteSpace(daprHttpEndpoint))
+        {
+            _ = gatewayClient.AddEventStoreDaprServiceInvocation(
+                "eventstore",
+                configuration["DAPR_API_TOKEN"]);
+        }
+
         services.TryAddSingleton<IWorkCommandSubmitter, EventStoreGatewayWorkCommandSubmitter>();
 
         // Date-reminder reconciliation-on-recovery.

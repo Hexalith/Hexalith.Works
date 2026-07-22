@@ -117,7 +117,9 @@ public sealed class CascadeRecoveryRuntimeTests
         submission.CommandType.ShouldBe(nameof(ExpireWorkItem));
         submission.CorrelationId.ShouldBe(correlationId);
         submission.CausationId.ShouldBe(correlationId);
-        submission.Payload.Deserialize<ExpireWorkItem>(Web)!.WorkItemId.ShouldBe(ActiveChild);
+        ExpireWorkItem command = submission.Payload.Deserialize<ExpireWorkItem>()!;
+        command.TenantId.ShouldBe(Tenant);
+        command.WorkItemId.ShouldBe(ActiveChild);
         Should.Throw<ArgumentOutOfRangeException>(() => CascadeCommands.BuildSubmission(Tenant.Value, ActiveChild.Value, "Complete", correlationId));
     }
 

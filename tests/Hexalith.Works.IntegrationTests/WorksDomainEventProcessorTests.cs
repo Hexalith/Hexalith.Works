@@ -20,6 +20,19 @@ public class WorksDomainEventProcessorTests
 {
     private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
 
+    /// <summary>Proves the host's by-type singleton registration can activate the local processor.</summary>
+    [Fact]
+    public void Works_processor_is_activatable_by_the_default_service_provider()
+    {
+        var registrations = new ServiceCollection();
+        registrations.AddLogging();
+        registrations.AddSingleton<IEventStoreDomainEventMarkerStore>(new InMemoryEventStoreDomainEventMarkerStore());
+        registrations.AddSingleton<WorksDomainEventProcessor>();
+        using ServiceProvider services = registrations.BuildServiceProvider();
+
+        services.GetRequiredService<WorksDomainEventProcessor>().ShouldNotBeNull();
+    }
+
     /// <summary>
     /// Proves the checked-out generic SDK processor silently misbinds the camel-case Works wire payload.
     /// </summary>

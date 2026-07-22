@@ -16,8 +16,6 @@ namespace Hexalith.Works.Reminders;
 /// </summary>
 public static class DateResume
 {
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
-
     /// <summary>Builds the deterministic <see cref="WorkCommandSubmission"/> for a date-based resume.</summary>
     /// <param name="tenantId">The tenant id (raw value).</param>
     /// <param name="workItemId">The work item id (raw value).</param>
@@ -38,7 +36,7 @@ public static class DateResume
             Tenant: tenant.Value,
             AggregateId: workItem.Value,
             CommandType: nameof(ResumeWorkItem),
-            Payload: JsonSerializer.SerializeToElement(command, s_web),
+            Payload: JsonSerializer.SerializeToElement(command),
             CorrelationId: id,
             CausationId: id);
     }

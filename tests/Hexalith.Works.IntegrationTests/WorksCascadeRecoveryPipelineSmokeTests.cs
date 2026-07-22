@@ -22,14 +22,17 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Story 4.7 live SM-1b proof: pub/sub drives a parent-terminal cascade and restart replays an interrupted checkpoint.
+/// Story 4.7 live proof: pub/sub resumes a parent after child completion, drives a parent-terminal cascade,
+/// and restart replays an interrupted checkpoint.
 /// </summary>
 /// <remarks>
 /// This Tier-3 lane requires the same Redis, Dapr placement, scheduler, and Docker prerequisites as the other
-/// Aspire pipeline tests. It widens the boundary between two cascade targets with the operational pacing option,
-/// stops after the first child reaches terminal state, then restarts against the same durable store and proves
-/// both descendants converge with exactly one accepted terminal event each.
+/// Aspire pipeline tests. It first proves the completed-child consumer re-reads the parent await and submits a
+/// live resume. It then widens the boundary between two cascade targets with the operational pacing option,
+/// stops after the first child reaches terminal state, and restarts against the same durable store to prove both
+/// descendants converge with exactly one accepted terminal event each.
 /// </remarks>
+[Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksCascadeRecoveryPipelineSmokeTests
 {
     private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
@@ -40,11 +43,12 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
     private static readonly string s_parent = $"work-cascade-parent-{s_runId}";
     private static readonly string s_firstChild = $"work-cascade-child-a-{s_runId}";
     private static readonly string s_secondChild = $"work-cascade-child-b-{s_runId}";
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
+    private static readonly string s_awaitingParent = $"work-awaiting-parent-{s_runId}";
+    private static readonly string s_completedChild = $"work-completed-child-{s_runId}";
 
-    /// <summary>Proves live cancellation delivery and durable mid-cascade restart convergence.</summary>
+    /// <summary>Proves live child-completion resume, cancellation delivery, and durable mid-cascade restart convergence.</summary>
     [Fact]
-    public async Task Parent_cancellation_cascades_live_and_interrupted_checkpoint_converges_after_restart()
+    public async Task Reactor_translators_run_live_and_interrupted_cascade_converges_after_restart()
     {
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
         if (!await PrerequisitesAvailableAsync(cancellationToken).ConfigureAwait(true))
@@ -61,6 +65,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
         // a deterministic stop boundary before child B. Disposing the AppHost simulates the process loss.
         await WithAppHostAsync(cancellationToken, InterruptedTargetIntervalMilliseconds, async (client, token) =>
         {
+            await ProveChildCompletionResumeAsync(client, token).ConfigureAwait(false);
             await CreateTreeAsync(client, token).ConfigureAwait(false);
             await SubmitToTerminalAsync(
                 client,
@@ -86,6 +91,76 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             (await CountEventsAsync(client, s_secondChild, nameof(WorkItemCancelled), token).ConfigureAwait(false))
                 .ShouldBe(1, "redelivery and replay converge to exactly one accepted terminal event");
         }).ConfigureAwait(true);
+    }
+
+    private static async Task ProveChildCompletionResumeAsync(HttpClient client, CancellationToken cancellationToken)
+    {
+        var tenant = new TenantId(Tenant);
+        var parentId = new WorkItemId(s_awaitingParent);
+        var childId = new WorkItemId(s_completedChild);
+        var binding = new ExecutorBinding(new PartyId("story-47-worker"), Channel.Cli, AuthorityLevel.Contribute);
+
+        await SubmitToTerminalAsync(
+            client,
+            s_awaitingParent,
+            nameof(CreateWorkItem),
+            new CreateWorkItem(tenant, parentId, "Await child completion"),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_awaitingParent,
+            nameof(AssignWorkItem),
+            new AssignWorkItem(tenant, parentId, binding),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_awaitingParent,
+            nameof(ClaimWorkItem),
+            new ClaimWorkItem(tenant, parentId, binding),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_awaitingParent,
+            nameof(SuspendWorkItem),
+            new SuspendWorkItem(tenant, parentId, [AwaitCondition.ChildCompleted(childId)]),
+            cancellationToken).ConfigureAwait(false);
+
+        await SubmitToTerminalAsync(
+            client,
+            s_completedChild,
+            nameof(CreateWorkItem),
+            new CreateWorkItem(
+                tenant,
+                childId,
+                "Complete and resume parent",
+                Parent: new ParentWorkItemReference(tenant, parentId)),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_completedChild,
+            nameof(AssignWorkItem),
+            new AssignWorkItem(tenant, childId, binding),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_completedChild,
+            nameof(ClaimWorkItem),
+            new ClaimWorkItem(tenant, childId, binding),
+            cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(
+            client,
+            s_completedChild,
+            nameof(CompleteWorkItem),
+            new CompleteWorkItem(tenant, childId),
+            cancellationToken).ConfigureAwait(false);
+
+        (await WaitForEventCountAsync(
+            client,
+            s_awaitingParent,
+            nameof(WorkItemResumed),
+            1,
+            cancellationToken).ConfigureAwait(false))
+            .ShouldBe(1, "the live completed-child subscription must resume the awaiting parent exactly once");
     }
 
     private static async Task CreateTreeAsync(HttpClient client, CancellationToken cancellationToken)
@@ -138,6 +213,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             ],
             startupCts.Token)
             .ConfigureAwait(true);
+        WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
         try
         {
@@ -147,6 +223,9 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
+            await WorksAppHostTestReadiness
+                .WaitForEventStoreCommandRuntimeAsync(client, startupCts.Token)
+                .ConfigureAwait(true);
             await body(client, startupCts.Token).ConfigureAwait(true);
         }
         finally
@@ -169,7 +248,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             "work",
             aggregateId,
             commandType,
-            JsonSerializer.SerializeToElement(command, s_web));
+            JsonSerializer.SerializeToElement(command));
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/commands")
         {
             Content = JsonContent.Create(body),

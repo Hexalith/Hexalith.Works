@@ -31,14 +31,16 @@ HexalithEventStoreSecurityResources? security = builder.AddHexalithEventStoreSec
 // cost, or production security-hardening surface is composed for this command/event pipeline proof). The Works
 // domain-service mapping routes "work" commands for any tenant at v1 to the "works" app's /process endpoint via
 // the Kubernetes-safe sanitized wildcard registration key (wildcard_<domain>_<version>).
-IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventStore>("eventstore");
+IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventStore>("eventstore")
+    .WithHttpHealthCheck("/alive");
 _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__AppId", "works")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName", "process")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId", "*")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Domain", "work")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Version", "v1")
-    .WithEnvironment("EventStore__Publisher__TopicOverrides__work", "work.events");
+    .WithEnvironment("EventStore__Publisher__TopicOverrides__work", "work.events")
+    .WithEnvironment("Authentication__DaprInternal__AllowedCallers__0", "works");
 
 IResourceBuilder<ProjectResource> adminServer = builder.AddProject<HexalithEventStoreAdminServerHost>("eventstore-admin");
 
@@ -64,6 +66,8 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
 // Story 4.5 proved. No Works UI, MCP, chatbot, email, routing, cost, SignalR, or IExecutorRouter surface is
 // composed for this recovery proof.
 IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("works")
+    .WithHttpEndpoint()
+    .WithHttpHealthCheck("/alive")
     .AddEventStoreDomainModule(eventStoreResources, "works", worksAccessControlConfigPath)
     .WithReference(eventStore)
     .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))

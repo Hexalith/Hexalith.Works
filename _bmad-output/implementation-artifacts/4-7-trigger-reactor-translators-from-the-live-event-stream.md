@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.7: Trigger Reactor Translators from the Live Event Stream
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -50,10 +50,10 @@ so that cascade and child-completion resume actually execute in the live topolog
   - [x] Record the checked-out EventStore submodule commit (`git -C references/Hexalith.EventStore log -1 --oneline`; observed `c6b72caa` on 2026-07-22 — it has moved past the `fbc78e58` state where the Tier-3 lanes timed out). Build both EventStore hosts explicitly (they carry `SuppressBuild=true`), rerun the two red Tier-3 lanes once, and re-baseline whether the 60 s gateway-submit timeout still reproduces BEFORE changing code.
   - [x] Reconcile the stale test baseline: `_bmad-output/implementation-artifacts/tests/test-summary.md` ends at Story 4.6 (2026-06-17, 620 green + 2 skipped, catalog 36) but the actual post-correct-course baseline at `9526c31` is UnitTests 496, PropertyTests 3, ArchitectureTests 44, IntegrationTests 96/98 (2 red Tier-3 lanes), catalog **37** (`tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:18`). Record the reconciled baseline in the Debug Log.
 
-- [ ] **Task 2 - Wire the at-least-once event consumption path at the host edge (AC: #1, #2, #4)**
+- [x] **Task 2 - Wire the at-least-once event consumption path at the host edge (AC: #1, #2, #4)**
   - [x] Builder side in `src/Hexalith.Works/Program.cs`: `AddEventStoreDomainEvents(typeof(WorkItemCreated).Assembly, ...)` + `AddDaprEventStoreDomainEventMarkerStore()` (the default marker store is IN-MEMORY — `EventStoreDomainEventsServiceCollectionExtensions.cs:50`; durable Dapr markers are required for at-least-once dedup across restarts) + one `AddEventStoreDomainEventHandler<TEvent, THandler>()` per consumed event.
   - [x] App side: `app.UseCloudEvents()` + `app.MapSubscribeHandler()` + `app.MapEventStoreDomainEvents()` (pairing documented at `EventStoreDomainEventsEndpointExtensions.cs:15-19`; the EventStore server's own `Program.cs:31,45` is the exemplar). Keep the bespoke `/project` mapped before `UseEventStoreDomainService()` — do not disturb that ordering.
-  - [ ] Resolve **Trap 1 (topic names)**: events for tenant `t` publish to `{t}.work.events`, not `work.events`, so a static `ForDomain("work")` subscription receives nothing. Either set `EventStore__Publisher__TopicOverrides__work` on the eventstore resource in `src/Hexalith.Works.AppHost/Program.cs` (config section `EventStore:Publisher`) so all work events land on one topic, or subscribe tenant-composed topics. Prove delivery live before building on it.
+  - [x] Resolve **Trap 1 (topic names)**: events for tenant `t` publish to `{t}.work.events`, not `work.events`, so a static `ForDomain("work")` subscription receives nothing. Either set `EventStore__Publisher__TopicOverrides__work` on the eventstore resource in `src/Hexalith.Works.AppHost/Program.cs` (config section `EventStore:Publisher`) so all work events land on one topic, or subscribe tenant-composed topics. Prove delivery live before building on it.
   - [x] Resolve **Trap 2 (payload decode)**: `EventStoreDomainEventProcessor.cs:147` deserializes payloads with DEFAULT (non-Web) `JsonSerializerOptions`, while Works payloads are camelCase Web JSON; a bind failure surfaces as `FailedInvalidPayload` → 200 OK → **silently acked and lost**. Write the deterministic decode test (Task 6) FIRST with real `WorkItemV1Catalog` Web-JSON bytes. If the SDK processor cannot bind them, do NOT patch `references/` — use the proposal's permitted alternative: an equivalent host-local subscription endpoint (`MapPost` + `.WithTopic(...)`) that decodes with the existing `Runtime/WorksEventDecoder.cs` pattern and applies the same durable-marker dedup.
   - [x] Rejection events are returned, never stream-appended, so the consumer only ever sees accepted events — no rejection filtering logic belongs in the consumer (a conditional on rejection types would be shadow-kernel logic, AC #4).
   - [x] New logging via source-generated `LoggerMessage` only, metadata-only fields (tenant id, work item id, correlation id, event type name, reason codes). Event-id ranges 4600-4603 (reminders) and 4700-4702 (cascade) are taken — use a fresh range (e.g. 4800+). The host logging scan bans the placeholder substrings `{Payload`, `{Obligation`, `{Command`, `{Secret`, `{Token`, `{Body`, `{EventJson`, `{Json` and any interpolated `.LogXxx($"...")` (`RuntimeAdapterGovernanceTests.cs:229-266`) — use `{Kind}` not `{CommandType}`.
@@ -81,10 +81,10 @@ so that cascade and child-completion resume actually execute in the live topolog
   - [x] Index tests: created-incomplete adds entry, completed removes it, replay-after-simulated-crash converges from the index alone; second recovery pass is a no-op.
   - [x] All existing lanes stay green untouched — especially `CascadeRecoveryRuntimeTests` (replay-not-rediscover), `TerminalCascadeTranslatorTests` (11), `ChildCompletionResumeTranslatorTests` (5), `DateReminderRecoveryRuntimeTests` (5).
 
-- [ ] **Task 7 - Live SM-1b Tier-3 lane and smoke-lane repairs (AC: #1-#3)**
+- [x] **Task 7 - Live SM-1b Tier-3 lane and smoke-lane repairs (AC: #1-#3)**
   - [x] Author the gated live cascade lane (e.g. `WorksCascadeRecoveryPipelineSmokeTests` — avoid banned type-name tokens like `Hub`/`Router`): under the full AppHost, create parent + children, cancel the parent, prove descendants receive terminal commands through the LIVE consumption path (assert stream end-state via `POST /api/v1/streams/read`, never HTTP 202); then restart the AppHost mid-cascade and prove checkpoint replay converges with exactly one terminal event per descendant (live SM-1b). Copy the reminder lane's gating (`Assert.Skip` when Redis :6379 / placement :50005 / scheduler :50006 absent) and its **per-run-unique aggregate ids** (`"work-cascade-" + Guid[..12]` pattern, `WorksReminderRecoveryPipelineSmokeTests.cs:64`).
   - [x] Fix the deferred-work item assigned to this story: switch `WorksCommandPipelineSmokeTests` from fixed `work-smoke-1` (`WorksCommandPipelineSmokeTests.cs:43`) to a per-run-unique id — against the persistent `dapr init` Redis the fixed id now collides with the duplicate-create rejection introduced 2026-07-21 (terminal status `Rejected` ≠ `Completed`).
-  - [ ] Re-prove the Tier-3 lanes at the current submodule. If the 60 s gateway-submit timeout still reproduces, record the exact command and result as a broad-gate blocker per the validation ladder (build both EventStore hosts explicitly first — they carry `SuppressBuild=true`), keep the deterministic evidence separate, and never weaken the gate to hide it. Do not claim Aspire lanes ran if they skipped; log which ports were absent.
+  - [x] Re-prove the Tier-3 lanes at the current submodule. If the 60 s gateway-submit timeout still reproduces, record the exact command and result as a broad-gate blocker per the validation ladder (build both EventStore hosts explicitly first — they carry `SuppressBuild=true`), keep the deterministic evidence separate, and never weaken the gate to hide it. Do not claim Aspire lanes ran if they skipped; log which ports were absent.
 
 - [x] **Task 8 - Fitness and governance compliance (AC: #4)**
   - [x] Zero csproj changes to Contracts/Server/Projections/Reactor; `DependencyDirectionTests` expected sets stay untouched (Reactor → Contracts only, L36-40).
@@ -100,7 +100,7 @@ so that cascade and child-completion resume actually execute in the live topolog
   - [x] Update `deferred-work.md`: mark the fixed-id smoke-lane item done; record the F-PROJ-1 revisit outcome; add anything newly deferred.
   - [x] Append the Story 4.7 section to `_bmad-output/implementation-artifacts/tests/test-summary.md` AFTER the 4.6 section (new sections append at file end), including the Task-1 baseline reconciliation note.
 
-- [ ] **Task 10 - Verify the slice (AC: #1-#4)**
+- [x] **Task 10 - Verify the slice (AC: #1-#4)**
   - [x] Baseline is the 2026-07-21 correct-course final at commit `9526c31`: UnitTests **496**, IntegrationTests **96/98** (2 red Tier-3 lanes = known blocker, not regression), ArchitectureTests **44**, PropertyTests **3**, catalog **37**.
   - [x] `DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal` then `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal` — MUST be 0 warnings / 0 errors (`dotnet test` is sandbox-blocked by Microsoft.Testing.Platform named pipes).
   - [x] Run all four suites as direct binaries: `tests/<Proj>/bin/Release/net10.0/<Proj>` for UnitTests, IntegrationTests, ArchitectureTests, PropertyTests.
@@ -222,7 +222,9 @@ GPT-5 Codex
 - 2026-07-22 Task 2 decode proof: real `WorkItemV1Catalog` Web JSON passed through the generic SDK processor produced `Processed` but dispatched a silently zero-valued record. The host-local processor bound all three consumed types, completed durable markers, returned `Duplicate` on redelivery, and terminally acknowledged malformed known-event bytes.
 - 2026-07-22 Tasks 3-6 deterministic proof: the focused Integration selection covering the local processor, terminal handlers, both re-readable sources (including transient-read retry propagation), durable index/startup replay, and the frozen `CascadeRecoveryRuntimeTests` passed 18/18. `TerminalCascadeTranslatorTests` passed 11/11, `ChildCompletionResumeTranslatorTests` 5/5, and `DateReminderRecoveryRuntimeTests` 5/5.
 - 2026-07-22 Task 7 live proof attempt: after rebuilding `references/Hexalith.EventStore/src/Hexalith.EventStore/Hexalith.EventStore.csproj` and `references/Hexalith.EventStore/src/Hexalith.EventStore.Admin.Server.Host/Hexalith.EventStore.Admin.Server.Host.csproj` Release (0 warnings, 0 errors), the focused cascade lane failed 1/1 and the focused command + reminder lanes failed 2/2. Every failure was the first `/api/v1/commands` POST timing out after 60 seconds; prerequisites were reachable, so none skipped and no lane reached event publication.
-- 2026-07-22 Tasks 8/10 final validation: restore succeeded; Release build succeeded with 0 warnings and 0 errors. Direct binaries reported UnitTests 496/496, IntegrationTests 110/113 (only the three live gateway failures), ArchitectureTests 44/44, PropertyTests 3/3, catalog 37. `git diff --check` was clean. Story remains in progress because live delivery/restart convergence is not proven.
+- 2026-07-22 live-gateway diagnosis: the Works project had no HTTP endpoint, so its Dapr sidecar had no app port; after that repair, live payloads exposed the pinned EventStore aggregate adapter's case-sensitive default JSON contract, Works processor DI activation exposed its non-public constructor, and internal recovery stream reads exposed the missing Dapr caller identity. The final AppHost supplies both host health checks, waits specifically for actor placement plus a Works app-health probe, preserves command payload casing, and routes recovery through the allow-listed `works` Dapr identity.
+- 2026-07-22 Task 7 live proof: all prerequisites were reachable and no lane skipped. Command smoke passed 1/1; reminder restart/reissue passed 1/1 with exactly one `WorkItemResumed`; the reactor/restart lane passed 1/1, proving live child-completion resume, live parent-terminal dispatch, AppHost restart, durable checkpoint replay, and exactly one `WorkItemCancelled` per descendant. The live classes are serialized because local Dapr name resolution uses fixed application ids.
+- 2026-07-22 Tasks 8/10 final validation: both suppressed EventStore hosts built Release with 0 warnings and 0 errors; restore and the Works Release build succeeded with 0 warnings and 0 errors. Direct binaries reported UnitTests 496/496, IntegrationTests 114/114 (0 skipped), ArchitectureTests 44/44, PropertyTests 3/3, catalog 37 — 657/657 total. Both Reactor translator hashes remain unchanged and `git diff --check` is clean.
 
 ### Implementation Plan
 
@@ -236,9 +238,10 @@ GPT-5 Codex
 - Wired one shared `work.events` subscription with the SDK registration/handler/marker contracts and a Works-local Web-JSON processor that validates envelope identity and preserves terminal-ack/retry semantics.
 - Added mechanical cancelled/expired consumers, persisted roll-up terminality checks, a same-tenant two-stream child-completion await source, and deterministic resume submissions through the existing EventStore gateway.
 - Added an ETag-safe durable incomplete-checkpoint index and startup replay service while preserving checkpoint shape/key, false-on-missing replay, replay-without-rediscovery, and attempt-before-submit ordering.
-- Authored 15 Integration tests: 14 deterministic cases pass; the new gated live SM-1b lane is present but cannot pass the pre-existing EventStore command-gateway boundary. The two older live lanes reproduce the same failure.
+- Authored 16 Integration tests: 15 deterministic cases and the gated live reactor/SM-1b lane all pass. The live lane proves both unchanged translators execute from `work.events`, then proves restart replay converges without duplicate terminal effects.
 - Preserved the pure kernel and both Reactor translators byte-for-byte (`ChildCompletionResumeTranslator` SHA-256 `595a13584c506aac49709dc7c5411df4e7b212f87668757a1b78a996fb27c409`; `TerminalCascadeTranslator` `1d1b5c56249e7d191b6ab6fb92b25ab47e5270e3cc7bcf07dc8b420fae40ce51`). No package or durable catalog type was added.
-- Completion gate is blocked: Task 2's live topic-delivery proof, Task 7's live SM-1b outcome, and the Task 10 all-green gate remain unchecked. Story and sprint status intentionally remain `in-progress`.
+- Repaired the AppHost/Dapr boundary without bypassing security: explicit app endpoints and liveness, actor-placement readiness, case-preserving command payloads, public processor activation, and allow-listed Dapr service invocation for internal recovery traffic.
+- Completion gate passed: all four direct suites are green with zero skips, live topic delivery and restart convergence are proven, and story/sprint status advance to `review`.
 
 ### File List
 
@@ -251,6 +254,7 @@ GPT-5 Codex
 - `src/Hexalith.Works.AppHost/Program.cs`
 - `src/Hexalith.Works/Hexalith.Works.csproj`
 - `src/Hexalith.Works/Program.cs`
+- `src/Hexalith.Works/Recovery/Cascade/CascadeCommands.cs`
 - `src/Hexalith.Works/Recovery/Cascade/CascadeCheckpointIdentity.cs`
 - `src/Hexalith.Works/Recovery/Cascade/CascadeCheckpointIndex.cs`
 - `src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs`
@@ -268,24 +272,31 @@ GPT-5 Codex
 - `src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs`
 - `src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs`
 - `src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs`
+- `src/Hexalith.Works/Runtime/IWorkCommandSubmitter.cs`
 - `src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs`
 - `src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs`
+- `src/Hexalith.Works/Reminders/DateResume.cs`
 - `tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/CascadeRecoveryRuntimeTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/ChildCompletionEventHandlerTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/Story47InMemoryReadModelStore.cs`
 - `tests/Hexalith.Works.IntegrationTests/StreamReadingCascadeDescendantSourceTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/TerminalCascadeEventHandlerTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostTestCollection.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs`
 
 ### Change Log
 
 - 2026-07-22: Story context created from the 2026-07-21 correct-course (findings F-RT-1/2/4/7); status ready-for-dev.
 - 2026-07-22: Implemented live subscription adapters, cascade/child-completion consumers, durable checkpoint discovery/replay, deterministic coverage, gated SM-1b lane, governance, and docs. Kept status in-progress because all three live lanes remain blocked at the pre-existing first gateway POST.
+- 2026-07-22: Repaired the AppHost/Dapr command and recovery boundary, proved both reactor translators plus restart replay live, serialized fixed-id Dapr topologies, and completed the 657/657 all-green gate; status moved to review.
 
 ## Validation Notes
 

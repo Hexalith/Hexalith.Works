@@ -36,14 +36,13 @@ namespace Hexalith.Works.IntegrationTests;
 /// <para>Auth uses the EventStore EnableKeycloak=false symmetric-key dev path; the signing key matches the
 /// EventStore <c>appsettings.Development.json</c> dev key.</para>
 /// </remarks>
+[Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksCommandPipelineSmokeTests
 {
     private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
     private const string Tenant = "tenant-alpha";
     // Unique per run so persistent dapr-init Redis cannot turn a rerun into duplicate-create rejection.
     private static readonly string WorkItem = "work-smoke-" + Guid.NewGuid().ToString("N")[..12];
-
-    private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     [Fact]
     public async Task CreateWorkItem_command_persists_then_publishes_to_a_terminal_status()
@@ -67,6 +66,7 @@ public sealed class WorksCommandPipelineSmokeTests
             .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], startupCts.Token)
             .ConfigureAwait(true);
 
+        WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
         try
         {
@@ -77,6 +77,9 @@ public sealed class WorksCommandPipelineSmokeTests
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
+            await WorksAppHostTestReadiness
+                .WaitForEventStoreCommandRuntimeAsync(client, startupCts.Token)
+                .ConfigureAwait(true);
 
             string correlationId = await SubmitCreateWorkItemAsync(client, startupCts.Token).ConfigureAwait(true);
             string status = await PollToTerminalAsync(client, correlationId, startupCts.Token).ConfigureAwait(true);
@@ -99,7 +102,7 @@ public sealed class WorksCommandPipelineSmokeTests
             Domain: "work",
             AggregateId: WorkItem,
             CommandType: nameof(CreateWorkItem),
-            Payload: JsonSerializer.SerializeToElement(command, Web));
+            Payload: JsonSerializer.SerializeToElement(command));
 
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/commands")
         {

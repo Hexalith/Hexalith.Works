@@ -18,7 +18,7 @@ internal sealed class WorksDomainEventProcessor
     private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>Initializes a new instance of the <see cref="WorksDomainEventProcessor"/> class.</summary>
-    internal WorksDomainEventProcessor(
+    public WorksDomainEventProcessor(
         IServiceScopeFactory serviceScopeFactory,
         IEventStoreDomainEventMarkerStore markerStore,
         ILogger<WorksDomainEventProcessor> logger)

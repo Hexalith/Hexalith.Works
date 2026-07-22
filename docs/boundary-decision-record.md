@@ -180,7 +180,18 @@ ownership model. None of them is implemented or wired in v1.
   re-reads the completed child's aggregate stream to find its same-tenant `WorkItemCreated.Parent`, then replays
   that parent's stream to rebuild only its current suspended await conditions; mismatch or read failure returns
   no candidate. The unchanged pure translator emits `ResumeWorkItem`, and the EventStore gateway plus aggregate
-  `Handle` remain the acceptance and idempotency boundary.
+  `Handle` remain the acceptance and idempotency boundary. Internal recovery reads and commands route through
+  the Works Dapr sidecar (`DAPR_HTTP_ENDPOINT` + EventStore service invocation), and EventStore explicitly
+  allow-lists the `works` caller. This preserves the supported Dapr-internal authentication boundary instead of
+  bypassing authorization with direct host calls. Recovery command payloads retain CLR property casing because
+  the pinned EventStore aggregate adapter deserializes command payloads with default, case-sensitive JSON
+  options; camel-case Web JSON would otherwise silently bind zero-valued tenant and work-item identities.
+
+  The live AppHost gate distinguishes host liveness from command-path readiness. Aspire waits on `/alive` for
+  both HTTP hosts, then the tests inspect EventStore's `/ready` response until the load-bearing
+  `dapr-actor-placement` check is healthy and allow one Dapr app-health probe interval for Works. EventStore's
+  aggregate `/ready` status may remain 503 because it also includes the independently operated
+  `projection-delivery-writer-protocol` cutover; that unrelated check does not gate aggregate commands.
 
   Incomplete cascade checkpoints are discoverable after restart through one ETag-updated singleton index in the
   same `statestore`; Dapr key enumeration is neither assumed nor emulated. An incomplete identity is indexed

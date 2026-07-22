@@ -28,10 +28,19 @@ public sealed class WorksAppHostTopologyTests
         names.ShouldContain("eventstore-admin", "The EventStore Admin.Server must be composed.");
         names.ShouldContain("works", "The runnable Works domain service must be composed.");
 
+        IResource eventStore = builder.Resources.Single(resource => string.Equals(resource.Name, "eventstore", StringComparison.Ordinal));
+        eventStore.Annotations.OfType<HealthCheckAnnotation>().ShouldNotBeEmpty(
+            "Tier-3 lanes must not submit commands until the EventStore HTTP host reports alive.");
+
         // Works runs as an EventStore domain module: it has a Dapr sidecar (shared state store + pub/sub).
         IResource works = builder.Resources.Single(resource => string.Equals(resource.Name, "works", StringComparison.Ordinal));
         works.Annotations.Any(annotation => annotation.GetType().Name.Contains("Dapr", StringComparison.Ordinal))
             .ShouldBeTrue("The Works domain service must run with a Dapr sidecar.");
+        works.Annotations.OfType<EndpointAnnotation>()
+            .Any(endpoint => string.Equals(endpoint.Name, "http", StringComparison.Ordinal))
+            .ShouldBeTrue("The Works HTTP endpoint must supply the Dapr sidecar app port for service invocation and subscriptions.");
+        works.Annotations.OfType<HealthCheckAnnotation>().ShouldNotBeEmpty(
+            "Tier-3 lanes must not submit commands until the Works HTTP host reports alive.");
 
         // The shared Dapr infrastructure components (actor state store + pub/sub) are present.
         int daprComponents = builder.Resources.Count(resource => resource.GetType().Name.Contains("DaprComponent", StringComparison.Ordinal));
@@ -52,6 +61,21 @@ public sealed class WorksAppHostTopologyTests
             "EventStore__Publisher__TopicOverrides__work",
             Case.Sensitive,
             "Works events must publish to the shared work.events subscription topic.");
+        appHostProgram.ShouldContain(
+            "Authentication__DaprInternal__AllowedCallers__0",
+            Case.Sensitive,
+            "EventStore must explicitly allow the Works Dapr identity for authenticated recovery reads and commands.");
+
+        string recoveryExtensions = File.ReadAllText(
+            Path.Combine(root, "src", "Hexalith.Works", "Runtime", "WorksRecoveryExtensions.cs"));
+        recoveryExtensions.ShouldContain(
+            "DAPR_HTTP_ENDPOINT",
+            Case.Sensitive,
+            "The recovery gateway client must route through the local Dapr sidecar when one is composed.");
+        recoveryExtensions.ShouldContain(
+            "AddEventStoreDaprServiceInvocation",
+            Case.Sensitive,
+            "The recovery gateway client must carry the authoritative EventStore app-id routing header.");
 
         // No production UI / MCP / chatbot / email / routing / cost / security-hardening adapters.
         string[] forbiddenFragments = ["mcp", "chatbot", "email", "mail", "datagrid", "webshell", "routing", "cost", "keycloak", "signalr"];

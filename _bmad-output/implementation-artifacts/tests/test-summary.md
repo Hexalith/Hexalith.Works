@@ -2236,11 +2236,10 @@ through an ETag-safe durable index on startup.
 (the command and reminder Tier-3 lanes were already red at their first gateway submission), ArchitectureTests
 **44**, PropertyTests **3**, catalog **37**. This supersedes the older Story 4.6 ledger of 620 green + 2 skipped.
 
-**Story 4.7 validation checkpoint: 653 green + 3 failed broad-gate lanes** — UnitTests **496/496**,
-IntegrationTests **110/113**, ArchitectureTests **44/44**, PropertyTests **3/3**. Catalog remains **37**.
-The 15 new Integration tests comprise **14 green deterministic cases** and **1 authored live cascade-recovery
-lane** that fails at the same pre-existing first-command gateway boundary as the two older live lanes. Story
-status remains `in-progress`; no live delivery or restart-convergence pass is claimed.
+**Story 4.7 final validation: 657/657 green, zero skips** — UnitTests **496/496**, IntegrationTests
+**114/114**, ArchitectureTests **44/44**, PropertyTests **3/3**. Catalog remains **37**. The **16** new
+Integration tests comprise **15 deterministic cases** and **1 live reactor/restart lane**. All three Tier-3
+classes pass against the current EventStore submodule, and the story advances to `review`.
 
 ## Production/runtime coverage
 
@@ -2258,10 +2257,11 @@ status remains `in-progress`; no live delivery or restart-convergence pass is cl
 - The checkpoint store maintains an ETag-updated incomplete index, and a startup hosted service drives
   `ReplayAsync` from that index without tenant hand-configuration or descendant rediscovery.
 
-## Tests added — IntegrationTests +15
+## Tests added — IntegrationTests +16
 
-- `WorksDomainEventProcessorTests` — **3**: generic silent misbind characterization; all three consumed Web-JSON
-  events dispatch; completed marker deduplicates; malformed known bytes are acknowledged and marked complete.
+- `WorksDomainEventProcessorTests` — **4**: default-DI activation; generic silent misbind characterization; all
+  three consumed Web-JSON events dispatch; completed marker deduplicates; malformed known bytes are acknowledged
+  and marked complete.
 - `TerminalCascadeEventHandlerTests` — **2**: cancellation and expiration consumers delegate to the dispatcher.
 - `StreamReadingCascadeDescendantSourceTests` — **2**: terminal roll-up skips, active and missing roll-ups target;
   transient parent-stream failures propagate so the durable delivery remains retryable.
@@ -2271,8 +2271,9 @@ status remains `in-progress`; no live delivery or restart-convergence pass is cl
   cross-tenant parent references fail closed; transient gateway failures propagate for subscription retry.
 - `CascadeCheckpointIndexRecoveryTests` — **2**: incomplete/completed index lifecycle and interrupted-attempt
   startup convergence with an idempotent second pass and no descendant rediscovery.
-- `WorksCascadeRecoveryPipelineSmokeTests` — **1 gated Tier-3 lane**: authored parent/children cancellation,
-  paced mid-cascade stop, AppHost restart, index replay, and exactly-one terminal-event assertions.
+- `WorksCascadeRecoveryPipelineSmokeTests` — **1 gated Tier-3 lane**: live completed-child resume through the
+  unchanged translator, parent/children cancellation, paced mid-cascade stop, AppHost restart, index replay, and
+  exactly-one terminal-event assertions.
 
 Existing focused recovery/translator lanes remained green: `CascadeRecoveryRuntimeTests`,
 `TerminalCascadeTranslatorTests` (**11**), `ChildCompletionResumeTranslatorTests` (**5**), and
@@ -2281,17 +2282,22 @@ Existing focused recovery/translator lanes remained green: `CascadeRecoveryRunti
 ## Live broad-gate result
 
 Redis :6379, Dapr placement :50005, and scheduler :50006 were reachable, so none of the three Tier-3 tests
-skipped. Both suppressed EventStore hosts were explicitly built Release first (0 warnings, 0 errors). Focused
-runs and the full Integration binary then produced the same result:
+skipped. Both suppressed EventStore hosts were explicitly built Release first (0 warnings, 0 errors). The live
+classes share one non-parallel xUnit collection because local Dapr name resolution uses fixed `works` and
+`eventstore` application ids; the harness also suppresses expected resource-log noise without suppressing xUnit
+failures. The final direct Integration binary reported **114/114 passed, 0 skipped**:
 
-- `WorksCommandPipelineSmokeTests`: failed at its first `POST /api/v1/commands` after the configured 60-second
-  `HttpClient.Timeout`.
-- `WorksReminderRecoveryPipelineSmokeTests`: failed at its first `POST /api/v1/commands` after 60 seconds.
-- `WorksCascadeRecoveryPipelineSmokeTests`: failed while creating its first work item through the same POST
-  after 60 seconds, before any event could be published or consumed.
+- `WorksCommandPipelineSmokeTests`: unique work item reached `Completed` through the command gateway.
+- `WorksReminderRecoveryPipelineSmokeTests`: AppHost restart plus duplicate reissue converged to exactly one
+  `WorkItemResumed`.
+- `WorksCascadeRecoveryPipelineSmokeTests`: `WorkItemCompleted` resumed the awaiting parent through the live
+  topic, parent cancellation dispatched the first descendant, and startup checkpoint replay dispatched the
+  outstanding descendant after restart; each descendant contains exactly one `WorkItemCancelled`.
 
-The fixed-id debt is nevertheless closed: `WorksCommandPipelineSmokeTests` now uses a per-run-unique aggregate
-id. The live gate was neither weakened nor converted to a skip.
+The gateway repair supplies the Works Dapr app port, waits for EventStore actor placement and the Works app-health
+probe, preserves the aggregate adapter's case-sensitive command payload casing, and routes internal recovery
+traffic through the allow-listed Works Dapr identity. `WorksCommandPipelineSmokeTests` also uses a per-run-unique
+aggregate id, closing the warm-Redis collision debt.
 
 ## Verification commands and results
 
