@@ -45,6 +45,7 @@ public sealed class StreamReadingCascadeDescendantSource(
         {
             ReplayContinuationToken? continuation = null;
             long from = 0;
+            bool stillTruncated = false;
 
             for (int page = 0; page < _options.MaxStreamPagesPerTenant; page++)
             {
@@ -71,7 +72,8 @@ public sealed class StreamReadingCascadeDescendantSource(
                     }
                 }
 
-                if (!result.Metadata.IsTruncated)
+                stillTruncated = result.Metadata.IsTruncated;
+                if (!stillTruncated)
                 {
                     break;
                 }
@@ -83,6 +85,22 @@ public sealed class StreamReadingCascadeDescendantSource(
                 // harmless here — the HashSet dedups child ids — but advancing is clearer and cheaper.
                 from = result.Metadata.LastSequenceReturned is { } lastSequence ? lastSequence + 1 : from;
             }
+
+            if (stillTruncated)
+            {
+                // The parent stream still has unread pages after exhausting the configured page budget: building a
+                // cascade checkpoint from a partial descendant set would silently miss targets, and because
+                // EnsureCheckpointAsync never re-discovers once a checkpoint exists, those targets would be
+                // skipped permanently. Fail closed instead (mirrors StreamReadingChildCompletionAwaitingParentSource).
+                throw new InvalidOperationException(
+                    $"Stream for aggregate '{parentWorkItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerTenant)} page budget while still truncated.");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Shutdown/timeout cancellation is not a discovery failure: let it propagate without logging a
+            // spurious recovery-step-failed (consistent with IsTerminalAsync below).
+            throw;
         }
         catch (Exception ex)
         {

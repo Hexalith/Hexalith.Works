@@ -21,6 +21,10 @@ public sealed class CascadeRecoveryReconciler(
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
     private readonly ILogger<CascadeRecoveryReconciler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
+    // TimeSpan.FromHours overflows above ~2.56e8 hours; clamp well below that so a misconfigured huge value reads
+    // as "effectively never prune" instead of throwing OverflowException and aborting the entire startup pass.
+    private const int MaxStaleAfterHours = 24 * 365 * 1000;
+
     /// <summary>Replays the current index snapshot and returns the number of checkpoints completed.</summary>
     public async Task<int> RecoverAsync(CancellationToken cancellationToken = default)
     {
@@ -29,7 +33,7 @@ public sealed class CascadeRecoveryReconciler(
             .ConfigureAwait(false);
         int completed = 0;
         DateTimeOffset now = _timeProvider.GetUtcNow();
-        TimeSpan staleAfter = TimeSpan.FromHours(Math.Max(0, _options.CascadeCheckpointIndexStaleAfterHours));
+        TimeSpan staleAfter = TimeSpan.FromHours(Math.Clamp(_options.CascadeCheckpointIndexStaleAfterHours, 0, MaxStaleAfterHours));
         foreach (CascadeCheckpointIndexEntry entry in entries)
         {
             try
