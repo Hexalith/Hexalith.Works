@@ -26,6 +26,16 @@ internal static class WorksReadModelKeys
     /// <summary>Builds the per-work-item roll-up read-model key, derived from <c>(tenantId, workItemId)</c>.</summary>
     public static string RollUpKey(string tenantId, string workItemId)
         => $"projection:works:rollup:{tenantId}:{workItemId}";
+
+    /// <summary>Builds the singleton-per-tenant pending-<c>DateReached</c>-await index key (Story 4.8). The tenant
+    /// is embedded so cross-tenant inner-id collisions never share an entry.</summary>
+    public static string PendingDateAwaitIndexKey(string tenantId) => $"projection:works:pending-date-await:{tenantId}";
+
+    /// <summary>The well-known singleton key of the pending-date-await tenant registry (Story 4.8). This one
+    /// durable document is what lets recovery enumerate the tenants that have (or have had) pending date awaits
+    /// without any per-tenant hand configuration — Dapr state stores expose no key enumeration and the gateway
+    /// exposes no tenant-wide read.</summary>
+    public const string PendingDateAwaitRegistryKey = "projection:works:pending-date-await:tenants";
 }
 
 /// <summary>

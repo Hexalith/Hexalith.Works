@@ -61,8 +61,10 @@ public static class WorksRecoveryExtensions
 
         services.TryAddSingleton<IWorkCommandSubmitter, EventStoreGatewayWorkCommandSubmitter>();
 
-        // Date-reminder reconciliation-on-recovery.
-        services.TryAddSingleton<IPendingDateAwaitSource, StreamReadingPendingDateAwaitSource>();
+        // Date-reminder reconciliation-on-recovery. Story 4.8: discovery is the durable pending-date-await index
+        // (registry + per-tenant index maintained by the /project dispatcher) re-folded per aggregate — never the
+        // retired tenant-wide, null-AggregateId scan the gateway 400-rejects, and never a hand-configured tenant list.
+        services.TryAddSingleton<IPendingDateAwaitSource, IndexedPendingDateAwaitSource>();
         services.TryAddSingleton<IDateReminderScheduler, DaprDateReminderScheduler>();
         services.TryAddSingleton<DateReminderReconciler>();
         _ = services.AddHostedService<ReminderReconciliationService>();

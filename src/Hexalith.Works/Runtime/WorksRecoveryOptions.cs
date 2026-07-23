@@ -5,24 +5,21 @@ namespace Hexalith.Works.Runtime;
 /// <c>Works:Recovery</c> configuration section.
 /// </summary>
 /// <remarks>
-/// <para>Substrate limitation (documented, not faked): neither the EventStore stream-read surface nor the
-/// Dapr state store exposes a cross-tenant enumeration, so reminder reconciliation re-scans the
-/// <see cref="Tenants"/> it is told about. A single-tenant or known-tenant-set deployment (the proof's
-/// shape) reconciles fully; broad multi-tenant discovery would need an EventStore capability not present at
-/// implementation time.</para>
+/// <para>Story 4.8 removed the hand-configured <c>Tenants</c> gate: reminder reconciliation discovers the tenants
+/// with pending date awaits from the durable pending-date-await registry (maintained by the <c>/project</c>
+/// dispatcher), not from configuration. Neither the EventStore stream-read surface nor the Dapr state store
+/// exposes a cross-tenant enumeration — the durable registry is the substrate-compatible answer, and every
+/// discovery read is per-aggregate (the tenant-wide null-<c>AggregateId</c> read is gateway-rejected).</para>
 /// </remarks>
 public sealed class WorksRecoveryOptions
 {
     /// <summary>The configuration section these options bind from.</summary>
     public const string SectionName = "Works:Recovery";
 
-    /// <summary>The tenant scope reminder reconciliation re-scans on recovery. Empty disables the scan.</summary>
-    public IReadOnlyList<string> Tenants { get; init; } = [];
-
     /// <summary>Whether the startup reconciliation pass runs. Defaults to enabled.</summary>
     public bool RunReconciliationOnStartup { get; init; } = true;
 
-    /// <summary>The maximum stream pages a single reconciliation scan reads per tenant (a runaway backstop).</summary>
+    /// <summary>The maximum stream pages a single reconciliation scan reads per aggregate (a runaway backstop).</summary>
     public int MaxStreamPagesPerTenant { get; init; } = 1000;
 
     /// <summary>

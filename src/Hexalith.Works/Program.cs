@@ -8,6 +8,7 @@ using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery.ChildCompletion;
+using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
 
@@ -50,6 +51,11 @@ _ = builder.Services.AddSingleton<WorksDomainEventProcessor>();
 _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCancelled, WorkItemCancelledCascadeHandler>();
 _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemExpired, WorkItemExpiredCascadeHandler>();
 _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCompleted, WorkItemCompletedResumeHandler>();
+
+// Story 4.8, AC #1: registering a durable date reminder at suspend time is the steady-state trigger — a
+// date-suspended item resumes when the date fires without a host restart. Derived from the folded current
+// pending set (DD-1), idempotent under the subscription's at-least-once redelivery.
+_ = builder.Services.AddEventStoreDomainEventHandler<WorkItemSuspended, WorkItemSuspendedReminderHandler>();
 
 // Story 4.6 recovery edge: date-resume reminder reconciliation and terminal-cascade dispatch/checkpoint/
 // replay. The Dapr actor reminders, gateway command path, stores, and clock all live here at the host edge;

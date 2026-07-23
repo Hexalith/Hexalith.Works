@@ -144,6 +144,8 @@ internal sealed class WorksDomainEventProcessor
                 value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
             [typeof(WorkItemCompleted)] = ConsumedEventDescriptor.For<WorkItemCompleted>(
                 value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
+            [typeof(WorkItemSuspended)] = ConsumedEventDescriptor.For<WorkItemSuspended>(
+                value => (value.TenantId.Value, value.WorkItemId.Value, value.AggregateId)),
         };
 
     private static Task<int> DispatchAsync(

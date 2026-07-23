@@ -158,11 +158,12 @@ ownership model. None of them is implemented or wired in v1.
   network/filesystem I/O, command gateways, and checkpoint stores (fitness-asserted). The current recovery scan
   is bounded to configured tenants because the EventStore/Dapr surfaces do not expose cross-tenant enumeration;
   this is documented as a substrate limitation, not hidden in the domain. No reminder/checkpoint/read-model
-  runtime type enters the polymorphic catalog, so the v1 catalog stays **36** and the golden corpus remains
-  byte-compatible. **Recovery trigger decision:** reminders/resumes are reconciliation-on-recovery only —
-  registered/reissued when the host (re)starts and scans pending date awaits — not registered at suspend time by
-  an event-driven subscriber. This matches the ACs (AC #1 = fire behavior, AC #3 = reconciliation) and avoids a
-  new steady-state subscriber; a host restart is the trigger that re-establishes pending reminders. The gated
+  runtime type enters the polymorphic catalog, so the v1 catalog stays **37** and the golden corpus remains
+  byte-compatible. **Recovery trigger decision (SUPERSEDED by Story 4.8, see below):** at 4.6, reminders/resumes
+  were reconciliation-on-recovery only — registered/reissued when the host (re)starts and scans pending date
+  awaits — not registered at suspend time. Story 4.8 reverses this per architecture decision C2 (reaffirmed by the
+  2026-07-21 correct-course): a reminder is now registered at suspend time on the live event stream, and recovery
+  discovers pending awaits from a durable index rather than a hand-configured tenant scan. The gated
   Tier-3 Aspire lane (`WorksReminderRecoveryPipelineSmokeTests`) proves this restart→reissue→exactly-once-resume
   path; because the gateway stream-read route requires a per-aggregate id (no tenant/domain-wide enumeration), the
   lane reissues through the adapter's own deterministic `DateResume` factory rather than tenant-wide
@@ -210,6 +211,24 @@ ownership model. None of them is implemented or wired in v1.
   auto-discovered; this is acceptable because the dispatcher had no production caller before the live
   subscription added by this story. The checkpoint record shape, key, replay signature, false-on-missing result,
   and attempt-before-submit ordering remain unchanged.
+- **Story 4.8 (register and reconcile date reminders durably).** This story supersedes the Story 4.6 M1
+  reconciliation-only posture per architecture decision C2 (reaffirmed by the 2026-07-21 correct-course). A durable
+  Dapr date reminder is now registered at **suspend time** on the live `work.events` subscription (Story 4.7's
+  surface): a new `IEventStoreDomainEventHandler<WorkItemSuspended>` re-folds the suspended aggregate's
+  per-aggregate stream through the pure `PendingDateAwaitProjection` (derived from the current pending set, never a
+  raw event in isolation) and schedules one reminder per pending `DateReached` await, so a date-suspended item
+  resumes when the date fires with no host restart. The subscription — not the poller-latency `/project` dispatch —
+  is the steady-state trigger, mirroring Story 4.7's other live translators. Recovery no longer needs per-tenant
+  hand configuration: the `/project` dispatcher maintains a durable **pending-date-await index** (a per-tenant
+  index document plus one well-known tenant-registry document, both plain host-edge `System.Text.Json` read models,
+  so the v1 catalog stays **37**), and the startup reconciler discovers tenants from that registry, reads each
+  tenant's index, and re-folds each candidate's per-aggregate stream for truth before acting — the index is
+  discovery, the stream is authoritative, so a stale entry can never cause a wrong reissue. The removed
+  `Works:Recovery:Tenants` gate (and its AppHost forwarding) means reconciliation runs on by default
+  (`RunReconciliationOnStartup`). Every stream read carries an `AggregateId`; the tenant-wide null-aggregate scan
+  the gateway 400-rejects is retired. Idempotency is unchanged: deterministic `DateReminderName`/correlation ids
+  make suspend-time registration and recovery reissue converge to a single accepted `WorkItemResumed`. The
+  `WorkItemAggregate.Handle`/reactor kernel stays clock-free (AC #4, fitness-asserted).
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate

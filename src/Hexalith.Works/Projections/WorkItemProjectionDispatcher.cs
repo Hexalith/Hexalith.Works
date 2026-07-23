@@ -8,6 +8,7 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
 using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.Logging;
 
@@ -93,6 +94,7 @@ public sealed class WorkItemProjectionDispatcher
 
         var whatsNext = new WhatsNextQueueProjection();
         var rollUp = new WorkItemRollUpProjection();
+        var decodedEvents = new List<(long Sequence, IEventPayload Payload)>();
         bool changed = false;
         int decoded = 0;
 
@@ -112,6 +114,7 @@ public sealed class WorkItemProjectionDispatcher
             var delivery = new WorkItemRollUpEvent(tenant, workItemId, dto.SequenceNumber, payload);
             rollUp.Project(delivery);
             changed |= whatsNext.Project(delivery).Changed;
+            decodedEvents.Add((dto.SequenceNumber, payload));
             decoded++;
         }
 
@@ -121,6 +124,7 @@ public sealed class WorkItemProjectionDispatcher
 
         await UpsertTenantIndexAsync(tenant, request.AggregateId, item, request.Events, cancellationToken).ConfigureAwait(false);
         await PersistRollUpAsync(tenant, workItemId, rollUp, cancellationToken).ConfigureAwait(false);
+        await MaintainPendingDateAwaitIndexAsync(tenant, request.AggregateId, decodedEvents, request.Events, cancellationToken).ConfigureAwait(false);
 
         if (changed && _notifier is not null)
         {
@@ -190,6 +194,103 @@ public sealed class WorkItemProjectionDispatcher
                 .SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value), model, cancellationToken)
                 .ConfigureAwait(false);
         }
+    }
+
+    private async Task MaintainPendingDateAwaitIndexAsync(
+        TenantId tenant,
+        string aggregateId,
+        IReadOnlyList<(long Sequence, IEventPayload Payload)> decodedEvents,
+        IReadOnlyList<ProjectionEventDto>? events,
+        CancellationToken cancellationToken)
+    {
+        // Fold the full replayed stream (Story 4.8, DD-1/DD-3): the durable index records the aggregate's
+        // *current* pending DateReached awaits, never a raw suspend event in isolation, so a stream that has
+        // since resumed clears the entry. Reuse the same pure fold the recovery source uses — never a second one.
+        IReadOnlyList<IEventPayload> ordered = [.. decodedEvents.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];
+        IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(ordered);
+
+        if (pending.Count == 0)
+        {
+            // Date awaits are sparse but /project fires for every aggregate dispatch: only touch the index when
+            // this aggregate actually has an entry to clear, so the common no-date-await dispatch does one cheap
+            // read and no write (never creating an empty index document for a tenant that never used a date await).
+            ReadModelEntry<PendingDateAwaitTenantIndex> existing = await _store
+                .GetAsync<PendingDateAwaitTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value), cancellationToken)
+                .ConfigureAwait(false);
+            if (existing.Value is null || !existing.Value.Entries.ContainsKey(aggregateId))
+            {
+                return;
+            }
+        }
+        else
+        {
+            // Registry BEFORE index: a crash after the registry write but before the index write leaves a registered
+            // tenant with an empty index (recovery pays one cheap empty read — safe). The reverse ordering could
+            // strand index entries under a tenant recovery never enumerates. The registry is append-only.
+            await EnsureTenantRegisteredAsync(tenant.Value, events, cancellationToken).ConfigureAwait(false);
+        }
+
+        ReadModelWriteContext context = new ReadModelWriteContext(
+            Category: "works pending-date-await index",
+            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            .WithEventDiagnostics(events ?? []);
+
+        _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantIndex>(
+            _store,
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value),
+            current =>
+            {
+                PendingDateAwaitTenantIndex index = current ?? new PendingDateAwaitTenantIndex();
+                if (pending.Count > 0)
+                {
+                    index.Entries[aggregateId] = pending;
+                }
+                else
+                {
+                    _ = index.Entries.Remove(aggregateId);
+                }
+
+                return index;
+            },
+            context,
+            _logger,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task EnsureTenantRegisteredAsync(
+        string tenantId,
+        IReadOnlyList<ProjectionEventDto>? events,
+        CancellationToken cancellationToken)
+    {
+        // Read first, write only on a genuine addition: most suspended-item dispatches are for a tenant already
+        // in the registry, so the common path is a single cheap read with no write churn on the singleton doc.
+        ReadModelEntry<PendingDateAwaitTenantRegistry> current = await _store
+            .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
+            .ConfigureAwait(false);
+        if (current.Value is not null && current.Value.Tenants.Contains(tenantId))
+        {
+            return;
+        }
+
+        ReadModelWriteContext context = new ReadModelWriteContext(
+            Category: "works pending-date-await tenant registry",
+            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            .WithEventDiagnostics(events ?? []);
+
+        _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantRegistry>(
+            _store,
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            existing =>
+            {
+                PendingDateAwaitTenantRegistry registry = existing ?? new PendingDateAwaitTenantRegistry();
+                _ = registry.Tenants.Add(tenantId);
+                return registry;
+            },
+            context,
+            _logger,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private IEventPayload? Decode(ProjectionEventDto dto, TenantId tenant, WorkItemId workItemId, string correlationId)

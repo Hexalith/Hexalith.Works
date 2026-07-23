@@ -7,11 +7,13 @@ using Microsoft.Extensions.Options;
 namespace Hexalith.Works.Reminders;
 
 /// <summary>
-/// Bounded hosted service that runs one reminder reconciliation pass on Works host startup (Story 4.6, AC
-/// #3): it re-scans the re-readable pending <c>DateReached</c> awaits and re-registers reminders / reissues
-/// due resumes so a firing lost to an AppHost restart is recovered. It is fail-safe — a transient
-/// scan/dispatch failure is logged with bounded metadata and never crashes the host, because the underlying
-/// scan and resumes are idempotent and the next restart repeats them.
+/// Bounded hosted service that runs one reminder reconciliation pass on Works host startup (Story 4.6 AC #3,
+/// Story 4.8 auto-discovery): it re-scans the durable pending <c>DateReached</c> awaits and re-registers
+/// reminders / reissues due resumes so a firing lost to an AppHost restart is recovered. Story 4.8 removed the
+/// hand-configured tenant gate — the pass runs whenever <see cref="WorksRecoveryOptions.RunReconciliationOnStartup"/>
+/// is set (default), discovering tenants from the durable registry. It is fail-safe — a transient scan/dispatch
+/// failure is logged with bounded metadata and never crashes the host, because the underlying scan and resumes
+/// are idempotent and the next restart repeats them.
 /// </summary>
 public sealed class ReminderReconciliationService(
     DateReminderReconciler reconciler,
@@ -25,7 +27,7 @@ public sealed class ReminderReconciliationService(
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (!_options.RunReconciliationOnStartup || _options.Tenants.Count == 0)
+        if (!_options.RunReconciliationOnStartup)
         {
             return;
         }

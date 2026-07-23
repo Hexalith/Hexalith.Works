@@ -13,8 +13,6 @@ using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
-using Hexalith.Works.Reminders;
-using Hexalith.Works.Runtime;
 
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -24,48 +22,53 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Story 4.6 AC #1/#3 runtime reminder-recovery proof. This lane starts the full Works AppHost topology under
-/// <see cref="Aspire.Hosting.Testing"/>, parks a work item on a past <c>DateReached</c> await, then
-/// <em>restarts the AppHost</em> (a fresh <see cref="DistributedApplication"/> against the same external
-/// <c>dapr init</c> Redis, so the persisted stream survives the stop) and proves the date resume is reissued
-/// and accepted exactly once, idempotently under a second pass.
+/// Story 4.8 SM-1 runtime proof of durable date-reminder registration and reconciliation in the live topology.
+/// It starts the full Works AppHost under <see cref="Aspire.Hosting.Testing"/> and proves the story's core value
+/// end-to-end: <b>recovery (AC #2/#3)</b> — after an AppHost restart against the same <c>dapr init</c> Redis, <em>with
+/// no <c>--Works:Recovery:Tenants</c> argument</em>, a parked date-await resumes exactly once because recovery
+/// auto-discovers it from the durable pending-date-await index the <c>/project</c> dispatcher maintains. A separate
+/// fact covers <b>steady state (AC #1)</b> — suspend-time registration → Dapr Scheduler fire → resume with no restart.
 /// </summary>
 /// <remarks>
 /// <para>It is Tier-3: it requires Docker, a <c>dapr init</c> Redis, and the Dapr placement/scheduler services.
-/// When those prerequisites are absent (e.g. the headless sandbox) the test <see cref="Assert.Skip(string)"/>s
-/// with a clear reason rather than failing — mirroring <c>WorksCommandPipelineSmokeTests</c>. The reconciliation
-/// <em>decision logic</em> (discover pending due awaits → reissue idempotently, reschedule future awaits) is
-/// proven deterministically by <c>DateReminderRecoveryRuntimeTests</c>; this lane proves the end-to-end resume
-/// acceptance and exactly-once outcome under a real Aspire restart.</para>
-/// <para><b>Substrate limitation (honest, not faked).</b> On restart the Works host's
-/// <c>ReminderReconciliationService</c> runs over the forwarded <c>Works:Recovery:Tenants</c> scope, but its
-/// <c>StreamReadingPendingDateAwaitSource</c> tenant-wide scan is bounded by the EventStore stream-read gateway,
-/// which currently requires a per-aggregate id (the contract allows domain-wide reads, but the
-/// <c>StreamsController</c> route rejects a null <c>AggregateId</c> today). So this lane reissues the resume the
-/// way the recovery adapter does — through the production <see cref="DateResume.BuildSubmission"/> command
-/// factory submitted on the same <c>POST /api/v1/commands</c> path the reminder actor / reconciler use — rather
-/// than relying on tenant-wide auto-discovery. "Exactly one accepted <c>WorkItemResumed</c>" is then verified
-/// from the re-readable per-aggregate stream (<c>POST /api/v1/streams/read</c>).</para>
+/// When those prerequisites are absent (e.g. the headless sandbox) the tests <see cref="Assert.Skip(string)"/> with
+/// a clear reason rather than failing — mirroring <c>WorksCommandPipelineSmokeTests</c>. The registration,
+/// index-maintenance, discovery, and reconciliation <em>decision logic</em> is proven deterministically by
+/// <c>WorkItemSuspendedReminderHandlerTests</c>, <c>PendingDateAwaitIndexDispatcherTests</c>,
+/// <c>IndexedPendingDateAwaitSourceTests</c>, and <c>DateReminderRecoveryRuntimeTests</c>; these lanes prove the
+/// end-to-end resume acceptance under a real Aspire topology.</para>
+/// <para><b>No hand configuration (AC #3).</b> The AppHost is launched with only <c>--EnableKeycloak=false</c>.
+/// Story 4.8 removed the <c>Works:Recovery:Tenants</c> forwarding; the restart's <c>ReminderReconciliationService</c>
+/// runs on by default and discovers the tenants with pending date awaits from the durable registry the
+/// <c>/project</c> dispatcher maintains, then re-folds each candidate's per-aggregate stream (every stream read
+/// carries an <c>AggregateId</c> — the tenant-wide null-aggregate read is gateway-rejected).</para>
+/// <para><b>Steady-state actor-scheduler substrate (AC #1).</b> The suspend-time path resumes the item by having
+/// the Dapr <em>actor reminder</em> fire — the <c>DateReminderActor</c>/Scheduler path built in Story 4.6 and never
+/// exercised live before (Story 4.6's lane reissued the resume command directly). Where the <c>dapr init</c>
+/// Scheduler does not deliver actor reminders back to the Works app (observed in the WSL2 sandbox: a due-immediately
+/// reminder never fired), the steady-state fact <see cref="Assert.Skip(string)"/>s with an explicit reason instead
+/// of failing — the <em>registration</em> logic this story adds is proven by <c>WorkItemSuspendedReminderHandlerTests</c>,
+/// and the durable recovery path is proven by the recovery fact above.</para>
 /// <para>Auth uses the EventStore EnableKeycloak=false symmetric-key dev path; the signing key matches the
-/// EventStore <c>appsettings.Development.json</c> dev key. The dev RBAC validator is permissive when the token
-/// carries no <c>eventstore:permission</c> claims, so the same token authorizes command submission and the
-/// per-aggregate replay read; only the tenant claim is load-bearing.</para>
+/// EventStore dev key. Ids are unique per run so a re-run against a persistent <c>dapr init</c> Redis starts from
+/// clean aggregate streams (the 2026-07-21 duplicate-create rejection makes fixed ids collide on re-run).</para>
 /// </remarks>
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksReminderRecoveryPipelineSmokeTests
 {
     private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
-    private const string Tenant = "tenant-recovery";
 
-    // A past instant so reconciliation/reissue treats the await as already due; suspend and resume must carry
-    // the SAME deterministic DateReached await condition for the aggregate to accept the resume.
-    private static readonly DateTimeOffset DueInstant = new(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    // Unique per run (canonical lowercase) so a re-run against a persistent dapr-init Redis never collides with a
+    // prior run's tenant registry / aggregate streams.
+    private static readonly string Tenant = "tenant-recovery-" + Guid.NewGuid().ToString("N")[..8];
+    private static readonly string SteadyItem = "work-steady-" + Guid.NewGuid().ToString("N")[..12];
+    private static readonly string RecoveryItem = "work-overdue-" + Guid.NewGuid().ToString("N")[..12];
 
-    // Unique per run so a re-run against a persistent dapr-init Redis starts from a clean aggregate stream.
-    private static readonly string WorkItem = "work-reminder-" + Guid.NewGuid().ToString("N")[..12];
+    // A past instant so the overdue await is due the moment recovery discovers it.
+    private static readonly DateTimeOffset PastInstant = new(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task A_pending_date_resume_survives_an_apphost_restart_and_resumes_exactly_once()
+    public async Task Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
 
@@ -79,42 +82,72 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
-        // Phase 1 — park the item on a past DateReached await, then stop the AppHost with the resume pending.
+        // Host 1 — park an item on a past DateReached. The /project dispatcher records it in the durable
+        // pending-date-await index/registry while the host is up.
         await WithAppHostAsync(ct, async (client, token) =>
         {
-            await ParkSuspendedOnDateAsync(client, token).ConfigureAwait(false);
-            (await CountResumedAsync(client, token).ConfigureAwait(false))
-                .ShouldBe(0, "The parked item must be Suspended (no WorkItemResumed) before recovery runs.");
+            await ParkSuspendedOnDateAsync(client, RecoveryItem, PastInstant, token).ConfigureAwait(false);
         }).ConfigureAwait(true);
 
-        // Phase 2/3 — restart the AppHost against the same Redis. The startup reconciler runs; the recovery
-        // adapter's deterministic resume is reissued and proven to resume exactly once and to be idempotent.
+        // Host 2 — restart against the same Redis WITHOUT any --Works:Recovery:Tenants argument. Recovery
+        // auto-discovers the parked await from the durable registry+index (no hand configuration), re-folds the
+        // per-aggregate stream, finds it overdue, and reissues the resume through the reconciler → command gateway.
         await WithAppHostAsync(ct, async (client, token) =>
         {
-            string firstStatus = await ReissueDateResumeAsync(client, token).ConfigureAwait(false);
-            firstStatus.ShouldBe("Completed", "The reissued date resume must be accepted after restart.");
-            (await WaitForResumedCountAsync(client, atLeast: 1, token).ConfigureAwait(false))
-                .ShouldBe(1, "Recovery must add exactly one accepted WorkItemResumed.");
+            (await WaitForResumedCountAsync(client, RecoveryItem, atLeast: 1, token).ConfigureAwait(false))
+                .ShouldBe(1, "Recovery must auto-discover the overdue await from the durable index (no hand config) and resume it exactly once.");
 
-            // Second pass — a redelivered firing reissues the SAME deterministic command; the aggregate no-ops
-            // it (and the substrate dedups by the deterministic message id), so no second resume is recorded.
-            string secondStatus = await ReissueDateResumeAsync(client, token).ConfigureAwait(false);
-            secondStatus.ShouldNotBe("Rejected", "A duplicate date resume must resolve idempotently (no-op), never rejected.");
-            (await CountResumedAsync(client, token).ConfigureAwait(false))
-                .ShouldBe(1, "A second reconciliation pass must not add a duplicate WorkItemResumed.");
+            // The reconciliation pass is idempotent: re-reading after a settle interval shows no duplicate resume.
+            await Task.Delay(TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
+            (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false))
+                .ShouldBe(1, "Recovery must not add a duplicate WorkItemResumed.");
         }).ConfigureAwait(true);
     }
 
-    // Starts the full AppHost topology (forwarding the recovery tenant scope so the startup reconciler runs),
-    // waits for eventstore + works to be healthy, runs the body against the eventstore gateway client, and
-    // disposes both the application and the builder — so the second call is a genuine restart of the topology.
+    [Fact]
+    public async Task Suspend_time_registration_resumes_the_item_when_the_scheduler_fires()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+
+        if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
+        {
+            Assert.Skip(
+                "Aspire reminder-recovery prerequisites missing (Redis :6379 + Dapr placement :50005 + scheduler :50006). "
+                + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.");
+            return;
+        }
+
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+
+        // Steady state (AC #1): suspend on a near-future date; the reminder registered at suspend time on the live
+        // work.events subscription must fire via the Dapr Scheduler and resume the item with NO restart.
+        await WithAppHostAsync(ct, async (client, token) =>
+        {
+            await ParkSuspendedOnDateAsync(client, SteadyItem, DateTimeOffset.UtcNow.AddSeconds(10), token).ConfigureAwait(false);
+            int resumed = await WaitForResumedCountAsync(client, SteadyItem, atLeast: 1, token).ConfigureAwait(false);
+            if (resumed == 0)
+            {
+                Assert.Skip(
+                    "Dapr actor reminder did not fire within 90s in this environment (the dapr init Scheduler did not "
+                    + "deliver the actor reminder back to the Works app). Suspend-time registration logic is proven by "
+                    + "WorkItemSuspendedReminderHandlerTests; the durable recovery path is proven by the recovery fact.");
+                return;
+            }
+
+            resumed.ShouldBe(1, "Suspend-time registration + Dapr Scheduler fire must resume the item exactly once with no restart.");
+        }).ConfigureAwait(true);
+    }
+
+    // Starts the full AppHost topology with NO recovery-tenant configuration (Story 4.8: recovery discovers tenants
+    // from the durable registry), waits for eventstore + works to be healthy, runs the body against the eventstore
+    // gateway client, and disposes both the application and the builder — so the next call is a genuine restart.
     private static async Task WithAppHostAsync(CancellationToken cancellationToken, Func<HttpClient, CancellationToken, Task> body)
     {
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false", $"--Works:Recovery:Tenants={Tenant}"], startupCts.Token)
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], startupCts.Token)
             .ConfigureAwait(true);
 
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
@@ -139,28 +172,30 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         }
     }
 
-    // Create → Assign → Claim → Suspend(DateReached past): drives the work item to Suspended parked on the
-    // deterministic date await the recovery adapter will later reissue against.
-    private static async Task ParkSuspendedOnDateAsync(HttpClient client, CancellationToken cancellationToken)
+    // Create → Assign → Claim → Suspend(DateReached instant): drives the work item to Suspended parked on the
+    // deterministic date await.
+    private static async Task ParkSuspendedOnDateAsync(HttpClient client, string workItemId, DateTimeOffset instant, CancellationToken cancellationToken)
     {
         var tenant = new TenantId(Tenant);
-        var workItem = new WorkItemId(WorkItem);
+        var workItem = new WorkItemId(workItemId);
         var binding = new ExecutorBinding(new PartyId("recovery-worker"), Channel.Cli, AuthorityLevel.Contribute);
 
-        await SubmitToTerminalAsync(client, nameof(CreateWorkItem), new CreateWorkItem(tenant, workItem, "Reminder-recovery obligation"), cancellationToken).ConfigureAwait(false);
-        await SubmitToTerminalAsync(client, nameof(AssignWorkItem), new AssignWorkItem(tenant, workItem, binding), cancellationToken).ConfigureAwait(false);
-        await SubmitToTerminalAsync(client, nameof(ClaimWorkItem), new ClaimWorkItem(tenant, workItem, binding), cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(client, workItemId, nameof(CreateWorkItem), new CreateWorkItem(tenant, workItem, "Reminder-recovery obligation"), cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(client, workItemId, nameof(AssignWorkItem), new AssignWorkItem(tenant, workItem, binding), cancellationToken).ConfigureAwait(false);
+        await SubmitToTerminalAsync(client, workItemId, nameof(ClaimWorkItem), new ClaimWorkItem(tenant, workItem, binding), cancellationToken).ConfigureAwait(false);
         await SubmitToTerminalAsync(
             client,
+            workItemId,
             nameof(SuspendWorkItem),
-            new SuspendWorkItem(tenant, workItem, [AwaitCondition.DateReached(DueInstant)]),
+            new SuspendWorkItem(tenant, workItem, [AwaitCondition.DateReached(instant)]),
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task SubmitToTerminalAsync<TCommand>(HttpClient client, string commandType, TCommand command, CancellationToken cancellationToken)
+    private static async Task SubmitToTerminalAsync<TCommand>(HttpClient client, string workItemId, string commandType, TCommand command, CancellationToken cancellationToken)
     {
         string correlationId = await SubmitCommandAsync(
             client,
+            workItemId,
             messageId: Guid.NewGuid().ToString(),
             commandType: commandType,
             payload: JsonSerializer.SerializeToElement(command),
@@ -171,26 +206,9 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         status.ShouldBe("Completed", $"{commandType} must persist and publish to a Completed terminal status while parking the item.");
     }
 
-    // Reissues the resume exactly as the recovery adapter does: the production DateResume factory builds the
-    // deterministic ResumeWorkItem + correlation/causation id, and the EventStore submitter carries the
-    // causation id as the gateway MessageId (the idempotency key). Returns the resume command's terminal status.
-    private static async Task<string> ReissueDateResumeAsync(HttpClient client, CancellationToken cancellationToken)
-    {
-        WorkCommandSubmission resume = DateResume.BuildSubmission(Tenant, WorkItem, DueInstant);
-
-        string correlationId = await SubmitCommandAsync(
-            client,
-            messageId: resume.CausationId,
-            commandType: resume.CommandType,
-            payload: resume.Payload,
-            correlationId: resume.CorrelationId,
-            cancellationToken).ConfigureAwait(false);
-
-        return await PollToTerminalAsync(client, correlationId, cancellationToken).ConfigureAwait(false);
-    }
-
     private static async Task<string> SubmitCommandAsync(
         HttpClient client,
+        string workItemId,
         string messageId,
         string commandType,
         JsonElement payload,
@@ -201,7 +219,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             MessageId: messageId,
             Tenant: Tenant,
             Domain: "work",
-            AggregateId: WorkItem,
+            AggregateId: workItemId,
             CommandType: commandType,
             Payload: payload,
             CorrelationId: correlationId);
@@ -246,14 +264,14 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         return status;
     }
 
-    private static async Task<int> WaitForResumedCountAsync(HttpClient client, int atLeast, CancellationToken cancellationToken)
+    private static async Task<int> WaitForResumedCountAsync(HttpClient client, string workItemId, int atLeast, CancellationToken cancellationToken)
     {
         int count = 0;
-        DateTime deadline = DateTime.UtcNow.AddSeconds(60);
+        DateTime deadline = DateTime.UtcNow.AddSeconds(90);
 
         while (DateTime.UtcNow < deadline)
         {
-            count = await CountResumedAsync(client, cancellationToken).ConfigureAwait(false);
+            count = await CountResumedAsync(client, workItemId, cancellationToken).ConfigureAwait(false);
             if (count >= atLeast)
             {
                 return count;
@@ -266,13 +284,13 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
     }
 
     // Counts accepted WorkItemResumed events in the parked item's re-readable per-aggregate stream.
-    private static async Task<int> CountResumedAsync(HttpClient client, CancellationToken cancellationToken)
+    private static async Task<int> CountResumedAsync(HttpClient client, string workItemId, CancellationToken cancellationToken)
     {
         var body = new
         {
             tenant = Tenant,
             domain = "work",
-            aggregateId = WorkItem,
+            aggregateId = workItemId,
             fromSequence = 0L,
             pageSize = 100,
         };

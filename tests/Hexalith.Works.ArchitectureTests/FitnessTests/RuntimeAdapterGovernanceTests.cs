@@ -82,6 +82,9 @@ public sealed class RuntimeAdapterGovernanceTests
             "IEventStoreGatewayClient",
             "IReadModelStore",
             "WorksDomainEventProcessor",
+            "WorkItemSuspendedReminderHandler",
+            "IndexedPendingDateAwaitSource",
+            "PendingDateAwaitStreamReader",
         ];
 
         string[] misplaced = [.. sourceFiles

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-07-23 (code review round 2 chunks A+B: 4-7 code + test patches applied, stays done)
+last_updated: 2026-07-23 (dev-story 4-8 complete → review: durable suspend-time registration + index-driven recovery)
 project: works
 project_key: NOKEY
 tracking_system: file-system
@@ -71,5 +71,5 @@ development_status:
   4-5-prove-the-command-event-pipeline-under-aspire: done
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
-  4-8-register-and-reconcile-date-reminders-durably: ready-for-dev
+  4-8-register-and-reconcile-date-reminders-durably: review
   epic-4-retrospective: done

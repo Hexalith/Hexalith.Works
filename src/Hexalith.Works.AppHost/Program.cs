@@ -83,21 +83,10 @@ if (security is not null)
         .WithEventStoreClientCredentials(security);
 }
 
-// Story 4.6 recovery scope: the date-reminder reconciliation pass is bounded to a known tenant set because
-// the EventStore stream-read gateway exposes no tenant-wide enumeration (per-aggregate route only). The scope
-// stays empty by default — reconciliation is disabled — so the standard pipeline/topology proofs are
-// unchanged. The gated Aspire reminder-recovery lane opts in with --Works:Recovery:Tenants=<comma-separated>,
-// which forwards the bounded scope to the Works host so its startup reconciler actually runs.
-string? recoveryTenants = builder.Configuration["Works:Recovery:Tenants"];
-if (!string.IsNullOrWhiteSpace(recoveryTenants))
-{
-    string[] tenants = recoveryTenants.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-    for (int index = 0; index < tenants.Length; index++)
-    {
-        works = works.WithEnvironment($"Works__Recovery__Tenants__{index}", tenants[index]);
-    }
-}
-
+// Story 4.8 removed the hand-configured Works:Recovery:Tenants forwarding: the date-reminder reconciliation
+// pass now discovers tenants with pending date awaits from the durable pending-date-await registry the
+// /project dispatcher maintains, so recovery runs on by default (Works:Recovery:RunReconciliationOnStartup)
+// with no per-tenant configuration. The cascade pacing knob below is the only remaining recovery forward.
 string? cascadeTargetInterval = builder.Configuration["Works:Recovery:CascadeTargetIntervalMilliseconds"];
 if (!string.IsNullOrWhiteSpace(cascadeTargetInterval))
 {

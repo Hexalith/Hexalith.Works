@@ -74,16 +74,13 @@ runnable host edge:
 - **Scheduler/state-store dependency is explicit.** Local proof uses the existing Redis-backed `statestore`
   component with `actorStateStore: "true"` and `works` in scope. Dapr Scheduler, placement, and Redis are
   prerequisites for the live Tier-3 lane; deterministic tests cover the adapter logic without those services.
-- **Reminder reconciliation is bounded by the per-aggregate stream-read route.** On startup, the Works host
-  rescans configured `Works:Recovery:Tenants`, reads `work` streams through the EventStore gateway, derives
-  pending `DateReached` awaits, re-registers future reminders, and reissues already-due resumes. The gateway's
-  `POST /api/v1/streams/read` route currently **requires an `AggregateId`** — `StreamReadRequest.AggregateId` is
+- **Reminder reconciliation is bounded by the per-aggregate stream-read route.** _(Superseded by Story 4.8 — see
+  below; at 4.6 the host rescanned a hand-configured `Works:Recovery:Tenants` scope with a tenant-wide read.)_ The
+  gateway's `POST /api/v1/streams/read` route **requires an `AggregateId`** — `StreamReadRequest.AggregateId` is
   contract-optional ("omit only for domain-wide rebuild reads") but `StreamsController` rejects a null id today —
-  so neither tenant-wide nor domain-wide enumeration is available. Broad auto-discovery is therefore a documented
-  substrate limitation, not a faked proof. The gated Tier-3 lane (`WorksReminderRecoveryPipelineSmokeTests`)
-  proves the restart→reissue→exactly-once-resume outcome end-to-end by reissuing through the adapter's own
-  deterministic `DateResume` command factory and verifying via a per-aggregate stream read; the reconciliation
-  decision logic itself is proven deterministically by `DateReminderRecoveryRuntimeTests`.
+  so neither tenant-wide nor domain-wide enumeration is available. Story 4.8 keeps every reminder read per-aggregate
+  but drops the hand-configured tenant scan for durable-index discovery (below). The reconciliation decision logic
+  is proven deterministically by `DateReminderRecoveryRuntimeTests`.
 - **Cascade checkpoints are host-edge read-model state.** The terminal-cascade runtime uses the pure
   `TerminalCascadeTranslator`, persists bounded checkpoint records in the shared state store via
   `IReadModelStore`, and submits descendant terminal commands through the EventStore command gateway. Checkpoint
@@ -96,7 +93,40 @@ runnable host edge:
   subtree/status projection would improve skip-before-dispatch fidelity without changing the kernel boundary.
 
 No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable polymorphic command/event/rejection
-catalog type. `WorkItemV1Catalog.Count` remains **36** and the golden corpus is byte-compatible.
+catalog type. `WorkItemV1Catalog.Count` remains **37** and the golden corpus is byte-compatible.
+
+## Story 4.8 — Register and Reconcile Date Reminders Durably
+
+Story 4.8 closes the runtime-wiring gap the 2026-07-21 audit found: date resumes must execute in the live topology
+in steady state and on recovery, without per-tenant hand configuration. It changes the stream-read usage and the
+recovery-discovery model while keeping every read per-aggregate.
+
+- **Suspend-time registration on the live event stream (AC #1).** A new
+  `IEventStoreDomainEventHandler<WorkItemSuspended>` on Story 4.7's `work.events` subscription re-folds the
+  suspended aggregate's per-aggregate stream through the pure `PendingDateAwaitProjection` and registers one durable
+  Dapr reminder per pending `DateReached` await. Registration is derived from the folded **current** pending set,
+  never a raw event in isolation, so a suspend redelivered after the item resumed registers nothing. The
+  subscription (immediate on publish) — not the `/project` dispatch (delivered by EventStore's
+  `ProjectionPollerService` on a per-domain refresh cadence, so poll-interval latency) — is the steady-state
+  trigger.
+- **Durable pending-date-await index replaces the hand-configured scan (AC #2/#3).** The `/project` dispatcher now
+  also maintains, alongside the what's-next and roll-up read models, a per-tenant pending-date-await index document
+  (`projection:works:pending-date-await:{tenantId}`) plus one well-known tenant-registry document
+  (`projection:works:pending-date-await:tenants`), both plain host-edge `System.Text.Json` read models upserted via
+  `ReadModelWritePolicy.UpdateAsync` (registry written before index so a crash strands only an empty read, never a
+  hidden entry). The registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration
+  and the gateway exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
+- **Index is discovery, stream is truth.** The recovery source enumerates the registry, reads each tenant's index,
+  and re-folds every candidate's per-aggregate stream (`AggregateId` always set) before acting — a stale index
+  entry whose stream has resumed contributes nothing. The `StreamsController` null-`AggregateId` 400 rejection
+  (verified against submodule `6a8f3866`) is therefore no longer load-bearing for reminders; the tenant-wide
+  null-aggregate scan is retired.
+- **On by default, no hand configuration (AC #3).** `WorksRecoveryOptions.Tenants` and its AppHost
+  `Works:Recovery:Tenants` forwarding are removed; `ReminderReconciliationService` runs whenever
+  `RunReconciliationOnStartup` (default `true`). The whole pass stays crash-safe by idempotency (deterministic
+  `DateReminderName`/correlation ids), not checkpoints.
+- **Catalog unchanged.** The index and registry records are host-edge STJ, not `[PolymorphicSerialization]` types;
+  `WorkItemV1Catalog.Count` stays **37** and the golden corpus is byte-compatible.
 
 ## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
 
