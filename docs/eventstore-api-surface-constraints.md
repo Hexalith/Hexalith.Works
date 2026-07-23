@@ -100,7 +100,10 @@ catalog type. `WorkItemV1Catalog.Count` remains **36** and the golden corpus is 
 
 ## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
 
-Story 4.7 verified the checked-out subscription and publisher surfaces at EventStore commit `c6b72caa`:
+Story 4.7 verified the checked-out subscription and publisher surfaces at EventStore commit `440ff4c`. The
+workspace intentionally advanced the `references/Hexalith.EventStore` pin from `c6b72caa` to `440ff4c` during the
+story; the delta is hot-reload readiness/diagnostics test infrastructure that Works does not consume, so every
+surface documented below is unchanged from the original `c6b72caa` verification.
 
 - **Tenant topic composition must be resolved explicitly.** Without an override, the publisher composes
   `{tenantId}.work.events`, while `EventStoreDomainEventsOptions.ForDomain("work")` subscribes to the static

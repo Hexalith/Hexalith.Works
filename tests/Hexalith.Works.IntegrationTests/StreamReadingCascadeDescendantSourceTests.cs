@@ -97,6 +97,119 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             TestContext.Current.CancellationToken));
     }
 
+    /// <summary>A parent stream still truncated past the page budget fails closed so a partial descendant set never becomes a permanent-skip checkpoint.</summary>
+    [Fact]
+    public async Task Descendant_discovery_fails_closed_when_parent_stream_stays_truncated()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateTruncatedEmptyPage());
+        var source = new StreamReadingCascadeDescendantSource(
+            gateway,
+            Substitute.For<IReadModelStore>(),
+            Options.Create(new WorksRecoveryOptions { MaxStreamPagesPerTenant = 1 }),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance);
+
+        InvalidOperationException error = await Should.ThrowAsync<InvalidOperationException>(() => source.GetDescendantsAsync(
+            s_tenant.Value,
+            s_parent.Value,
+            TestContext.Current.CancellationToken));
+        error.Message.ShouldContain(s_parent.Value);
+    }
+
+    /// <summary>Cancellation during a roll-up read propagates instead of collapsing into a fail-closed "active" verdict.</summary>
+    [Fact]
+    public async Task Descendant_terminality_propagates_cancellation_rather_than_treating_as_active()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateChildPage(s_activeChild));
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(s_tenant.Value, s_activeChild.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ReadModelEntry<WorkItemRollUp>>(new OperationCanceledException()));
+        var source = new StreamReadingCascadeDescendantSource(
+            gateway,
+            store,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance);
+
+        _ = await Should.ThrowAsync<OperationCanceledException>(() => source.GetDescendantsAsync(
+            s_tenant.Value,
+            s_parent.Value,
+            TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>An unreadable roll-up (store throws) fails closed to active so the descendant stays a cascade target.</summary>
+    [Fact]
+    public async Task Descendant_terminality_treats_unreadable_rollup_as_active()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateChildPage(s_activeChild));
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(s_tenant.Value, s_activeChild.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ReadModelEntry<WorkItemRollUp>>(new InvalidOperationException("state store unavailable")));
+        var source = new StreamReadingCascadeDescendantSource(
+            gateway,
+            store,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance);
+
+        IReadOnlyList<CascadeDescendant> descendants = await source.GetDescendantsAsync(
+            s_tenant.Value,
+            s_parent.Value,
+            TestContext.Current.CancellationToken);
+
+        descendants.ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
+    }
+
+    private static StreamReadPage CreateChildPage(WorkItemId child)
+    {
+        ChildSpawned spawn = CreateSpawn(1, child);
+        StreamReadEvent[] streamEvents =
+        [
+            new StreamReadEvent(
+                spawn.Sequence,
+                typeof(ChildSpawned).FullName!,
+                JsonSerializer.SerializeToUtf8Bytes(spawn, s_web),
+                "json",
+                1,
+                $"message-{spawn.Sequence}",
+                $"correlation-{spawn.Sequence}",
+                null,
+                new DateTimeOffset(2026, 7, 22, 8, 0, checked((int)spawn.Sequence), TimeSpan.Zero),
+                null),
+        ];
+
+        return new StreamReadPage(
+            s_tenant.Value,
+            WorkCommandSubmission.WorkDomain,
+            s_parent.Value,
+            streamEvents,
+            new StreamReadMetadata(0, null, 1, 1, 1, IsTruncated: false, NextContinuationToken: null));
+    }
+
+    private static StreamReadPage CreateTruncatedEmptyPage()
+    {
+        return new StreamReadPage(
+            s_tenant.Value,
+            WorkCommandSubmission.WorkDomain,
+            s_parent.Value,
+            [],
+            new StreamReadMetadata(0, null, null, 100, 0, IsTruncated: true, NextContinuationToken: null));
+    }
+
     private static StreamReadPage CreateParentPage()
     {
         ChildSpawned[] events =

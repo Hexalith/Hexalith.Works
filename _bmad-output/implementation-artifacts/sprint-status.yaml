@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-07-22 (code review: 4-7 moved to done)
+last_updated: 2026-07-23 (code review round 2 chunks A+B: 4-7 code + test patches applied, stays done)
 project: works
 project_key: NOKEY
 tracking_system: file-system

@@ -144,6 +144,118 @@ public class WorksDomainEventProcessorTests
         duplicate.ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
     }
 
+    /// <summary>An envelope whose identity disagrees with its decoded event is terminally skipped, never dispatched.</summary>
+    [Fact]
+    public async Task Works_processor_skips_envelope_with_identity_mismatch()
+    {
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        EventStoreDomainEventEnvelope mismatched = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB0") with
+        {
+            AggregateId = "work-item-unrelated",
+        };
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            mismatched,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.SkippedAggregateMismatch);
+        await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
+        (await processor.ProcessAsync(mismatched, TestContext.Current.CancellationToken))
+            .ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+    }
+
+    /// <summary>A marker already owned by another in-flight attempt yields a retryable result and no dispatch or completion.</summary>
+    [Fact]
+    public async Task Works_processor_returns_retryable_when_marker_in_progress()
+    {
+        IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
+        markerStore
+            .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(EventStoreDomainEventMarkerAcquisitionResult.InProgress);
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB1"),
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.RetryableInProgress);
+        await markerStore.DidNotReceiveWithAnyArgs().MarkCompletedAsync(default!, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>An envelope with an invalid message id is rejected before the marker is even acquired.</summary>
+    [Fact]
+    public async Task Works_processor_rejects_invalid_envelope_before_marker_acquisition()
+    {
+        IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        EventStoreDomainEventEnvelope invalid = CreateEnvelope(@event, "not-a-valid-unique-id");
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            invalid,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        await markerStore.DidNotReceiveWithAnyArgs().TryAcquireAsync(default!, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>An envelope with a non-JSON serialization format is terminally acknowledged, not left to a retry loop.</summary>
+    [Fact]
+    public async Task Works_processor_terminally_acknowledges_unsupported_serialization_format()
+    {
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        EventStoreDomainEventEnvelope envelope = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB2") with
+        {
+            SerializationFormat = "protobuf",
+        };
+
+        EventStoreDomainEventProcessingResult first = await processor.ProcessAsync(envelope, TestContext.Current.CancellationToken);
+        EventStoreDomainEventProcessingResult duplicate = await processor.ProcessAsync(envelope, TestContext.Current.CancellationToken);
+
+        first.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        duplicate.ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+    }
+
+    /// <summary>A consumed event type with no registered handler is terminally acknowledged as skipped.</summary>
+    [Fact]
+    public async Task Works_processor_skips_consumed_event_with_no_registered_handler()
+    {
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB3"),
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.SkippedNoHandlers);
+    }
+
     private static EventStoreDomainEventEnvelope CreateEnvelope(IEventPayload @event, string messageId)
     {
         (string aggregateId, string tenantId, long sequence) = @event switch

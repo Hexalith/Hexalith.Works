@@ -121,6 +121,40 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         await submitter.DidNotReceiveWithAnyArgs().SubmitAsync(default!, Arg.Any<CancellationToken>());
     }
 
+    /// <summary>A huge stale-after configuration is clamped so TimeSpan.FromHours cannot overflow and abort the whole recovery pass.</summary>
+    [Fact]
+    public async Task Recovery_pass_survives_an_overflowing_stale_after_configuration()
+    {
+        var readModels = new Story47InMemoryReadModelStore();
+        var timeProvider = new ManualTimeProvider();
+        var store = new ReadModelCascadeCheckpointStore(readModels, timeProvider, NullLogger<ReadModelCascadeCheckpointStore>.Instance);
+        var identity = new CascadeCheckpointIdentity(Tenant, Parent, TerminalType);
+        await readModels.SaveAsync(
+            "statestore",
+            "projection:works:cascade-checkpoint-index",
+            new CascadeCheckpointIndex { Entries = [new CascadeCheckpointIndexEntry(identity, timeProvider.GetUtcNow())] },
+            TestContext.Current.CancellationToken);
+
+        ICascadeDescendantSource source = Substitute.For<ICascadeDescendantSource>();
+        IWorkCommandSubmitter submitter = Substitute.For<IWorkCommandSubmitter>();
+        var dispatcher = new CascadeDispatcher(store, source, submitter, NullLogger<CascadeDispatcher>.Instance);
+        IOptions<WorksRecoveryOptions> options = Options.Create(new WorksRecoveryOptions { CascadeCheckpointIndexStaleAfterHours = int.MaxValue });
+        var reconciler = new CascadeRecoveryReconciler(
+            store,
+            dispatcher,
+            timeProvider,
+            options,
+            NullLogger<CascadeRecoveryReconciler>.Instance);
+
+        // Without the clamp, TimeSpan.FromHours(int.MaxValue) throws OverflowException before the loop and aborts
+        // the whole pass; with it, the pass runs and the effectively-never-prune threshold keeps the entry.
+        timeProvider.Advance(TimeSpan.FromHours(1_000_000));
+        int completed = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
+
+        completed.ShouldBe(0);
+        (await store.GetIncompleteAsync(TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+    }
+
     private static CascadeCheckpoint CreateCheckpoint(CascadeTargetStatus status, bool completed)
     {
         return new CascadeCheckpoint(

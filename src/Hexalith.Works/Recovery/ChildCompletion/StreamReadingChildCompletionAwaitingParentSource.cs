@@ -58,6 +58,12 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
                 ? []
                 : [new AwaitingParent(parent.TenantId, parent.WorkItemId, conditions)];
         }
+        catch (OperationCanceledException)
+        {
+            // Shutdown/timeout cancellation is not a read failure: let it propagate without logging a spurious
+            // recovery-step-failed (consistent with StreamReadingCascadeDescendantSource.IsTerminalAsync).
+            throw;
+        }
         catch (Exception exception)
         {
             WorksRecoveryLog.RecoveryStepFailed(_logger, "read-child-completion-awaiting-parent", exception);

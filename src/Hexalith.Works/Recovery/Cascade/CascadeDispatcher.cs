@@ -32,9 +32,9 @@ public sealed class CascadeDispatcher(
     private readonly TimeSpan _targetInterval = ComputeTargetInterval(options, logger);
 
     /// <summary>
-    /// Upper bound for <see cref="WorksRecoveryOptions.CascadeTargetIntervalMilliseconds"/>: a misconfigured
-    /// very large value must not be able to block a dispatch (and hold the Dapr message/marker in-progress)
-    /// indefinitely.
+    /// Upper bound for a single <see cref="WorksRecoveryOptions.CascadeTargetIntervalMilliseconds"/> gap AND for
+    /// the cumulative pacing delay across an entire dispatch: neither a misconfigured value nor a large target
+    /// count may block a dispatch (holding the Dapr message/marker in-progress) past the delivery ack deadline.
     /// </summary>
     private const int MaxTargetIntervalMilliseconds = 60_000;
 
@@ -162,6 +162,11 @@ public sealed class CascadeDispatcher(
         int outstanding = targets.Count(static t => t.Status != CascadeTargetStatus.Completed);
         WorksRecoveryLog.CascadeReplayResumed(_logger, checkpoint.TenantId, checkpoint.ParentWorkItemId, outstanding);
 
+        // Bound the TOTAL pacing delay across the whole dispatch, not merely each gap: the per-target interval is
+        // already clamped, but N outstanding targets would otherwise accumulate N×interval and pin the Dapr
+        // message/marker in-progress far past the delivery ack deadline. This cumulative budget caps it.
+        TimeSpan remainingDelayBudget = TimeSpan.FromMilliseconds(MaxTargetIntervalMilliseconds);
+
         for (int i = 0; i < targets.Count; i++)
         {
             CascadeTargetCheckpoint target = targets[i];
@@ -191,9 +196,12 @@ public sealed class CascadeDispatcher(
             await _checkpointStore.SaveAsync(checkpoint, cancellationToken).ConfigureAwait(false);
 
             if (_targetInterval > TimeSpan.Zero
+                && remainingDelayBudget > TimeSpan.Zero
                 && targets.Skip(i + 1).Any(static value => value.Status != CascadeTargetStatus.Completed))
             {
-                await Task.Delay(_targetInterval, cancellationToken).ConfigureAwait(false);
+                TimeSpan delay = _targetInterval < remainingDelayBudget ? _targetInterval : remainingDelayBudget;
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                remainingDelayBudget -= delay;
             }
         }
 

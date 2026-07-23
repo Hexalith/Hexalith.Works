@@ -122,10 +122,61 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
             TestContext.Current.CancellationToken));
     }
 
+    /// <summary>A child stream still truncated past the page budget throws so the durable marker stays retryable instead of rebuilding await state from a partial read.</summary>
+    [Fact]
+    public async Task Source_fails_closed_when_stream_stays_truncated()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(TruncatedPageFor(call.ArgAt<StreamReadRequest>(0).AggregateId)));
+        var source = new StreamReadingChildCompletionAwaitingParentSource(
+            gateway,
+            Options.Create(new WorksRecoveryOptions { MaxStreamPagesPerTenant = 1 }),
+            NullLogger<StreamReadingChildCompletionAwaitingParentSource>.Instance);
+
+        InvalidOperationException error = await Should.ThrowAsync<InvalidOperationException>(() => source.GetAwaitingParentsAsync(
+            new WorkItemCompleted(s_child.Value, 7, s_tenant, s_child),
+            TestContext.Current.CancellationToken));
+        error.Message.ShouldContain(s_child.Value);
+    }
+
+    /// <summary>A completed root work item (no parent reference) yields no awaiting parent and never reads a second stream.</summary>
+    [Fact]
+    public async Task Source_returns_no_awaiting_parent_for_root_child_without_parent()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(PageFor(call.ArgAt<StreamReadRequest>(0).AggregateId, rootChild: true)));
+        var source = new StreamReadingChildCompletionAwaitingParentSource(
+            gateway,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingChildCompletionAwaitingParentSource>.Instance);
+
+        IReadOnlyList<AwaitingParent> parents = await source.GetAwaitingParentsAsync(
+            new WorkItemCompleted(s_child.Value, 7, s_tenant, s_child),
+            TestContext.Current.CancellationToken);
+
+        parents.ShouldBeEmpty();
+        await gateway.Received(1).ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    private static StreamReadPage TruncatedPageFor(string? aggregateId)
+    {
+        return new StreamReadPage(
+            s_tenant.Value,
+            WorkCommandSubmission.WorkDomain,
+            aggregateId,
+            [],
+            new StreamReadMetadata(0, null, null, 100, 0, IsTruncated: true, NextContinuationToken: null));
+    }
+
     private static StreamReadPage PageFor(
         string? aggregateId,
         bool includeResume = false,
-        TenantId? childParentTenant = null)
+        TenantId? childParentTenant = null,
+        bool rootChild = false)
     {
         IEventPayload[] events = aggregateId switch
         {
@@ -137,7 +188,7 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
                     s_tenant,
                     s_child,
                     new Obligation("Child work"),
-                    Parent: new ParentWorkItemReference(childParentTenant ?? s_tenant, s_parent)),
+                    Parent: rootChild ? null : new ParentWorkItemReference(childParentTenant ?? s_tenant, s_parent)),
             ],
             var value when value == s_parent.Value && includeResume =>
             [
