@@ -21,4 +21,20 @@ internal static class RepositoryRoot
 
     public static string PathFromRoot(params string[] segments)
         => Path.Combine([Locate(), .. segments]);
+
+    public static string DependencyRoot(string repositoryName)
+    {
+        string nestedRoot = PathFromRoot("references", repositoryName);
+        if (File.Exists(Path.Combine(nestedRoot, ".git"))
+            || Directory.Exists(Path.Combine(nestedRoot, ".git")))
+        {
+            return nestedRoot;
+        }
+
+        string siblingRoot = Path.GetFullPath(Path.Combine(Locate(), "..", repositoryName));
+        return File.Exists(Path.Combine(siblingRoot, ".git"))
+            || Directory.Exists(Path.Combine(siblingRoot, ".git"))
+            ? siblingRoot
+            : nestedRoot;
+    }
 }

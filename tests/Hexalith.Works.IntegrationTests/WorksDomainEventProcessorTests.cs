@@ -34,10 +34,10 @@ public class WorksDomainEventProcessorTests
     }
 
     /// <summary>
-    /// Proves the checked-out generic SDK processor silently misbinds the camel-case Works wire payload.
+    /// Proves the checked-out generic SDK processor binds the camel-case Works wire payload.
     /// </summary>
     [Fact]
-    public async Task Generic_sdk_processor_silently_misbinds_real_web_json_works_payload()
+    public async Task Generic_sdk_processor_binds_real_web_json_works_payload()
     {
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
         IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
@@ -66,7 +66,7 @@ public class WorksDomainEventProcessorTests
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
         decoded.ShouldNotBeNull();
-        decoded.ShouldNotBe(@event);
+        decoded.ShouldBe(@event);
     }
 
     /// <summary>
