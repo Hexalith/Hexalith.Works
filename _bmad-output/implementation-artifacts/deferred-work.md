@@ -19,7 +19,8 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests; tests/Hexalith.Works.PropertyTests
 reason: `ScaffoldIntegrationTests` and `ScaffoldPropertyTests` only prove their own assembly loads, with no Aspire boot or FsCheck `Prop.ForAll`, and some forbidden-token governance assertions cannot fire; this was accepted for the scaffold-only story, with real integration and property coverage deferred to later stories.
-status: open
+status: done 2026-08-27
+resolution: already resolved: tests/Hexalith.Works.PropertyTests/WorkItemRollUpConvergencePropertyTests.cs:22-52 executes generated FsCheck Prop.ForAll cases, and tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:65-87 starts Aspire, submits a command, and asserts terminal completion.
 
 ### DW-4: Rejection-event sequencing & stream-persistence contract
 
@@ -33,7 +34,8 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
 location: src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs:25
 reason: A same-tenant parent whose `WorkItemId` equals the child work item's own id passes the cross-tenant guard and replays as its own parent because `ParentWorkItemReference` has no self-reference or cycle check; this was intentionally deferred with the acyclic, depth, and tree rules to Epic 3.
-status: open
+status: done 2026-08-27
+resolution: already resolved: src/Hexalith.Works.Server/Aggregates/WorkTreeAttachmentGuard.cs:46-50 rejects self-parenting with WorkItemTreeCycleRejected, and tests/Hexalith.Works.UnitTests/WorkItemCreateTests.cs:150-172 proves rejection without state mutation.
 
 ### DW-6: `ConversationCorrelationId` is unvalidated
 
@@ -68,7 +70,8 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs; tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs; src/Hexalith.Works.AppHost/Program.cs
 reason: Story 4.7 introduced unique smoke-test aggregate ids and EventStore commit `c6b72caa` repaired AppHost port, actor-placement dependency, payload-casing, and Dapr caller-identity wiring; the legacy text declares the command and recovery smoke lanes passing without skips and this item closed, but the authoritative manifest requires migration as open for subsequent sweep reconciliation.
-status: open
+status: done 2026-08-27
+resolution: already resolved: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:44-45 uses a per-run GUID-derived aggregate id; tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:23-78 and src/Hexalith.Works.AppHost/Program.cs:34-75 contain the actor-placement and live AppHost repairs.
 
 ### DW-11: Works's Dapr pubsub component has zero access-control scoping
 
@@ -117,7 +120,8 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs
 reason: The SDK misbinding characterization asserts only that the decoded event differs from the source event without proving the casing-related field default, so a future SDK binding fix could make it fail for the wrong reason; assert a named defaulted field.
-status: open
+status: done 2026-08-27
+resolution: already resolved: tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs:36-69 now proves the generic SDK binds the real Web JSON payload and asserts decoded.ShouldBe(@event); references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Subscriptions/EventStoreDomainEventProcessor.cs:148 uses the shared Web payload options.
 
 ### DW-18: AppHost topology test uses presence-only assertions
 
