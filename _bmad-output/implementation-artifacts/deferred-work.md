@@ -1,39 +1,127 @@
 # Deferred Work
 
-Tracks items surfaced during review that are real but intentionally not actioned in their originating story.
+### DW-1: Kernel-purity test is transitive-blind
 
-## Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:100-134
+reason: `P0_KernelProjectsStayInfrastructureFree` only string-matches kernel project-file text, so a `ProjectReference` to `Hexalith.EventStore.Client` can transitively introduce `Dapr.Client` undetected; the story Dev Notes assign the stronger check to Story 1.2, when `Works.Server` first subclasses the EventStore aggregate base.
+status: open
 
-- **Kernel-purity test is transitive-blind** — `P0_KernelProjectsStayInfrastructureFree` only string-matches kernel `.csproj` text, so a `<ProjectReference>` to `Hexalith.EventStore.Client` (which carries `Dapr.Client`) would pass undetected. Documented in the story's Dev Notes ("Kernel-purity vs EventStore.Client") and assigned to Story 1.2, where `Works.Server` first subclasses the EventStore aggregate base. `tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:100-134`.
-- **Warnings-as-errors defeats the "scaffolding phase" analyzer intent** — `TreatWarningsAsErrors=true` promotes the `.editorconfig` CA1062/CA1822/CA2007 `severity=warning` settings to build errors (no `WarningsNotAsErrors` escape hatch). Latent while the scaffold is empty; will break the build the moment real kernel code triggers one of these rules (e.g. CA1062 argument null-checks). Add `WarningsNotAsErrors` (or escalate the editorconfig to match) when domain code lands. `.editorconfig:56-60`; `Directory.Build.props:11`.
-- **Placeholder tests prove little** — `ScaffoldIntegrationTests` and `ScaffoldPropertyTests` assert only that their own assembly loads (no Aspire boot, no FsCheck `Prop.ForAll`); some governance assertions (forbidden tokens that can never appear) can't fire. Acceptable for a scaffold-only story; real integration/property coverage belongs to later stories. `tests/Hexalith.Works.IntegrationTests`; `tests/Hexalith.Works.PropertyTests`.
+### DW-2: Warnings-as-errors defeats the "scaffolding phase" analyzer intent
 
-## Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
+location: .editorconfig:56-60; Directory.Build.props:11
+reason: `TreatWarningsAsErrors=true` promotes the scaffolding-phase CA1062, CA1822, and CA2007 warnings to build errors without a `WarningsNotAsErrors` escape hatch; this is latent while the scaffold is empty, but domain code will require either `WarningsNotAsErrors` or editorconfig severities aligned with the intended policy.
+status: open
 
-- **Rejection-event sequencing & stream-persistence contract** — `WorkItemCannotReferenceParentFromAnotherTenant` (and the pre-existing `WorkItemCannotBeCreatedWithoutObligation`) carry no `Sequence`/`AggregateId`, and their `Apply` overloads are no-ops. The aggregate's `state is null ? 1 : 2` sequence assignment assumes a rejection never advanced the stream, so a rejection-only stream replays identically to a never-created aggregate and a later create would re-emit sequence `1`. Pre-existing pattern from Story 1.2; resolve when EventStore stream-append/replay is wired (explicitly out of scope for 1.3). `WorkItemCannotReferenceParentFromAnotherTenant.cs`; `WorkItemState.cs:44`; `WorkItemAggregate.cs:34`.
-- **Self-parent reference accepted** — a same-tenant parent whose `WorkItemId` equals the work item's own id passes the cross-tenant guard and replays as its own parent; `ParentWorkItemReference` has no self/cycle check. Intentional: acyclic/depth/tree rules are explicitly deferred to Epic 3 per the story Dev Notes. `WorkItemAggregate.cs:25`.
-- **`ConversationCorrelationId` is unvalidated** — unlike `PartyId`/`TenantId`/`WorkItemId` it does not route through `AggregateIdentity`, so it accepts colons, whitespace, non-ASCII, and unbounded length. Pre-existing from Story 1.2; only a concern if the correlation id ever participates in a composite key/topic (where `AggregateIdentity`'s no-colon tenant-isolation rule matters). Tighten validation at that point. `ConversationCorrelationId.cs`.
+### DW-3: Placeholder tests prove little
 
-## Deferred from: architecture/domain audit correct-course (2026-07-21)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests; tests/Hexalith.Works.PropertyTests
+reason: `ScaffoldIntegrationTests` and `ScaffoldPropertyTests` only prove their own assembly loads, with no Aspire boot or FsCheck `Prop.ForAll`, and some forbidden-token governance assertions cannot fire; this was accepted for the scaffold-only story, with real integration and property coverage deferred to later stories.
+status: open
 
-- **Persisted parent roll-up never converges to child progress** — the host `/project` dispatcher replays only the dispatched aggregate's stream and persists only that aggregate's keys, so a parent's persisted `WorkItemRollUp`/`WhatsNextItem.RolledRemaining` keeps each child's spawn-time `InitialEffort` forever (a wrong, never-decreasing rolled number, not eventual convergence). Acknowledged in `docs/eventstore-api-surface-constraints.md` as a reconciliation limitation; resolution depends on the EventStore projection-model reconciliation seam, or an interim refuse-don't-fake / re-merge decision. Story 4.7 revisited this on 2026-07-22: live cascade discovery now trusts only each child's persisted terminal status and deliberately does not consume `RolledRemaining`; cross-aggregate convergence still needs a substrate reconciliation seam and remains deferred. `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:94-123,180-193`. (Audit F-PROJ-1, major.)
-- **"Mutation-validated cross-tenant negative tests" gate does not exist** — no mutation harness runs anywhere in this repo, and the roll-up's five redundant tenant-equality checks mean deleting any single check leaves every existing test green (the redundancy masks single-check loss); the roll-up property test cannot detect an isolation leak at all (relative comparison, and its guard accepts foreign `child-*` ids). The whats-next single check IS killed by an existing test. Needs a Stryker-style gate scoped to isolation paths or per-hop seam tests via `InternalsVisibleTo`. `src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs`; `tests/Hexalith.Works.PropertyTests/WorkItemRollUpConvergencePropertyTests.cs:35-39`. (Audit F-PROJ-2, major.)
-- **`Apply(ReEstimated)` trusts a stored mismatched Unit** — replaying a corrupted/hand-written `ReEstimated` with a different Unit silently preserves the old Unit in aggregate state while the roll-up projection refuses the same event, producing divergent Unit views. Command-side rejection is correct (A3 holds at the write boundary); only reachable via a corrupted stream. Optionally mirror the projection's defensive skip. `src/Hexalith.Works.Contracts/State/WorkItemState.cs:171-178`. (Audit F-DOMAIN-4, minor.)
-- **Completed by Story 4.7 — Tier-3 fixed aggregate id and live gateway repair.** `WorksCommandPipelineSmokeTests` now generates a per-run-unique `work-smoke-{suffix}` id, so a warm Redis store cannot turn a rerun into a duplicate-create rejection. At EventStore `c6b72caa`, the AppHost now supplies the Works Dapr app port, waits for the command-path actor-placement dependency, preserves the aggregate adapter's case-sensitive command-payload casing, and routes internal recovery calls through the supported Dapr caller identity. After explicit host builds, the command, reminder-recovery, and cascade-recovery lanes all pass without skips; this item is closed. `tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs`; `tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs`; `src/Hexalith.Works.AppHost/Program.cs`.
+### DW-4: Rejection-event sequencing & stream-persistence contract
 
-## Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream (2026-07-22)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
+location: src/Hexalith.Works.Contracts/Events/Rejections/WorkItemCannotReferenceParentFromAnotherTenant.cs; src/Hexalith.Works.Contracts/State/WorkItemState.cs:44; src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs:34
+reason: `WorkItemCannotReferenceParentFromAnotherTenant` and `WorkItemCannotBeCreatedWithoutObligation` carry no `Sequence` or `AggregateId` and apply as no-ops, while `state is null ? 1 : 2` assumes rejection never advances the stream; a rejection-only stream therefore replays like a never-created aggregate and a later create can re-emit sequence 1, an inherited Story 1.2 contract deferred until EventStore append and replay wiring.
+status: open
 
-- **Works's Dapr pubsub component has zero access-control scoping** — `src/Hexalith.Works.AppHost/Program.cs` calls `AddHexalithEventStore(...)` without a `pubSubComponentPath`, so `HexalithEventStoreExtensions.cs:195-202` auto-generates an unscoped pubsub component (`AddDaprPubSub("pubsub")`) instead of loading the scoped `references/Hexalith.EventStore/src/Hexalith.EventStore.AppHost/DaprComponents/pubsub.yaml` (whose `scopes`/`publishingScopes`/`subscriptionScopes` implement a documented zero-trust posture for other domain modules). Confirmed live: the works sidecar's materialized component resource contains only `redisHost`/`redisPassword`, and `/v1.0/metadata` shows an active `work.events` subscription with no scope-denial warnings — Dapr does enforce component scoping, Works just never wires the scoped component in. Deferring because the proper fix requires `works` to be added to that component's `scopes`/`subscriptionScopes`, which lives in the read-only `Hexalith.EventStore` submodule — a cross-repo change out of reach from this repo. The endpoint-level Dapr-caller allow-listing added to `WorksDomainEventEndpointExtensions.MapWorksDomainEvents` this story is a compensating control in the meantime. `src/Hexalith.Works.AppHost/Program.cs`.
+### DW-5: Self-parent reference accepted
 
-## Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 (2026-07-22)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
+location: src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs:25
+reason: A same-tenant parent whose `WorkItemId` equals the child work item's own id passes the cross-tenant guard and replays as its own parent because `ParentWorkItemReference` has no self-reference or cycle check; this was intentionally deferred with the acyclic, depth, and tree rules to Epic 3.
+status: open
 
-- **Cascade checkpoint index is a single global cross-tenant key rewritten O(2N) per cascade** — `ReadModelCascadeCheckpointStore` maintains one `IndexKey = "projection:works:cascade-checkpoint-index"` for all tenants, and `CascadeDispatcher.DriveAsync`'s per-target `SaveAsync` re-adds the already-present identity on every incomplete write (≈2 writes per target). The write is ETag-safe (`ReadModelWritePolicy.UpdateAsync`, 3 attempts) so there is no data loss, but concurrent multi-tenant cascades can exhaust the ETag attempts on the shared key → `InvalidOperationException` → the checkpoint save aborts → handler throws → 500 → Dapr redelivery churn; a hot tenant's cascade burst can starve another tenant's checkpoint writes (tenant-isolation weakness). Fix needs a design call: write the index only at the create/complete transitions (the membership does not change across per-target saves), or shard the index per tenant. Deferred because the correct shape is a design decision, not a mechanical patch. `src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs:21,49-51,86-117`; `src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs:177-201`.
-- **Subscription endpoint drops unbindable envelope bodies into a Dapr poison-retry loop** — `WorksDomainEventEndpointExtensions.MapWorksDomainEvents` binds `EventStoreDomainEventEnvelope` from the request body; a non-deserializable body throws `BadHttpRequestException` before `WorksDomainEventProcessor.ProcessAsync` runs, so the processor's designed terminal-ack of malformed payloads never executes and Dapr redelivers the poison message indefinitely. Only truly-unbindable bodies hit this gap (an empty/`{}` body binds to nulls → `ValidateEnvelope` false → 200 ack). Mirrors the EventStore SDK's own generic `MapEventStoreDomainEvents` endpoint (this endpoint's documented exemplar), so it is a platform-level pattern rather than a Works regression; the real mitigation is Dapr max-redelivery / dead-letter topic configuration. Deferred as pre-existing platform behavior with low likelihood from a well-formed publisher. `src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs:33-42`.
+### DW-6: `ConversationCorrelationId` is unvalidated
 
-## Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)
+origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
+location: src/Hexalith.Works.Contracts/ValueObjects/ConversationCorrelationId.cs
+reason: Unlike `PartyId`, `TenantId`, and `WorkItemId`, `ConversationCorrelationId` does not use `AggregateIdentity` and therefore accepts colons, whitespace, non-ASCII text, and unbounded length; tighten it if it begins participating in a composite key or topic where tenant-isolation-safe identity rules matter.
+status: open
 
-- **Child-completion await-clearing on terminal parent events is untested** — `RebuildAwaitConditions` clears the await set on `WorkItemResumed`/`Cancelled`/`Expired`/`Completed`/`Rejected` via one fall-through switch arm; only the `WorkItemResumed` path is exercised. The other four share the identical `conditions = []` body (only the per-type `Matches` guard differs), so marginal coverage value. Add per-type cases if a future change gives them distinct behavior. `tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs`.
-- **Stale-prune exact-boundary is untested** — `CascadeRecoveryReconciler.RecoverAsync` prunes on strict `now - AddedAt > staleAfter`; the test proves 0h (not stale) and 25h-vs-24h (stale) but never pins the delta to exactly `staleAfter`, so a `>`→`>=` regression would slip. Blast radius is one extra/fewer prune of an already-abandoned index entry. `tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs`.
-- **Tier-3 cascade smoke-lane skip message does not report which port was absent** — `PrerequisitesAvailableAsync` returns a bare bool from three `&&`-chained port probes (Redis 6379 / placement 50005 / scheduler 50006) and `Assert.Skip`s with a single static all-ports string, so a partial-environment skip reads the same as a fully-absent one. Skip-diagnostics honesty only; the live end-state assertions are sound. Surface the specific unreachable port. `tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs`.
-- **SDK-misbind characterization test asserts only bare inequality** — `Generic_sdk_processor_silently_misbinds_real_web_json_works_payload` asserts `decoded.ShouldNotBe(@event)` without isolating the casing cause (no assertion that a specific field is defaulted). Sufficient as Trap-2 evidence today, but it would go spuriously red if the pinned SDK were later fixed to bind correctly. Strengthen to assert a named field is default/zero. `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs`.
-- **AppHost topology test uses presence-only assertions** — `ShouldNotBeEmpty` on a `HealthCheckAnnotation` and `ShouldContain` substring checks pass whenever the literal appears in source (even in a comment or with a broken value), yet their messages promise runtime gating. The live smoke lane exercises the real gated path, so these cheap structural guards are an intentional complement rather than the sole proof; upgrade to value-asserting checks if the live lane is ever descoped. `tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs`.
+### DW-7: Persisted parent roll-up never converges to child progress
+
+origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:94-123,180-193
+reason: Audit F-PROJ-1 (major): the `/project` dispatcher replays and persists only the dispatched aggregate, so a parent's persisted `WorkItemRollUp` and `WhatsNextItem.RolledRemaining` retain each child's spawn-time `InitialEffort` forever; Story 4.7 deliberately trusts only persisted terminal status during live cascade discovery, leaving cross-aggregate convergence dependent on an EventStore projection reconciliation seam or an interim refuse-don't-fake or re-merge decision documented in `docs/eventstore-api-surface-constraints.md`.
+status: open
+
+### DW-8: "Mutation-validated cross-tenant negative tests" gate does not exist
+
+origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
+location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs; tests/Hexalith.Works.PropertyTests/WorkItemRollUpConvergencePropertyTests.cs:35-39
+reason: Audit F-PROJ-2 (major): no mutation harness runs in this repository, five redundant roll-up tenant checks let any single check be deleted without failing existing tests, and the relative property assertion accepts foreign `child-*` ids, although the whats-next single check is killed by an existing test; add a Stryker-style isolation-path gate or per-hop seam tests using `InternalsVisibleTo`.
+status: open
+
+### DW-9: `Apply(ReEstimated)` trusts a stored mismatched Unit
+
+origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
+location: src/Hexalith.Works.Contracts/State/WorkItemState.cs:171-178
+reason: Audit F-DOMAIN-4 (minor): replaying a corrupted or hand-written `ReEstimated` with a different Unit preserves the old Unit in aggregate state while the roll-up projection refuses the event, creating divergent Unit views; command-side validation protects the normal write boundary, so the optional hardening is to mirror the projection's defensive skip.
+status: open
+
+### DW-10: Completed by Story 4.7 — Tier-3 fixed aggregate id and live gateway repair.
+
+origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs; tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs; src/Hexalith.Works.AppHost/Program.cs
+reason: Story 4.7 introduced unique smoke-test aggregate ids and EventStore commit `c6b72caa` repaired AppHost port, actor-placement dependency, payload-casing, and Dapr caller-identity wiring; the legacy text declares the command and recovery smoke lanes passing without skips and this item closed, but the authoritative manifest requires migration as open for subsequent sweep reconciliation.
+status: open
+
+### DW-11: Works's Dapr pubsub component has zero access-control scoping
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream (2026-07-22)"), 2026-08-27
+location: src/Hexalith.Works.AppHost/Program.cs
+reason: `AddHexalithEventStore` is called without a `pubSubComponentPath`, generating an unscoped pubsub component; the proper zero-trust fix requires adding `works` to `scopes` and `subscriptionScopes` in the read-only Hexalith.EventStore submodule, while endpoint-level Dapr caller allow-listing remains a compensating control.
+status: open
+
+### DW-12: Cascade checkpoint index is a single global cross-tenant key rewritten O(2N) per cascade
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 (2026-07-22)"), 2026-08-27
+location: src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs:21,49-51,86-117; src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs:177-201
+reason: Every incomplete target save rewrites one global cross-tenant checkpoint index, so concurrent cascades can exhaust the three ETag retries, abort saves, trigger Dapr redelivery churn, and let a hot tenant starve another; resolution needs a design choice between transition-only index writes and per-tenant sharding.
+status: open
+
+### DW-13: Subscription endpoint drops unbindable envelope bodies into a Dapr poison-retry loop
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 (2026-07-22)"), 2026-08-27
+location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs:33-42
+reason: An unbindable `EventStoreDomainEventEnvelope` throws `BadHttpRequestException` before the processor can terminally acknowledge malformed payloads, causing indefinite Dapr redelivery; this mirrors the EventStore SDK endpoint pattern, and the deferred platform-level mitigation is max-redelivery or dead-letter configuration.
+status: open
+
+### DW-14: Child-completion await-clearing on terminal parent events is untested
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs
+reason: `RebuildAwaitConditions` clears await conditions for resumed, cancelled, expired, completed, and rejected parents through one shared switch arm, but only resumed is tested; add per-type cases if these paths gain distinct behavior.
+status: open
+
+### DW-15: Stale-prune exact-boundary is untested
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs
+reason: Recovery tests cover zero age and 25 hours against a 24-hour threshold but not exact equality, so a strict-greater-than to greater-than-or-equal regression could change whether an abandoned checkpoint is pruned.
+status: open
+
+### DW-16: Tier-3 cascade smoke-lane skip message does not report which port was absent
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs
+reason: `PrerequisitesAvailableAsync` collapses Redis, placement, and scheduler probes into one boolean and emits a static all-ports skip message, obscuring which dependency is unreachable; surface the specific missing port while retaining the existing end-state assertions.
+status: open
+
+### DW-17: SDK-misbind characterization test asserts only bare inequality
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs
+reason: The SDK misbinding characterization asserts only that the decoded event differs from the source event without proving the casing-related field default, so a future SDK binding fix could make it fail for the wrong reason; assert a named defaulted field.
+status: open
+
+### DW-18: AppHost topology test uses presence-only assertions
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
+location: tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs
+reason: Presence-only `HealthCheckAnnotation` and source-substring assertions can pass for comments or broken values despite claiming runtime gating; the live smoke lane currently supplies behavioral proof, but these checks should become value-asserting if that lane is descoped.
+status: open
