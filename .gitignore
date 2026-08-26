@@ -433,3 +433,7 @@ FodyWeavers.xsd
 # Aspirate intermediate Aspire manifest (regenerated each run alongside K8s output)
 src/Hexalith.Works.AppHost/manifest.json
 src/Hexalith.Works.AppHost/aspirate-state.json
+.bmad-loop/runs/
+.bmad-loop/cache/
+.bmad-loop/policy.toml
+_bmad/render/
