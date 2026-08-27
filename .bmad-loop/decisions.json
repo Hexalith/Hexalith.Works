@@ -17,6 +17,15 @@
     "label": "Transition-only indexing",
     "resolution": ""
   },
+  "DW-38": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.",
+    "key": "1",
+    "label": "Add exact persisted corpus",
+    "resolution": ""
+  },
   "DW-4": {
     "answered_at": "2026-08-27",
     "bundle_name": "",

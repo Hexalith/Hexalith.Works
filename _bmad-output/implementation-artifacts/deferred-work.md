@@ -319,6 +319,7 @@ source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: EventPersister.cs:71 serializes with JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()) -- no options, so PascalCase. SchemaEvolutionGoldenCorpusTests and WorkItemProjectionDispatcher's <remarks> both call the JsonSerializerDefaults.Web (camelCase) samples the persisted form; the 14 Golden/*.json files start "aggregateId". Decoding survives only because Web options are case-insensitive, so a naming-policy change upstream would not turn the corpus red. Surfaced by the first byte-level persisted-form assertion, which this change added.
 status: open
+decision: 2026-08-27 Add exact persisted corpus — Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.
 
 ### DW-39: No executable test proves that a rejection DomainResult routed through the EventStore command pipeline reaches persistence; only source-text characterization covers it.
 origin: spec-deferred 4aa7d4178162
