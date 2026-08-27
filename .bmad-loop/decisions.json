@@ -1,0 +1,11 @@
+{
+  "DW-4": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Document EventStore envelope SequenceNumber as the canonical stream position and Works payload Sequence as the state-changing-event ordinal; add rejection-then-create persistence/replay coverage and reconcile the contradictory architecture text.",
+    "key": "1",
+    "label": "Envelope-canonical sequencing",
+    "resolution": ""
+  }
+}

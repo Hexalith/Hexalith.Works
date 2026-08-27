@@ -28,6 +28,7 @@ origin: migrated from legacy ledger ("Deferred from: code review of 1-3-referenc
 location: src/Hexalith.Works.Contracts/Events/Rejections/WorkItemCannotReferenceParentFromAnotherTenant.cs; src/Hexalith.Works.Contracts/State/WorkItemState.cs:44; src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs:34
 reason: `WorkItemCannotReferenceParentFromAnotherTenant` and `WorkItemCannotBeCreatedWithoutObligation` carry no `Sequence` or `AggregateId` and apply as no-ops, while `state is null ? 1 : 2` assumes rejection never advances the stream; a rejection-only stream therefore replays like a never-created aggregate and a later create can re-emit sequence 1, an inherited Story 1.2 contract deferred until EventStore append and replay wiring.
 status: open
+decision: 2026-08-27 Envelope-canonical sequencing — Document EventStore envelope SequenceNumber as the canonical stream position and Works payload Sequence as the state-changing-event ordinal; add rejection-then-create persistence/replay coverage and reconcile the contradictory architecture text.
 
 ### DW-5: Self-parent reference accepted
 
