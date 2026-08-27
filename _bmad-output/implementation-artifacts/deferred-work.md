@@ -69,7 +69,9 @@ resolution-undo: 158f7ee039cd50584e23ba256190839eb05a20aea675c2c6641408a138bb866
 origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
 location: src/Hexalith.Works.Contracts/State/WorkItemState.cs:171-178
 reason: Audit F-DOMAIN-4 (minor): replaying a corrupted or hand-written `ReEstimated` with a different Unit preserves the old Unit in aggregate state while the roll-up projection refuses the event, creating divergent Unit views; command-side validation protects the normal write boundary, so the optional hardening is to mirror the projection's defensive skip.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-reestimate-replay-unit-hardening
+resolution-undo: e631ddbe2597aa647e13c95e6f52b4eb765756181d6ec852e8a9099f23deb037 2026-08-27 7374617475733a206f70656e
 
 ### DW-10: Completed by Story 4.7 — Tier-3 fixed aggregate id and live gateway repair.
 
@@ -208,4 +210,12 @@ location: n/a
 source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-28: A persisted same-unit ReEstimated event with a negative estimate can still throw during aggregate replay.
+origin: spec-deferred 92fa2ce13a28
+location: src/Hexalith.Works.Contracts/State/WorkItemState.cs:176
+source_spec: `spec-reestimate-replay-unit-hardening.md`
+severity: high
+reason: WorkItemState.Apply(ReEstimated) calls WorkItemEffort.ReEstimate for a matching established unit, and that value object rejects negative estimates. WorkItemRollUpProjection already refuses and diagnoses the same corrupted fact, so this separate pre-existing corruption case can wedge aggregate replay.
 status: open

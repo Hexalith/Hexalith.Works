@@ -2,8 +2,11 @@ using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
+using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.State;
 using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections.Models;
+using Hexalith.Works.Projections.Strategies;
 using Hexalith.Works.Server.Aggregates;
 using Hexalith.Works.Testing;
 using Shouldly;
@@ -132,6 +135,39 @@ public sealed class WorkItemReEstimateTests
         state.InitialEffort.ShouldNotBeNull().Unit.ShouldBe(Hour);
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(5m);
         state.Sequence.ShouldBe(sequenceAfterEstablish);
+    }
+
+    [Fact]
+    public void Mismatched_persisted_reestimate_retains_effort_and_advances_both_replay_sequences()
+    {
+        var state = new WorkItemState();
+        WorkItemRollUpProjection projection = new();
+        WorkItemEffort establishedEffort = new(8m, Hour, 3m);
+        WorkItemCreated created = new(
+            Item.Value,
+            1,
+            Tenant,
+            Item,
+            new Obligation("Re-estimate work"),
+            establishedEffort);
+        ReEstimated mismatched = new(Item.Value, 2, Tenant, Item, 13m, new Unit("point"), "corrupted persisted fact");
+
+        state.Apply(created);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, created.Sequence, created));
+        state.Apply(mismatched);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, mismatched.Sequence, mismatched));
+
+        WorkItemRollUp rollUp = projection.Get(Tenant, Item).ShouldNotBeNull();
+        state.InitialEffort.ShouldBe(establishedEffort);
+        rollUp.OwnEffort.ShouldBe(establishedEffort);
+        state.Remaining.ShouldBe(establishedEffort.Remaining);
+        rollUp.OwnRemaining.ShouldBe(new OwnRemaining(establishedEffort.Remaining, Hour));
+        state.Sequence.ShouldBe(mismatched.Sequence);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(mismatched.Sequence);
+        rollUp.Degraded.ShouldBeTrue();
+        rollUp.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Item, nameof(ReEstimated), mismatched.Sequence),
+        ]);
     }
 
     [Fact]
