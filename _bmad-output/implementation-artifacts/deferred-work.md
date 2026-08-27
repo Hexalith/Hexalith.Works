@@ -51,6 +51,7 @@ origin: migrated from legacy ledger ("Deferred from: architecture/domain audit c
 location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:94-123,180-193
 reason: Audit F-PROJ-1 (major): the `/project` dispatcher replays and persists only the dispatched aggregate, so a parent's persisted `WorkItemRollUp` and `WhatsNextItem.RolledRemaining` retain each child's spawn-time `InitialEffort` forever; Story 4.7 deliberately trusts only persisted terminal status during live cascade discovery, leaving cross-aggregate convergence dependent on an EventStore projection reconciliation seam or an interim refuse-don't-fake or re-merge decision documented in `docs/eventstore-api-surface-constraints.md`.
 status: open
+decision: 2026-08-27 Refuse stale roll-ups — Persist or expose rolled remaining as unavailable when child contributions cannot be reconciled, while preserving reliable own effort and terminal status.
 
 ### DW-8: "Mutation-validated cross-tenant negative tests" gate does not exist
 

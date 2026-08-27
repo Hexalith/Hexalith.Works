@@ -7,5 +7,14 @@
     "key": "1",
     "label": "Envelope-canonical sequencing",
     "resolution": ""
+  },
+  "DW-7": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Persist or expose rolled remaining as unavailable when child contributions cannot be reconciled, while preserving reliable own effort and terminal status.",
+    "key": "1",
+    "label": "Refuse stale roll-ups",
+    "resolution": ""
   }
 }
