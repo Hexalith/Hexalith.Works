@@ -54,11 +54,10 @@ dotnet_diagnostic.IDE0055.severity = warning
 csharp_indent_case_contents = true
 csharp_indent_switch_labels = true
 
-# Analyzer severity: warning (not error) for scaffolding phase
-# These can be escalated to error once codebase matures
-dotnet_diagnostic.CA1062.severity = warning
-dotnet_diagnostic.CA1822.severity = warning
-dotnet_diagnostic.CA2007.severity = warning
+# Warnings are errors repository-wide; keep analyzer severities explicit so editor and build policies cannot drift
+dotnet_diagnostic.CA1062.severity = error
+dotnet_diagnostic.CA1822.severity = error
+dotnet_diagnostic.CA2007.severity = error
 
-# Suppress specific analyzers that conflict with scaffolding
+# Unrelated CA1014 suppression retained outside this analyzer policy
 dotnet_diagnostic.CA1014.severity = none

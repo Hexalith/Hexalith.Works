@@ -14,7 +14,9 @@ resolution-undo: 5205efa379203d325360cd1365decb0d05f518a3d7b9e85ef9dae1db9076c5d
 origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
 location: .editorconfig:56-60; Directory.Build.props:11
 reason: `TreatWarningsAsErrors=true` promotes the scaffolding-phase CA1062, CA1822, and CA2007 warnings to build errors without a `WarningsNotAsErrors` escape hatch; this is latent while the scaffold is empty, but domain code will require either `WarningsNotAsErrors` or editorconfig severities aligned with the intended policy.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-analyzer-severity-policy-alignment
+resolution-undo: c5cbd6d2aa8b399fd48aeec5810f4a0dc116522225ae7a930158488d49ad588a 2026-08-27 7374617475733a206f70656e
 
 ### DW-3: Placeholder tests prove little
 
