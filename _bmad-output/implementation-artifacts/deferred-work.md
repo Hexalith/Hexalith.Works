@@ -385,3 +385,4 @@ source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: CreateWorkItem accepts a Parent, and WorkItemRollUpProjection.Project adds the parent->child edge from WorkItemCreated.Parent on the child's stream. That create emits nothing on the parent's stream, so the parent's own dispatch sees ChildContributionCount == 0 and no ChildSpawned event name, ToBoundarySafeRollUp does not fire, and the parent is persisted as a leaf with an available rolled total that excludes those children. This predates the refusal change; detecting it from a single dispatch would require a cross-aggregate store read or merge protocol, which the intent's Block If excludes.
 status: open
+decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.

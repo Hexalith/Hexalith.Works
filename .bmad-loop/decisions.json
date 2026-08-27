@@ -44,6 +44,15 @@
     "label": "Version and backfill",
     "resolution": ""
   },
+  "DW-46": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.",
+    "key": "1",
+    "label": "Platform reconciliation seam",
+    "resolution": ""
+  },
   "DW-7": {
     "answered_at": "2026-08-27",
     "bundle_name": "",
