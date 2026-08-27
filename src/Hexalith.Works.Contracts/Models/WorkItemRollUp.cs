@@ -8,8 +8,14 @@ namespace Hexalith.Works.Contracts.Models;
 /// <param name="Status">The projected lifecycle status.</param>
 /// <param name="Parent">The projected parent reference, when present.</param>
 /// <param name="OwnRemaining">The work item's own remaining effort.</param>
-/// <param name="RolledRemaining">The single-unit subtree remainder, when available.</param>
-/// <param name="RolledRemainingByUnit">The subtree remainder grouped by unit.</param>
+/// <param name="RolledRemaining">
+/// The single-unit subtree remainder when locally available; <see langword="null"/> also represents a
+/// runtime-unavailable child-dependent total that a per-aggregate replay cannot reconcile.
+/// </param>
+/// <param name="RolledRemainingByUnit">
+/// The subtree remainder grouped by unit, or an empty list when no numeric contribution exists or the runtime
+/// cannot reconcile child-dependent totals from separate aggregate replays.
+/// </param>
 /// <param name="ChildWorkItemIds">The accepted child identities.</param>
 /// <param name="ChildContributionCount">The number of accepted child contributions.</param>
 /// <param name="LatestAcceptedSourceSequence">

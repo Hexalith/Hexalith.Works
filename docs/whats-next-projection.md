@@ -60,6 +60,16 @@ available": pass an optional roll-up lookup
 `WorkItemRollUpProjection` read model; leave it null to return them empty. Reinventing the roll-up tree
 walk here is the anti-pattern this avoids.
 
+At the runtime `/project` boundary, the supplied lookup is sanitized before composition. Because each dispatch
+contains only one aggregate stream, a roll-up with `ChildContributionCount > 0` cannot reconcile later child
+progress and supplies `RolledRemaining: null` plus an empty `RolledRemainingByUnit` instead of a spawn-time total.
+The same refusal applies when the request names a `ChildSpawned` event that cannot be decoded or accepted, because
+the incomplete local model cannot prove the aggregate is a leaf.
+The same sanitized model is supplied to tenant-index composition and per-item persistence so both paths apply
+the same refusal policy within a dispatch; those separate writes are not an atomic transaction. Leaf items keep
+their locally complete rolled values. This is substrate unavailability, not corrupt-event degradation: own
+effort, status, structure, diagnostics, tenant, and freshness remain intact.
+
 ## Tenant scoping and query-side authorization (D2 / NFR-1)
 
 Two **distinct controls**, defense-in-depth:

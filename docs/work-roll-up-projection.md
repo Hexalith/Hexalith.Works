@@ -57,4 +57,13 @@ incompatible event.
 
 The projection is pure code in `Hexalith.Works.Projections` and references only Works contracts. It does
 not read EventStore, repositories, files, clocks, Dapr, runtime configuration, UI, routing, LLM services,
-or cost-governance services. Runtime projection adapter wiring remains outside this story.
+or cost-governance services. Its recursive convergence is valid when all contributing event streams are
+co-available to the same projection instance.
+
+The runtime `/project` adapter receives only one aggregate stream per dispatch. A parent's `ChildSpawned`
+facts can establish spawn-time child contributions, but later child progress is delivered separately and cannot
+reconcile that parent instance. At this adapter boundary, a model with `ChildContributionCount > 0`—or a request
+containing a `ChildSpawned` event type that could not be decoded or accepted—keeps its own effort, lifecycle
+status, parent/child structure, tenant, diagnostics, and freshness watermark, while `RolledRemaining` and
+`RolledRemainingByUnit` are exposed and persisted as unavailable (`null` / empty). This 2026-08-27 refusal
+decision does not weaken or change the pure projection's co-available recursive behavior.

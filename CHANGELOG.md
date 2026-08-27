@@ -56,6 +56,13 @@ All notable changes to Hexalith.Works will be documented in this file.
   projection delivery, freshness watermarks, and dedup key off the envelope position, so a rejection at
   envelope position 1 followed by a valid create at position 2 correctly yields
   `WorkItemCreated.Sequence == 1`.
+- Refuse stale persisted roll-ups: the runtime `/project` adapter delivers one aggregate's stream per
+  call, so a parent's child-dependent totals cannot be reconciled within a dispatch. `RolledRemaining`
+  and `RolledRemainingByUnit` are now persisted and exposed as unavailable (`null` / empty) whenever the
+  replayed item has accepted child contributions — or names a `ChildSpawned` event that could not be
+  decoded or accepted — instead of retaining each child's spawn-time effort. Own effort, lifecycle
+  status (including terminal status), parent/child structure, tenant identity, diagnostics, and the
+  accepted-source watermark are preserved, and locally complete leaf totals remain available.
 
 ### Deferred
 

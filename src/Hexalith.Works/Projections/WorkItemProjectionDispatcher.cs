@@ -28,9 +28,9 @@ namespace Hexalith.Works.Projections;
 /// <see cref="ProjectionEventDto.EventTypeName"/>, mirroring the EventStore Counter/Tenants projection handlers.</para>
 /// <para>Reconciliation limitation (documented in <c>docs/eventstore-api-surface-constraints.md</c>): the
 /// EventStore <c>/project</c> contract delivers one aggregate's event stream per call, so the cross-aggregate
-/// "rolled remaining" contribution from sibling/child work items is not available within a single dispatch.
-/// Each item's own remaining effort is composed; cross-aggregate roll-up convergence is exercised only when the
-/// full Aspire runtime replays every aggregate.</para>
+/// "rolled remaining" contribution from sibling/child work items cannot be reconciled within a single dispatch.
+/// Parent rolled totals are therefore persisted and exposed as unavailable while reliable local evidence and
+/// parent/child structure are preserved.</para>
 /// <para>Logging is bounded to metadata (tenant id, work-item id, event-type names, projection type, counts) —
 /// never event payloads, obligations, secrets, tokens, or full command bodies (AC #4 / NFR-6).</para>
 /// </remarks>
@@ -97,6 +97,8 @@ public sealed class WorkItemProjectionDispatcher
         var decodedEvents = new List<(long Sequence, IEventPayload Payload)>();
         bool changed = false;
         int decoded = 0;
+        bool childContributionMayExist = (request.Events ?? []).Any(dto => dto is not null
+            && string.Equals(SimpleTypeName(dto.EventTypeName), nameof(ChildSpawned), StringComparison.Ordinal));
 
         foreach (ProjectionEventDto? dto in request.Events ?? [])
         {
@@ -118,12 +120,17 @@ public sealed class WorkItemProjectionDispatcher
             decoded++;
         }
 
+        WorkItemRollUp? model = ToBoundarySafeRollUp(rollUp.Get(tenant, workItemId), childContributionMayExist);
         WhatsNextItem? item = whatsNext
-            .WhatsNext(tenant, rollUp.Get)
+            .WhatsNext(tenant, (lookupTenant, lookupWorkItemId) =>
+                string.Equals(lookupTenant.Value, tenant.Value, StringComparison.Ordinal)
+                && string.Equals(lookupWorkItemId.Value, workItemId.Value, StringComparison.Ordinal)
+                    ? model
+                    : null)
             .FirstOrDefault(candidate => string.Equals(candidate.WorkItemId.Value, request.AggregateId, StringComparison.Ordinal));
 
         await UpsertTenantIndexAsync(tenant, request.AggregateId, item, request.Events, cancellationToken).ConfigureAwait(false);
-        await PersistRollUpAsync(tenant, workItemId, rollUp, cancellationToken).ConfigureAwait(false);
+        await PersistRollUpAsync(tenant, workItemId, model, cancellationToken).ConfigureAwait(false);
         await MaintainPendingDateAwaitIndexAsync(tenant, request.AggregateId, decodedEvents, request.Events, cancellationToken).ConfigureAwait(false);
 
         if (changed && _notifier is not null)
@@ -184,10 +191,9 @@ public sealed class WorkItemProjectionDispatcher
     private async Task PersistRollUpAsync(
         TenantId tenant,
         WorkItemId workItemId,
-        WorkItemRollUpProjection rollUp,
+        WorkItemRollUp? model,
         CancellationToken cancellationToken)
     {
-        WorkItemRollUp? model = rollUp.Get(tenant, workItemId);
         if (model is not null)
         {
             await _store
@@ -195,6 +201,15 @@ public sealed class WorkItemProjectionDispatcher
                 .ConfigureAwait(false);
         }
     }
+
+    private static WorkItemRollUp? ToBoundarySafeRollUp(WorkItemRollUp? model, bool childContributionMayExist)
+        => model is not null && (model.ChildContributionCount > 0 || childContributionMayExist)
+            ? model with
+            {
+                RolledRemaining = null,
+                RolledRemainingByUnit = [],
+            }
+            : model;
 
     private async Task MaintainPendingDateAwaitIndexAsync(
         TenantId tenant,

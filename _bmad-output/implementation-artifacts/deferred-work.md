@@ -56,7 +56,9 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: architecture/domain audit correct-course (2026-07-21)"), 2026-08-27
 location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:94-123,180-193
 reason: Audit F-PROJ-1 (major): the `/project` dispatcher replays and persists only the dispatched aggregate, so a parent's persisted `WorkItemRollUp` and `WhatsNextItem.RolledRemaining` retain each child's spawn-time `InitialEffort` forever; Story 4.7 deliberately trusts only persisted terminal status during live cascade discovery, leaving cross-aggregate convergence dependent on an EventStore projection reconciliation seam or an interim refuse-don't-fake or re-merge decision documented in `docs/eventstore-api-surface-constraints.md`.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-refuse-stale-persisted-rollups
+resolution-undo: ddefab4380f8905628c9b3aeb714f69399d7c2991b6b63f91621f55d32918f0e 2026-08-27 7374617475733a206f70656e
 decision: 2026-08-27 Refuse stale roll-ups — Persist or expose rolled remaining as unavailable when child contributions cannot be reconciled, while preserving reliable own effort and terminal status.
 
 ### DW-8: "Mutation-validated cross-tenant negative tests" gate does not exist
@@ -347,4 +349,36 @@ location: n/a
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-130630-f73f; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-43: A delayed older full-replay request can overwrite newer persisted work-item projection state.
+origin: spec-deferred 1362c100f6fb
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:152
+source_spec: `spec-refuse-stale-persisted-rollups.md`
+severity: medium
+reason: WorkItemProjectionDispatcher writes the tenant index and per-item roll-up without comparing the incoming LatestAcceptedSourceSequence to the stored item, so an older request completing later can replace newer status, effort, structure, and availability state. This behavior predates the stale-roll-up refusal change and needs a focused ordering/concurrency design.
+status: open
+
+### DW-44: Per-item roll-up persistence does not use the documented optimistic-concurrency write policy.
+origin: spec-deferred 6baca031f280
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:191
+source_spec: `spec-refuse-stale-persisted-rollups.md`
+severity: medium
+reason: PersistRollUpAsync calls IReadModelStore.SaveAsync directly, while docs/eventstore-api-surface-constraints.md describes per-item persistence as ReadModelWritePolicy/ETag guarded. The mismatch predates this bundle and should be reconciled separately without expanding the adapter refusal patch.
+status: open
+
+### DW-45: Roll-ups and tenant-index entries persisted before the refusal change keep their stale child-dependent totals until their own aggregate is dispatched again.
+origin: spec-deferred ced4955ae997
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:123
+source_spec: `spec-refuse-stale-persisted-rollups.md`
+severity: medium
+reason: ToBoundarySafeRollUp is applied only on the write path of a dispatch, and the dispatcher is the only writer of WorksReadModelKeys.RollUpKey and the what's-next tenant index. A child-only dispatch never rewrites the parent's keys, WhatsNextQueryHandler returns stored values verbatim with no read-side sanitization, WorksReadModelKeys carries no schema/version token, and no startup replay, rebuild, or invalidation path exists. A parent that appends no further events of its own therefore keeps serving its spawn-time total indefinitely. Every adapter test starts from a fresh InMemoryReadModelStore, so no test observes a pre-change document. Closing this needs a re-projection/backfill or read-side guard, which the approved adapter-boundary approach ("whenever the dispatched item has child contributions") does not cover.
+status: open
+
+### DW-46: A parent whose children were attached by a parented create still publishes a rolled total that silently omits them.
+origin: spec-deferred 8b641af15c5f
+location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:58
+source_spec: `spec-refuse-stale-persisted-rollups.md`
+severity: medium
+reason: CreateWorkItem accepts a Parent, and WorkItemRollUpProjection.Project adds the parent->child edge from WorkItemCreated.Parent on the child's stream. That create emits nothing on the parent's stream, so the parent's own dispatch sees ChildContributionCount == 0 and no ChildSpawned event name, ToBoundarySafeRollUp does not fire, and the parent is persisted as a leaf with an available rolled total that excludes those children. This predates the refusal change; detecting it from a single dispatch would require a cross-aggregate store read or merge protocol, which the intent's Block If excludes.
 status: open

@@ -14,6 +14,9 @@ namespace Hexalith.Works.Contracts.Models;
 /// pill, and a <see cref="LatestAcceptedSourceSequence"/> freshness watermark. The watermark is the
 /// EventStore envelope position of the latest accepted state-changing delivery; filtered rejection
 /// positions do not advance it, so it is not the full persisted stream high-watermark.
+/// At the per-aggregate runtime boundary, <c>RolledRemaining: null</c> and an empty
+/// <c>RolledRemainingByUnit</c> can represent child-dependent totals that are unavailable because separate
+/// child streams cannot be reconciled in that dispatch.
 /// <para>
 /// This is a plain <see cref="System.Text.Json"/> record — not a polymorphic catalog type, not
 /// stream-appended, not in the golden corpus (DC3). It exposes no UI-specific types (no colour, glyph,
