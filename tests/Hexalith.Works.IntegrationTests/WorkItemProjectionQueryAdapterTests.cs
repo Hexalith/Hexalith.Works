@@ -6,6 +6,8 @@ using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Events.Rejections;
+using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Queries;
@@ -74,6 +76,42 @@ public sealed class WorkItemProjectionQueryAdapterTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         (await QueryWhatsNextAsync(store).ConfigureAwait(true)).Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task AcceptedFreshnessUsesEnvelopePositionAndFilteredRejectionsDoNotAdvanceIt()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                // Persisted rejection at envelope 1 is filtered as no projection state change.
+                Dto(new WorkItemCannotBeCreatedWithoutObligation(tenant, item), 1),
+                // State-changing payload ordinal 1 intentionally diverges from envelope position 2.
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 2),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 3),
+                // A later filtered rejection proves the accepted watermark is not the full stream high-watermark.
+                Dto(new WorkItemTransitionRejected(tenant, item, WorkItemStatus.Assigned, "Claim"), 4),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        IReadOnlyList<JsonElement> items = await QueryWhatsNextAsync(store).ConfigureAwait(true);
+        items.Count.ShouldBe(1);
+        items[0].GetProperty("latestAcceptedSourceSequence").GetInt64().ShouldBe(3);
+
+        // The roll-up read model written by the same dispatch carries the same accepted-envelope watermark:
+        // envelope 3 (the last accepted state-changing delivery), not envelope 4 (the filtered rejection).
+        ReadModelEntry<WorkItemRollUp> rollUp = await store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        rollUp.Value.ShouldNotBeNull().LatestAcceptedSourceSequence.ShouldBe(3);
     }
 
     [Fact]

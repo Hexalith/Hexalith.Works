@@ -68,10 +68,9 @@ public sealed class WorkItemLifecycleContractFlowTests
     [Fact]
     public void Out_of_order_event_stream_replays_to_completed_when_resorted_by_sequence()
     {
-        // AC #2: every event carries (AggregateId, Sequence) FOR ORDER-TOLERANT PROJECTIONS. Prove the
-        // Sequence alone is sufficient to recover the canonical order: persist the full lifecycle stream
-        // through serialization, deliver it OUT OF ORDER, and let a projection re-sort purely by Sequence
-        // and replay to the identical terminal state.
+        // This success-only payload contract retains contiguous state-changing ordinals. Canonical
+        // persisted ordering, including rejection events, comes from EventStore envelope SequenceNumber
+        // and is covered by EnvelopeCanonicalSequencingTests.
         var write = new WorkItemState();
         var stream = new List<(long Sequence, IEventPayload Event)>();
 
@@ -94,11 +93,11 @@ public sealed class WorkItemLifecycleContractFlowTests
 
         stream.Count.ShouldBe(6); // Guard: never assert order-tolerance over an empty or short stream.
 
-        // The persisted sequences are exactly the contiguous, gap-free 1..6 a projection can sort on.
+        // These success payload ordinals are contiguous because this scenario has no rejection events.
         stream.Select(t => t.Sequence).OrderBy(s => s).ShouldBe(new long[] { 1, 2, 3, 4, 5, 6 });
 
-        // Deliver the stream OUT OF ORDER (deterministic reverse — no RNG), then recover order from
-        // Sequence and replay into an independent state.
+        // Deliver the payloads OUT OF ORDER (deterministic reverse — no RNG), then recover their
+        // state-changing order from payload Sequence and replay into an independent state.
         var replay = new WorkItemState();
         foreach ((long _, IEventPayload e) in stream.AsEnumerable().Reverse().OrderBy(t => t.Sequence))
         {
@@ -153,8 +152,8 @@ public sealed class WorkItemLifecycleContractFlowTests
     [Fact]
     public void Illegal_transition_serializes_a_transition_rejection_only()
     {
-        // Claim from Created is illegal — the result is a rejection-only payload that is returned to the
-        // caller (never appended to the stream), so it carries context but no sequence.
+        // Claim from Created is illegal. The Works rejection payload carries context but no state-changing
+        // Sequence; EventStore persists it with an independently assigned envelope SequenceNumber.
         var result = WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, Binding), Created());
 
         result.IsRejection.ShouldBeTrue();
@@ -164,7 +163,7 @@ public sealed class WorkItemLifecycleContractFlowTests
             .ShouldBeOfType<WorkItemTransitionRejected>();
 
         string json = JsonSerializer.Serialize(rejection, JsonOptions);
-        json.ShouldNotContain("\"sequence\"", Case.Insensitive, "Rejections are returned to the caller, not sequenced into the stream.");
+        json.ShouldNotContain("\"sequence\"", Case.Insensitive, "A rejection payload has no state-changing ordinal; EventStore sequences its envelope.");
         using (JsonDocument document = JsonDocument.Parse(json))
         {
             foreach (string envelope in EnvelopeFields)

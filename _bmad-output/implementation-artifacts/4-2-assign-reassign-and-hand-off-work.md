@@ -223,7 +223,8 @@ All paths under `Hexalith.Works` root; line numbers are approximate anchors from
     — **no** binding field; marks every queue entry (from `Created` or `Assigned`) per FR-18.
   - `WorkItemClaimed.cs` — `…(…, ExecutorBinding Binding) : IEventPayload;` — captures the claimant binding.
   - `Events/Rejections/WorkItemTransitionRejected.cs` — `…(TenantId TenantId, WorkItemId WorkItemId, WorkItemStatus
-    FromStatus, string AttemptedAct) : IRejectionEvent;` — **no `Sequence`** (returned to caller, not appended). This is
+    FromStatus, string AttemptedAct) : IRejectionEvent;` — **no `Sequence`** (returned to the caller; EventStore
+    still appends it and assigns its own envelope `SequenceNumber`). This is
     the `IRejectionEvent` for AC#5.
 - **Status enum** `src/Hexalith.Works.Contracts/ValueObjects/WorkItemStatus.cs` — `Unknown=0, Created=1, Assigned=2,
   Queued=3, InProgress=4, Suspended=5, Completed=6, Cancelled=7, Rejected=8, Expired=9` (string-serialized). Terminal =

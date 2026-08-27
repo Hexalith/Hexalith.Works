@@ -14,9 +14,11 @@ namespace Hexalith.Works.Projections.Strategies;
 /// by <see cref="WhatsNextOrdering"/> (Priority → Due Date → identity; neither sorts last).
 /// <para>
 /// Each item keeps its accepted events in a per-item <see cref="SortedDictionary{TKey, TValue}"/> keyed
-/// by aggregate-local sequence and re-derives status / schedule / binding / own-remaining / await
-/// conditions on every change, so replay, duplicate, and out-of-order delivery converge to the same read
-/// model and the same ordering (idempotent + order-tolerant — DC5/NFR-4/NFR-9/B2). Tenant isolation is a
+/// by EventStore envelope position and re-derives status / schedule / binding / own-remaining / await
+/// conditions on every change. Unsupported and rejection payloads are filtered before acceptance, so
+/// the freshness watermark is the latest accepted state-changing envelope position rather than the full
+/// stream high-watermark. Replay, duplicate, and out-of-order delivery converge to the same read model
+/// and the same ordering (idempotent + order-tolerant — DC5/NFR-4/NFR-9/B2). Tenant isolation is a
 /// per-item <c>(tenant, id)</c> key plus an ordinal tenant-equality check on read, so items from
 /// different tenants with colliding inner ids stay distinct and never cross (AC #5). It holds no
 /// authoritative state, performs no I/O, and never logs (NFR-5/NFR-6).
@@ -37,8 +39,8 @@ public sealed class WhatsNextQueueProjection
     /// Applies a delivery and reports whether it changed the tenant's what's-next eligibility set or
     /// ordering. The deferred runtime adapter notifies the SignalR seam only when
     /// <see cref="WhatsNextProjectionChange.Changed"/> is set; a binding- or remaining-only update on an
-    /// already-eligible item is not a change (AC #4). Out-of-sequence facts, tenant/id-mismatched
-    /// payloads, and duplicate sequences are ignored and report no change.
+    /// already-eligible item is not a change (AC #4). Unsupported or rejection payloads,
+    /// tenant/id-mismatched payloads, and duplicate envelope positions are ignored and report no change.
     /// </summary>
     public WhatsNextProjectionChange Project(WorkItemRollUpEvent delivery)
     {

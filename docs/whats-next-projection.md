@@ -47,7 +47,8 @@ catalog type, not stream-appended, not in the golden corpus (DC3). It exposes on
   types** from `OwnRemaining` (AR-9/B3), populated only **where a co-available roll-up read model is
   supplied** (DC7); `null`/empty otherwise. Per-unit subtotals are never coerced (UX-DR2).
 - `IReadOnlyList<AwaitCondition> AwaitConditions` — kind + key, for a future "Waiting on…" pill (UX-DR5).
-- `long LatestAcceptedSourceSequence` — a freshness watermark (mirrors `WorkItemRollUp`).
+- `long LatestAcceptedSourceSequence` — the latest accepted state-changing delivery's EventStore
+  envelope position (mirrors `WorkItemRollUp`), not the full stream high-watermark.
 
 ## Rolled-Remaining composition (DC7)
 
@@ -76,10 +77,15 @@ Two **distinct controls**, defense-in-depth:
 
 ## Idempotent + order-tolerant (DC5)
 
-Each item keeps its accepted events in a per-item `SortedDictionary<long, IEventPayload>` keyed by
-aggregate-local sequence and re-derives status / schedule / binding / own-remaining / await-conditions on
-each change. Replay, duplicate delivery, and out-of-order delivery converge to the same read model and the
-same ordering (NFR-4/NFR-9/B2). Rebuild is per-tenant and event-derived (the projection holds no
+Each item keeps its accepted events in a per-item `SortedDictionary<long, IEventPayload>` keyed by the
+canonical EventStore envelope `SequenceNumber` supplied by projection delivery, and re-derives status /
+schedule / binding / own-remaining / await-conditions on each change. A success payload's `Sequence` is
+only its state-changing ordinal. Rejections retain their upstream persisted envelope positions but are
+filtered as no state change before this projection's event map; they do not advance
+`LatestAcceptedSourceSequence`. That watermark is the latest accepted state-changing delivery's envelope
+position, not the full stream high-watermark, so gaps from filtered rejections are expected. Replay,
+duplicate delivery, and out-of-order delivery converge to the same read model and the same ordering
+(NFR-4/NFR-9/B2). Rebuild is per-tenant and event-derived (the projection holds no
 authoritative state), aligning to EventStore's **checkpoint-per-aggregate** online rebuild (see
 `docs/eventstore-api-surface-constraints.md`), **not** the superseded shadow+swap wording.
 

@@ -147,8 +147,9 @@ condition set from that suspension, records the consumed condition for replay, a
 `InProgress`.
 
 If a resume condition does not match the current suspended set, the command returns
-`WorkItemTransitionRejected`, emits no `WorkItemResumed`, burns no sequence number, and leaves the
-condition set intact. After a successful resume, repeating the consumed condition is the only resume
+`WorkItemTransitionRejected`, emits no `WorkItemResumed`, consumes no state-changing payload ordinal,
+and leaves the condition set intact. EventStore still persists the rejection at its canonical envelope
+`SequenceNumber`. After a successful resume, repeating the consumed condition is the only resume
 no-op; a different post-resume condition is rejected. Date and external resumes arrive as command data;
 the aggregate never reads a clock or calls an adapter.
 
@@ -184,11 +185,14 @@ Notes:
   `Queued→InProgress`. There is no `WorkItemStarted` event. **Single-claim-wins (Story 4.3; FR-18/NFR-3)**
   is realized as the *composition* of two separately-owned layers, with **no cell change** here: (1) the
   pure lifecycle above — `Queued/Assigned → Claim = Accept(InProgress)`, every other status (including
-  `InProgress` and `Suspended`) `R` — and (2) the EventStore substrate's **expected-version (ETag)
-  optimistic concurrency** (`AggregateActor → EventPersister → SaveStateAsync`). When two executors claim
-  the same item at expected version `N`, both compute `WorkItemClaimed` at sequence `N+1`; the store admits
-  exactly one append (the winner → `InProgress`), and the loser's commit conflicts, so on retry it
-  re-handles against the now-`InProgress` state and lands on the existing `InProgress + Claim = R` cell →
+  `InProgress` and `Suspended`) `R` — and (2) the EventStore substrate's **ETag-backed optimistic
+  concurrency** on the atomic actor-state save (`AggregateActor → EventPersister → SaveStateAsync`). When two executors claim
+  the same item from the same ETag-backed persisted state, both compute the next state-changing payload
+  ordinal from `WorkItemState.Sequence`; that ordinal is not the EventStore expected version and can
+  differ from the next envelope position after a rejection. `EventPersister` independently assigns the
+  next metadata-derived envelope `SequenceNumber`. The store admits exactly one atomic save (the winner
+  → `InProgress`), and the loser's commit conflicts, so on retry it re-handles against the now-`InProgress`
+  state and lands on the existing `InProgress + Claim = R` cell →
   `WorkItemTransitionRejected(InProgress, "Claim")`. The loser's observable rejection is therefore the
   **existing** `WorkItemTransitionRejected` (DC1) — **no** `ClaimRejected`/`ConcurrencyRejected` type is
   added and the v1 catalog stays **36**. Retry-exhaustion under hot contention is an infrastructure failure

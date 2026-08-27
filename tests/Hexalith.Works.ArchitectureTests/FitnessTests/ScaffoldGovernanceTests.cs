@@ -445,8 +445,8 @@ public sealed class ScaffoldGovernanceTests
     // Story 4.3 / AC #4 + DC1/DC4: claim is unconditional in v1 — any tenant Executor may claim a Queued
     // item, with no eligibility filter, routing score, escalation ladder, executor ranking, or AI claim
     // decision record (those are a Theme-4 routing concern). Single-claim-wins is realized as the pure
-    // lifecycle + the EventStore substrate's expected-version concurrency; the loser's observable rejection
-    // is the existing WorkItemTransitionRejected, NOT a new ClaimRejected/ConcurrencyRejected type (DC1).
+    // lifecycle + EventStore's ETag-backed atomic actor-state save; the loser's observable rejection is the
+    // existing WorkItemTransitionRejected, NOT a new ClaimRejected/ConcurrencyRejected type (DC1).
     // This mirrors P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36: it
     // matches on declared TYPE names (not raw substrings) so legitimate ClaimWorkItem/WorkItemClaimed and
     // XML-comment "claim"/"routing" mentions stay valid, and it is paired with the frozen-catalog assertion
@@ -503,7 +503,7 @@ public sealed class ScaffoldGovernanceTests
                 .Where(typeName => forbiddenTypeNamePatterns.Any(pattern => Regex.IsMatch(typeName, pattern)))
                 .Select(typeName => $"{Path.GetRelativePath(root, file.Path)} declares forbidden claim-eligibility/routing/concurrency-rejection type '{typeName}'"))];
 
-        violations.ShouldBeEmpty("Claim is unconditional in v1 (AC #4): no ClaimEligibility*/EligibilityFilter*/ClaimRouter*/RoutingScore*/ExecutorRanking*/EscalationLadder*/ClaimDecisionRecord* type, and no new ClaimRejected/ConcurrencyRejected rejection (DC1) — single-claim-wins reuses WorkItemTransitionRejected + the EventStore expected-version substrate.");
+        violations.ShouldBeEmpty("Claim is unconditional in v1 (AC #4): no ClaimEligibility*/EligibilityFilter*/ClaimRouter*/RoutingScore*/ExecutorRanking*/EscalationLadder*/ClaimDecisionRecord* type, and no new ClaimRejected/ConcurrencyRejected rejection (DC1) — single-claim-wins reuses WorkItemTransitionRejected + EventStore's ETag-backed atomic actor-state save.");
 
         // The durable v1 wire surface stays frozen at 37 (14 success events + 14 commands + 9 rejection
         // events). Every catalog member derives from the empty Polymorphic base; Story 4.3 adds none.

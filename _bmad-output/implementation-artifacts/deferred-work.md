@@ -31,7 +31,9 @@ resolution: already resolved: tests/Hexalith.Works.PropertyTests/WorkItemRollUpC
 origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
 location: src/Hexalith.Works.Contracts/Events/Rejections/WorkItemCannotReferenceParentFromAnotherTenant.cs; src/Hexalith.Works.Contracts/State/WorkItemState.cs:44; src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs:34
 reason: `WorkItemCannotReferenceParentFromAnotherTenant` and `WorkItemCannotBeCreatedWithoutObligation` carry no `Sequence` or `AggregateId` and apply as no-ops, while `state is null ? 1 : 2` assumes rejection never advances the stream; a rejection-only stream therefore replays like a never-created aggregate and a later create can re-emit sequence 1, an inherited Story 1.2 contract deferred until EventStore append and replay wiring.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-envelope-canonical-sequencing
+resolution-undo: 8ddd93e83ece5733892f7e3c22229ca6bbb11498dba824730dc963a106b8c774 2026-08-27 7374617475733a206f70656e
 decision: 2026-08-27 Envelope-canonical sequencing — Document EventStore envelope SequenceNumber as the canonical stream position and Works payload Sequence as the state-changing-event ordinal; add rejection-then-create persistence/replay coverage and reconcile the contradictory architecture text.
 
 ### DW-5: Self-parent reference accepted
@@ -273,4 +275,76 @@ location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmok
 source_spec: `spec-recovery-edge-case-test-hardening.md`
 severity: medium
 reason: `IsPortReachableAsync` catches every `OperationCanceledException` and returns false, so cancellation from `TestContext.Current.CancellationToken` is indistinguishable from the helper's two-second probe timeout and may produce a misleading `Assert.Skip`.
+status: open
+
+### DW-34: Rejection payloads are now durable persisted bytes but have no entry in the frozen golden-payload corpus; their shape freeze lives only in an in-test signature table.
+origin: spec-deferred 72838eb68eb0
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden/ holds only the 14 success events. RejectionShapeSignatures in EnvelopeCanonicalSequencingTests is a second, uncross-referenced freeze surface for the 9 v1 rejections, so the corpus rule (RR-6/NFR-12) does not cover them.
+status: open
+
+### DW-35: Snapshot-backed rehydration after a persisted rejection is unproven.
+origin: spec-deferred 5529e78a3460
+location: references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Events/EventStreamReader.cs:68-88
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: EventStreamReader reads the tail from snapshot.SequenceNumber + 1, and returns the snapshot alone when it already sits at the current sequence. A snapshot taken after a rejection envelope therefore folds the no-op away, and no test drives that path. The spec's I/O matrix covers only full replay.
+status: open
+
+### DW-36: Several older documentation paragraphs still say the v1 catalog "stays 36" while the fitness-asserted count is 37.
+origin: spec-deferred c4c1db7ffe36
+location: docs/lifecycle-transition-matrix.md:198
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: docs/lifecycle-transition-matrix.md:198, docs/whats-next-projection.md:120 and docs/boundary-decision-record.md:109/122/134/151 say 36; ScaffoldGovernanceTests asserts polymorphicCatalogCount.ShouldBe(37) and docs/eventstore-api-surface-constraints.md:112 says 37. Pre-existing staleness, surfaced while reconciling sequencing terminology in the same files.
+status: open
+
+### DW-37: Mid-stream and repeated-rejection envelope/payload divergence is unproven at the persistence layer.
+origin: spec-deferred efac8f417df1
+location: tests/Hexalith.Works.IntegrationTests/EnvelopeCanonicalSequencingTests.cs
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: EnvelopeCanonicalSequencingTests covers only pre-create rejections (the spec's I/O matrix rows). create(env 1) -> rejection(env 2) -> assign(env 3, payload ordinal 2), and two rejections before a create, are the cases where an off-by-one between the two counters would first show up.
+status: open
+
+### DW-38: The golden-payload corpus is camelCase while the bytes EventStore actually persists are PascalCase, yet both are documented as "the EventStore-persisted form".
+origin: spec-deferred 6b155a733168
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/SchemaEvolutionGoldenCorpusTests.cs:14-16
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: EventPersister.cs:71 serializes with JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()) -- no options, so PascalCase. SchemaEvolutionGoldenCorpusTests and WorkItemProjectionDispatcher's <remarks> both call the JsonSerializerDefaults.Web (camelCase) samples the persisted form; the 14 Golden/*.json files start "aggregateId". Decoding survives only because Web options are case-insensitive, so a naming-policy change upstream would not turn the corpus red. Surfaced by the first byte-level persisted-form assertion, which this change added.
+status: open
+
+### DW-39: No executable test proves that a rejection DomainResult routed through the EventStore command pipeline reaches persistence; only source-text characterization covers it.
+origin: spec-deferred 4aa7d4178162
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: EnvelopeCanonicalSequencingTests calls EventPersister.PersistEventsAsync itself, presupposing the routing decision that AggregateActor.ProcessCommandCoreAsync actually makes. No Works test instantiates AggregateActor, and the three Aspire lanes submit only accepted commands. The always-on guard is now mutation-validated across the whole command path, but it is still a string match over a pinned submodule, not execution.
+status: open
+
+### DW-40: The claim tests point at a Story 4.5 Aspire lane for live ETag conflict/retry coverage that does not exist.
+origin: spec-deferred 96069162f44f
+location: tests/Hexalith.Works.UnitTests/WorkItemClaimConcurrencyTests.cs:33-35
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: medium
+reason: WorkItemClaimConcurrencyTests' class XML doc says the live ETag-backed save / conflict-retry / retry-exhaustion path "is exercised under the Aspire runtime in Story 4.5". WorksCommandPipelineSmokeTests (the Story 4.5 lane) issues no ClaimWorkItem at all; the only runtime claims are single sequential submissions in WorksReminderRecoveryPipelineSmokeTests:185 and WorksCascadeRecoveryPipelineSmokeTests:165,194. Nothing anywhere issues two competing claims. Pre-existing pointer, re-asserted by this change's rewording.
+status: open
+
+### DW-41: Three ScaffoldGovernanceTests fitness method names still end "AndCatalogStays36" while the assertion in the same methods is polymorphicCatalogCount.ShouldBe(37).
+origin: spec-deferred 3ac7ddef56e1
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:387
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: low
+reason: ScaffoldGovernanceTests.cs:387, :455 and :524 declare ...AndCatalogStays36; the comment directly above the third says the wire surface "stays frozen at 37". Renaming is not free: roughly ten story-file and test-summary references quote those method names verbatim, so the rename and the reference sweep must land together. Distinct surface from the documentation-paragraph instance already tracked.
+status: open
+
+### DW-42: Follow-up review still recommended for dw-envelope-canonical-sequencing after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-envelope-canonical-sequencing.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-130630-f73f; this entry preserves the lingering recommendation for a deliberate later review.
 status: open

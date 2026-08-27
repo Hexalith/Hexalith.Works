@@ -2,6 +2,22 @@ using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.Contracts.Models;
 
+/// <summary>Represents the accepted state-changing roll-up projection for one work item.</summary>
+/// <param name="TenantId">The owning tenant.</param>
+/// <param name="WorkItemId">The projected work item.</param>
+/// <param name="Status">The projected lifecycle status.</param>
+/// <param name="Parent">The projected parent reference, when present.</param>
+/// <param name="OwnRemaining">The work item's own remaining effort.</param>
+/// <param name="RolledRemaining">The single-unit subtree remainder, when available.</param>
+/// <param name="RolledRemainingByUnit">The subtree remainder grouped by unit.</param>
+/// <param name="ChildWorkItemIds">The accepted child identities.</param>
+/// <param name="ChildContributionCount">The number of accepted child contributions.</param>
+/// <param name="LatestAcceptedSourceSequence">
+/// The EventStore envelope position of the latest accepted state-changing delivery. Filtered rejection
+/// positions do not advance it, so it is not the full persisted stream high-watermark. A spawn-derived
+/// child that has no <c>WorkItemCreated</c> delivery of its own carries a synthetic floor of <c>1</c>
+/// until a real delivery raises it.
+/// </param>
 public sealed record WorkItemRollUp(
     TenantId TenantId,
     WorkItemId WorkItemId,

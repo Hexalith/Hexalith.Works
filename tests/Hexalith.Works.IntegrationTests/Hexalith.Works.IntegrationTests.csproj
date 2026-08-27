@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\src\Hexalith.Works.AppHost\Hexalith.Works.AppHost.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
+    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Testing\Hexalith.EventStore.Testing.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
   </ItemGroup>
 

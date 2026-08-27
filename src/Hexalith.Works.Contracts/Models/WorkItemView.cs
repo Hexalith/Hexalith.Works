@@ -18,7 +18,12 @@ namespace Hexalith.Works.Contracts.Models;
 /// <param name="Remaining">The derived remaining effort (<c>Estimated - Done</c>), or <see langword="null"/> when unestimated.</param>
 /// <param name="Unit">The effort unit, or <see langword="null"/> when unestimated.</param>
 /// <param name="Parent">The parent work item reference, when this item is a child.</param>
-/// <param name="LatestAcceptedSourceSequence">The latest source sequence reflected by the read model (freshness signal).</param>
+/// <param name="LatestAcceptedSourceSequence">
+/// The EventStore envelope position of the latest accepted state-changing delivery. Filtered rejection
+/// positions do not advance it, so it is not the full persisted stream high-watermark. A spawn-derived
+/// child that has no <c>WorkItemCreated</c> delivery of its own carries a synthetic floor of <c>1</c>
+/// until a real delivery raises it.
+/// </param>
 public sealed record WorkItemView(
     TenantId TenantId,
     WorkItemId WorkItemId,

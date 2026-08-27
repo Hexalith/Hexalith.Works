@@ -2,6 +2,29 @@
 
 Story 1.1 verified the live `Hexalith.EventStore` source surface before Works depends on domain behavior in later stories.
 
+## Canonical Stream Sequencing
+
+Verified against EventStore commit `b43e963403efa848eda9621b5e3e7e446c7faa2d`
+(`v3.97.0-26-gb43e9634`), the revision this repository pins for `references/Hexalith.EventStore`.
+`EventStoreApiSurfaceCharacterizationTests.P1_EventStorePersistsRejectionsAndUsesEnvelopeCanonicalSequencing`
+is the always-on drift guard over that source.
+
+EventStore envelope `SequenceNumber` is the canonical persisted position. `EventPersister` derives it
+from `AggregateMetadata.CurrentSequence`, assigns one gapless position to every persisted success or
+`IRejectionEvent`, and updates metadata independently of any similarly named payload field.
+`EventStreamReader` reads those envelope positions from 1 through the metadata watermark on a full
+replay, and only the tail from `snapshot.SequenceNumber + 1` when a snapshot is supplied (returning the
+snapshot alone when it already sits at the current sequence). `AggregateReplayer` sorts and gap-validates
+the positions it is given before invoking every matching `Apply` overload.
+
+Works payload `Sequence` has a narrower meaning: it is the state-changing-event ordinal used by
+`WorkItemState` and advances only when an event mutates aggregate state. Rejection payload shapes remain
+frozen without `AggregateId` or `Sequence`; applying an `IRejectionEvent` is a no-op even though its
+EventStore envelope occupies a persisted position. Therefore, after a rejection at envelope position 1,
+a valid create is persisted at envelope position 2 while `WorkItemCreated.Sequence` is correctly 1.
+Projection delivery, replay ordering, freshness watermarks, and deduplication use the EventStore
+envelope `SequenceNumber`, not the Works payload ordinal.
+
 ## Concurrency
 
 EventStore does not expose an explicit `expectedVersion` append argument. Optimistic concurrency is implemented through the Dapr state-store ETag used by `AggregateActor.SaveStateAsync()`, which raises `ConcurrencyConflictException` after configured retries. Later Works claim and single-writer stories must translate that infrastructure conflict into Works domain rejections instead of assuming an expected-version append API.

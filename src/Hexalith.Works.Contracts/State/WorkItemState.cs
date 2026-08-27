@@ -20,9 +20,11 @@ public sealed class WorkItemState
     public WorkItemStatus Status { get; private set; }
 
     /// <summary>
-    /// The sequence number of the last event applied to this state. Starts at 0 (no events) and is
-    /// set to each success event's <c>Sequence</c> on replay, giving the writer a monotonic basis for
-    /// assigning the next event's sequence. Rejection events do not advance it.
+    /// The ordinal of the last state-changing Works event applied to this state. Starts at 0 (no
+    /// state changes) and is set to each success event's payload <c>Sequence</c> on replay, giving the
+    /// writer a monotonic basis for assigning the next state-changing ordinal. Rejection events do
+    /// not advance it; EventStore envelope <c>SequenceNumber</c> independently tracks every persisted
+    /// stream position, including rejections.
     /// </summary>
     public long Sequence { get; private set; }
 

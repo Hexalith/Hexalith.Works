@@ -22,8 +22,8 @@ All notable changes to Hexalith.Works will be documented in this file.
 - Tenant-safe work tree guard: acyclic, single-parent, single-tenant attachment with a policy-supplied
   maximum depth (default 32) (Epic 3).
 - `SpawnChild` parent→child spawning, with an optional suspend-until-child-completes await (Epic 3).
-- Recursive remaining-effort roll-up projection with per-child-sequence last-writer-wins accounting and
-  tenant-equality assertions at every traversal hop (Epic 3).
+- Recursive remaining-effort roll-up projection with per-child last-writer-wins accounting keyed by the
+  EventStore envelope position, and tenant-equality assertions at every traversal hop (Epic 3).
 - Heterogeneous-unit roll-up safety: per-unit subtotals, fail-closed on unit mismatch with
   metadata-only diagnostics and a `Degraded` indicator, never a coerced all-unit total (Epic 3).
 - Suspend/resume on await-conditions (`ChildCompleted`, `DateReached`, `ExternalSignal`); resume on the
@@ -35,9 +35,10 @@ All notable changes to Hexalith.Works will be documented in this file.
   carried but not enforced in v1 (Epic 4).
 - Assign, reassign, and hand-off through one uniform `AssignWorkItem` operation; return-to-pool requeue
   re-emits `WorkItemQueued` while retaining the last binding in state (Epic 4).
-- Single-claim-wins: claiming a `Queued`/`Assigned` item emits `WorkItemClaimed`; concurrent losers
-  receive an observable `WorkItemTransitionRejected` through EventStore expected-version (ETag)
-  concurrency — no new rejection type added (Epic 4).
+- Single-claim-wins: claiming a `Queued`/`Assigned` item emits `WorkItemClaimed`; the ETag-backed atomic
+  actor-state save commits exactly one candidate, and the loser retries and re-handles against the now
+  `InProgress` state to receive an observable `WorkItemTransitionRejected` — no new rejection type added
+  (Epic 4).
 - Tenant "what's next" queue: pure `WhatsNextQueueProjection` + `WhatsNextItem` read model, ordered by
   Priority → earliest Due Date → creation/identity (both-null sorts last), with tenant scoping and a
   distinct query-side authorization filter; `WhatsNextQueryHandler` exposes it (Epic 4).
@@ -49,6 +50,12 @@ All notable changes to Hexalith.Works will be documented in this file.
   reminders for date resumes (deterministic reminder names), startup reminder reconciliation, reactor
   cascade dispatch with bounded checkpoints, checkpoint replay, and AppHost restart recovery (Epic 4,
   Story 4.6).
+- Envelope-canonical sequencing contract: the EventStore envelope `SequenceNumber` is the canonical
+  gapless persisted stream position — every persisted success event *and* every `IRejectionEvent`
+  consumes one — while the Works payload `Sequence` is only the state-changing-event ordinal. Replay,
+  projection delivery, freshness watermarks, and dedup key off the envelope position, so a rejection at
+  envelope position 1 followed by a valid create at position 2 correctly yields
+  `WorkItemCreated.Sequence == 1`.
 
 ### Deferred
 

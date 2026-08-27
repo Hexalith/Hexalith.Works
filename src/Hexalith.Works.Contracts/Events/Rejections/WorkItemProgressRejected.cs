@@ -5,8 +5,9 @@ using Hexalith.Works.Contracts.ValueObjects;
 namespace Hexalith.Works.Contracts.Events.Rejections;
 
 /// <summary>
-/// Raised when a progress report is refused by progress-specific invariants. Rejections are returned to
-/// the caller and are not appended to the event stream, so they carry no sequence.
+/// Raised when a progress report is refused by progress-specific invariants. EventStore persists the
+/// rejection and assigns its envelope <c>SequenceNumber</c>; the frozen Works payload carries no
+/// <c>Sequence</c> because the refusal does not change aggregate state.
 /// </summary>
 [PolymorphicSerialization]
 public sealed partial record WorkItemProgressRejected(

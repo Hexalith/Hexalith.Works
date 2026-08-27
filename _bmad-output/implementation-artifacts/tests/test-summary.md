@@ -283,10 +283,11 @@ golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golde
 - [x] `WorkItemClaimConcurrencyTests` — **new file, +10 cases** (Tasks 2–3, AC #1–#5). Builds on (does not
   duplicate) Story 4.1's `WorkItemUniformExecutorBindingTests` and the exhaustive `WorkItemLifecycleTests`
   (status, Claim) matrix:
-  - **Task 2 / AC #2/#5 (1):** `Two_claims_at_the_same_expected_version_collide_and_exactly_one_wins_with_the_loser_domain_rejected`
+  - **Task 2 / AC #2/#5 (1):** `Same_observed_state_produces_claim_candidates_and_loser_rehandle_is_domain_rejected`
     — a `Queued` item at version `N`; two claims with **different** valid bindings are handled against the
-    same observed state and **both** emit a `WorkItemClaimed` at sequence `N+1` (the expected-version
-    collision — only one append can land). Applying the winner advances to `InProgress` at `N+1` bound to A;
+    same observed state and **both** emit a `WorkItemClaimed` carrying the same state-changing payload
+    ordinal `N+1` (only one of them survives the ETag-backed atomic actor-state save). Applying the
+    winner advances to `InProgress` at `N+1` bound to A;
     re-handling the loser against the now-advanced state (exactly what the substrate's conflict-retry does)
     yields a single `WorkItemTransitionRejected(InProgress, "Claim")`, applying it is a no-op, and there is
     exactly one accepted `WorkItemClaimed` and exactly one observable `IRejectionEvent`. **Deterministic —

@@ -433,8 +433,9 @@ public static class WorkItemAggregate
     private static WorkItemStatus CurrentStatus(WorkItemState? state)
         => state?.Status ?? WorkItemStatus.Unknown;
 
-    // Monotonic, in-memory sequence assignment: the next event continues the stream. Replaces the
-    // create-only "state is null ? 1 : 2" placeholder so multi-event lifecycles stay ordered.
+    // Monotonic state-changing payload ordinal assignment. Rejections leave WorkItemState.Sequence
+    // unchanged even though EventStore persists them at their own envelope SequenceNumber, so a
+    // rejection-only state still assigns WorkItemCreated payload Sequence 1.
     private static long NextSequence(WorkItemState? state)
         => (state?.Sequence ?? 0) + 1;
 

@@ -510,7 +510,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
   the story's claims exactly.
 
 **AC coverage (all IMPLEMENTED):** AC #1 (`Claim_from_a_claimable_status…`, Queued + Assigned);
-AC #2/#5 (`Two_claims_at_the_same_expected_version_collide…` + the `WorkItemClaimConvergencePropertyTests`
+AC #2/#5 (`Same_observed_state_produces_claim_candidates…` + the `WorkItemClaimConvergencePropertyTests`
 order-independent property — both deterministic, no threads, RR-3-faithful); AC #3
 (`Claim_from_a_non_claimable_status…` across all 7 non-claimable statuses + DC5 duplicate-holder case);
 AC #4 (`P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays36` fitness

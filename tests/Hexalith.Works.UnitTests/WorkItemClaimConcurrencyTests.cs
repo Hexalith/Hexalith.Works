@@ -17,10 +17,10 @@ namespace Hexalith.Works.UnitTests;
 /// binding across executor kinds) and the exhaustive (status, act) matrix in
 /// <see cref="WorkItemLifecycleTests"/> (which owns every Claim cell):
 /// <list type="bullet">
-///   <item>single-claim-wins is proved <b>deterministically</b> as the domain outcome of an
-///   expected-version collision — two claims observe the same <see cref="WorkItemState.Sequence"/> and
-///   both compute a <see cref="WorkItemClaimed"/> at the same next sequence, so only one append can land;
-///   the loser re-handles against the now-advanced state and is domain-rejected (AC #2/#5);</item>
+///   <item>the domain side of single-claim-wins is proved <b>deterministically</b> — two claims observe
+///   the same state and both produce valid <see cref="WorkItemClaimed"/> candidates; after the independent
+///   EventStore ETag save selects one committed candidate, the loser re-handles against the now-advanced
+///   state and is domain-rejected (AC #2/#5);</item>
 ///   <item>the happy-path claim emits one binding-carrying <see cref="WorkItemClaimed"/> and transitions
 ///   to <see cref="WorkItemStatus.InProgress"/> (AC #1);</item>
 ///   <item>every non-claimable status rejects <see cref="ClaimWorkItem"/> with no binding/status/sequence
@@ -30,11 +30,12 @@ namespace Hexalith.Works.UnitTests;
 /// The race is modelled with <b>no threads, no <c>Task.Run</c>, no sleeps, and no shared-mutable-state
 /// interleaving</b> (RR-3): <see cref="WorkItemAggregate.Handle(ClaimWorkItem, WorkItemState?)"/> is pure,
 /// so handling two claims against the same observed state is exactly two racers rehydrating the same
-/// snapshot. The <b>live</b> ETag append / conflict-retry / retry-exhaustion path (owned by the
-/// EventStore <c>AggregateActor</c> → <c>EventPersister</c> → DAPR ETag <c>SaveStateAsync</c> pipeline) is
+/// snapshot. The <b>live</b> ETag-backed save / conflict-retry / retry-exhaustion path (owned by the
+/// EventStore <c>AggregateActor</c> → <c>EventPersister</c> → Dapr ETag <c>SaveStateAsync</c> pipeline) is
 /// exercised under the Aspire runtime in <b>Story 4.5</b>, not here; this Tier-1 test proves the pure
-/// <i>domain outcome</i> of the collision (no Dapr/Aspire/network). No new event, command, or rejection
-/// type is introduced — the loser's observable rejection is the existing
+/// <i>domain outcome</i> after that independent commit decision (no Dapr/Aspire/network). Equal Works
+/// payload ordinals neither create nor identify the persistence conflict. No new event, command, or
+/// rejection type is introduced — the loser's observable rejection is the existing
 /// <see cref="WorkItemTransitionRejected"/> (DC1), and claim adds nothing to the frozen v1 catalog.
 /// </para>
 /// </summary>
@@ -48,21 +49,21 @@ public sealed class WorkItemClaimConcurrencyTests
     private static readonly ExecutorBinding BindingA = new(new PartyId("party-a"), Channel.Mcp, AuthorityLevel.Administer);
     private static readonly ExecutorBinding BindingB = new(new PartyId("party-b"), Channel.Cli, AuthorityLevel.Contribute);
 
-    // ── Task 2 (AC #2/#5) — deterministic single-claim-wins via expected-version conflict. ──────────────
+    // ── Task 2 (AC #2/#5) — deterministic candidates and loser re-handle after an ETag-selected commit. ──
     [Fact]
-    public void Two_claims_at_the_same_expected_version_collide_and_exactly_one_wins_with_the_loser_domain_rejected()
+    public void Same_observed_state_produces_claim_candidates_and_loser_rehandle_is_domain_rejected()
     {
         BindingA.ShouldNotBe(BindingB);
 
-        // Arrange: a Queued item observed at version N (WorkItemQueued at sequence 2 over WorkItemCreated).
+        // Arrange: a Queued item with state-changing payload ordinal N.
         WorkItemState queued = WorkItemStateBuilder.InStatus(WorkItemStatus.Queued, Tenant, Item);
         long n = queued.Sequence;
         queued.Status.ShouldBe(WorkItemStatus.Queued);
 
-        // Both claims are handled against the SAME observed state (version N). Handle is pure and never
-        // mutates state, so this is exactly two racers rehydrating the same Queued snapshot. Each accepts
-        // and emits a single WorkItemClaimed targeting sequence N+1 — the store admits only one append at
-        // N+1, so this shared target IS the expected-version collision.
+        // Both claims are handled against the SAME observed state. Handle is pure and never mutates state,
+        // so this models two racers rehydrating the same Queued snapshot. Each accepts and emits a single
+        // WorkItemClaimed with state-changing payload ordinal N+1. That equal payload ordinal is a domain
+        // consequence of the shared state; it is not an EventStore envelope position or concurrency token.
         DomainResult resultA = WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, BindingA), queued);
         DomainResult resultB = WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, BindingB), queued);
 
@@ -72,11 +73,11 @@ public sealed class WorkItemClaimConcurrencyTests
         WorkItemClaimed claimedB = resultB.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemClaimed>();
         claimedA.Sequence.ShouldBe(n + 1);
         claimedB.Sequence.ShouldBe(n + 1);
-        claimedB.Sequence.ShouldBe(claimedA.Sequence); // same expected-version target => only one can persist.
+        claimedB.Sequence.ShouldBe(claimedA.Sequence); // Same observed state yields the same domain ordinal.
 
-        // Winner commits: A's WorkItemClaimed appends at N+1; replay rests InProgress at N+1, bound to A.
-        // (resultB's success is the would-be conflicting append — it is never persisted; the loser's actual
-        // persisted outcome is the re-handle below, exactly as the substrate's conflict-retry produces it.)
+        // Model the state after EventStore's independent ETag-backed atomic save has committed A. The Tier-1
+        // test does not simulate or prove that save; it proves the domain retry outcome from the resulting
+        // InProgress state. B's initial success is an uncommitted candidate, not an append attempt at N+1.
         queued.Apply(claimedA);
         queued.Status.ShouldBe(WorkItemStatus.InProgress);
         queued.Sequence.ShouldBe(n + 1);
@@ -104,7 +105,7 @@ public sealed class WorkItemClaimConcurrencyTests
         queued.Sequence.ShouldBe(n + 1);
         queued.ExecutorBinding.ShouldBe(BindingA);
 
-        // Exactly one accepted WorkItemClaimed (the winner) and exactly one observable IRejectionEvent.
+        // The ETag-selected candidate is applied, and the other claimant's re-handle emits one rejection.
         claimedA.Binding.ShouldBe(BindingA);
         loser.Events.ShouldHaveSingleItem().ShouldBeAssignableTo<IRejectionEvent>();
     }

@@ -13,19 +13,20 @@ namespace Hexalith.Works.PropertyTests;
 
 /// <summary>
 /// Story 4.3 (AC #2/#5) — single-claim-wins is <b>order-independent</b>. For a Queued item and any
-/// generated set of K ≥ 2 distinct claim attempts, exactly one <see cref="WorkItemClaimed"/> is accepted
-/// and the remaining K − 1 are domain-rejected, regardless of which claimant the substrate happens to let
-/// win. This generalizes the two-claimant deterministic proof in
+/// generated set of K ≥ 2 distinct claim attempts, every candidate can be derived from the same observed
+/// state; after the substrate independently commits one candidate, the remaining K − 1 re-handles are
+/// domain-rejected, regardless of which claimant commits. This generalizes the two-claimant proof in
 /// <c>WorkItemClaimConcurrencyTests</c> (UnitTests) to arbitrary fan-in.
 /// <para>
 /// Like that unit test this is a <b>deterministic</b> domain-outcome proof (RR-3): no threads, no
-/// <c>Task.Run</c>, no sleeps. All K claims observe the same Queued version N and each computes a claim at
-/// the same next sequence N+1 (the expected-version collision); the chosen winner advances state to
-/// InProgress, and every other claim re-handles against InProgress to a
+/// <c>Task.Run</c>, no sleeps. All K claims observe the same Queued state and each computes the same
+/// state-changing payload ordinal. That equality neither creates nor identifies the EventStore conflict;
+/// the ETag-backed actor-state save independently selects one committed candidate. The chosen candidate
+/// advances state to InProgress, and every other claim re-handles against InProgress to a
 /// <see cref="WorkItemTransitionRejected"/>. <b>Duplicate-delivery idempotency is a substrate concern</b>
 /// (the actor's CausationId/offset dedup, NFR-9/AR-11), not the kernel: re-handling a claim against an
 /// already-InProgress item is a rejection, never <see cref="DomainResult.NoOp"/> — so this property does
-/// not assert NoOp convergence, only single-winner convergence.
+/// not assert NoOp convergence, only loser-re-handle convergence after a selected commit.
 /// </para>
 /// </summary>
 public sealed class WorkItemClaimConvergencePropertyTests
@@ -38,7 +39,7 @@ public sealed class WorkItemClaimConvergencePropertyTests
         [AuthorityLevel.Read, AuthorityLevel.Contribute, AuthorityLevel.Coordinate, AuthorityLevel.Administer];
 
     [Fact]
-    public void Single_claim_wins_is_order_independent_for_any_set_of_distinct_claims_on_a_queued_item()
+    public void Loser_rehandles_converge_for_any_ETag_selected_candidate_from_the_same_observed_state()
     {
         FsCheck.Gen<int[]> generatedCases = FsCheck.Fluent.Gen.ArrayOf(FsCheck.Fluent.Gen.Choose(0, 255));
         Arbitrary<int[]> arbitraryCases = FsCheck.Fluent.Arb.ToArbitrary(generatedCases);
@@ -55,8 +56,9 @@ public sealed class WorkItemClaimConvergencePropertyTests
                 WorkItemState queued = WorkItemStateBuilder.InStatus(WorkItemStatus.Queued, Tenant, Item);
                 long n = queued.Sequence;
 
-                // Every claim, handled against the same Queued snapshot (version N), accepts and targets the
-                // SAME next sequence N+1 — the expected-version collision: only one append can land at N+1.
+                // Every claim handled against the same Queued snapshot accepts and derives the same
+                // state-changing payload ordinal N+1. This proves deterministic domain candidate generation,
+                // not EventStore envelope assignment or ETag commit enforcement.
                 WorkItemClaimed[] candidates = [.. claims
                     .Select(binding => WorkItemAggregate.Handle(new ClaimWorkItem(Tenant, Item, binding), queued))
                     .Select(result => result.IsSuccess ? result.Events[0] as WorkItemClaimed : null)
@@ -67,7 +69,7 @@ public sealed class WorkItemClaimConvergencePropertyTests
                     return false;
                 }
 
-                // The winner commits: replay rests InProgress at N+1, bound to the winning claimant.
+                // Model state after the independent ETag-backed actor-state save commits the selected candidate.
                 WorkItemState advanced = WorkItemStateBuilder.InStatus(WorkItemStatus.Queued, Tenant, Item);
                 advanced.Apply(candidates[winnerIndex]);
                 if (advanced.Status != WorkItemStatus.InProgress
@@ -99,7 +101,7 @@ public sealed class WorkItemClaimConvergencePropertyTests
                     rejected++;
                 }
 
-                // Exactly one accepted (the winner) and exactly K-1 rejected — independent of who won.
+                // Every possible committed candidate yields exactly K-1 rejected re-handles.
                 return rejected == k - 1;
             }));
 

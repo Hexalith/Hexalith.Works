@@ -11,7 +11,9 @@ namespace Hexalith.Works.Contracts.Models;
 /// deliberately no executor-kind discriminator), the item's own <see cref="OwnRemaining"/> burn-down,
 /// the eventual <see cref="RolledRemaining"/> subtree totals where a co-available roll-up supplies them
 /// (own and rolled stay distinct types — AR-9), the await-condition data for a future "Waiting on…"
-/// pill, and a <see cref="LatestAcceptedSourceSequence"/> freshness watermark.
+/// pill, and a <see cref="LatestAcceptedSourceSequence"/> freshness watermark. The watermark is the
+/// EventStore envelope position of the latest accepted state-changing delivery; filtered rejection
+/// positions do not advance it, so it is not the full persisted stream high-watermark.
 /// <para>
 /// This is a plain <see cref="System.Text.Json"/> record — not a polymorphic catalog type, not
 /// stream-appended, not in the golden corpus (DC3). It exposes no UI-specific types (no colour, glyph,

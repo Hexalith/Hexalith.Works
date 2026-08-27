@@ -6,10 +6,16 @@ totals read the projection read model instead.
 
 ## Rules
 
-- Projection input includes the dispatch tenant id, work item id, aggregate-local sequence, and the
-  concrete work item event payload.
-- Each node stores accepted event facts by aggregate-local sequence and rebuilds node effort in sequence
-  order. Duplicate sequence deliveries are ignored, so repeated events converge to the same state.
+- Projection input includes the dispatch tenant id, work item id, canonical EventStore envelope
+  `SequenceNumber`, and the concrete work item event payload.
+- Each node stores accepted event facts by envelope `SequenceNumber` and rebuilds node effort in that
+  persisted order. Duplicate envelope positions are ignored, so repeated deliveries converge to the
+  same state. A success payload's `Sequence` is only its state-changing ordinal and is not the
+  projection delivery key. Rejections still occupy positions in the persisted stream, but the Works
+  roll-up allowlist filters them as no state change, so they are not retained in the node event map and
+  do not advance `LatestAcceptedSourceSequence`. That watermark is the latest accepted state-changing
+  delivery's envelope position, not the full stream high-watermark; gaps from filtered rejections are
+  expected.
 - Parent totals are recomputed from latest child node state, never by applying additive child deltas.
 - `OwnRemaining` and `RolledRemaining` are distinct contract types. `OwnRemaining` is the node's own
   effort only; `RolledRemaining` is eventual read-model state for the subtree.
@@ -35,7 +41,9 @@ The projection keeps the same unit-safety rule as a read-side defense-in-depth c
 unit disagrees, the projection refuses that contribution. It retains the last valid projected effort,
 marks the affected read model as `Degraded`, and exposes a deterministic `RollUpProjectionDiagnostic`.
 
-Diagnostics are metadata only: tenant id, work item id, event type name, and aggregate-local sequence.
+Diagnostics are metadata only: tenant id, work item id, event type name, and the state-changing Works
+payload `Sequence` ordinal that the projection refused. They do not claim to be EventStore envelope
+positions.
 They deliberately exclude payload values such as done delta, estimate, unit, or note. A runtime adapter
 can log those diagnostics later; the pure projection itself performs no logging or I/O.
 

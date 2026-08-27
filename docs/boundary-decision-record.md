@@ -110,10 +110,12 @@ ownership model. None of them is implemented or wired in v1.
   rule and the catalog size).
 - **Story 4.3 (claim queued work / single-claim-wins).** Single-claim-wins is the **composition** of the
   Works kernel lifecycle (`Queued/Assigned → Claim = Accept(InProgress)`; all else `R`) and the
-  **EventStore-owned expected-version (ETag) optimistic concurrency** mechanism (see the EventStore row
-  above — Works references persistence/concurrency, it does **not** own the mechanism): two claims at the
-  same expected version both target sequence `N+1`, one append wins, and the loser re-handles against the
-  now-`InProgress` state to the existing `WorkItemTransitionRejected(InProgress, "Claim")`. Works adds **no**
+  **EventStore-owned ETag-backed atomic actor-state save** (see the EventStore row above — Works references
+  persistence/concurrency, it does **not** own the mechanism): two claims may observe the same persisted
+  actor state and independently produce domain candidates with the same state-changing payload ordinal.
+  The shared persisted ETag, not that payload ordinal, permits one atomic save; the loser retries and
+  re-handles against the now-`InProgress` state to the existing
+  `WorkItemTransitionRejected(InProgress, "Claim")`. Works adds **no**
   claim-eligibility, routing, escalation, ranking, or AI-decision type, and **no** new
   `ClaimRejected`/`ConcurrencyRejected` rejection — claim is **unconditional** in v1 (any tenant Executor
   may claim a queued item; eligibility is the deferred Theme-4 executor-routing seam `IExecutorRouter`
@@ -137,8 +139,9 @@ ownership model. None of them is implemented or wired in v1.
 - **Story 4.5 (prove the command/event pipeline under Aspire).** The new runnable host (`src/Hexalith.Works`)
   and the Works AppHost are an **adapter-edge runtime proof only** — they consume the deferred Story 4.4 seams,
   they do not move behavior into the kernel. The boundary stays exactly as the EventStore row above states:
-  **EventStore owns** persistence, the expected-version/ETag concurrency mechanism, envelopes/metadata, and the
-  public command/query gateway (`/api/v1/commands`, `/api/v1/queries`); **Works owns** only domain behavior (the
+  **EventStore owns** persistence, ETag-backed concurrency on the atomic actor-state save,
+  envelopes/metadata, and the public command/query gateway (`/api/v1/commands`, `/api/v1/queries`);
+  **Works owns** only domain behavior (the
   pure static `WorkItemAggregate`, wrapped at the edge by `WorkItemEventStoreAggregate : EventStoreAggregate<…>`
   for discovery) and the read-model transformations (the pure `WhatsNext`/roll-up projections, persisted by a
   host-edge `/project` adapter + `WhatsNextQueryHandler`). The kernel (`Contracts`, `Server`, `Projections`,

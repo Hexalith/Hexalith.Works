@@ -92,8 +92,8 @@ _Derived from an advanced-elicitation pass (Assumption Audit · Pre-mortem · Ca
 
 **Load-bearing invariants (honor when deciding):**
 
-1. **Roll-Up = idempotent per-child accounting keyed by child event *sequence*, never additive deltas and never clock/arrival order.** The projection stores each child's latest rolled contribution as `(childId → lastObservedSequence, value)`; lower-sequence (stale/replayed) writes are ignored. Normative recursive invariant: `rolled-Remaining(node) = own-Remaining(node) + Σ last-known per-child rolled-Remaining, recursively`. Out-of-order and at-least-once redelivery tests are mandatory (SM-2).
-2. **Concurrency is two separate worlds.** Write-path: **expected-version optimistic concurrency** on append — single-claim-wins resolves as exactly one version-conflict loser, which receives an observable `IRejectionEvent`. Read-path: projections take **no locks**; they reconcile idempotently and order-tolerantly. Do not put a version check on a projection.
+1. **Roll-Up = idempotent per-child accounting keyed by EventStore envelope `SequenceNumber`, never additive deltas and never clock/arrival order.** The projection stores each child's latest rolled contribution as `(childId → lastObservedEnvelopeSequence, value)`; lower-sequence (stale/replayed) writes are ignored. Normative recursive invariant: `rolled-Remaining(node) = own-Remaining(node) + Σ last-known per-child rolled-Remaining, recursively`. Out-of-order and at-least-once redelivery tests are mandatory (SM-2).
+2. **Concurrency is two separate worlds.** Write-path: **ETag-backed optimistic concurrency** on the atomic actor-state save — single-claim-wins resolves as exactly one conflict loser, which receives an observable `IRejectionEvent` after retry and re-handling. Read-path: projections take **no locks**; they reconcile idempotently and order-tolerantly. Do not put a version check on a projection.
 3. **Authority split on the numbers (type-separated).** Own-Remaining and Status (including the `Done = Remaining 0 → Completed` transition) are **aggregate-authoritative and synchronous**; only **rolled-Remaining is an eventually-consistent projection** — a projection never flips status. The two numbers must not share a type, field name, or serialized shape, so no consumer can gate control flow on the eventual value.
 4. **A reactor / process-manager (event → command) is a real v1 component — and it lives OUTSIDE the kernel.** The kernel emits events and accepts commands and references no adapter. The reactor drives the two inherently multi-aggregate, non-atomic flows: child-completion → parent-resume (FR-15) and cascade cancel/expire → descendants (FR-10). Its hard contract is **at-least-once delivery + idempotent target commands + a checkpoint** so cascade is resumable (driven off a re-readable "descendants still needing cancel" projection, not an in-memory loop).
 5. **The reactor is mechanical — no shadow kernel (collapses SM-C1 + SM-C2 into one leverage point).** The reactor contains no conditional a pure `Handle` could not have produced; every *decision* round-trips through the aggregate. This single falsifiable rule is the highest-leverage defense against kernel growth, because the kernel will be tempted to grow *at the reactor* and call it "just orchestration."
@@ -112,7 +112,7 @@ _Derived from an advanced-elicitation pass (Assumption Audit · Pre-mortem · Ca
 |---|---|---|
 | RR-1 | Stale-write / out-of-order roll-up corruption (silent) | Property test (FsCheck): any permutation + duplication of a child-event multiset converges to identical state — fixed seed, build-gate |
 | RR-2 | Mid-cascade / mid-reactor-step crash inconsistency | Chaos / crash-injection at each step boundary in the Aspire host (integration-gate); add **SM-1b: mid-reactor-step crash converges** |
-| RR-3 | Double-claim on a Queued item | Deterministic version-conflict test (same expected version → one commits, loser gets observable rejection event); not a thread-race |
+| RR-3 | Double-claim on a Queued item | Deterministic ETag-conflict test (same persisted actor state → one atomic save commits, loser gets observable rejection event after retry); not a thread-race |
 | RR-4 | Cross-tenant roll-up leak via recursive traversal | Mutation-validated negative tests (delete the isolation check → test goes red); seed colliding IDs in the other tenant |
 | RR-5 | Purity / clock / identity / no-branch erosion over time | Architecture fitness functions (banned-symbol analyzer + no-branch-on-executor-kind), run every build |
 | RR-6 | Serialization back-compat ("no V2 / tolerant evolution") unfalsifiable | Golden-payload corpus + round-trip contract test; start the corpus in v1 even near-empty |
@@ -163,7 +163,7 @@ themes) by **not** scaffolding any UI/channel/portal/security surface.
 |---|---|---|
 | `Hexalith.Works.Contracts` | Events, commands, value objects (ExecutorBinding, effort Meter, AwaitCondition), Reference Value Objects, port interfaces — low-dependency, no infra | ✅ |
 | `Hexalith.Works.Server` | Aggregate `Handle`/`Apply`, lifecycle state machine, no-LLM `IExpectationResolver` impl, domain services | ✅ |
-| `Hexalith.Works.Projections` | Roll-Up (per-child-sequence accounting) + "what's next" query | ✅ |
+| `Hexalith.Works.Projections` | Roll-Up (per-child envelope-position accounting) + "what's next" query | ✅ |
 | `Hexalith.Works.Reactor` | Pure event→command translators outside the kernel: child-completion→resume (`ChildCompletionResumeTranslator`) and terminal cascade→descendant cancel/expire (`TerminalCascadeTranslator`); references `Contracts` only, no dispatch/clock/infra. Realized in Epic 3 (resolves D-1). | ✅ |
 | `Hexalith.Works.Testing` | Fakes/builders: `InMemoryEventLog`, `ReorderingProjectionDriver`, `RollUpProjectionBuilder` (tenant-required) | ✅ |
 | `Hexalith.Works` | **ADAPTER-EDGE runnable domain-service host** (realized Epic 4, Story 4.5/4.6): subclasses EventStore's `EventStoreAggregate<WorkItemState>` (`WorkItemEventStoreAggregate`, one `Handle` wrapper per command delegating to the pure kernel), and owns the runtime layer — Dapr date-resume reminders (`Reminders/`), cascade dispatch + checkpoints (`Recovery/`), recovery reconciliation/command submission (`Runtime/`), and the `/project`/`/query` adapter endpoints (`Projections/`, `Queries/`). Not a library; the only Works project permitted to reference EventStore runtime, Dapr, and ASP.NET hosting. | ✅ |
@@ -214,8 +214,8 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 
 **Critical Decisions (block implementation):**
 - A1 Aggregate-ID assigned at the edge (Commons), not inside `Handle`.
-- A5 Roll-Up per-child-sequence LWW data model.
-- B1 Single-aggregate claim under expected-version concurrency.
+- A5 Roll-Up per-child envelope-position LWW data model.
+- B1 Single-aggregate claim under ETag-backed optimistic concurrency.
 - B2 No reliance on pub/sub ordering (idempotent, order-tolerant projections).
 - C1 Reactor lives outside the kernel; C2 Dapr actor reminders for date resumes.
 
@@ -250,7 +250,7 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 ### API & Communication Patterns
 
 - **Public surface = the domain contract** (events, commands, value objects, ports) — no production channel adapter in v1. Errors via **ProblemDetails / RFC 9457** with correlation/tenant context; domain rejections are `IRejectionEvent` (never exceptions).
-- **B1 — Concurrency & claim:** commands against one Work Item serialize via the **single-writer actor + expected-version** (EventStore ETag/version) optimistic concurrency. **Claim is a single-aggregate operation** on the `WorkItem`; the claimable pool is a **read projection**, not an authoritative queue aggregate. Two racing claims → exactly one commits, the loser receives a domain rejection. *Resolves D-2; avoids multi-aggregate non-atomicity.*
+- **B1 — Concurrency & claim:** commands against one Work Item serialize via the **single-writer actor + ETag-backed** optimistic concurrency on the atomic actor-state save. **Claim is a single-aggregate operation** on the `WorkItem`; the claimable pool is a **read projection**, not an authoritative queue aggregate. Two racing claims → exactly one commits, the loser receives a domain rejection after retry and re-handling. *Resolves D-2; avoids multi-aggregate non-atomicity.*
 - **B2 — Delivery posture:** Dapr pub/sub is **at-least-once, not ordered** — Works does **not** rely on broker ordering. Write-path ordering comes from the single-writer actor; read-path correctness comes from idempotent, order-tolerant projections (A5) + substrate offset dedup. *Resolves D-4.*
 - **C1 — Reactor / process-manager:** lives **outside the kernel** (adapter near AppHost). Mechanical **event→command translation only — no shadow-kernel logic** (every decision round-trips through a pure `Handle`). Contract: at-least-once delivery + **idempotent target commands** + **checkpoint-driven, resumable cascade** (cascade reads a re-readable "descendants still needing cancel" projection, not an in-memory loop). *Resolves D-1; mitigates RR-2; the single highest-leverage SM-C1/SM-C2 guard.*
 - **C4 — Await-condition & resume:** discriminated value `{ ChildCompleted(childId) | DateReached(instant) | ExternalSignal(correlationId) }`; a suspended item holds a **set** and resumes on **first match**; resume is **idempotent** (key no longer matching = no-op; duplicate = no-op). v1 satisfiers: child-completion (reactor), date (reminder, below), external (generic command; concrete adapter deferred to Theme 3).
@@ -273,16 +273,16 @@ story** (and is a precondition for SM-1/SM-4 green-build-under-Aspire).
 
 **Implementation sequence:**
 1. **Scaffold** the module (step-3 layout) — precondition for any green build.
-2. **Contracts** — value objects (`ExecutorBinding`, `Meter`, `AwaitCondition`, Reference Value Objects, Priority enum), v1 event catalog (14 events, each carrying `(AggregateId, Sequence)`), commands, port interfaces, `IRejectionEvent` types.
-3. **Server** — `WorkItem` aggregate `Handle`/`Apply`, 9-state machine + per-state cancel/expire table, no-LLM `IExpectationResolver`, expected-version append.
-4. **Projections** — Roll-Up (per-child-sequence LWW) + "what's next"; tenant-equality assertions; rebuild support.
+2. **Contracts** — value objects (`ExecutorBinding`, `Meter`, `AwaitCondition`, Reference Value Objects, Priority enum), v1 event catalog (14 state-changing events carrying payload `(AggregateId, Sequence)` ordinals), commands, port interfaces, and frozen `IRejectionEvent` payloads without those state-changing fields.
+3. **Server** — `WorkItem` aggregate `Handle`/`Apply`, 9-state machine + per-state cancel/expire table, no-LLM `IExpectationResolver`; EventStore owns ETag-backed atomic persistence.
+4. **Projections** — Roll-Up (per-child envelope-position LWW) + "what's next"; tenant-equality assertions; rebuild support.
 5. **Testing** — `InMemoryEventLog`, `ReorderingProjectionDriver`, `RollUpProjectionBuilder` (tenant-required); property/architecture-fitness gates.
 6. **AppHost + reactor + timer adapter** — wire reminders, cascade reactor, Aspire topology; SM-1/SM-1b durability tests.
 
 **Cross-component dependencies:**
 - A1 (ID at edge) gates every Contracts command shape **and** all test builders.
-- A5 + B2 (per-child-sequence, order-tolerant) require every domain event to carry `(AggregateId, Sequence)` — a Contracts-level `[KERNEL+]` decision.
-- B1 (expected-version) gates the aggregate append contract — decide before writing `Handle`.
+- A5 + B2 (per-child envelope-position, order-tolerant) use EventStore envelope `SequenceNumber` as the canonical persisted and projection-delivery position. State-changing Works payloads additionally carry `(AggregateId, Sequence)`, where payload `Sequence` is the state-changing ordinal; rejection payloads remain frozen without either field.
+- B1 (ETag-backed atomic persistence) gates the aggregate concurrency contract — decide before writing `Handle`.
 - C1/C2 (reactor + reminders outside the kernel) keep Server/Projections clock-free and infra-free — protects SM-C1/SM-4.
 - D2 (tenant-equality at every hop) couples Projections to the tree-shape guard in Server.
 
@@ -340,12 +340,20 @@ No agent invents a parallel key scheme. Reminder name = a deterministic function
 ### Format Patterns
 
 **Event payload = the Raw Act, verbatim** — store reported values, never interpreted/derived ones
-(interpretation is a Projection). Every domain event carries **`(AggregateId, Sequence)`** for
-order-tolerant projections. The acting Party + timestamp come from the binding + EventStore
-envelope — **Works never populates envelope metadata.**
+(interpretation is a Projection). State-changing raw-act payloads carry **`(AggregateId, Sequence)`**,
+where `Sequence` is the state-changing ordinal. Frozen rejection payloads carry refusal context without
+those fields. Order-tolerant projections receive the canonical EventStore envelope `SequenceNumber`;
+the acting Party + timestamp also come from that envelope — **Works never populates envelope metadata.**
 
 **`DomainResult` never mixes** success and rejection payloads. Rejections are events, not
 exceptions; infrastructure failures are exceptions/dead-letter.
+
+**Two sequence counters intentionally coexist.** EventStore envelope `SequenceNumber` is the canonical,
+gapless persisted stream position used for reads, replay, and projection delivery; every persisted
+success or `IRejectionEvent` consumes one. Works payload `Sequence` is only the ordinal of a
+state-changing event and is copied into `WorkItemState.Sequence`. Applying a rejection is a no-op, so a
+rejection at envelope position 1 followed by create at position 2 correctly yields
+`WorkItemCreated.Sequence == 1`.
 
 **Serialization:** `Hexalith.PolymorphicSerializations` for every event/command; `System.Text.Json`
 conventions; additive, tolerant evolution only (**no `V2`**); start a **golden-payload corpus** in
@@ -385,10 +393,10 @@ resolved on demand from the owning sibling module. LLM/cost/routing live behind 
 external system**; IDs are supplied at the edge (Commons). Enforced as a build-time fitness
 function (banned-symbol analyzer over `Server`/`Projections`).
 
-**Concurrency & idempotency:** writes use **expected-version** optimistic concurrency on append
-(loser → `IRejectionEvent`); reads/projections take **no locks** and are **idempotent +
-order-tolerant** (per-child-sequence LWW + offset dedup). Single-claim-wins is a single-aggregate
-operation.
+**Concurrency & idempotency:** writes use EventStore's **ETag-backed** optimistic concurrency on the
+atomic actor-state save (loser → retry/re-handle → `IRejectionEvent`); reads/projections take **no
+locks** and are **idempotent + order-tolerant** (per-child envelope-position LWW + offset dedup).
+Single-claim-wins is a single-aggregate operation.
 
 **Tenant scoping (every layer):** every command, query, key, projection, and log is tenant-scoped;
 **query-side authorization is enforced in addition to key-prefixing**; the roll-up asserts
@@ -401,11 +409,11 @@ secrets, raw tokens, or full command bodies.
 
 **All AI agents MUST:**
 - Keep `Handle`/`Apply`/reactor pure (no clock/RNG/I/O); take IDs as input.
-- Carry `(AggregateId, Sequence)` on every stream-appended event (rejection events are returned
-  to the caller, never appended, and therefore carry no sequence — see the deferred-work ledger
-  entry on rejection-event sequencing); store the raw act; keep success/rejection
-  payloads separate; rejections implement `IRejectionEvent`.
-- Use per-child-sequence LWW for roll-up (never additive deltas); assert tenant-equality per hop.
+- Treat EventStore envelope `SequenceNumber` as canonical for every persisted event and projection
+  delivery. Carry payload `(AggregateId, Sequence)` only on state-changing Works events; payload
+  `Sequence` is the state-changing ordinal. Keep frozen rejection payloads free of those fields, apply
+  them as no-ops, and preserve them as persisted `IRejectionEvent`s.
+- Use per-child envelope-position LWW for roll-up (never additive deltas); assert tenant-equality per hop.
 - Never branch on executor kind; never reference a clock/Dapr/LLM/infra type from
   `Contracts`/`Server`/`Projections`.
 - Register every new event/command with `PolymorphicSerializations`; evolve additively (no `V2`);
@@ -422,7 +430,8 @@ changes are recorded in this document and `project-context.md`.
 **Good:**
 - `public sealed record ProgressReported(WorkItemId AggregateId, long Sequence, decimal DoneDelta, Unit Unit, string? Note) : IDomainEvent;`
 - Roll-up: `contributions[childId] = (childSequence, childRolledRemaining); rolled = own + contributions.Values.Sum(...)` — stale `childSequence` ignored.
-- Claim race: both append at expected version N → one commits, the other emits `ClaimRejected`.
+- Claim race: both act from the same ETag-backed persisted state → one atomic save commits; the other
+  retries against `InProgress` and persists the existing `WorkItemTransitionRejected` refusal.
 
 **Anti-patterns:**
 - `var id = Guid.NewGuid();` inside `Handle` · `if (DateTime.UtcNow > dueDate)` inside the domain.
@@ -567,8 +576,10 @@ strategies; observability/privacy → all layers (structured logs, RFC 9457).
 **External integrations:** none in v1 beyond sibling Hexalith modules (no production channel adapter).
 Projections are SignalR-ready for the deferred UI horizon.
 
-**Data flow:** raw-act event (carrying `AggregateId,Sequence`) is the source of truth; own-Remaining/
-Status are synchronous on the aggregate; rolled-Remaining and "what's next" are eventual projections.
+**Data flow:** each persisted EventStore envelope supplies canonical `SequenceNumber` ordering and a
+Works payload. State-changing raw-act payloads carry `AggregateId,Sequence`; rejection payloads retain
+their frozen context-only shapes. Own-Remaining/Status are synchronous on the aggregate;
+rolled-Remaining and "what's next" are eventual projections.
 
 ### File Organization Patterns
 
@@ -594,14 +605,15 @@ Status are synchronous on the aggregate; rolled-Remaining and "what's next" are 
 
 **Decision Compatibility:** All decisions are mutually reinforcing and contradiction-free.
 Event-sourcing on `EventStore` · Dapr-only infrastructure · pure kernel + adapter ring ·
-per-child-sequence LWW roll-up · expected-version optimistic concurrency · Dapr actor reminders for
+per-child envelope-position LWW roll-up · ETag-backed optimistic concurrency · Dapr actor reminders for
 date resumes · explicit *do-not-rely-on-pub/sub-ordering* posture. Versions are mutually compatible
 and inherited from current sibling pins (SDK 10.0.301 · Dapr 1.18.4 · Aspire 13.4.6 · xUnit v3 3.2.2).
 
-**Pattern Consistency:** Implementation patterns (raw-act events carrying `(AggregateId, Sequence)`;
-pure `Handle`/`Apply`/reactor; idempotent order-tolerant projections; zero branching on executor
-kind; reference-not-copy) directly enforce the decisions. Naming follows ecosystem conventions
-(imperative commands, past-tense events, sealed records).
+**Pattern Consistency:** Implementation patterns (state-changing raw-act payloads carrying
+`(AggregateId, Sequence)` ordinals; rejection payloads remaining context-only; envelope
+`SequenceNumber` driving persisted order; pure `Handle`/`Apply`/reactor; idempotent order-tolerant
+projections; zero branching on executor kind; reference-not-copy) directly enforce the decisions.
+Naming follows ecosystem conventions (imperative commands, past-tense events, sealed records).
 
 **Structure Alignment:** The kernel (`Contracts`/`Server`/`Projections`) vs adapter ring
 (`Reactor`/`AppHost`/`ServiceDefaults`) split, with machine-checkable dependency direction
@@ -612,13 +624,13 @@ physically realizes domain purity (SM-4) and the don't-grow-the-kernel guard (SM
 
 **Functional Requirements Coverage:** All 25 FRs across 7 groups have a concrete home
 (see Requirements→Structure mapping). Spot checks: FR-11–13 (roll-up/tree-guard/heterogeneous-unit)
-→ `Projections` per-child-sequence + per-Unit subtotals + Server tree guard; FR-17 (uniform
+→ `Projections` per-child envelope-position + per-Unit subtotals + Server tree guard; FR-17 (uniform
 assign/handoff, zero branching) → `ExecutorBinding` + fitness test; FR-23 (boundary decision record)
 → `docs/boundary-decision-record.md` tracked deliverable.
 
 **Non-Functional Requirements Coverage:** Tenant isolation (per-hop equality + query-side authz +
 mutation-validated negatives) · ES invariants (persist-then-publish, pure Handle, in-memory Apply,
-rejection events) · concurrency (expected-version, single-claim-wins) · rebuildable projections
+rejection events) · concurrency (ETag-backed atomic save, single-claim-wins) · rebuildable projections
 (online, per-tenant) · domain purity (kernel/adapter + fitness functions) · observability/privacy
 (RFC 9457, structured logs, no payloads) · performance (qualitative, incremental updates; no numeric
 budgets by design — acceptance is build-signal based). All addressed.
@@ -640,8 +652,9 @@ mutation-validated negatives, golden-payload contract tests).
 **Critical Gaps:** None blocking — all critical architectural decisions are made.
 
 **Important Gaps (resolve in the first stories, not architecture-blocking):**
-- Verify the live `Hexalith.EventStore` API surface (expected-version append; `CachingProjectionActor`/
-  ETag actors/notifiers; online rebuild support) matches the chosen patterns — **first-story task**.
+- Verify the live `Hexalith.EventStore` API surface (ETag-backed optimistic concurrency; metadata-derived
+  envelope sequencing; `CachingProjectionActor`/ETag actors/notifiers; online rebuild support) matches
+  the chosen patterns — **first-story task**.
 - Enumerate the 9-state cancel/expire transition table (Server story).
 - Define the reminder reconciliation-on-recovery re-scan query for `DateReached` await-conditions.
 - Choose the concrete config source/mechanism for Due-Date/TTL and validation bounds (E2).
@@ -653,7 +666,7 @@ budgets); MCP/CLI command surfaces (Theme 2, deliberately deferred).
 
 - D-1 reactor placement → resolved: outside kernel (pure translation in `Reactor`, runtime in
   `Reactor/Dispatch|Cascade|Timer`, wired by `AppHost`).
-- D-2 claim cardinality → resolved: single-aggregate under expected-version; claimable pool is a
+- D-2 claim cardinality → resolved: single-aggregate under ETag-backed optimistic concurrency; claimable pool is a
   read projection.
 - D-3 deadline semantics + AuthorityLevel → resolved: advisory-until-fired; AuthorityLevel carried,
   not enforced, no v1 branch.
@@ -697,8 +710,8 @@ package APIs in this session.
 
 **Key Strengths:**
 - A genuinely thin, pure, event-sourced kernel with a machine-checkable kernel/adapter boundary.
-- The hard event-sourcing traps are pre-solved: idempotent per-child-sequence roll-up, expected-
-  version single-claim-wins, clock-free saga with durable Dapr reminders, online per-tenant rebuild.
+- The hard event-sourcing traps are pre-solved: idempotent per-child envelope-position roll-up,
+  ETag-backed single-claim-wins, clock-free saga with durable Dapr reminders, online per-tenant rebuild.
 - "Everything is a Party" enforced as a fitness function (zero branching), not a hope.
 - SM-C1/SM-C2 collapsed into one falsifiable rule: the reactor stays mechanical (no shadow kernel).
 
@@ -712,11 +725,12 @@ package APIs in this session.
 - Follow all architectural decisions exactly as documented; treat the Implementation Patterns &
   Consistency Rules as binding.
 - Keep the kernel pure; keep the reactor mechanical; never branch on executor kind; carry
-  `(AggregateId, Sequence)` on every event; roll up by per-child-sequence LWW.
+  `(AggregateId, Sequence)` ordinals only on state-changing payloads, keep rejection payloads frozen,
+  and roll up accepted deliveries by EventStore envelope `SequenceNumber`.
 - Respect the kernel/adapter boundary and dependency direction; reference siblings by correlation ID.
 
 **First Implementation Priority:**
 Scaffold the module per *Project Structure* (donor = `Hexalith.Parties`, via `Hexalith.Builds`),
-**and as part of that first story verify the `Hexalith.EventStore` API surface** supports
-expected-version append, the projection infrastructure, and online rebuild. This scaffold is the
-precondition for SM-1/SM-4 (green build + green tests under Aspire).
+**and as part of that first story verify the `Hexalith.EventStore` API surface** supports ETag-backed
+optimistic concurrency, metadata-derived envelope sequencing, the projection infrastructure, and
+online rebuild. This scaffold is the precondition for SM-1/SM-4 (green build + green tests under Aspire).
