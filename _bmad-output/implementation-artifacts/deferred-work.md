@@ -81,6 +81,7 @@ origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-
 location: src/Hexalith.Works.AppHost/Program.cs
 reason: `AddHexalithEventStore` is called without a `pubSubComponentPath`, generating an unscoped pubsub component; the proper zero-trust fix requires adding `works` to `scopes` and `subscriptionScopes` in the read-only Hexalith.EventStore submodule, while endpoint-level Dapr caller allow-listing remains a compensating control.
 status: open
+decision: 2026-08-27 Scope shared component — Update the EventStore shared pub/sub YAML and tests to authorize works only for work.events, advance the submodule pin, and pass that YAML through pubSubComponentPath.
 
 ### DW-12: Cascade checkpoint index is a single global cross-tenant key rewritten O(2N) per cascade
 

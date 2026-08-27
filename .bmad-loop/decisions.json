@@ -1,4 +1,13 @@
 {
+  "DW-11": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Update the EventStore shared pub/sub YAML and tests to authorize works only for work.events, advance the submodule pin, and pass that YAML through pubSubComponentPath.",
+    "key": "1",
+    "label": "Scope shared component",
+    "resolution": ""
+  },
   "DW-4": {
     "answered_at": "2026-08-27",
     "bundle_name": "",
