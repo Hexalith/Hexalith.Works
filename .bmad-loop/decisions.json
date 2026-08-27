@@ -35,6 +35,15 @@
     "label": "Envelope-canonical sequencing",
     "resolution": ""
   },
+  "DW-45": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.",
+    "key": "1",
+    "label": "Version and backfill",
+    "resolution": ""
+  },
   "DW-7": {
     "answered_at": "2026-08-27",
     "bundle_name": "",

@@ -376,6 +376,7 @@ source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: ToBoundarySafeRollUp is applied only on the write path of a dispatch, and the dispatcher is the only writer of WorksReadModelKeys.RollUpKey and the what's-next tenant index. A child-only dispatch never rewrites the parent's keys, WhatsNextQueryHandler returns stored values verbatim with no read-side sanitization, WorksReadModelKeys carries no schema/version token, and no startup replay, rebuild, or invalidation path exists. A parent that appends no further events of its own therefore keeps serving its spawn-time total indefinitely. Every adapter test starts from a fresh InMemoryReadModelStore, so no test observes a pre-change document. Closing this needs a re-projection/backfill or read-side guard, which the approved adapter-boundary approach ("whenever the dispatched item has child contributions") does not cover.
 status: open
+decision: 2026-08-27 Version and backfill — Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.
 
 ### DW-46: A parent whose children were attached by a parented create still publishes a rolled total that silently omits them.
 origin: spec-deferred 8b641af15c5f
