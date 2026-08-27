@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
@@ -7,13 +9,35 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 /// </summary>
 internal static class KernelDependencyPolicy
 {
-    private static readonly IReadOnlyList<string> _governedProjects = Array.AsReadOnly<string>(
-    [
-        "Hexalith.Works.Contracts",
-        "Hexalith.Works.Server",
-        "Hexalith.Works.Projections",
-        "Hexalith.Works.Reactor",
-    ]);
+    private static readonly IReadOnlyDictionary<string, bool> _sourceProjectClassifications =
+        new Dictionary<string, bool>(StringComparer.Ordinal)
+        {
+            ["Hexalith.Works.Contracts"] = true,
+            ["Hexalith.Works.Server"] = true,
+            ["Hexalith.Works.Projections"] = true,
+            ["Hexalith.Works.Reactor"] = true,
+            ["Hexalith.Works"] = false,
+            ["Hexalith.Works.AppHost"] = false,
+            ["Hexalith.Works.ServiceDefaults"] = false,
+        };
+
+    private static readonly IReadOnlyList<string> _sourceProjects = Array.AsReadOnly(
+        _sourceProjectClassifications.Keys.ToArray());
+
+    private static readonly IReadOnlyList<string> _governedProjects = Array.AsReadOnly(
+        _sourceProjectClassifications
+            .Where(classification => classification.Value)
+            .Select(classification => classification.Key)
+            .ToArray());
+
+    private static readonly IReadOnlyList<string> _adapterProjects = Array.AsReadOnly(
+        _sourceProjectClassifications
+            .Where(classification => !classification.Value)
+            .Select(classification => classification.Key)
+            .ToArray());
+
+    private static readonly string[] _supportedDirectReferenceKinds =
+        ["ProjectReference", "PackageReference", "FrameworkReference", "Reference"];
 
     private static readonly string[] _namedAdapterSegments =
     [
@@ -43,9 +67,231 @@ internal static class KernelDependencyPolicy
     ];
 
     /// <summary>
+    /// Gets every deliberately classified top-level Works source project.
+    /// </summary>
+    public static IReadOnlyList<string> SourceProjects => _sourceProjects;
+
+    /// <summary>
     /// Gets the exact kernel project set whose evaluated dependency closures are governed.
     /// </summary>
     public static IReadOnlyList<string> GovernedProjects => _governedProjects;
+
+    /// <summary>
+    /// Gets the deliberate adapter projects that are excluded from kernel purity rules.
+    /// </summary>
+    public static IReadOnlyList<string> AdapterProjects => _adapterProjects;
+
+    /// <summary>
+    /// Resolves the source roots for every governed project.
+    /// </summary>
+    /// <param name="repositoryRoot">The repository root that owns <c>src</c>.</param>
+    /// <returns>The governed source roots in canonical classification order.</returns>
+    public static string[] GovernedProjectRoots(string repositoryRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
+
+        return [.. GovernedProjects.Select(project => Path.Combine(repositoryRoot, "src", project))];
+    }
+
+    /// <summary>
+    /// Reconciles top-level source project discovery with the deliberate kernel/adapter classification.
+    /// </summary>
+    /// <param name="repositoryRoot">The repository root that owns <c>src</c>.</param>
+    /// <returns>Actionable classification violations; an empty collection means every project is classified exactly once.</returns>
+    public static string[] ReconcileSourceProjects(string repositoryRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(repositoryRoot);
+
+        string sourceRoot = Path.Combine(repositoryRoot, "src");
+        if (!Directory.Exists(sourceRoot))
+        {
+            return [$"Source project root '{sourceRoot}' is missing; no Works source project can be classified."];
+        }
+
+        try
+        {
+            // Discover the whole src tree, not just src/*/*.csproj: a project placed at any other depth
+            // must be reported rather than silently escaping classification.
+            string[] discoveredProjectFiles = [.. Directory
+                .GetFiles(sourceRoot, "*.csproj", SearchOption.AllDirectories)
+                .Where(path => !IsBuildOutput(path))
+                .Order(StringComparer.Ordinal)];
+
+            string[] projectFiles = [.. discoveredProjectFiles.Where(path => IsTopLevelSourceProject(sourceRoot, path))];
+
+            var violations = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string misplacedProject in discoveredProjectFiles.Except(projectFiles, StringComparer.Ordinal))
+            {
+                violations.Add(
+                    $"Source project file '{misplacedProject}' is not a top-level 'src/<name>/<name>.csproj' project and cannot be classified.");
+            }
+
+            if (projectFiles.Length == 0)
+            {
+                violations.Add($"Source project discovery under '{sourceRoot}' returned no top-level src/*/*.csproj files.");
+            }
+
+            foreach (string projectFile in projectFiles)
+            {
+                string projectName = Path.GetFileNameWithoutExtension(projectFile);
+                string directoryName = Path.GetFileName(Path.GetDirectoryName(projectFile)!);
+                if (!string.Equals(projectName, directoryName, StringComparison.Ordinal))
+                {
+                    violations.Add(
+                        $"Source project '{projectName}' at '{projectFile}' does not match its containing directory '{directoryName}'.");
+                }
+
+                if (!_sourceProjectClassifications.ContainsKey(projectName))
+                {
+                    violations.Add(
+                        $"Source project '{projectName}' at '{projectFile}' is unclassified; add an explicit governed-kernel or deliberate-adapter classification.");
+                }
+            }
+
+            foreach (string classifiedProject in SourceProjects)
+            {
+                string expectedPath = Path.Combine(sourceRoot, classifiedProject, classifiedProject + ".csproj");
+                int matchingProjects = projectFiles.Count(path =>
+                    string.Equals(Path.GetFileNameWithoutExtension(path), classifiedProject, StringComparison.Ordinal));
+
+                if (!File.Exists(expectedPath))
+                {
+                    violations.Add(
+                        $"Classified source project '{classifiedProject}' is missing its expected project file '{expectedPath}'.");
+                }
+
+                if (matchingProjects > 1)
+                {
+                    violations.Add(
+                        $"Classified source project '{classifiedProject}' was discovered {matchingProjects} times; expected exactly once at '{expectedPath}'.");
+                }
+            }
+
+            return [.. violations.Order(StringComparer.Ordinal)];
+        }
+        catch (IOException exception)
+        {
+            return [$"Source projects under '{sourceRoot}' could not be discovered: {exception.Message}"];
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return [$"Source projects under '{sourceRoot}' could not be discovered: {exception.Message}"];
+        }
+    }
+
+    /// <summary>
+    /// Evaluates declared project, package, and framework references in one governed project file.
+    /// </summary>
+    /// <param name="governedProject">The kernel project that owns the declared references.</param>
+    /// <param name="projectPath">The project file to inspect.</param>
+    /// <returns>Actionable policy violations; an empty collection means every declared reference is allowed.</returns>
+    public static string[] EvaluateProjectFile(string governedProject, string projectPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(governedProject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
+
+        if (!File.Exists(projectPath))
+        {
+            return [$"{governedProject} governed project file '{projectPath}' is missing."];
+        }
+
+        try
+        {
+            return EvaluateProjectXml(governedProject, projectPath, File.ReadAllText(projectPath));
+        }
+        catch (IOException exception)
+        {
+            return [$"{governedProject} governed project file '{projectPath}' could not be read: {exception.Message}"];
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            return [$"{governedProject} governed project file '{projectPath}' could not be read: {exception.Message}"];
+        }
+    }
+
+    /// <summary>
+    /// Evaluates synthetic project XML through the same direct-reference policy as repository project files.
+    /// </summary>
+    /// <param name="governedProject">The kernel project that owns the declared references.</param>
+    /// <param name="projectPath">The diagnostic path of the project file.</param>
+    /// <param name="projectXml">The complete project XML.</param>
+    /// <returns>Actionable policy violations; an empty collection means every declared reference is allowed.</returns>
+    public static string[] EvaluateProjectXml(string governedProject, string projectPath, string projectXml)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(governedProject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
+
+        if (string.IsNullOrWhiteSpace(projectXml))
+        {
+            return [$"{governedProject} governed project file '{projectPath}' is unusable: the project XML is empty."];
+        }
+
+        try
+        {
+            XDocument project = XDocument.Parse(projectXml, LoadOptions.PreserveWhitespace);
+            if (project.Root is null
+                || !string.Equals(project.Root.Name.LocalName, "Project", StringComparison.OrdinalIgnoreCase))
+            {
+                return [$"{governedProject} governed project file '{projectPath}' is unusable: the XML root is not a Project element."];
+            }
+
+            var violations = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (XElement reference in project
+                .Descendants()
+                .Where(element => string.Equals(element.Parent?.Name.LocalName, "ItemGroup", StringComparison.OrdinalIgnoreCase))
+                .Where(element => element.Attribute("Include") is not null
+                    || (element.Attribute("Remove") is null && element.Attribute("Update") is null)))
+            {
+                if (!TryGetDirectReferenceKind(reference.Name.LocalName, out string referenceKind))
+                {
+                    continue;
+                }
+
+                XAttribute? declaration = reference.Attribute("Include");
+
+                if (declaration is null || string.IsNullOrWhiteSpace(declaration.Value))
+                {
+                    violations.Add(
+                        $"{governedProject} governed project file '{projectPath}' contains a malformed {referenceKind} without a dependency name.");
+                    continue;
+                }
+
+                string[] declaredItems = declaration.Value.Split(
+                    ';',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                if (declaredItems.Length == 0)
+                {
+                    violations.Add(
+                        $"{governedProject} governed project file '{projectPath}' contains a malformed {referenceKind} without a dependency name.");
+                    continue;
+                }
+
+                foreach (string declaredItem in declaredItems)
+                {
+                    if (!TryNormalizeDeclaredReference(referenceKind, declaredItem, out string dependencyName))
+                    {
+                        violations.Add(
+                            $"{governedProject} governed project file '{projectPath}' contains malformed {referenceKind} declaration '{declaredItem}'.");
+                        continue;
+                    }
+
+                    string? forbiddenFamily = ForbiddenFamily(dependencyName);
+                    if (forbiddenFamily is not null)
+                    {
+                        violations.Add(
+                            $"{governedProject} direct {referenceKind} '{dependencyName}' is forbidden ({forbiddenFamily}) in '{projectPath}'.");
+                    }
+                }
+            }
+
+            return [.. violations.Order(StringComparer.Ordinal)];
+        }
+        catch (XmlException exception)
+        {
+            return [$"{governedProject} governed project file '{projectPath}' could not be parsed: {exception.Message}"];
+        }
+    }
 
     /// <summary>
     /// Evaluates one governed kernel project from the repository layout the architecture gate uses.
@@ -341,7 +587,7 @@ internal static class KernelDependencyPolicy
             AddForbiddenDependencyViolation(
                 governedProject,
                 assetsPath,
-                frameworkReference.Name,
+                frameworkReference.Name.Trim(),
                 violations,
                 "framework reference");
         }
@@ -523,6 +769,166 @@ internal static class KernelDependencyPolicy
         return true;
     }
 
+    private static bool TryNormalizeDeclaredReference(
+        string referenceKind,
+        string declaration,
+        out string dependencyName)
+    {
+        string normalizedDeclaration = declaration.Trim();
+        if (normalizedDeclaration.Length == 0)
+        {
+            dependencyName = string.Empty;
+            return false;
+        }
+
+        if (normalizedDeclaration.IndexOfAny(['*', '?']) >= 0)
+        {
+            dependencyName = string.Empty;
+            return false;
+        }
+
+        if (referenceKind == "ProjectReference")
+        {
+            string normalizedPath = normalizedDeclaration.Replace('\\', '/');
+            string fileName = normalizedPath[(normalizedPath.LastIndexOf('/') + 1)..];
+            if (!fileName.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+                || ContainsMsBuildExpression(fileName)
+                || normalizedPath.Contains("@(", StringComparison.Ordinal)
+                || normalizedPath.Contains("%(", StringComparison.Ordinal))
+            {
+                dependencyName = string.Empty;
+                return false;
+            }
+
+            dependencyName = Path.GetFileNameWithoutExtension(fileName);
+            return !string.IsNullOrWhiteSpace(dependencyName);
+        }
+
+        if (ContainsMsBuildExpression(normalizedDeclaration))
+        {
+            dependencyName = string.Empty;
+            return false;
+        }
+
+        if (referenceKind == "Reference")
+        {
+            int fusionNameSeparator = normalizedDeclaration.IndexOf(',');
+            string assemblyDeclaration = (fusionNameSeparator < 0
+                ? normalizedDeclaration
+                : normalizedDeclaration[..fusionNameSeparator]).Trim();
+
+            // A hint-path style Reference names an assembly file; classify the assembly, not the path to it.
+            string assemblyPath = assemblyDeclaration.Replace('\\', '/');
+            string assemblyFile = assemblyPath[(assemblyPath.LastIndexOf('/') + 1)..];
+            dependencyName = assemblyFile.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)
+                || assemblyFile.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                ? Path.GetFileNameWithoutExtension(assemblyFile)
+                : assemblyFile;
+            return dependencyName.Length > 0;
+        }
+
+        dependencyName = normalizedDeclaration;
+        return true;
+    }
+
+    /// <summary>
+    /// Discovers one kind of declared MSBuild reference from a project file so every gate that reads
+    /// project XML shares the same fail-closed discovery instead of keeping its own parser.
+    /// </summary>
+    /// <param name="projectPath">The project file to inspect.</param>
+    /// <param name="referenceKind">The canonical MSBuild item kind, such as <c>ProjectReference</c>.</param>
+    /// <returns>
+    /// The normalized dependency names, plus an unmatchable sentinel for every conditional, opaque, or
+    /// malformed item specification so an allowlist comparison fails closed rather than dropping it.
+    /// </returns>
+    internal static string[] DeclaredReferenceNames(string projectPath, string referenceKind)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(referenceKind);
+
+        XDocument project;
+        try
+        {
+            project = XDocument.Load(projectPath);
+        }
+        catch (Exception exception) when (exception is XmlException or IOException or UnauthorizedAccessException)
+        {
+            return [$"<unreadable {referenceKind} source '{projectPath}': {exception.Message}>"];
+        }
+
+        if (project.Root is null
+            || !string.Equals(project.Root.Name.LocalName, "Project", StringComparison.OrdinalIgnoreCase))
+        {
+            return [$"<unusable {referenceKind} source '{projectPath}': the XML root is not a Project element>"];
+        }
+
+        return [.. project
+            .Descendants()
+            .Where(element => IsReferenceAddition(element, referenceKind))
+            .SelectMany(element => DeclaredReferenceNames(element, referenceKind))];
+    }
+
+    private static bool IsReferenceAddition(XElement element, string referenceKind)
+        => string.Equals(element.Name.LocalName, referenceKind, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(element.Parent?.Name.LocalName, "ItemGroup", StringComparison.OrdinalIgnoreCase)
+            && (element.Attribute("Include") is not null
+                || (element.Attribute("Remove") is null && element.Attribute("Update") is null));
+
+    private static IEnumerable<string> DeclaredReferenceNames(XElement reference, string referenceKind)
+    {
+        string? include = reference.Attribute("Include")?.Value;
+        if (string.IsNullOrWhiteSpace(include))
+        {
+            return [$"<malformed {referenceKind} without Include>"];
+        }
+
+        for (XElement? current = reference; current is not null; current = current.Parent)
+        {
+            if (current.Attribute("Condition") is not null)
+            {
+                return [$"<conditional {referenceKind} '{include}'>"];
+            }
+        }
+
+        string[] includedItems = include.Split(
+            ';',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        return includedItems.Length == 0
+            ? [$"<malformed {referenceKind} with empty Include>"]
+            : includedItems.Select(item => TryNormalizeDeclaredReference(referenceKind, item, out string dependencyName)
+                ? dependencyName
+                : $"<malformed {referenceKind} '{item}'>");
+    }
+
+    private static bool ContainsMsBuildExpression(string value)
+        => value.Contains("$(", StringComparison.Ordinal)
+            || value.Contains("@(", StringComparison.Ordinal)
+            || value.Contains("%(", StringComparison.Ordinal);
+
+    private static bool IsTopLevelSourceProject(string sourceRoot, string projectFile)
+        => string.Equals(
+            Path.GetFullPath(Path.GetDirectoryName(Path.GetDirectoryName(projectFile)!)!),
+            Path.GetFullPath(sourceRoot),
+            StringComparison.Ordinal);
+
+    /// <summary>
+    /// Determines whether a path lives under a build output directory, so every gate that walks source
+    /// files shares one exclusion rule instead of keeping its own copy.
+    /// </summary>
+    /// <param name="path">The candidate file path.</param>
+    /// <returns><see langword="true"/> when the path is build output.</returns>
+    internal static bool IsBuildOutput(string path)
+        => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
+            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+
+    private static bool TryGetDirectReferenceKind(string localName, out string referenceKind)
+    {
+        referenceKind = _supportedDirectReferenceKinds.FirstOrDefault(kind =>
+            string.Equals(localName, kind, StringComparison.OrdinalIgnoreCase)) ?? string.Empty;
+        return referenceKind.Length > 0;
+    }
+
     private static string? ForbiddenFamily(string dependencyName)
     {
         if (string.Equals(dependencyName, "Hexalith.EventStore.Contracts", StringComparison.OrdinalIgnoreCase))
@@ -632,10 +1038,13 @@ internal static class KernelDependencyPolicy
             || dependencyName.StartsWith(namespaceName + ".", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsNamedAdapterSegment(string dependencyName, string segment)
-        => !IsFrameworkLibrary(dependencyName) && HasSegment(dependencyName, segment);
+        => !IsSegmentMatchingExempt(dependencyName) && HasSegment(dependencyName, segment);
 
-    private static bool IsFrameworkLibrary(string dependencyName)
-        => IsNameOrChild(dependencyName, "System") || IsNameOrChild(dependencyName, "Microsoft");
+    // Only System.* is exempt from generic segment matching. Microsoft.* is deliberately NOT exempt: a
+    // blanket Microsoft exemption is what let Microsoft-branded MCP, Client, and UI adapters into the
+    // kernel. Do not widen this predicate without an explicit architecture decision.
+    private static bool IsSegmentMatchingExempt(string dependencyName)
+        => IsNameOrChild(dependencyName, "System");
 
     private static bool HasSegment(string dependencyName, string segment)
         => dependencyName.Split('.', StringSplitOptions.RemoveEmptyEntries)

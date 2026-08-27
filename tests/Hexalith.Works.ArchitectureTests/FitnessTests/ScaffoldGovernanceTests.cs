@@ -10,16 +10,6 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class ScaffoldGovernanceTests
 {
-    private static readonly string[] RequiredSourceProjects =
-    [
-        "Hexalith.Works.Contracts",
-        "Hexalith.Works.Server",
-        "Hexalith.Works.Projections",
-        "Hexalith.Works.Reactor",
-        "Hexalith.Works.ServiceDefaults",
-        "Hexalith.Works.AppHost",
-    ];
-
     private static readonly string[] RequiredTestProjects =
     [
         "Hexalith.Works.Testing",
@@ -48,17 +38,15 @@ public sealed class ScaffoldGovernanceTests
     public void P0_ScaffoldContainsOnlyTheV1ProjectSet()
     {
         string root = RepositoryRoot.Locate();
+        KernelDependencyPolicy.ReconcileSourceProjects(root)
+            .ShouldBeEmpty("Every top-level Works source project must have exactly one explicit kernel or adapter classification.");
+
         string[] projectFiles = Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
             .Where(path => !IsBuildOutput(path))
             .ToArray();
 
         string[] projectNames = [.. projectFiles.Select(path => Path.GetFileNameWithoutExtension(path)!)];
-
-        foreach (string requiredProject in RequiredSourceProjects)
-        {
-            projectNames.ShouldContain(requiredProject, $"Works requires '{requiredProject}' in the bounded-context project set.");
-        }
 
         string[] forbiddenProjects = [.. projectNames.Where(name => ForbiddenProjectFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase)))];
         forbiddenProjects.ShouldBeEmpty("Works excludes UI, MCP, portal, security, routing, LLM, cost-governance, and production channel-adapter projects.");
@@ -123,36 +111,21 @@ public sealed class ScaffoldGovernanceTests
     public void P0_KernelProjectsStayInfrastructureFree()
     {
         string root = RepositoryRoot.Locate();
-        string[] forbiddenReferences =
-        [
-            "Dapr.Actors.AspNetCore",
-            "Dapr.Client",
-            "ModelContextProtocol",
-            "Microsoft.AspNetCore.Components",
-            "Microsoft.AspNetCore.OpenApi",
-            "Swashbuckle",
-            "OpenAI",
-            "SemanticKernel",
-        ];
+
+        // Classification must hold before the governed roots are scanned, so an unclassified or missing
+        // source project fails with its actionable diagnostic instead of an IO exception from the scan.
+        KernelDependencyPolicy.ReconcileSourceProjects(root)
+            .ShouldBeEmpty("Every Works source project must carry exactly one explicit kernel or adapter classification.");
 
         var kernelGovernanceViolations = new List<string>();
 
-        foreach (string project in KernelDependencyPolicy.GovernedProjects)
+        foreach (string projectRoot in KernelDependencyPolicy.GovernedProjectRoots(root))
         {
-            string projectPath = Path.Combine(root, "src", project, project + ".csproj");
-            if (!File.Exists(projectPath))
-            {
-                kernelGovernanceViolations.Add($"Project file not found at '{projectPath}'.");
-                continue;
-            }
+            string project = Path.GetFileName(projectRoot);
+            string projectPath = Path.Combine(projectRoot, project + ".csproj");
 
             // Collect rather than assert per project so one failure never hides the remaining kernel projects.
-            string text = File.ReadAllText(projectPath);
-            // The scan is raw project-file text, so it reports a mention rather than claiming a resolved reference.
-            kernelGovernanceViolations.AddRange(forbiddenReferences
-                .Where(forbidden => text.Contains(forbidden, StringComparison.OrdinalIgnoreCase))
-                .Select(forbidden => $"{project} project file mentions '{forbidden}' in '{projectPath}'; kernel projects must not reference adapter, Dapr runtime, UI, MCP, LLM, or OpenAPI packages."));
-
+            kernelGovernanceViolations.AddRange(KernelDependencyPolicy.EvaluateProjectFile(project, projectPath));
             kernelGovernanceViolations.AddRange(KernelDependencyPolicy.EvaluateGovernedProject(root, project));
         }
 
@@ -202,13 +175,11 @@ public sealed class ScaffoldGovernanceTests
     public void P0_WorkItemKernelRemainsPure()
     {
         string root = RepositoryRoot.Locate();
-        string[] kernelRoots =
-        [
-            Path.Combine(root, "src", "Hexalith.Works.Contracts"),
-            Path.Combine(root, "src", "Hexalith.Works.Server"),
-            Path.Combine(root, "src", "Hexalith.Works.Projections"),
-            Path.Combine(root, "src", "Hexalith.Works.Reactor"),
-        ];
+
+        KernelDependencyPolicy.ReconcileSourceProjects(root).ShouldBeEmpty(
+            "Every source project must be deliberately classified before governed roots are scanned.");
+
+        string[] kernelRoots = KernelDependencyPolicy.GovernedProjectRoots(root);
         string[] bannedSymbols =
         [
             "DateTime.Now",
@@ -596,12 +567,11 @@ public sealed class ScaffoldGovernanceTests
     public void P0_WorkItemKernelDoesNotLogPayloadsOrPii()
     {
         string root = RepositoryRoot.Locate();
-        string[] kernelRoots =
-        [
-            Path.Combine(root, "src", "Hexalith.Works.Contracts"),
-            Path.Combine(root, "src", "Hexalith.Works.Server"),
-            Path.Combine(root, "src", "Hexalith.Works.Projections"),
-        ];
+
+        KernelDependencyPolicy.ReconcileSourceProjects(root).ShouldBeEmpty(
+            "Every source project must be deliberately classified before governed roots are scanned.");
+
+        string[] kernelRoots = KernelDependencyPolicy.GovernedProjectRoots(root);
         string[] bannedLoggingSymbols =
         [
             "ILogger",
@@ -622,7 +592,7 @@ public sealed class ScaffoldGovernanceTests
                 .Where(symbol => File.ReadAllText(path).Contains(symbol, StringComparison.Ordinal))
                 .Select(symbol => $"{Path.GetRelativePath(root, path)} contains {symbol}"))];
 
-        violations.ShouldBeEmpty("The Works kernel (Contracts, Server, Projections) must perform no logging: no ILogger or log sink may appear, so payloads/PII/obligation text can never be logged from the pure core (NFR-6 / AC #5).");
+        violations.ShouldBeEmpty($"The governed Works projects ({string.Join(", ", KernelDependencyPolicy.GovernedProjects)}) must perform no logging: no ILogger or log sink may appear, so payloads/PII/obligation text can never be logged from the pure core (NFR-6 / AC #5).");
     }
 
     private static IEnumerable<string> RequiredTestProjectSet() => RequiredTestProjects;
@@ -635,9 +605,8 @@ public sealed class ScaffoldGovernanceTests
         return Path.GetFileNameWithoutExtension(fileName)!;
     }
 
-    private static bool IsBuildOutput(string path)
-        => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+    // One build-output exclusion rule for every gate: delegate instead of keeping a second copy.
+    private static bool IsBuildOutput(string path) => KernelDependencyPolicy.IsBuildOutput(path);
 
     private static string SourceWithoutXmlDocComments(string path)
         => string.Join('\n', File.ReadLines(path).Where(line => !line.TrimStart().StartsWith("///", StringComparison.Ordinal)));

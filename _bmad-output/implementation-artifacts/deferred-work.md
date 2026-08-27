@@ -165,7 +165,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPo
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: medium
 reason: `KernelDependencyPolicy.GovernedProjects` and `DependencyDirectionTests`' allowlists each name the kernel projects independently, and `GovernedProjectSetIsExact` pins the policy list literally. Nothing compares either list against the `src/` directory listing, which is the same class of blind spot DW-1 was filed for. Pre-existing: the original `P0_KernelProjectsStayInfrastructureFree` carried the same hard-coded shape before this story.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
+resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 
 ### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structur
 origin: spec-deferred 57d35d9aaaaf
@@ -173,7 +175,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernance
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: medium
 reason: `ScaffoldGovernanceTests.P0_KernelProjectsStayInfrastructureFree` holds a `forbiddenReferences` array of eight raw strings, and `KernelDependencyPolicy.ForbiddenFamily` independently implements eleven families plus segment and prefix lists. Adding a family to one leaves the other blind, and no test compares them. This is the same drift class as DW-19, but for the forbidden set rather than the governed project set.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
+resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 
 ### DW-21: Two further kernel-purity fitness tests keep their own hand-maintained kernel project lists that did not adopt the centralized governed set, and one of them omits Reactor.
 origin: spec-deferred aa6c514b60ba
@@ -181,7 +185,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernance
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: medium
 reason: `P0_WorkItemKernelRemainsPure` lists four kernel roots and `P0_WorkItemKernelDoesNotLogPayloadsOrPii` lists three (Reactor absent), both as local `string[]` literals rather than `KernelDependencyPolicy.GovernedProjects`. The logging gap is currently covered elsewhere by `RuntimeAdapterGovernanceTests.P0_PureProjectsRemainFreeOfActorClockLoggingNetworkFileAndEventStoreRuntimeApis`, which scans all four projects, so this is drift risk rather than an open hole today. Pre-existing: both lists predate this story.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
+resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 
 ### DW-22: `IsFrameworkLibrary` exempts every `Microsoft.*` and `System.*` name from segment-based classification, so a Microsoft-branded adapter is governed only when an explicit rule names it.
 origin: spec-deferred 295933146e55
@@ -189,7 +195,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPo
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: medium
 reason: The exemption is load-bearing for safe framework names such as `System.Security.Cryptography`, whose `Security` segment would otherwise match `_namedAdapterSegments`. The cost is that names such as `Microsoft.<x>.Mcp`, `Microsoft.<x>.Client`, or `Microsoft.<x>.UI` bypass every segment family; the LLM family already needed hand-written `Microsoft.Extensions.AI` and `Azure.AI` rules for exactly this reason. Narrowing the exemption to known framework roots is a false-positive tradeoff that needs a deliberate call.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
+resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 decision: 2026-08-27 Classify Microsoft segments — Keep the System.* framework exemption, remove the blanket Microsoft.* exemption, classify selected Microsoft adapter segments including MCP, Client, and UI, and add safe near-match plus forbidden-family tests while retaining explicit rules and actionable diagnostics.
 
 ### DW-23: Follow-up review still recommended for dw-kernel-transitive-dependency-guard after the damping cap was spent
@@ -198,7 +206,9 @@ location: n/a
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
+resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 
 ### DW-24: The 14-arm supported-payload allowlist has no drift guard, so a new work-item event type added to Contracts but omitted from the switch is silently refused with no failing test.
 origin: spec-deferred 578a38dc7a24
@@ -398,4 +408,36 @@ location: n/a
 source_spec: `spec-cascade-transition-only-indexing.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-214141-f7db; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-48: Exact dependency-direction allowlists inspect literal project files but not ProjectReference items introduced by imported MSBuild props or targets.
+origin: spec-deferred f984e193f381
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:277
+source_spec: `spec-kernel-governance-drift-hardening.md`
+severity: medium
+reason: `DependencyDirectionTests.ProjectReferenceNames` loads only the owning `.csproj`. A safe-family imported reference such as Server to Projections would not violate the forbidden-family classifier and could bypass the exact literal allowlist. This limitation predates the current centralized governed-set work.
+status: open
+
+### DW-49: Evaluated dependency artifact freshness does not cover the complete custom MSBuild import closure.
+origin: spec-deferred 94642d4aefa7
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs:811
+source_spec: `spec-kernel-governance-drift-hardening.md`
+severity: medium
+reason: `SharedRestoreInputs` checks the known root restore inputs, but a dependency-affecting custom imported props or targets file could change without making an existing `project.assets.json` fail the timestamp gate. The prior transitive-dependency implementation already carried this limitation.
+status: open
+
+### DW-50: Exact ProjectReference allowlists normalize by project filename rather than canonical evaluated path identity.
+origin: spec-deferred ef210fd53a67
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:298
+source_spec: `spec-kernel-governance-drift-hardening.md`
+severity: medium
+reason: A reference to an unrelated project with an allowlisted `.csproj` basename can normalize to the permitted name. Closing this safely requires evaluated path identity and is a pre-existing limitation of the exact direction test, not a defect introduced by this bundle.
+status: open
+
+### DW-51: The Hexalith-source consumption gate still reads PackageReference and PackageVersion item specifications raw, outside the shared fail-closed discovery.
+origin: spec-deferred 36cdab656fd8
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:300
+source_spec: `spec-kernel-governance-drift-hardening.md`
+severity: low
+reason: `DependencyDirectionTests.PackageReferenceNames` matches item names case-sensitively, takes `Include` or `Update` verbatim, and never splits semicolon-delimited item lists, so `Include="Something;Hexalith.Foo"` evades the "Hexalith libraries must come from sibling source" rule. The governed-set and forbidden-family paths this story centralized do not consume this helper, and the rule it serves is outside the kernel-purity scope this bundle reconciled.
 status: open

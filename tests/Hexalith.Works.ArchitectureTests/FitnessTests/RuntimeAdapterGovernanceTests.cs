@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.Commands;
@@ -35,23 +34,27 @@ public sealed class RuntimeAdapterGovernanceTests
 
         // The pure kernel + Reactor must never reach EventStore runtime (anything beyond EventStore.Contracts)
         // or take a Dapr dependency. The host is the only Works src project allowed those.
-        string[] kernelProjects =
-        [
-            "Hexalith.Works.Contracts",
-            "Hexalith.Works.Server",
-            "Hexalith.Works.Projections",
-            "Hexalith.Works.Reactor",
-        ];
+        KernelDependencyPolicy.ReconcileSourceProjects(root).ShouldBeEmpty(
+            "Every source project must be deliberately classified before governed project files are inspected.");
 
-        foreach (string project in kernelProjects)
+        foreach (string project in KernelDependencyPolicy.GovernedProjects)
         {
             string csproj = Path.Combine("src", project, project + ".csproj");
-            string[] eventStoreRuntimeReferences = [.. ProjectReferenceNames(root, csproj)
+            string[] projectReferences = ProjectReferenceNames(root, csproj);
+            string[] packageReferences = PackageReferenceNames(root, csproj);
+
+            // Fail closed: a conditional, opaque, or unreadable declaration yields a sentinel that the
+            // family filters below cannot see, so it must be rejected before they run.
+            projectReferences.Concat(packageReferences)
+                .Where(reference => reference.StartsWith('<'))
+                .ShouldBeEmpty($"{project} must declare every reference in a form this gate can classify.");
+
+            string[] eventStoreRuntimeReferences = [.. projectReferences
                 .Where(reference => reference.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal)
                     && !string.Equals(reference, "Hexalith.EventStore.Contracts", StringComparison.Ordinal))];
             eventStoreRuntimeReferences.ShouldBeEmpty($"{project} must reference only EventStore.Contracts, never EventStore runtime/domain-service projects.");
 
-            string[] daprPackages = [.. PackageReferenceNames(root, csproj)
+            string[] daprPackages = [.. packageReferences
                 .Where(name => name.StartsWith("Dapr", StringComparison.Ordinal))];
             daprPackages.ShouldBeEmpty($"{project} must not take a Dapr dependency; the runtime adapter lives in {RunnableHost}.");
         }
@@ -101,14 +104,6 @@ public sealed class RuntimeAdapterGovernanceTests
     public void P0_PureProjectsRemainFreeOfActorClockLoggingNetworkFileAndEventStoreRuntimeApis()
     {
         string root = RepositoryRoot.Locate();
-        string[] pureProjects =
-        [
-            "Hexalith.Works.Contracts",
-            "Hexalith.Works.Server",
-            "Hexalith.Works.Projections",
-            "Hexalith.Works.Reactor",
-        ];
-
         string[] bannedSourcePatterns =
         [
             @"^\s*using\s+Dapr\.",
@@ -129,8 +124,10 @@ public sealed class RuntimeAdapterGovernanceTests
             @"\bDirectory\.",
         ];
 
-        string[] violations = [.. pureProjects
-            .Select(project => Path.Combine(root, "src", project))
+        KernelDependencyPolicy.ReconcileSourceProjects(root).ShouldBeEmpty(
+            "Every source project must be deliberately classified before governed roots are scanned.");
+
+        string[] violations = [.. KernelDependencyPolicy.GovernedProjectRoots(root)
             .SelectMany(projectRoot => Directory.GetFiles(projectRoot, "*.cs", SearchOption.AllDirectories))
             .Where(path => !IsBuildOutput(path))
             .Where(path => !Path.GetFileName(path).EndsWith(".g.cs", StringComparison.Ordinal))
@@ -139,7 +136,7 @@ public sealed class RuntimeAdapterGovernanceTests
                 .Where(pattern => Regex.IsMatch(file.Text, pattern, RegexOptions.Multiline))
                 .Select(pattern => $"{Path.GetRelativePath(root, file.Path)} matches forbidden pure-project runtime pattern /{pattern}/"))];
 
-        violations.ShouldBeEmpty("Contracts, Server, Projections, and the pure Reactor must remain free of Dapr actors, clocks, logging, network/filesystem I/O, read-model stores, and EventStore gateway/runtime APIs.");
+        violations.ShouldBeEmpty($"The governed projects ({string.Join(", ", KernelDependencyPolicy.GovernedProjects)}) must remain free of Dapr actors, clocks, logging, network/filesystem I/O, read-model stores, and EventStore gateway/runtime APIs.");
     }
 
     [Fact]
@@ -272,37 +269,20 @@ public sealed class RuntimeAdapterGovernanceTests
         interpolatedLogViolations.ShouldBeEmpty("The runtime adapter must use compile-time LoggerMessage definitions, never interpolated log calls that can embed payloads.");
     }
 
+    // Both reference scans share the centralized fail-closed discovery so this gate cannot drift away
+    // from the exact dependency-direction and direct-family gates that read the same project files.
     private static string[] ProjectReferenceNames(string root, string relativeProjectPath)
-    {
-        XDocument project = XDocument.Load(Path.Combine(root, relativeProjectPath));
-        return [.. project.Descendants()
-            .Where(element => element.Name.LocalName == "ProjectReference")
-            .Select(element => element.Attribute("Include")?.Value)
-            .OfType<string>()
-            .Where(include => !string.IsNullOrWhiteSpace(include))
-            .Select(ProjectNameFromReference)];
-    }
+        => KernelDependencyPolicy.DeclaredReferenceNames(
+            Path.Combine(root, relativeProjectPath),
+            "ProjectReference");
 
     private static string[] PackageReferenceNames(string root, string relativeProjectPath)
-    {
-        XDocument project = XDocument.Load(Path.Combine(root, relativeProjectPath));
-        return [.. project.Descendants()
-            .Where(element => element.Name.LocalName == "PackageReference")
-            .Select(element => element.Attribute("Include")?.Value ?? element.Attribute("Update")?.Value)
-            .OfType<string>()
-            .Where(include => !string.IsNullOrWhiteSpace(include))];
-    }
+        => KernelDependencyPolicy.DeclaredReferenceNames(
+            Path.Combine(root, relativeProjectPath),
+            "PackageReference");
 
-    private static string ProjectNameFromReference(string include)
-    {
-        string normalized = include.Replace('\\', '/');
-        string fileName = normalized[(normalized.LastIndexOf('/') + 1)..];
-        return Path.GetFileNameWithoutExtension(fileName);
-    }
-
-    private static bool IsBuildOutput(string path)
-        => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
+    // One build-output exclusion rule for every gate: delegate instead of keeping a second copy.
+    private static bool IsBuildOutput(string path) => KernelDependencyPolicy.IsBuildOutput(path);
 
     private static bool IsAllowedRuntimeAdapterLocation(string root, string path)
     {

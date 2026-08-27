@@ -6,38 +6,268 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class DependencyDirectionTests
 {
-    [Fact]
-    public void P0_SourceProjectReferencesFollowWorksArchitectureDirection()
-    {
-        string root = RepositoryRoot.Locate();
-
-        ProjectReferenceNames(root, "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj")
-            .ShouldBe(
+    private static readonly IReadOnlyDictionary<string, (string[] Allowed, string Rationale)> _governedProjectReferences =
+        new Dictionary<string, (string[] Allowed, string Rationale)>(StringComparer.Ordinal)
+        {
+            ["Hexalith.Works.Contracts"] = (
                 [
                     "Hexalith.EventStore.Contracts",
                     "Hexalith.PolymorphicSerializations",
                     "Hexalith.PolymorphicSerializations.CodeGenerators",
                 ],
-                ignoreOrder: true,
-                customMessage: "Contracts may reference EventStore.Contracts plus the PolymorphicSerializations library and its code generator (analyzer) that register the v1 event/command catalog.");
-
-        ProjectReferenceNames(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj")
-            .ShouldBe(
+                "Contracts may reference EventStore.Contracts plus the PolymorphicSerializations library and its code generator (analyzer) that register the v1 event/command catalog."),
+            ["Hexalith.Works.Server"] = (
                 ["Hexalith.Works.Contracts"],
-                ignoreOrder: true,
-                customMessage: "Server must reference inward to Contracts only.");
-
-        ProjectReferenceNames(root, "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj")
-            .ShouldBe(
+                "Server owns the pure decision core and must reference inward to Contracts only."),
+            ["Hexalith.Works.Projections"] = (
                 ["Hexalith.Works.Contracts"],
-                ignoreOrder: true,
-                customMessage: "Projections must reference Contracts only.");
-
-        ProjectReferenceNames(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj")
-            .ShouldBe(
+                "Projections build read models from the v1 catalog and must reference inward to Contracts only."),
+            ["Hexalith.Works.Reactor"] = (
                 ["Hexalith.Works.Contracts"],
-                ignoreOrder: true,
-                customMessage: "Reactor is an adapter-ring project and must reference inward to Contracts only.");
+                "Reactor is an adapter-ring project and must reference inward to Contracts only."),
+        };
+
+    [Fact]
+    public void P0_SourceProjectReferencesFollowWorksArchitectureDirection()
+    {
+        string root = RepositoryRoot.Locate();
+
+        _governedProjectReferences.Keys.ShouldBe(
+            KernelDependencyPolicy.GovernedProjects,
+            ignoreOrder: true,
+            customMessage: "Every governed source project must have one exact dependency-direction allowlist, with no stale rules.");
+
+        foreach ((string project, (string[] allowedReferences, string rationale)) in _governedProjectReferences)
+        {
+            string projectPath = Path.Combine(root, "src", project, project + ".csproj");
+            File.Exists(projectPath).ShouldBeTrue(
+                $"Governed project '{project}' must own its project file '{projectPath}' before its dependency direction can be checked.");
+
+            ProjectReferenceNames(root, $"src/{project}/{project}.csproj")
+                .ShouldBe(
+                    allowedReferences,
+                    ignoreOrder: true,
+                    customMessage: $"{project} must retain its exact architecture dependency-direction allowlist: {rationale}");
+        }
+    }
+
+    [Fact]
+    public void P0_ArchitectureTestReferencesCoverEveryGovernedProject()
+    {
+        string root = RepositoryRoot.Locate();
+
+        KernelDependencyPolicy.ReconcileSourceProjects(root).ShouldBeEmpty(
+            "Every source project must be deliberately classified before governed restore coverage is compared.");
+
+        string[] architectureReferences = [.. ProjectReferenceNames(
+                root,
+                "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj")
+            .Where(reference => reference.StartsWith('<')
+                || KernelDependencyPolicy.SourceProjects.Contains(reference, StringComparer.Ordinal))];
+
+        architectureReferences.ShouldBe(
+            KernelDependencyPolicy.GovernedProjects,
+            ignoreOrder: true,
+            customMessage: "The architecture-test project must reference every governed project so isolated restore produces every evaluated dependency graph.");
+    }
+
+    [Fact]
+    public void SemicolonDelimitedProjectReferencesAreAllDiscovered()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup><ProjectReference Include=\"../Hexalith.Works.Projections/Hexalith.Works.Projections.csproj;../Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj\" /></ItemGroup></Project>");
+
+            ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj")
+                .ShouldBe(
+                    ["Hexalith.Works.Projections", "Hexalith.Works.Contracts"],
+                    ignoreOrder: true,
+                    customMessage: "Exact direction checks must inspect every dependency in a semicolon-delimited MSBuild item specification, not only the first.");
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void MalformedProjectFileFailsExactDirectionDiscoveryClosed()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            File.WriteAllText(
+                Path.Combine(temporaryRoot.FullName, "Malformed.csproj"),
+                "<Project><ItemGroup><ProjectReference Include=\"../A/A.csproj\" ");
+            File.WriteAllText(
+                Path.Combine(temporaryRoot.FullName, "NotAProject.csproj"),
+                "<Solution><ItemGroup><ProjectReference Include=\"../A/A.csproj\" /></ItemGroup></Solution>");
+
+            string[] malformed = ProjectReferenceNames(temporaryRoot.FullName, "Malformed.csproj");
+            malformed.ShouldHaveSingleItem();
+            malformed[0].ShouldContain("unreadable ProjectReference source", Case.Sensitive);
+
+            string[] missing = ProjectReferenceNames(temporaryRoot.FullName, "Absent.csproj");
+            missing.ShouldHaveSingleItem();
+            missing[0].ShouldContain("unreadable ProjectReference source", Case.Sensitive);
+
+            string[] notAProject = ProjectReferenceNames(temporaryRoot.FullName, "NotAProject.csproj");
+            notAProject.ShouldHaveSingleItem();
+            notAProject[0].ShouldContain("the XML root is not a Project element", Case.Sensitive);
+
+            // Every sentinel must survive the governed-set filter so an unreadable project file cannot
+            // silently reduce the discovered reference set to an allowed one.
+            malformed.Concat(missing).Concat(notAProject).ShouldAllBe(reference => reference.StartsWith('<'));
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ConditionalProjectReferencesFailExactDirectionDiscoveryClosed()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup><ProjectReference Include=\"../Hexalith.Commons/Hexalith.Commons.csproj\" Condition=\"'$(Configuration)' == 'Release'\" /></ItemGroup></Project>");
+
+            string[] references = ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj");
+
+            references.ShouldHaveSingleItem();
+            references[0].ShouldContain("conditional ProjectReference", Case.Sensitive);
+            references[0].ShouldContain("Hexalith.Commons.csproj", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void AncestorItemGroupConditionFailsExactDirectionDiscoveryClosed()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup Condition=\"'$(Configuration)' == 'Release'\"><ProjectReference Include=\"../Hexalith.Commons/Hexalith.Commons.csproj\" /></ItemGroup></Project>");
+
+            string[] references = ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj");
+
+            references.ShouldHaveSingleItem();
+            references[0].ShouldContain("conditional ProjectReference", Case.Sensitive);
+            references[0].ShouldContain("Hexalith.Commons.csproj", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void EmptySemicolonProjectReferenceFailsDiscoveryClosed()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup><ProjectReference Include=\"; ;\" /></ItemGroup></Project>");
+
+            ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj")
+                .ShouldBe(["<malformed ProjectReference with empty Include>"]);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void RemoveUpdateAndItemDefinitionProjectReferencesAreExcluded()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                """
+                <Project>
+                  <ItemGroup>
+                    <ProjectReference Include="../Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" />
+                    <ProjectReference Remove="../Bad/Bad.csproj" />
+                    <ProjectReference Update="../Also.Bad/Also.Bad.csproj" />
+                  </ItemGroup>
+                  <ItemDefinitionGroup>
+                    <ProjectReference Include="../Default.Bad/Default.Bad.csproj" />
+                  </ItemDefinitionGroup>
+                </Project>
+                """);
+
+            ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj")
+                .ShouldBe(["Hexalith.Works.Contracts"]);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void CaseVariantProjectReferenceItemIsDiscovered()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><iTeMgRoUp><pRoJeCtReFeReNcE Include=\"../Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj\" /></iTeMgRoUp></Project>");
+
+            ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj")
+                .ShouldBe(["Hexalith.Works.Contracts"]);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ArchitectureReferenceDiscoveryPreservesExtraAndMalformedAdditions()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DependencyDirectionTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup><ProjectReference Include=\"../External.Adapter/External.Adapter.csproj;../*/Opaque.csproj\" /></ItemGroup></Project>");
+
+            string[] references = ProjectReferenceNames(temporaryRoot.FullName, "Synthetic.csproj");
+
+            references.Length.ShouldBe(2);
+            references.ShouldContain("External.Adapter");
+            references.ShouldContain(reference => reference.Contains("malformed ProjectReference", StringComparison.Ordinal)
+                && reference.Contains("Opaque.csproj", StringComparison.Ordinal));
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
     }
 
     [Fact]
@@ -89,7 +319,7 @@ public sealed class DependencyDirectionTests
         string root = RepositoryRoot.Locate();
         string[] projectFiles = [.. Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
             .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !IsBuildOutput(path))];
+            .Where(path => !KernelDependencyPolicy.IsBuildOutput(path))];
 
         // Guard against a vacuous pass: if discovery returns nothing (wrong root, packaged output dir),
         // the violation scan below would trivially pass while enforcing almost nothing.
@@ -109,18 +339,9 @@ public sealed class DependencyDirectionTests
     }
 
     private static string[] ProjectReferenceNames(string root, string relativeProjectPath)
-    {
-        string projectPath = Path.Combine(root, relativeProjectPath);
-        XDocument project = XDocument.Load(projectPath);
-
-        return [.. project.Descendants()
-            .Where(element => element.Name.LocalName == "ProjectReference")
-            .Where(element => !IsConditionallyExcluded(element))
-            .Select(element => element.Attribute("Include")?.Value)
-            .OfType<string>()
-            .Where(include => !string.IsNullOrWhiteSpace(include))
-            .Select(ProjectNameFromReference)];
-    }
+        => KernelDependencyPolicy.DeclaredReferenceNames(
+            Path.Combine(root, relativeProjectPath),
+            "ProjectReference");
 
     private static string[] PackageReferenceNames(string projectPath)
     {
@@ -133,32 +354,4 @@ public sealed class DependencyDirectionTests
             .Where(include => !string.IsNullOrWhiteSpace(include))];
     }
 
-    // The fitness test must reflect the *realized* default build graph, not the raw XML. A reference
-    // gated by a Condition (on the element itself or an ancestor ItemGroup) is excluded from the
-    // unconditional build, so it must not be counted as present. This prevents a disabled (decorative)
-    // reference from making the dependency-direction assertion pass while the real build omits it.
-    private static bool IsConditionallyExcluded(XElement element)
-    {
-        for (XElement? current = element; current is not null; current = current.Parent)
-        {
-            if (current.Attribute("Condition") is not null)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static string ProjectNameFromReference(string include)
-    {
-        string normalized = include.Replace('\\', '/');
-        string fileName = normalized[(normalized.LastIndexOf('/') + 1)..];
-
-        return Path.GetFileNameWithoutExtension(fileName);
-    }
-
-    private static bool IsBuildOutput(string path)
-        => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal)
-            || path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal);
 }
