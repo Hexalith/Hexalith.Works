@@ -132,7 +132,15 @@ public sealed class WorksAppHostTopologyTests
         stateStore.Type.ShouldBe("state.redis");
         stateStore.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "statestore.yaml"));
         IDaprComponentResource pubSub = Component(builder, PubSubName);
-        pubSub.Type.ShouldBe("pubsub");
+        pubSub.Type.ShouldBe("pubsub.redis");
+        pubSub.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(
+            LocateRepositoryRoot(),
+            "references",
+            "Hexalith.EventStore",
+            "src",
+            "Hexalith.EventStore.AppHost",
+            "DaprComponents",
+            "pubsub.yaml"));
         IDaprComponentResource resiliency = Component(builder, ResiliencyName);
         resiliency.Type.ShouldBe("resiliency");
         resiliency.Options.ShouldNotBeNull().LocalPath

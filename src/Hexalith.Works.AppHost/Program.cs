@@ -16,6 +16,13 @@ string resiliencyConfigPath = ResolveDaprConfigPath(
     builder.AppHostDirectory,
     Path.Combine("resiliency", "resiliency.yaml"));
 string stateStoreComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "statestore.yaml");
+string pubSubComponentPath = ProjectMetadataPaths.GetProjectPath(
+    "references",
+    "Hexalith.EventStore",
+    "src",
+    "Hexalith.EventStore.AppHost",
+    "DaprComponents",
+    "pubsub.yaml");
 
 // Model the resiliency CRD as a local Dapr resource so every sidecar that must enforce the committed policy
 // receives its directory on --resources-path explicitly, instead of picking the file up incidentally because
@@ -65,7 +72,8 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
     eventStoreDaprConfigPath: eventStoreAccessControlConfigPath,
     adminServerDaprConfigPath: adminServerAccessControlConfigPath,
     resiliencyConfigPath: resiliencyConfigPath,
-    stateStoreComponentPath: stateStoreComponentPath);
+    stateStoreComponentPath: stateStoreComponentPath,
+    pubSubComponentPath: pubSubComponentPath);
 
 // The runnable Works domain service. Its Dapr sidecar shares the EventStore state store + pub/sub; it waits for
 // EventStore and the shared state store before serving /process, /query, and /project.
