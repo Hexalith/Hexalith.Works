@@ -181,6 +181,7 @@ source_spec: `spec-kernel-transitive-dependency-guard.md`
 severity: medium
 reason: The exemption is load-bearing for safe framework names such as `System.Security.Cryptography`, whose `Security` segment would otherwise match `_namedAdapterSegments`. The cost is that names such as `Microsoft.<x>.Mcp`, `Microsoft.<x>.Client`, or `Microsoft.<x>.UI` bypass every segment family; the LLM family already needed hand-written `Microsoft.Extensions.AI` and `Azure.AI` rules for exactly this reason. Narrowing the exemption to known framework roots is a false-positive tradeoff that needs a deliberate call.
 status: open
+decision: 2026-08-27 Classify Microsoft segments — Keep the System.* framework exemption, remove the blanket Microsoft.* exemption, classify selected Microsoft adapter segments including MCP, Client, and UI, and add safe near-match plus forbidden-family tests while retaining explicit rules and actionable diagnostics.
 
 ### DW-23: Follow-up review still recommended for dw-kernel-transitive-dependency-guard after the damping cap was spent
 origin: review-budget-followup
@@ -213,6 +214,7 @@ source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: low
 reason: ToReadModel derives both ChildWorkItemIds and ChildContributionCount from the same outputChildren list, which is filtered by AllowsOutput. A tenant-local child with no effort is counted, and under a policy where output and contribution differ the count tracks the wrong hop -- Contribution_boundary_includes_local_effort_and_ignores_foreign_effort_from_permissive_edge asserts a count of 2 while RolledRemaining proves only one child contributed. In the shipped configuration the two filters are identical, so this is a naming/semantics mismatch rather than a leak. Pre-existing: the count came from the same tenant-filtered child list before this change.
 status: open
+decision: 2026-08-27 Rename to exposed count — Preserve existing behavior but rename the public positional member to ExposedChildCount or an approved equivalent, then update serialization, consumers, tests, and documentation as a deliberate API change.
 
 ### DW-27: Follow-up review still recommended for dw-rollup-tenant-isolation-gate after the damping cap was spent
 origin: review-budget-followup
@@ -253,6 +255,7 @@ source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: low
 reason: The dead-letter topic is referenced only by the subscription endpoint and its regression test. The intent forbids subscribing Works to its own DLQ, so bounding redelivery necessarily trades an infinite retry loop for retained-but-unobserved messages. An operator drain/alert path and a runbook entry belong to a separate operational decision, not to this bundle.
 status: open
+decision: 2026-08-27 Platform DLQ operator — Add a separate reusable EventStore or operations subscriber with narrowly scoped deadletter.work.events access, redacted metrics and alerts, a durable drain or replay workflow, an operator runbook, and integration coverage while keeping Works unsubscribed.
 
 ### DW-32: Follow-up review still recommended for dw-dapr-subscription-topology-hardening after the damping cap was spent
 origin: review-budget-followup
