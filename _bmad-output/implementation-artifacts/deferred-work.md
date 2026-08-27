@@ -89,6 +89,7 @@ origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-
 location: src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs:21,49-51,86-117; src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs:177-201
 reason: Every incomplete target save rewrites one global cross-tenant checkpoint index, so concurrent cascades can exhaust the three ETag retries, abort saves, trigger Dapr redelivery churn, and let a hot tenant starve another; resolution needs a design choice between transition-only index writes and per-tenant sharding.
 status: open
+decision: 2026-08-27 Transition-only indexing — Update discovery only when a cascade first becomes incomplete and when it becomes complete, preserving per-target checkpoint durability without repeated global index writes.
 
 ### DW-13: Subscription endpoint drops unbindable envelope bodies into a Dapr poison-retry loop
 

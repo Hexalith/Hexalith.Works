@@ -8,6 +8,15 @@
     "label": "Scope shared component",
     "resolution": ""
   },
+  "DW-12": {
+    "answered_at": "2026-08-27",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Update discovery only when a cascade first becomes incomplete and when it becomes complete, preserving per-target checkpoint durability without repeated global index writes.",
+    "key": "1",
+    "label": "Transition-only indexing",
+    "resolution": ""
+  },
   "DW-4": {
     "answered_at": "2026-08-27",
     "bundle_name": "",
