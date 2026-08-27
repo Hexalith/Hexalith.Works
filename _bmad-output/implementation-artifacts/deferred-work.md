@@ -102,7 +102,9 @@ decision: 2026-08-27 Transition-only indexing — Update discovery only when a c
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 (2026-07-22)"), 2026-08-27
 location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs:33-42
 reason: An unbindable `EventStoreDomainEventEnvelope` throws `BadHttpRequestException` before the processor can terminally acknowledge malformed payloads, causing indefinite Dapr redelivery; this mirrors the EventStore SDK endpoint pattern, and the deferred platform-level mitigation is max-redelivery or dead-letter configuration.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-dapr-subscription-topology-hardening
+resolution-undo: 9d0b70160443abe5d272b224acf45f97375b4700088e4a908274f27e6fad285a 2026-08-27 7374617475733a206f70656e
 
 ### DW-14: Child-completion await-clearing on terminal parent events is untested
 
@@ -138,7 +140,9 @@ resolution: already resolved: tests/Hexalith.Works.IntegrationTests/WorksDomainE
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs
 reason: Presence-only `HealthCheckAnnotation` and source-substring assertions can pass for comments or broken values despite claiming runtime gating; the live smoke lane currently supplies behavioral proof, but these checks should become value-asserting if that lane is descoped.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-dapr-subscription-topology-hardening
+resolution-undo: 9d0b70160443abe5d272b224acf45f97375b4700088e4a908274f27e6fad285a 2026-08-27 7374617475733a206f70656e
 
 ### DW-19: The governed kernel project set is a hard-coded four-name list that nothing reconciles against what actually exists under `src/`, so a fifth kernel project would be silently ungoverned.
 origin: spec-deferred 476e642905c2
@@ -218,4 +222,36 @@ location: src/Hexalith.Works.Contracts/State/WorkItemState.cs:176
 source_spec: `spec-reestimate-replay-unit-hardening.md`
 severity: high
 reason: WorkItemState.Apply(ReEstimated) calls WorkItemEffort.ReEstimate for a matching established unit, and that value object rejects negative estimates. WorkItemRollUpProjection already refuses and diagnoses the same corrupted fact, so this separate pre-existing corruption case can wedge aggregate replay.
+status: open
+
+### DW-29: Make endpoint result mapping fail retryably for unknown future EventStoreDomainEventProcessingResult values.
+origin: spec-deferred c3f0a312e23e
+location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs:54
+source_spec: `spec-dapr-subscription-topology-hardening.md`
+severity: medium
+reason: The current endpoint mapping acknowledges every value except RetryableInProgress with HTTP 200. If the referenced EventStore SDK later adds a processing result, the Works endpoint would silently acknowledge that unrecognized outcome instead of retrying it. This behavior predates this bundle and is not caused by the DLQ/topology changes.
+status: open
+
+### DW-30: The resiliency CRD's statestore target declares retry/timeout/circuitBreaker at the top level instead of under inbound/outbound, so Dapr drops those policies.
+origin: spec-deferred eaa2c317b239
+location: src/Hexalith.Works.AppHost/DaprComponents/resiliency/resiliency.yaml:56
+source_spec: `spec-dapr-subscription-topology-hardening.md`
+severity: medium
+reason: daprd parses `spec.targets.components.<name>` as inbound/outbound sections. Running daprd 1.18.1 against the committed file reduces the `statestore` target to `{"inbound":{},"outbound":{}}`, discarding `retry: defaultRetry`, `timeout: daprSidecar`, and `circuitBreaker: defaultBreaker`. The `pubsub` target uses the correct shape. This predates the bundle and is outside AC #4, which covers the actor state-store metadata/scopes and the inbound retry target only.
+status: open
+
+### DW-31: Nothing consumes, drains, alerts on, or documents the deadletter.work.events topic.
+origin: spec-deferred b7f701b76c90
+location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs:50
+source_spec: `spec-dapr-subscription-topology-hardening.md`
+severity: low
+reason: The dead-letter topic is referenced only by the subscription endpoint and its regression test. The intent forbids subscribing Works to its own DLQ, so bounding redelivery necessarily trades an infinite retry loop for retained-but-unobserved messages. An operator drain/alert path and a runbook entry belong to a separate operational decision, not to this bundle.
+status: open
+
+### DW-32: Follow-up review still recommended for dw-dapr-subscription-topology-hardening after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-dapr-subscription-topology-hardening.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
 status: open

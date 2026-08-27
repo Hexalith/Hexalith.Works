@@ -1,6 +1,8 @@
 using Hexalith.EventStore.Aspire;
 using Hexalith.Works.AppHost;
 
+using CommunityToolkit.Aspire.Hosting.Dapr;
+
 using Projects;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
@@ -10,8 +12,18 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 string eventStoreAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.yaml");
 string worksAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.works.yaml");
 string adminServerAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.eventstore-admin.yaml");
-string resiliencyConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "resiliency.yaml");
+string resiliencyConfigPath = ResolveDaprConfigPath(
+    builder.AppHostDirectory,
+    Path.Combine("resiliency", "resiliency.yaml"));
 string stateStoreComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "statestore.yaml");
+
+// Model the resiliency CRD as a local Dapr resource so every sidecar that must enforce the committed policy
+// receives its directory on --resources-path explicitly, instead of picking the file up incidentally because
+// it happened to sit beside statestore.yaml.
+IResourceBuilder<IDaprComponentResource> resiliency = builder.AddDaprComponent(
+    "resiliency",
+    "resiliency",
+    new DaprComponentOptions { LocalPath = resiliencyConfigPath });
 
 // Local security service for JWT/OIDC authentication. The EventStore Aspire helper owns the Keycloak resource
 // and exposes it under the shared "security" resource name. Set EnableKeycloak=false to keep the symmetric-key
@@ -61,7 +73,7 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
 // Story 4.6 recovery proof: the Works host now also hosts the date-resume reminder actor and the terminal-
 // cascade checkpoint store. Dapr actor reminders are persisted by the Dapr Scheduler and their state lives in
 // the shared actor-capable state store (statestore.yaml, actorStateStore: "true", scoped to works), so no new
-// component is added — only the existing shared topology is reused. The EventStore command gateway endpoint is
+// stateful component is added — the existing shared topology is reused. The EventStore command gateway endpoint is
 // injected so a fired reminder / cascade target reissues its command through the same /api/v1/commands path
 // Story 4.5 proved. No Works UI, MCP, chatbot, email, routing, cost, SignalR, or IExecutorRouter surface is
 // composed for this recovery proof.
@@ -69,10 +81,22 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
     .WithHttpEndpoint()
     .WithHttpHealthCheck("/alive")
     .AddEventStoreDomainModule(eventStoreResources, "works", worksAccessControlConfigPath)
-    .WithReference(eventStore)
     .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))
-    .WaitFor(eventStore)
     .WaitFor(eventStoreResources.StateStore);
+
+// The resiliency CRD carries policies for both ends of the pipeline: pubsubRetryInbound/subscriberTimeout for
+// the Works subscriber (the bounded retry budget that ends in deadletter.work.events) and
+// pubsubRetryOutbound/apps.eventstore/components.statestore for the publisher and admin reader. Reference it
+// from every composed sidecar so no end silently falls back to Dapr defaults. The set is derived from the
+// composed model rather than an enumerated list, so a sidecar added later cannot silently miss the policy.
+foreach (IDaprSidecarResource sidecar in builder.Resources
+    .OfType<ProjectResource>()
+    .Select(SidecarOf)
+    .OfType<IDaprSidecarResource>()
+    .Distinct())
+{
+    _ = builder.CreateResourceBuilder(sidecar).WithReference(resiliency);
+}
 
 if (security is not null)
 {
@@ -107,21 +131,39 @@ await builder
     .RunAsync()
     .ConfigureAwait(false);
 
-static string ResolveDaprConfigPath(string appHostDirectory, string fileName)
+// Resolve a composed project's Dapr sidecar from its own annotation rather than the toolkit's "<appId>-dapr"
+// naming convention, so a sidecar rename cannot silently drop the resiliency reference. Projects composed
+// without a sidecar yield null; a project carrying more than one is a composition error worth naming, because
+// the silent alternative is a sidecar that enforces no policy.
+static IDaprSidecarResource? SidecarOf(ProjectResource project)
 {
-    string configPath = Path.Combine(appHostDirectory, "DaprComponents", fileName);
+    DaprSidecarAnnotation[] annotations = [.. project.Annotations.OfType<DaprSidecarAnnotation>()];
+    return annotations.Length switch
+    {
+        0 => null,
+        1 => annotations[0].Sidecar,
+        _ => throw new InvalidOperationException(
+            $"Project resource '{project.Name}' carries {annotations.Length} Dapr sidecar annotations; expected at most one."),
+    };
+}
+
+// relativePath is resolved under the AppHost's DaprComponents directory and may name a subdirectory
+// (e.g. "resiliency/resiliency.yaml") when a component needs an isolated --resources-path.
+static string ResolveDaprConfigPath(string appHostDirectory, string relativePath)
+{
+    string configPath = Path.Combine(appHostDirectory, "DaprComponents", relativePath);
     if (File.Exists(configPath))
     {
         return configPath;
     }
 
-    configPath = Path.Combine(Directory.GetCurrentDirectory(), "DaprComponents", fileName);
+    configPath = Path.Combine(Directory.GetCurrentDirectory(), "DaprComponents", relativePath);
     if (File.Exists(configPath))
     {
         return configPath;
     }
 
     throw new FileNotFoundException(
-        $"Dapr configuration '{fileName}' not found. Ensure it exists in the AppHost DaprComponents directory.",
+        $"Dapr configuration '{relativePath}' not found. Ensure it exists in the AppHost DaprComponents directory.",
         configPath);
 }

@@ -1,5 +1,7 @@
 using Hexalith.EventStore.Client.Subscriptions;
 
+using Dapr;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -39,9 +41,23 @@ internal static class WorksDomainEventEndpointExtensions
                 .ProcessAsync(envelope, cancellationToken)
                 .ConfigureAwait(false);
             return MapProcessingResult(result);
-        }).WithTopic(options.PubSubName, options.TopicName);
+        }).WithTopic(new TopicOptions
+        {
+            PubsubName = options.PubSubName,
+            Name = options.TopicName,
+            // Derived from the subscribed topic so the poison destination cannot drift away from the topic it
+            // drains. With the host's configured "work.events" this resolves to "deadletter.work.events".
+            DeadLetterTopic = DeadLetterTopicName(options.TopicName),
+        });
 
         return endpoints;
+    }
+
+    /// <summary>Builds the poison destination for a subscribed topic.</summary>
+    private static string DeadLetterTopicName(string topicName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(topicName);
+        return "deadletter." + topicName;
     }
 
     private static IResult MapProcessingResult(EventStoreDomainEventProcessingResult result)

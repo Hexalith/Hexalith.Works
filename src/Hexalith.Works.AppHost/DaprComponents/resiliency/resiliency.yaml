@@ -20,8 +20,9 @@ spec:
         maxInterval: 30s
         maxRetries: 10
     timeouts:
-      daprSidecar:
-        general: 5s
+      # Every timeout policy must be a duration scalar: daprd unmarshals spec.policies.timeouts as
+      # map[string]string and rejects the whole Resiliency document if any entry is a mapping.
+      daprSidecar: 5s
       pubsubTimeout: 10s
       subscriberTimeout: 30s
     circuitBreakers:
