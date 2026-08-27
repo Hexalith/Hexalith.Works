@@ -5,7 +5,9 @@
 origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
 location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:100-134
 reason: `P0_KernelProjectsStayInfrastructureFree` only string-matches kernel project-file text, so a `ProjectReference` to `Hexalith.EventStore.Client` can transitively introduce `Dapr.Client` undetected; the story Dev Notes assign the stronger check to Story 1.2, when `Works.Server` first subclasses the EventStore aggregate base.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-kernel-transitive-dependency-guard
+resolution-undo: 5205efa379203d325360cd1365decb0d05f518a3d7b9e85ef9dae1db9076c5d5 2026-08-27 7374617475733a206f70656e
 
 ### DW-2: Warnings-as-errors defeats the "scaffolding phase" analyzer intent
 
@@ -132,4 +134,44 @@ resolution: already resolved: tests/Hexalith.Works.IntegrationTests/WorksDomainE
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs
 reason: Presence-only `HealthCheckAnnotation` and source-substring assertions can pass for comments or broken values despite claiming runtime gating; the live smoke lane currently supplies behavioral proof, but these checks should become value-asserting if that lane is descoped.
+status: open
+
+### DW-19: The governed kernel project set is a hard-coded four-name list that nothing reconciles against what actually exists under `src/`, so a fifth kernel project would be silently ungoverned.
+origin: spec-deferred 476e642905c2
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs:10
+source_spec: `spec-kernel-transitive-dependency-guard.md`
+severity: medium
+reason: `KernelDependencyPolicy.GovernedProjects` and `DependencyDirectionTests`' allowlists each name the kernel projects independently, and `GovernedProjectSetIsExact` pins the policy list literally. Nothing compares either list against the `src/` directory listing, which is the same class of blind spot DW-1 was filed for. Pre-existing: the original `P0_KernelProjectsStayInfrastructureFree` carried the same hard-coded shape before this story.
+status: open
+
+### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structur
+origin: spec-deferred 57d35d9aaaaf
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:126
+source_spec: `spec-kernel-transitive-dependency-guard.md`
+severity: medium
+reason: `ScaffoldGovernanceTests.P0_KernelProjectsStayInfrastructureFree` holds a `forbiddenReferences` array of eight raw strings, and `KernelDependencyPolicy.ForbiddenFamily` independently implements eleven families plus segment and prefix lists. Adding a family to one leaves the other blind, and no test compares them. This is the same drift class as DW-19, but for the forbidden set rather than the governed project set.
+status: open
+
+### DW-21: Two further kernel-purity fitness tests keep their own hand-maintained kernel project lists that did not adopt the centralized governed set, and one of them omits Reactor.
+origin: spec-deferred aa6c514b60ba
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:205
+source_spec: `spec-kernel-transitive-dependency-guard.md`
+severity: medium
+reason: `P0_WorkItemKernelRemainsPure` lists four kernel roots and `P0_WorkItemKernelDoesNotLogPayloadsOrPii` lists three (Reactor absent), both as local `string[]` literals rather than `KernelDependencyPolicy.GovernedProjects`. The logging gap is currently covered elsewhere by `RuntimeAdapterGovernanceTests.P0_PureProjectsRemainFreeOfActorClockLoggingNetworkFileAndEventStoreRuntimeApis`, which scans all four projects, so this is drift risk rather than an open hole today. Pre-existing: both lists predate this story.
+status: open
+
+### DW-22: `IsFrameworkLibrary` exempts every `Microsoft.*` and `System.*` name from segment-based classification, so a Microsoft-branded adapter is governed only when an explicit rule names it.
+origin: spec-deferred 295933146e55
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs:637
+source_spec: `spec-kernel-transitive-dependency-guard.md`
+severity: medium
+reason: The exemption is load-bearing for safe framework names such as `System.Security.Cryptography`, whose `Security` segment would otherwise match `_namedAdapterSegments`. The cost is that names such as `Microsoft.<x>.Mcp`, `Microsoft.<x>.Client`, or `Microsoft.<x>.UI` bypass every segment family; the LLM family already needed hand-written `Microsoft.Extensions.AI` and `Azure.AI` rules for exactly this reason. Narrowing the exemption to known framework roots is a false-positive tradeoff that needs a deliberate call.
+status: open
+
+### DW-23: Follow-up review still recommended for dw-kernel-transitive-dependency-guard after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-kernel-transitive-dependency-guard.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
 status: open

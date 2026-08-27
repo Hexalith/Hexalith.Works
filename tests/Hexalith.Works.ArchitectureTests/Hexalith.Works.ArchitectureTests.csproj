@@ -16,13 +16,14 @@
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
 
-  <!-- Reflection-based boundary-port fitness tests load the kernel assemblies. Referencing the
-       kernel projects (Contracts/Server/Projections) from a test project violates no dependency-
-       direction rule. -->
+  <!-- Reflection-based boundary-port fitness tests load the kernel assemblies, and the transitive-
+       dependency fitness gate inspects every kernel project's isolated restore assets. Referencing
+       the kernel projects from a test project violates no dependency-direction rule. -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hexalith.Works.Contracts\Hexalith.Works.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Projections\Hexalith.Works.Projections.csproj" />
+    <ProjectReference Include="..\..\src\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

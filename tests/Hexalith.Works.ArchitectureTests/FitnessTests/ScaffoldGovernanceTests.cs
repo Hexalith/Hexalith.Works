@@ -123,13 +123,6 @@ public sealed class ScaffoldGovernanceTests
     public void P0_KernelProjectsStayInfrastructureFree()
     {
         string root = RepositoryRoot.Locate();
-        string[] kernelProjects =
-        [
-            "Hexalith.Works.Contracts",
-            "Hexalith.Works.Server",
-            "Hexalith.Works.Projections",
-        ];
-
         string[] forbiddenReferences =
         [
             "Dapr.Actors.AspNetCore",
@@ -142,17 +135,29 @@ public sealed class ScaffoldGovernanceTests
             "SemanticKernel",
         ];
 
-        foreach (string project in kernelProjects)
-        {
-            string path = Path.Combine(root, "src", project, project + ".csproj");
-            File.Exists(path).ShouldBeTrue($"Project file not found at '{path}'.");
+        var kernelGovernanceViolations = new List<string>();
 
-            string text = File.ReadAllText(path);
-            foreach (string forbidden in forbiddenReferences)
+        foreach (string project in KernelDependencyPolicy.GovernedProjects)
+        {
+            string projectPath = Path.Combine(root, "src", project, project + ".csproj");
+            if (!File.Exists(projectPath))
             {
-                text.ShouldNotContain(forbidden, Case.Insensitive, $"{project} must remain kernel code and not reference adapter, Dapr runtime, UI, MCP, LLM, or OpenAPI packages.");
+                kernelGovernanceViolations.Add($"Project file not found at '{projectPath}'.");
+                continue;
             }
+
+            // Collect rather than assert per project so one failure never hides the remaining kernel projects.
+            string text = File.ReadAllText(projectPath);
+            // The scan is raw project-file text, so it reports a mention rather than claiming a resolved reference.
+            kernelGovernanceViolations.AddRange(forbiddenReferences
+                .Where(forbidden => text.Contains(forbidden, StringComparison.OrdinalIgnoreCase))
+                .Select(forbidden => $"{project} project file mentions '{forbidden}' in '{projectPath}'; kernel projects must not reference adapter, Dapr runtime, UI, MCP, LLM, or OpenAPI packages."));
+
+            kernelGovernanceViolations.AddRange(KernelDependencyPolicy.EvaluateGovernedProject(root, project));
         }
+
+        kernelGovernanceViolations.ShouldBeEmpty(
+            "Every governed kernel project must be present, and both its project file and its restored, evaluated dependency closure must remain free of adapter, runtime, hosting, telemetry, and persistence dependencies.");
     }
 
     [Fact]
