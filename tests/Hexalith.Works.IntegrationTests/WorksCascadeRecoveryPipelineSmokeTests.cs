@@ -51,11 +51,13 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
     public async Task Reactor_translators_run_live_and_interrupted_cascade_converges_after_restart()
     {
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
-        if (!await PrerequisitesAvailableAsync(cancellationToken).ConfigureAwait(true))
+        int? unavailablePort = await FirstUnavailablePrerequisitePortAsync(
+            PrerequisitePorts(),
+            IsPortReachableAsync,
+            cancellationToken).ConfigureAwait(true);
+        if (unavailablePort is not null)
         {
-            Assert.Skip(
-                "Aspire cascade-recovery prerequisites missing (Redis :6379 + Dapr placement :50005 + scheduler :50006). "
-                + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.");
+            Assert.Skip(PrerequisiteUnavailableReason(unavailablePort.Value));
             return;
         }
 
@@ -91,6 +93,51 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             (await CountEventsAsync(client, s_secondChild, nameof(WorkItemCancelled), token).ConfigureAwait(false))
                 .ShouldBe(1, "redelivery and replay converge to exactly one accepted terminal event");
         }).ConfigureAwait(true);
+    }
+
+    /// <summary>The prerequisite gate reports the first unreachable OS-resolved port and stops probing.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task Prerequisite_probe_reports_first_unavailable_port_in_skip_reason(int unavailablePortIndex)
+    {
+        IReadOnlyList<int> ports = PrerequisitePorts();
+        var probedPorts = new List<int>();
+
+        int? unavailablePort = await FirstUnavailablePrerequisitePortAsync(
+            ports,
+            (port, _) =>
+            {
+                probedPorts.Add(port);
+                return Task.FromResult(port != ports[unavailablePortIndex]);
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        int actualUnavailablePort = unavailablePort.ShouldNotBeNull();
+        actualUnavailablePort.ShouldBe(ports[unavailablePortIndex]);
+        probedPorts.ShouldBe(ports.Take(unavailablePortIndex + 1));
+        PrerequisiteUnavailableReason(actualUnavailablePort).ShouldContain($":{actualUnavailablePort}");
+    }
+
+    /// <summary>The prerequisite gate probes every OS-resolved port and reports no failure when all are reachable.</summary>
+    [Fact]
+    public async Task Prerequisite_probe_reports_no_unavailable_port_when_all_ports_are_reachable()
+    {
+        IReadOnlyList<int> ports = PrerequisitePorts();
+        var probedPorts = new List<int>();
+
+        int? unavailablePort = await FirstUnavailablePrerequisitePortAsync(
+            ports,
+            (port, _) =>
+            {
+                probedPorts.Add(port);
+                return Task.FromResult(true);
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        unavailablePort.ShouldBeNull();
+        probedPorts.ShouldBe(ports);
     }
 
     private static async Task ProveChildCompletionResumeAsync(HttpClient client, CancellationToken cancellationToken)
@@ -373,13 +420,33 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
         return new JsonWebTokenHandler().CreateToken(descriptor);
     }
 
-    private static async Task<bool> PrerequisitesAvailableAsync(CancellationToken cancellationToken)
+    private static IReadOnlyList<int> PrerequisitePorts()
     {
         int placementPort = OperatingSystem.IsWindows() ? 6050 : 50005;
         int schedulerPort = OperatingSystem.IsWindows() ? 6060 : 50006;
-        return await IsPortReachableAsync(6379, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(placementPort, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(schedulerPort, cancellationToken).ConfigureAwait(false);
+        return [6379, placementPort, schedulerPort];
+    }
+
+    private static async Task<int?> FirstUnavailablePrerequisitePortAsync(
+        IReadOnlyList<int> ports,
+        Func<int, CancellationToken, Task<bool>> probe,
+        CancellationToken cancellationToken)
+    {
+        foreach (int port in ports)
+        {
+            if (!await probe(port, cancellationToken).ConfigureAwait(false))
+            {
+                return port;
+            }
+        }
+
+        return null;
+    }
+
+    private static string PrerequisiteUnavailableReason(int port)
+    {
+        return $"Aspire cascade-recovery prerequisite port localhost:{port} is unavailable. "
+            + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.";
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)

@@ -60,14 +60,21 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
             Arg.Any<CancellationToken>());
     }
 
-    /// <summary>A later parent resume clears the re-read await state.</summary>
-    [Fact]
-    public async Task Source_returns_no_awaiting_parent_after_parent_resumed()
+    /// <summary>Each resume or terminal parent event clears the re-read await state.</summary>
+    [Theory]
+    [InlineData(nameof(WorkItemResumed))]
+    [InlineData(nameof(WorkItemCancelled))]
+    [InlineData(nameof(WorkItemExpired))]
+    [InlineData(nameof(WorkItemCompleted))]
+    [InlineData(nameof(WorkItemRejected))]
+    public async Task Source_returns_no_awaiting_parent_after_parent_await_clearing_event(string clearingEventType)
     {
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway
             .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call => Task.FromResult(PageFor(call.ArgAt<StreamReadRequest>(0).AggregateId, includeResume: true)));
+            .Returns(call => Task.FromResult(PageFor(
+                call.ArgAt<StreamReadRequest>(0).AggregateId,
+                clearingEventType: clearingEventType)));
         var source = new StreamReadingChildCompletionAwaitingParentSource(
             gateway,
             Options.Create(new WorksRecoveryOptions()),
@@ -174,7 +181,7 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
 
     private static StreamReadPage PageFor(
         string? aggregateId,
-        bool includeResume = false,
+        string? clearingEventType = null,
         TenantId? childParentTenant = null,
         bool rootChild = false)
     {
@@ -190,7 +197,7 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
                     new Obligation("Child work"),
                     Parent: rootChild ? null : new ParentWorkItemReference(childParentTenant ?? s_tenant, s_parent)),
             ],
-            var value when value == s_parent.Value && includeResume =>
+            var value when value == s_parent.Value && clearingEventType is not null =>
             [
                 new WorkItemSuspended(
                     s_parent.Value,
@@ -198,12 +205,7 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
                     s_tenant,
                     s_parent,
                     [AwaitCondition.ExternalSignal("approval"), AwaitCondition.ChildCompleted(s_child)]),
-                new WorkItemResumed(
-                    s_parent.Value,
-                    5,
-                    s_tenant,
-                    s_parent,
-                    AwaitCondition.ChildCompleted(s_child)),
+                CreateAwaitClearingEvent(clearingEventType),
             ],
             var value when value == s_parent.Value =>
             [
@@ -238,5 +240,23 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
             aggregateId,
             streamEvents,
             new StreamReadMetadata(0, null, streamEvents.Length, streamEvents.Length, streamEvents.Length, false, null));
+    }
+
+    private static IEventPayload CreateAwaitClearingEvent(string eventType)
+    {
+        return eventType switch
+        {
+            nameof(WorkItemResumed) => new WorkItemResumed(
+                s_parent.Value,
+                5,
+                s_tenant,
+                s_parent,
+                AwaitCondition.ChildCompleted(s_child)),
+            nameof(WorkItemCancelled) => new WorkItemCancelled(s_parent.Value, 5, s_tenant, s_parent),
+            nameof(WorkItemExpired) => new WorkItemExpired(s_parent.Value, 5, s_tenant, s_parent),
+            nameof(WorkItemCompleted) => new WorkItemCompleted(s_parent.Value, 5, s_tenant, s_parent),
+            nameof(WorkItemRejected) => new WorkItemRejected(s_parent.Value, 5, s_tenant, s_parent, Requeue: false),
+            _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, "Unsupported await-clearing event type."),
+        };
     }
 }

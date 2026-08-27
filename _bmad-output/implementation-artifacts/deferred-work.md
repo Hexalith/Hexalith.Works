@@ -111,21 +111,27 @@ resolution-undo: 9d0b70160443abe5d272b224acf45f97375b4700088e4a908274f27e6fad285
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs
 reason: `RebuildAwaitConditions` clears await conditions for resumed, cancelled, expired, completed, and rejected parents through one shared switch arm, but only resumed is tested; add per-type cases if these paths gain distinct behavior.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-recovery-edge-case-test-hardening
+resolution-undo: 0ab05a78f4d20558bd4d462f7ffa46eb6c6a2aabdce71d243420206f93c19db9 2026-08-27 7374617475733a206f70656e
 
 ### DW-15: Stale-prune exact-boundary is untested
 
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs
 reason: Recovery tests cover zero age and 25 hours against a 24-hour threshold but not exact equality, so a strict-greater-than to greater-than-or-equal regression could change whether an abandoned checkpoint is pruned.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-recovery-edge-case-test-hardening
+resolution-undo: 0ab05a78f4d20558bd4d462f7ffa46eb6c6a2aabdce71d243420206f93c19db9 2026-08-27 7374617475733a206f70656e
 
 ### DW-16: Tier-3 cascade smoke-lane skip message does not report which port was absent
 
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 tests (2026-07-23)"), 2026-08-27
 location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs
 reason: `PrerequisitesAvailableAsync` collapses Redis, placement, and scheduler probes into one boolean and emits a static all-ports skip message, obscuring which dependency is unreachable; surface the specific missing port while retaining the existing end-state assertions.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-recovery-edge-case-test-hardening
+resolution-undo: 0ab05a78f4d20558bd4d462f7ffa46eb6c6a2aabdce71d243420206f93c19db9 2026-08-27 7374617475733a206f70656e
 
 ### DW-17: SDK-misbind characterization test asserts only bare inequality
 
@@ -254,4 +260,12 @@ location: n/a
 source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-33: External test cancellation is converted into an unavailable-port result by the pre-existing TCP probe.
+origin: spec-deferred 9ae6f9653e9f
+location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:452
+source_spec: `spec-recovery-edge-case-test-hardening.md`
+severity: medium
+reason: `IsPortReachableAsync` catches every `OperationCanceledException` and returns false, so cancellation from `TestContext.Current.CancellationToken` is indistinguishable from the helper's two-second probe timeout and may produce a misleading `Assert.Skip`.
 status: open

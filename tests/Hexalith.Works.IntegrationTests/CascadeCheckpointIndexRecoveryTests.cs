@@ -113,7 +113,13 @@ public sealed class CascadeCheckpointIndexRecoveryTests
         tooSoon.ShouldBe(0);
         (await store.GetIncompleteAsync(TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
 
-        timeProvider.Advance(TimeSpan.FromHours(25));
+        timeProvider.Advance(TimeSpan.FromHours(24));
+        int atThreshold = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
+
+        atThreshold.ShouldBe(0);
+        (await store.GetIncompleteAsync(TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+
+        timeProvider.Advance(TimeSpan.FromHours(1));
         int afterThreshold = await reconciler.RecoverAsync(TestContext.Current.CancellationToken);
 
         afterThreshold.ShouldBe(0, "pruning a stale entry is not a completed replay");
