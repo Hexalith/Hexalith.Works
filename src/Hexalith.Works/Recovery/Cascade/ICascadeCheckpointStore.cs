@@ -12,6 +12,12 @@ public interface ICascadeCheckpointStore
     /// <summary>Reads the checkpoint for a parent-terminal cascade, or <see langword="null"/> when none exists yet.</summary>
     Task<CascadeCheckpoint?> GetAsync(string tenantId, string parentWorkItemId, string parentTerminalEventType, CancellationToken cancellationToken = default);
 
-    /// <summary>Persists (creates or overwrites) the cascade checkpoint.</summary>
+    /// <summary>
+    /// Persists (creates or overwrites) the cascade checkpoint. Completion is monotonic: once a checkpoint is
+    /// durably completed it cannot be overwritten by an incomplete one for the same identity.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The durable checkpoint for this identity is already completed and <paramref name="checkpoint"/> is not.
+    /// </exception>
     Task SaveAsync(CascadeCheckpoint checkpoint, CancellationToken cancellationToken = default);
 }

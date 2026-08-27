@@ -10,11 +10,13 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// </summary>
 public sealed class CascadeRecoveryReconciler(
     ICascadeCheckpointIndex index,
+    ICascadeCheckpointStore checkpointStore,
     CascadeDispatcher dispatcher,
     TimeProvider timeProvider,
     IOptions<WorksRecoveryOptions> options,
     ILogger<CascadeRecoveryReconciler> logger)
 {
+    private readonly ICascadeCheckpointStore _checkpointStore = checkpointStore ?? throw new ArgumentNullException(nameof(checkpointStore));
     private readonly CascadeDispatcher _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
     private readonly ICascadeCheckpointIndex _index = index ?? throw new ArgumentNullException(nameof(index));
     private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
@@ -25,7 +27,11 @@ public sealed class CascadeRecoveryReconciler(
     // as "effectively never prune" instead of throwing OverflowException and aborting the entire startup pass.
     private const int MaxStaleAfterHours = 24 * 365 * 1000;
 
-    /// <summary>Replays the current index snapshot and returns the number of checkpoints completed.</summary>
+    /// <summary>
+    /// Replays the current index snapshot and returns the number of checkpoints resolved as completed --
+    /// both those this pass replayed to completion and those already durably completed but still indexed.
+    /// Pruning a stale entry that never had a checkpoint is not a completion and is not counted.
+    /// </summary>
     public async Task<int> RecoverAsync(CancellationToken cancellationToken = default)
     {
         IReadOnlyList<CascadeCheckpointIndexEntry> entries = await _index
@@ -38,7 +44,28 @@ public sealed class CascadeRecoveryReconciler(
         {
             try
             {
-                bool replayed = await _dispatcher
+                CascadeCheckpoint? checkpoint = await _checkpointStore
+                    .GetAsync(
+                        entry.Identity.TenantId,
+                        entry.Identity.ParentWorkItemId,
+                        entry.Identity.ParentTerminalEventType,
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (checkpoint is { Completed: true })
+                {
+                    // The checkpoint is durably completed while discovery still lists it. Two paths reach
+                    // here: a completion save whose following index removal failed, and a first checkpoint
+                    // save that failed after the index add and whose retry re-discovered no outstanding
+                    // targets (absent-to-completed writes no index entry, so no removal was ever attempted).
+                    // Resolving it from this identity's own checkpoint keeps the repair local: only stranded
+                    // entries touch the global singleton index, instead of every entry re-reading it.
+                    await _index.RemoveIncompleteAsync(entry.Identity, cancellationToken).ConfigureAwait(false);
+                    WorksRecoveryLog.CascadeIndexEntryStranded(_logger, entry.Identity.TenantId, entry.Identity.ParentWorkItemId);
+                    completed++;
+                    continue;
+                }
+
+                bool replayed = checkpoint is not null && await _dispatcher
                     .ReplayAsync(
                         entry.Identity.TenantId,
                         entry.Identity.ParentWorkItemId,
@@ -47,10 +74,9 @@ public sealed class CascadeRecoveryReconciler(
                     .ConfigureAwait(false);
                 if (replayed)
                 {
-                    await _index.RemoveIncompleteAsync(entry.Identity, cancellationToken).ConfigureAwait(false);
                     completed++;
                 }
-                else if (now - entry.AddedAt > staleAfter)
+                else if (checkpoint is null && now - entry.AddedAt > staleAfter)
                 {
                     // No checkpoint was ever written for this identity (the documented crash window between
                     // index-add and checkpoint-write, ReadModelCascadeCheckpointStore.SaveAsync), and it has

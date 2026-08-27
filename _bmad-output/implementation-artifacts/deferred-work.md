@@ -101,7 +101,9 @@ decision: 2026-08-27 Scope shared component — Update the EventStore shared pub
 origin: migrated from legacy ledger ("Deferred from: code review of 4-7-trigger-reactor-translators-from-the-live-event-stream — Round 2 (2026-07-22)"), 2026-08-27
 location: src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs:21,49-51,86-117; src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs:177-201
 reason: Every incomplete target save rewrites one global cross-tenant checkpoint index, so concurrent cascades can exhaust the three ETag retries, abort saves, trigger Dapr redelivery churn, and let a hot tenant starve another; resolution needs a design choice between transition-only index writes and per-tenant sharding.
-status: open
+status: done 2026-08-27
+resolution: resolved by sweep bundle dw-cascade-transition-only-indexing
+resolution-undo: e628801ff9ae6ab4db426ccc16253fa1cbd02b0a5fec85d459aa1569eff7a955 2026-08-27 7374617475733a206f70656e
 decision: 2026-08-27 Transition-only indexing — Update discovery only when a cascade first becomes incomplete and when it becomes complete, preserving per-target checkpoint durability without repeated global index writes.
 
 ### DW-13: Subscription endpoint drops unbindable envelope bodies into a Dapr poison-retry loop
@@ -389,3 +391,11 @@ reason: CreateWorkItem accepts a Parent, and WorkItemRollUpProjection.Project ad
 status: open
 decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
 decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
+
+### DW-47: Follow-up review still recommended for dw-cascade-transition-only-indexing after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-cascade-transition-only-indexing.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-214141-f7db; this entry preserves the lingering recommendation for a deliberate later review.
+status: open

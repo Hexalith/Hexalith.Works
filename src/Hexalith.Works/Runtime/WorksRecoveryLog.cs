@@ -65,6 +65,12 @@ internal static class WorksRecoveryLog
             new EventId(4704, "CascadeIndexEntryPruned"),
             "Pruned a stale incomplete-cascade-checkpoint index entry for parent {ParentWorkItemId} in tenant {TenantId}; no checkpoint was ever written for it.");
 
+    private static readonly Action<ILogger, string, string, Exception?> s_cascadeIndexEntryStranded =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(4705, "CascadeIndexEntryStranded"),
+            "Removed a stranded incomplete-cascade-checkpoint index entry for parent {ParentWorkItemId} in tenant {TenantId}; its checkpoint is already durably completed, so no incomplete work was lost.");
+
     public static void DateReminderScheduled(ILogger logger, string tenantId, string workItemId, string reminderName)
         => s_reminderScheduled(logger, reminderName, workItemId, tenantId, null);
 
@@ -91,4 +97,7 @@ internal static class WorksRecoveryLog
 
     public static void CascadeIndexEntryPruned(ILogger logger, string tenantId, string parentWorkItemId)
         => s_cascadeIndexEntryPruned(logger, parentWorkItemId, tenantId, null);
+
+    public static void CascadeIndexEntryStranded(ILogger logger, string tenantId, string parentWorkItemId)
+        => s_cascadeIndexEntryStranded(logger, parentWorkItemId, tenantId, null);
 }

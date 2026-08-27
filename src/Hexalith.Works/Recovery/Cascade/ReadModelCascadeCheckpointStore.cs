@@ -8,8 +8,9 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// Production <see cref="ICascadeCheckpointStore"/> backed by the shared Dapr state store through
 /// <see cref="IReadModelStore"/> (Story 4.6, AC #4/#5). The key embeds the tenant id, parent work item id,
 /// and parent terminal event type so each parent-terminal cascade owns exactly one durable, re-readable
-/// checkpoint that survives an AppHost restart. Writes are last-write-wins because the dispatcher is the
-/// single writer per cascade and every replay is idempotent.
+/// checkpoint that survives an AppHost restart. Progress writes are last-write-wins because the dispatcher is
+/// the single writer per cascade and every replay is idempotent; the one exception is completion, which is
+/// monotonic -- a durably completed checkpoint is never overwritten by an incomplete one.
 /// </summary>
 public sealed class ReadModelCascadeCheckpointStore(
     IReadModelStore store,
@@ -39,26 +40,41 @@ public sealed class ReadModelCascadeCheckpointStore(
     {
         ArgumentNullException.ThrowIfNull(checkpoint);
 
+        string checkpointKey = Key(
+            checkpoint.TenantId,
+            checkpoint.ParentWorkItemId,
+            checkpoint.ParentTerminalEventType);
+        ReadModelEntry<CascadeCheckpoint> durable = await _store
+            .GetAsync<CascadeCheckpoint>(StateStoreName, checkpointKey, cancellationToken)
+            .ConfigureAwait(false);
+        if (durable.Value is { Completed: true } && !checkpoint.Completed)
+        {
+            throw new InvalidOperationException(
+                $"Completed cascade checkpoint '{checkpointKey}' cannot transition back to incomplete.");
+        }
+
         var identity = new CascadeCheckpointIdentity(
             checkpoint.TenantId,
             checkpoint.ParentWorkItemId,
             checkpoint.ParentTerminalEventType);
+        bool firstIncompleteSave = durable.Value is null && !checkpoint.Completed;
+        bool completing = durable.Value is { Completed: false } && checkpoint.Completed;
 
         // Add discovery before the first incomplete checkpoint write: a crash can leave a harmless dangling
         // identity, but can never leave an incomplete durable checkpoint undiscoverable.
-        if (!checkpoint.Completed)
+        if (firstIncompleteSave)
         {
             await UpdateIndexAsync(identity, add: true, cancellationToken).ConfigureAwait(false);
         }
 
         await _store.SaveAsync(
             StateStoreName,
-            Key(checkpoint.TenantId, checkpoint.ParentWorkItemId, checkpoint.ParentTerminalEventType),
+            checkpointKey,
             checkpoint,
             cancellationToken).ConfigureAwait(false);
 
         // Remove discovery only after the completed checkpoint itself is durable.
-        if (checkpoint.Completed)
+        if (completing)
         {
             await UpdateIndexAsync(identity, add: false, cancellationToken).ConfigureAwait(false);
         }
