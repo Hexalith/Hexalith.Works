@@ -40,13 +40,17 @@ public sealed class WorkItemRollUpConvergencePropertyTests
                 WorkItemRollUpEvent[] delivery = [.. deliveryCase.Order.Select(index => scenario.Deliverable[index])];
                 WorkItemRollUpProjection canonicalProjection = Replay(scenario.Canonical);
                 WorkItemRollUp expected = canonicalProjection.Get(Tenant, Parent).ShouldNotBeNull();
-                WorkItemRollUp actual = Replay(delivery).Get(Tenant, Parent).ShouldNotBeNull();
+                WorkItemRollUpProjection actualProjection = Replay(delivery);
+                WorkItemRollUp actual = actualProjection.Get(Tenant, Parent).ShouldNotBeNull();
 
                 return SameRollUp(actual, expected)
                     && expected.Degraded
                     && expected.ProjectionDiagnostics.Count > 0
-                    && actual.ChildWorkItemIds.All(id => id.Value.StartsWith("child-", StringComparison.Ordinal))
-                    && Replay(delivery).Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
+                    && actual.ChildWorkItemIds
+                        .OrderBy(id => id.Value, StringComparer.Ordinal)
+                        .SequenceEqual(scenario.ExpectedLocalChildren.OrderBy(id => id.Value, StringComparer.Ordinal))
+                    && actual.ChildContributionCount == scenario.ExpectedLocalChildren.Length
+                    && actualProjection.Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
             }));
 
         Check.One(Config.QuickThrowOnFailure, property);
@@ -97,7 +101,7 @@ public sealed class WorkItemRollUpConvergencePropertyTests
         int[] duplicateIndexes = [.. values.Select(value => Math.Abs(value) % canonical.Count)];
         WorkItemRollUpEvent[] deliverable = [.. canonical, .. duplicateIndexes.Select(index => canonical[index])];
 
-        return new RollUpScenario([.. canonical], deliverable, collidingForeignChild);
+        return new RollUpScenario([.. canonical], deliverable, [.. children], collidingForeignChild);
     }
 
     private static bool SameRollUp(WorkItemRollUp actual, WorkItemRollUp expected)
@@ -108,7 +112,9 @@ public sealed class WorkItemRollUpConvergencePropertyTests
             && actual.OwnRemaining == expected.OwnRemaining
             && actual.RolledRemaining == expected.RolledRemaining
             && actual.RolledRemainingByUnit.SequenceEqual(expected.RolledRemainingByUnit)
-            && actual.ChildWorkItemIds.OrderBy(id => id.Value).SequenceEqual(expected.ChildWorkItemIds.OrderBy(id => id.Value))
+            && actual.ChildWorkItemIds
+                .OrderBy(id => id.Value, StringComparer.Ordinal)
+                .SequenceEqual(expected.ChildWorkItemIds.OrderBy(id => id.Value, StringComparer.Ordinal))
             && actual.ChildContributionCount == expected.ChildContributionCount
             && actual.LatestAcceptedSourceSequence == expected.LatestAcceptedSourceSequence
             && actual.Degraded == expected.Degraded
@@ -162,6 +168,7 @@ public sealed class WorkItemRollUpConvergencePropertyTests
     private sealed record RollUpScenario(
         WorkItemRollUpEvent[] Canonical,
         WorkItemRollUpEvent[] Deliverable,
+        WorkItemId[] ExpectedLocalChildren,
         WorkItemId CollidingForeignChild);
 
     private sealed record DeliveryCase(int[] Values, int[] Order);

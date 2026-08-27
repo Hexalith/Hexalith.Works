@@ -6,18 +6,42 @@ using Hexalith.Works.Projections.Models;
 
 namespace Hexalith.Works.Projections.Strategies;
 
+/// <summary>
+/// Builds tenant-scoped recursive work-item roll-up read models from event deliveries.
+/// </summary>
 public sealed class WorkItemRollUpProjection
 {
     private readonly Dictionary<NodeKey, RollUpNode> _nodes = [];
+    private readonly WorkItemRollUpTenantIsolation _tenantIsolation;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorkItemRollUpProjection"/> class with secure tenant isolation.
+    /// </summary>
+    public WorkItemRollUpProjection()
+        : this(new WorkItemRollUpTenantIsolation())
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="WorkItemRollUpProjection"/> class with an isolation policy.
+    /// </summary>
+    /// <param name="tenantIsolation">The tenant-isolation policy used at every roll-up boundary.</param>
+    internal WorkItemRollUpProjection(WorkItemRollUpTenantIsolation tenantIsolation)
+    {
+        ArgumentNullException.ThrowIfNull(tenantIsolation);
+        _tenantIsolation = tenantIsolation;
+    }
 
     public void Project(WorkItemRollUpEvent delivery)
     {
         ArgumentNullException.ThrowIfNull(delivery);
-        ArgumentNullException.ThrowIfNull(delivery.Payload);
 
-        // Refuse a mismatched delivery before any node is allocated: a payload whose tenant/id disagrees
-        // with the delivery header must not fabricate an empty phantom node in Get()/Snapshot().
-        if (delivery.Sequence <= 0 || !EventMatchesDelivery(delivery))
+        // Refuse a mismatched or malformed delivery before any node is allocated: a payload whose tenant/id
+        // disagrees with the delivery header must not fabricate an empty phantom node in Get()/Snapshot().
+        // A corrupted stream is refused, not thrown on -- AllowsDelivery owns the well-formedness floor
+        // (missing payload, missing identities, unsupported payload type) so replay cannot wedge here.
+        // The identity comparison itself is policy-governed; the floor is not.
+        if (delivery.Sequence <= 0 || !_tenantIsolation.AllowsDelivery(delivery))
         {
             return;
         }
@@ -61,29 +85,6 @@ public sealed class WorkItemRollUpProjection
     public IReadOnlyList<WorkItemRollUp> Snapshot()
         => [.. _nodes.Values.Select(node => ToReadModel(node, []))];
 
-    private static bool EventMatchesDelivery(WorkItemRollUpEvent delivery)
-        => delivery.Payload switch
-        {
-            WorkItemCreated e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ChildSpawned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ProgressReported e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ReEstimated e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemCompleted e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemCancelled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemExpired e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemRejected e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemAssigned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemQueued e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemClaimed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemSuspended e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemResumed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemRescheduled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-
-            // Fail closed: an event type this projection does not know cannot prove its payload agrees
-            // with the delivery header, so it must never be accepted into a sequence slot.
-            _ => false,
-        };
-
     private RollUpNode GetOrAdd(NodeKey key, TenantId tenantId, WorkItemId workItemId)
     {
         if (_nodes.TryGetValue(key, out RollUpNode? node))
@@ -101,7 +102,7 @@ public sealed class WorkItemRollUpProjection
         // A cross-tenant edge is refused and never materializes graph state. The refusal is not silent:
         // ApplyPayload re-derives a metadata-only diagnostic from the WorkItemCreated fact on every
         // rebuild, so the trace is deterministic and survives replay.
-        if (!string.Equals(parentKey.TenantId, childKey.TenantId, StringComparison.Ordinal))
+        if (!_tenantIsolation.AllowsEdge(parentKey.TenantId, childKey.TenantId))
         {
             return;
         }
@@ -118,7 +119,7 @@ public sealed class WorkItemRollUpProjection
             : child.Parent;
     }
 
-    private static void Rebuild(RollUpNode node)
+    private void Rebuild(RollUpNode node)
     {
         node.ResetProjectionState();
 
@@ -137,7 +138,7 @@ public sealed class WorkItemRollUpProjection
         }
     }
 
-    private static void ApplyPayload(RollUpNode node, IEventPayload payload)
+    private void ApplyPayload(RollUpNode node, IEventPayload payload)
     {
         switch (payload)
         {
@@ -146,7 +147,7 @@ public sealed class WorkItemRollUpProjection
                 node.OwnEffort = created.InitialEffort;
                 node.Parent = created.Parent;
                 node.Terminal = false;
-                if (created.Parent is not null && created.Parent.TenantId != node.TenantId)
+                if (created.Parent is not null && !_tenantIsolation.AllowsEdge(created.Parent.TenantId, node.TenantId))
                 {
                     // AddEdge refuses the cross-tenant parent edge; surface that refusal as a
                     // deterministic metadata-only diagnostic without degrading the node — tenant
@@ -235,6 +236,15 @@ public sealed class WorkItemRollUpProjection
     {
         RemainingBuckets buckets = CalculateRolled(node, traversal);
         IReadOnlyList<RolledRemaining> byUnit = buckets.ToRolledRemainingByUnit();
+        List<RollUpNode> outputChildren = [];
+        foreach (NodeKey childKey in node.ChildKeys)
+        {
+            if (_nodes.TryGetValue(childKey, out RollUpNode? child)
+                && _tenantIsolation.AllowsOutput(node.TenantId, child.TenantId))
+            {
+                outputChildren.Add(child);
+            }
+        }
 
         return new WorkItemRollUp(
             node.TenantId,
@@ -244,10 +254,8 @@ public sealed class WorkItemRollUpProjection
             ToOwnRemaining(node),
             byUnit.Count == 1 ? byUnit[0] : null,
             byUnit,
-            [.. node.ChildKeys
-                .Where(key => string.Equals(key.TenantId, node.TenantId.Value, StringComparison.Ordinal))
-                .Select(key => _nodes[key].WorkItemId)],
-            node.ChildKeys.Count(key => string.Equals(key.TenantId, node.TenantId.Value, StringComparison.Ordinal)),
+            [.. outputChildren.Select(child => child.WorkItemId)],
+            outputChildren.Count,
             node.LatestAcceptedSourceSequence)
         {
             Degraded = IsDegraded(node, []),
@@ -286,8 +294,8 @@ public sealed class WorkItemRollUpProjection
         {
             foreach (NodeKey childKey in node.ChildKeys)
             {
-                if (!string.Equals(childKey.TenantId, node.TenantId.Value, StringComparison.Ordinal)
-                    || !_nodes.TryGetValue(childKey, out RollUpNode? child))
+                if (!_nodes.TryGetValue(childKey, out RollUpNode? child)
+                    || !_tenantIsolation.AllowsContribution(node.TenantId, child.TenantId))
                 {
                     continue;
                 }
@@ -313,8 +321,8 @@ public sealed class WorkItemRollUpProjection
         {
             foreach (NodeKey childKey in node.ChildKeys)
             {
-                if (!string.Equals(childKey.TenantId, node.TenantId.Value, StringComparison.Ordinal)
-                    || !_nodes.TryGetValue(childKey, out RollUpNode? child))
+                if (!_nodes.TryGetValue(childKey, out RollUpNode? child)
+                    || !_tenantIsolation.AllowsDiagnostic(node.TenantId, child.TenantId))
                 {
                     continue;
                 }
@@ -347,8 +355,8 @@ public sealed class WorkItemRollUpProjection
         {
             foreach (NodeKey childKey in node.ChildKeys)
             {
-                if (string.Equals(childKey.TenantId, node.TenantId.Value, StringComparison.Ordinal)
-                    && _nodes.TryGetValue(childKey, out RollUpNode? child)
+                if (_nodes.TryGetValue(childKey, out RollUpNode? child)
+                    && _tenantIsolation.AllowsDegradation(node.TenantId, child.TenantId)
                     && IsDegraded(child, traversal))
                 {
                     traversal.Remove(node.Key);
