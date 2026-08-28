@@ -291,8 +291,9 @@ golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golde
     re-handling the loser against the now-advanced state (exactly what the substrate's conflict-retry does)
     yields a single `WorkItemTransitionRejected(InProgress, "Claim")`, applying it is a no-op, and there is
     exactly one accepted `WorkItemClaimed` and exactly one observable `IRejectionEvent`. **Deterministic —
-    no threads/Task.Run/sleeps (RR-3);** a class XML-doc records that the live ETag append/retry/exhaustion
-    path is exercised under Aspire in Story 4.5.
+    no threads/Task.Run/sleeps (RR-3);** the class XML-doc now points to the exact in-process
+    `WorkItemClaimPersistenceConflictTests` retry and exhaustion methods. Story 4.5 did not issue competing
+    claims, and the new characterization does not claim live provider-ETag coverage.
   - **Task 3 / AC #1 (Theory ×2):** `Claim_from_a_claimable_status_emits_one_claimed_act_binding_the_claimant_and_transitions_to_in_progress`
     — from both claimable entries (`Queued` and `Assigned`), one `WorkItemClaimed` at `Sequence + 1`
     carrying the supplied binding, replay rests `InProgress` bound to the claimant, plus an identity
@@ -338,7 +339,8 @@ golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golde
   concurrency is Story 4.3"): single-claim-wins is the composition of the pure lifecycle and the EventStore
   substrate's expected-version (ETag) optimistic concurrency; the loser of a same-expected-version race
   re-handles to `WorkItemTransitionRejected(InProgress, "Claim")` (DC1); no new rejection type; catalog stays
-  36; retry-exhaustion is infra (Story 4.5). **No cell changed** (still 1:1 with `WorkItemLifecycle.cs`).
+  36; retry exhaustion is an infrastructure `ConcurrencyConflict`, now characterized in-process by
+  `WorkItemClaimPersistenceConflictTests`. **No cell changed** (still 1:1 with `WorkItemLifecycle.cs`).
 - [x] `docs/boundary-decision-record.md` — added a Story 4.3 note in *Notes and cross-references*:
   single-claim-wins is the kernel lifecycle + EventStore-owned expected-version composition; Works adds no
   claim-eligibility/routing/escalation/ranking/AI type and no `ClaimRejected`/`ConcurrencyRejected`; claim is
@@ -395,7 +397,7 @@ assertion-level, not new-surface. One genuine gap was found and auto-applied as 
 - No production UI, MCP/chatbot/email adapter, executor router, eligibility filter, escalation ladder,
   authority gate, routing score, AI decision record, signed link, LLM/NL parsing, or cost-governance
   package — all out of scope and deferred (claimable-pool "what's-next" queue projection/query → Story 4.4;
-  the **live** ETag append/retry/exhaustion behavior under the Aspire command/event pipeline → Story 4.5;
+  live provider-ETag behavior (still outside this in-process characterization);
   reminder/reactor recovery → Story 4.6).
 - No Dapr dispatch, EventStore stream reads, clock/timer, or actor runtime here: the single-claim-wins proof
   is the **deterministic domain outcome** of the expected-version collision (RR-3), modelled with no
@@ -2443,3 +2445,35 @@ ASPNETCORE_ENVIRONMENT=Development \
 # Suspend_time_registration_...: SKIP in the WSL2 dapr-init sandbox (actor reminder did not fire); PASS where the Scheduler delivers.
 # Cascade lane (same work.events subscription) independently PASSES, confirming subscription + gateway health.
 ```
+
+# Runtime Characterization — Claim Persistence Conflicts (2026-08-28)
+
+This correction closes the false historical pointer from Story 4.3 to Story 4.5. The Story 4.5 Aspire smoke
+lane submitted one command at a time and never exercised competing claims. Works-specific executable proof now
+runs the real in-process EventStore `AggregateActor`, `EventPersister`, `EventStreamReader`, and
+`WorkItemEventStoreAggregate` against a forwarding `ConflictInjectingActorStateManager`.
+
+- `RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection` computes two
+  `WorkItemClaimed` candidates from the same committed queued stream at payload ordinal 3, conflicts the loser's
+  first atomic event-batch save while committing the configured winner, then proves fresh-state re-handle commits
+  and publishes only `WorkItemTransitionRejected(InProgress, "Claim")` at envelope 4.
+- `ExhaustingClaimPersistenceConflictRetryReturnsConcurrencyConflictWithoutLoserEffects` conflicts the initial
+  claim save and the one configured retry, then proves the result/status are `ConcurrencyConflict`, the committed
+  stream ends at the winner's envelope 3, and the loser has no append, publication, or dead-letter effect.
+
+The proof is deterministic and uses no threads, sleeps, Aspire, Docker, Dapr sidecars, network, or provider ETag.
+The frozen v1 catalog remains **37** (14 commands, 14 success events, 9 rejections); no production contract or
+golden-payload file changed.
+
+## Focused verification
+
+```text
+dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release --no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class Hexalith.Works.IntegrationTests.WorkItemClaimPersistenceConflictTests
+# 2 passed, 0 failed, 0 skipped
+```
+
+Broader solution and full-suite counts are intentionally left to the enclosing workflow's final verification run;
+the focused characterization count is **2/2**.

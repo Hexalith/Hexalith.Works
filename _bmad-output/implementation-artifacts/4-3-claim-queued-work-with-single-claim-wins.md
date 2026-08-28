@@ -90,9 +90,10 @@ so that system agents and people can pull from the same backlog without double o
     `Status`, `Sequence`, and `ExecutorBinding` (still A) are unchanged.
   - [x] **Exactly-one assertion:** across winner + loser there is exactly one accepted `WorkItemClaimed` and
     exactly one observable `IRejectionEvent` (`loser.Events.Single().ShouldBeAssignableTo<IRejectionEvent>()`).
-  - [x] Add an XML-doc/comment on the test class stating that the live ETag append/retry/exhaustion path is
-    exercised under Aspire in **Story 4.5** (not here); this test proves the *domain outcome* of the
-    expected-version collision deterministically (RR-3). Keep Tier-1 purity (no Dapr/Aspire/network).
+  - [x] Add an XML-doc/comment on the test class stating that this test proves the *domain outcome* of the
+    expected-version collision deterministically (RR-3). A 2026-08-28 post-story correction now points to
+    `WorkItemClaimPersistenceConflictTests` for in-process actor retry/exhaustion characterization; Story 4.5
+    did not issue competing claims. Keep Tier-1 purity (no Dapr/Aspire/network).
 
 - [x] **Task 3 — Prove the happy-path claim and the not-claimable rejection focused on claim (AC: #1, #3)**
   - [x] **AC #1 (focused, do not duplicate `WorkItemUniformExecutorBindingTests`):** in the new file, assert a
@@ -189,8 +190,9 @@ optional claim-convergence property test; doc + test-summary updates.
 
 **Out of scope (deferred — do not implement here):** the "what's next" queue projection and query — including any
 **claimable-pool read projection** (Story 4.4; AR-10 says the pool is a read projection, but 4.3 is the
-*single-aggregate claim* proof only); the Aspire command/event pipeline proof and the **live** ETag
-append/retry/exhaustion behavior (Story 4.5); reminder/reactor recovery (Story 4.6); production UI, MCP/chatbot/
+*single-aggregate claim* proof only); live provider-ETag conflict proof (still unproven; the deterministic
+in-process actor retry/exhaustion characterization now lives in `WorkItemClaimPersistenceConflictTests`);
+reminder/reactor recovery (Story 4.6); production UI, MCP/chatbot/
 email adapters, executor routing, eligibility filtering, escalation ladders, `AuthorityLevel` enforcement, signed
 links, security hardening, LLM/NL parsing, cost governance. **Do not add a `ClaimRejected` or `ConcurrencyRejected`
 type** (DC1). v1 claim is unconditional — any tenant Executor may claim a queued item; eligibility is a Theme-4
@@ -241,12 +243,12 @@ one commits, the other emits ClaimRejected"); #Architectural Risk & Assumption S
   claimable" can add `ConcurrencyRejected` **additively** then (no `V2`). [Source:
   _bmad-output/planning-artifacts/architecture.md#Data Model & Schema (Events catalog, e.g. list); #Counter-metrics
   SM-C1/SM-C2; _bmad-output/planning-artifacts/ux-designs/ux-works-2026-06-14/EXPERIENCE.md (voice/microcopy)]
-- **DC2 — Retry-exhaustion is an infrastructure failure, not a domain rejection — and it is Story 4.5's to
-  exercise.** If the substrate's conflict-retry budget exhausts under hot contention, it surfaces a failed
-  `CommandProcessingResult`/`ConcurrencyConflictException` (NFR-2: infra failures are exceptions/dead-letter). With
-  the default 1 retry the loser virtually always lands on the re-handle → domain-rejection path (DC1). Do **not**
-  unit-test the live ETag/retry path here (it needs the Dapr actor runtime); the deterministic Task 2 test models
-  the domain outcome, and the live path is proved under Aspire in Story 4.5. [Source:
+- **DC2 — Retry-exhaustion is an infrastructure failure, not a domain rejection.** If the substrate's
+  conflict-retry budget exhausts under hot contention, it returns a failed `CommandProcessingResult` with
+  `ConcurrencyConflict`; it is not a domain rejection and is not dead-lettered. The deterministic Task 2 test
+  models the domain outcome. A 2026-08-28 post-story correction adds real in-process `AggregateActor` and
+  `EventPersister` coverage in `WorkItemClaimPersistenceConflictTests`; this remains distinct from live provider
+  ETag coverage, and Story 4.5 did not issue competing claims. [Source:
   _bmad-output/planning-artifacts/architecture.md#Core Principles (event-sourcing invariants: rejections are
   events, infra failures are exceptions/dead-letter); Hexalith.EventStore/src/Hexalith.EventStore.Server/Actors/
   AggregateActor.cs (retry/exhaustion); _bmad-output/planning-artifacts/epics.md#Story 4.5]
@@ -458,7 +460,8 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
   with **no threads/Task.Run/sleeps**: two (Task 2) and arbitrary `K ≥ 2` (Task 5 property) claims at the
   same observed version `N` all target sequence `N+1`; the winner advances to `InProgress`, every loser
   re-handles to `WorkItemTransitionRejected(InProgress, "Claim")` (the existing rejection — DC1). The live
-  ETag append/retry/exhaustion path is deferred to Story 4.5 (documented on the test class).
+  actor append/retry/exhaustion path is now characterized in-process by `WorkItemClaimPersistenceConflictTests`;
+  live provider-ETag behavior remains outside this historical story.
 - **Task 3 — focused AC #1 (claim emits/binds/transitions) and AC #3 (not-claimable rejection with no
   binding/status/sequence mutation across all 7 non-claimable statuses, each arranged carrying a binding).**
 - **DC5 (QA pass) — added `Duplicate_claim_by_the_current_holder_of_an_in_progress_item_is_rejected_not_a_no_op`**:
@@ -485,6 +488,17 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 - `_bmad-output/implementation-artifacts/tests/test-summary.md` — added the Story 4.3 section (Task 6).
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — status `ready-for-dev → in-progress → review`.
 - `_bmad-output/implementation-artifacts/4-3-claim-queued-work-with-single-claim-wins.md` — checkboxes, Dev Agent Record, Change Log, Status.
+
+### Post-story correction — 2026-08-28
+
+Story 4.5's Aspire smoke lane submitted one command at a time; it never created two claims from one queued
+stream and therefore did not prove claim persistence-conflict retry or exhaustion. The Works-specific executable
+proof is now
+`WorkItemClaimPersistenceConflictTests.RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection`
+and
+`WorkItemClaimPersistenceConflictTests.ExhaustingClaimPersistenceConflictRetryReturnsConcurrencyConflictWithoutLoserEffects`.
+These are deterministic in-process tests of the real EventStore actor and persister, not live provider-ETag tests.
+Historical Story 4.3 test counts and completed work above remain unchanged.
 
 ## Change Log
 

@@ -145,7 +145,12 @@ The most important trap: current `src/Hexalith.Works.Server/Aggregates/WorkItemA
 ### Previous Story Intelligence
 
 - **Story 4.4** added the pure what's-next projection and explicitly deferred live `IDomainQueryHandler`, `IReadModelStore`, `IProjectionChangeNotifier`, Dapr pub/sub, and runtime adapter wiring to Stories 4.5/4.6. This story consumes that deferred work at the adapter edge.
-- **Story 4.3** proved single-claim-wins deterministically in Tier-1 tests and deferred live ETag append/retry/exhaustion behavior to Story 4.5. Do not add `ClaimRejected` or `ConcurrencyRejected`; the loser still re-handles to existing domain rejection semantics.
+- **Story 4.3** proved the pure single-claim-wins domain outcome deterministically in Tier-1 tests. A
+  2026-08-28 post-story correction records that this Story 4.5 Aspire smoke lane submitted one command at a
+  time and did not exercise competing claims, persistence-conflict retry, or retry exhaustion. Those actor paths
+  are now characterized in-process by `WorkItemClaimPersistenceConflictTests`; live provider-ETag proof remains
+  out of scope. Do not add `ClaimRejected` or `ConcurrencyRejected`; the loser still re-handles to existing
+  domain rejection semantics.
 - **Epic 3 retrospective lessons:** test-count bookkeeping drift is a recurring review finding; reconcile this story, `tests/test-summary.md`, and actual test output before review. `dotnet test` may be unusable in this sandbox because of Microsoft.Testing.Platform named-pipe permissions; direct xUnit v3 binaries are the reliable fallback.
 
 ### Git Intelligence
@@ -258,6 +263,18 @@ Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`.
 - `docs/boundary-decision-record.md`
 - `_bmad-output/implementation-artifacts/tests/test-summary.md`
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
+
+### Post-story correction — 2026-08-28
+
+The historical Story 4.5 results prove AppHost composition and a single-command persist-then-publish smoke path.
+They do **not** prove competing claims, persistence-conflict retry/re-handle, or retry exhaustion. Exact executable
+pointers for that behavior are
+`WorkItemClaimPersistenceConflictTests.RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection`
+and
+`WorkItemClaimPersistenceConflictTests.ExhaustingClaimPersistenceConflictRetryReturnsConcurrencyConflictWithoutLoserEffects`.
+Those tests run the real EventStore actor and persister with a deterministic in-process conflict injector; they
+do not claim Aspire, Dapr sidecar, network, or live provider-ETag coverage. Historical counts and completed Story
+4.5 work remain unchanged.
 
 ## Senior Developer Review (AI)
 
