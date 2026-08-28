@@ -28,7 +28,12 @@ public static class WorksRecoveryExtensions
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
 
-        _ = services.Configure<WorksRecoveryOptions>(configuration.GetSection(WorksRecoveryOptions.SectionName));
+        _ = services.AddOptions<WorksRecoveryOptions>()
+            .Bind(configuration.GetSection(WorksRecoveryOptions.SectionName))
+            .Validate(static options => options.MaxStreamPagesPerTenant > 0, "MaxStreamPagesPerTenant must be greater than zero.")
+            .Validate(static options => options.ReminderReconciliationMaxAttempts > 0, "ReminderReconciliationMaxAttempts must be greater than zero.")
+            .Validate(static options => options.ReminderReconciliationRetryDelayMilliseconds >= 0, "ReminderReconciliationRetryDelayMilliseconds cannot be negative.")
+            .ValidateOnStart();
         services.TryAddSingleton(TimeProvider.System);
 
         // The command path back into the EventStore gateway that Story 4.5 proved (POST /api/v1/commands).

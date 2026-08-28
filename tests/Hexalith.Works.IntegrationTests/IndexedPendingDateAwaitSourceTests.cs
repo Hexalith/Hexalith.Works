@@ -112,6 +112,84 @@ public sealed class IndexedPendingDateAwaitSourceTests
     }
 
     [Fact]
+    public async Task Advances_to_the_next_page_and_folds_the_complete_stream()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        var requests = new List<StreamReadRequest>();
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+            requests.Add(request);
+            return Task.FromResult(request.FromSequence == 0
+                ? Story48Streams.PageAt(TenantA, WorkFuture, 1, isTruncated: true, Created(WorkFuture))
+                : Story48Streams.PageAt(TenantA, WorkFuture, 2, isTruncated: false, SuspendedOnDate(WorkFuture, s_future)));
+        });
+
+        PendingDateAwait result = (await NewSource(store, gateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldHaveSingleItem();
+
+        result.WorkItemId.ShouldBe(WorkFuture);
+        requests.Select(static request => request.FromSequence).ShouldBe([0L, 2L]);
+    }
+
+    [Fact]
+    public async Task Fails_closed_when_the_page_budget_ends_on_a_truncated_page()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Story48Streams.PageAt(TenantA, WorkFuture, 1, isTruncated: true, Created(WorkFuture)));
+        var options = new WorksRecoveryOptions { MaxStreamPagesPerTenant = 1 };
+        var source = new IndexedPendingDateAwaitSource(
+            store,
+            gateway,
+            Options.Create(options),
+            NullLogger<IndexedPendingDateAwaitSource>.Instance);
+
+        await Should.ThrowAsync<InvalidOperationException>(() => source
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Fails_closed_when_a_known_lifecycle_event_is_malformed()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        StreamReadPage page = Story48Streams.Page(TenantA, WorkFuture, SuspendedOnDate(WorkFuture, s_future));
+        StreamReadEvent malformed = page.Events[0] with { Payload = "{"u8.ToArray() };
+        IEventStoreGatewayClient gateway = GatewayFor(new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [WorkFuture] = page with { Events = [malformed] },
+        });
+
+        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, gateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Rejects_a_page_or_payload_outside_the_requested_stream_identity()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        IEventStoreGatewayClient wrongDomainGateway = GatewayFor(new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [WorkFuture] = Story48Streams.Page(TenantA, WorkFuture, Created(WorkFuture)) with { Domain = "other" },
+        });
+        IEventStoreGatewayClient wrongPayloadGateway = GatewayFor(new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [WorkFuture] = Story48Streams.Page(TenantA, WorkFuture, Created("work-other")),
+        });
+
+        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, wrongDomainGateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, wrongPayloadGateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+    }
+
+    [Fact]
     public async Task Reconciler_over_the_indexed_source_reissues_due_and_reschedules_future_idempotently()
     {
         var store = new Story47InMemoryReadModelStore();

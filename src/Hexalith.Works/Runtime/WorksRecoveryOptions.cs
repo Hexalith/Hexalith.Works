@@ -22,6 +22,12 @@ public sealed class WorksRecoveryOptions
     /// <summary>The maximum stream pages a single reconciliation scan reads per aggregate (a runaway backstop).</summary>
     public int MaxStreamPagesPerTenant { get; init; } = 1000;
 
+    /// <summary>The maximum number of startup reminder-reconciliation attempts after an incomplete scan.</summary>
+    public int ReminderReconciliationMaxAttempts { get; init; } = 5;
+
+    /// <summary>The delay between startup reminder-reconciliation attempts.</summary>
+    public int ReminderReconciliationRetryDelayMilliseconds { get; init; } = 1000;
+
     /// <summary>
     /// Optional pacing interval between cascade targets. Zero dispatches immediately; a positive value lets
     /// operators bound burst pressure and lets the live recovery lane stop at a deterministic checkpoint boundary.

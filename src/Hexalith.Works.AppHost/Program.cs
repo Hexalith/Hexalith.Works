@@ -7,6 +7,12 @@ using Projects;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
+// Dapr init exposes placement/scheduler on 6050/6060 in the containerized layout and 50005/50006 in the
+// native/slim layout. Resolve the reachable pair and give every sidecar the same explicit actor substrate.
+(string? daprPlacementHostAddress, string? daprSchedulerHostAddress) = AspireDaprLocalServiceEndpoints.Resolve(
+    builder.Configuration[AspireDaprLocalServiceEndpoints.PlacementHostAddressKey],
+    builder.Configuration[AspireDaprLocalServiceEndpoints.SchedulerHostAddressKey]);
+
 // Resolve local-development Dapr component / access-control paths. builder.AppHostDirectory keeps this working
 // under both `dotnet run` and Aspire.Hosting.Testing.
 string eventStoreAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.yaml");
@@ -75,7 +81,9 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
     adminServerDaprConfigPath: adminServerAccessControlConfigPath,
     resiliencyConfigPath: resiliencyConfigPath,
     stateStoreComponentPath: stateStoreComponentPath,
-    pubSubComponentPath: pubSubComponentPath);
+    pubSubComponentPath: pubSubComponentPath,
+    daprPlacementHostAddress: daprPlacementHostAddress,
+    daprSchedulerHostAddress: daprSchedulerHostAddress);
 
 // The runnable Works domain service. Its Dapr sidecar shares the EventStore state store + pub/sub; it waits for
 // EventStore and the shared state store before serving /process, /query, and /project.
@@ -90,7 +98,12 @@ HexalithEventStoreResources eventStoreResources = builder.AddHexalithEventStore(
 IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("works")
     .WithHttpEndpoint()
     .WithHttpHealthCheck("/alive")
-    .AddEventStoreDomainModule(eventStoreResources, "works", worksAccessControlConfigPath)
+    .AddEventStoreDomainModule(
+        eventStoreResources,
+        "works",
+        worksAccessControlConfigPath,
+        daprPlacementHostAddress: daprPlacementHostAddress,
+        daprSchedulerHostAddress: daprSchedulerHostAddress)
     .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))
     .WaitFor(eventStoreResources.StateStore);
 
@@ -116,6 +129,8 @@ IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventS
             Config = operationsAccessControlConfigPath,
             EnableAppHealthCheck = true,
             AppHealthCheckPath = "/alive",
+            PlacementHostAddress = daprPlacementHostAddress,
+            SchedulerHostAddress = daprSchedulerHostAddress,
         })
         .WithReference(eventStoreResources.StateStore)
         .WithReference(eventStoreResources.PubSub));

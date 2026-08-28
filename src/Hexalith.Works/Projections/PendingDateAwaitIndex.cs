@@ -18,18 +18,10 @@ public sealed class PendingDateAwaitTenantIndex
 {
     /// <summary>The pending date awaits keyed by raw work-item id (<c>WorkItemId.Value</c>).</summary>
     public Dictionary<string, IReadOnlyList<PendingDateAwait>> Entries { get; init; } = new(StringComparer.Ordinal);
-}
 
-/// <summary>
-/// The single well-known durable document listing every tenant that has (or has had) pending <c>DateReached</c>
-/// awaits (Story 4.8). This registry is the whole answer to "reconciliation without per-tenant hand configuration":
-/// recovery enumerates its tenants from durable data instead of a hand-configured <c>Works:Recovery:Tenants</c>
-/// list. It is append-only — a tenant whose awaits have all cleared stays listed and costs one cheap empty-index
-/// read on recovery, which is preferred over a read-modify-write that would need the full per-tenant index.
-/// </summary>
-/// <remarks>Plain host-edge <c>System.Text.Json</c> read model; not a durable polymorphic catalog type.</remarks>
-public sealed class PendingDateAwaitTenantRegistry
-{
-    /// <summary>The tenant ids known to have (or have had) pending date awaits.</summary>
-    public HashSet<string> Tenants { get; init; } = new(StringComparer.Ordinal);
+    /// <summary>
+    /// The greatest projection sequence accepted for each work item, retained even after its pending entry is
+    /// cleared. These tombstone watermarks prevent an older full-stream replay from resurrecting a cleared await.
+    /// </summary>
+    public Dictionary<string, long> LastSequences { get; init; } = new(StringComparer.Ordinal);
 }

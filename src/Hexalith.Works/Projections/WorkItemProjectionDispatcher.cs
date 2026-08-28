@@ -9,6 +9,7 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
 using Hexalith.Works.Projections.Strategies;
 using Hexalith.Works.Reminders;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
 
@@ -87,6 +88,10 @@ public sealed class WorkItemProjectionDispatcher
     public async Task<ProjectionResponse> DispatchAsync(ProjectionRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        if (!string.Equals(request.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("Projection request domain is not the Works domain.");
+        }
 
         var tenant = new TenantId(request.TenantId);
         var workItemId = new WorkItemId(request.AggregateId);
@@ -111,6 +116,11 @@ public sealed class WorkItemProjectionDispatcher
             if (payload is null)
             {
                 continue;
+            }
+
+            if (!WorksEventIdentity.Matches(payload, request.TenantId, request.AggregateId))
+            {
+                throw new InvalidOperationException("Projection event payload is outside the requested stream identity.");
             }
 
             var delivery = new WorkItemRollUpEvent(tenant, workItemId, dto.SequenceNumber, payload);
@@ -218,26 +228,18 @@ public sealed class WorkItemProjectionDispatcher
         IReadOnlyList<ProjectionEventDto>? events,
         CancellationToken cancellationToken)
     {
+        if (events is null || events.Count == 0)
+        {
+            return;
+        }
+
         // Fold the full replayed stream (Story 4.8, DD-1/DD-3): the durable index records the aggregate's
         // *current* pending DateReached awaits, never a raw suspend event in isolation, so a stream that has
         // since resumed clears the entry. Reuse the same pure fold the recovery source uses — never a second one.
         IReadOnlyList<IEventPayload> ordered = [.. decodedEvents.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];
         IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(ordered);
 
-        if (pending.Count == 0)
-        {
-            // Date awaits are sparse but /project fires for every aggregate dispatch: only touch the index when
-            // this aggregate actually has an entry to clear, so the common no-date-await dispatch does one cheap
-            // read and no write (never creating an empty index document for a tenant that never used a date await).
-            ReadModelEntry<PendingDateAwaitTenantIndex> existing = await _store
-                .GetAsync<PendingDateAwaitTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value), cancellationToken)
-                .ConfigureAwait(false);
-            if (existing.Value is null || !existing.Value.Entries.ContainsKey(aggregateId))
-            {
-                return;
-            }
-        }
-        else
+        if (pending.Count > 0)
         {
             // Registry BEFORE index: a crash after the registry write but before the index write leaves a registered
             // tenant with an empty index (recovery pays one cheap empty read — safe). The reverse ordering could
@@ -249,6 +251,14 @@ public sealed class WorkItemProjectionDispatcher
             Category: "works pending-date-await index",
             ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
             .WithEventDiagnostics(events ?? []);
+        long? incomingLastSequence = events!
+            .Where(static value => value is not null)
+            .Select(static value => (long?)value.SequenceNumber)
+            .Max();
+        if (incomingLastSequence is null)
+        {
+            return;
+        }
 
         _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantIndex>(
             _store,
@@ -257,6 +267,13 @@ public sealed class WorkItemProjectionDispatcher
             current =>
             {
                 PendingDateAwaitTenantIndex index = current ?? new PendingDateAwaitTenantIndex();
+                if (index.LastSequences.TryGetValue(aggregateId, out long storedLastSequence)
+                    && storedLastSequence >= incomingLastSequence.Value)
+                {
+                    return index;
+                }
+
+                index.LastSequences[aggregateId] = incomingLastSequence.Value;
                 if (pending.Count > 0)
                 {
                     index.Entries[aggregateId] = pending;
@@ -319,10 +336,21 @@ public sealed class WorkItemProjectionDispatcher
 
         try
         {
-            return JsonSerializer.Deserialize(dto.Payload, eventType, s_webOptions) as IEventPayload;
+            IEventPayload? payload = JsonSerializer.Deserialize(dto.Payload, eventType, s_webOptions) as IEventPayload;
+            if (payload is null && PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
+            {
+                throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
+            }
+
+            return payload;
         }
         catch (JsonException)
         {
+            if (PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
+            {
+                throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
+            }
+
             s_skippedEvent(_logger, dto.EventTypeName, workItemId.Value, tenant.Value, correlationId, null);
             return null;
         }

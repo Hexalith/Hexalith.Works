@@ -166,10 +166,109 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     }
 
     [Fact]
+    public async Task Older_replay_cannot_resurrect_an_await_cleared_by_a_newer_replay()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        _ = await dispatcher.DispatchAsync(
+            Request(
+                TenantA,
+                WorkId,
+                Created(TenantA, WorkId, 1),
+                SuspendedOnDate(TenantA, WorkId, 2, s_future),
+                new WorkItemResumed(WorkId, 3, new TenantId(TenantA), new WorkItemId(WorkId), AwaitCondition.DateReached(s_future))),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(
+            Request(TenantA, WorkId, Created(TenantA, WorkId, 1), SuspendedOnDate(TenantA, WorkId, 2, s_future)),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        PendingDateAwaitTenantIndex index = await ReadIndexAsync(store, TenantA).ConfigureAwait(true);
+        index.Entries.ShouldNotContainKey(WorkId);
+        index.LastSequences[WorkId].ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task Malformed_state_affecting_event_fails_before_the_pending_index_is_updated()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var malformed = new ProjectionEventDto(
+            nameof(WorkItemSuspended),
+            "{"u8.ToArray(),
+            "json",
+            1,
+            default,
+            "corr-1");
+
+        await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            new ProjectionRequest(TenantA, "work", WorkId, [malformed]),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Concurrent_tenants_are_both_retained_in_the_registry_after_an_etag_conflict()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            new PendingDateAwaitTenantRegistry(),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.CoordinateFirstTrySaveConflict(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        await Task.WhenAll(
+            dispatcher.DispatchAsync(
+                Request(TenantA, "work-a", Created(TenantA, "work-a", 1), SuspendedOnDate(TenantA, "work-a", 2, s_future)),
+                TestContext.Current.CancellationToken),
+            dispatcher.DispatchAsync(
+                Request(TenantB, "work-b", Created(TenantB, "work-b", 1), SuspendedOnDate(TenantB, "work-b", 2, s_future)),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        (await ReadRegistryAsync(store).ConfigureAwait(true)).Tenants.ShouldBe([TenantA, TenantB], ignoreOrder: true);
+    }
+
+    [Fact]
+    public async Task Concurrent_aggregates_are_both_retained_in_one_tenant_index_after_an_etag_conflict()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            new PendingDateAwaitTenantRegistry { Tenants = { TenantA } },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(TenantA),
+            new PendingDateAwaitTenantIndex(),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.CoordinateFirstTrySaveConflict(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(TenantA));
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        await Task.WhenAll(
+            dispatcher.DispatchAsync(
+                Request(TenantA, "work-a", Created(TenantA, "work-a", 1), SuspendedOnDate(TenantA, "work-a", 2, s_future)),
+                TestContext.Current.CancellationToken),
+            dispatcher.DispatchAsync(
+                Request(TenantA, "work-b", Created(TenantA, "work-b", 1), SuspendedOnDate(TenantA, "work-b", 2, s_future)),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.Keys.ShouldBe(["work-a", "work-b"], ignoreOrder: true);
+    }
+
+    [Fact]
     public void Index_and_registry_round_trip_through_system_text_json()
     {
         var index = new PendingDateAwaitTenantIndex();
         index.Entries[WorkId] = [new PendingDateAwait(TenantA, WorkId, s_future, AwaitCondition.DateReached(s_future).CorrelationKey)];
+        index.LastSequences[WorkId] = 2;
         var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, TenantB } };
 
         PendingDateAwaitTenantIndex? roundTrippedIndex = JsonSerializer.Deserialize<PendingDateAwaitTenantIndex>(
@@ -179,6 +278,7 @@ public sealed class PendingDateAwaitIndexDispatcherTests
 
         roundTrippedIndex.ShouldNotBeNull();
         roundTrippedIndex.Entries[WorkId].ShouldHaveSingleItem().Instant.ShouldBe(s_future);
+        roundTrippedIndex.LastSequences[WorkId].ShouldBe(2);
         roundTrippedRegistry.ShouldNotBeNull();
         roundTrippedRegistry.Tenants.ShouldBe([TenantA, TenantB], ignoreOrder: true);
     }

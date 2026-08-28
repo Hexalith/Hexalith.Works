@@ -18,11 +18,13 @@ namespace Hexalith.Works.Reminders;
 public sealed class ReminderReconciliationService(
     DateReminderReconciler reconciler,
     IOptions<WorksRecoveryOptions> options,
-    ILogger<ReminderReconciliationService> logger) : BackgroundService
+    ILogger<ReminderReconciliationService> logger,
+    TimeProvider timeProvider) : BackgroundService
 {
     private readonly DateReminderReconciler _reconciler = reconciler ?? throw new ArgumentNullException(nameof(reconciler));
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
     private readonly ILogger<ReminderReconciliationService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
     /// <inheritdoc/>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -32,17 +34,30 @@ public sealed class ReminderReconciliationService(
             return;
         }
 
-        try
+        for (int attempt = 1; attempt <= _options.ReminderReconciliationMaxAttempts; attempt++)
         {
-            _ = await _reconciler.ReconcileAsync(stoppingToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            // Host shutting down during reconciliation: safe to abandon — the scan is idempotent on restart.
-        }
-        catch (Exception ex)
-        {
-            WorksRecoveryLog.RecoveryStepFailed(_logger, "startup-reminder-reconciliation", ex);
+            try
+            {
+                _ = await _reconciler.ReconcileAsync(stoppingToken).ConfigureAwait(false);
+                return;
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                WorksRecoveryLog.RecoveryStepFailed(_logger, "startup-reminder-reconciliation", ex);
+                if (attempt == _options.ReminderReconciliationMaxAttempts)
+                {
+                    return;
+                }
+
+                await Task.Delay(
+                    TimeSpan.FromMilliseconds(_options.ReminderReconciliationRetryDelayMilliseconds),
+                    _timeProvider,
+                    stoppingToken).ConfigureAwait(false);
+            }
         }
     }
 }

@@ -25,6 +25,10 @@ internal static class PendingDateAwaitStreamReader
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(gateway);
+        if (maxPages <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxPages), maxPages, "The stream page budget must be greater than zero.");
+        }
 
         var events = new List<(long Sequence, IEventPayload Payload)>();
         long from = 0;
@@ -41,6 +45,7 @@ internal static class PendingDateAwaitStreamReader
                 PageSize: PageSize);
             StreamReadPage result = await gateway.ReadStreamAsync(request, cancellationToken).ConfigureAwait(false);
             if (!string.Equals(result.Tenant, tenantId, StringComparison.Ordinal)
+                || !string.Equals(result.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
                 || !string.Equals(result.AggregateId, workItemId, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("EventStore returned a stream outside the requested identity.");
@@ -49,10 +54,22 @@ internal static class PendingDateAwaitStreamReader
             foreach (StreamReadEvent streamEvent in result.Events)
             {
                 IEventPayload? payload = WorksEventDecoder.Decode(streamEvent.EventTypeName, streamEvent.Payload);
-                if (payload is not null)
+                if (payload is null)
                 {
-                    events.Add((streamEvent.SequenceNumber, payload));
+                    if (PendingDateAwaitProjection.IsStateAffectingEventType(streamEvent.EventTypeName))
+                    {
+                        throw new InvalidOperationException("A state-affecting Works event could not be decoded.");
+                    }
+
+                    continue;
                 }
+
+                if (!WorksEventIdentity.Matches(payload, tenantId, workItemId))
+                {
+                    throw new InvalidOperationException("EventStore returned an event payload outside the requested stream identity.");
+                }
+
+                events.Add((streamEvent.SequenceNumber, payload));
             }
 
             stillTruncated = result.Metadata.IsTruncated;

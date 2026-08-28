@@ -21,6 +21,15 @@ namespace Hexalith.Works.Reminders;
 /// </remarks>
 public static class PendingDateAwaitProjection
 {
+    /// <summary>Returns whether the named event can change pending-date-await state.</summary>
+    internal static bool IsStateAffectingEventType(string eventTypeName)
+        => SimpleTypeName(eventTypeName) is nameof(WorkItemSuspended)
+            or nameof(WorkItemResumed)
+            or nameof(WorkItemCancelled)
+            or nameof(WorkItemExpired)
+            or nameof(WorkItemCompleted)
+            or nameof(WorkItemRejected);
+
     /// <summary>
     /// Reconstructs the still-pending <c>DateReached</c> awaits for one work item from its <paramref name="events"/>,
     /// supplied in ascending sequence order.
@@ -70,5 +79,11 @@ public static class PendingDateAwaitProjection
                 workItemId.Value,
                 condition.Instant!.Value,
                 condition.CorrelationKey))];
+    }
+
+    private static string SimpleTypeName(string eventTypeName)
+    {
+        int lastDot = eventTypeName?.LastIndexOf('.') ?? -1;
+        return lastDot >= 0 ? eventTypeName![(lastDot + 1)..] : eventTypeName ?? string.Empty;
     }
 }

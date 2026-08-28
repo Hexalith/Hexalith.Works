@@ -43,6 +43,10 @@ internal static class WorksEventDecoder
         }
     }
 
+    /// <summary>Returns whether the event type name identifies a known Works event.</summary>
+    public static bool IsKnownEventType(string eventTypeName)
+        => !string.IsNullOrEmpty(eventTypeName) && s_eventTypesByName.ContainsKey(SimpleTypeName(eventTypeName));
+
     private static string SimpleTypeName(string eventTypeName)
     {
         int lastDot = eventTypeName.LastIndexOf('.');

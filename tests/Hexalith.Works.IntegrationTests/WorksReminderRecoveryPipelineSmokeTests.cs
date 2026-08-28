@@ -42,13 +42,10 @@ namespace Hexalith.Works.IntegrationTests;
 /// runs on by default and discovers the tenants with pending date awaits from the durable registry the
 /// <c>/project</c> dispatcher maintains, then re-folds each candidate's per-aggregate stream (every stream read
 /// carries an <c>AggregateId</c> — the tenant-wide null-aggregate read is gateway-rejected).</para>
-/// <para><b>Steady-state actor-scheduler substrate (AC #1).</b> The suspend-time path resumes the item by having
-/// the Dapr <em>actor reminder</em> fire — the <c>DateReminderActor</c>/Scheduler path built in Story 4.6 and never
-/// exercised live before (Story 4.6's lane reissued the resume command directly). Where the <c>dapr init</c>
-/// Scheduler does not deliver actor reminders back to the Works app (observed in the WSL2 sandbox: a due-immediately
-/// reminder never fired), the steady-state fact <see cref="Assert.Skip(string)"/>s with an explicit reason instead
-/// of failing — the <em>registration</em> logic this story adds is proven by <c>WorkItemSuspendedReminderHandlerTests</c>,
-/// and the durable recovery path is proven by the recovery fact above.</para>
+/// <para><b>Actor-scheduler substrate.</b> The AppHost resolves either containerized Dapr ports 6050/6060 or
+/// native ports 50005/50006 and passes them explicitly to every sidecar. Once prerequisites are reachable, failure
+/// to deliver a reminder is an acceptance failure, not a skip. Both suspend-time registration and recovery-time
+/// re-registration of a still-future await are exercised through a real scheduler firing.</para>
 /// <para>Auth uses the EventStore EnableKeycloak=false symmetric-key dev path; the signing key matches the
 /// EventStore dev key. Ids are unique per run so a re-run against a persistent <c>dapr init</c> Redis starts from
 /// clean aggregate streams (the 2026-07-21 duplicate-create rejection makes fixed ids collide on re-run).</para>
@@ -63,9 +60,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
     private static readonly string Tenant = "tenant-recovery-" + Guid.NewGuid().ToString("N")[..8];
     private static readonly string SteadyItem = "work-steady-" + Guid.NewGuid().ToString("N")[..12];
     private static readonly string RecoveryItem = "work-overdue-" + Guid.NewGuid().ToString("N")[..12];
-
-    // A past instant so the overdue await is due the moment recovery discovers it.
-    private static readonly DateTimeOffset PastInstant = new(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly string FutureRecoveryItem = "work-future-" + Guid.NewGuid().ToString("N")[..12];
 
     [Fact]
     public async Task Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration()
@@ -75,19 +70,28 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
         {
             Assert.Skip(
-                "Aspire reminder-recovery prerequisites missing (Redis :6379 + Dapr placement :50005 + scheduler :50006). "
+                "Aspire reminder-recovery prerequisites missing (Redis :6379 plus Dapr placement/scheduler on 6050/6060 or 50005/50006). "
                 + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.");
             return;
         }
 
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
-        // Host 1 — park an item on a past DateReached. The /project dispatcher records it in the durable
-        // pending-date-await index/registry while the host is up.
+        DateTimeOffset recoveryInstant = DateTimeOffset.UtcNow.AddMinutes(1);
+
+        // Host 1 — park a future await, give the projection poller time to durably index it, and prove no resume
+        // occurred before shutdown. It becomes overdue only while the host is genuinely down.
         await WithAppHostAsync(ct, async (client, token) =>
         {
-            await ParkSuspendedOnDateAsync(client, RecoveryItem, PastInstant, token).ConfigureAwait(false);
+            await ParkSuspendedOnDateAsync(client, RecoveryItem, recoveryInstant, token).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
+            (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false)).ShouldBe(0);
         }).ConfigureAwait(true);
+        TimeSpan untilOverdue = recoveryInstant - DateTimeOffset.UtcNow + TimeSpan.FromSeconds(2);
+        if (untilOverdue > TimeSpan.Zero)
+        {
+            await Task.Delay(untilOverdue, ct).ConfigureAwait(true);
+        }
 
         // Host 2 — restart against the same Redis WITHOUT any --Works:Recovery:Tenants argument. Recovery
         // auto-discovers the parked await from the durable registry+index (no hand configuration), re-folds the
@@ -102,6 +106,39 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false))
                 .ShouldBe(1, "Recovery must not add a duplicate WorkItemResumed.");
         }).ConfigureAwait(true);
+
+        // Host 3 — a second genuine startup reconciliation against the same durable state must remain convergent.
+        await WithAppHostAsync(ct, async (client, token) =>
+        {
+            (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false)).ShouldBe(1);
+        }).ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Recovery_re_registers_a_still_future_await_that_later_fires()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
+        {
+            Assert.Skip("Aspire reminder-recovery prerequisites are not running.");
+            return;
+        }
+
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        DateTimeOffset futureInstant = DateTimeOffset.UtcNow.AddSeconds(90);
+        await WithAppHostAsync(ct, async (client, token) =>
+        {
+            await ParkSuspendedOnDateAsync(client, FutureRecoveryItem, futureInstant, token).ConfigureAwait(false);
+            await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
+            (await CountResumedAsync(client, FutureRecoveryItem, token).ConfigureAwait(false)).ShouldBe(0);
+        }).ConfigureAwait(true);
+
+        DateTimeOffset.UtcNow.ShouldBeLessThan(futureInstant, "The second host must observe a genuinely future await.");
+        await WithAppHostAsync(ct, async (client, token) =>
+        {
+            (await WaitForResumedCountAsync(client, FutureRecoveryItem, atLeast: 1, token).ConfigureAwait(false))
+                .ShouldBe(1, "Startup recovery must re-register the future reminder and its later scheduler firing must resume exactly once.");
+        }).ConfigureAwait(true);
     }
 
     [Fact]
@@ -112,7 +149,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
         {
             Assert.Skip(
-                "Aspire reminder-recovery prerequisites missing (Redis :6379 + Dapr placement :50005 + scheduler :50006). "
+                "Aspire reminder-recovery prerequisites missing (Redis :6379 plus Dapr placement/scheduler on 6050/6060 or 50005/50006). "
                 + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.");
             return;
         }
@@ -125,15 +162,6 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         {
             await ParkSuspendedOnDateAsync(client, SteadyItem, DateTimeOffset.UtcNow.AddSeconds(10), token).ConfigureAwait(false);
             int resumed = await WaitForResumedCountAsync(client, SteadyItem, atLeast: 1, token).ConfigureAwait(false);
-            if (resumed == 0)
-            {
-                Assert.Skip(
-                    "Dapr actor reminder did not fire within 90s in this environment (the dapr init Scheduler did not "
-                    + "deliver the actor reminder back to the Works app). Suspend-time registration logic is proven by "
-                    + "WorkItemSuspendedReminderHandlerTests; the durable recovery path is proven by the recovery fact.");
-                return;
-            }
-
             resumed.ShouldBe(1, "Suspend-time registration + Dapr Scheduler fire must resume the item exactly once with no restart.");
         }).ConfigureAwait(true);
     }
@@ -349,12 +377,11 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
     private static async Task<bool> PrerequisitesAvailableAsync(CancellationToken cancellationToken)
     {
-        int placementPort = OperatingSystem.IsWindows() ? 6050 : 50005;
-        int schedulerPort = OperatingSystem.IsWindows() ? 6060 : 50006;
-
         return await IsPortReachableAsync(6379, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(placementPort, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(schedulerPort, cancellationToken).ConfigureAwait(false);
+            && ((await IsPortReachableAsync(6050, cancellationToken).ConfigureAwait(false)
+                    && await IsPortReachableAsync(6060, cancellationToken).ConfigureAwait(false))
+                || (await IsPortReachableAsync(50005, cancellationToken).ConfigureAwait(false)
+                    && await IsPortReachableAsync(50006, cancellationToken).ConfigureAwait(false)));
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)

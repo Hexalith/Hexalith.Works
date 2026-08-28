@@ -95,6 +95,24 @@ _Added by the 2026-07-21 correct-course (audit findings F-RT-3 critical, F-RT-5 
   - [x] Confirm `WorkItemV1Catalog.Count` stays **37** and the golden corpus is byte-unchanged (this story adds no durable catalog type).
   - [x] Never run recursive submodule commands or initialize nested submodules; leave the long-standing sibling submodule pointer drift (`Hexalith.FrontComposer`, `Hexalith.Parties`, `Hexalith.Tenants`) untouched and out of the File List.
 
+### Review Findings
+
+- [ ] [Review][Patch] [High] Fix the live Dapr actor-reminder callback path and make AC #1's smoke test fail after prerequisites pass when no resume occurs [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:108]
+- [x] [Review][Patch] [High] Propagate incomplete reconciliation scans and retry startup reconciliation with bounded backoff until success or the configured limit [src/Hexalith.Works/Reminders/ReminderReconciliationService.cs:28]
+- [x] [Review][Patch] [High] Preserve a per-aggregate sequence watermark so an older replay cannot remove or overwrite a newer pending-date index entry [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:214]
+- [x] [Review][Patch] [High] Make the recovery smoke establish durable-index state, prove zero pre-restart resumes, execute a genuine repeated reconciliation pass, and align its test-summary claim [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:85]
+- [x] [Review][Patch] [High] Add the required live recovery proof that a future pending await is re-registered and later resumes [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:61]
+- [x] [Review][Patch] [High] Fail closed on malformed known lifecycle events instead of folding an incomplete stream into reminder truth or index removal [src/Hexalith.Works/Reminders/PendingDateAwaitStreamReader.cs:49]
+- [x] [Review][Patch] [High] Validate stream-page domain and decoded event tenant/work-item/aggregate identities before scheduling or indexing reminders [src/Hexalith.Works/Reminders/PendingDateAwaitStreamReader.cs:43]
+- [x] [Review][Patch] [High] Validate `MaxStreamPagesPerTenant` as positive at startup so zero or negative configuration cannot silently disable reads [src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs:23]
+- [x] [Review][Patch] [Medium] Add multi-page, page-advance, and exhausted-budget tests for `PendingDateAwaitStreamReader` [tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:14]
+- [x] [Review][Patch] [Medium] Add coordinated concurrent index-update tests for the singleton registry and same-tenant aggregate index [tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs:31]
+- [x] [Review][Patch] [High] Extend the domain-event processor dispatch test to cover the newly consumed `WorkItemSuspended` envelope [tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs:76]
+- [x] [Review][Patch] [Low] Split the two production index models and three test fakes into one correctly named C# file per type [src/Hexalith.Works/Projections/PendingDateAwaitIndex.cs:17]
+- [x] [Review][Patch] [Low] Restore a real `last_updated` YAML value instead of an inline-commented null [\_bmad-output/implementation-artifacts/sprint-status.yaml:38]
+- [x] [Review][Defer] [Medium] Event processing can return success after durable marker completion fails [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:119] — deferred, pre-existing
+- [x] [Review][Defer] [Medium] Event processing does not reject envelopes whose domain is not `work` [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:227] — deferred, pre-existing
+
 ## Dev Notes
 
 ### Scope Boundary
@@ -204,6 +222,24 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+> The original 2026-07-23 completion notes below are historical. The 2026-08-28 code-review remediation supersedes
+> its live-lane status: callback failure is no longer skipped, but the current acceptance run was blocked earlier
+> by Aspire AppHost startup timing out before any reminder assertion executed.
+
+- **Code-review remediation (2026-08-28):** added explicit containerized/native Dapr placement+scheduler endpoint
+  resolution; bounded startup reconciliation retry; complete-scan propagation; positive options validation;
+  pending-index sequence tombstones; page/domain/payload identity validation; malformed lifecycle fail-closed;
+  multipage, budget, concurrency, stale-replay, processor-dispatch, and retry tests; future-recovery and repeated-
+  restart live facts; one-type-per-file cleanup; and valid sprint YAML bookkeeping.
+- **Review validation:** `Hexalith.Works` and AppHost build with 0 warnings/errors; UnitTests **528/528**,
+  PropertyTests **3/3**, ArchitectureTests **207/207**, all non-smoke IntegrationTests **198/198**, and the focused
+  review set **37/37** pass. The normal repository test build is independently
+  blocked by the checked-out central-package conflict (`xunit.v3` 4.0.0 versus 3.2.2 extension pins), so review
+  compilation used a temporary 3.2.2 package override without modifying repository dependencies.
+- **Open acceptance evidence:** the focused reminder smoke command reached the containerized Dapr prerequisites
+  but failed in the first `DistributedApplication.StartAsync` after **5m 08s** with `TaskCanceledException`.
+  Because no reminder assertion ran, the AC #1 live-callback finding remains open.
+
 - **Task 1 reconciliation — DD-1 resolution (steady-state trigger surface).** Story 4.7 is `done` (sprint-status + merge `ff329cc`), so per Task 1 I use its live `work.events` domain-event subscription as the steady-state registration trigger via a new `IEventStoreDomainEventHandler<WorkItemSuspended>`, mirroring 4.7's `WorkItemCompletedResumeHandler` (read stream → rebuild state → act). Evidence-based rationale that resolves Validation-Note risk (a): the `/project` dispatch is delivered by EventStore's `ProjectionPollerService` (`BackgroundService`, per-domain `RefreshIntervalMs` cadence) — a live background path but with poll-interval latency and dependent on a configured refresh interval, whereas the `work.events` subscription fires immediately on publish and is already proven live end-to-end by 4.7. The subscription is therefore the low-latency, reliable steady-state trigger; the `/project` dispatcher's role is narrowed to maintaining the durable pending-date-await index (recovery treats the index as discovery and re-folds each candidate's stream for truth per DD-3, so poll-interval index staleness is tolerated by design).
 - **Substrate invariant re-verified against submodule `6a8f3866` (v3.81.0-4):** `StreamsController.ValidateRequest` 400-rejects null/whitespace `AggregateId` (`MissingRequiredField`) and any non-null `ContinuationToken`; page only by `FromSequence = LastSequenceReturned + 1`, `PageSize` ≤ 1000. Every stream read this story issues carries an `AggregateId` (per-aggregate reads only).
 - **Task 2 (AC #1):** `WorkItemSuspendedReminderHandler : IEventStoreDomainEventHandler<WorkItemSuspended>` on 4.7's `work.events` subscription re-folds the suspended aggregate's per-aggregate stream through the pure `PendingDateAwaitProjection` (folded current set, never a raw event — DD-1) and registers one durable reminder per pending `DateReached` await via the injected `TimeProvider` + `IDateReminderScheduler`. Added `WorkItemSuspended` to `WorksDomainEventProcessor.s_consumedEvents` and registered the handler in `Program.cs`. Failures propagate for at-least-once redelivery; registration is idempotent.
@@ -222,11 +258,13 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `Reminders/IndexedPendingDateAwaitSource.cs` (new)
 - `Reminders/StreamReadingPendingDateAwaitSource.cs` (deleted)
 - `Reminders/ReminderReconciliationService.cs` (drop `Tenants` gate)
-- `Projections/PendingDateAwaitIndex.cs` (new — index + registry read models)
+- `Projections/PendingDateAwaitIndex.cs` (new — index model + sequence tombstones)
+- `Projections/PendingDateAwaitTenantRegistry.cs` (new — registry model split to one type/file)
 - `Projections/WorkItemProjectionDispatcher.cs` (maintain index + registry)
 - `Projections/WorksWhatsNextReadModel.cs` (new keys)
 - `Runtime/WorksRecoveryOptions.cs` (remove `Tenants`)
 - `Runtime/WorksRecoveryExtensions.cs` (swap source registration)
+- `Runtime/WorksEventDecoder.cs` / `Runtime/WorksEventIdentity.cs` (fail-closed decoding and stream identity checks)
 - `Runtime/Events/WorksDomainEventProcessor.cs` (consume `WorkItemSuspended`)
 - `Program.cs` (register the suspend handler)
 
@@ -237,7 +275,8 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `PendingDateAwaitIndexDispatcherTests.cs` (new)
 - `WorkItemSuspendedReminderHandlerTests.cs` (new)
 - `IndexedPendingDateAwaitSourceTests.cs` (new)
-- `Story48ReminderFakes.cs` (new — shared fakes)
+- `Story48FixedTimeProvider.cs`, `Story48RecordingScheduler.cs`, `Story48RecordingSubmitter.cs` (split test fakes)
+- `ReminderReconciliationServiceTests.cs` (bounded startup retry)
 - `Story48Streams.cs` (new — shared stream-page helper)
 - `WorksReminderRecoveryPipelineSmokeTests.cs` (reworked into recovery + steady-state facts)
 
@@ -253,6 +292,9 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
 ## Change Log
+
+- 2026-08-28 — Adversarial code-review remediation applied: 12/13 patch findings closed, 2 pre-existing findings
+  deferred, and the live callback finding retained as open because Aspire timed out before the acceptance assertion.
 
 - 2026-07-23 — Story 4.8 implemented (dev-story, claude-opus-4-8). Suspend-time durable date-reminder registration
   on Story 4.7's live `work.events` subscription; durable pending-date-await index + tenant registry maintained by

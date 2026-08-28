@@ -2366,14 +2366,15 @@ UnitTests **496**, PropertyTests **3**, ArchitectureTests **44**; IntegrationTes
 - `WorksReminderRecoveryPipelineSmokeTests` — reworked into the full SM-1 lane: a steady-state phase (AC #1: suspend
   on a near-future date, resume with no restart) and a recovery phase (AC #3: restart with **no
   `--Works:Recovery:Tenants` argument**, auto-discover from the durable index, resume exactly once, second restart
-  adds no duplicates). Uses per-run-unique tenant and work-item ids.
+  adds no duplicates), plus a future-at-restart phase proving recovery re-registers a future reminder that later
+  fires. Uses per-run-unique tenant and work-item ids. Once prerequisites pass, missing callback delivery fails.
 
 ## Skipped / blocked infrastructure conditions (Tier-3)
 
 - `WorksAppHostTopologyTests` still pins `EventStore__CommandGateway__BaseAddress` as source text and does not
   reference `Works:Recovery:Tenants`; it remained green after the AppHost forwarding-block deletion.
-- The three Tier-3 smoke lanes (`Works{Command,ReminderRecovery,CascadeRecovery}PipelineSmokeTests`) `Assert.Skip`
-  when Redis :6379 / Dapr placement :50005 / scheduler :50006 are absent. When present, the suppressed EventStore
+- The Tier-3 smoke lanes `Assert.Skip` only when Redis :6379 and either containerized Dapr placement/scheduler
+  :6050/:6060 or native :50005/:50006 are absent. When present, the suppressed EventStore
   hosts (`Hexalith.EventStore`, `Hexalith.EventStore.Admin.Server.Host`, both `SuppressBuild=true`) must be built
   Release explicitly first. Live SM-1 result recorded below.
 
@@ -2390,6 +2391,18 @@ tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.Integra
 ```
 
 ## Live SM-1 result (Tier-3, honest)
+
+> **2026-08-28 code-review rerun supersedes the original live-status claim below.** AppHost now resolves the
+> reachable Dapr placement/scheduler pair and passes it explicitly to every sidecar; the steady-state test no
+> longer skips after prerequisites pass. The focused live command detected Redis :6379 and containerized Dapr
+> :6050/:6060, then failed in the first `DistributedApplication.StartAsync` after **5m 08s** with
+> `TaskCanceledException`. A direct AppHost run likewise remained in DCP resource rendering until cancellation.
+> No reminder assertion executed, so this rerun establishes neither a live pass nor a callback failure. The
+> current code-review verdict keeps AC #1's live callback finding open and records AppHost startup as the exact
+> validation blocker. UnitTests **528/528**, PropertyTests **3/3**, ArchitectureTests **207/207**, deterministic
+> non-smoke IntegrationTests **198/198**, and the focused review set **37/37** pass.
+
+### Original 2026-07-23 live observation (historical)
 
 Redis :6379, Dapr placement :50005, and scheduler :50006 were reachable, so the smoke lanes ran (they did not
 skip). Both suppressed EventStore hosts were built Release first (0 warn / 0 err). A focused two-host diagnostic
@@ -2412,7 +2425,7 @@ isolated the two ACs:
   therefore `Assert.Skip`s (not fails) with an explicit reason when the reminder does not fire within 90 s, and
   asserts exactly-once resume where the Scheduler does deliver.
 
-**Net:** the story's load-bearing new behavior — durable index maintenance, auto-discovery without hand
+**Historical net:** the story's load-bearing new behavior — durable index maintenance, auto-discovery without hand
 configuration, and idempotent reissue — is proven live; the pre-existing 4.6 actor-reminder-fire path is recorded
 as an environment blocker, not hidden or faked.
 
@@ -2430,4 +2443,3 @@ ASPNETCORE_ENVIRONMENT=Development \
 # Suspend_time_registration_...: SKIP in the WSL2 dapr-init sandbox (actor reminder did not fire); PASS where the Scheduler delivers.
 # Cascade lane (same work.events subscription) independently PASSES, confirming subscription + gateway health.
 ```
-

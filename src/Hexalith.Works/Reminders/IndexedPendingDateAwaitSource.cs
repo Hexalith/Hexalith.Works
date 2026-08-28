@@ -32,23 +32,10 @@ internal sealed class IndexedPendingDateAwaitSource(
     /// <inheritdoc/>
     public async Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
     {
-        PendingDateAwaitTenantRegistry? registry;
-        try
-        {
-            ReadModelEntry<PendingDateAwaitTenantRegistry> entry = await _store
-                .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
-                .ConfigureAwait(false);
-            registry = entry.Value;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception exception)
-        {
-            WorksRecoveryLog.RecoveryStepFailed(_logger, "read-pending-date-await-registry", exception);
-            return [];
-        }
+        ReadModelEntry<PendingDateAwaitTenantRegistry> entry = await _store
+            .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
+            .ConfigureAwait(false);
+        PendingDateAwaitTenantRegistry? registry = entry.Value;
 
         if (registry is null || registry.Tenants.Count == 0)
         {
@@ -58,18 +45,7 @@ internal sealed class IndexedPendingDateAwaitSource(
         var pending = new List<PendingDateAwait>();
         foreach (string tenant in registry.Tenants)
         {
-            try
-            {
-                pending.AddRange(await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false));
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                WorksRecoveryLog.RecoveryStepFailed(_logger, "scan-tenant-date-awaits", exception);
-            }
+            pending.AddRange(await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false));
         }
 
         return pending;
@@ -88,22 +64,12 @@ internal sealed class IndexedPendingDateAwaitSource(
         var pending = new List<PendingDateAwait>();
         foreach (string workItemId in entry.Value.Entries.Keys)
         {
-            try
-            {
-                // The index only tells us which aggregates to inspect; the stream is authoritative. A stale entry
-                // whose stream shows the await cleared re-folds to an empty set and contributes nothing.
-                pending.AddRange(await PendingDateAwaitStreamReader
-                    .RebuildAsync(_gateway, tenant, workItemId, _options.MaxStreamPagesPerTenant, cancellationToken)
-                    .ConfigureAwait(false));
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception exception)
-            {
-                WorksRecoveryLog.RecoveryStepFailed(_logger, "rebuild-pending-date-await", exception);
-            }
+            // The index only tells us which aggregates to inspect; the stream is authoritative. Any failed
+            // candidate makes the scan incomplete and is propagated so startup reconciliation retries the whole,
+            // idempotent pass instead of treating a partial result as success.
+            pending.AddRange(await PendingDateAwaitStreamReader
+                .RebuildAsync(_gateway, tenant, workItemId, _options.MaxStreamPagesPerTenant, cancellationToken)
+                .ConfigureAwait(false));
         }
 
         return pending;

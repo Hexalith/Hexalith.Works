@@ -78,11 +78,13 @@ public class WorksDomainEventProcessorTests
         IEventStoreDomainEventHandler<WorkItemCancelled> cancelledHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
         IEventStoreDomainEventHandler<WorkItemExpired> expiredHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemExpired>>();
         IEventStoreDomainEventHandler<WorkItemCompleted> completedHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCompleted>>();
+        IEventStoreDomainEventHandler<WorkItemSuspended> suspendedHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemSuspended>>();
 
         var registrations = new ServiceCollection();
         registrations.AddScoped(_ => cancelledHandler);
         registrations.AddScoped(_ => expiredHandler);
         registrations.AddScoped(_ => completedHandler);
+        registrations.AddScoped(_ => suspendedHandler);
         using ServiceProvider services = registrations.BuildServiceProvider();
         var markerStore = new InMemoryEventStoreDomainEventMarkerStore();
         var processor = new WorksDomainEventProcessor(
@@ -93,6 +95,7 @@ public class WorksDomainEventProcessorTests
         WorkItemCancelled cancelled = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
         WorkItemExpired expired = WorkItemV1Catalog.All.OfType<WorkItemExpired>().Single();
         WorkItemCompleted completed = WorkItemV1Catalog.All.OfType<WorkItemCompleted>().Single();
+        WorkItemSuspended suspended = WorkItemV1Catalog.All.OfType<WorkItemSuspended>().Single();
 
         (await processor.ProcessAsync(CreateEnvelope(cancelled, "01ARZ3NDEKTSV4RRFFQ69G5FAV"), TestContext.Current.CancellationToken))
             .ShouldBe(EventStoreDomainEventProcessingResult.Processed);
@@ -103,6 +106,8 @@ public class WorksDomainEventProcessorTests
             .ShouldBe(EventStoreDomainEventProcessingResult.Processed);
         (await processor.ProcessAsync(completedEnvelope, TestContext.Current.CancellationToken))
             .ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+        (await processor.ProcessAsync(CreateEnvelope(suspended, "01ARZ3NDEKTSV4RRFFQ69G5FB4"), TestContext.Current.CancellationToken))
+            .ShouldBe(EventStoreDomainEventProcessingResult.Processed);
 
         await cancelledHandler.Received(1).HandleAsync(
             Arg.Is<WorkItemCancelled>(value => value == cancelled),
@@ -114,6 +119,10 @@ public class WorksDomainEventProcessorTests
             Arg.Any<CancellationToken>());
         await completedHandler.Received(1).HandleAsync(
             Arg.Is<WorkItemCompleted>(value => value == completed),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
+        await suspendedHandler.Received(1).HandleAsync(
+            Arg.Is<WorkItemSuspended>(value => value == suspended),
             Arg.Any<EventStoreDomainEventContext>(),
             Arg.Any<CancellationToken>());
     }
@@ -263,6 +272,7 @@ public class WorksDomainEventProcessorTests
             WorkItemCancelled value => (value.AggregateId, value.TenantId.Value, value.Sequence),
             WorkItemExpired value => (value.AggregateId, value.TenantId.Value, value.Sequence),
             WorkItemCompleted value => (value.AggregateId, value.TenantId.Value, value.Sequence),
+            WorkItemSuspended value => (value.AggregateId, value.TenantId.Value, value.Sequence),
             _ => throw new ArgumentOutOfRangeException(nameof(@event)),
         };
 

@@ -34,7 +34,13 @@ public sealed class WorksAppHostTopologyTests
     public async Task AppHostModelExposesTheExactCommandEventTopology()
     {
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], TestContext.Current.CancellationToken)
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                [
+                    "--EnableKeycloak=false",
+                    "--Dapr:PlacementHostAddress=localhost:6050",
+                    "--Dapr:SchedulerHostAddress=localhost:6060",
+                ],
+                TestContext.Current.CancellationToken)
             .ConfigureAwait(true);
 
         ProjectResource eventStore = Project(builder, EventStoreName);
@@ -67,6 +73,8 @@ public sealed class WorksAppHostTopologyTests
         eventStoreOptions.AppId.ShouldBe(EventStoreName);
         eventStoreOptions.DaprHttpPort.ShouldBe(3501);
         eventStoreOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.yaml"));
+        eventStoreOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+        eventStoreOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
         ReferencedComponents(eventStoreSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
         DaprSidecarOptions adminOptions = SidecarOptions(adminSidecar);
@@ -79,6 +87,8 @@ public sealed class WorksAppHostTopologyTests
         worksOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.works.yaml"));
         worksOptions.EnableAppHealthCheck.ShouldBe(true);
         worksOptions.AppHealthCheckPath.ShouldBe("/alive");
+        worksOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+        worksOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
         worksOptions.AppPort.ShouldBeNull();
         ReferencedComponents(worksSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
@@ -87,6 +97,8 @@ public sealed class WorksAppHostTopologyTests
         operationsOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-operations.yaml"));
         operationsOptions.EnableAppHealthCheck.ShouldBe(true);
         operationsOptions.AppHealthCheckPath.ShouldBe("/alive");
+        operationsOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+        operationsOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
         ReferencedComponents(operationsSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
         // Two "Reference" relationships to eventstore, not one: AddEventStoreDomainModule contributes the

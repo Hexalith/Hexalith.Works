@@ -13,11 +13,20 @@ internal static class Story48Streams
 
     /// <summary>A single, non-truncated per-aggregate page carrying the given events in order.</summary>
     public static StreamReadPage Page(string tenant, string aggregateId, params IEventPayload[] events)
+        => PageAt(tenant, aggregateId, 1, isTruncated: false, events);
+
+    /// <summary>A per-aggregate page with explicit sequence and truncation metadata.</summary>
+    public static StreamReadPage PageAt(
+        string tenant,
+        string aggregateId,
+        long firstSequence,
+        bool isTruncated,
+        params IEventPayload[] events)
     {
         StreamReadEvent[] streamEvents =
         [
             .. events.Select((value, index) => new StreamReadEvent(
-                index + 1,
+                firstSequence + index,
                 value.GetType().FullName!,
                 JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), s_web),
                 "json",
@@ -34,6 +43,13 @@ internal static class Story48Streams
             WorkCommandSubmission.WorkDomain,
             aggregateId,
             streamEvents,
-            new StreamReadMetadata(0, null, streamEvents.Length, streamEvents.Length, streamEvents.Length, IsTruncated: false, NextContinuationToken: null));
+            new StreamReadMetadata(
+                firstSequence - 1,
+                null,
+                streamEvents.Length == 0 ? null : firstSequence + streamEvents.Length - 1,
+                streamEvents.Length == 0 ? firstSequence - 1 : firstSequence + streamEvents.Length - 1,
+                streamEvents.Length,
+                IsTruncated: isTruncated,
+                NextContinuationToken: null));
     }
 }
