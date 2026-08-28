@@ -39,6 +39,8 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
     private const string Tenant = "tenant-cascade-recovery";
     private const int InterruptedTargetIntervalMilliseconds = 20_000;
 
+    private static readonly TimeSpan s_probeTimeout = TimeSpan.FromSeconds(2);
+    private static readonly TimeSpan s_deterministicHangGuard = TimeSpan.FromSeconds(10);
     private static readonly string s_runId = Guid.NewGuid().ToString("N")[..12];
     private static readonly string s_parent = $"work-cascade-parent-{s_runId}";
     private static readonly string s_firstChild = $"work-cascade-child-a-{s_runId}";
@@ -138,6 +140,304 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
 
         unavailablePort.ShouldBeNull();
         probedPorts.ShouldBe(ports);
+    }
+
+    /// <summary>The port probe reports a connection that completes before either cancellation source fires.</summary>
+    [Fact]
+    public async Task Port_probe_reports_reachable_when_connection_succeeds()
+    {
+        bool reachable = await IsPortReachableAsync(
+            _ => Task.CompletedTask,
+            CancellationToken.None,
+            CancellationToken.None).ConfigureAwait(true);
+
+        reachable.ShouldBeTrue();
+    }
+
+    /// <summary>The prerequisite gate reports a socket connection failure as the unavailable port.</summary>
+    [Fact]
+    public async Task Port_probe_reports_socket_failure_as_unavailable()
+    {
+        const int port = 6379;
+
+        int? unavailablePort = await FirstUnavailablePrerequisitePortAsync(
+            [port],
+            (_, callerToken) => IsPortReachableAsync(
+                _ => Task.FromException(new SocketException((int)SocketError.ConnectionRefused)),
+                callerToken,
+                CancellationToken.None),
+            CancellationToken.None).ConfigureAwait(true);
+
+        unavailablePort.ShouldBe(port);
+    }
+
+    /// <summary>The prerequisite gate reports a probe-owned timeout as the unavailable port.</summary>
+    [Fact]
+    public async Task Port_probe_reports_probe_timeout_as_unavailable()
+    {
+        const int port = 6379;
+        using var probeTimeoutCts = new CancellationTokenSource();
+        var connectionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [port],
+            (_, callerToken) => IsPortReachableAsync(
+                token =>
+                {
+                    Task pendingConnection = Task.Delay(Timeout.InfiniteTimeSpan, token);
+                    connectionStarted.TrySetResult(true);
+                    return pendingConnection;
+                },
+                callerToken,
+                probeTimeoutCts.Token),
+            CancellationToken.None);
+
+        _ = await connectionStarted.Task.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        probeTimeoutCts.Cancel();
+        int? unavailablePort = await probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        unavailablePort.ShouldBe(port);
+    }
+
+    /// <summary>The prerequisite gate propagates caller-requested cancellation instead of reporting a port.</summary>
+    [Fact]
+    public async Task Port_probe_propagates_caller_cancellation()
+    {
+        using var callerCts = new CancellationTokenSource();
+        var connectionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [6379],
+            (_, callerToken) => IsPortReachableAsync(
+                token =>
+                {
+                    Task pendingConnection = Task.Delay(Timeout.InfiniteTimeSpan, token);
+                    connectionStarted.TrySetResult(true);
+                    return pendingConnection;
+                },
+                callerToken,
+                CancellationToken.None),
+            callerCts.Token);
+
+        _ = await connectionStarted.Task.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        callerCts.Cancel();
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
+    }
+
+    /// <summary>The production port probe rejects pre-requested caller cancellation before it opens a socket.</summary>
+    [Fact]
+    public async Task Port_probe_production_boundary_propagates_pre_cancelled_caller()
+    {
+        using var callerCts = new CancellationTokenSource();
+        callerCts.Cancel();
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => IsPortReachableAsync(PrerequisitePorts()[0], callerCts.Token)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
+    }
+
+    /// <summary>The prerequisite gate gives caller cancellation precedence when both cancellation sources fire.</summary>
+    [Fact]
+    public async Task Port_probe_gives_caller_cancellation_precedence_over_probe_timeout()
+    {
+        using var callerCts = new CancellationTokenSource();
+        using var probeTimeoutCts = new CancellationTokenSource();
+        var connectionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken connectionToken = default;
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [6379],
+            (_, callerToken) => IsPortReachableAsync(
+                token =>
+                {
+                    connectionToken = token;
+                    connectionStarted.TrySetResult(true);
+                    return connectionCompletion.Task;
+                },
+                callerToken,
+                probeTimeoutCts.Token),
+            callerCts.Token);
+
+        _ = await connectionStarted.Task.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        callerCts.Cancel();
+        probeTimeoutCts.Cancel();
+        connectionToken.CanBeCanceled.ShouldBeTrue();
+        connectionCompletion.TrySetCanceled(connectionToken);
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
+    }
+
+    /// <summary>The prerequisite gate propagates caller cancellation when a pending connection later succeeds.</summary>
+    [Fact]
+    public async Task Port_probe_propagates_caller_cancellation_after_connection_completes()
+    {
+        using var callerCts = new CancellationTokenSource();
+        var connectionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [6379],
+            (_, callerToken) => IsPortReachableAsync(
+                _ =>
+                {
+                    connectionStarted.TrySetResult(true);
+                    return connectionCompletion.Task;
+                },
+                callerToken,
+                CancellationToken.None),
+            callerCts.Token);
+
+        _ = await connectionStarted.Task.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        callerCts.Cancel();
+        connectionCompletion.TrySetResult(true);
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
+    }
+
+    /// <summary>The prerequisite gate reports a timeout when a pending connection later succeeds.</summary>
+    [Fact]
+    public async Task Port_probe_reports_probe_timeout_after_connection_completes_as_unavailable()
+    {
+        const int port = 6379;
+        using var probeTimeoutCts = new CancellationTokenSource();
+        var connectionStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [port],
+            (_, callerToken) => IsPortReachableAsync(
+                _ =>
+                {
+                    connectionStarted.TrySetResult(true);
+                    return connectionCompletion.Task;
+                },
+                callerToken,
+                probeTimeoutCts.Token),
+            CancellationToken.None);
+
+        _ = await connectionStarted.Task.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        probeTimeoutCts.Cancel();
+        connectionCompletion.TrySetResult(true);
+        int? unavailablePort = await probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        unavailablePort.ShouldBe(port);
+    }
+
+    /// <summary>The prerequisite gate propagates caller cancellation when the connection reports a socket failure.</summary>
+    [Fact]
+    public async Task Port_probe_propagates_caller_cancellation_from_socket_failure()
+    {
+        using var callerCts = new CancellationTokenSource();
+
+        Task<int?> probeTask = FirstUnavailablePrerequisitePortAsync(
+            [6379],
+            (_, callerToken) => IsPortReachableAsync(
+                _ =>
+                {
+                    callerCts.Cancel();
+                    return Task.FromException(new SocketException((int)SocketError.ConnectionRefused));
+                },
+                callerToken,
+                CancellationToken.None),
+            callerCts.Token);
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => probeTask.WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
+    }
+
+    /// <summary>The port probe rethrows a cancellation attributable to neither the caller nor its own deadline.</summary>
+    [Fact]
+    public async Task Port_probe_rethrows_unattributable_cancellation()
+    {
+        using var foreignCts = new CancellationTokenSource();
+        foreignCts.Cancel();
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => IsPortReachableAsync(
+                _ => Task.FromCanceled(foreignCts.Token),
+                CancellationToken.None,
+                CancellationToken.None)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(foreignCts.Token);
+    }
+
+    /// <summary>The production port probe connects through the real socket path and reports a listening port as reachable.</summary>
+    [Fact]
+    public async Task Port_probe_production_boundary_reports_listening_port_as_reachable()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+        bool reachable = await IsPortReachableAsync(port, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        reachable.ShouldBeTrue();
+    }
+
+    /// <summary>The production port probe reports a closed loopback port as an unavailable prerequisite.</summary>
+    [Fact]
+    public async Task Port_probe_production_boundary_reports_closed_port_as_unreachable()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+
+        bool reachable = await IsPortReachableAsync(port, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        reachable.ShouldBeFalse();
+    }
+
+    /// <summary>The production probe owns a deadline that cancels a connection which never completes.</summary>
+    [Fact]
+    public async Task Port_probe_deadline_reports_a_never_completing_connection_as_unavailable()
+    {
+        bool reachable = await IsPortReachableAsync(
+            token => Task.Delay(Timeout.InfiniteTimeSpan, token),
+            TimeSpan.FromMilliseconds(50),
+            TestContext.Current.CancellationToken)
+            .WaitAsync(s_deterministicHangGuard, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        reachable.ShouldBeFalse();
+    }
+
+    /// <summary>The production probe deadline stays at the documented two-second limit.</summary>
+    [Fact]
+    public void Port_probe_deadline_is_two_seconds()
+    {
+        s_probeTimeout.ShouldBe(TimeSpan.FromSeconds(2));
+    }
+
+    /// <summary>The prerequisite gate composed with the production probe propagates caller cancellation instead of a port.</summary>
+    [Fact]
+    public async Task Prerequisite_gate_propagates_caller_cancellation_through_the_production_probe()
+    {
+        using var callerCts = new CancellationTokenSource();
+        callerCts.Cancel();
+
+        OperationCanceledException cancellation = await Should.ThrowAsync<OperationCanceledException>(
+            () => FirstUnavailablePrerequisitePortAsync(
+                PrerequisitePorts(),
+                IsPortReachableAsync,
+                callerCts.Token)).ConfigureAwait(true);
+
+        cancellation.CancellationToken.ShouldBe(callerCts.Token);
     }
 
     private static async Task ProveChildCompletionResumeAsync(HttpClient client, CancellationToken cancellationToken)
@@ -451,21 +751,55 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var client = new TcpClient();
+        return await IsPortReachableAsync(
+            token => client.ConnectAsync("localhost", port, token).AsTask(),
+            s_probeTimeout,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> IsPortReachableAsync(
+        Func<CancellationToken, Task> connectAsync,
+        TimeSpan probeTimeout,
+        CancellationToken cancellationToken)
+    {
+        using var probeTimeoutCts = new CancellationTokenSource(probeTimeout);
+        return await IsPortReachableAsync(
+            connectAsync,
+            cancellationToken,
+            probeTimeoutCts.Token).ConfigureAwait(false);
+    }
+
+    private static async Task<bool> IsPortReachableAsync(
+        Func<CancellationToken, Task> connectAsync,
+        CancellationToken cancellationToken,
+        CancellationToken probeTimeoutToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(
+            cancellationToken,
+            probeTimeoutToken);
         try
         {
-            using var client = new TcpClient();
-            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            probeCts.CancelAfter(TimeSpan.FromSeconds(2));
-            await client.ConnectAsync("localhost", port, probeCts.Token).ConfigureAwait(false);
-            return true;
+            await connectAsync(probeCts.Token).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return !probeTimeoutToken.IsCancellationRequested;
         }
         catch (SocketException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return false;
         }
         catch (OperationCanceledException)
         {
-            return false;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (probeTimeoutToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            throw;
         }
     }
 }

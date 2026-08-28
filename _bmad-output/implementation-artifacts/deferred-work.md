@@ -308,7 +308,9 @@ location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmok
 source_spec: `spec-recovery-edge-case-test-hardening.md`
 severity: medium
 reason: `IsPortReachableAsync` catches every `OperationCanceledException` and returns false, so cancellation from `TestContext.Current.CancellationToken` is indistinguishable from the helper's two-second probe timeout and may produce a misleading `Assert.Skip`.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-probe-cancellation-propagation
+resolution-undo: a9b2a73b17dc064fa75b9944c43a3245b866510db555c0962a1bd902c3b09e94 2026-08-28 7374617475733a206f70656e
 
 ### DW-34: Rejection payloads are now durable persisted bytes but have no entry in the frozen golden-payload corpus; their shape freeze lives only in an in-test signature table.
 origin: spec-deferred 72838eb68eb0
@@ -510,4 +512,28 @@ status: open
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
 location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:227
 reason: Event processing validates envelope metadata and payload identity but does not reject an envelope whose `Domain` is not `work`. This behavior predates Story 4.8.
+status: open
+
+### DW-58: Sibling smoke-test prerequisite probes still collapse caller-requested cancellation into an unavailable result.
+origin: spec-deferred dc9e48616d2d
+location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:179; tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:387
+source_spec: `spec-probe-cancellation-propagation.md`
+severity: medium
+reason: `WorksCommandPipelineSmokeTests.IsPortReachableAsync` and `WorksReminderRecoveryPipelineSmokeTests.IsPortReachableAsync` catch every `OperationCanceledException` and return `false`. Both implementations pre-date this bundle and are outside DW-33's cited cascade-recovery probe.
+status: open
+
+### DW-59: The deterministic probe cases never run in the repository's habitual deterministic lane, because they live in a class that lane excludes by name.
+origin: spec-deferred 282ced3de175
+location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:145
+source_spec: `spec-probe-cancellation-propagation.md`
+severity: medium
+reason: The routine deterministic command recorded across this repository's specs is `Hexalith.Works.IntegrationTests -class- "*SmokeTests"`, an exclude-by-class filter that drops every case in `WorksCascadeRecoveryPipelineSmokeTests`. Confirmed against the built Release assembly: `-list Tests` reports 15 `Port_probe_*`/`Prerequisite_gate_*` cases with no filter and 0 under `-class- "*SmokeTests"`. They still run in an unfiltered full-assembly run, and the spec's own verification command targets the class directly, so the coverage is not orphaned -- but a probe regression is invisible to the lane that is actually run by habit. Relocating them needs a new test class outside this file, which the intent's Block If fences off.
+status: open
+
+### DW-60: Follow-up review still recommended for dw-probe-cancellation-propagation after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-probe-cancellation-propagation.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260828-191811-dea9; this entry preserves the lingering recommendation for a deliberate later review.
 status: open
