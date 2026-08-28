@@ -1,0 +1,24 @@
+{
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "existingParent": {
+    "tenantId": {
+      "value": "tenant-alpha"
+    },
+    "workItemId": {
+      "value": "parent-001"
+    }
+  },
+  "proposedParent": {
+    "tenantId": {
+      "value": "tenant-alpha"
+    },
+    "workItemId": {
+      "value": "parent-002"
+    }
+  }
+}

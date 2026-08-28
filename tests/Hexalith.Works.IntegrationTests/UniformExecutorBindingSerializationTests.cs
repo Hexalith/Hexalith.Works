@@ -8,11 +8,11 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// AC #1–#3 — the one <see cref="ExecutorBinding"/> shape survives concrete <see cref="JsonSerializerDefaults.Web"/>
-/// serialization (the EventStore-persisted form, no <c>$type</c>) for system-agent, internal-user, and
-/// external-party executors. <c>authorityLevel</c> is the field most at risk of being dropped, so each
-/// representative binding is asserted present in the JSON and equal after round-trip on the three
-/// binding-carrying events and on replayed <see cref="WorkItemState"/>.
+/// AC #1–#3 — the one <see cref="ExecutorBinding"/> shape survives options-free concrete EventPersister-form
+/// serialization (PascalCase, no <c>$type</c>) for system-agent, internal-user, and external-party executors.
+/// <c>AuthorityLevel</c> is the field most at risk of being dropped, so each representative binding is asserted
+/// present in the JSON and equal after round-trip through the case-insensitive reader on the binding-carrying
+/// events and on replayed <see cref="WorkItemState"/>.
 /// </summary>
 public sealed class UniformExecutorBindingSerializationTests
 {
@@ -79,7 +79,7 @@ public sealed class UniformExecutorBindingSerializationTests
         string label, string partyId, Channel channel, AuthorityLevel authorityLevel)
     {
         // SpawnChild/ChildSpawned is the fourth binding-carrying pair; the child binding is nested but its
-        // authorityLevel must survive the same EventStore-persisted form as the create/assign/claim events.
+        // AuthorityLevel must survive the same EventStore-persisted form as the create/assign/claim events.
         _ = label;
         ExecutorBinding binding = Binding(partyId, channel, authorityLevel);
         var spawned = new ChildSpawned("work-001", 3, Tenant, Item, new WorkItemId("child-001"), new Obligation("Break out child work"), ExecutorBinding: binding);
@@ -95,9 +95,9 @@ public sealed class UniformExecutorBindingSerializationTests
     private static T RoundTripWithAuthorityAssertion<T>(T payload, Channel channel, AuthorityLevel authorityLevel)
         where T : class
     {
-        string json = JsonSerializer.Serialize(payload, Options);
-        json.ShouldContain($"\"channel\":\"{channel}\"");
-        json.ShouldContain($"\"authorityLevel\":\"{authorityLevel}\"");
+        string json = JsonSerializer.Serialize(payload);
+        json.ShouldContain($"\"Channel\":\"{channel}\"");
+        json.ShouldContain($"\"AuthorityLevel\":\"{authorityLevel}\"");
 
         T deserialized = JsonSerializer.Deserialize<T>(json, Options).ShouldNotBeNull();
         deserialized.ShouldBe(payload);

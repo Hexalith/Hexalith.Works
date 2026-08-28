@@ -30,9 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Frozen golden-payload corpus (RR-6 / NFR-12): copied verbatim so the schema-evolution tests
-         read the exact checked-in bytes from the test output directory. -->
+    <!-- Frozen Web-reader compatibility corpus (RR-6 / NFR-12): copied verbatim so the
+         schema-evolution tests read the exact checked-in historical bytes from test output. -->
     <None Include="SchemaEvolution\Golden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Exact options-free EventPersister payload bytes, deliberately separate from the Web fixtures. -->
+    <None Include="SchemaEvolution\EventPersisterGolden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

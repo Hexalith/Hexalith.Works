@@ -21,7 +21,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>
 /// Deterministic Tier-1 proof of the Story 4.5 runtime projection + query adapter, with an in-memory
 /// <see cref="IReadModelStore"/> standing in for Dapr (no Docker/Dapr/containers/network). It feeds the
-/// adapter the same concrete (Web-JSON, no <c>$type</c>) event form EventStore persists, and asserts the
+/// adapter the same options-free PascalCase concrete event form EventPersister writes, and asserts the
 /// adapter's persisted end state and query representation: eligible items land in the tenant "what's next"
 /// index, terminal items fall out, locally complete leaf totals remain available, and child-dependent parent
 /// totals are refused because separate aggregate dispatches cannot reconcile them. Missing indexes and
@@ -50,6 +50,27 @@ public sealed class WorkItemProjectionQueryAdapterTests
             .ConfigureAwait(true);
 
         response.ProjectionType.ShouldBe("works-whats-next");
+
+        IReadOnlyList<JsonElement> items = await QueryWhatsNextAsync(store).ConfigureAwait(true);
+        items.Count.ShouldBe(1);
+        items[0].GetProperty("workItemId").GetProperty("value").GetString().ShouldBe(WorkId);
+    }
+
+    [Fact]
+    public async Task CamelCaseWebCompatibilityPayloadIsAcceptedByTheProjectionReader()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                WebDto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                WebDto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         IReadOnlyList<JsonElement> items = await QueryWhatsNextAsync(store).ConfigureAwait(true);
         items.Count.ShouldBe(1);
@@ -435,6 +456,15 @@ public sealed class WorkItemProjectionQueryAdapterTests
     }
 
     private static ProjectionEventDto Dto(IEventPayload evt, long sequence)
+        => new(
+            evt.GetType().Name,
+            JsonSerializer.SerializeToUtf8Bytes(evt, evt.GetType()),
+            "json",
+            sequence,
+            default,
+            "corr-1");
+
+    private static ProjectionEventDto WebDto(IEventPayload evt, long sequence)
         => new(
             evt.GetType().Name,
             JsonSerializer.SerializeToUtf8Bytes(evt, evt.GetType(), Web),

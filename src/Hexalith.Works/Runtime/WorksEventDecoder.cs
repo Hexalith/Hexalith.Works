@@ -6,10 +6,11 @@ using Hexalith.Works.Contracts.Events;
 namespace Hexalith.Works.Runtime;
 
 /// <summary>
-/// Decodes a persisted Works event from its concrete wire form (<see cref="JsonSerializerDefaults.Web"/>, no
-/// polymorphic <c>$type</c> discriminator — the byte-frozen golden-corpus form) keyed by its short type name.
-/// Shared by the recovery runtime so a re-readable stream of <c>work</c> events can be turned back into the
-/// pure <see cref="IEventPayload"/> instances the reminder/cascade projections consume.
+/// Decodes a concrete Works event keyed by its short type name. Its case-insensitive Web reader accepts both
+/// EventPersister's options-free PascalCase bytes and camelCase compatibility inputs; neither form carries a
+/// polymorphic <c>$type</c> discriminator. Shared by the recovery runtime so a re-readable stream of
+/// <c>work</c> events can be turned back into the pure <see cref="IEventPayload"/> instances the
+/// reminder/cascade projections consume.
 /// </summary>
 internal static class WorksEventDecoder
 {

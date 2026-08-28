@@ -1,6 +1,9 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
+using Hexalith.EventStore.Contracts.Events;
+using Hexalith.EventStore.Contracts.Serialization;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
 using Shouldly;
@@ -8,12 +11,11 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests.SchemaEvolution;
 
 /// <summary>
-/// RR-6 / NFR-12 schema-evolution golden-corpus tests (AC #5): the frozen, concrete-type
-/// (<see cref="JsonSerializerDefaults.Web"/>) serialized samples of Works v1 events deserialize from
-/// the checked-in bytes via the production <see cref="System.Text.Json"/> path and round-trip — proving
-/// additive, backward-compatible deserialization with no <c>V2</c> event types. Injecting an unknown
-/// field proves additive tolerance. These freeze the EventStore-persisted form (no <c>$type</c>); the
-/// polymorphic-resolution capability is proven separately in
+/// RR-6 / NFR-12 schema-evolution golden-corpus tests (AC #5): frozen camelCase compatibility samples
+/// for every Works v1 event deserialize through the production case-insensitive Web-reader path and
+/// round-trip. Injecting an unknown field proves additive tolerance. These are reader-compatibility
+/// fixtures, not the options-free PascalCase bytes EventPersister writes; the exact writer corpus lives in
+/// <see cref="EventPersisterGoldenCorpusTests"/>. The polymorphic-resolution capability is proven separately in
 /// <see cref="WorkItemSerializationRegistrationTests"/>. Line endings are normalized before reading.
 /// Pure Tier-1 (reads copied-to-output fixtures only).
 /// </summary>
@@ -23,6 +25,74 @@ public sealed class SchemaEvolutionGoldenCorpusTests
 
     private static readonly string GoldenDirectory =
         Path.Combine(AppContext.BaseDirectory, "SchemaEvolution", "Golden");
+
+    [Fact]
+    public void WebCompatibilityCorpusMatchesEveryFrozenV1EventPayloadBidirectionally()
+    {
+        IEventPayload[] payloads = [.. WorkItemV1Catalog.All.OfType<IEventPayload>()];
+
+        // Assert before ToDictionary: a duplicated catalog sample would otherwise throw an opaque duplicate-key
+        // ArgumentException instead of naming the type that broke one-fixture-per-event-type.
+        payloads
+            .Select(static payload => payload.GetType())
+            .Distinct()
+            .Count()
+            .ShouldBe(
+                payloads.Length,
+                "Each frozen v1 event type must appear exactly once in the catalog: " +
+                string.Join(", ", payloads.Select(static payload => payload.GetType().Name).Order(StringComparer.Ordinal)));
+
+        IReadOnlyDictionary<string, IEventPayload> catalog = payloads.ToDictionary(
+            static payload => $"{payload.GetType().Name}.v1.json",
+            static payload => payload,
+            StringComparer.Ordinal);
+        string[] fixtures = Directory
+            .GetFiles(GoldenDirectory, "*.json", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(GoldenDirectory, path).Replace('\\', '/'))
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+
+        catalog.Count.ShouldBe(23, "The frozen v1 catalog must contain 14 success and 9 rejection event payloads.");
+        fixtures.ShouldBe(
+            catalog.Keys.Order(StringComparer.Ordinal),
+            ignoreOrder: false,
+            customMessage: "Web-corpus filenames must match the frozen v1 event catalog in both directions.");
+
+        foreach ((string fileName, IEventPayload catalogPayload) in catalog)
+        {
+            string frozen = ReadGolden(fileName);
+            frozen.ShouldNotContain("$type", Case.Sensitive);
+            using (JsonDocument document = JsonDocument.Parse(frozen))
+            {
+                AssertCamelCaseProperties(document.RootElement, fileName);
+            }
+
+            Type eventType = catalogPayload.GetType();
+            object deserialized = JsonSerializer
+                .Deserialize(frozen, eventType, EventStorePayloadSerialization.Options)
+                .ShouldNotBeNull();
+            if (catalogPayload is IRejectionEvent)
+            {
+                deserialized.ShouldBe(catalogPayload);
+            }
+
+            byte[] roundTripBytes = JsonSerializer.SerializeToUtf8Bytes(deserialized, eventType, Options);
+            JsonSerializer
+                .Deserialize(roundTripBytes, eventType, EventStorePayloadSerialization.Options)
+                .ShouldBe(deserialized);
+
+            JsonObject withFutureField = JsonNode.Parse(frozen).ShouldNotBeNull().AsObject();
+            InjectFutureField(withFutureField);
+            object withUnknownField = JsonSerializer
+                .Deserialize(withFutureField.ToJsonString(), eventType, EventStorePayloadSerialization.Options)
+                .ShouldNotBeNull();
+            withUnknownField.ShouldBe(deserialized);
+            if (catalogPayload is IRejectionEvent)
+            {
+                withUnknownField.ShouldBe(catalogPayload);
+            }
+        }
+    }
 
     [Fact]
     public void WorkItemCreated_DeserializesFromFrozenBytesAndRoundTrips()
@@ -358,5 +428,61 @@ public sealed class SchemaEvolutionGoldenCorpusTests
 
         // Normalize line endings before any comparison (golden files may be checked in CRLF or LF).
         return File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Adds an unknown field to the payload root AND to every nested object, including objects inside
+    /// arrays. Additive evolution lands on nested value objects (parent, binding, schedule, await
+    /// conditions) at least as often as on the payload root, so root-only injection would leave the
+    /// tolerance claim unproven exactly where the contract records are most likely to grow.
+    /// </summary>
+    private static void InjectFutureField(JsonNode node)
+    {
+        switch (node)
+        {
+            case JsonObject jsonObject:
+                foreach (JsonNode? child in jsonObject.Select(static pair => pair.Value).ToArray())
+                {
+                    if (child is not null)
+                    {
+                        InjectFutureField(child);
+                    }
+                }
+
+                jsonObject["futureField"] = "ignored";
+                break;
+            case JsonArray jsonArray:
+                foreach (JsonNode? item in jsonArray.ToArray())
+                {
+                    if (item is not null)
+                    {
+                        InjectFutureField(item);
+                    }
+                }
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    private static void AssertCamelCaseProperties(JsonElement element, string fileName)
+    {
+        if (element.ValueKind == JsonValueKind.Object)
+        {
+            foreach (JsonProperty property in element.EnumerateObject())
+            {
+                char.IsLower(property.Name[0]).ShouldBeTrue(
+                    $"{fileName} property '{property.Name}' must use the camelCase Web compatibility form.");
+                AssertCamelCaseProperties(property.Value, fileName);
+            }
+        }
+        else if (element.ValueKind == JsonValueKind.Array)
+        {
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                AssertCamelCaseProperties(item, fileName);
+            }
+        }
     }
 }

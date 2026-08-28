@@ -1,0 +1,9 @@
+{
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "reason": "Progress unit must match the established effort unit."
+}

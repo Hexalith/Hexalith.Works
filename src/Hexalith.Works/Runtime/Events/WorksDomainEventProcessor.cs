@@ -9,7 +9,8 @@ using Microsoft.Extensions.Logging;
 namespace Hexalith.Works.Runtime.Events;
 
 /// <summary>
-/// Processes Works domain-event envelopes with the Web JSON contract used by the Works event stream.
+/// Processes Works domain-event envelopes through a case-insensitive JSON reader that accepts both the
+/// options-free PascalCase persisted form and camelCase compatibility inputs.
 /// </summary>
 internal sealed class WorksDomainEventProcessor
 {

@@ -51,9 +51,10 @@ internal static class WorksHost
         builder.Services.AddDaprClient();
         _ = builder.Services.AddEventStoreReadModelStore();
 
-        // EventStore publishes Works events as Web JSON on one shared work.events topic. Register the SDK's
-        // durable Dapr marker store, but route the payload through the Works-local Web JSON processor so
-        // malformed deliveries are terminally acknowledged instead of becoming a poison-message retry loop.
+        // EventStore publishes options-free PascalCase Works payloads on one shared work.events topic; the
+        // case-insensitive reader also accepts camelCase compatibility deliveries. Register the SDK's durable
+        // Dapr marker store, but retain the Works-local processor for strict identity validation and terminal
+        // malformed-delivery handling.
         _ = builder.Services.AddEventStoreDomainEvents(typeof(WorkItemCreated).Assembly, static options =>
         {
             options.TopicName = "work.events";
@@ -101,8 +102,8 @@ internal static class WorksHost
             return Results.Ok(await dispatcher.DispatchAsync(request, cancellationToken).ConfigureAwait(false));
         });
 
-        // The host-owned Web JSON route must be present before SDK activation. Canonical activation observes
-        // it, preserves it, and supplies CloudEvents plus the single Dapr subscription-discovery endpoint.
+        // The host-owned case-insensitive JSON route must be present before SDK activation. Canonical activation
+        // observes it, preserves it, and supplies CloudEvents plus the single Dapr subscription-discovery endpoint.
         _ = app.MapWorksDomainEvents();
         _ = app.UseEventStoreDomainService();
 

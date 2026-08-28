@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace Hexalith.Works.Runtime.Events;
 
 /// <summary>
-/// Maps the Works-local EventStore subscription endpoint that preserves the Works Web JSON wire contract.
+/// Maps the Works-local EventStore subscription endpoint with case-insensitive Works payload binding.
 /// </summary>
 /// <remarks>
 /// Intentionally carries no additional caller authentication, matching the EventStore SDK's own generic

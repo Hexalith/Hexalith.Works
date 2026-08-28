@@ -30,7 +30,7 @@ namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
 /// Proves that EventStore envelope positions, rather than Works payload ordinals, define persisted
-/// ordering when a rejection precedes the first state-changing event.
+/// ordering across rejection-position snapshots, mid-stream rejections, and repeated rejections before create.
 /// </summary>
 public sealed class EnvelopeCanonicalSequencingTests
 {
@@ -42,19 +42,7 @@ public sealed class EnvelopeCanonicalSequencingTests
     private static readonly TenantId Tenant = new("tenant-alpha");
     private static readonly WorkItemId Item = new("work-001");
     private static readonly AggregateIdentity Identity = new(Tenant.Value, Domain, Item.Value);
-    private static readonly IReadOnlyDictionary<Type, string> RejectionShapeSignatures =
-        new Dictionary<Type, string>
-        {
-            [typeof(WorkItemTransitionRejected)] = "{TenantId:{Value:String},WorkItemId:{Value:String},FromStatus:String,AttemptedAct:String}",
-            [typeof(WorkItemProgressRejected)] = "{TenantId:{Value:String},WorkItemId:{Value:String},Reason:String}",
-            [typeof(WorkItemReEstimateRejected)] = "{TenantId:{Value:String},WorkItemId:{Value:String},Reason:String}",
-            [typeof(WorkItemInitialEffortRejected)] = "{TenantId:{Value:String},WorkItemId:{Value:String},Done:Number}",
-            [typeof(WorkItemCannotBeCreatedWithoutObligation)] = "{TenantId:{Value:String},WorkItemId:{Value:String}}",
-            [typeof(WorkItemCannotReferenceParentFromAnotherTenant)] = "{TenantId:{Value:String},WorkItemId:{Value:String},Parent:{TenantId:{Value:String},WorkItemId:{Value:String}}}",
-            [typeof(WorkItemCannotReferenceSecondParent)] = "{TenantId:{Value:String},WorkItemId:{Value:String},ExistingParent:{TenantId:{Value:String},WorkItemId:{Value:String}},ProposedParent:{TenantId:{Value:String},WorkItemId:{Value:String}}}",
-            [typeof(WorkItemTreeCycleRejected)] = "{TenantId:{Value:String},WorkItemId:{Value:String},ProposedParent:{TenantId:{Value:String},WorkItemId:{Value:String}},CycleWorkItemId:{Value:String}}",
-            [typeof(WorkItemTreeDepthExceeded)] = "{TenantId:{Value:String},WorkItemId:{Value:String},ProposedParent:{TenantId:{Value:String},WorkItemId:{Value:String}},MaxDepth:Number,ResultingDepth:Number}",
-        };
+    private static readonly DateTimeOffset SnapshotCreatedAt = new(2026, 8, 28, 0, 0, 0, TimeSpan.Zero);
 
     [Theory]
     [InlineData("missing-obligation")]
@@ -131,12 +119,6 @@ public sealed class EnvelopeCanonicalSequencingTests
             .ShouldBeAssignableTo<IRejectionEvent>();
         persistedRejectionPayload.ShouldBe(rejection);
         AssertLedgerEvidence(rejectionLedgerName, persistedRejectionPayload);
-        using (JsonDocument persistedRejectionDocument = JsonDocument.Parse(persistedRejection.Payload))
-        {
-            RejectionShapeSignatures.ShouldContainKey(rejection.GetType());
-            ShapeOf(persistedRejectionDocument.RootElement)
-                .ShouldBe(RejectionShapeSignatures[rejection.GetType()]);
-        }
         JsonSerializer.Deserialize<WorkItemCreated>(persistedCreate.Payload, JsonOptions)
             .ShouldNotBeNull()
             .Sequence
@@ -153,27 +135,215 @@ public sealed class EnvelopeCanonicalSequencingTests
     }
 
     [Fact]
-    public void FrozenV1RejectionPayloadsRetainTheirExactSerializedShapes()
+    public async Task SnapshotAfterRejectionRehydratesAtCurrentSequenceWithoutTail()
     {
-        IRejectionEvent[] rejections = WorkItemV1Catalog.All.OfType<IRejectionEvent>().ToArray();
-        rejections.Length.ShouldBe(9, "The frozen v1 catalog must still hold exactly 9 rejection payloads.");
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        var stateManager = new InMemoryStateManager();
+        var persister = new EventPersister(
+            stateManager,
+            Substitute.For<ILogger<EventPersister>>(),
+            new NoOpEventPayloadProtectionService());
+        var reader = new EventStreamReader(stateManager, Substitute.For<ILogger<EventStreamReader>>());
 
-        // Freeze the table in both directions: every catalog rejection has a signature (below) AND no
-        // signature outlives the type it froze, so a retired or renamed rejection cannot leave dead cover.
-        RejectionShapeSignatures.Keys.ShouldBe(
-            rejections.Select(static rejection => rejection.GetType()),
-            ignoreOrder: true,
-            customMessage: "The recorded rejection shape signatures must match the frozen v1 rejection catalog exactly.");
+        var rejectedCommand = new CreateWorkItem(Tenant, Item, Obligation: null);
+        DomainResult rejectionResult = await ProcessAsync(
+            rejectedCommand,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB0",
+            currentStream: null);
+        rejectionResult.IsRejection.ShouldBeTrue();
+        await CommitAsync(
+            stateManager,
+            persister,
+            rejectedCommand,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB0",
+            rejectionResult,
+            cancellationToken);
 
-        foreach (IRejectionEvent rejection in rejections)
-        {
-            byte[] payload = JsonSerializer.SerializeToUtf8Bytes(rejection, rejection.GetType());
-            using JsonDocument document = JsonDocument.Parse(payload);
-            RejectionShapeSignatures.ShouldContainKey(
-                rejection.GetType(),
-                $"Frozen v1 rejection '{rejection.GetType().Name}' has no recorded serialized shape signature.");
-            ShapeOf(document.RootElement).ShouldBe(RejectionShapeSignatures[rejection.GetType()]);
-        }
+        RehydrationResult rejectionStream = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        AggregateReconstructionResult rejectionReplay = Replay(rejectionStream, includeTimeline: true);
+        AssertUnknownStateIsUnchanged(rejectionReplay.StateJson);
+
+        var snapshotState = new WorkItemState();
+        ApplyByConvention(snapshotState, rejectionResult.Events.Single().ShouldBeAssignableTo<IRejectionEvent>());
+        SerializeState(snapshotState).ShouldBe(rejectionReplay.StateJson);
+        var rejectionPositionSnapshot = new SnapshotRecord(
+            SequenceNumber: 1,
+            State: snapshotState,
+            CreatedAt: SnapshotCreatedAt,
+            Domain: Domain,
+            AggregateId: Item.Value,
+            TenantId: Tenant.Value);
+
+        RehydrationResult snapshotBacked = (await reader.RehydrateAsync(Identity, rejectionPositionSnapshot)).ShouldNotBeNull();
+        snapshotBacked.Events.ShouldBeEmpty();
+        snapshotBacked.LastSnapshotSequence.ShouldBe(1);
+        snapshotBacked.CurrentSequence.ShouldBe(1);
+        snapshotBacked.SnapshotState.ShouldBeSameAs(snapshotState);
+
+        var acceptedCommand = new CreateWorkItem(Tenant, Item, "Create through a rejection-position snapshot");
+        DomainResult createResult = await ProcessAsync(
+            acceptedCommand,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB1",
+            snapshotBacked);
+        createResult.Events.Single().ShouldBeOfType<WorkItemCreated>().Sequence.ShouldBe(1);
+        await CommitAsync(
+            stateManager,
+            persister,
+            acceptedCommand,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB1",
+            createResult,
+            cancellationToken);
+
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L]);
+        AggregateReconstructionResult completedReplay = Replay(committed, includeTimeline: true);
+        AssertState(completedReplay.StateJson, WorkItemStatus.Created, expectedPayloadOrdinal: 1);
+
+        // Everything above is also satisfied by a rehydration that DROPS the snapshot: the
+        // rejection-position snapshot state is byte-identical to a default WorkItemState, and the
+        // pinned rehydrator maps a missing snapshot with no tail to a null state, from which the
+        // aggregate reads the same Unknown status and the same next ordinal 1. One more command is
+        // therefore driven through a snapshot carrying ESTABLISHED state, where dropping the snapshot
+        // flips the outcome from rejection to success.
+        var createPositionSnapshot = new SnapshotRecord(
+            SequenceNumber: 2,
+            State: PopulatedState(),
+            CreatedAt: SnapshotCreatedAt,
+            Domain: Domain,
+            AggregateId: Item.Value,
+            TenantId: Tenant.Value);
+
+        RehydrationResult establishedSnapshot =
+            (await reader.RehydrateAsync(Identity, createPositionSnapshot)).ShouldNotBeNull();
+        establishedSnapshot.Events.ShouldBeEmpty();
+        establishedSnapshot.LastSnapshotSequence.ShouldBe(2);
+        establishedSnapshot.CurrentSequence.ShouldBe(2);
+
+        DomainResult duplicateCreate = await ProcessAsync(
+            new CreateWorkItem(Tenant, Item, "Duplicate create through an established-state snapshot"),
+            "01ARZ3NDEKTSV4RRFFQ69G5FB8",
+            establishedSnapshot);
+        duplicateCreate.IsRejection.ShouldBeTrue(
+            "A create handled through a Created-state snapshot must reject; accepting it would mean the "
+            + "snapshot state never reached the aggregate and the snapshot-backed path proves nothing.");
+        duplicateCreate.Events
+            .Single()
+            .ShouldBeOfType<WorkItemTransitionRejected>()
+            .FromStatus.ShouldBe(WorkItemStatus.Created);
+    }
+
+    [Fact]
+    public async Task MidStreamRejectionAdvancesEnvelopeButNotPayloadOrdinal()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        var stateManager = new InMemoryStateManager();
+        var persister = new EventPersister(
+            stateManager,
+            Substitute.For<ILogger<EventPersister>>(),
+            new NoOpEventPayloadProtectionService());
+        var reader = new EventStreamReader(stateManager, Substitute.For<ILogger<EventStreamReader>>());
+
+        var create = new CreateWorkItem(Tenant, Item, "Create before a rejected transition");
+        DomainResult createResult = await ProcessAsync(create, "01ARZ3NDEKTSV4RRFFQ69G5FB2", currentStream: null);
+        await CommitAsync(stateManager, persister, create, "01ARZ3NDEKTSV4RRFFQ69G5FB2", createResult, cancellationToken);
+
+        RehydrationResult afterCreate = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        var illegalComplete = new CompleteWorkItem(Tenant, Item);
+        DomainResult rejectionResult = await ProcessAsync(illegalComplete, "01ARZ3NDEKTSV4RRFFQ69G5FB3", afterCreate);
+        rejectionResult.IsRejection.ShouldBeTrue();
+        WorkItemTransitionRejected expectedRejection = rejectionResult.Events.Single()
+            .ShouldBeOfType<WorkItemTransitionRejected>();
+        await CommitAsync(
+            stateManager,
+            persister,
+            illegalComplete,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB3",
+            rejectionResult,
+            cancellationToken);
+
+        RehydrationResult afterRejection = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        var assign = new AssignWorkItem(Tenant, Item, WorkItemV1Catalog.Binding);
+        DomainResult assignResult = await ProcessAsync(assign, "01ARZ3NDEKTSV4RRFFQ69G5FB4", afterRejection);
+        assignResult.Events.Single().ShouldBeOfType<WorkItemAssigned>().Sequence.ShouldBe(2);
+        await CommitAsync(stateManager, persister, assign, "01ARZ3NDEKTSV4RRFFQ69G5FB4", assignResult, cancellationToken);
+
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L, 3L]);
+        JsonSerializer.Deserialize<WorkItemCreated>(committed.Events[0].Payload, JsonOptions)
+            .ShouldNotBeNull().Sequence.ShouldBe(1);
+        committed.Events[1].EventTypeName.ShouldContain(nameof(WorkItemTransitionRejected));
+        WorkItemTransitionRejected persistedRejection = JsonSerializer
+            .Deserialize<WorkItemTransitionRejected>(committed.Events[1].Payload, JsonOptions)
+            .ShouldNotBeNull();
+        persistedRejection.ShouldBe(expectedRejection);
+        persistedRejection.FromStatus.ShouldBe(expectedRejection.FromStatus);
+        persistedRejection.AttemptedAct.ShouldBe(expectedRejection.AttemptedAct);
+        JsonSerializer.Deserialize<WorkItemAssigned>(committed.Events[2].Payload, JsonOptions)
+            .ShouldNotBeNull().Sequence.ShouldBe(2);
+
+        AggregateReconstructionResult replay = Replay(committed, includeTimeline: true);
+        IReadOnlyList<AggregateReconstructionTimelineEntry> timeline = replay.Timeline.ShouldNotBeNull();
+        timeline.Select(static entry => entry.SequenceNumber).ShouldBe([1L, 2L, 3L]);
+        AssertState(timeline[0].StateJson, WorkItemStatus.Created, expectedPayloadOrdinal: 1);
+        AssertState(timeline[1].StateJson, WorkItemStatus.Created, expectedPayloadOrdinal: 1);
+        AssertState(timeline[2].StateJson, WorkItemStatus.Assigned, expectedPayloadOrdinal: 2);
+    }
+
+    [Fact]
+    public async Task RepeatedPreCreateRejectionsPreserveIndependentEvidenceBeforeCreate()
+    {
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        var stateManager = new InMemoryStateManager();
+        var persister = new EventPersister(
+            stateManager,
+            Substitute.For<ILogger<EventPersister>>(),
+            new NoOpEventPayloadProtectionService());
+        var reader = new EventStreamReader(stateManager, Substitute.For<ILogger<EventStreamReader>>());
+
+        CreateWorkItem missingObligation = RejectedCreate("missing-obligation");
+        DomainResult firstRejection = await ProcessAsync(missingObligation, "01ARZ3NDEKTSV4RRFFQ69G5FB5", currentStream: null);
+        await CommitAsync(
+            stateManager,
+            persister,
+            missingObligation,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB5",
+            firstRejection,
+            cancellationToken);
+
+        RehydrationResult afterFirst = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        CreateWorkItem crossTenantParent = RejectedCreate("cross-tenant-parent");
+        DomainResult secondRejection = await ProcessAsync(crossTenantParent, "01ARZ3NDEKTSV4RRFFQ69G5FB6", afterFirst);
+        await CommitAsync(
+            stateManager,
+            persister,
+            crossTenantParent,
+            "01ARZ3NDEKTSV4RRFFQ69G5FB6",
+            secondRejection,
+            cancellationToken);
+
+        RehydrationResult afterSecond = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        var create = new CreateWorkItem(Tenant, Item, "Create after two persisted rejections");
+        DomainResult createResult = await ProcessAsync(create, "01ARZ3NDEKTSV4RRFFQ69G5FB7", afterSecond);
+        createResult.Events.Single().ShouldBeOfType<WorkItemCreated>().Sequence.ShouldBe(1);
+        await CommitAsync(stateManager, persister, create, "01ARZ3NDEKTSV4RRFFQ69G5FB7", createResult, cancellationToken);
+
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L, 3L]);
+        WorkItemCannotBeCreatedWithoutObligation persistedFirst = JsonSerializer
+            .Deserialize<WorkItemCannotBeCreatedWithoutObligation>(committed.Events[0].Payload, JsonOptions)
+            .ShouldNotBeNull();
+        persistedFirst.ShouldBe(firstRejection.Events.Single());
+        WorkItemCannotReferenceParentFromAnotherTenant persistedSecond = JsonSerializer
+            .Deserialize<WorkItemCannotReferenceParentFromAnotherTenant>(committed.Events[1].Payload, JsonOptions)
+            .ShouldNotBeNull();
+        persistedSecond.ShouldBe(secondRejection.Events.Single());
+        persistedSecond.Parent.ShouldBe(new ParentWorkItemReference(new TenantId("tenant-beta"), new WorkItemId("parent-001")));
+
+        AggregateReconstructionResult replay = Replay(committed, includeTimeline: true);
+        IReadOnlyList<AggregateReconstructionTimelineEntry> timeline = replay.Timeline.ShouldNotBeNull();
+        AssertState(timeline[0].StateJson, WorkItemStatus.Unknown, expectedPayloadOrdinal: 0);
+        AssertState(timeline[1].StateJson, WorkItemStatus.Unknown, expectedPayloadOrdinal: 0);
+        AssertState(timeline[2].StateJson, WorkItemStatus.Created, expectedPayloadOrdinal: 1);
     }
 
     [Fact]
@@ -240,18 +410,54 @@ public sealed class EnvelopeCanonicalSequencingTests
         }
     }
 
-    private static CommandEnvelope CommandFor(CreateWorkItem command, string messageId)
-        => new(
+    private static CommandEnvelope CommandFor(object command, string messageId)
+    {
+        // Every Works command carries TenantId/WorkItemId but they share no common interface, so the
+        // envelope identity is read off the command by name rather than pinned to the fixture constants:
+        // a command aimed at another tenant or work item must not be silently re-addressed to this
+        // aggregate by the harness that is supposed to prove addressing.
+        PropertyInfo tenantProperty = command.GetType()
+            .GetProperty(nameof(CreateWorkItem.TenantId))
+            .ShouldNotBeNull();
+        PropertyInfo workItemProperty = command.GetType()
+            .GetProperty(nameof(CreateWorkItem.WorkItemId))
+            .ShouldNotBeNull();
+
+        return new(
             MessageId: messageId,
-            TenantId: command.TenantId.Value,
+            TenantId: tenantProperty.GetValue(command).ShouldBeOfType<TenantId>().Value,
             Domain: Domain,
-            AggregateId: command.WorkItemId.Value,
-            CommandType: typeof(CreateWorkItem).FullName!,
+            AggregateId: workItemProperty.GetValue(command).ShouldBeOfType<WorkItemId>().Value,
+            CommandType: command.GetType().FullName!,
             Payload: JsonSerializer.SerializeToUtf8Bytes(command, command.GetType()),
             CorrelationId: messageId,
             CausationId: null,
             UserId: "test-user",
             Extensions: null);
+    }
+
+    private static Task<DomainResult> ProcessAsync(object command, string messageId, RehydrationResult? currentStream)
+        => new WorkItemEventStoreAggregate().ProcessAsync(
+            CommandFor(command, messageId),
+            currentStream is null ? null : ToDomainServiceCurrentState(currentStream));
+
+    private static async Task CommitAsync(
+        InMemoryStateManager stateManager,
+        EventPersister persister,
+        object command,
+        string messageId,
+        DomainResult result,
+        CancellationToken cancellationToken)
+    {
+        _ = await persister.PersistEventsAsync(
+            Identity,
+            AggregateType,
+            CommandFor(command, messageId),
+            result,
+            DomainServiceVersion,
+            cancellationToken).ConfigureAwait(false);
+        await stateManager.SaveStateAsync(cancellationToken).ConfigureAwait(false);
+    }
 
     private static AggregateReconstructionResult Replay(RehydrationResult stream, bool includeTimeline)
         => AggregateReplayer.Replay<WorkItemState>(new AggregateReconstructionRequest(
@@ -367,18 +573,4 @@ public sealed class EnvelopeCanonicalSequencingTests
         document.RootElement.GetProperty("sequence").GetInt64().ShouldBe(expectedPayloadOrdinal);
     }
 
-    private static string ShapeOf(JsonElement element)
-    {
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            return $"{{{string.Join(',', element.EnumerateObject().Select(property => $"{property.Name}:{ShapeOf(property.Value)}"))}}}";
-        }
-
-        if (element.ValueKind == JsonValueKind.Array)
-        {
-            return $"[{string.Join(',', element.EnumerateArray().Select(ShapeOf))}]";
-        }
-
-        return element.ValueKind.ToString();
-    }
 }

@@ -1,0 +1,1 @@
+{"AggregateId":"work-001","Sequence":5,"TenantId":{"Value":"tenant-alpha"},"WorkItemId":{"Value":"work-001"},"AwaitConditions":[{"Kind":"ChildCompleted","CorrelationKey":"child-001","ChildWorkItemId":{"Value":"child-001"}}]}

@@ -24,9 +24,10 @@ namespace Hexalith.Works.Projections;
 /// pure projections stay free of <c>IReadModelStore</c>, Dapr, and logging.
 /// </summary>
 /// <remarks>
-/// <para>Events are decoded from their persisted concrete form (<see cref="JsonSerializerDefaults.Web"/>, no
-/// polymorphic <c>$type</c> discriminator — the byte-frozen golden-corpus form) keyed by
-/// <see cref="ProjectionEventDto.EventTypeName"/>, mirroring the EventStore Counter/Tenants projection handlers.</para>
+/// <para>Events are decoded by locally constructed Web-compatible options keyed by
+/// <see cref="ProjectionEventDto.EventTypeName"/>. The case-insensitive reader accepts both EventPersister's
+/// options-free PascalCase bytes and historical camelCase Web fixtures; neither concrete form carries a
+/// polymorphic <c>$type</c> discriminator.</para>
 /// <para>Reconciliation limitation (documented in <c>docs/eventstore-api-surface-constraints.md</c>): the
 /// EventStore <c>/project</c> contract delivers one aggregate's event stream per call, so the cross-aggregate
 /// "rolled remaining" contribution from sibling/child work items cannot be reconciled within a single dispatch.
@@ -39,7 +40,7 @@ public sealed class WorkItemProjectionDispatcher
 {
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
-    // The persisted Works event catalog keyed by simple type name. Built once from the Contracts assembly so a
+    // The readable Works event catalog keyed by simple type name. Built once from the Contracts assembly so a
     // ProjectionEventDto's EventTypeName (short or fully qualified) maps to the concrete event type for decoding.
     private static readonly IReadOnlyDictionary<string, Type> s_eventTypesByName = typeof(WorkItemCreated).Assembly
         .GetTypes()

@@ -12,12 +12,13 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>
 /// AC #1/#2/#3 regression guard: registering the catalog with
 /// <see cref="Hexalith.PolymorphicSerializations"/> must be purely <em>additive</em>. EventStore
-/// persists/replays the <em>concrete</em> CLR type with plain <see cref="System.Text.Json"/> (keyed by
-/// <see cref="Type.FullName"/>); because the generated <see cref="Polymorphic"/> base is an empty
-/// <c>[DataContract] record</c>, deriving from it must add nothing to concrete-type serialization. These
-/// tests prove the persisted shape is unchanged: no <c>$type</c> discriminator and no EventStore envelope
-/// fields leak into the concrete form, and a concrete event still round-trips and replays. If any of
-/// these fail, the additivity assumption is wrong (STOP and escalate — see the story Critical Decision).
+/// persists event <em>concrete</em> CLR types with options-free <see cref="System.Text.Json"/> (keyed by
+/// <see cref="Type.FullName"/>), while Works command builders use the same case-preserving concrete writer.
+/// Because the generated <see cref="Polymorphic"/> base is an empty <c>[DataContract] record</c>, deriving from
+/// it must add nothing to either concrete shape. These tests prove no <c>$type</c> discriminator or EventStore
+/// envelope field leaks into the concrete form, and a persisted event still round-trips through the shared
+/// case-insensitive reader and replays. If any of these fail, the additivity assumption is wrong (STOP and
+/// escalate — see the story Critical Decision).
 /// </summary>
 public sealed class WorkItemRawActAdditivityTests
 {
@@ -35,9 +36,9 @@ public sealed class WorkItemRawActAdditivityTests
 
         foreach (Polymorphic payload in WorkItemV1Catalog.All)
         {
-            // Mirror EventStore's persist call: serialize the CONCRETE runtime type (payload.GetType()),
-            // not the Polymorphic base. The empty base contributes no members and no discriminator.
-            string concreteJson = JsonSerializer.Serialize(payload, payload.GetType(), JsonOptions);
+            // Serialize the CONCRETE runtime type (payload.GetType()), not the Polymorphic base. This mirrors
+            // EventPersister for events and the Works options-free command builders for commands.
+            string concreteJson = JsonSerializer.Serialize(payload, payload.GetType());
 
             concreteJson.ShouldNotContain(
                 PolymorphicHelper.Discriminator,
@@ -53,7 +54,7 @@ public sealed class WorkItemRawActAdditivityTests
 
         foreach (Polymorphic payload in WorkItemV1Catalog.All)
         {
-            string concreteJson = JsonSerializer.Serialize(payload, payload.GetType(), JsonOptions);
+            string concreteJson = JsonSerializer.Serialize(payload, payload.GetType());
 
             // Assert top-level PROPERTY absence rather than substring containment: an envelope field
             // would be a top-level sibling of the payload, and a substring test would false-positive on
@@ -63,7 +64,7 @@ public sealed class WorkItemRawActAdditivityTests
 
             foreach (string envelopeField in WorkItemV1Catalog.EnvelopeFields)
             {
-                root.TryGetProperty(envelopeField, out _)
+                root.EnumerateObject().Any(property => string.Equals(property.Name, envelopeField, StringComparison.OrdinalIgnoreCase))
                     .ShouldBeFalse($"{payload.GetType().Name} must return payload only; EventStore owns envelope metadata ({envelopeField}).");
             }
         }
@@ -79,8 +80,8 @@ public sealed class WorkItemRawActAdditivityTests
             new WorkItemId("work-001"),
             new Obligation("Prepare the first tenant-scoped work item"));
 
-        // Concrete-type write → replay loop (EventStore transport), unaffected by the Polymorphic base.
-        string json = JsonSerializer.Serialize(created, created.GetType(), JsonOptions);
+        // Options-free concrete write → case-insensitive reader → replay, unaffected by the Polymorphic base.
+        string json = JsonSerializer.Serialize(created, created.GetType());
         json.ShouldNotContain(PolymorphicHelper.Discriminator, Case.Sensitive);
 
         WorkItemCreated roundTripped = JsonSerializer.Deserialize<WorkItemCreated>(json, JsonOptions).ShouldNotBeNull();

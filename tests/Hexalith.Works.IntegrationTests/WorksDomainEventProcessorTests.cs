@@ -14,7 +14,7 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Characterizes the EventStore subscription payload boundary and the Works-local Web JSON decoder.
+/// Characterizes the EventStore subscription payload boundary and the Works-local case-insensitive JSON decoder.
 /// </summary>
 public class WorksDomainEventProcessorTests
 {
@@ -34,10 +34,10 @@ public class WorksDomainEventProcessorTests
     }
 
     /// <summary>
-    /// Proves the checked-out generic SDK processor binds the camel-case Works wire payload.
+    /// Proves the checked-out generic SDK processor accepts a camelCase Web compatibility payload.
     /// </summary>
     [Fact]
-    public async Task Generic_sdk_processor_binds_real_web_json_works_payload()
+    public async Task GenericSdkProcessorBindsCamelCaseWebCompatibilityPayload()
     {
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
         IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
@@ -61,7 +61,7 @@ public class WorksDomainEventProcessorTests
             NullLogger<EventStoreDomainEventProcessor>.Instance);
 
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
-            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FAV"),
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FAV", webCompatibility: true),
             TestContext.Current.CancellationToken);
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
@@ -70,10 +70,45 @@ public class WorksDomainEventProcessorTests
     }
 
     /// <summary>
-    /// Proves each event consumed by Story 4.7 binds from its real Web JSON catalog form and reaches its handler.
+    /// Proves the Works-local processor accepts a camelCase Web compatibility payload and dispatches it once.
     /// </summary>
     [Fact]
-    public async Task Works_processor_dispatches_every_consumed_web_json_event_once()
+    public async Task WorksProcessorBindsCamelCaseWebCompatibilityPayloadOnce()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        WorkItemCancelled? decoded = null;
+        handler
+            .When(value => value.HandleAsync(
+                Arg.Any<WorkItemCancelled>(),
+                Arg.Any<EventStoreDomainEventContext>(),
+                Arg.Any<CancellationToken>()))
+            .Do(call => decoded = call.ArgAt<WorkItemCancelled>(0));
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB8", webCompatibility: true),
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        decoded.ShouldBe(@event);
+        await handler.Received(1).HandleAsync(
+            Arg.Is<WorkItemCancelled>(value => value == @event),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// Proves each consumed event binds from the options-free EventPersister form and reaches its handler.
+    /// </summary>
+    [Fact]
+    public async Task WorksProcessorDispatchesEveryConsumedPersistedEventOnce()
     {
         IEventStoreDomainEventHandler<WorkItemCancelled> cancelledHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
         IEventStoreDomainEventHandler<WorkItemExpired> expiredHandler = Substitute.For<IEventStoreDomainEventHandler<WorkItemExpired>>();
@@ -265,7 +300,10 @@ public class WorksDomainEventProcessorTests
         result.ShouldBe(EventStoreDomainEventProcessingResult.SkippedNoHandlers);
     }
 
-    private static EventStoreDomainEventEnvelope CreateEnvelope(IEventPayload @event, string messageId)
+    private static EventStoreDomainEventEnvelope CreateEnvelope(
+        IEventPayload @event,
+        string messageId,
+        bool webCompatibility = false)
     {
         (string aggregateId, string tenantId, long sequence) = @event switch
         {
@@ -285,7 +323,9 @@ public class WorksDomainEventProcessorTests
             new DateTimeOffset(2026, 7, 22, 8, 0, 0, TimeSpan.Zero),
             $"story-4-7-{sequence}",
             "json",
-            JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), s_web))
+            webCompatibility
+                ? JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), s_web)
+                : JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType()))
         {
             Domain = "work",
         };

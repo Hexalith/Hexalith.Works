@@ -20,7 +20,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>
 /// Deterministic Tier-1 proof of the <c>get-work-item</c> query adapter with an in-memory
 /// <see cref="IReadModelStore"/> standing in for Dapr (no Docker/Dapr/containers/network). It feeds the projection
-/// dispatcher the same concrete (Web-JSON, no <c>$type</c>) event form EventStore persists, then queries the
+/// dispatcher the same options-free PascalCase concrete event form EventPersister writes, then queries the
 /// handler and asserts: an existing work item resolves with its planned effort (estimated/done/remaining/unit) for
 /// planned-vs-actual consumers, an unknown id fails closed to a not-found view, and the read is tenant-scoped.
 /// </summary>
@@ -102,7 +102,7 @@ public sealed class GetWorkItemQueryHandlerTests
     private static ProjectionEventDto Dto(IEventPayload evt, long sequence)
         => new(
             evt.GetType().Name,
-            JsonSerializer.SerializeToUtf8Bytes(evt, evt.GetType(), Web),
+            JsonSerializer.SerializeToUtf8Bytes(evt, evt.GetType()),
             "json",
             sequence,
             default,

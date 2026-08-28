@@ -174,11 +174,15 @@ ownership model. None of them is implemented or wired in v1.
   `DateReminderRecoveryRuntimeTests`.
 - **Story 4.7 (live reactor consumption and durable cascade discovery).** Works uses the EventStore SDK's
   subscription registration, handler contracts, and durable Dapr marker store, but maps an equivalent host-local
-  endpoint instead of the SDK's generic processor. The checked-out generic processor uses default JSON options;
-  real camel-case Works Web JSON silently binds to a zero-valued record and can be acknowledged as processed.
-  The local processor reuses `WorksEventDecoder`, verifies envelope/payload tenant and aggregate identity, and
-  preserves the SDK result contract: terminal skips are acknowledged, handler failures remain retryable, and a
-  completed marker makes redelivery a duplicate. EventStore receives
+  endpoint instead of the SDK's generic processor. Both processors use case-insensitive Web reader options that
+  bind options-free PascalCase persisted bytes and camelCase compatibility inputs. That holds at the current
+  EventStore pin `c61739206fd89619b7d29dfb0812225a234066bb` and equally at the earlier
+  `b43e963403efa848eda9621b5e3e7e446c7faa2d`, whose processor and aggregate sources are byte-identical: the
+  withdrawn zero-valued-binding characterization was wrong at both pins, not a behaviour the bump changed. The
+  local processor remains for
+  stricter envelope/payload tenant and aggregate identity checks and explicit terminal malformed/unhandled
+  delivery behavior; terminal skips are acknowledged, handler failures remain retryable, and a completed marker
+  makes redelivery a duplicate. EventStore receives
   `EventStore__Publisher__TopicOverrides__work=work.events`, so every tenant's Works event reaches the one
   programmatic `pubsub` subscription without introducing a second component. The `WorkItemCompleted` handler
   re-reads the completed child's aggregate stream to find its same-tenant `WorkItemCreated.Parent`, then replays
@@ -187,19 +191,21 @@ ownership model. None of them is implemented or wired in v1.
   `Handle` remain the acceptance and idempotency boundary. Internal recovery reads and commands route through
   the Works Dapr sidecar (`DAPR_HTTP_ENDPOINT` + EventStore service invocation), and EventStore explicitly
   allow-lists the `works` caller. This preserves the supported Dapr-internal authentication boundary instead of
-  bypassing authorization with direct host calls. Recovery command payloads retain CLR property casing because
-  the pinned EventStore aggregate adapter deserializes command payloads with default, case-sensitive JSON
-  options; camel-case Web JSON would otherwise silently bind zero-valued tenant and work-item identities.
+  bypassing authorization with direct host calls. Recovery command payloads retain CLR property casing, while
+  the aggregate adapter's shared case-insensitive reader also accepts camelCase compatibility input.
 
-  **This casing fix is not new to Story 4.7's own command paths** — `CascadeCommands.BuildSubmission` (new this
+  **The command-payload casing change is not new to Story 4.7's own command paths** — `CascadeCommands.BuildSubmission` (new this
   story) and `DateResume.BuildSubmission` (Story 4.6, unchanged signature, only its serialization options
-  changed here) both switched from `JsonSerializerDefaults.Web` to default/case-sensitive serialization. Because
+  changed here) both switched from `JsonSerializerDefaults.Web` to options-free serialization. Because
   `DateResume.BuildSubmission` is also called from the pre-existing `DateReminderReconciler` and
   `DateReminderActor` (Stories 4.5/4.6, not touched by this diff), this means **date-resume command submissions
-  from those already-shipped stories were serializing with the wrong casing for the live gateway the entire
-  time** — undetected because no prior story exercised that path against the live EventStore aggregate adapter
-  end-to-end. Story 4.7's live-topology proof surfaced it. No other consumer of either `BuildSubmission` method
-  was found (verified by repo-wide search); the fix is confined to these two command-payload builders.
+  from those already-shipped stories did not match the then-characterized command-payload reader contract — but
+  that characterization was itself wrong. `EventStoreAggregate` binds command payloads through the shared
+  case-insensitive reader at both `b43e963403efa848eda9621b5e3e7e446c7faa2d` and
+  `c61739206fd89619b7d29dfb0812225a234066bb`, so no live casing defect ever shipped from those stories. Case-preserving
+  output is retained for consistency with the options-free persisted event convention rather than as a
+  reader-compatibility requirement. No other consumer of either `BuildSubmission` method was found
+  (verified by repo-wide search); the change remains confined to these two command-payload builders.
 
   The live AppHost gate distinguishes host liveness from command-path readiness. Aspire waits on `/alive` for
   both HTTP hosts, then the tests inspect EventStore's `/ready` response until the load-bearing

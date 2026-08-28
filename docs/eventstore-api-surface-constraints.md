@@ -4,10 +4,17 @@ Story 1.1 verified the live `Hexalith.EventStore` source surface before Works de
 
 ## Canonical Stream Sequencing
 
-Verified against EventStore commit `b43e963403efa848eda9621b5e3e7e446c7faa2d`
-(`v3.97.0-26-gb43e9634`), the revision this repository pins for `references/Hexalith.EventStore`.
+Verified against the current EventStore pin `c61739206fd89619b7d29dfb0812225a234066bb`
+(`v3.98.0-10-gc6173920`). The characterized `EventPersister`, `EventStreamReader`, and shared payload
+serialization files are unchanged from `b43e963403efa848eda9621b5e3e7e446c7faa2d`.
+Two always-on guards cover that source, and neither covers the other's claims:
 `EventStoreApiSurfaceCharacterizationTests.P1_EventStorePersistsRejectionsAndUsesEnvelopeCanonicalSequencing`
-is the always-on drift guard over that source.
+reads `AggregateActor`, `EventPersister`, and `AggregateReplayer` source text and guards the
+envelope-sequencing claims only. The concrete-writer and shared-reader casing claims below are guarded
+behaviourally instead, by `EventPersisterGoldenCorpusTests` (options-free PascalCase writer bytes, read
+back through `EventStorePayloadSerialization.Options`) and `SchemaEvolutionGoldenCorpusTests` (camelCase
+compatibility inputs read through the same shared options). `EventStreamReader`'s snapshot-at-current
+behaviour is guarded by `EnvelopeCanonicalSequencingTests`.
 
 EventStore envelope `SequenceNumber` is the canonical persisted position. `EventPersister` derives it
 from `AggregateMetadata.CurrentSequence`, assigns one gapless position to every persisted success or
@@ -59,12 +66,17 @@ verified EventStore domain-service surface is:
   raising `ConcurrencyConflictException` on the Dapr state-store ETag conflict) **before** `PublishEventsAsync`.
   Command status advances Received → Processing → EventsStored → EventsPublished → Completed; the smoke test polls
   `/api/v1/commands/status/{correlationId}` to a terminal status.
+- **Concrete writer and shared reader casing.** `EventPersister` serializes normal concrete payloads with
+  options-free `System.Text.Json`, producing compact PascalCase bytes at rest with no polymorphic `$type`.
+  EventStore's shared `JsonSerializerDefaults.Web` reader options are property-name case-insensitive and accept
+  both those PascalCase bytes and camelCase compatibility/client inputs.
 
 ### Projection-model reconciliation — what is wired and what is still deferred
 
 - **Wired:** a bespoke async `/project` handler (mapped before `UseEventStoreDomainService`, so the SDK yields the
-  route) decodes each `ProjectionEventDto` from its **concrete** persisted form (`JsonSerializerDefaults.Web`, no
-  polymorphic `$type` — the byte-frozen golden-corpus form) keyed by `EventTypeName`, feeds the pure
+  route) decodes each `ProjectionEventDto` by `EventTypeName` through case-insensitive Web reader options. That
+  reader accepts both the options-free PascalCase persisted form and camelCase compatibility fixtures, with no
+  polymorphic `$type` in either concrete form. It feeds the pure
   `WhatsNextQueueProjection` and `WorkItemRollUpProjection`, and persists a tenant-scoped `works-whats-next` index
   plus per-item roll-up through `IReadModelStore` + `ReadModelWritePolicy` (idempotent per-item merge, ETag-guarded).
   A discovered `WhatsNextQueryHandler : IDomainQueryHandler` reads that index and applies the pure
@@ -168,13 +180,14 @@ surface documented below is unchanged from the original `c6b72caa` verification.
   `work.events` topic. The AppHost therefore injects
   `EventStore__Publisher__TopicOverrides__work=work.events` into EventStore. Works continues to use the existing
   shared `pubsub` component and declares one programmatic subscription through `MapSubscribeHandler`.
-- **The generic processor is not Web-JSON compatible for Works records at this revision.** A deterministic test
-  feeds real `WorkItemV1Catalog` camel-case Web JSON to `EventStoreDomainEventProcessor`; default
-  `JsonSerializer` options silently construct a zero-valued Works record and the processor reports `Processed`
-  rather than `FailedInvalidPayload`. Works therefore maps a host-local equivalent endpoint that decodes with
-  the existing `WorksEventDecoder` (`JsonSerializerDefaults.Web`) and validates tenant, work-item, and aggregate
-  identity before dispatch. Malformed known-event bytes and unhandled types are terminally marked complete and
-  acknowledged so they cannot become poison-message retry loops.
+- **The generic processor shares the case-insensitive payload reader.** `EventStoreDomainEventProcessor` binds
+  both EventPersister's PascalCase bytes and camelCase Web compatibility inputs through
+  `EventStorePayloadSerialization.Options`. That file is byte-identical between `b43e963403efa848eda9621b5e3e7e446c7faa2d`
+  and the current pin `c61739206fd89619b7d29dfb0812225a234066bb`, so the withdrawn "not Web-JSON compatible /
+  silently binds a zero-valued record" characterization was wrong at both revisions rather than something the pin
+  bump changed. Works retains its host-local endpoint for stricter tenant/work-item/aggregate identity validation
+  and its explicit terminal handling of malformed or unhandled deliveries; casing compatibility was never the
+  reason for the local processor.
 - **Durable markers provide restart dedup, not broker ordering.** The Dapr marker key includes the configured
   topic, subscription route, and EventStore message id. A completed marker makes a redelivery `Duplicate` across
   host restarts. Handler failures do not write completion and remain retryable; after handlers finish, marker
@@ -184,10 +197,12 @@ surface documented below is unchanged from the original `c6b72caa` verification.
   reference, then reads that parent stream to rebuild current await conditions. Cascade discovery reads the
   parent stream and consults each child's persisted roll-up only for terminal status; parent roll-up totals with
   child contributions are explicitly unavailable and are never used for cascade decisions.
-- **Command payload casing is an adapter contract.** The pinned EventStore aggregate adapter deserializes the
-  inner command payload with default, case-sensitive `JsonSerializer` options. Recovery submissions therefore
-  serialize with case-preserving CLR property names. Camel-case Web JSON is accepted by the outer gateway but
-  silently produces zero-valued command identities at the aggregate adapter.
+- **Command payload binding uses the same shared reader contract.** The pinned EventStore aggregate adapter
+  deserializes inner command payloads with `EventStorePayloadSerialization.Options`, so both case-preserving CLR
+  property names and camelCase Web inputs bind correctly. `EventStoreAggregate` is also byte-identical across the
+  two revisions above, so the withdrawn case-sensitive command-reader characterization was never true of either
+  pin. Works recovery submissions keep their existing case-preserving writer form for consistency with the
+  options-free persisted event convention.
 - **Internal Works gateway calls use Dapr authentication.** Under Aspire, the EventStore gateway client targets
   `DAPR_HTTP_ENDPOINT` and applies `AddEventStoreDaprServiceInvocation("eventstore")`; EventStore explicitly
   allow-lists `works` through `Authentication:DaprInternal:AllowedCallers`. Direct configured HTTP remains only

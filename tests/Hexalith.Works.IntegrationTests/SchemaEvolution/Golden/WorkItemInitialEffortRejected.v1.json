@@ -1,0 +1,9 @@
+{
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "done": 3
+}

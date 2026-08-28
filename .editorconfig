@@ -10,6 +10,10 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
+# Byte-exact EventPersister fixtures intentionally have no trailing newline.
+[tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGolden/*.json]
+insert_final_newline = false
+
 # C# files
 [*.cs]
 # Naming conventions

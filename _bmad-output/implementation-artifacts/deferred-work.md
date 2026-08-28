@@ -318,7 +318,9 @@ location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golden/ holds only the 14 success events. RejectionShapeSignatures in EnvelopeCanonicalSequencingTests is a second, uncross-referenced freeze surface for the 9 v1 rejections, so the corpus rule (RR-6/NFR-12) does not cover them.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
+resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 
 ### DW-35: Snapshot-backed rehydration after a persisted rejection is unproven.
 origin: spec-deferred 5529e78a3460
@@ -326,7 +328,9 @@ location: references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Events/E
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: EventStreamReader reads the tail from snapshot.SequenceNumber + 1, and returns the snapshot alone when it already sits at the current sequence. A snapshot taken after a rejection envelope therefore folds the no-op away, and no test drives that path. The spec's I/O matrix covers only full replay.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
+resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 
 ### DW-36: Several older documentation paragraphs still say the v1 catalog "stays 36" while the fitness-asserted count is 37.
 origin: spec-deferred c4c1db7ffe36
@@ -342,7 +346,9 @@ location: tests/Hexalith.Works.IntegrationTests/EnvelopeCanonicalSequencingTests
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: EnvelopeCanonicalSequencingTests covers only pre-create rejections (the spec's I/O matrix rows). create(env 1) -> rejection(env 2) -> assign(env 3, payload ordinal 2), and two rejections before a create, are the cases where an off-by-one between the two counters would first show up.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
+resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 
 ### DW-38: The golden-payload corpus is camelCase while the bytes EventStore actually persists are PascalCase, yet both are documented as "the EventStore-persisted form".
 origin: spec-deferred 6b155a733168
@@ -350,7 +356,9 @@ location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/SchemaEvolutionG
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: EventPersister.cs:71 serializes with JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()) -- no options, so PascalCase. SchemaEvolutionGoldenCorpusTests and WorkItemProjectionDispatcher's <remarks> both call the JsonSerializerDefaults.Web (camelCase) samples the persisted form; the 14 Golden/*.json files start "aggregateId". Decoding survives only because Web options are case-insensitive, so a naming-policy change upstream would not turn the corpus red. Surfaced by the first byte-level persisted-form assertion, which this change added.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
+resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 decision: 2026-08-27 Add exact persisted corpus — Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.
 decision: 2026-08-27 Add exact persisted corpus — Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.
 
@@ -385,7 +393,9 @@ location: n/a
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-130630-f73f; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
+resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 
 ### DW-43: A delayed older full-replay request can overwrite newer persisted work-item projection state.
 origin: spec-deferred 1362c100f6fb
@@ -536,4 +546,52 @@ location: n/a
 source_spec: `spec-probe-cancellation-propagation.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260828-191811-dea9; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-61: Three untouched contract-flow test summaries still describe camelCase Web JSON as the real EventStore write path, contradicting the corrected claims this bundle landed elsewhere.
+origin: spec-deferred 2c19a16a4d17
+location: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs:13
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: medium
+reason: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs:13-14 and UniformExecutorBindingLifecycleFlowTests.cs:17-18 both say "the real write path ... -> concrete JsonSerializerDefaults.Web serialization"; WorkItemProgressContractFlowTests.cs:57 says the event "survives concrete EventStore serialization" while serializing with camelCase JsonOptions. EventPersister writes options-free PascalCase, so the repository now asserts two different things about the same persisted form. These files sit outside the intent's named sweep list, so the omission is deliberate for this story.
+status: open
+
+### DW-62: The frozen WorkItemCannotReferenceParentFromAnotherTenant catalog sample carries a same-tenant parent, so its evidence contradicts the rejection it names.
+origin: spec-deferred fcb2bd62083e
+location: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36,81 builds Parent as new ParentWorkItemReference(Tenant, new WorkItemId("parent-001")) with Tenant = "tenant-alpha", the event's own tenant. EnvelopeCanonicalSequencingTests sources "tenant-beta" from its own helper instead. WorkItemV1Catalog is untouched by this change, but both new corpora now freeze those bytes, so correcting the sample later means regenerating two fixtures.
+status: open
+
+### DW-63: Nothing binds the EventStore revision quoted in the maintained docs to the actual checked-out submodule gitlink, so the corrected pin can silently rot on the next bump.
+origin: spec-deferred 7a41b5161f32
+location: docs/eventstore-api-surface-constraints.md:7
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: grep over tests/ finds no assertion on b43e963403efa848eda9621b5e3e7e446c7faa2d or c61739206fd89619b7d29dfb0812225a234066bb; both SHAs exist only as prose in docs/eventstore-api-surface-constraints.md and docs/boundary-decision-record.md. This is the same documentation-drift failure mode DW-42 recorded.
+status: open
+
+### DW-64: The byte-exact corpus never freezes the PascalCase at-rest form of EffortEstimate, ObligationReference, or ConversationCorrelationId, because every catalog sample leaves them null.
+origin: spec-deferred bb511d744622
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGolden/WorkItemCreated.v1.json
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: medium
+reason: All 23 EventPersisterGolden fixtures are produced from WorkItemV1Catalog samples, and those samples leave InitialEffort, Obligation.Reference, and ConversationCorrelationId null on every event that can carry them; the camelCase Golden/WorkItemCreated.v1.json does freeze all three. Those nested contract records therefore have no frozen writer-side form anywhere, so a property rename or shape change inside them cannot turn the exact corpus red. Closing it means changing catalog sample values, which regenerates fixtures in both corpora -- the same coupling DW-62 records.
+status: open
+
+### DW-65: Story48Streams serializes stand-in EventStore stream bytes with camelCase Web options, the same contradiction DW-61 records for three contract-flow tests but at a helper DW-61 does not name.
+origin: spec-deferred e4191a19474f
+location: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12,31 builds StreamReadEvent.Payload with new JsonSerializerOptions(JsonSerializerDefaults.Web) while standing in for real per-aggregate stream pages, and feeds the Story 4.8 recovery sources that decode through WorksEventDecoder. EventPersister writes options-free PascalCase. It is not currently an escape hatch, because the shared decoder is separately pinned against PascalCase bytes by WorksDomainEventProcessorTests, but the fixture now contradicts the persisted form the rest of this bundle established. Outside the intent's named sweep list and outside DW-61's three files.
+status: open
+
+### DW-66: Both corpus membership gates enumerate the copied build output, so a fixture deleted from source survives in bin/ and membership still passes on an incremental build.
+origin: spec-deferred 8bfcda99d79e
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGoldenCorpusTests.cs:32
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: EventPersisterGoldenCorpusTests.cs:32 and SchemaEvolutionGoldenCorpusTests.cs:26 resolve their corpus directory under AppContext.BaseDirectory and enumerate it with SearchOption.AllDirectories, while Hexalith.Works.IntegrationTests.csproj copies both directories with CopyToOutputDirectory PreserveNewest, which never prunes. A fixture deleted from source therefore still satisfies the bidirectional set-equality check until a clean build. The gate fails closed only in CI. Pre-existing for the Web corpus; inherited by the new exact corpus.
 status: open
