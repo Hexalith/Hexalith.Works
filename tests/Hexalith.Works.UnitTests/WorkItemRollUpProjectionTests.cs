@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
@@ -48,6 +50,37 @@ public sealed class WorkItemRollUpProjectionTests
     }
 
     [Fact]
+    public void Read_model_serializes_the_exposed_child_count_with_web_defaults()
+    {
+        WorkItemRollUp model = new(
+            Tenant,
+            Parent,
+            WorkItemStatus.InProgress,
+            null,
+            new OwnRemaining(5m, Hour),
+            new RolledRemaining(8m, Hour),
+            [new RolledRemaining(8m, Hour)],
+            [Child],
+            1,
+            2);
+
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        string json = JsonSerializer.Serialize(model, options);
+        using JsonDocument document = JsonDocument.Parse(json);
+        JsonElement root = document.RootElement;
+        // The retired property name is composed rather than written as one literal so that the repository-wide
+        // scan proving the old name is gone from source cannot be satisfied -- or defeated -- by this test file.
+        string obsoletePropertyName = string.Concat("child", "Contribution", "Count");
+
+        root.GetProperty("exposedChildCount").GetInt32().ShouldBe(1);
+        root.TryGetProperty(obsoletePropertyName, out _).ShouldBeFalse();
+
+        WorkItemRollUp roundTrip = JsonSerializer.Deserialize<WorkItemRollUp>(json, options).ShouldNotBeNull();
+        roundTrip.ExposedChildCount.ShouldBe(1);
+        roundTrip.ChildWorkItemIds.ShouldBe([Child]);
+    }
+
+    [Fact]
     public void Projecting_parent_and_child_reports_own_and_recursive_rolled_remaining()
     {
         WorkItemRollUpProjection projection = new();
@@ -62,7 +95,7 @@ public sealed class WorkItemRollUpProjectionTests
         parent.OwnRemaining.ShouldBe(new OwnRemaining(5m, Hour));
         parent.RolledRemaining.ShouldBe(new RolledRemaining(8m, Hour));
         parent.RolledRemainingByUnit.ShouldBe([new RolledRemaining(8m, Hour)]);
-        parent.ChildContributionCount.ShouldBe(1);
+        parent.ExposedChildCount.ShouldBe(1);
         parent.ChildWorkItemIds.ShouldBe([Child]);
         child.RolledRemaining.ShouldBe(new RolledRemaining(3m, Hour));
     }
@@ -125,6 +158,28 @@ public sealed class WorkItemRollUpProjectionTests
         actual.RolledRemaining.ShouldBe(expected.RolledRemaining);
         actual.RolledRemainingByUnit.ShouldBe(expected.RolledRemainingByUnit);
         actual.ChildWorkItemIds.ShouldBe(expected.ChildWorkItemIds);
+    }
+
+    [Fact]
+    public void Exposed_children_are_ordinal_for_opposite_mixed_case_delivery_orders()
+    {
+        WorkItemId upperCaseChild = new("child-A");
+        WorkItemId lowerCaseChild = new("child-a");
+        WorkItemRollUpProjection lowerFirst = new();
+        WorkItemRollUpProjection upperFirst = new();
+
+        Project(lowerFirst, Created(Parent, 1, 5m));
+        Project(lowerFirst, Created(lowerCaseChild, 1, 2m, Parent));
+        Project(lowerFirst, Created(upperCaseChild, 1, 3m, Parent));
+
+        Project(upperFirst, Created(Parent, 1, 5m));
+        Project(upperFirst, Created(upperCaseChild, 1, 3m, Parent));
+        Project(upperFirst, Created(lowerCaseChild, 1, 2m, Parent));
+
+        lowerFirst.Get(Tenant, Parent).ShouldNotBeNull().ChildWorkItemIds
+            .ShouldBe([upperCaseChild, lowerCaseChild]);
+        upperFirst.Get(Tenant, Parent).ShouldNotBeNull().ChildWorkItemIds
+            .ShouldBe([upperCaseChild, lowerCaseChild]);
     }
 
     [Theory]

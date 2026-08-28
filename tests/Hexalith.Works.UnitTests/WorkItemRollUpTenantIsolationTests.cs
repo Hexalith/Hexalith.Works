@@ -1,5 +1,6 @@
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Events.Rejections;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
@@ -22,8 +23,8 @@ public sealed class WorkItemRollUpTenantIsolationTests
         Channel.Mcp,
         AuthorityLevel.Contribute);
 
-    public static TheoryData<IEventPayload> SupportedDeliveryPayloads => new()
-    {
+    private static readonly IReadOnlyList<IEventPayload> _supportedPayloadFixtures =
+    [
         Created(Tenant, LocalChild, 2m, sequence: 2),
         new ChildSpawned(LocalChild.Value, 2, Tenant, LocalChild, new WorkItemId("spawned-child"), new Obligation("spawned child"), new WorkItemEffort(1m, Hour)),
         new ProgressReported(LocalChild.Value, 2, Tenant, LocalChild, 1m, Hour),
@@ -38,7 +39,21 @@ public sealed class WorkItemRollUpTenantIsolationTests
         new WorkItemSuspended(LocalChild.Value, 2, Tenant, LocalChild, [AwaitCondition.ExternalSignal("resume")]),
         new WorkItemResumed(LocalChild.Value, 2, Tenant, LocalChild, AwaitCondition.ExternalSignal("resume")),
         new WorkItemRescheduled(LocalChild.Value, 2, Tenant, LocalChild, new WorkItemSchedule(Priority.Normal)),
-    };
+    ];
+
+    public static TheoryData<IEventPayload> SupportedDeliveryPayloads
+    {
+        get
+        {
+            TheoryData<IEventPayload> payloads = [];
+            foreach (IEventPayload payload in _supportedPayloadFixtures)
+            {
+                payloads.Add(payload);
+            }
+
+            return payloads;
+        }
+    }
 
     [Fact]
     public void Secure_default_policy_enforces_every_boundary()
@@ -82,7 +97,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
 
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
         parent.ChildWorkItemIds.ShouldBe([LocalChild]);
-        parent.ChildContributionCount.ShouldBe(1);
+        parent.ExposedChildCount.ShouldBe(1);
         parent.RolledRemaining.ShouldBe(new RolledRemaining(7m, Hour));
         parent.ProjectionDiagnostics.ShouldBeEmpty();
         parent.Degraded.ShouldBeFalse();
@@ -108,6 +123,42 @@ public sealed class WorkItemRollUpTenantIsolationTests
         projection.Project(new WorkItemRollUpEvent(Tenant, LocalChild, 2, payload));
 
         projection.Get(Tenant, LocalChild).ShouldNotBeNull().LatestAcceptedSourceSequence.ShouldBe(2);
+    }
+
+    [Fact]
+    public void Supported_payload_fixtures_exactly_cover_the_runtime_registry()
+    {
+        Type[] fixtureTypes = [.. _supportedPayloadFixtures
+            .Select(static payload => payload.GetType())
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)];
+        Type[] registryTypes = [.. WorkItemRollUpTenantIsolation.SupportedPayloadTypes
+            .OrderBy(type => type.FullName, StringComparer.Ordinal)];
+
+        fixtureTypes.ShouldBe(
+            registryTypes,
+            "Every exact runtime registry key must have one representative exercised by the supported-delivery theory.");
+    }
+
+    [Fact]
+    public void Rejection_payload_allocates_no_node_and_does_not_consume_the_sequence_slot()
+    {
+        WorkItemRollUpProjection projection = new();
+        IRejectionEvent rejection = new WorkItemTransitionRejected(
+            Tenant,
+            LocalChild,
+            WorkItemStatus.Unknown,
+            nameof(WorkItemCreated));
+
+        projection.Project(new WorkItemRollUpEvent(Tenant, LocalChild, 1, rejection));
+
+        projection.Get(Tenant, LocalChild).ShouldBeNull();
+        projection.Snapshot().ShouldBeEmpty();
+
+        projection.Project(Envelope(Created(Tenant, LocalChild, 5m)));
+
+        WorkItemRollUp accepted = projection.Get(Tenant, LocalChild).ShouldNotBeNull();
+        accepted.LatestAcceptedSourceSequence.ShouldBe(1);
+        accepted.Status.ShouldBe(WorkItemStatus.Created);
     }
 
     [Fact]
@@ -244,7 +295,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
 
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
         parent.ChildWorkItemIds.ShouldBe([LocalChild]);
-        parent.ChildContributionCount.ShouldBe(1);
+        parent.ExposedChildCount.ShouldBe(1);
         parent.RolledRemaining.ShouldBe(new RolledRemaining(7m, Hour));
         projection.Get(Tenant, LocalChild).ShouldNotBeNull().ProjectionDiagnostics.ShouldBeEmpty();
         projection.Get(OtherTenant, ForeignChild).ShouldNotBeNull().ProjectionDiagnostics.ShouldBe([
@@ -261,7 +312,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
 
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
         parent.ChildWorkItemIds.ShouldBe([LocalChild]);
-        parent.ChildContributionCount.ShouldBe(1);
+        parent.ExposedChildCount.ShouldBe(1);
         parent.RolledRemaining.ShouldBe(new RolledRemaining(14m, Hour));
         projection.Get(OtherTenant, ForeignChild).ShouldNotBeNull();
     }
@@ -274,10 +325,8 @@ public sealed class WorkItemRollUpTenantIsolationTests
         ProjectParentAndDistinctChildren(projection);
 
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
-        parent.ChildWorkItemIds
-            .OrderBy(id => id.Value, StringComparer.Ordinal)
-            .ShouldBe([ForeignChild, LocalChild]);
-        parent.ChildContributionCount.ShouldBe(2);
+        parent.ChildWorkItemIds.ShouldBe([ForeignChild, LocalChild]);
+        parent.ExposedChildCount.ShouldBe(2);
         parent.RolledRemaining.ShouldBe(new RolledRemaining(7m, Hour));
         parent.RolledRemainingByUnit.ShouldBe([new RolledRemaining(7m, Hour)]);
     }
@@ -298,7 +347,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
             new RollUpProjectionDiagnostic(OtherTenant, ForeignChild, nameof(ReEstimated), 2),
         ]);
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
-        parent.ChildContributionCount.ShouldBe(2);
+        parent.ExposedChildCount.ShouldBe(2);
         parent.ProjectionDiagnostics.ShouldBe([
             new RollUpProjectionDiagnostic(Tenant, LocalChild, nameof(ReEstimated), 2),
         ]);
@@ -313,7 +362,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
         projection.Project(Envelope(new ReEstimated(ForeignChild.Value, 2, OtherTenant, ForeignChild, 13m, Point)));
         projection.Get(OtherTenant, ForeignChild).ShouldNotBeNull().Degraded.ShouldBeTrue();
         WorkItemRollUp parent = projection.Get(Tenant, Parent).ShouldNotBeNull();
-        parent.ChildContributionCount.ShouldBe(2);
+        parent.ExposedChildCount.ShouldBe(2);
         parent.Degraded.ShouldBeFalse();
 
         projection.Project(Envelope(new ReEstimated(LocalChild.Value, 2, Tenant, LocalChild, 11m, Point)));

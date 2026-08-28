@@ -203,7 +203,7 @@ public sealed class WorkItemProjectionDispatcher
     }
 
     private static WorkItemRollUp? ToBoundarySafeRollUp(WorkItemRollUp? model, bool childContributionMayExist)
-        => model is not null && (model.ChildContributionCount > 0 || childContributionMayExist)
+        => model is not null && (model.ExposedChildCount > 0 || childContributionMayExist)
             ? model with
             {
                 RolledRemaining = null,

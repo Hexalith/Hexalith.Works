@@ -16,8 +16,11 @@ namespace Hexalith.Works.Contracts.Models;
 /// The subtree remainder grouped by unit, or an empty list when no numeric contribution exists or the runtime
 /// cannot reconcile child-dependent totals from separate aggregate replays.
 /// </param>
-/// <param name="ChildWorkItemIds">The accepted child identities.</param>
-/// <param name="ChildContributionCount">The number of accepted child contributions.</param>
+/// <param name="ChildWorkItemIds">
+/// The accepted child identities, emitted in ordinal <see cref="WorkItemId.Value"/> order so that permuted
+/// or duplicated deliveries of the same child facts produce an identical public sequence.
+/// </param>
+/// <param name="ExposedChildCount">The number of child identities exposed by this read model.</param>
 /// <param name="LatestAcceptedSourceSequence">
 /// The EventStore envelope position of the latest accepted state-changing delivery. Filtered rejection
 /// positions do not advance it, so it is not the full persisted stream high-watermark. A spawn-derived
@@ -33,7 +36,7 @@ public sealed record WorkItemRollUp(
     RolledRemaining? RolledRemaining,
     IReadOnlyList<RolledRemaining> RolledRemainingByUnit,
     IReadOnlyList<WorkItemId> ChildWorkItemIds,
-    int ChildContributionCount,
+    int ExposedChildCount,
     long LatestAcceptedSourceSequence)
 {
     public bool Degraded { get; init; }

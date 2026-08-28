@@ -59,10 +59,25 @@ All notable changes to Hexalith.Works will be documented in this file.
 - Refuse stale persisted roll-ups: the runtime `/project` adapter delivers one aggregate's stream per
   call, so a parent's child-dependent totals cannot be reconciled within a dispatch. `RolledRemaining`
   and `RolledRemainingByUnit` are now persisted and exposed as unavailable (`null` / empty) whenever the
-  replayed item has accepted child contributions — or names a `ChildSpawned` event that could not be
-  decoded or accepted — instead of retaining each child's spawn-time effort. Own effort, lifecycle
+  replayed item exposes any child (`ExposedChildCount > 0`) — or names a `ChildSpawned` event that could
+  not be decoded or accepted — instead of retaining each child's spawn-time effort. Own effort, lifecycle
   status (including terminal status), parent/child structure, tenant identity, diagnostics, and the
   accepted-source watermark are preserved, and locally complete leaf totals remain available.
+
+### Changed
+
+- **Breaking:** the `WorkItemRollUp` read model's positional member `ChildContributionCount` and its
+  serialized `childContributionCount` property are renamed to `ExposedChildCount` / `exposedChildCount`,
+  with the value and positional order unchanged. The number counts the tenant-filtered child identities the
+  read model exposes, not children that contributed numeric effort; no compatibility alias is retained, so
+  consumers must adopt the new name. Roll-up documents persisted before this change deserialize the count as
+  `0` until the item is next re-projected.
+- Exposed `ChildWorkItemIds` are now emitted in ordinal `WorkItemId.Value` order instead of internal
+  insertion order, so permuted or duplicated deliveries of the same child facts produce an identical
+  public sequence.
+- The roll-up delivery allowlist is now a single production payload-identity registry guarded by a
+  Contracts-derived architecture fitness test: every concrete non-rejection `IEventPayload` in
+  `Hexalith.Works.Contracts` must be registered, and only `IRejectionEvent` types may be excluded.
 
 ### Deferred
 

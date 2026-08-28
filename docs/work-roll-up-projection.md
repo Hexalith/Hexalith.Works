@@ -29,6 +29,9 @@ totals read the projection read model instead.
   `Requeue: true` rests at `Queued` and does not zero contribution.
 - Parent/child edges may be discovered from either `WorkItemCreated.Parent` or `ChildSpawned`. Replaying
   the same edge is idempotent.
+- Exposed `ChildWorkItemIds` are ordered ordinally by `WorkItemId.Value`, so replay permutations and
+  duplicate deliveries produce the same public sequence. `ExposedChildCount` is the size of that
+  filtered sequence, including children that expose no numeric effort contribution.
 - Tenant equality is checked at every traversal hop. Cross-tenant edges are ignored and cannot affect a
   parent roll-up, even when work item ids collide across tenants.
 - The write side rejects `ReportProgress` or `ReEstimate` commands whose unit disagrees with an
@@ -62,7 +65,7 @@ co-available to the same projection instance.
 
 The runtime `/project` adapter receives only one aggregate stream per dispatch. A parent's `ChildSpawned`
 facts can establish spawn-time child contributions, but later child progress is delivered separately and cannot
-reconcile that parent instance. At this adapter boundary, a model with `ChildContributionCount > 0`—or a request
+reconcile that parent instance. At this adapter boundary, a model with `ExposedChildCount > 0`—or a request
 containing a `ChildSpawned` event type that could not be decoded or accepted—keeps its own effort, lifecycle
 status, parent/child structure, tenant, diagnostics, and freshness watermark, while `RolledRemaining` and
 `RolledRemainingByUnit` are exposed and persisted as unavailable (`null` / empty). This 2026-08-27 refusal

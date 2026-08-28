@@ -246,6 +246,17 @@ public sealed class WorkItemRollUpProjection
             }
         }
 
+        // Ordinal work item id is the published ordering key. An isolation-ablated output policy can expose two
+        // tenants' children whose ids collide, and List<T>.Sort is unstable, so tenant breaks that tie to keep the
+        // comparison a total order rather than leaving tied entries in delivery order.
+        outputChildren.Sort(static (first, second) =>
+        {
+            int byWorkItemId = StringComparer.Ordinal.Compare(first.WorkItemId.Value, second.WorkItemId.Value);
+            return byWorkItemId != 0
+                ? byWorkItemId
+                : StringComparer.Ordinal.Compare(first.TenantId.Value, second.TenantId.Value);
+        });
+
         return new WorkItemRollUp(
             node.TenantId,
             node.WorkItemId,

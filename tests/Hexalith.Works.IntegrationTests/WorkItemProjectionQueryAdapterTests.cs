@@ -135,7 +135,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
         parent.OwnEffort.ShouldNotBeNull().ShouldBe(new WorkItemEffort(10m, Hour, 2m));
         parent.OwnRemaining.ShouldBe(new OwnRemaining(8m, Hour));
         parent.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-        parent.ChildContributionCount.ShouldBe(1);
+        parent.ExposedChildCount.ShouldBe(1);
         parent.LatestAcceptedSourceSequence.ShouldBe(4);
         parent.RolledRemaining.ShouldBeNull();
         parent.RolledRemainingByUnit.ShouldBeEmpty();
@@ -174,7 +174,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         WorkItemRollUp persisted = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
-        persisted.ChildContributionCount.ShouldBe(0);
+        persisted.ExposedChildCount.ShouldBe(0);
         persisted.ChildWorkItemIds.ShouldBeEmpty();
         persisted.OwnRemaining.ShouldBe(new OwnRemaining(10m, Hour));
         persisted.RolledRemaining.ShouldBeNull();
@@ -209,7 +209,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         WorkItemRollUp persisted = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
-        persisted.ChildContributionCount.ShouldBe(1);
+        persisted.ExposedChildCount.ShouldBe(1);
         persisted.OwnRemaining.ShouldBe(new OwnRemaining(10m, Hour));
         persisted.RolledRemaining.ShouldBeNull();
         persisted.RolledRemainingByUnit.ShouldBeEmpty();
@@ -241,7 +241,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         WorkItemRollUp persisted = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
-        persisted.ChildContributionCount.ShouldBe(1);
+        persisted.ExposedChildCount.ShouldBe(1);
         persisted.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
         persisted.OwnRemaining.ShouldBe(new OwnRemaining(10m, Hour));
         persisted.RolledRemaining.ShouldBeNull();
@@ -322,7 +322,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         WorkItemRollUp leaf = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
-        leaf.ChildContributionCount.ShouldBe(0);
+        leaf.ExposedChildCount.ShouldBe(0);
         leaf.OwnRemaining.ShouldBe(new OwnRemaining(6m, Hour));
         leaf.RolledRemaining.ShouldBe(new RolledRemaining(6m, Hour));
         leaf.RolledRemainingByUnit.ShouldBe([new RolledRemaining(6m, Hour)]);
@@ -354,7 +354,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
         terminal.OwnEffort.ShouldBe(new WorkItemEffort(10m, Hour));
         terminal.OwnRemaining.ShouldBe(new OwnRemaining(0m, Hour));
         terminal.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-        terminal.ChildContributionCount.ShouldBe(1);
+        terminal.ExposedChildCount.ShouldBe(1);
         terminal.LatestAcceptedSourceSequence.ShouldBe(3);
         terminal.RolledRemaining.ShouldBeNull();
         terminal.RolledRemainingByUnit.ShouldBeEmpty();

@@ -216,7 +216,9 @@ location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpTenantIsolatio
 source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: medium
 reason: TryGetPayloadIdentity enumerates 14 payload types and falls through to (null, null), which AllowsDelivery turns into an unconditional refusal. SupportedDeliveryPayloads in the unit tests restates the same 14 types by hand; nothing ties the two lists together or to the Contracts assembly. A newly introduced event would be dropped from every roll-up read model with a fully green suite. Pre-existing: the removed EventMatchesDelivery switch had the same shape. A fitness test enumerating IEventPayload implementations in Hexalith.Works.Contracts and asserting each is allowlisted or explicitly excluded would close it.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-rollup-contract-drift-hardening
+resolution-undo: c51f1baf0f42425fa8f7b8e868a503c355e6dc53dba6924acd7be68d032b0809 2026-08-28 7374617475733a206f70656e
 
 ### DW-25: Exposed child order follows HashSet insertion order, so replays that permute delivery order can expose the same children in different order, and the convergence property cannot observe it.
 origin: spec-deferred 8d7db14257f2
@@ -224,7 +226,9 @@ location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:
 source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: medium
 reason: ToReadModel iterates node.ChildKeys, a HashSet<NodeKey> that is only ever added to, so iteration order is insertion order and therefore delivery order. CollectDiagnostics in the same file sorts ordinal; ChildWorkItemIds does not. Both SameRollUp and the new ExpectedLocalChildren assertion in WorkItemRollUpConvergencePropertyTests sort before comparing, so the permutation replay the property exists to exercise cannot see an order divergence. Pre-existing: ChildKeys was already an unordered set and the previous ToReadModel loop iterated it the same way. Sorting outputChildren by WorkItemId.Value ordinal, plus an unsorted assertion in the property, would close it.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-rollup-contract-drift-hardening
+resolution-undo: c51f1baf0f42425fa8f7b8e868a503c355e6dc53dba6924acd7be68d032b0809 2026-08-28 7374617475733a206f70656e
 
 ### DW-26: ChildContributionCount counts children that passed the output filter, not children that actually contributed effort, so the public contract's name overstates what the number means.
 origin: spec-deferred 10a80ad1448a
@@ -232,7 +236,9 @@ location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:
 source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: low
 reason: ToReadModel derives both ChildWorkItemIds and ChildContributionCount from the same outputChildren list, which is filtered by AllowsOutput. A tenant-local child with no effort is counted, and under a policy where output and contribution differ the count tracks the wrong hop -- Contribution_boundary_includes_local_effort_and_ignores_foreign_effort_from_permissive_edge asserts a count of 2 while RolledRemaining proves only one child contributed. In the shipped configuration the two filters are identical, so this is a naming/semantics mismatch rather than a leak. Pre-existing: the count came from the same tenant-filtered child list before this change.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-rollup-contract-drift-hardening
+resolution-undo: c51f1baf0f42425fa8f7b8e868a503c355e6dc53dba6924acd7be68d032b0809 2026-08-28 7374617475733a206f70656e
 decision: 2026-08-27 Rename to exposed count — Preserve existing behavior but rename the public positional member to ExposedChildCount or an approved equivalent, then update serialization, consumers, tests, and documentation as a deliberate API change.
 
 ### DW-27: Follow-up review still recommended for dw-rollup-tenant-isolation-gate after the damping cap was spent
@@ -241,7 +247,9 @@ location: n/a
 source_spec: `spec-rollup-tenant-isolation-gate.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-rollup-contract-drift-hardening
+resolution-undo: c51f1baf0f42425fa8f7b8e868a503c355e6dc53dba6924acd7be68d032b0809 2026-08-28 7374617475733a206f70656e
 
 ### DW-28: A persisted same-unit ReEstimated event with a negative estimate can still throw during aggregate replay.
 origin: spec-deferred 92fa2ce13a28
@@ -440,4 +448,28 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-kernel-governance-drift-hardening.md`
 severity: low
 reason: `DependencyDirectionTests.PackageReferenceNames` matches item names case-sensitively, takes `Include` or `Update` verbatim, and never splits semicolon-delimited item lists, so `Include="Something;Hexalith.Foo"` evades the "Hexalith libraries must come from sibling source" rule. The governed-set and forbidden-family paths this story centralized do not consume this helper, and the rule it serves is outside the kernel-purity scope this bundle reconciled.
+status: open
+
+### DW-52: ExposedChildCount remains independently constructible from ChildWorkItemIds and can represent an inconsistent read model.
+origin: spec-deferred 124b7489f14f
+location: src/Hexalith.Works.Contracts/Models/WorkItemRollUp.cs:27
+source_spec: `spec-rollup-contract-drift-hardening.md`
+severity: medium
+reason: WorkItemRollUp already accepted the count as an independent positional integer before this bundle. The approved DW-26 decision preserves that behavior while renaming it, so deriving or validating the value would be a separate contract change.
+status: open
+
+### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no
+origin: spec-deferred 96d65c591dec
+location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:137
+source_spec: `spec-rollup-contract-drift-hardening.md`
+severity: medium
+reason: The fitness test compares Contracts payloads with WorkItemRollUpTenantIsolation's identity registry only. WorkItemRollUpProjection.ApplyPayload holds a second, ungated switch. Adding any concrete non-rejection Contracts payload turns the gate red, and the only way to green it is a registry entry -- which converts a fail-closed refusal into a silent no-op acceptance that still advances LatestAcceptedSourceSequence. The spec's Approach scopes the allowlist to the identity registry, so binding ApplyPayload is a separate change.
+status: open
+
+### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up st
+origin: spec-deferred 05c45a10513b
+location: src/Hexalith.Works.Projections/Strategies/WhatsNextQueueProjection.cs:91
+source_spec: `spec-rollup-contract-drift-hardening.md`
+severity: medium
+reason: WhatsNextQueueProjection.EventMatchesDelivery enumerates the same 14 payload types with a fail-closed `_ => false` fallthrough and is driven in production by WorkItemProjectionDispatcher.DispatchAsync. None of its 37 unit tests enumerate payload types, and no architecture test ties its accepted set to Contracts. A 15th non-rejection event would be silently dropped from the tenant what's-next index with a green suite. The spec's Never clause forbids modifying unrelated projections, so this is out of scope for this bundle.
 status: open

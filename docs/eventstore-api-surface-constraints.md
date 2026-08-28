@@ -72,12 +72,13 @@ verified EventStore domain-service surface is:
 - **Refuse stale persisted roll-ups (2026-08-27):** the EventStore `/project` contract delivers a **single
   aggregate's** event stream per call. A parent replay can reconstruct its own current effort and its accepted
   `ChildSpawned` facts, but cannot reconcile those children with their later, separately dispatched streams.
-  The runtime adapter therefore refuses totals when `ChildContributionCount > 0` or when the request contains a
+  The runtime adapter therefore refuses totals when `ExposedChildCount > 0` or when the request contains a
   `ChildSpawned` event type that could not be decoded or accepted. It persists/exposes both `RolledRemaining` and
-  `RolledRemainingByUnit` as unavailable (`null` / empty). It preserves
-  own effort, lifecycle status (including terminal status), parent/child structure, tenant identity, diagnostics,
-  and the accepted-source watermark. Leaf roll-ups remain locally complete and available. The pure projection
-  still supports recursive convergence when all contributing event streams are co-available; the per-aggregate
+  `RolledRemainingByUnit` as unavailable (`null` / empty). It preserves own effort, lifecycle status (including
+  terminal status), parent/child structure, tenant identity, diagnostics, and the accepted-source watermark.
+  Exposed child identities are emitted in ordinal `WorkItemId.Value` order; `ExposedChildCount` is that filtered
+  sequence's size, not an effort-contribution count. Leaf roll-ups remain locally complete and available. The pure
+  projection still supports recursive convergence when all contributing event streams are co-available; the per-aggregate
   runtime does not claim that convergence. Deterministic `WorkItemProjectionQueryAdapterTests` assert the
   persisted read-model end state and query representation.
 

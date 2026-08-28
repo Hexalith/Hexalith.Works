@@ -46,10 +46,9 @@ public sealed class WorkItemRollUpConvergencePropertyTests
                 return SameRollUp(actual, expected)
                     && expected.Degraded
                     && expected.ProjectionDiagnostics.Count > 0
-                    && actual.ChildWorkItemIds
-                        .OrderBy(id => id.Value, StringComparer.Ordinal)
-                        .SequenceEqual(scenario.ExpectedLocalChildren.OrderBy(id => id.Value, StringComparer.Ordinal))
-                    && actual.ChildContributionCount == scenario.ExpectedLocalChildren.Length
+                    && actual.ChildWorkItemIds.SequenceEqual(
+                        scenario.ExpectedLocalChildren.OrderBy(id => id.Value, StringComparer.Ordinal))
+                    && actual.ExposedChildCount == scenario.ExpectedLocalChildren.Length
                     && actualProjection.Get(OtherTenant, scenario.CollidingForeignChild).ShouldNotBeNull().TenantId == OtherTenant;
             }));
 
@@ -112,10 +111,8 @@ public sealed class WorkItemRollUpConvergencePropertyTests
             && actual.OwnRemaining == expected.OwnRemaining
             && actual.RolledRemaining == expected.RolledRemaining
             && actual.RolledRemainingByUnit.SequenceEqual(expected.RolledRemainingByUnit)
-            && actual.ChildWorkItemIds
-                .OrderBy(id => id.Value, StringComparer.Ordinal)
-                .SequenceEqual(expected.ChildWorkItemIds.OrderBy(id => id.Value, StringComparer.Ordinal))
-            && actual.ChildContributionCount == expected.ChildContributionCount
+            && actual.ChildWorkItemIds.SequenceEqual(expected.ChildWorkItemIds)
+            && actual.ExposedChildCount == expected.ExposedChildCount
             && actual.LatestAcceptedSourceSequence == expected.LatestAcceptedSourceSequence
             && actual.Degraded == expected.Degraded
             && actual.ProjectionDiagnostics.SequenceEqual(expected.ProjectionDiagnostics);

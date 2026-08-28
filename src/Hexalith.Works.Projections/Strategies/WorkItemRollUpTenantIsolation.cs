@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 
 using Hexalith.EventStore.Contracts.Events;
@@ -12,12 +13,38 @@ namespace Hexalith.Works.Projections.Strategies;
 /// </summary>
 internal sealed class WorkItemRollUpTenantIsolation
 {
+    private static readonly FrozenDictionary<Type, Func<IEventPayload, (TenantId? TenantId, WorkItemId? WorkItemId)>> _payloadIdentityRegistry
+        = new KeyValuePair<Type, Func<IEventPayload, (TenantId? TenantId, WorkItemId? WorkItemId)>>[]
+        {
+            For<WorkItemCreated>(static value => (value.TenantId, value.WorkItemId)),
+            For<ChildSpawned>(static value => value.ChildWorkItemId is null
+                ? default
+                : (value.TenantId, value.WorkItemId)),
+            For<ProgressReported>(static value => (value.TenantId, value.WorkItemId)),
+            For<ReEstimated>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemCompleted>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemCancelled>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemExpired>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemRejected>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemAssigned>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemQueued>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemClaimed>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemSuspended>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemResumed>(static value => (value.TenantId, value.WorkItemId)),
+            For<WorkItemRescheduled>(static value => (value.TenantId, value.WorkItemId)),
+        }.ToFrozenDictionary();
+
     private readonly bool _enforceContribution;
     private readonly bool _enforceDegradation;
     private readonly bool _enforceDelivery;
     private readonly bool _enforceDiagnostic;
     private readonly bool _enforceEdge;
     private readonly bool _enforceOutput;
+
+    /// <summary>
+    /// Gets the exact concrete payload types whose identities the runtime projection can validate.
+    /// </summary>
+    internal static IReadOnlySet<Type> SupportedPayloadTypes { get; } = _payloadIdentityRegistry.Keys.ToFrozenSet();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="WorkItemRollUpTenantIsolation"/> class.
@@ -130,29 +157,33 @@ internal sealed class WorkItemRollUpTenantIsolation
     internal bool AllowsDegradation(TenantId parentTenantId, TenantId childTenantId)
         => !_enforceDegradation || SameTenant(parentTenantId, childTenantId);
 
+    /// <summary>
+    /// Creates one registry entry whose dictionary key and payload cast both come from the same type argument,
+    /// so a key can never disagree with the cast performed by the reader stored under it.
+    /// </summary>
+    /// <typeparam name="TPayload">The exact concrete payload type this entry reads.</typeparam>
+    /// <param name="readIdentity">Reads the tenant and work item identity carried by the payload.</param>
+    /// <returns>The registry entry for <typeparamref name="TPayload"/>.</returns>
+    private static KeyValuePair<Type, Func<IEventPayload, (TenantId? TenantId, WorkItemId? WorkItemId)>> For<TPayload>(
+        Func<TPayload, (TenantId? TenantId, WorkItemId? WorkItemId)> readIdentity)
+        where TPayload : IEventPayload
+        => new(typeof(TPayload), payload => readIdentity((TPayload)payload));
+
     private static bool TryGetPayloadIdentity(
         IEventPayload payload,
         [NotNullWhen(true)] out TenantId? tenantId,
         [NotNullWhen(true)] out WorkItemId? workItemId)
     {
-        (tenantId, workItemId) = payload switch
+        if (!_payloadIdentityRegistry.TryGetValue(
+                payload.GetType(),
+                out Func<IEventPayload, (TenantId? TenantId, WorkItemId? WorkItemId)>? getIdentity))
         {
-            WorkItemCreated e => (e.TenantId, e.WorkItemId),
-            ChildSpawned e when e.ChildWorkItemId is not null => (e.TenantId, e.WorkItemId),
-            ProgressReported e => (e.TenantId, e.WorkItemId),
-            ReEstimated e => (e.TenantId, e.WorkItemId),
-            WorkItemCompleted e => (e.TenantId, e.WorkItemId),
-            WorkItemCancelled e => (e.TenantId, e.WorkItemId),
-            WorkItemExpired e => (e.TenantId, e.WorkItemId),
-            WorkItemRejected e => (e.TenantId, e.WorkItemId),
-            WorkItemAssigned e => (e.TenantId, e.WorkItemId),
-            WorkItemQueued e => (e.TenantId, e.WorkItemId),
-            WorkItemClaimed e => (e.TenantId, e.WorkItemId),
-            WorkItemSuspended e => (e.TenantId, e.WorkItemId),
-            WorkItemResumed e => (e.TenantId, e.WorkItemId),
-            WorkItemRescheduled e => (e.TenantId, e.WorkItemId),
-            _ => (null, null),
-        };
+            tenantId = null;
+            workItemId = null;
+            return false;
+        }
+
+        (tenantId, workItemId) = getIdentity(payload);
 
         return tenantId is not null && workItemId is not null;
     }
