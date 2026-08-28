@@ -355,7 +355,7 @@ public sealed class ScaffoldGovernanceTests
     // assertion: Story 4.2 introduces no new event, command, or rejection, so the v1 catalog stays at
     // its frozen count (37 since the F-KERNEL-1 audit fix added WorkItemInitialEffortRejected).
     [Fact]
-    public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36()
+    public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37()
     {
         string root = RepositoryRoot.Locate();
 
@@ -418,12 +418,12 @@ public sealed class ScaffoldGovernanceTests
     // decision record (those are a Theme-4 routing concern). Single-claim-wins is realized as the pure
     // lifecycle + EventStore's ETag-backed atomic actor-state save; the loser's observable rejection is the
     // existing WorkItemTransitionRejected, NOT a new ClaimRejected/ConcurrencyRejected type (DC1).
-    // This mirrors P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36: it
+    // This mirrors P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37: it
     // matches on declared TYPE names (not raw substrings) so legitimate ClaimWorkItem/WorkItemClaimed and
     // XML-comment "claim"/"routing" mentions stay valid, and it is paired with the frozen-catalog assertion
     // so adding a claim-specific or concurrency rejection type breaks the build.
     [Fact]
-    public void P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays36()
+    public void P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays37()
     {
         string root = RepositoryRoot.Locate();
 
@@ -492,7 +492,7 @@ public sealed class ScaffoldGovernanceTests
     // "routing"/"SignalR" mentions stay valid, and it is paired with the frozen-catalog assertion so adding a
     // durable what's-next type breaks the build.
     [Fact]
-    public void P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays36()
+    public void P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays37()
     {
         string root = RepositoryRoot.Locate();
 

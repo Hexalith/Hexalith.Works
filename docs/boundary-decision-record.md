@@ -106,7 +106,7 @@ ownership model. None of them is implemented or wired in v1.
   event (`HandoffToBot`, `ReassignToHuman`, `WorkItemHandedOff`, …); reassignment and hand-off differ only
   by `ExecutorBinding` field values. Hand-off is symmetric in both directions and **auditable** through the
   ordered raw-act event history (each `WorkItemAssigned` is a distinct act, never collapsed). The frozen v1
-  catalog stays 36 — Story 4.2 adds no contract type (a fitness test asserts both the no-kind-vocabulary
+  catalog stays 37 — Story 4.2 adds no contract type (a fitness test asserts both the no-kind-vocabulary
   rule and the catalog size).
 - **Story 4.3 (claim queued work / single-claim-wins).** Single-claim-wins is the **composition** of the
   Works kernel lifecycle (`Queued/Assigned → Claim = Accept(InProgress)`; all else `R`) and the
@@ -119,7 +119,7 @@ ownership model. None of them is implemented or wired in v1.
   claim-eligibility, routing, escalation, ranking, or AI-decision type, and **no** new
   `ClaimRejected`/`ConcurrencyRejected` rejection — claim is **unconditional** in v1 (any tenant Executor
   may claim a queued item; eligibility is the deferred Theme-4 executor-routing seam `IExecutorRouter`
-  above), `AuthorityLevel` stays carried-not-enforced, and the v1 catalog stays 36 (fitness-asserted). The
+  above), `AuthorityLevel` stays carried-not-enforced, and the v1 catalog stays 37 (fitness-asserted). The
   claimable pool itself is a read projection (Story 4.4), not an authoritative queue aggregate.
 - **Story 4.4 (resolve the tenant's what's-next queue).** The tenant "what's next" queue is realized as a
   **pure read projection + query-shaping** over Works' own events (`WhatsNextQueueProjection` +
@@ -131,7 +131,7 @@ ownership model. None of them is implemented or wired in v1.
   `ProjectQueryTenantFilter`) are **distinct controls** (defense-in-depth, D2/NFR-1); `AuthorityLevel`
   stays carried-not-enforced (no `IExecutorRouter` impl — the Theme-4 routing/eligibility seam above is
   still abstraction-only). Works adds **no** routing/eligibility/escalation/ranking type and **no** durable
-  catalog type — the v1 catalog stays 36 (fitness-asserted) and the golden corpus is byte-compatible. The
+  catalog type — the v1 catalog stays 37 (fitness-asserted) and the golden corpus is byte-compatible. The
   notifier requirement is met by **referencing** the substrate seam
   `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore
   owns the SignalR broadcast); the live query/notifier runtime is the deferred Aspire wiring (Stories
@@ -148,7 +148,7 @@ ownership model. None of them is implemented or wired in v1.
   `Reactor`) remains free of Dapr, ASP.NET hosting, EventStore runtime, clocks, I/O, and logging
   (fitness-asserted); the host is the **only** Works source project allowed those adapters. `AuthorityLevel`
   stays carried-not-enforced, there is still no `IExecutorRouter` implementation, and **no** production UI, MCP,
-  chatbot, email, routing, cost, or security-hardening surface is composed. The v1 catalog stays **36** and the
+  chatbot, email, routing, cost, or security-hardening surface is composed. The v1 catalog stays **37** and the
   golden corpus is byte-unchanged (no durable type added by the adapter/query/read-model code).
 - **Story 4.6 (prove reminder and reactor recovery).** Date-based resumes and terminal-cascade restart recovery
   are still **adapter-edge orchestration**, not new kernel behavior. Works owns only deterministic reminder

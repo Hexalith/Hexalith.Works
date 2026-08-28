@@ -409,7 +409,7 @@ Claude Opus 4.8 (1M context) — `claude-opus-4-8[1m]`, `bmad-dev-story` workflo
   the latest binding authoritative for the next claim (AC #3, incl. through serialization); the full
   requeue→reclaim-by-a-different-executor path (D6, distinct from Story 2.5's reject path); and terminal-state
   assignment/queue rejection with no binding mutation and no sequence burn across all four terminals (D5).
-- **Task 6:** Added `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`
+- **Task 6:** Added `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37`
   — matches declared type names (not substrings) against `HandoffTo*`/`ReassignTo*`/`AssignTo<Kind>*`/
   `*HandedOff`/`Unassign*`/`ReturnToPool*` (none exist) and asserts the v1 catalog stays 36 by reflecting the
   `Polymorphic`-derived concrete types in the Contracts assembly (ArchitectureTests cannot reference the

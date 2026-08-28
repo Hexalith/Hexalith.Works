@@ -88,7 +88,7 @@ byte-unchanged (DC3). `WhatsNextItem` is a plain `System.Text.Json` record, not 
 
 ### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +2 cases
 
-- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays36`
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays37`
   — **new fitness test** (Task 8, AC #1/#4 + DC3). Mirrors the 4.2/4.3 declared-type-name scans: forbids a
   what's-next routing/surface vocabulary (`RoutingEngine`, `EligibilityScore`/`EligibilityEngine`/
   `EligibilityFilter`, `EscalationLadder`, `ExecutorRanking`, a concrete `*Router` impl with the
@@ -306,9 +306,9 @@ golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/Golde
 
 ### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +1 case
 
-- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays36`
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays37`
   — **new fitness test** (Task 4, AC #4 + DC1/DC4). Mirrors
-  `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`: scans declared
+  `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37`: scans declared
   **type names** under `src/` (reusing the `declarationRegex` + exclusion set) for a forbidden claim/routing
   vocabulary (`ClaimEligibility*`, `EligibilityFilter*`, `EligibilityEngine*`, `ClaimRouter*`,
   `RoutingScore*`, `ExecutorRanking*`, `EscalationLadder*`, `ClaimDecisionRecord*`, and the DC1-forbidden
@@ -511,7 +511,7 @@ golden corpus under `tests/Hexalith.Works.IntegrationTests/SchemaEvolution/` is 
 
 ### Architecture tests (`tests/Hexalith.Works.ArchitectureTests`) — +1 case
 
-- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`
+- [x] `ScaffoldGovernanceTests.P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37`
   — **new fitness test** (Task 6, AC #2/#5, FR-17). Mirrors
   `P0_WorkItemDomainDoesNotBranchOnExecutorKindChannelOrAuthority`: scans production `src/**/*.cs`
   (excluding `bin`/`obj`, `*.g.cs`, `*Assembly.cs`, and the value-object definition files) for **declared

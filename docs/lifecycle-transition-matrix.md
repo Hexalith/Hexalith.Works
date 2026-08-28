@@ -195,7 +195,7 @@ Notes:
   state and lands on the existing `InProgress + Claim = R` cell →
   `WorkItemTransitionRejected(InProgress, "Claim")`. The loser's observable rejection is therefore the
   **existing** `WorkItemTransitionRejected` (DC1) — **no** `ClaimRejected`/`ConcurrencyRejected` type is
-  added and the v1 catalog stays **36**. Retry-exhaustion under hot contention is an infrastructure failure
+  added and the v1 catalog stays **37**. Retry-exhaustion under hot contention is an infrastructure failure
   (exception/dead-letter), not a domain rejection; the live ETag append/retry path is exercised under
   Aspire in Story 4.5.
 - **Active work is not directly reassigned or requeued (D4 — finalizes Story 2.1's deferred edge cell).**

@@ -109,7 +109,7 @@ so that system agents and people can pull from the same backlog without double o
 
 - [x] **Task 4 — Guardrail: unconditional claim, no eligibility/routing, catalog stays 36 (AC: #4)**
   - [x] Add a fitness method on `tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs`
-    (mirror `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36`): scan declared
+    (mirror `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37`): scan declared
     **type names** under `src/` (reuse the existing `declarationRegex` + exclusion set) for a forbidden claim/
     routing vocabulary — patterns such as `ClaimEligibility`, `ClaimRouter`, `EligibilityFilter`,
     `EscalationLadder`, `RoutingScore`, `ExecutorRanking`, `ClaimDecisionRecord` — and assert none exist.
@@ -329,7 +329,7 @@ All paths under the `Hexalith.Works` root unless noted; line numbers are approxi
     samples. `SchemaEvolution/Golden/WorkItemClaimed.v1.json` + `SchemaEvolutionGoldenCorpusTests.cs` must stay
     byte-compatible (no new type → no corpus change).
   - `tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs` —
-    `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays36` (L366–422) is the exact
+    `P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays37` (L366–422) is the exact
     pattern to mirror for the Task 4 claim/routing-vocabulary guard (`declarationRegex`, exclusion set,
     reflection-based `polymorphicCatalogCount.ShouldBe(36, …)`).
   - `tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs` —
@@ -372,7 +372,7 @@ All paths under the `Hexalith.Works` root unless noted; line numbers are approxi
   concurrency test's two distinct bindings. [Source:
   _bmad-output/implementation-artifacts/4-1-bind-work-to-a-uniform-party-executor.md]
 - **Story 4.2** was the analogous **no-production-code** proof/guardrail story (FR-17/FR-18 reconcile + tests +
-  fitness): it added the `…CatalogStays36` fitness test to mirror, finalized matrix edge cells, and confirmed the
+  fitness): it added the `…CatalogStays37` fitness test to mirror, finalized matrix edge cells, and confirmed the
   claim path "models the transition only; single-claim-wins is Story 4.3." [Source:
   _bmad-output/implementation-artifacts/4-2-assign-reassign-and-hand-off-work.md]
 - **Epic 3 retrospective lessons** (carry forward): (1) first passes can pass under-cover — make an explicit QA
@@ -428,7 +428,7 @@ it untouched (do not run recursive submodule commands).
 - [Source: Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Results/DomainResult.cs] — `IsSuccess`/`IsRejection`/`IsNoOp`; mixed results rejected at construction.
 - [Source: _bmad-output/implementation-artifacts/2-1-define-the-lifecycle-state-machine.md] — origin of the claim transition and the matrix.
 - [Source: _bmad-output/implementation-artifacts/4-1-bind-work-to-a-uniform-party-executor.md] — uniform `ExecutorBinding`, valid-`AuthorityLevel` requirement, claim-binding proof across kinds.
-- [Source: _bmad-output/implementation-artifacts/4-2-assign-reassign-and-hand-off-work.md] — the analogous no-production-code proof/guardrail pattern and the `…CatalogStays36` fitness test to mirror.
+- [Source: _bmad-output/implementation-artifacts/4-2-assign-reassign-and-hand-off-work.md] — the analogous no-production-code proof/guardrail pattern and the `…CatalogStays37` fitness test to mirror.
 - [Source: _bmad-output/implementation-artifacts/tests/test-summary.md] — authoritative baseline counts (549 green) and catalog size (36).
 - [Source: Hexalith.Projects/_bmad-output/project-context.md#Critical Implementation Rules] — purity, persist-then-publish, rejection-as-event, additive serialization, file-scoped namespaces, sealed records, xUnit v3 + Shouldly.
 - [Source: CLAUDE.md] — root-submodule and `ProjectReference`-not-`PackageReference` rules.
@@ -513,7 +513,7 @@ claude-opus-4-8[1m] (Claude Opus 4.8, 1M context)
 AC #2/#5 (`Same_observed_state_produces_claim_candidates…` + the `WorkItemClaimConvergencePropertyTests`
 order-independent property — both deterministic, no threads, RR-3-faithful); AC #3
 (`Claim_from_a_non_claimable_status…` across all 7 non-claimable statuses + DC5 duplicate-holder case);
-AC #4 (`P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays36` fitness
+AC #4 (`P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays37` fitness
 guard + boundary-record note). Every `[x]` task verified done.
 
 **Findings:**

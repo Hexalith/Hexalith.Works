@@ -188,7 +188,7 @@ so that assigned and claimable work can be ordered without introducing a routing
 
 - [x] **Task 8 — Guardrail fitness: catalog stays 36, no routing/surface type in the kernel (AC: #1, #4)**
   - [x] Extend `tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs` (mirror
-    `P0_WorkItemSurfaceHasNo…AndCatalogStays36`): scan declared type names under `src/` for a forbidden
+    `P0_WorkItemSurfaceHasNo…AndCatalogStays37`): scan declared type names under `src/` for a forbidden
     what's-next vocabulary — `RoutingEngine`, `EligibilityScore`/`EligibilityEngine`, `EscalationLadder`,
     `ExecutorRanking`, `*Router` impl, plus surface types `*DataGrid`, `*Hub`, `*SignalR*`, `*WebShell`,
     `*MailSurface`/`*EmailSurface`, `*McpTool`, `*Chatbot*` — and assert none exist in the Works kernel.
@@ -393,7 +393,7 @@ All paths under the `Hexalith.Works` root unless noted; line numbers are approxi
   / `WorkItemClaimConvergencePropertyTests.cs` (FsCheck wiring for the optional Task 9 property);
   `tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs` (`Count == 36`);
   `tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs` (mirror the
-  `…AndCatalogStays36` fitness method), `DependencyDirectionTests.cs`, `BoundaryDecisionRecordTests.cs`,
+  `…AndCatalogStays37` fitness method), `DependencyDirectionTests.cs`, `BoundaryDecisionRecordTests.cs`,
   `BoundaryPortTests.cs`, `EventStoreApiSurfaceCharacterizationTests.cs`.
 
 ### Technical Requirements
@@ -436,7 +436,7 @@ All paths under the `Hexalith.Works` root unless noted; line numbers are approxi
   explicitly defers the scaled what's-next populator to **this** story — and hardened `ExecutorBinding` (rejects
   `Channel.Unknown`/`AuthorityLevel.Unknown`; every test binding must use a **valid** `AuthorityLevel`). Reuse
   those binding fixtures. [Source: _bmad-output/implementation-artifacts/4-1-…md; WorkItemExecutorBindingView.cs]
-- **Story 4.2/4.3** were no-production-code proof/guardrail stories that added the `…CatalogStays36` fitness
+- **Story 4.2/4.3** were no-production-code proof/guardrail stories that added the `…CatalogStays37` fitness
   pattern to mirror (Task 8) and recorded that the **claimable pool is a read projection (Story 4.4)**, claim is
   unconditional, and `AuthorityLevel` is carried-not-enforced. The matrix note (~L194–200) records that the
   "who owns a queued item" presentation is the 4.4 what's-next projection's job. [Source:

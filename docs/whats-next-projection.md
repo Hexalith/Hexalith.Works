@@ -130,7 +130,7 @@ The projection, comparator, filter, and change-signal are pure code in `Hexalith
 model `WhatsNextItem` in `Hexalith.Works.Contracts`), referencing only Works contracts (+
 `EventStore.Contracts`). They do not read EventStore, repositories, files, clocks, Dapr, runtime
 configuration, UI, routing, LLM, or cost-governance services. Story 4.4 adds **no** event, command, or
-rejection type — the v1 catalog stays **36** and the golden corpus stays byte-compatible (DC3). The live
+rejection type — the v1 catalog stays **37** and the golden corpus stays byte-compatible (DC3). The live
 `IDomainQueryHandler` / `/query` endpoint, `IReadModelStore` persistence, and the
 `IProjectionChangeNotifier` / SignalR broadcast are the deferred runtime adapters (Stories 4.5/4.6), gated
 on the EventStore projection-model reconciliation.

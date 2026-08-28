@@ -338,7 +338,9 @@ location: docs/lifecycle-transition-matrix.md:198
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: docs/lifecycle-transition-matrix.md:198, docs/whats-next-projection.md:120 and docs/boundary-decision-record.md:109/122/134/151 say 36; ScaffoldGovernanceTests asserts polymorphicCatalogCount.ShouldBe(37) and docs/eventstore-api-surface-constraints.md:112 says 37. Pre-existing staleness, surfaced while reconciling sequencing terminology in the same files.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-v1-catalog-count-reconciliation
+resolution-undo: d14ab66c4bb7ff2377be30a1297960dd1e5973c6cae6066ca9e75a455bf8debe 2026-08-28 7374617475733a206f70656e
 
 ### DW-37: Mid-stream and repeated-rejection envelope/payload divergence is unproven at the persistence layer.
 origin: spec-deferred efac8f417df1
@@ -385,7 +387,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernance
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: low
 reason: ScaffoldGovernanceTests.cs:387, :455 and :524 declare ...AndCatalogStays36; the comment directly above the third says the wire surface "stays frozen at 37". Renaming is not free: roughly ten story-file and test-summary references quote those method names verbatim, so the rename and the reference sweep must land together. Distinct surface from the documentation-paragraph instance already tracked.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-v1-catalog-count-reconciliation
+resolution-undo: d14ab66c4bb7ff2377be30a1297960dd1e5973c6cae6066ca9e75a455bf8debe 2026-08-28 7374617475733a206f70656e
 
 ### DW-42: Follow-up review still recommended for dw-envelope-canonical-sequencing after the damping cap was spent
 origin: review-budget-followup
