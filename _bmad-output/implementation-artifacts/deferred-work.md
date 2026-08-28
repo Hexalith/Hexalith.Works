@@ -495,7 +495,16 @@ status: open
 decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
 decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
 
-## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)
+### DW-56: Completed-marker failure can still be acknowledged as processed
 
-- Event processing can return `Processed` after `MarkCompletedAsync` fails, leaving no durable deduplication marker for a later duplicate delivery (`src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:119`). This behavior predates Story 4.8.
-- Event processing validates envelope metadata and payload identity but does not reject an envelope whose `Domain` is not `work` (`src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:227`). This behavior predates Story 4.8.
+origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
+location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:119
+reason: Event processing can return `Processed` after `MarkCompletedAsync` fails, leaving no durable deduplication marker for a later duplicate delivery. This behavior predates Story 4.8.
+status: open
+
+### DW-57: Event processor does not reject non-work domains
+
+origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
+location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:227
+reason: Event processing validates envelope metadata and payload identity but does not reject an envelope whose `Domain` is not `work`. This behavior predates Story 4.8.
+status: open
