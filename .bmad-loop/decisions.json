@@ -25,5 +25,14 @@
     "key": "1",
     "label": "Platform reconciliation seam",
     "resolution": ""
+  },
+  "DW-55": {
+    "answered_at": "2026-08-28",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.",
+    "key": "1",
+    "label": "Direct Server test reference",
+    "resolution": ""
   }
 }
