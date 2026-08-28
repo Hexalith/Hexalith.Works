@@ -1,22 +1,4 @@
 {
-  "DW-11": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Update the EventStore shared pub/sub YAML and tests to authorize works only for work.events, advance the submodule pin, and pass that YAML through pubSubComponentPath.",
-    "key": "1",
-    "label": "Scope shared component",
-    "resolution": ""
-  },
-  "DW-12": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Update discovery only when a cascade first becomes incomplete and when it becomes complete, preserving per-target checkpoint durability without repeated global index writes.",
-    "key": "1",
-    "label": "Transition-only indexing",
-    "resolution": ""
-  },
   "DW-38": {
     "answered_at": "2026-08-27",
     "bundle_name": "",
@@ -24,15 +6,6 @@
     "intent": "Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.",
     "key": "1",
     "label": "Add exact persisted corpus",
-    "resolution": ""
-  },
-  "DW-4": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Document EventStore envelope SequenceNumber as the canonical stream position and Works payload Sequence as the state-changing-event ordinal; add rejection-then-create persistence/replay coverage and reconcile the contradictory architecture text.",
-    "key": "1",
-    "label": "Envelope-canonical sequencing",
     "resolution": ""
   },
   "DW-45": {
@@ -51,15 +24,6 @@
     "intent": "Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.",
     "key": "1",
     "label": "Platform reconciliation seam",
-    "resolution": ""
-  },
-  "DW-7": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Persist or expose rolled remaining as unavailable when child contributions cannot be reconciled, while preserving reliable own effort and terminal status.",
-    "key": "1",
-    "label": "Refuse stale roll-ups",
     "resolution": ""
   }
 }
