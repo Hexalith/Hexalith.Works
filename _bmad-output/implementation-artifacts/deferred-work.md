@@ -427,7 +427,9 @@ location: n/a
 source_spec: `spec-cascade-transition-only-indexing.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260827-214141-f7db; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-08-28
+resolution: closed by human decision: Close after three completed review passes, green verification, and two consecutive passes without production control-flow changes.
+decision: 2026-08-28 Accept review saturation — Close after three completed review passes, green verification, and two consecutive passes without production control-flow changes.
 
 ### DW-48: Exact dependency-direction allowlists inspect literal project files but not ProjectReference items introduced by imported MSBuild props or targets.
 origin: spec-deferred f984e193f381
@@ -468,6 +470,7 @@ source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: WorkItemRollUp already accepted the count as an independent positional integer before this bundle. The approved DW-26 decision preserves that behavior while renaming it, so deriving or validating the value would be a separate contract change.
 status: open
+decision: 2026-08-28 Derive exposed count — Remove the independent count input, compute ExposedChildCount from ChildWorkItemIds, preserve the intended exposedChildCount wire output, and update constructors, serialization compatibility tests, consumers, and documentation.
 
 ### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no
 origin: spec-deferred 96d65c591dec
