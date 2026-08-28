@@ -284,9 +284,10 @@ public sealed class DependencyDirectionTests
                     "Hexalith.Works.Server",
                     "Hexalith.Works.ServiceDefaults",
                     "Hexalith.EventStore.Aspire",
+                    "Hexalith.EventStore.Operations",
                 ],
                 ignoreOrder: true,
-                customMessage: "AppHost should wire only the Works topology and EventStore Aspire support.");
+                customMessage: "AppHost should wire only the Works topology plus EventStore Aspire and operations workloads.");
     }
 
     [Fact]

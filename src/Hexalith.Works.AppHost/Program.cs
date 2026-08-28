@@ -12,17 +12,12 @@ IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(ar
 string eventStoreAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.yaml");
 string worksAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.works.yaml");
 string adminServerAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.eventstore-admin.yaml");
+string operationsAccessControlConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "accesscontrol.eventstore-operations.yaml");
 string resiliencyConfigPath = ResolveDaprConfigPath(
     builder.AppHostDirectory,
     Path.Combine("resiliency", "resiliency.yaml"));
 string stateStoreComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "statestore.yaml");
-string pubSubComponentPath = ProjectMetadataPaths.GetProjectPath(
-    "references",
-    "Hexalith.EventStore",
-    "src",
-    "Hexalith.EventStore.AppHost",
-    "DaprComponents",
-    "pubsub.yaml");
+string pubSubComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "pubsub.yaml");
 
 // Model the resiliency CRD as a local Dapr resource so every sidecar that must enforce the committed policy
 // receives its directory on --resources-path explicitly, instead of picking the file up incidentally because
@@ -59,6 +54,13 @@ _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Domain", "work")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__Version", "v1")
     .WithEnvironment("EventStore__Publisher__TopicOverrides__work", "work.events")
+
+    // Command dead letters must not collide with the subscriber DLQ. EventPublisherOptions derives the command
+    // dead-letter topic as "{prefix}.{GetPubSubTopic(identity)}", and the override above resolves the work
+    // domain's topic to work.events -- so the default "deadletter" prefix produces the literal string
+    // deadletter.work.events, which is the topic the operations workload drains. A distinct prefix keeps the two
+    // queues separate, as the operator runbook states, and matches the eventstore publish grant in pubsub.yaml.
+    .WithEnvironment("EventStore__Publisher__DeadLetterTopicPrefix", "commanddeadletter")
     .WithEnvironment("Authentication__DaprInternal__AllowedCallers__0", "works");
 
 IResourceBuilder<ProjectResource> adminServer = builder.AddProject<HexalithEventStoreAdminServerHost>("eventstore-admin");
@@ -91,6 +93,37 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
     .AddEventStoreDomainModule(eventStoreResources, "works", worksAccessControlConfigPath)
     .WithEnvironment("EventStore__CommandGateway__BaseAddress", eventStore.GetEndpoint("http"))
     .WaitFor(eventStoreResources.StateStore);
+
+// Reusable EventStore-owned operations workload. Its actor is the durable serialization point for the Works
+// subscriber DLQ. It has state access, subscribes only to deadletter.work.events, and has no publish grant.
+// Replay reaches Works only through the narrow /work/events service-invocation policy.
+IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventStoreOperations>("eventstore-operations")
+    .WithHttpEndpoint()
+    .WithHttpHealthCheck("/alive")
+    .WithEnvironment("EventStoreOperations__PubSubName", "pubsub")
+    .WithEnvironment("EventStoreOperations__TopicName", "deadletter.work.events")
+    .WithEnvironment("EventStoreOperations__CaptureRoute", "/dead-letters/work/events")
+    .WithEnvironment("EventStoreOperations__AdminCallerAppId", "eventstore-admin")
+    .WithEnvironment("EventStoreOperations__ReplayAppId", "works")
+    .WithEnvironment("EventStoreOperations__ReplayMethodName", "work/events")
+    .WithReference(works)
+    .WaitFor(works)
+    .WaitFor(eventStoreResources.StateStore)
+    .WithDaprSidecar(sidecar => sidecar
+        .WithOptions(new DaprSidecarOptions
+        {
+            AppId = "eventstore-operations",
+            Config = operationsAccessControlConfigPath,
+            EnableAppHealthCheck = true,
+            AppHealthCheckPath = "/alive",
+        })
+        .WithReference(eventStoreResources.StateStore)
+        .WithReference(eventStoreResources.PubSub));
+
+_ = adminServer
+    .WithEnvironment("AdminServer__OperationsAppId", "eventstore-operations")
+    .WithReference(operations)
+    .WaitFor(operations);
 
 // The resiliency CRD carries policies for both ends of the pipeline: pubsubRetryInbound/subscriberTimeout for
 // the Works subscriber (the bounded retry budget that ends in deadletter.work.events) and

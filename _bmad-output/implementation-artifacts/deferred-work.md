@@ -267,7 +267,9 @@ location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.c
 source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: medium
 reason: The current endpoint mapping acknowledges every value except RetryableInProgress with HTTP 200. If the referenced EventStore SDK later adds a processing result, the Works endpoint would silently acknowledge that unrecognized outcome instead of retrying it. This behavior predates this bundle and is not caused by the DLQ/topology changes.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-dapr-subscription-operations-hardening
+resolution-undo: f7fdc870700be500be9dd4703686ba265d04eaeb5703c418c00416b72edf62ad 2026-08-28 7374617475733a206f70656e
 
 ### DW-30: The resiliency CRD's statestore target declares retry/timeout/circuitBreaker at the top level instead of under inbound/outbound, so Dapr drops those policies.
 origin: spec-deferred eaa2c317b239
@@ -275,7 +277,9 @@ location: src/Hexalith.Works.AppHost/DaprComponents/resiliency/resiliency.yaml:5
 source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: medium
 reason: daprd parses `spec.targets.components.<name>` as inbound/outbound sections. Running daprd 1.18.1 against the committed file reduces the `statestore` target to `{"inbound":{},"outbound":{}}`, discarding `retry: defaultRetry`, `timeout: daprSidecar`, and `circuitBreaker: defaultBreaker`. The `pubsub` target uses the correct shape. This predates the bundle and is outside AC #4, which covers the actor state-store metadata/scopes and the inbound retry target only.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-dapr-subscription-operations-hardening
+resolution-undo: f7fdc870700be500be9dd4703686ba265d04eaeb5703c418c00416b72edf62ad 2026-08-28 7374617475733a206f70656e
 
 ### DW-31: Nothing consumes, drains, alerts on, or documents the deadletter.work.events topic.
 origin: spec-deferred b7f701b76c90
@@ -283,7 +287,9 @@ location: src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.c
 source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: low
 reason: The dead-letter topic is referenced only by the subscription endpoint and its regression test. The intent forbids subscribing Works to its own DLQ, so bounding redelivery necessarily trades an infinite retry loop for retained-but-unobserved messages. An operator drain/alert path and a runbook entry belong to a separate operational decision, not to this bundle.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-dapr-subscription-operations-hardening
+resolution-undo: f7fdc870700be500be9dd4703686ba265d04eaeb5703c418c00416b72edf62ad 2026-08-28 7374617475733a206f70656e
 decision: 2026-08-27 Platform DLQ operator — Add a separate reusable EventStore or operations subscriber with narrowly scoped deadletter.work.events access, redacted metrics and alerts, a durable drain or replay workflow, an operator runbook, and integration coverage while keeping Works unsubscribed.
 
 ### DW-32: Follow-up review still recommended for dw-dapr-subscription-topology-hardening after the damping cap was spent
@@ -292,7 +298,9 @@ location: n/a
 source_spec: `spec-dapr-subscription-topology-hardening.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260826-171625-6b20; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-dapr-subscription-operations-hardening
+resolution-undo: f7fdc870700be500be9dd4703686ba265d04eaeb5703c418c00416b72edf62ad 2026-08-28 7374617475733a206f70656e
 
 ### DW-33: External test cancellation is converted into an unavailable-port result by the pre-existing TCP probe.
 origin: spec-deferred 9ae6f9653e9f
@@ -474,4 +482,12 @@ location: src/Hexalith.Works.Projections/Strategies/WhatsNextQueueProjection.cs:
 source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: WhatsNextQueueProjection.EventMatchesDelivery enumerates the same 14 payload types with a fail-closed `_ => false` fallthrough and is driven in production by WorkItemProjectionDispatcher.DispatchAsync. None of its 37 unit tests enumerate payload types, and no architecture test ties its accepted set to Contracts. A 15th non-rejection event would be silently dropped from the tenant what's-next index with a green suite. The spec's Never clause forbids modifying unrelated projections, so this is out of scope for this bundle.
+status: open
+
+### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests
+origin: spec-deferred 3bd2f3fc99d1
+location: references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Capture/DeadLetterEnvelopeParser.cs
+source_spec: `spec-dapr-subscription-operations-hardening.md`
+severity: high
+reason: DeadLetterEnvelopeParser requires data.messageId, tenantId, domain, aggregateId, correlationId and one of the eventTypeName/eventName/eventType aliases; a missing field collapses the identity to "unidentified-<hash>" and permanently disqualifies the item from replay. Every fixture (DeadLetterEnvelopeParserTests, DeadLetterCaptureBodyTests) is a UTF-8 literal typed into the test file, and nothing in either repository builds one by serializing the real producer envelope. This is not hypothetical: the first pass of this story shipped exactly that defect (the parser accepted only eventName/eventType while the publisher emits eventTypeName) and human review, not a test, caught it. Caused by this change but not trivially fixable: Hexalith.EventStore.Operations.Tests would need a reference to Hexalith.EventStore.Server to serialize EventEnvelope, which is a deliberate dependency-surface decision for a shared submodule rather than an in-pass patch.
 status: open

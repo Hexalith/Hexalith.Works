@@ -19,8 +19,14 @@ namespace Hexalith.Works.Runtime.Events;
 /// <c>dapr-caller-app-id</c> header used by <c>Authentication:DaprInternal:AllowedCallers</c> is attached only
 /// to Dapr <em>service-invocation</em> (app-to-app RPC) requests, not <em>pub/sub delivery</em> callbacks like
 /// this one, so that check does not apply here. The protection boundary for a pub/sub subscription endpoint is
-/// network/deployment topology — only the local Dapr sidecar's loopback call reaches it — not an app-level
-/// header check.
+/// network/deployment topology, not an app-level header check.
+/// <para>
+/// This route is no longer reached by pub/sub delivery alone: the <c>eventstore-operations</c> workload replays
+/// a captured dead letter to it through Dapr <em>service invocation</em>. That caller is admitted by the Dapr
+/// access-control policy in <c>accesscontrol.works.yaml</c>, which denies by default and grants
+/// <c>eventstore-operations</c> exactly <c>POST /work/events</c> — so the boundary is still topology, but it is
+/// now the sidecar's caller policy rather than loopback alone, and it must stay deny-by-default for that to hold.
+/// </para>
 /// </remarks>
 internal static class WorksDomainEventEndpointExtensions
 {
@@ -60,10 +66,18 @@ internal static class WorksDomainEventEndpointExtensions
         return "deadletter." + topicName;
     }
 
-    private static IResult MapProcessingResult(EventStoreDomainEventProcessingResult result)
-    {
-        return result == EventStoreDomainEventProcessingResult.RetryableInProgress
-            ? Results.Problem(statusCode: StatusCodes.Status500InternalServerError)
-            : Results.Ok();
-    }
+    /// <summary>Maps every pinned processing outcome and fails retryably for future values.</summary>
+    internal static IResult MapProcessingResult(EventStoreDomainEventProcessingResult result)
+        => result switch
+        {
+            EventStoreDomainEventProcessingResult.Processed => Results.Ok(),
+            EventStoreDomainEventProcessingResult.Duplicate => Results.Ok(),
+            EventStoreDomainEventProcessingResult.SkippedUnknownEventType => Results.Ok(),
+            EventStoreDomainEventProcessingResult.SkippedNoHandlers => Results.Ok(),
+            EventStoreDomainEventProcessingResult.SkippedAggregateMismatch => Results.Ok(),
+            EventStoreDomainEventProcessingResult.FailedInvalidPayload => Results.Ok(),
+            EventStoreDomainEventProcessingResult.RetryableInProgress => Results.Problem(
+                statusCode: StatusCodes.Status500InternalServerError),
+            _ => Results.Problem(statusCode: StatusCodes.Status500InternalServerError),
+        };
 }

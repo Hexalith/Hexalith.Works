@@ -1,18 +1,19 @@
 # DAPR Access Control Configuration for the Works domain-service sidecar
 # ================================================================================
-# WARNING: Local development only.
-# Production MUST use receiver-specific deny-by-default configs with mTLS.
-#
 # Loaded only by the `works` sidecar; governs which CALLERS may invoke the Works domain service through Dapr
-# service invocation. EventStore dispatches commands (/process), queries (/query), and projection rebuilds
-# (/project) to Works, so `eventstore` is the named allowed caller.
+# service invocation. Deny-by-default at both the configuration and the per-caller level: EventStore dispatches
+# commands (/process), queries (/query), projection rebuilds (/project), and replay state (/replay-state), and
+# the operations workload may reach only /work/events to redeliver a captured dead letter.
+#
+# WARNING: Local development only -- the trust domain and namespace are the dapr-init defaults and callers are
+# not mutually authenticated. Production must additionally enable mTLS so an app id cannot simply be asserted.
 apiVersion: dapr.io/v1alpha1
 kind: Configuration
 metadata:
   name: accesscontrol-works
 spec:
   accessControl:
-    defaultAction: allow
+    defaultAction: deny
     trustDomain: "public"
     policies:
       - appId: eventstore
@@ -30,5 +31,13 @@ spec:
             httpVerb: ['POST']
             action: allow
           - name: /replay-state
+            httpVerb: ['POST']
+            action: allow
+      - appId: eventstore-operations
+        defaultAction: deny
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /work/events
             httpVerb: ['POST']
             action: allow

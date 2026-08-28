@@ -1,0 +1,43 @@
+# Works-owned local Redis pub/sub boundary.
+# Every endpoint is a dapr-init executable literal. Component, publish, and subscribe scopes are all explicit:
+# EventStore publishes only work.events; Works subscribes only to work.events; eventstore-operations subscribes
+# only to deadletter.work.events and may not publish at all.
+#
+# Works is granted publish on deadletter.work.events and nothing else. That grant is not an application
+# capability: Dapr's poison-message forwarding is performed by the *subscribing* sidecar, which publishes to the
+# subscription's DeadLetterTopic under its own app id. With deadletter.work.events listed in protectedTopics, an
+# empty works publishing scope would deny that forwarding outright, so no poison message could ever reach the
+# operations workload and the capture/replay path would be permanently inert. The Works application itself never
+# publishes -- it holds no publish call site and is not subscribed to the dead-letter topic.
+#
+# EventStore's own command dead letters are a different queue and must stay one. EventPublisherOptions derives
+# that topic as "{DeadLetterTopicPrefix}.{GetPubSubTopic(identity)}", and this composition overrides the work
+# domain's topic to work.events -- so with the default "deadletter" prefix the command dead-letter topic would
+# be the literal string deadletter.work.events, the subscriber DLQ. The AppHost therefore sets the prefix to
+# "commanddeadletter", and eventstore is granted publish on exactly that one extra topic. Without the grant the
+# scoped component denies the publish and every command dead letter is lost; without the distinct prefix the two
+# queues merge and command failures land in the subscriber backlog an operator is told never to replay there.
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: pubsub
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+    - name: redisHost
+      value: "localhost:6379"
+    - name: redisPassword
+      value: ""
+    - name: publishingScopes
+      value: "eventstore=work.events,commanddeadletter.work.events;works=deadletter.work.events;eventstore-operations="
+    - name: subscriptionScopes
+      value: "eventstore=;works=work.events;eventstore-operations=deadletter.work.events"
+    - name: allowedTopics
+      value: "work.events,deadletter.work.events,commanddeadletter.work.events"
+    - name: protectedTopics
+      value: "work.events,deadletter.work.events,commanddeadletter.work.events"
+scopes:
+  - eventstore
+  - works
+  - eventstore-operations

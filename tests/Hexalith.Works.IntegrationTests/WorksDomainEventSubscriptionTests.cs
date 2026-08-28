@@ -31,6 +31,26 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 public sealed class WorksDomainEventSubscriptionTests
 {
+    /// <summary>Verifies the pinned exhaustive outcome mapping fails closed for future values.</summary>
+    [Theory]
+    [InlineData(EventStoreDomainEventProcessingResult.Processed, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.Duplicate, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.SkippedUnknownEventType, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.SkippedNoHandlers, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.SkippedAggregateMismatch, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.FailedInvalidPayload, HttpStatusCode.OK)]
+    [InlineData(EventStoreDomainEventProcessingResult.RetryableInProgress, HttpStatusCode.InternalServerError)]
+    [InlineData((EventStoreDomainEventProcessingResult)int.MaxValue, HttpStatusCode.InternalServerError)]
+    public void ProcessingResultMappingIsExhaustiveAndFutureValuesFailClosed(
+        EventStoreDomainEventProcessingResult result,
+        HttpStatusCode expectedStatus)
+    {
+        IResult mapped = WorksDomainEventEndpointExtensions.MapProcessingResult(result);
+
+        mapped.ShouldBeAssignableTo<IStatusCodeHttpResult>()
+            .StatusCode.ShouldBe((int)expectedStatus);
+    }
+
     /// <summary>Verifies the host-owned delivery route and SDK-owned discovery route are each unique.</summary>
     [Fact]
     public async Task WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute()

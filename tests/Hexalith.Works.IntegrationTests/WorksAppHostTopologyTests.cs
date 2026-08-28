@@ -19,10 +19,15 @@ public sealed class WorksAppHostTopologyTests
 {
     private const string EventStoreName = "eventstore";
     private const string EventStoreAdminName = "eventstore-admin";
+    private const string EventStoreOperationsName = "eventstore-operations";
     private const string PubSubName = "pubsub";
     private const string ResiliencyName = "resiliency";
     private const string StateStoreName = "statestore";
     private const string WorksName = "works";
+    private const string SourceTopic = "work.events";
+    private const string DeadLetterTopic = "deadletter.work.events";
+    private const string CommandDeadLetterPrefix = "commanddeadletter";
+    private const string CommandDeadLetterTopic = CommandDeadLetterPrefix + "." + SourceTopic;
 
     /// <summary>Verifies exact project, endpoint, sidecar, relationship, and environment values.</summary>
     [Fact]
@@ -34,10 +39,12 @@ public sealed class WorksAppHostTopologyTests
 
         ProjectResource eventStore = Project(builder, EventStoreName);
         ProjectResource adminServer = Project(builder, EventStoreAdminName);
+        ProjectResource operations = Project(builder, EventStoreOperationsName);
         ProjectResource works = Project(builder, WorksName);
 
         HealthKeys(eventStore).ShouldBe(Sorted(["eventstore_http_/alive_200_check"]));
         HealthKeys(works).ShouldBe(Sorted(["works_http_/alive_200_check"]));
+        HealthKeys(operations).ShouldBe(Sorted(["eventstore-operations_http_/alive_200_check"]));
 
         EndpointAnnotation worksHttp = works.Annotations
             .OfType<EndpointAnnotation>()
@@ -54,6 +61,7 @@ public sealed class WorksAppHostTopologyTests
         IDaprSidecarResource eventStoreSidecar = Sidecar(eventStore);
         IDaprSidecarResource adminSidecar = Sidecar(adminServer);
         IDaprSidecarResource worksSidecar = Sidecar(works);
+        IDaprSidecarResource operationsSidecar = Sidecar(operations);
 
         DaprSidecarOptions eventStoreOptions = SidecarOptions(eventStoreSidecar);
         eventStoreOptions.AppId.ShouldBe(EventStoreName);
@@ -74,12 +82,22 @@ public sealed class WorksAppHostTopologyTests
         worksOptions.AppPort.ShouldBeNull();
         ReferencedComponents(worksSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
+        DaprSidecarOptions operationsOptions = SidecarOptions(operationsSidecar);
+        operationsOptions.AppId.ShouldBe(EventStoreOperationsName);
+        operationsOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-operations.yaml"));
+        operationsOptions.EnableAppHealthCheck.ShouldBe(true);
+        operationsOptions.AppHealthCheckPath.ShouldBe("/alive");
+        ReferencedComponents(operationsSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
+
         // Two "Reference" relationships to eventstore, not one: AddEventStoreDomainModule contributes the
         // domain-module reference and the explicit EventStore__CommandGateway__BaseAddress endpoint reference
         // contributes the second. Counted rather than de-duplicated so losing either one fails here.
         ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName]);
         WaitedResources(works).ShouldBe([EventStoreName, StateStoreName]);
-        ReferencedResources(adminServer).ShouldBe([EventStoreName]);
+        ReferencedResources(adminServer).ShouldBe([EventStoreName, EventStoreOperationsName]);
+        WaitedResources(adminServer).ShouldBe([EventStoreOperationsName]);
+        ReferencedResources(operations).ShouldBe([WorksName]);
+        WaitedResources(operations).ShouldBe([StateStoreName, WorksName]);
 
         // The bounded inbound retry budget only holds where the CRD's directory reaches --resources-path, so no
         // composed sidecar may be missing the reference — including one added after this test was written.
@@ -90,7 +108,7 @@ public sealed class WorksAppHostTopologyTests
                 .Select(Sidecar)
                 .Distinct(),
         ];
-        allSidecars.Length.ShouldBe(3);
+        allSidecars.Length.ShouldBe(4);
         allSidecars.ShouldAllBe(sidecar => ReferencedComponents(sidecar).Contains(ResiliencyName));
 
         Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
@@ -127,20 +145,30 @@ public sealed class WorksAppHostTopologyTests
         Dictionary<string, object> adminEnvironment = await EvaluateEnvironmentAsync(adminServer, builder.ExecutionContext);
         StringValue(adminEnvironment, "AdminServer__ResiliencyConfigPath")
             .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
+        StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
+
+        Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
+        StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
+        StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");
+        StringValue(operationsEnvironment, "EventStoreOperations__CaptureRoute").ShouldBe("/dead-letters/work/events");
+        StringValue(operationsEnvironment, "EventStoreOperations__AdminCallerAppId").ShouldBe(EventStoreAdminName);
+        StringValue(operationsEnvironment, "EventStoreOperations__ReplayAppId").ShouldBe(WorksName);
+        StringValue(operationsEnvironment, "EventStoreOperations__ReplayMethodName").ShouldBe("work/events");
+        EnvironmentKeys(operationsEnvironment, "EventStoreOperations__").ShouldBe([
+            "EventStoreOperations__AdminCallerAppId",
+            "EventStoreOperations__CaptureRoute",
+            "EventStoreOperations__PubSubName",
+            "EventStoreOperations__ReplayAppId",
+            "EventStoreOperations__ReplayMethodName",
+            "EventStoreOperations__TopicName",
+        ]);
 
         IDaprComponentResource stateStore = Component(builder, StateStoreName);
         stateStore.Type.ShouldBe("state.redis");
         stateStore.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "statestore.yaml"));
         IDaprComponentResource pubSub = Component(builder, PubSubName);
         pubSub.Type.ShouldBe("pubsub.redis");
-        pubSub.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(
-            LocateRepositoryRoot(),
-            "references",
-            "Hexalith.EventStore",
-            "src",
-            "Hexalith.EventStore.AppHost",
-            "DaprComponents",
-            "pubsub.yaml"));
+        pubSub.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "pubsub.yaml"));
         IDaprComponentResource resiliency = Component(builder, ResiliencyName);
         resiliency.Type.ShouldBe("resiliency");
         resiliency.Options.ShouldNotBeNull().LocalPath
@@ -189,8 +217,142 @@ public sealed class WorksAppHostTopologyTests
         Sorted(scopeNodes.Children
             .Cast<YamlScalarNode>()
             .Select(static scope => scope.Value ?? string.Empty))
-            .ShouldBe(Sorted([EventStoreName, WorksName, EventStoreAdminName]));
+            .ShouldBe(Sorted([EventStoreName, WorksName, EventStoreAdminName, EventStoreOperationsName]));
     }
+
+    /// <summary>Verifies exact component, publishing, and subscription scopes for both Works topics.</summary>
+    [Fact]
+    public void PubSubComponentHasExactLiteralEndpointAndTopicScopes()
+    {
+        YamlMappingNode root = LoadYaml("pubsub.yaml");
+        YamlMappingNode spec = Mapping(root, "spec");
+        Scalar(spec, "type").ShouldBe("pubsub.redis");
+        Dictionary<string, string> metadata = Sequence(spec, "metadata").Children
+            .Cast<YamlMappingNode>()
+            .ToDictionary(static item => Scalar(item, "name"), static item => Scalar(item, "value"), StringComparer.Ordinal);
+        metadata.ShouldBe(new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["redisHost"] = "localhost:6379",
+            ["redisPassword"] = string.Empty,
+            ["publishingScopes"] = "eventstore=work.events,commanddeadletter.work.events;works=deadletter.work.events;eventstore-operations=",
+            ["subscriptionScopes"] = "eventstore=;works=work.events;eventstore-operations=deadletter.work.events",
+            ["allowedTopics"] = "work.events,deadletter.work.events,commanddeadletter.work.events",
+            ["protectedTopics"] = "work.events,deadletter.work.events,commanddeadletter.work.events",
+        });
+        Sorted(Sequence(root, "scopes").Children.Cast<YamlScalarNode>().Select(static item => item.Value ?? string.Empty))
+            .ShouldBe(Sorted([EventStoreName, WorksName, EventStoreOperationsName]));
+        string.Join(';', metadata.Values).ShouldNotContain("{env:");
+
+        // The scope strings above are literals; these assertions pin the invariant that makes them correct.
+        // Dapr forwards a poison message from the *subscribing* sidecar, publishing under its own app id, and
+        // deadletter.work.events is a protected topic. So the topic Works may publish must be exactly the topic
+        // the operations workload drains, or the capture path receives nothing and the feature is inert.
+        IReadOnlyDictionary<string, string> publish = ParseScopes(metadata["publishingScopes"]);
+        IReadOnlyDictionary<string, string> subscribe = ParseScopes(metadata["subscriptionScopes"]);
+        publish[WorksName].ShouldBe(subscribe[EventStoreOperationsName]);
+        publish[WorksName].ShouldBe(DeadLetterTopic);
+        subscribe[WorksName].ShouldBe(SourceTopic);
+        publish[EventStoreOperationsName].ShouldBeEmpty();
+        subscribe[EventStoreName].ShouldBeEmpty();
+        Sorted(metadata["protectedTopics"].Split(',')).ShouldBe(
+            Sorted([SourceTopic, DeadLetterTopic, CommandDeadLetterTopic]));
+
+        // EventStore publishes the domain topic and its own command dead letters, and nothing else. The command
+        // dead-letter topic is derived, not configured: EventPublisherOptions builds it as
+        // "{DeadLetterTopicPrefix}.{GetPubSubTopic(identity)}", and this composition overrides the work domain's
+        // topic to work.events. With the shipped default prefix that derivation lands on the subscriber DLQ, so
+        // this asserts both halves of the fix: the grant exists, and the derived topic is a different queue.
+        Sorted(publish[EventStoreName].Split(',')).ShouldBe(Sorted([SourceTopic, CommandDeadLetterTopic]));
+        CommandDeadLetterTopic.ShouldNotBe(DeadLetterTopic);
+    }
+
+    /// <summary>
+    /// Verifies the composed command dead-letter prefix keeps that queue off the subscriber dead-letter topic.
+    /// </summary>
+    /// <remarks>
+    /// The prefix is only half of the invariant -- the other half is the domain topic override, which this same
+    /// AppHost sets. Deriving the topic here the way EventPublisherOptions does keeps the two settings pinned
+    /// together: changing either one alone would silently re-merge the queues or forbid the publish.
+    /// </remarks>
+    [Fact]
+    public async Task EventStoreCommandDeadLettersUseADistinctTopicFromTheSubscriberQueue()
+    {
+        IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        ProjectResource eventStore = Project(builder, EventStoreName);
+        Dictionary<string, object> environment =
+            await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
+
+        StringValue(environment, "EventStore__Publisher__TopicOverrides__work").ShouldBe(SourceTopic);
+        StringValue(environment, "EventStore__Publisher__DeadLetterTopicPrefix").ShouldBe(CommandDeadLetterPrefix);
+
+        string derived = StringValue(environment, "EventStore__Publisher__DeadLetterTopicPrefix")
+            + "."
+            + StringValue(environment, "EventStore__Publisher__TopicOverrides__work");
+        derived.ShouldBe(CommandDeadLetterTopic);
+        derived.ShouldNotBe(DeadLetterTopic);
+    }
+
+    /// <summary>
+    /// Verifies both Dapr access-control configurations deny by default and grant exactly one caller path.
+    /// </summary>
+    /// <remarks>
+    /// These two documents are the enforcement point for operator access and for replay reaching Works. Without
+    /// a content assertion, deleting the operations grant or restoring an allow-by-default action would break
+    /// replay, or open the operator surface to any app id, with every test still green.
+    /// </remarks>
+    [Fact]
+    public void AccessControlConfigurationsDenyByDefaultAndGrantExactlyOneCallerPath()
+    {
+        YamlMappingNode worksAccessControl = Mapping(LoadYaml("accesscontrol.works.yaml"), "spec", "accessControl");
+        Scalar(worksAccessControl, "defaultAction").ShouldBe("deny");
+        YamlMappingNode replayPolicy = Sequence(worksAccessControl, "policies").Children
+            .Cast<YamlMappingNode>()
+            .Single(static policy => string.Equals(
+                Scalar(policy, "appId"),
+                EventStoreOperationsName,
+                StringComparison.Ordinal));
+        Scalar(replayPolicy, "defaultAction").ShouldBe("deny");
+        YamlMappingNode replayOperation = Sequence(replayPolicy, "operations").Children
+            .Cast<YamlMappingNode>()
+            .ShouldHaveSingleItem();
+        Scalar(replayOperation, "name").ShouldBe("/work/events");
+        Scalar(replayOperation, "action").ShouldBe("allow");
+        Sequence(replayOperation, "httpVerb").Children
+            .Cast<YamlScalarNode>()
+            .Select(static verb => verb.Value ?? string.Empty)
+            .ShouldBe(["POST"]);
+
+        YamlMappingNode operationsAccessControl = Mapping(
+            LoadYaml("accesscontrol.eventstore-operations.yaml"),
+            "spec",
+            "accessControl");
+        Scalar(operationsAccessControl, "defaultAction").ShouldBe("deny");
+        YamlMappingNode operatorPolicy = Sequence(operationsAccessControl, "policies").Children
+            .Cast<YamlMappingNode>()
+            .ShouldHaveSingleItem();
+        Scalar(operatorPolicy, "appId").ShouldBe(EventStoreAdminName);
+        Scalar(operatorPolicy, "defaultAction").ShouldBe("deny");
+        YamlMappingNode operatorOperation = Sequence(operatorPolicy, "operations").Children
+            .Cast<YamlMappingNode>()
+            .ShouldHaveSingleItem();
+        Scalar(operatorOperation, "name").ShouldBe("/internal/dead-letters/**");
+        Scalar(operatorOperation, "action").ShouldBe("allow");
+        Sorted(Sequence(operatorOperation, "httpVerb").Children
+            .Cast<YamlScalarNode>()
+            .Select(static verb => verb.Value ?? string.Empty))
+            .ShouldBe(Sorted(["GET", "POST"]));
+    }
+
+    private static IReadOnlyDictionary<string, string> ParseScopes(string value)
+        => value
+            .Split(';', StringSplitOptions.RemoveEmptyEntries)
+            .Select(static entry => entry.Split('=', 2))
+            .ToDictionary(
+                static parts => parts[0],
+                static parts => parts.Length > 1 ? parts[1] : string.Empty,
+                StringComparer.Ordinal);
 
     /// <summary>Verifies the inbound pub/sub retry target resolves to the intended bounded policy.</summary>
     [Fact]
@@ -228,6 +390,14 @@ public sealed class WorksAppHostTopologyTests
             .Select(static key => key.Value ?? string.Empty)
             .Order(StringComparer.Ordinal)
             .ShouldBe(["retry", "timeout"]);
+
+        YamlMappingNode stateStoreTarget = Mapping(root, "spec", "targets", "components", StateStoreName);
+        stateStoreTarget.Children.Keys.Cast<YamlScalarNode>().Select(static key => key.Value ?? string.Empty)
+            .ShouldBe(["outbound"]);
+        YamlMappingNode stateStoreOutbound = Mapping(stateStoreTarget, "outbound");
+        Scalar(stateStoreOutbound, "retry").ShouldBe("defaultRetry");
+        Scalar(stateStoreOutbound, "timeout").ShouldBe("daprSidecar");
+        Scalar(stateStoreOutbound, "circuitBreaker").ShouldBe("defaultBreaker");
     }
 
     /// <summary>Verifies the resiliency resources directory stays isolated to the one committed CRD.</summary>

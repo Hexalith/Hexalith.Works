@@ -46,6 +46,10 @@ spec:
         retry: defaultRetry
         timeout: daprSidecar
         circuitBreaker: defaultBreaker
+      eventstore-operations:
+        retry: defaultRetry
+        timeout: daprSidecar
+        circuitBreaker: defaultBreaker
     components:
       pubsub:
         outbound:
@@ -56,6 +60,7 @@ spec:
           retry: pubsubRetryInbound
           timeout: subscriberTimeout
       statestore:
-        retry: defaultRetry
-        timeout: daprSidecar
-        circuitBreaker: defaultBreaker
+        outbound:
+          retry: defaultRetry
+          timeout: daprSidecar
+          circuitBreaker: defaultBreaker

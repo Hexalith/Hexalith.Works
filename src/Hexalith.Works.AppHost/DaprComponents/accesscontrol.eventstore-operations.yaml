@@ -1,0 +1,20 @@
+# Dapr service-invocation boundary for the subscriber dead-letter operations workload.
+# Pub/sub delivery to the capture route is not a service-invocation call. Only Admin.Server may query or mutate
+# retained items, and the application additionally requires its forwarded bearer context.
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: accesscontrol-eventstore-operations
+spec:
+  accessControl:
+    defaultAction: deny
+    trustDomain: "public"
+    policies:
+      - appId: eventstore-admin
+        defaultAction: deny
+        trustDomain: "public"
+        namespace: "default"
+        operations:
+          - name: /internal/dead-letters/**
+            httpVerb: ['GET', 'POST']
+            action: allow

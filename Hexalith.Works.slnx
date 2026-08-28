@@ -27,6 +27,7 @@
   </Folder>
   <Folder Name="/references/Hexalith.EventStore/">
     <File Path="references/Hexalith.EventStore/README.md" />
+    <Project Path="references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj" />
   </Folder>
   <Folder Name="/references/Hexalith.FrontComposer/">
     <File Path="references/Hexalith.FrontComposer/README.md" />
