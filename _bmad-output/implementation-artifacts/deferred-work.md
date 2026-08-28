@@ -358,7 +358,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfa
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: EnvelopeCanonicalSequencingTests calls EventPersister.PersistEventsAsync itself, presupposing the routing decision that AggregateActor.ProcessCommandCoreAsync actually makes. No Works test instantiates AggregateActor, and the three Aspire lanes submit only accepted commands. The always-on guard is now mutation-validated across the whole command path, but it is still a string match over a pinned submodule, not execution.
-status: open
+status: done 2026-08-28
+resolution: already resolved: references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/AggregateActorDomainResultTests.cs:535-550 executes AggregateActor.ProcessCommandAsync with DomainResult.Rejection and asserts the rejection envelope is written; commit 536a269438ef4edaff1fd83b73bae36c88e7cc23 introduced this executable proof.
 
 ### DW-40: The claim tests point at a Story 4.5 Aspire lane for live ETag conflict/retry coverage that does not exist.
 origin: spec-deferred 96069162f44f
