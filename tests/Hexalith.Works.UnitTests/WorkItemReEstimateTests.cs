@@ -171,6 +171,56 @@ public sealed class WorkItemReEstimateTests
     }
 
     [Fact]
+    public void PersistedNegativeReestimateRetainsEffortAndAdvancesAggregateAndProjectionSequences()
+    {
+        var state = new WorkItemState();
+        WorkItemRollUpProjection projection = new();
+        WorkItemEffort establishedEffort = new(8m, Hour, 3m);
+        WorkItemCreated created = new(
+            Item.Value,
+            1,
+            Tenant,
+            Item,
+            new Obligation("Re-estimate work"),
+            establishedEffort);
+        ReEstimated negative = new(Item.Value, 2, Tenant, Item, -1m, Hour, "corrupted persisted fact");
+
+        state.Apply(created);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, created.Sequence, created));
+
+        Should.NotThrow(() => state.Apply(negative));
+        Should.NotThrow(() => projection.Project(new WorkItemRollUpEvent(Tenant, Item, negative.Sequence, negative)));
+
+        WorkItemRollUp rollUp = projection.Get(Tenant, Item).ShouldNotBeNull();
+        state.InitialEffort.ShouldBe(establishedEffort);
+        rollUp.OwnEffort.ShouldBe(establishedEffort);
+        state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(8m);
+        state.InitialEffort.ShouldNotBeNull().Done.ShouldBe(3m);
+        state.InitialEffort.ShouldNotBeNull().Unit.ShouldBe(Hour);
+        state.Remaining.ShouldBe(5m);
+        rollUp.OwnRemaining.ShouldBe(new OwnRemaining(5m, Hour));
+        state.Sequence.ShouldBe(negative.Sequence);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(negative.Sequence);
+        rollUp.Degraded.ShouldBeTrue();
+        rollUp.ProjectionDiagnostics.ShouldBe([
+            new RollUpProjectionDiagnostic(Tenant, Item, nameof(ReEstimated), negative.Sequence),
+        ]);
+    }
+
+    [Fact]
+    public void PersistedNegativeReestimateLeavesUnestimatedAggregateSequenceAligned()
+    {
+        WorkItemState state = UnestimatedInProgress();
+        ReEstimated negative = new(Item.Value, state.Sequence + 1, Tenant, Item, -1m, Hour, "corrupted persisted fact");
+
+        Should.NotThrow(() => state.Apply(negative));
+
+        state.InitialEffort.ShouldBeNull();
+        state.Remaining.ShouldBeNull();
+        state.Sequence.ShouldBe(negative.Sequence);
+    }
+
+    [Fact]
     public void ReEstimate_to_zero_clamps_done_and_remaining_without_completing()
     {
         // Zero is the lower boundary of the AC #1 "non-negative value": accepted, Done clamps to 0, and

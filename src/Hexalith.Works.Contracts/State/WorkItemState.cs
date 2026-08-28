@@ -178,16 +178,19 @@ public sealed class WorkItemState
     public void Apply(ReEstimated e)
     {
         ArgumentNullException.ThrowIfNull(e);
-        if (InitialEffort is null)
+        if (e.Estimated >= 0)
         {
-            InitialEffort = new WorkItemEffort(e.Estimated, e.Unit);
+            if (InitialEffort is null)
+            {
+                InitialEffort = new WorkItemEffort(e.Estimated, e.Unit);
+            }
+            else if (InitialEffort.Unit == e.Unit)
+            {
+                InitialEffort = InitialEffort.ReEstimate(e.Estimated);
+            }
         }
-        else if (InitialEffort.Unit == e.Unit)
-        {
-            InitialEffort = InitialEffort.ReEstimate(e.Estimated);
-        }
-        // Consume a corrupted mismatched-unit event for replay sequencing without replacing the last
-        // valid effort, mirroring the roll-up projection's refusal policy.
+        // Consume a corrupted negative or mismatched-unit event for replay sequencing while retaining
+        // the last valid effort, matching the roll-up projection's retention behavior.
 
         Sequence = e.Sequence;
     }

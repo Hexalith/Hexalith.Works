@@ -257,7 +257,9 @@ location: src/Hexalith.Works.Contracts/State/WorkItemState.cs:176
 source_spec: `spec-reestimate-replay-unit-hardening.md`
 severity: high
 reason: WorkItemState.Apply(ReEstimated) calls WorkItemEffort.ReEstimate for a matching established unit, and that value object rejects negative estimates. WorkItemRollUpProjection already refuses and diagnoses the same corrupted fact, so this separate pre-existing corruption case can wedge aggregate replay.
-status: open
+status: done 2026-08-28
+resolution: resolved by sweep bundle dw-negative-reestimate-replay-guard
+resolution-undo: f63efa4ed3687450c195d3e89ce77d5c1aad677a260b68a7045fd7d20934e66a 2026-08-28 7374617475733a206f70656e
 
 ### DW-29: Make endpoint result mapping fail retryably for unknown future EventStoreDomainEventProcessingResult values.
 origin: spec-deferred c3f0a312e23e
