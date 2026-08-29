@@ -171,7 +171,6 @@ public sealed class WhatsNextQueueProjectionTests
             new RolledRemaining(9m, Hour),
             [new RolledRemaining(9m, Hour)],
             [],
-            0,
             3);
 
         WhatsNextItem withRollUp = projection
@@ -668,7 +667,7 @@ public sealed class WhatsNextQueueProjectionTests
         WorkItemRollUp rollUp = new(
             Tenant, Work1, WorkItemStatus.Queued, null,
             new OwnRemaining(2m, Hour), new RolledRemaining(9m, Hour),
-            [new RolledRemaining(9m, Hour)], [], 0, 2);
+            [new RolledRemaining(9m, Hour)], [], 2);
 
         IReadOnlyList<WhatsNextItem> result =
             projection.WhatsNext(Tenant, (_, id) => id == Work1 ? rollUp : null);

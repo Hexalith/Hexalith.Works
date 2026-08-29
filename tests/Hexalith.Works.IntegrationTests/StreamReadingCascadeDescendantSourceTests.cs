@@ -336,7 +336,6 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             null,
             [],
             [],
-            0,
             1);
     }
 }

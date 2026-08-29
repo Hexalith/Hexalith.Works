@@ -30,8 +30,9 @@ totals read the projection read model instead.
 - Parent/child edges may be discovered from either `WorkItemCreated.Parent` or `ChildSpawned`. Replaying
   the same edge is idempotent.
 - Exposed `ChildWorkItemIds` are ordered ordinally by `WorkItemId.Value`, so replay permutations and
-  duplicate deliveries produce the same public sequence. `ExposedChildCount` is the size of that
-  filtered sequence, including children that expose no numeric effort contribution.
+  duplicate deliveries produce the same public sequence. `ExposedChildCount` is a derived getter, not
+  an independent constructor input, and is always the size of that filtered sequence, including children
+  that expose no numeric effort contribution. Web JSON continues to emit it as `exposedChildCount`.
 - Tenant equality is checked at every traversal hop. Cross-tenant edges are ignored and cannot affect a
   parent roll-up, even when work item ids collide across tenants.
 - The write side rejects `ReportProgress` or `ReEstimate` commands whose unit disagrees with an

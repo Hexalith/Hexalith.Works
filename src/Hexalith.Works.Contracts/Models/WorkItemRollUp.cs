@@ -20,7 +20,6 @@ namespace Hexalith.Works.Contracts.Models;
 /// The accepted child identities, emitted in ordinal <see cref="WorkItemId.Value"/> order so that permuted
 /// or duplicated deliveries of the same child facts produce an identical public sequence.
 /// </param>
-/// <param name="ExposedChildCount">The number of child identities exposed by this read model.</param>
 /// <param name="LatestAcceptedSourceSequence">
 /// The EventStore envelope position of the latest accepted state-changing delivery. Filtered rejection
 /// positions do not advance it, so it is not the full persisted stream high-watermark. A spawn-derived
@@ -36,9 +35,14 @@ public sealed record WorkItemRollUp(
     RolledRemaining? RolledRemaining,
     IReadOnlyList<RolledRemaining> RolledRemainingByUnit,
     IReadOnlyList<WorkItemId> ChildWorkItemIds,
-    int ExposedChildCount,
     long LatestAcceptedSourceSequence)
 {
+    /// <summary>
+    /// Gets the number of child identities derived from <see cref="ChildWorkItemIds"/>, treating a missing or
+    /// <see langword="null"/> deserialized list as empty.
+    /// </summary>
+    public int ExposedChildCount => ChildWorkItemIds?.Count ?? 0;
+
     public bool Degraded { get; init; }
 
     public IReadOnlyList<RollUpProjectionDiagnostic> ProjectionDiagnostics { get; init; } = [];

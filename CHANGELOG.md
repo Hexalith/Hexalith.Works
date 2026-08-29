@@ -95,11 +95,12 @@ All notable changes to Hexalith.Works will be documented in this file.
   non-atomic, and the pending date-await index the same dispatch maintains is unchanged — it keeps its own
   pre-existing raw stream-sequence watermark and is outside this guarantee.
 - **Breaking:** the `WorkItemRollUp` read model's positional member `ChildContributionCount` and its
-  serialized `childContributionCount` property are renamed to `ExposedChildCount` / `exposedChildCount`,
-  with the value and positional order unchanged. The number counts the tenant-filtered child identities the
-  read model exposes, not children that contributed numeric effort; no compatibility alias is retained, so
-  consumers must adopt the new name. Roll-up documents persisted before this change deserialize the count as
-  `0` until the item is next re-projected.
+  serialized `childContributionCount` property are replaced by the derived `ExposedChildCount` getter and
+  `exposedChildCount` Web JSON property. The count is no longer a positional constructor input and always
+  reflects the tenant-filtered child identities the read model exposes, not children that contributed numeric
+  effort. No compatibility alias is retained, so consumers must adopt the new name. Incoming
+  `exposedChildCount` values are non-authoritative: persisted documents derive the count from
+  `childWorkItemIds`, and normalized output emits that derived value.
 - Exposed `ChildWorkItemIds` are now emitted in ordinal `WorkItemId.Value` order instead of internal
   insertion order, so permuted or duplicated deliveries of the same child facts produce an identical
   public sequence.

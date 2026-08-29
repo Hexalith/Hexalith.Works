@@ -806,7 +806,6 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             new RolledRemaining(remaining, Hour),
             [new RolledRemaining(remaining, Hour)],
             [],
-            0,
             1)
         {
             OwnEffort = new WorkItemEffort(remaining, Hour),

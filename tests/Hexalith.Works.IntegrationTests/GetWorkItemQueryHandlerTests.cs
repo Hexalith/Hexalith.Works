@@ -113,7 +113,6 @@ public sealed class GetWorkItemQueryHandlerTests
                 new RolledRemaining(5m, Hour),
                 [new RolledRemaining(5m, Hour)],
                 [],
-                0,
                 1)
             {
                 OwnEffort = new WorkItemEffort(5m, Hour),

@@ -861,7 +861,6 @@ public sealed class WorkItemProjectionQueryAdapterTests
             null,
             [],
             [],
-            0,
             2);
         var staleItem = new WhatsNextItem(
             tenant,

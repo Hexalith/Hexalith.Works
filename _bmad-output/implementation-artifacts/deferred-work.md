@@ -503,7 +503,9 @@ location: src/Hexalith.Works.Contracts/Models/WorkItemRollUp.cs:27
 source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: WorkItemRollUp already accepted the count as an independent positional integer before this bundle. The approved DW-26 decision preserves that behavior while renaming it, so deriving or validating the value would be a separate contract change.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-rollup-exposed-count-invariant
+resolution-undo: 94e3b0b28087e68fc7ca936676f0f4614d1a516c98becc3949cd282a37ac1c48 2026-08-29 7374617475733a206f70656e
 decision: 2026-08-28 Derive exposed count — Remove the independent count input, compute ExposedChildCount from ChildWorkItemIds, preserve the intended exposedChildCount wire output, and update constructors, serialization compatibility tests, consumers, and documentation.
 
 ### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no

@@ -284,7 +284,6 @@ public sealed class WorkItemReadModelGenerationQueryTests
             new RolledRemaining(5m, s_hour),
             [new RolledRemaining(5m, s_hour)],
             [],
-            0,
             1);
 
     private static async Task SeedLegacyAsync(IReadModelStore store)

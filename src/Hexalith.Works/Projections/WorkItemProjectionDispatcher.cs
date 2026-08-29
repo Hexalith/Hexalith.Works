@@ -171,7 +171,6 @@ public sealed class WorkItemProjectionDispatcher
                     projected = projected with
                     {
                         ChildWorkItemIds = merged,
-                        ExposedChildCount = merged.Count,
                     };
                 }
             }

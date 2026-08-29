@@ -266,7 +266,6 @@ public sealed class WorkItemRollUpProjection
             byUnit.Count == 1 ? byUnit[0] : null,
             byUnit,
             [.. outputChildren.Select(child => child.WorkItemId)],
-            outputChildren.Count,
             node.LatestAcceptedSourceSequence)
         {
             Degraded = IsDegraded(node, []),

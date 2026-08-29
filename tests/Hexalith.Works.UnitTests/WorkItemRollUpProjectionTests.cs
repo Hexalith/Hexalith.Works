@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
@@ -40,13 +41,43 @@ public sealed class WorkItemRollUpProjectionTests
             rolled,
             [rolled],
             [Child],
-            1,
             2);
 
         model.OwnRemaining.ShouldBe(own);
         model.RolledRemaining.ShouldBe(rolled);
         model.OwnRemaining.ShouldBeOfType<OwnRemaining>();
         model.RolledRemaining.ShouldBeOfType<RolledRemaining>();
+    }
+
+    [Fact]
+    public void Read_model_derives_exposed_child_count_from_child_identities()
+    {
+        WorkItemRollUp empty = new(
+            Tenant,
+            Parent,
+            WorkItemStatus.InProgress,
+            null,
+            null,
+            null,
+            [],
+            [],
+            1);
+
+        empty.ExposedChildCount.ShouldBe(0);
+        typeof(WorkItemRollUp).GetConstructors().SelectMany(constructor => constructor.GetParameters())
+            .Select(parameter => parameter.Name)
+            .ShouldNotContain(nameof(WorkItemRollUp.ExposedChildCount));
+        typeof(WorkItemRollUp).GetProperty(nameof(WorkItemRollUp.ExposedChildCount))
+            .ShouldNotBeNull()
+            .SetMethod
+            .ShouldBeNull();
+
+        WorkItemRollUp reconciled = empty with
+        {
+            ChildWorkItemIds = [Child, Grandchild],
+        };
+
+        reconciled.ExposedChildCount.ShouldBe(2);
     }
 
     [Fact]
@@ -60,8 +91,7 @@ public sealed class WorkItemRollUpProjectionTests
             new OwnRemaining(5m, Hour),
             new RolledRemaining(8m, Hour),
             [new RolledRemaining(8m, Hour)],
-            [Child],
-            1,
+            [Child, Grandchild],
             2);
 
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
@@ -72,12 +102,39 @@ public sealed class WorkItemRollUpProjectionTests
         // scan proving the old name is gone from source cannot be satisfied -- or defeated -- by this test file.
         string obsoletePropertyName = string.Concat("child", "Contribution", "Count");
 
-        root.GetProperty("exposedChildCount").GetInt32().ShouldBe(1);
+        root.GetProperty("exposedChildCount").GetInt32().ShouldBe(2);
         root.TryGetProperty(obsoletePropertyName, out _).ShouldBeFalse();
 
-        WorkItemRollUp roundTrip = JsonSerializer.Deserialize<WorkItemRollUp>(json, options).ShouldNotBeNull();
-        roundTrip.ExposedChildCount.ShouldBe(1);
-        roundTrip.ChildWorkItemIds.ShouldBe([Child]);
+        JsonObject inconsistent = JsonNode.Parse(json).ShouldBeOfType<JsonObject>();
+        inconsistent["exposedChildCount"] = 99;
+        WorkItemRollUp normalized = JsonSerializer
+            .Deserialize<WorkItemRollUp>(inconsistent.ToJsonString(options), options)
+            .ShouldNotBeNull();
+        normalized.ExposedChildCount.ShouldBe(2);
+        normalized.ChildWorkItemIds.ShouldBe([Child, Grandchild]);
+
+        using JsonDocument normalizedDocument = JsonDocument.Parse(JsonSerializer.Serialize(normalized, options));
+        normalizedDocument.RootElement.GetProperty("exposedChildCount").GetInt32().ShouldBe(2);
+
+        JsonObject nullChildren = JsonNode.Parse(json).ShouldBeOfType<JsonObject>();
+        nullChildren["childWorkItemIds"] = null;
+        nullChildren["exposedChildCount"] = 99;
+        WorkItemRollUp normalizedNull = JsonSerializer
+            .Deserialize<WorkItemRollUp>(nullChildren.ToJsonString(options), options)
+            .ShouldNotBeNull();
+        normalizedNull.ExposedChildCount.ShouldBe(0);
+        using JsonDocument normalizedNullDocument = JsonDocument.Parse(JsonSerializer.Serialize(normalizedNull, options));
+        normalizedNullDocument.RootElement.GetProperty("exposedChildCount").GetInt32().ShouldBe(0);
+
+        JsonObject absentChildren = JsonNode.Parse(json).ShouldBeOfType<JsonObject>();
+        absentChildren.Remove("childWorkItemIds").ShouldBeTrue();
+        absentChildren["exposedChildCount"] = 99;
+        WorkItemRollUp normalizedAbsent = JsonSerializer
+            .Deserialize<WorkItemRollUp>(absentChildren.ToJsonString(options), options)
+            .ShouldNotBeNull();
+        normalizedAbsent.ExposedChildCount.ShouldBe(0);
+        using JsonDocument normalizedAbsentDocument = JsonDocument.Parse(JsonSerializer.Serialize(normalizedAbsent, options));
+        normalizedAbsentDocument.RootElement.GetProperty("exposedChildCount").GetInt32().ShouldBe(0);
     }
 
     [Fact]
