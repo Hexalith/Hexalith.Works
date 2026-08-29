@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>MSBuildToolsPath</_Parameter1>
+      <_Parameter2>$(MSBuildToolsPath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -14,6 +21,28 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Dependency governance must observe the same evaluated item/import surface as the installed SDK.
+         Reference the SDK's own MSBuild assemblies without introducing a production or restored package. -->
+    <Reference Include="Microsoft.Build">
+      <HintPath>$(MSBuildToolsPath)/Microsoft.Build.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Framework">
+      <HintPath>$(MSBuildToolsPath)/Microsoft.Build.Framework.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.Build.Utilities.Core">
+      <HintPath>$(MSBuildToolsPath)/Microsoft.Build.Utilities.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.EventLog, Version=10.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>$(MSBuildToolsPath)/System.Diagnostics.EventLog.dll</HintPath>
+      <Private>true</Private>
+      <SpecificVersion>true</SpecificVersion>
+    </Reference>
   </ItemGroup>
 
   <!-- Reflection-based boundary-port fitness tests load the kernel assemblies, and the transitive-

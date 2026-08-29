@@ -39,6 +39,9 @@ internal static class KernelDependencyPolicy
     private static readonly string[] _supportedDirectReferenceKinds =
         ["ProjectReference", "PackageReference", "FrameworkReference", "Reference"];
 
+    private static readonly string[] _packageItemKinds =
+        ["PackageReference", "GlobalPackageReference", "PackageVersion"];
+
     private static readonly string[] _namedAdapterSegments =
     [
         "AdminPortal",
@@ -197,7 +200,26 @@ internal static class KernelDependencyPolicy
 
         try
         {
-            return EvaluateProjectXml(governedProject, projectPath, File.ReadAllText(projectPath));
+            string projectXml = File.ReadAllText(projectPath);
+            if (string.IsNullOrWhiteSpace(projectXml))
+            {
+                return [$"{governedProject} governed project file '{projectPath}' is unusable: the project XML is empty."];
+            }
+
+            var violations = new HashSet<string>(
+                EvaluateProjectXml(governedProject, projectPath, projectXml),
+                StringComparer.Ordinal);
+            if (!MsBuildProjectEvaluation.TryEvaluate(projectPath, out MsBuildProjectSnapshot? snapshot, out string diagnostic))
+            {
+                violations.Add($"{governedProject} {diagnostic}");
+                return [.. violations.Order(StringComparer.Ordinal)];
+            }
+
+            violations.UnionWith(EvaluateSnapshot(
+                governedProject,
+                snapshot!,
+                Path.GetFullPath(projectPath)));
+            return [.. violations.Order(StringComparer.Ordinal)];
         }
         catch (IOException exception)
         {
@@ -294,6 +316,65 @@ internal static class KernelDependencyPolicy
     }
 
     /// <summary>
+    /// Evaluates Hexalith package consumption and package-version ownership for one project.
+    /// </summary>
+    /// <param name="projectPath">The owning project to evaluate.</param>
+    /// <param name="approvedSharedCatalogPath">The one externally owned shared package catalog.</param>
+    /// <returns>Actionable source-consumption violations; an empty collection means sibling source is used.</returns>
+    internal static string[] EvaluateHexalithSourceConsumption(
+        string projectPath,
+        string approvedSharedCatalogPath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(approvedSharedCatalogPath);
+
+        if (!File.Exists(approvedSharedCatalogPath))
+        {
+            return [$"Approved shared Builds package catalog '{approvedSharedCatalogPath}' is missing."];
+        }
+
+        string approvedCatalog = Path.GetFullPath(approvedSharedCatalogPath);
+        var violations = new HashSet<string>(StringComparer.Ordinal);
+
+        // The Release-lane evaluation resolves conditions away and never sees an unevaluable declaration, so
+        // scan the owning project XML conservatively first. Without this, a Hexalith package declared under an
+        // inactive condition would leave this gate silently blind instead of failing closed.
+        foreach (string packageItemKind in _packageItemKinds)
+        {
+            foreach (string declaration in DeclaredReferenceNames(projectPath, packageItemKind)
+                .Where(declaration => declaration.StartsWith('<')))
+            {
+                violations.Add(
+                    $"Owning project '{projectPath}' declares {packageItemKind} {declaration}; the evaluated source-consumption gate cannot inspect it.");
+            }
+        }
+
+        if (!MsBuildProjectEvaluation.TryEvaluate(projectPath, out MsBuildProjectSnapshot? snapshot, out string diagnostic))
+        {
+            violations.Add(diagnostic);
+            return [.. violations.Order(StringComparer.Ordinal)];
+        }
+
+        foreach (MsBuildEvaluatedItem packageReference in snapshot!.Items
+            .Where(item => item.ItemType is "PackageReference" or "GlobalPackageReference")
+            .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase)))
+        {
+            violations.Add(
+                $"Owning project '{snapshot.ProjectPath}' consumes evaluated {packageReference.ItemType} '{packageReference.Identity}' defined by '{packageReference.DefiningProjectPath}'; Hexalith libraries must use sibling ProjectReference source.");
+        }
+
+        foreach (MsBuildEvaluatedItem packageVersion in snapshot.ItemsOfType("PackageVersion")
+            .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
+            .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog)))
+        {
+            violations.Add(
+                $"Owning project '{snapshot.ProjectPath}' receives Works-owned PackageVersion '{packageVersion.Identity}' from '{packageVersion.DefiningProjectPath}'; only shared catalog '{approvedCatalog}' may define Hexalith package versions.");
+        }
+
+        return [.. violations.Order(StringComparer.Ordinal)];
+    }
+
+    /// <summary>
     /// Evaluates one governed kernel project from the repository layout the architecture gate uses.
     /// </summary>
     /// <param name="repositoryRoot">The repository root that owns <c>src</c> and the shared restore inputs.</param>
@@ -305,12 +386,26 @@ internal static class KernelDependencyPolicy
         ArgumentException.ThrowIfNullOrWhiteSpace(governedProject);
 
         string projectDirectory = Path.Combine(repositoryRoot, "src", governedProject);
-
-        return EvaluateFile(
+        string governedProjectPath = Path.Combine(projectDirectory, governedProject + ".csproj");
+        if (!TryEvaluateProjectClosure(
             governedProject,
-            Path.Combine(projectDirectory, governedProject + ".csproj"),
+            governedProjectPath,
+            out IReadOnlyList<MsBuildProjectSnapshot> projectClosure,
+            out string evaluationDiagnostic))
+        {
+            return [evaluationDiagnostic];
+        }
+
+        string[] evaluatedRestoreInputs = [.. projectClosure
+            .SelectMany(snapshot => snapshot.ImportPaths.Prepend(snapshot.ProjectPath))
+            .Distinct(MsBuildProjectEvaluation.PathComparer)];
+
+        return EvaluateFileWithRequiredFreshnessInputs(
+            governedProject,
+            governedProjectPath,
             Path.Combine(projectDirectory, "obj", "project.assets.json"),
-            SharedRestoreInputs(repositoryRoot));
+            SharedRestoreInputs(repositoryRoot),
+            evaluatedRestoreInputs);
     }
 
     /// <summary>
@@ -326,6 +421,36 @@ internal static class KernelDependencyPolicy
         string governedProjectPath,
         string assetsPath,
         IReadOnlyList<string>? additionalFreshnessInputs = null)
+        => EvaluateFileCore(
+            governedProject,
+            governedProjectPath,
+            assetsPath,
+            additionalFreshnessInputs,
+            requiredFreshnessInputs: null);
+
+    internal static string[] EvaluateFileWithRequiredFreshnessInputs(
+        string governedProject,
+        string governedProjectPath,
+        string assetsPath,
+        IReadOnlyList<string>? optionalFreshnessInputs,
+        IReadOnlyList<string> requiredFreshnessInputs)
+    {
+        ArgumentNullException.ThrowIfNull(requiredFreshnessInputs);
+
+        return EvaluateFileCore(
+            governedProject,
+            governedProjectPath,
+            assetsPath,
+            optionalFreshnessInputs,
+            requiredFreshnessInputs);
+    }
+
+    private static string[] EvaluateFileCore(
+        string governedProject,
+        string governedProjectPath,
+        string assetsPath,
+        IReadOnlyList<string>? optionalFreshnessInputs,
+        IReadOnlyList<string>? requiredFreshnessInputs)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(governedProject);
         ArgumentException.ThrowIfNullOrWhiteSpace(governedProjectPath);
@@ -349,22 +474,43 @@ internal static class KernelDependencyPolicy
                 StringComparer.Ordinal);
 
             DateTime artifactWriteTimeUtc = File.GetLastWriteTimeUtc(assetsPath);
-            IReadOnlyList<string> freshnessInputs =
+            IReadOnlyList<string> optionalInputs =
             [
-                .. additionalFreshnessInputs ?? [],
+                .. optionalFreshnessInputs ?? [],
 
                 // A referenced project can pull a forbidden dependency into this closure without touching the
                 // governed project file or any shared restore input, so it is a restore input in its own right.
                 .. ReferencedProjectPaths(assetsJson),
             ];
 
-            foreach (string freshnessInput in FreshnessInputs(governedProjectPath, freshnessInputs))
+            var freshnessWriteTimes = new List<(string Path, DateTime WriteTimeUtc)>();
+            freshnessWriteTimes.AddRange(FreshnessInputs(governedProjectPath, optionalInputs)
+                .Distinct(MsBuildProjectEvaluation.PathComparer)
+                .Select(path => (path, File.GetLastWriteTimeUtc(path))));
+            foreach (string requiredInput in (requiredFreshnessInputs ?? [])
+                .Distinct(MsBuildProjectEvaluation.PathComparer))
             {
-                if (artifactWriteTimeUtc < File.GetLastWriteTimeUtc(freshnessInput))
+                if (!TryGetRequiredFreshnessWriteTime(requiredInput, out DateTime writeTimeUtc))
                 {
                     violations.Add(
-                        $"{governedProject} evaluated dependency artifact '{assetsPath}' is stale: it is older than restore input '{freshnessInput}'; run restore again.");
+                        $"{governedProject} required evaluated restore input '{requiredInput}' disappeared after MSBuild evaluation; restore and rerun the architecture suite.");
+                    continue;
                 }
+
+                freshnessWriteTimes.Add((requiredInput, writeTimeUtc));
+            }
+
+            string? newestStaleInput = freshnessWriteTimes
+                .DistinctBy(input => input.Path, MsBuildProjectEvaluation.PathComparer)
+                .Where(input => artifactWriteTimeUtc < input.WriteTimeUtc)
+                .OrderByDescending(input => input.WriteTimeUtc)
+                .ThenBy(input => input.Path, MsBuildProjectEvaluation.PathComparer)
+                .Select(input => input.Path)
+                .FirstOrDefault();
+            if (newestStaleInput is not null)
+            {
+                violations.Add(
+                    $"{governedProject} evaluated dependency artifact '{assetsPath}' is stale: it is older than newest restore input '{newestStaleInput}'; run restore again.");
             }
 
             return [.. violations.Order(StringComparer.Ordinal)];
@@ -679,6 +825,113 @@ internal static class KernelDependencyPolicy
         }
     }
 
+    private static string[] EvaluateSnapshot(
+        string governedProject,
+        MsBuildProjectSnapshot snapshot,
+        string? owningProjectPath = null)
+    {
+        var violations = new HashSet<string>(StringComparer.Ordinal);
+        foreach (MsBuildEvaluatedItem item in snapshot.Items.Where(item =>
+            !string.Equals(item.ItemType, "PackageVersion", StringComparison.OrdinalIgnoreCase)
+            && (owningProjectPath is null
+                || !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, owningProjectPath))))
+        {
+            if (!TryNormalizeDeclaredReference(item.ItemType, item.Identity, out string dependencyName))
+            {
+                violations.Add(
+                    $"{governedProject} evaluated {item.ItemType} '{item.Identity}' defined by '{item.DefiningProjectPath}' is malformed in '{snapshot.ProjectPath}'.");
+                continue;
+            }
+
+            string? forbiddenFamily = ForbiddenFamily(dependencyName);
+            if (forbiddenFamily is null)
+            {
+                continue;
+            }
+
+            string canonicalIdentity = item.CanonicalPath is null
+                ? dependencyName
+                : $"{dependencyName} at '{item.CanonicalPath}'";
+            violations.Add(
+                $"{governedProject} evaluated {item.ItemType} '{canonicalIdentity}' defined by '{item.DefiningProjectPath}' is forbidden ({forbiddenFamily}) in '{snapshot.ProjectPath}'.");
+        }
+
+        return [.. violations.Order(StringComparer.Ordinal)];
+    }
+
+    private static bool TryEvaluateProjectClosure(
+        string governedProject,
+        string governedProjectPath,
+        out IReadOnlyList<MsBuildProjectSnapshot> projectClosure,
+        out string diagnostic)
+    {
+        var snapshots = new List<MsBuildProjectSnapshot>();
+        var pendingProjects = new Queue<(string Path, IReadOnlyDictionary<string, string>? GlobalProperties)>();
+        var visitedEvaluations = new HashSet<string>(StringComparer.Ordinal);
+        pendingProjects.Enqueue((governedProjectPath, null));
+
+        while (pendingProjects.Count > 0)
+        {
+            (string projectPath, IReadOnlyDictionary<string, string>? globalProperties) = pendingProjects.Dequeue();
+            string canonicalProjectPath;
+            try
+            {
+                canonicalProjectPath = Path.GetFullPath(projectPath);
+            }
+            catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+            {
+                projectClosure = snapshots.AsReadOnly();
+                diagnostic = $"{governedProject} referenced project identity '{projectPath}' is unusable: {exception.Message}";
+                return false;
+            }
+
+            if (globalProperties is not null
+                && visitedEvaluations.Contains(ProjectEvaluationKey(canonicalProjectPath, globalProperties)))
+            {
+                continue;
+            }
+
+            bool evaluated = globalProperties is null
+                ? MsBuildProjectEvaluation.TryEvaluate(
+                    canonicalProjectPath,
+                    out MsBuildProjectSnapshot? snapshot,
+                    out string evaluationDiagnostic)
+                : MsBuildProjectEvaluation.TryEvaluate(
+                    canonicalProjectPath,
+                    globalProperties,
+                    out snapshot,
+                    out evaluationDiagnostic);
+            if (!evaluated)
+            {
+                projectClosure = snapshots.AsReadOnly();
+                diagnostic = $"{governedProject} dependency evaluation failed while inspecting '{canonicalProjectPath}': {evaluationDiagnostic}";
+                return false;
+            }
+
+            if (!visitedEvaluations.Add(ProjectEvaluationKey(snapshot!.ProjectPath, snapshot.GlobalProperties)))
+            {
+                continue;
+            }
+
+            snapshots.Add(snapshot);
+            foreach (MsBuildEvaluatedItem reference in snapshot!.ItemsOfType("ProjectReference"))
+            {
+                if (reference.CanonicalPath is null)
+                {
+                    projectClosure = snapshots.AsReadOnly();
+                    diagnostic = $"{governedProject} ProjectReference '{reference.Identity}' defined by '{reference.DefiningProjectPath}' has no canonical path.";
+                    return false;
+                }
+
+                pendingProjects.Enqueue((reference.CanonicalPath, reference.ProjectReferenceGlobalProperties));
+            }
+        }
+
+        projectClosure = snapshots.AsReadOnly();
+        diagnostic = string.Empty;
+        return true;
+    }
+
     private static IEnumerable<string> FreshnessInputs(
         string governedProjectPath,
         IReadOnlyList<string>? additionalFreshnessInputs)
@@ -693,6 +946,33 @@ internal static class KernelDependencyPolicy
             }
         }
     }
+
+    private static bool TryGetRequiredFreshnessWriteTime(string path, out DateTime writeTimeUtc)
+    {
+        var input = new FileInfo(path);
+        input.Refresh();
+        if (!input.Exists)
+        {
+            writeTimeUtc = default;
+            return false;
+        }
+
+        writeTimeUtc = input.LastWriteTimeUtc;
+        input.Refresh();
+        return input.Exists;
+    }
+
+    private static string ProjectEvaluationKey(
+        string projectPath,
+        IReadOnlyDictionary<string, string> globalProperties)
+        => string.Join(
+            '\u001f',
+            [
+                OperatingSystem.IsWindows() ? projectPath.ToUpperInvariant() : projectPath,
+                .. globalProperties
+                    .OrderBy(property => property.Key, StringComparer.OrdinalIgnoreCase)
+                    .Select(property => $"{property.Key.ToUpperInvariant()}={property.Value}"),
+            ]);
 
     private static IReadOnlyList<string> ReferencedProjectPaths(string assetsJson)
     {

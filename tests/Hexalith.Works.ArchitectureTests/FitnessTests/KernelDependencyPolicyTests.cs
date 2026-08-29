@@ -573,6 +573,70 @@ public sealed class KernelDependencyPolicyTests
     }
 
     /// <summary>
+    /// Verifies an inactive owning-project condition cannot hide a forbidden dependency from the live file gate.
+    /// </summary>
+    [Fact]
+    public void InactiveOwningProjectConditionRemainsConservativelyGoverned()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DirectReferenceTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Hexalith.Works.Contracts.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup Condition=\"'$(Configuration)' == 'Debug'\"><PackageReference Include=\"Dapr.Client\" /></ItemGroup></Project>");
+
+            string[] violations = KernelDependencyPolicy.EvaluateProjectFile(
+                "Hexalith.Works.Contracts",
+                projectPath);
+
+            violations.ShouldHaveSingleItem();
+            violations[0].ShouldContain("direct PackageReference", Case.Sensitive);
+            violations[0].ShouldContain("Dapr.Client", Case.Sensitive);
+            violations[0].ShouldContain(projectPath, Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies forbidden dependencies introduced by custom imports remain visible to the live file gate.
+    /// </summary>
+    [Theory]
+    [InlineData("dependency.props")]
+    [InlineData("dependency.targets")]
+    public void ImportedForbiddenDependencyIsReportedWithItsDefiningPath(string importFileName)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DirectReferenceTests-");
+        try
+        {
+            string importPath = Path.Combine(temporaryRoot.FullName, importFileName);
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Hexalith.Works.Contracts.csproj");
+            File.WriteAllText(
+                importPath,
+                "<Project><ItemGroup><PackageReference Include=\"Dapr.Client\" /></ItemGroup></Project>");
+            File.WriteAllText(
+                projectPath,
+                $"<Project><Import Project=\"{XmlPath(importPath)}\" /></Project>");
+
+            string[] violations = KernelDependencyPolicy.EvaluateProjectFile(
+                "Hexalith.Works.Contracts",
+                projectPath);
+
+            violations.ShouldHaveSingleItem();
+            violations[0].ShouldContain("evaluated PackageReference", Case.Sensitive);
+            violations[0].ShouldContain("Dapr.Client", Case.Sensitive);
+            violations[0].ShouldContain(importPath, Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
     /// Verifies the shared declared-reference discovery is kind-generic, so every gate that reads project
     /// XML — not only the exact dependency-direction gate — splits item lists and fails closed alike.
     /// </summary>
@@ -595,6 +659,102 @@ public sealed class KernelDependencyPolicyTests
 
             KernelDependencyPolicy.DeclaredReferenceNames(projectPath, referenceKind)
                 .ShouldContain(expectedName);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies an ancestor <c>ItemGroup</c> condition — not only a condition on the item element itself —
+    /// fails the shared declared-reference discovery closed, because the AppHost exact-topology and
+    /// runtime-adapter gates both reject that sentinel before the Release-lane evaluation resolves the
+    /// condition away.
+    /// </summary>
+    [Fact]
+    public void AncestorItemGroupConditionFailsSharedDeclaredReferenceDiscoveryClosed()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DeclaredReferenceTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                "<Project><ItemGroup Condition=\"'$(Configuration)' == 'Debug'\"><ProjectReference Include=\"../A/A.csproj\" /></ItemGroup></Project>");
+
+            string sentinel = KernelDependencyPolicy.DeclaredReferenceNames(projectPath, "ProjectReference")
+                .ShouldHaveSingleItem();
+
+            sentinel.ShouldBe("<conditional ProjectReference '../A/A.csproj'>");
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies the shared declared-reference discovery reports exactly one unmatchable sentinel for every
+    /// source it cannot classify, because the runtime-adapter gate rejects those sentinels before its family
+    /// filters run and would otherwise pass vacuously over an empty reference set.
+    /// </summary>
+    [Theory]
+    [InlineData(null, "<unreadable ProjectReference source")]
+    [InlineData("<Project>", "<unreadable ProjectReference source")]
+    [InlineData("<NotAProject />", "the XML root is not a Project element")]
+    [InlineData("<Project><ItemGroup><ProjectReference /></ItemGroup></Project>", "<malformed ProjectReference without Include>")]
+    [InlineData("<Project><ItemGroup><ProjectReference Include=\" ; ; \" /></ItemGroup></Project>", "<malformed ProjectReference with empty Include>")]
+    public void SharedDeclaredReferenceDiscoveryFailsClosedOnUnusableSources(string? projectXml, string expectedSentinel)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DeclaredReferenceTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            if (projectXml is not null)
+            {
+                File.WriteAllText(projectPath, projectXml);
+            }
+
+            string[] declaredReferences = KernelDependencyPolicy.DeclaredReferenceNames(projectPath, "ProjectReference");
+
+            string sentinel = declaredReferences.ShouldHaveSingleItem();
+            sentinel.ShouldStartWith("<", Case.Sensitive);
+            sentinel.ShouldContain(expectedSentinel, Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies removal, update, and item-definition declarations are not discovered as added references, so
+    /// metadata defaults and removals cannot be mistaken for dependencies the allowlist gates must classify.
+    /// </summary>
+    [Fact]
+    public void RemovalUpdateAndItemDefinitionDeclarationsAreNotDiscoveredReferences()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DeclaredReferenceTests-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Synthetic.csproj");
+            File.WriteAllText(
+                projectPath,
+                """
+                <Project>
+                  <ItemDefinitionGroup>
+                    <ProjectReference><Private>false</Private></ProjectReference>
+                  </ItemDefinitionGroup>
+                  <ItemGroup>
+                    <ProjectReference Remove="../A/A.csproj" />
+                    <ProjectReference Update="../B/B.csproj" />
+                  </ItemGroup>
+                </Project>
+                """);
+
+            KernelDependencyPolicy.DeclaredReferenceNames(projectPath, "ProjectReference").ShouldBeEmpty(
+                "Removal, update, and item-definition declarations add no dependency and must not be discovered.");
         }
         finally
         {
@@ -1217,6 +1377,248 @@ public sealed class KernelDependencyPolicyTests
         }
     }
 
+    /// <summary>
+    /// Verifies direct, nested, and referenced-project custom imports all participate in freshness.
+    /// </summary>
+    /// <param name="offendingInput">The dependency-affecting input made newer than the artifact.</param>
+    [Theory]
+    [InlineData("governed-direct")]
+    [InlineData("governed-transitive")]
+    [InlineData("referenced-project")]
+    [InlineData("referenced-direct")]
+    [InlineData("referenced-transitive")]
+    public void CompleteEvaluatedImportClosureParticipatesInFreshness(string offendingInput)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.KernelDependencyPolicyTests-");
+        try
+        {
+            string governedProjectDirectory = Path.Combine(temporaryRoot.FullName, "src", "Hexalith.Works.Server");
+            string governedProjectPath = Path.Combine(governedProjectDirectory, "Hexalith.Works.Server.csproj");
+            string assetsPath = Path.Combine(governedProjectDirectory, "obj", "project.assets.json");
+            string referencedProjectPath = Path.Combine(temporaryRoot.FullName, "dependencies", "Referenced.csproj");
+            string governedDirectImport = Path.Combine(temporaryRoot.FullName, "imports", "governed.props");
+            string governedTransitiveImport = Path.Combine(temporaryRoot.FullName, "imports", "governed-transitive.targets");
+            string referencedDirectImport = Path.Combine(temporaryRoot.FullName, "imports", "referenced.props");
+            string referencedTransitiveImport = Path.Combine(temporaryRoot.FullName, "imports", "referenced-transitive.targets");
+            Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(referencedProjectPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(governedDirectImport)!);
+
+            File.WriteAllText(governedTransitiveImport, "<Project />");
+            File.WriteAllText(
+                governedDirectImport,
+                $"<Project><Import Project=\"{XmlPath(governedTransitiveImport)}\" /></Project>");
+            File.WriteAllText(referencedTransitiveImport, "<Project />");
+            File.WriteAllText(
+                referencedDirectImport,
+                $"<Project><Import Project=\"{XmlPath(referencedTransitiveImport)}\" /></Project>");
+            File.WriteAllText(
+                referencedProjectPath,
+                $"<Project><Import Project=\"{XmlPath(referencedDirectImport)}\" /></Project>");
+            File.WriteAllText(
+                governedProjectPath,
+                $"""
+                <Project>
+                  <Import Project="{XmlPath(governedDirectImport)}" />
+                  <ItemGroup>
+                    <ProjectReference Include="{XmlPath(referencedProjectPath)}" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                assetsPath,
+                CreateAssetsJson("Hexalith.EventStore.Contracts", restoreProjectPath: governedProjectPath));
+
+            var baseline = new DateTime(2026, 8, 27, 12, 0, 0, DateTimeKind.Utc);
+            string[] restoreInputs =
+            [
+                governedProjectPath,
+                referencedProjectPath,
+                governedDirectImport,
+                governedTransitiveImport,
+                referencedDirectImport,
+                referencedTransitiveImport,
+            ];
+            foreach (string restoreInput in restoreInputs)
+            {
+                File.SetLastWriteTimeUtc(restoreInput, baseline.AddMinutes(-10));
+            }
+
+            File.SetLastWriteTimeUtc(assetsPath, baseline);
+            string offendingPath = offendingInput switch
+            {
+                "governed-direct" => governedDirectImport,
+                "governed-transitive" => governedTransitiveImport,
+                "referenced-project" => referencedProjectPath,
+                "referenced-direct" => referencedDirectImport,
+                "referenced-transitive" => referencedTransitiveImport,
+                _ => throw new InvalidOperationException($"Unknown import fixture '{offendingInput}'."),
+            };
+            File.SetLastWriteTimeUtc(offendingPath, baseline.AddMinutes(10));
+
+            string[] violations = KernelDependencyPolicy.EvaluateGovernedProject(
+                temporaryRoot.FullName,
+                "Hexalith.Works.Server");
+
+            violations.ShouldHaveSingleItem();
+            violations[0].ShouldContain("newest restore input", Case.Sensitive);
+            violations[0].ShouldContain(offendingPath, Case.Sensitive);
+            violations[0].ShouldContain("Hexalith.Works.Server", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies referenced projects are evaluated with the effective global properties declared on their ProjectReference.
+    /// </summary>
+    [Fact]
+    public void ProjectReferenceGlobalPropertiesSelectChildImportClosure()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.KernelDependencyPolicyTests-");
+        try
+        {
+            string governedProjectDirectory = Path.Combine(temporaryRoot.FullName, "src", "Hexalith.Works.Server");
+            string governedProjectPath = Path.Combine(governedProjectDirectory, "Hexalith.Works.Server.csproj");
+            string assetsPath = Path.Combine(governedProjectDirectory, "obj", "project.assets.json");
+            string referencedProjectPath = Path.Combine(temporaryRoot.FullName, "dependencies", "Referenced.csproj");
+            string selectedImport = Path.Combine(temporaryRoot.FullName, "imports", "selected.props");
+            Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(referencedProjectPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(selectedImport)!);
+
+            File.WriteAllText(selectedImport, "<Project />");
+            File.WriteAllText(
+                referencedProjectPath,
+                $"""
+                <Project>
+                  <Import Project="{XmlPath(selectedImport)}" Condition="'$(Flavor)' == 'Enabled' and '$(Configuration)' == 'Special' and '$(Platform)' == 'x64' and '$(DesignTimeBuild)' == ''" />
+                </Project>
+                """);
+            File.WriteAllText(
+                governedProjectPath,
+                $"""
+                <Project>
+                  <ItemGroup>
+                    <ProjectReference Include="{XmlPath(referencedProjectPath)}"
+                                      AdditionalProperties="Flavor=Enabled"
+                                      SetConfiguration="Configuration=Special"
+                                      SetPlatform="Platform=x64"
+                                      GlobalPropertiesToRemove="DesignTimeBuild" />
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                assetsPath,
+                CreateAssetsJson("Hexalith.EventStore.Contracts", restoreProjectPath: governedProjectPath));
+
+            var baseline = new DateTime(2026, 8, 27, 12, 0, 0, DateTimeKind.Utc);
+            File.SetLastWriteTimeUtc(governedProjectPath, baseline.AddMinutes(-10));
+            File.SetLastWriteTimeUtc(referencedProjectPath, baseline.AddMinutes(-10));
+            File.SetLastWriteTimeUtc(assetsPath, baseline);
+            File.SetLastWriteTimeUtc(selectedImport, baseline.AddMinutes(10));
+
+            string[] violations = KernelDependencyPolicy.EvaluateGovernedProject(
+                temporaryRoot.FullName,
+                "Hexalith.Works.Server");
+
+            violations.ShouldHaveSingleItem();
+            violations[0].ShouldContain(selectedImport, Case.Sensitive);
+            violations[0].ShouldContain("newest restore input", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies required evaluated freshness paths fail closed instead of being treated like optional root candidates.
+    /// </summary>
+    [Fact]
+    public void MissingRequiredEvaluatedFreshnessInputIsReported()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.KernelDependencyPolicyTests-");
+        try
+        {
+            (string projectPath, string assetsPath) = CreateGovernedProjectLayout(
+                temporaryRoot.FullName,
+                "Hexalith.Works.Contracts",
+                CreateAssetsJson("Hexalith.EventStore.Contracts"));
+            string disappearedImport = Path.Combine(temporaryRoot.FullName, "imports", "disappeared.props");
+
+            string[] violations = KernelDependencyPolicy.EvaluateFileWithRequiredFreshnessInputs(
+                "Hexalith.Works.Contracts",
+                projectPath,
+                assetsPath,
+                optionalFreshnessInputs: [Path.Combine(temporaryRoot.FullName, "optional.props")],
+                requiredFreshnessInputs: [disappearedImport]);
+
+            violations.ShouldHaveSingleItem();
+            violations[0].ShouldContain(disappearedImport, Case.Sensitive);
+            violations[0].ShouldContain("required evaluated restore input", Case.Sensitive);
+            violations[0].ShouldContain("disappeared", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>
+    /// Verifies duplicate imports and cyclic project-reference graphs terminate without duplicate freshness inputs.
+    /// </summary>
+    [Fact]
+    public void ProjectReferenceCyclesAndDuplicateImportsAreDeduplicated()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.KernelDependencyPolicyTests-");
+        try
+        {
+            string governedProjectDirectory = Path.Combine(temporaryRoot.FullName, "src", "Hexalith.Works.Server");
+            string governedProjectPath = Path.Combine(governedProjectDirectory, "Hexalith.Works.Server.csproj");
+            string assetsPath = Path.Combine(governedProjectDirectory, "obj", "project.assets.json");
+            string referencedProjectPath = Path.Combine(temporaryRoot.FullName, "dependencies", "Referenced.csproj");
+            string commonImport = Path.Combine(temporaryRoot.FullName, "imports", "common.props");
+            Directory.CreateDirectory(Path.GetDirectoryName(assetsPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(referencedProjectPath)!);
+            Directory.CreateDirectory(Path.GetDirectoryName(commonImport)!);
+
+            File.WriteAllText(commonImport, "<Project />");
+            File.WriteAllText(
+                governedProjectPath,
+                $"""
+                <Project>
+                  <Import Project="{XmlPath(commonImport)}" />
+                  <Import Project="{XmlPath(commonImport)}" />
+                  <ItemGroup><ProjectReference Include="{XmlPath(referencedProjectPath)}" /></ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(
+                referencedProjectPath,
+                $"<Project><ItemGroup><ProjectReference Include=\"{XmlPath(governedProjectPath)}\" /></ItemGroup></Project>");
+            File.WriteAllText(
+                assetsPath,
+                CreateAssetsJson("Hexalith.EventStore.Contracts", restoreProjectPath: governedProjectPath));
+
+            var baseline = new DateTime(2026, 8, 27, 12, 0, 0, DateTimeKind.Utc);
+            File.SetLastWriteTimeUtc(governedProjectPath, baseline);
+            File.SetLastWriteTimeUtc(referencedProjectPath, baseline);
+            File.SetLastWriteTimeUtc(commonImport, baseline);
+            File.SetLastWriteTimeUtc(assetsPath, baseline.AddMinutes(1));
+
+            KernelDependencyPolicy.EvaluateGovernedProject(
+                temporaryRoot.FullName,
+                "Hexalith.Works.Server")
+                .ShouldBeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
     private const string _forbiddenTransitiveAssetsJson =
         """
         {
@@ -1356,4 +1758,6 @@ public sealed class KernelDependencyPolicyTests
         File.SetLastWriteTimeUtc(projectPath, baseline);
         File.SetLastWriteTimeUtc(assetsPath, assetsIsStale ? baseline.AddMinutes(-1) : baseline.AddMinutes(1));
     }
+
+    private static string XmlPath(string path) => path.Replace('\\', '/');
 }

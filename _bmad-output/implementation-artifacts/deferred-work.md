@@ -463,7 +463,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-kernel-governance-drift-hardening.md`
 severity: medium
 reason: `DependencyDirectionTests.ProjectReferenceNames` loads only the owning `.csproj`. A safe-family imported reference such as Server to Projections would not violate the forbidden-family classifier and could bypass the exact literal allowlist. This limitation predates the current centralized governed-set work.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-msbuild-dependency-discovery
+resolution-undo: a3ed9f095f783e0e1a9344fb936307fa6a5b319403a9451b8aec9f36112eb63f 2026-08-29 7374617475733a206f70656e
 
 ### DW-49: Evaluated dependency artifact freshness does not cover the complete custom MSBuild import closure.
 origin: spec-deferred 94642d4aefa7
@@ -471,7 +473,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPo
 source_spec: `spec-kernel-governance-drift-hardening.md`
 severity: medium
 reason: `SharedRestoreInputs` checks the known root restore inputs, but a dependency-affecting custom imported props or targets file could change without making an existing `project.assets.json` fail the timestamp gate. The prior transitive-dependency implementation already carried this limitation.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-msbuild-dependency-discovery
+resolution-undo: a3ed9f095f783e0e1a9344fb936307fa6a5b319403a9451b8aec9f36112eb63f 2026-08-29 7374617475733a206f70656e
 
 ### DW-50: Exact ProjectReference allowlists normalize by project filename rather than canonical evaluated path identity.
 origin: spec-deferred ef210fd53a67
@@ -479,7 +483,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-kernel-governance-drift-hardening.md`
 severity: medium
 reason: A reference to an unrelated project with an allowlisted `.csproj` basename can normalize to the permitted name. Closing this safely requires evaluated path identity and is a pre-existing limitation of the exact direction test, not a defect introduced by this bundle.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-msbuild-dependency-discovery
+resolution-undo: a3ed9f095f783e0e1a9344fb936307fa6a5b319403a9451b8aec9f36112eb63f 2026-08-29 7374617475733a206f70656e
 
 ### DW-51: The Hexalith-source consumption gate still reads PackageReference and PackageVersion item specifications raw, outside the shared fail-closed discovery.
 origin: spec-deferred 36cdab656fd8
@@ -487,7 +493,9 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-kernel-governance-drift-hardening.md`
 severity: low
 reason: `DependencyDirectionTests.PackageReferenceNames` matches item names case-sensitively, takes `Include` or `Update` verbatim, and never splits semicolon-delimited item lists, so `Include="Something;Hexalith.Foo"` evades the "Hexalith libraries must come from sibling source" rule. The governed-set and forbidden-family paths this story centralized do not consume this helper, and the rule it serves is outside the kernel-purity scope this bundle reconciled.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-msbuild-dependency-discovery
+resolution-undo: a3ed9f095f783e0e1a9344fb936307fa6a5b319403a9451b8aec9f36112eb63f 2026-08-29 7374617475733a206f70656e
 
 ### DW-52: ExposedChildCount remains independently constructible from ChildWorkItemIds and can represent an inconsistent read model.
 origin: spec-deferred 124b7489f14f
@@ -671,6 +679,78 @@ status: open
 origin: review-budget-followup
 location: n/a
 source_spec: `spec-shared-rollup-reconciliation.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-75: Hexalith source-consumption project discovery remains constrained by the Hexalith.Works*.csproj filename glob.
+origin: spec-deferred 9a356fa164ff
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:415
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: The live source-consumption gate still enumerates projects by basename, so a differently named root-owned project could evade this specific check. This behavior predates the evaluated-input bundle and is outside its four ledger entries.
+status: open
+
+### DW-76: PackageVersion ownership does not trace Works-owned property overrides consumed by the approved shared catalog.
+origin: spec-deferred 61f77899777d
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:226
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: Ownership follows the XML file that defines the effective Version metadata. A Works-local property could influence a version expression in the shared catalog while the catalog remains the defining file. This pre-existing property-provenance problem is broader than evaluated PackageReference and PackageVersion item discovery.
+status: open
+
+### DW-77: The architecture-test lane is bound to the build machine's installed MSBuild layout instead of resolving it at run time.
+origin: spec-deferred 769960e1cb23
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:475
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: medium
+reason: The test project captures $(MSBuildToolsPath) into an AssemblyMetadataAttribute at compile time and copies the SDK's Microsoft.Build* assemblies next to the test host. A build-once/test-elsewhere pipeline, or an SDK patch installed between build and test, makes ConfigureInstalledMsBuild throw and fails the whole architecture lane. Replacing the hand bootstrap with MSBuildLocator adds a package dependency and is a design decision beyond this bundle.
+status: open
+
+### DW-78: The Release lane pins Platform=AnyCPU for every evaluated project regardless of its declared Platforms.
+origin: spec-deferred 27c11709b8c0
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:29
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: A project declaring a Platforms set that excludes AnyCPU would be evaluated under a platform it does not support, so platform-conditioned imports and ProjectReference items would silently drop out of the evaluated set the gates trust as complete. No project in the repository declares such a set today.
+status: open
+
+### DW-79: Restored NuGet package build props enter the custom-import freshness closure.
+origin: spec-deferred c816fd817c7c
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:431
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: IsCustomImportPath excludes installed-SDK imports and generated build output, but a package's build/buildTransitive props imported from the global packages folder is neither, so it becomes a restore input. Re-extracting or touching the package cache without restoring would report the evaluated dependency artifact stale.
+status: open
+
+### DW-80: Dependency declarations that only an inactive non-Release condition guards remain invisible when they arrive through an import.
+origin: spec-deferred 65a78e5cf80d
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:22
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: medium
+reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
+status: open
+
+### DW-81: Runtime-adapter confinement still decides EventStore-runtime and Dapr direction from owning-file XML and basename prefixes.
+origin: spec-deferred b052bd148f70
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs:53
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: RuntimeAdapterGovernanceTests reads declared references from the governed project file only and compares them by name prefix, so an imported item or an unrelated project with an EventStore-runtime basename escapes that specific gate. The escape is partly covered elsewhere because ScaffoldGovernanceTests routes through the evaluated EvaluateProjectFile path, but with a different message. The intent named the dependency-direction, source-consumption, and restore-freshness gates; converting this fourth gate is separate work.
+status: open
+
+### DW-82: The architecture-test project pins one exact System.Diagnostics.EventLog assembly version to keep the MSBuild reference set warning-free.
+origin: spec-deferred f3e8a31d6d81
+location: tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj:41
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: Dropping `Version=10.0.0.0`/`SpecificVersion` was tried and reintroduces MSB3277 (unification with the SDK's System.Configuration.ConfigurationManager), so the pin is load-bearing under the repository's zero-warning bar. An SDK band that ships a different EventLog assembly version will therefore need this literal edited. This is the same installed-SDK coupling as the MSBuild-layout entry above, but a distinct literal.
+status: open
+
+### DW-83: Follow-up review still recommended for dw-msbuild-dependency-discovery after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
 status: open
