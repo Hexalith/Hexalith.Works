@@ -140,11 +140,34 @@ public sealed class WorkItemProjectionDispatcher
                     : null)
             .FirstOrDefault(candidate => string.Equals(candidate.WorkItemId.Value, request.AggregateId, StringComparison.Ordinal));
 
-        await UpsertTenantIndexAsync(tenant, request.AggregateId, item, request.Events, cancellationToken).ConfigureAwait(false);
-        await PersistRollUpAsync(tenant, workItemId, model, cancellationToken).ConfigureAwait(false);
+        bool indexAccepted = false;
+        if (model is not null)
+        {
+            WorkItemRollUp persistedRollUp = await PersistRollUpAsync(
+                tenant,
+                workItemId,
+                model,
+                request.Events,
+                cancellationToken).ConfigureAwait(false);
+
+            // The roll-up is written first and acts as this aggregate's own ordering guard. If a concurrent
+            // newer replay already won that key, this stale dispatch must not attempt the independent tenant-
+            // index write. The two keys are intentionally non-atomic and converge through their own watermarks.
+            if (persistedRollUp.LatestAcceptedSourceSequence <= model.LatestAcceptedSourceSequence)
+            {
+                indexAccepted = await UpsertTenantIndexAsync(
+                    tenant,
+                    request.AggregateId,
+                    item,
+                    model.LatestAcceptedSourceSequence,
+                    request.Events,
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
+
         await MaintainPendingDateAwaitIndexAsync(tenant, request.AggregateId, decodedEvents, request.Events, cancellationToken).ConfigureAwait(false);
 
-        if (changed && _notifier is not null)
+        if (changed && indexAccepted && _notifier is not null)
         {
             await _notifier
                 .NotifyProjectionChangedAsync(WorksReadModelKeys.WhatsNextProjectionType, tenant.Value, entityId: null, cancellationToken)
@@ -160,10 +183,11 @@ public sealed class WorkItemProjectionDispatcher
         return new ProjectionResponse(WorksReadModelKeys.WhatsNextProjectionType, state);
     }
 
-    private async Task UpsertTenantIndexAsync(
+    private async Task<bool> UpsertTenantIndexAsync(
         TenantId tenant,
         string aggregateId,
         WhatsNextItem? item,
+        long incomingLastSequence,
         IReadOnlyList<ProjectionEventDto>? events,
         CancellationToken cancellationToken)
     {
@@ -176,41 +200,99 @@ public sealed class WorkItemProjectionDispatcher
             ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
             .WithEventDiagnostics(events ?? []);
 
+        bool incomingAccepted = false;
         _ = await ReadModelWritePolicy.UpdateAsync<WorksWhatsNextTenantIndex>(
             _store,
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.WhatsNextIndexKey(tenant.Value),
             current =>
             {
-                WorksWhatsNextTenantIndex index = current ?? new WorksWhatsNextTenantIndex();
-                if (item is not null)
+                var items = current is null
+                    ? new Dictionary<string, WhatsNextItem>(StringComparer.Ordinal)
+                    : new Dictionary<string, WhatsNextItem>(current.Items, StringComparer.Ordinal);
+                var lastSequences = current is null
+                    ? new Dictionary<string, long>(StringComparer.Ordinal)
+                    : new Dictionary<string, long>(current.LastSequences, StringComparer.Ordinal);
+
+                // Additive-rollout compatibility: when this aggregate id has no LastSequences entry, an
+                // eligible legacy item still carries ordering authority on its own accepted-source watermark.
+                // The item is a fallback for a missing entry, never a competing maximum. The two watermarks are
+                // produced by different projections whose accept filters can disagree on a delivery (the
+                // what's-next projection accepts a ChildSpawned that the roll-up's identity registry refuses),
+                // so a stored item can sit permanently ahead of the roll-up watermark this guard compares
+                // against. Maximising over both would then refuse every later replay of that stream and freeze
+                // the item's index entry and its notifications until an event both projections accept caught
+                // the roll-up up.
+                long storedLastSequence;
+                if (lastSequences.TryGetValue(aggregateId, out long tombstoneSequence))
                 {
-                    index.Items[aggregateId] = item;
+                    storedLastSequence = tombstoneSequence;
+                }
+                else if (items.TryGetValue(aggregateId, out WhatsNextItem? storedItem))
+                {
+                    storedLastSequence = storedItem.LatestAcceptedSourceSequence;
                 }
                 else
                 {
-                    _ = index.Items.Remove(aggregateId);
+                    storedLastSequence = long.MinValue;
                 }
 
-                return index;
+                if (storedLastSequence > incomingLastSequence)
+                {
+                    incomingAccepted = false;
+                    return new WorksWhatsNextTenantIndex
+                    {
+                        Items = items,
+                        LastSequences = lastSequences,
+                    };
+                }
+
+                incomingAccepted = true;
+                lastSequences[aggregateId] = incomingLastSequence;
+                if (item is not null)
+                {
+                    items[aggregateId] = item;
+                }
+                else
+                {
+                    _ = items.Remove(aggregateId);
+                }
+
+                return new WorksWhatsNextTenantIndex
+                {
+                    Items = items,
+                    LastSequences = lastSequences,
+                };
             },
             context,
             _logger,
             cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return incomingAccepted;
     }
 
-    private async Task PersistRollUpAsync(
+    private async Task<WorkItemRollUp> PersistRollUpAsync(
         TenantId tenant,
         WorkItemId workItemId,
-        WorkItemRollUp? model,
+        WorkItemRollUp model,
+        IReadOnlyList<ProjectionEventDto>? events,
         CancellationToken cancellationToken)
     {
-        if (model is not null)
-        {
-            await _store
-                .SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value), model, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        ReadModelWriteContext context = new ReadModelWriteContext(
+            Category: "works work-item roll-up",
+            ProjectionType: WorksReadModelKeys.WorkItemViewProjectionType)
+            .WithEventDiagnostics(events ?? []);
+
+        return await ReadModelWritePolicy.UpdateAsync<WorkItemRollUp>(
+            _store,
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value),
+            current => current is not null && current.LatestAcceptedSourceSequence > model.LatestAcceptedSourceSequence
+                ? current
+                : model,
+            context,
+            _logger,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     private static WorkItemRollUp? ToBoundarySafeRollUp(WorkItemRollUp? model, bool childContributionMayExist)

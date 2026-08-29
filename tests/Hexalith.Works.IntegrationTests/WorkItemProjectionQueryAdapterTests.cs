@@ -14,6 +14,8 @@ using Hexalith.Works.Queries;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
+using NSubstitute;
+
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -383,6 +385,593 @@ public sealed class WorkItemProjectionQueryAdapterTests
     }
 
     [Fact]
+    public async Task Older_ineligible_replay_cannot_delete_newer_eligible_state()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing"), new WorkItemEffort(8m, Hour)), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                Dto(new ProgressReported(WorkId, 3, tenant, item, 2m, Hour), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        store.SuccessfulWriteKeys.Take(2).ShouldBe(
+        [
+            $"{WorksReadModelKeys.StateStoreName}:{WorksReadModelKeys.RollUpKey(Tenant, WorkId)}",
+            $"{WorksReadModelKeys.StateStoreName}:{WorksReadModelKeys.WhatsNextIndexKey(Tenant)}",
+        ]);
+        store.ResetSuccessfulWriteObservation();
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Stale obligation")), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(3);
+        rollUp.OwnRemaining.ShouldBe(new OwnRemaining(6m, Hour));
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        index.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(3);
+        index.LastSequences[WorkId].ShouldBe(3);
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Older_eligible_replay_cannot_resurrect_terminal_index_state()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                Dto(new WorkItemCompleted(WorkId, 3, tenant, item), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Completed);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(3);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items.ShouldNotContainKey(WorkId);
+        index.LastSequences[WorkId].ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task Tombstone_only_index_refuses_older_eligible_replay_and_does_not_notify()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+            new WorksWhatsNextTenantIndex { LastSequences = { [WorkId] = 3 } },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        IProjectionChangeNotifier notifier = Substitute.For<IProjectionChangeNotifier>();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store, notifier);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(2);
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items.ShouldNotContainKey(WorkId);
+        index.LastSequences[WorkId].ShouldBe(3);
+        (await QueryWhatsNextAsync(store).ConfigureAwait(true)).ShouldBeEmpty();
+        await notifier
+            .DidNotReceiveWithAnyArgs()
+            .NotifyProjectionChangedAsync(default!, default!, default, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Older_terminal_replay_cannot_delete_newer_eligible_index_entry()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                Dto(new ProgressReported(WorkId, 3, tenant, item, 2m, Hour), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ResetSuccessfulWriteObservation();
+
+        // The stale replay ends terminal, so accepting it would remove the index entry: the deletion half of
+        // the ordering guard, which a stale *eligible* replay can never exercise.
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                Dto(new WorkItemCompleted(WorkId, 2, tenant, item), 2),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(3);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        index.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(3);
+        index.LastSequences[WorkId].ShouldBe(3);
+        (await QueryWhatsNextAsync(store).ConfigureAwait(true)).ShouldHaveSingleItem();
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Accepted_replay_notifies_once_and_a_later_stale_replay_does_not()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        IProjectionChangeNotifier notifier = Substitute.For<IProjectionChangeNotifier>();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store, notifier);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        // Pins the accepting edge of the indexAccepted notification gate: without it, a permanently false
+        // gate would silence every subscriber while leaving all persisted-state assertions green.
+        await notifier
+            .Received(1)
+            .NotifyProjectionChangedAsync(
+                WorksReadModelKeys.WhatsNextProjectionType,
+                Tenant,
+                null,
+                Arg.Any<CancellationToken>())
+            .ConfigureAwait(true);
+        notifier.ClearReceivedCalls();
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Stale obligation")), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        await notifier
+            .DidNotReceiveWithAnyArgs()
+            .NotifyProjectionChangedAsync(default!, default!, default, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Concurrent_distinct_items_merge_after_a_tenant_index_etag_conflict()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        string indexKey = WorksReadModelKeys.WhatsNextIndexKey(Tenant);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            indexKey,
+            new WorksWhatsNextTenantIndex(),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ResetSuccessfulWriteObservation();
+        store.CoordinateFirstTrySaveConflict(WorksReadModelKeys.StateStoreName, indexKey);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        await Task.WhenAll(
+            dispatcher.DispatchAsync(CreateThenAssign(Tenant, WorkId), TestContext.Current.CancellationToken),
+            dispatcher.DispatchAsync(CreateThenAssign(Tenant, ChildId), TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items.Keys.ShouldBe([WorkId, ChildId], ignoreOrder: true);
+        index.LastSequences.Keys.ShouldBe([WorkId, ChildId], ignoreOrder: true);
+        index.LastSequences[WorkId].ShouldBe(2);
+        index.LastSequences[ChildId].ShouldBe(2);
+        store.GetSuccessfulWriteCount(WorksReadModelKeys.StateStoreName, indexKey).ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Concurrent_older_and_newer_replays_converge_after_a_roll_up_etag_conflict()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        string rollUpKey = WorksReadModelKeys.RollUpKey(Tenant, WorkId);
+        store.FailNextSaves(WorksReadModelKeys.StateStoreName, rollUpKey);
+        store.CoordinateFirstTrySaveConflict(
+            WorksReadModelKeys.StateStoreName,
+            rollUpKey);
+
+        await Task.WhenAll(
+            dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken),
+            dispatcher.DispatchAsync(
+                new ProjectionRequest(Tenant, "work", WorkId,
+                [
+                    Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                    Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                    Dto(new WorkItemCompleted(WorkId, 3, tenant, item), 3),
+                ]),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Completed);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(3);
+        store.GetSuccessfulWriteCount(WorksReadModelKeys.StateStoreName, rollUpKey).ShouldBe(2);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items.ShouldNotContainKey(WorkId);
+        index.LastSequences[WorkId].ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task Empty_and_rejection_only_replays_do_not_mutate_authoritative_projection_models()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ResetSuccessfulWriteObservation();
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId, []),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemTransitionRejected(tenant, item, WorkItemStatus.Assigned, "Claim"), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId)).ShouldBe(0);
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant)).ShouldBe(0);
+
+        (await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true))
+            .LatestAcceptedSourceSequence.ShouldBe(2);
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(2);
+        index.LastSequences[WorkId].ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Legacy_eligible_item_watermark_refuses_an_older_replay_without_a_tombstone_map_entry()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var legacyItem = new WhatsNextItem(
+            tenant,
+            item,
+            WorkItemStatus.Assigned,
+            null,
+            null,
+            Binding,
+            null,
+            null,
+            [],
+            [],
+            3);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+            new WorksWhatsNextTenantIndex { Items = { [WorkId] = legacyItem } },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Stale obligation")), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].ShouldBe(legacyItem);
+        index.LastSequences.ShouldNotContainKey(WorkId);
+    }
+
+    [Fact]
+    public async Task Stored_item_ahead_of_its_retained_sequence_does_not_freeze_the_index()
+    {
+        // The two watermarks come from different projections: the retained sequence is the roll-up's, while
+        // Items[id].LatestAcceptedSourceSequence is the what's-next projection's. Their accept filters can
+        // disagree (a ChildSpawned with no child id is accepted by what's-next and refused by the roll-up's
+        // identity registry), so a stored item can sit permanently ahead. The item watermark must therefore be
+        // a fallback for a missing retained entry, never a competing maximum — maximising over both would
+        // refuse this item's every later replay and freeze its index entry and notifications.
+        var store = new Story47InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var aheadItem = new WhatsNextItem(
+            tenant,
+            item,
+            WorkItemStatus.Queued,
+            null,
+            null,
+            null,
+            null,
+            null,
+            [],
+            [],
+            5);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+            new WorksWhatsNextTenantIndex
+            {
+                Items = { [WorkId] = aheadItem },
+                LastSequences = { [WorkId] = 2 },
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        IProjectionChangeNotifier notifier = Substitute.For<IProjectionChangeNotifier>();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store, notifier);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        index.Items[WorkId].ExecutorBinding.ShouldBe(Binding);
+        index.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(2);
+        index.LastSequences[WorkId].ShouldBe(2);
+        await notifier
+            .Received(1)
+            .NotifyProjectionChangedAsync(
+                WorksReadModelKeys.WhatsNextProjectionType,
+                Tenant,
+                null,
+                Arg.Any<CancellationToken>())
+            .ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task Newer_replay_over_a_retained_tombstone_restores_eligibility()
+    {
+        // The forward edge of the tombstone: retention must refuse only *older* replays. An item that leaves
+        // the eligible set and later re-enters it (suspend, resume, requeue) has to reappear in the index at
+        // its newer sequence, or the guard would evict it from the tenant's queue permanently.
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                Dto(new WorkItemSuspended(WorkId, 3, tenant, item, [AwaitCondition.ExternalSignal("resume")]), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorksWhatsNextTenantIndex suspended = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        suspended.Items.ShouldNotContainKey(WorkId);
+        suspended.LastSequences[WorkId].ShouldBe(3);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+                Dto(new WorkItemSuspended(WorkId, 3, tenant, item, [AwaitCondition.ExternalSignal("resume")]), 3),
+                Dto(new WorkItemResumed(WorkId, 4, tenant, item, AwaitCondition.ExternalSignal("resume")), 4),
+                Dto(new WorkItemQueued(WorkId, 5, tenant, item), 5),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorksWhatsNextTenantIndex requeued = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        requeued.Items[WorkId].Status.ShouldBe(WorkItemStatus.Queued);
+        requeued.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(5);
+        requeued.LastSequences[WorkId].ShouldBe(5);
+        (await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true))
+            .LatestAcceptedSourceSequence.ShouldBe(5);
+        (await QueryWhatsNextAsync(store).ConfigureAwait(true)).ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void Whats_next_index_sequence_tombstones_round_trip_and_legacy_json_gets_a_usable_empty_map()
+    {
+        var index = new WorksWhatsNextTenantIndex { LastSequences = { [WorkId] = 7 } };
+
+        WorksWhatsNextTenantIndex roundTripped = JsonSerializer
+            .Deserialize<WorksWhatsNextTenantIndex>(JsonSerializer.Serialize(index, Web), Web)
+            .ShouldNotBeNull();
+        roundTripped.LastSequences[WorkId].ShouldBe(7);
+
+        WorksWhatsNextTenantIndex legacy = JsonSerializer
+            .Deserialize<WorksWhatsNextTenantIndex>("""{"items":{}}""", Web)
+            .ShouldNotBeNull();
+        legacy.LastSequences.ShouldBeEmpty();
+        legacy.LastSequences[WorkId] = 1;
+        legacy.LastSequences[WorkId].ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Equal_sequence_redispatch_refreshes_deterministic_roll_up_and_index_documents()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var staleRollUp = new WorkItemRollUp(
+            tenant,
+            item,
+            WorkItemStatus.Queued,
+            null,
+            null,
+            null,
+            [],
+            [],
+            0,
+            2);
+        var staleItem = new WhatsNextItem(
+            tenant,
+            item,
+            WorkItemStatus.Queued,
+            null,
+            null,
+            null,
+            null,
+            null,
+            [],
+            [],
+            2);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+            staleRollUp,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+            new WorksWhatsNextTenantIndex
+            {
+                Items = { [WorkId] = staleItem },
+                LastSequences = { [WorkId] = 2 },
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(2);
+        WorksWhatsNextTenantIndex index = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        index.Items[WorkId].ExecutorBinding.ShouldBe(Binding);
+        index.LastSequences[WorkId].ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task Roll_up_retry_exhaustion_propagates_without_an_unconditional_fallback()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        string rollUpKey = WorksReadModelKeys.RollUpKey(Tenant, WorkId);
+        store.RejectNextTrySaves(
+            WorksReadModelKeys.StateStoreName,
+            rollUpKey,
+            ReadModelWritePolicy.DefaultMaxAttempts);
+        store.FailNextSaves(WorksReadModelKeys.StateStoreName, rollUpKey);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            CreateThenAssign(),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        exception.Message.ShouldContain(rollUpKey);
+        exception.Message.ShouldContain("exceeded the optimistic-concurrency retry limit");
+        store.GetSuccessfulWriteCount(WorksReadModelKeys.StateStoreName, rollUpKey).ShouldBe(0);
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant)).ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task Equal_sequence_redispatch_repairs_index_after_non_atomic_index_retry_exhaustion()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        string indexKey = WorksReadModelKeys.WhatsNextIndexKey(Tenant);
+        store.RejectNextTrySaves(
+            WorksReadModelKeys.StateStoreName,
+            indexKey,
+            ReadModelWritePolicy.DefaultMaxAttempts);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            CreateThenAssign(),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        exception.Message.ShouldContain(indexKey);
+        WorkItemRollUp firstRollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        firstRollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        firstRollUp.LatestAcceptedSourceSequence.ShouldBe(2);
+        (await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true)).Items.ShouldBeEmpty();
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp repairedRollUp = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        repairedRollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        repairedRollUp.LatestAcceptedSourceSequence.ShouldBe(2);
+        WorksWhatsNextTenantIndex repairedIndex = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        repairedIndex.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        repairedIndex.Items[WorkId].LatestAcceptedSourceSequence.ShouldBe(2);
+        repairedIndex.LastSequences[WorkId].ShouldBe(2);
+        (await QueryWhatsNextAsync(store).ConfigureAwait(true)).ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public async Task Ordering_guards_keep_colliding_inner_ids_isolated_by_tenant()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenantA = new TenantId(Tenant);
+        var tenantB = new TenantId(OtherTenant);
+        var item = new WorkItemId(WorkId);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenantA, item, new Obligation("Tenant A")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenantA, item, Binding), 2),
+                Dto(new WorkItemCompleted(WorkId, 3, tenantA, item), 3),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(OtherTenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenantB, item, new Obligation("Tenant B")), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenantB, item, Binding), 2),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        _ = await dispatcher.DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(OtherTenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenantB, item, new Obligation("Stale tenant B")), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp rollUpA = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        WorkItemRollUp rollUpB = await ReadRollUpAsync(store, OtherTenant, WorkId).ConfigureAwait(true);
+        rollUpA.Status.ShouldBe(WorkItemStatus.Completed);
+        rollUpA.LatestAcceptedSourceSequence.ShouldBe(3);
+        rollUpB.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUpB.LatestAcceptedSourceSequence.ShouldBe(2);
+
+        WorksWhatsNextTenantIndex indexA = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        WorksWhatsNextTenantIndex indexB = await ReadWhatsNextIndexAsync(store, OtherTenant).ConfigureAwait(true);
+        indexA.Items.ShouldNotContainKey(WorkId);
+        indexA.LastSequences[WorkId].ShouldBe(3);
+        indexB.Items[WorkId].Status.ShouldBe(WorkItemStatus.Assigned);
+        indexB.LastSequences[WorkId].ShouldBe(2);
+    }
+
+    [Fact]
     public async Task Colliding_work_item_ids_remain_isolated_by_tenant()
     {
         var store = new InMemoryReadModelStore();
@@ -410,17 +999,19 @@ public sealed class WorkItemProjectionQueryAdapterTests
     public async Task Query_fails_closed_to_empty_for_a_tenant_with_no_index()
         => (await QueryWhatsNextAsync(new InMemoryReadModelStore()).ConfigureAwait(true)).Count.ShouldBe(0);
 
-    private static WorkItemProjectionDispatcher NewDispatcher(IReadModelStore store)
-        => new(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance);
+    private static WorkItemProjectionDispatcher NewDispatcher(
+        IReadModelStore store,
+        IProjectionChangeNotifier? notifier = null)
+        => new(store, notifier, NullLogger<WorkItemProjectionDispatcher>.Instance);
 
-    private static ProjectionRequest CreateThenAssign()
+    private static ProjectionRequest CreateThenAssign(string tenantId = Tenant, string workItemId = WorkId)
     {
-        var tenant = new TenantId(Tenant);
-        var item = new WorkItemId(WorkId);
-        return new ProjectionRequest(Tenant, "work", WorkId,
+        var tenant = new TenantId(tenantId);
+        var item = new WorkItemId(workItemId);
+        return new ProjectionRequest(tenantId, "work", workItemId,
         [
-            Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
-            Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+            Dto(new WorkItemCreated(workItemId, 1, tenant, item, new Obligation("Do the thing")), 1),
+            Dto(new WorkItemAssigned(workItemId, 2, tenant, item, Binding), 2),
         ]);
     }
 
@@ -482,6 +1073,17 @@ public sealed class WorkItemProjectionQueryAdapterTests
                 TestContext.Current.CancellationToken)
             .ConfigureAwait(false);
         return entry.Value.ShouldNotBeNull();
+    }
+
+    private static async Task<WorksWhatsNextTenantIndex> ReadWhatsNextIndexAsync(IReadModelStore store, string tenantId)
+    {
+        ReadModelEntry<WorksWhatsNextTenantIndex> entry = await store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.WhatsNextIndexKey(tenantId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(false);
+        return entry.Value ?? new WorksWhatsNextTenantIndex();
     }
 
     private static async Task<IReadOnlyList<JsonElement>> QueryWhatsNextAsync(IReadModelStore store, string tenantId = Tenant)

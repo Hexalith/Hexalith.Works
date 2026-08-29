@@ -70,3 +70,11 @@ containing a `ChildSpawned` event type that could not be decoded or accepted—k
 status, parent/child structure, tenant, diagnostics, and freshness watermark, while `RolledRemaining` and
 `RolledRemainingByUnit` are exposed and persisted as unavailable (`null` / empty). This 2026-08-27 refusal
 decision does not weaken or change the pure projection's co-available recursive behavior.
+
+Persisted roll-ups accept only an incoming model whose `LatestAcceptedSourceSequence` is not older than the
+currently stored model. The adapter applies that comparison inside `ReadModelWritePolicy`'s ETag reload/retry
+loop; it has no unconditional-save fallback. Equal-sequence replay remains allowed so deterministic documents
+written before a projection-shape correction can be refreshed. The roll-up is written before the separate
+tenant what's-next index and acts as the first ordering guard: when the policy returns a strictly newer stored
+roll-up, that stale dispatch skips its index write. This ordering does not make the two keys atomic; each key is
+independently monotonic and converges through later replay.

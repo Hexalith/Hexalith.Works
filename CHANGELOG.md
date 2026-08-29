@@ -66,6 +66,18 @@ All notable changes to Hexalith.Works will be documented in this file.
 
 ### Changed
 
+- Runtime `/project` per-item roll-up and tenant what's-next index persistence is now monotonic on each
+  accepted EventStore envelope position: per-item roll-ups use the shared optimistic-concurrency write policy,
+  and the tenant what's-next index retains per-item sequence tombstones so delayed older full replays cannot
+  overwrite, delete, or resurrect newer state. Equal-sequence replay can refresh deterministic documents; a
+  legacy eligible entry supplies its own watermark whenever that aggregate id has no tombstone entry. The
+  persisted what's-next index therefore gains an additive serialized `lastSequences` member; documents written
+  before this change omit it and deserialize to an empty map. A retained entry is the sole ordering authority
+  for its work item; the legacy item watermark is consulted only when that id has no entry yet. Projection
+  change notification is correspondingly narrowed: a dispatch whose tenant-index write was refused as stale
+  announces nothing, because no persisted state moved. The two keys remain independently guarded and
+  non-atomic, and the pending date-await index the same dispatch maintains is unchanged — it keeps its own
+  pre-existing raw stream-sequence watermark and is outside this guarantee.
 - **Breaking:** the `WorkItemRollUp` read model's positional member `ChildContributionCount` and its
   serialized `childContributionCount` property are renamed to `ExposedChildCount` / `exposedChildCount`,
   with the value and positional order unchanged. The number counts the tenant-filtered child identities the

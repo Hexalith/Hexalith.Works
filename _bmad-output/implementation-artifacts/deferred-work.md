@@ -409,7 +409,9 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:152
 source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: WorkItemProjectionDispatcher writes the tenant index and per-item roll-up without comparing the incoming LatestAcceptedSourceSequence to the stored item, so an older request completing later can replace newer status, effort, structure, and availability state. This behavior predates the stale-roll-up refusal change and needs a focused ordering/concurrency design.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-projection-write-ordering-guard
+resolution-undo: bb280afa3e98e0e59e3943ec36b0029d2739c580568bb8b7779f4b9278ed6480 2026-08-29 7374617475733a206f70656e
 
 ### DW-44: Per-item roll-up persistence does not use the documented optimistic-concurrency write policy.
 origin: spec-deferred 6baca031f280
@@ -417,7 +419,9 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:191
 source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: PersistRollUpAsync calls IReadModelStore.SaveAsync directly, while docs/eventstore-api-surface-constraints.md describes per-item persistence as ReadModelWritePolicy/ETag guarded. The mismatch predates this bundle and should be reconciled separately without expanding the adapter refusal patch.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-projection-write-ordering-guard
+resolution-undo: bb280afa3e98e0e59e3943ec36b0029d2739c580568bb8b7779f4b9278ed6480 2026-08-29 7374617475733a206f70656e
 
 ### DW-45: Roll-ups and tenant-index entries persisted before the refusal change keep their stale child-dependent totals until their own aggregate is dispatched again.
 origin: spec-deferred ced4955ae997
@@ -601,4 +605,52 @@ location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGo
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: low
 reason: EventPersisterGoldenCorpusTests.cs:32 and SchemaEvolutionGoldenCorpusTests.cs:26 resolve their corpus directory under AppContext.BaseDirectory and enumerate it with SearchOption.AllDirectories, while Hexalith.Works.IntegrationTests.csproj copies both directories with CopyToOutputDirectory PreserveNewest, which never prunes. A fixture deleted from source therefore still satisfies the bidirectional set-equality check until a clean build. The gate fails closed only in CI. Pre-existing for the Web corpus; inherited by the new exact corpus.
+status: open
+
+### DW-67: Pre-change ineligible index state can lack a durable accepted-sequence watermark after the old index-first partial-failure window.
+origin: spec-deferred bf5afcdcbbe6
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:145
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: medium
+reason: Before this bundle, an ineligible replay removed the tenant-index item before unconditionally saving the roll-up and retained no tombstone. A crash between those writes can leave no record of the newer ineligible sequence, so a later older eligible replay cannot be distinguished without a migration or backfill decision.
+status: open
+
+### DW-68: The retained tenant-index sequence watermark is never pruned, so the single per-tenant what's-next document grows by one permanent entry per work item ever projected.
+origin: spec-deferred c229b8333c33
+location: src/Hexalith.Works/Projections/WorksWhatsNextReadModel.cs:57
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: medium
+reason: WorksWhatsNextTenantIndex.LastSequences keeps an entry after the item leaves the eligible set and nothing removes it. Before this bundle the document was bounded by the currently eligible item count. It is read, copied, and rewritten on every dispatch for the tenant and read on every what's-next query, so a long-lived tenant eventually meets the state-store value-size limit. The sibling PendingDateAwaitTenantIndex has the same unbounded shape, so a retention policy (cap, TTL, or compaction) is a cross-index design decision rather than a local fix.
+status: open
+
+### DW-69: A refused stale replay still issues a conditional write through ReadModelWritePolicy, bumping the key's ETag instead of skipping the store round-trip.
+origin: spec-deferred c87599ee7a12
+location: references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelWritePolicy.cs:78
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: ReadModelWritePolicy.UpdateAsync unconditionally calls TrySaveAsync with whatever the transform returns, so both ordering guards refuse at the value surface only: the persisted document is unchanged, but the version advances and a concurrent legitimate writer can lose an attempt from its bounded retry budget. This is the pre-existing platform contract (the old unconditional SaveAsync also wrote), so the change adds no write it did not already make; suppressing the write needs a no-op signal in the EventStore write policy, which this story's Block If fences off.
+status: open
+
+### DW-70: The sibling pending-date-await index transform still mutates the instance it loaded, so a rejected write can leave that mutation visible in a reference-returning store.
+origin: spec-deferred 6f4552a53c41
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:330
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: MaintainPendingDateAwaitIndexAsync does `PendingDateAwaitTenantIndex index = current ?? new(...)` and then mutates `index` in place inside ReadModelWritePolicy's retry transform. The what's-next transform was converted to build replacement dictionaries on every retry precisely so a rejected attempt cannot leak into loaded state; the pending-date sibling was left on the older pattern because this story's Never clause fences off pending-date behavior. No test depends on it today (RejectNextTrySaves is never armed on that key), but the two sibling transforms now disagree on a semantics the docs claim for the index family.
+status: open
+
+### DW-71: The /project response still echoes the freshly computed item even when both ordering guards refused the replay, so a caller can receive state that was never persisted.
+origin: spec-deferred 2cfe338125c2
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:179
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: DispatchAsync serializes `item` into ProjectionResponse unconditionally, and `indexAccepted` is computed and then discarded. Before this change the writes were unconditional, so the response always matched persisted state; a refused stale replay now returns a document the store does not hold, with no field distinguishing accepted from refused. Adding an acceptance signal changes the projection response contract, which this story's Block If fences off.
+status: open
+
+### DW-72: Follow-up review still recommended for dw-projection-write-ordering-guard after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
 status: open

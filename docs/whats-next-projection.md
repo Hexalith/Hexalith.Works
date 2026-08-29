@@ -102,6 +102,19 @@ duplicate delivery, and out-of-order delivery converge to the same read model an
 authoritative state), aligning to EventStore's **checkpoint-per-aggregate** online rebuild (see
 `docs/eventstore-api-surface-constraints.md`), **not** the superseded shadow+swap wording.
 
+The persisted tenant index retains `LastSequences[workItemId]` even after an item becomes ineligible. Inside
+the ETag retry transform, a strictly greater retained sequence refuses an older eligible or ineligible replay;
+an equal sequence may refresh the deterministic item document or tombstone. During additive rollout, an
+eligible legacy `Items[workItemId].LatestAcceptedSourceSequence` supplies the comparison when the new map is
+partially populated but has no entry for that work item. That item sequence is a fallback for a missing entry,
+never a competing maximum: it is produced by this projection, while the incoming and retained sequences are the
+roll-up's, and the two projections' accept filters can disagree on a delivery. A stored item permitted to
+outrank its own retained sequence would refuse every later replay of that stream. The index transform builds
+replacement dictionaries on every retry so test stores and real stores observe the same merge semantics. Its
+tenant-scoped key is
+independently monotonic from the per-item roll-up key; their write ordering aids convergence but is not an
+atomic two-key transaction.
+
 ## Notifier seam and deferred runtime (DC1 / AC #4)
 
 `Project(delivery)` returns a `WhatsNextProjectionChange(Changed, TenantId)`: did this delivery change the
@@ -112,7 +125,10 @@ flip it while binding- or remaining-only updates do not. The pure kernel ships t
 
 Live notification is the **deferred runtime wiring** (Stories 4.5/4.6): the adapter calls
 `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore.Client)
-only when `Changed` is set; that flows `DaprProjectionChangeNotifier → IProjectionChangedBroadcaster →
+only when `Changed` is set **and** the tenant-index ordering guard accepted this replay's write. A refused
+stale replay changed no persisted state, so it announces nothing: subscribers are never woken for a document
+that did not move. A dispatch whose roll-up guard refused first never reaches the index write and likewise
+never notifies. That flows `DaprProjectionChangeNotifier → IProjectionChangedBroadcaster →
 SignalRProjectionChangedBroadcaster` (group `{projectionType}:{tenantId}`, fail-open). The Works kernel
 cannot reference Client (dependency direction), so v1 ships the seam, not the surface. **No web shell,
 DataGrid, MCP, chatbot, or email surface ships in v1** (UX-DR1).

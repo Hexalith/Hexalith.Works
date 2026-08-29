@@ -93,6 +93,17 @@ verified EventStore domain-service surface is:
   projection still supports recursive convergence when all contributing event streams are co-available; the per-aggregate
   runtime does not claim that convergence. Deterministic `WorkItemProjectionQueryAdapterTests` assert the
   persisted read-model end state and query representation.
+- **Monotonic projection writes (2026-08-29):** delayed full replays compare the accepted EventStore envelope
+  position carried by `LatestAcceptedSourceSequence` before mutating either persisted model. The adapter writes
+  the per-item roll-up first through `ReadModelWritePolicy`; a strictly newer stored roll-up makes the stale
+  dispatch skip its tenant-index write. The tenant index has its own ETag-guarded per-item `LastSequences`
+  watermark, retained after eligibility removal, and falls back to an eligible legacy item's own sequence only
+  when that aggregate id has no `LastSequences` entry; a retained entry is the sole authority for that id, so a
+  stored item cannot outrank its own tombstone. Equal-sequence redispatches may refresh deterministic
+  documents. An empty or rejection-only replay has no accepted model and writes neither roll-up nor what's-next
+  index. These two keys remain separate, non-atomic read models: each is independently monotonic and they
+  converge on replay rather than claiming a cross-key transaction. The pending date-await index maintained by
+  the same dispatch is outside this guarantee: it keeps its pre-existing raw stream-sequence watermark.
 
 ### Build reconciliation
 
