@@ -1,31 +1,4 @@
 {
-  "DW-38": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.",
-    "key": "1",
-    "label": "Add exact persisted corpus",
-    "resolution": ""
-  },
-  "DW-45": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.",
-    "key": "1",
-    "label": "Version and backfill",
-    "resolution": ""
-  },
-  "DW-46": {
-    "answered_at": "2026-08-27",
-    "bundle_name": "",
-    "effect": "build",
-    "intent": "Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.",
-    "key": "1",
-    "label": "Platform reconciliation seam",
-    "resolution": ""
-  },
   "DW-55": {
     "answered_at": "2026-08-28",
     "bundle_name": "",
