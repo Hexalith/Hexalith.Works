@@ -30,10 +30,17 @@ namespace Hexalith.Works.UnitTests;
 /// The race is modelled with <b>no threads, no <c>Task.Run</c>, no sleeps, and no shared-mutable-state
 /// interleaving</b> (RR-3): <see cref="WorkItemAggregate.Handle(ClaimWorkItem, WorkItemState?)"/> is pure,
 /// so handling two claims against the same observed state is exactly two racers rehydrating the same
-/// snapshot. The <b>live</b> ETag-backed save / conflict-retry / retry-exhaustion path (owned by the
-/// EventStore <c>AggregateActor</c> → <c>EventPersister</c> → Dapr ETag <c>SaveStateAsync</c> pipeline) is
-/// exercised under the Aspire runtime in <b>Story 4.5</b>, not here; this Tier-1 test proves the pure
-/// <i>domain outcome</i> after that independent commit decision (no Dapr/Aspire/network). Equal Works
+/// snapshot. The persistence-conflict path is characterized by
+/// <c>WorkItemClaimPersistenceConflictTests.RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection</c>
+/// and
+/// <c>WorkItemClaimPersistenceConflictTests.ExhaustingClaimPersistenceConflictRetryReturnsConcurrencyConflictWithoutLoserEffects</c>.
+/// The retry-success test rehydrates the committed winner, then persists and publishes the existing loser
+/// <see cref="WorkItemTransitionRejected"/>; the exhaustion test returns the infrastructure
+/// <c>ConcurrencyConflict</c> with no loser append, publication, or dead-letter effect.
+/// Those deterministic tests exercise the real EventStore <c>AggregateActor</c>/<c>EventPersister</c>
+/// pipeline in-process with a conflict injector; they do not use Aspire, a Dapr sidecar, a network, or a
+/// live state-store provider, so live provider-ETag behavior remains unproven. This Tier-1 test proves the
+/// pure <i>domain outcome</i> after an independent commit decision (no Dapr/Aspire/network). Equal Works
 /// payload ordinals neither create nor identify the persistence conflict. No new event, command, or
 /// rejection type is introduced — the loser's observable rejection is the existing
 /// <see cref="WorkItemTransitionRejected"/> (DC1), and claim adds nothing to the frozen v1 catalog.

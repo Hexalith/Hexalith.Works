@@ -379,7 +379,9 @@ location: tests/Hexalith.Works.UnitTests/WorkItemClaimConcurrencyTests.cs:33-35
 source_spec: `spec-envelope-canonical-sequencing.md`
 severity: medium
 reason: WorkItemClaimConcurrencyTests' class XML doc says the live ETag-backed save / conflict-retry / retry-exhaustion path "is exercised under the Aspire runtime in Story 4.5". WorksCommandPipelineSmokeTests (the Story 4.5 lane) issues no ClaimWorkItem at all; the only runtime claims are single sequential submissions in WorksReminderRecoveryPipelineSmokeTests:185 and WorksCascadeRecoveryPipelineSmokeTests:165,194. Nothing anywhere issues two competing claims. Pre-existing pointer, re-asserted by this change's rewording.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-claim-conflict-proof-docs
+resolution-undo: 6cf3d6d05557a2a1522c8b916f3049ee5b337631786714f9bb52a5fba22394a8 2026-08-29 7374617475733a206f70656e
 
 ### DW-41: Three ScaffoldGovernanceTests fitness method names still end "AndCatalogStays36" while the assertion in the same methods is polymorphicCatalogCount.ShouldBe(37).
 origin: spec-deferred 3ac7ddef56e1

@@ -195,9 +195,15 @@ Notes:
   state and lands on the existing `InProgress + Claim = R` cell →
   `WorkItemTransitionRejected(InProgress, "Claim")`. The loser's observable rejection is therefore the
   **existing** `WorkItemTransitionRejected` (DC1) — **no** `ClaimRejected`/`ConcurrencyRejected` type is
-  added and the v1 catalog stays **37**. Retry-exhaustion under hot contention is an infrastructure failure
-  (exception/dead-letter), not a domain rejection; the live ETag append/retry path is exercised under
-  Aspire in Story 4.5.
+  added and the v1 catalog stays **37**. Configured retry exhaustion returns the infrastructure
+  `ConcurrencyConflict`, not a domain rejection, with no loser append, publication, or dead-letter effect.
+  Executable conflict coverage is
+  `WorkItemClaimPersistenceConflictTests.RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection`
+  and
+  `WorkItemClaimPersistenceConflictTests.ExhaustingClaimPersistenceConflictRetryReturnsConcurrencyConflictWithoutLoserEffects`.
+  Those deterministic tests characterize the real EventStore `AggregateActor`/`EventPersister` pipeline
+  in-process with a conflict injector; they do not use Aspire, a Dapr sidecar, a network, or a live state-store
+  provider, so live provider-ETag behavior remains unproven.
 - **Active work is not directly reassigned or requeued (D4 — finalizes Story 2.1's deferred edge cell).**
   The `InProgress` and `Suspended` rows keep `Assign = R` and `Queue = R`: hand-off in v1 happens while the
   item is `Assigned` (a rebind — `Assigned → Assign`, latest binding wins) or via
