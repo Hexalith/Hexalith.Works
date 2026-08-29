@@ -5,7 +5,10 @@ using System.Text.Json;
 
 using Dapr;
 
+using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Subscriptions;
+using Hexalith.EventStore.DomainService;
+using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
@@ -20,6 +23,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 using NSubstitute;
 using Shouldly;
@@ -95,9 +99,25 @@ public sealed class WorksDomainEventSubscriptionTests
             // already-mapped route. Prove that yielding leaves exactly one of each and does not suppress the
             // canonical endpoints the SDK still owns.
             Route(app, "/project", HttpMethods.Post).Metadata.GetMetadata<ITopicMetadata>().ShouldBeNull();
+            Route(app, "/project/rebuild/shared/v1", HttpMethods.Post);
             Route(app, "/process", HttpMethods.Post);
             Route(app, "/query", HttpMethods.Post);
             Route(app, "/replay-state", HttpMethods.Post);
+
+            using (IServiceScope scope = app.Services.CreateScope())
+            {
+                scope.ServiceProvider
+                    .GetServices<IAsyncDomainProjectionHandler>()
+                    .OfType<WorkItemSharedProjectionRebuildHandler>()
+                    .ShouldHaveSingleItem();
+                ReadModelBatchOptions batchOptions = scope.ServiceProvider
+                    .GetRequiredService<IOptions<ReadModelBatchOptions>>()
+                    .Value;
+                batchOptions.MaxOperations.ShouldBe(
+                    (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 2) + 2);
+                batchOptions.MaxCanonicalManifestBytes.ShouldBe(
+                    4 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes);
+            }
 
             ITopicMetadata topic = delivery.Metadata.GetMetadata<ITopicMetadata>().ShouldNotBeNull();
             topic.PubsubName.ShouldBe("pubsub");

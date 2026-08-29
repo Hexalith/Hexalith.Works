@@ -70,6 +70,17 @@ the same refusal policy within a dispatch; those separate writes are not an atom
 their locally complete rolled values. This is substrate unavailability, not corrupt-event degradation: own
 effort, status, structure, diagnostics, tenant, and freshness remain intact.
 
+The operator shared-rebuild path is the co-available counterpart: EventStore supplies the sealed authoritative
+tenant histories, Works reconstructs both parent-link encodings through one roll-up/queue graph, and Stage keeps
+the live legacy view unchanged. Commit atomically exposes a schema-v2 membership index plus all rebuilt item
+documents and deletes candidate-known legacy keys. Queries prefer that v2 index once present and filter both
+queue entries and per-item lookup through its authoritative membership; before commit, they fall back to the
+legacy index/documents so staging cannot create a mixed visible generation.
+That capture-through-Commit interval has an operator consistency precondition: ordinary projection delivery is
+quiesced (or excluded by an equivalent platform fence), then resumes and catches up after Commit. The Works
+handler itself does not prevent a live `/project` writer from overwriting or being overwritten by the manifest's
+`LastWrite` operations.
+
 `ExposedChildCount` is the number of tenant-filtered child identities, which the roll-up exposes in ordinal
 `WorkItemId.Value` order; it does not claim that every exposed child contributes numeric effort.
 
@@ -98,9 +109,9 @@ filtered as no state change before this projection's event map; they do not adva
 `LatestAcceptedSourceSequence`. That watermark is the latest accepted state-changing delivery's envelope
 position, not the full stream high-watermark, so gaps from filtered rejections are expected. Replay,
 duplicate delivery, and out-of-order delivery converge to the same read model and the same ordering
-(NFR-4/NFR-9/B2). Rebuild is per-tenant and event-derived (the projection holds no
-authoritative state), aligning to EventStore's **checkpoint-per-aggregate** online rebuild (see
-`docs/eventstore-api-surface-constraints.md`), **not** the superseded shadow+swap wording.
+(NFR-4/NFR-9/B2). Rebuild is per-tenant and event-derived (the projection holds no authoritative state).
+Independent aggregate projection uses EventStore's checkpoint rebuild; relationship-aware roll-up repair uses
+its bounded shared lifecycle and atomic single-store promotion (see `docs/eventstore-api-surface-constraints.md`).
 
 The persisted tenant index retains `LastSequences[workItemId]` even after an item becomes ineligible. Inside
 the ETag retry transform, a strictly greater retained sequence refuses an older eligible or ineligible replay;

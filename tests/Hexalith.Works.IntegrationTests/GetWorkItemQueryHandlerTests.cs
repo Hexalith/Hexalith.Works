@@ -96,6 +96,46 @@ public sealed class GetWorkItemQueryHandlerTests
         view.Found.ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task Legacy_rollup_only_survivor_remains_queryable_when_another_aggregate_dispatches_before_rebuild()
+    {
+        const string survivorId = "legacy-survivor";
+        var store = new InMemoryReadModelStore();
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, survivorId),
+            new WorkItemRollUp(
+                new TenantId(Tenant),
+                new WorkItemId(survivorId),
+                WorkItemStatus.Assigned,
+                null,
+                new OwnRemaining(5m, Hour),
+                new RolledRemaining(5m, Hour),
+                [new RolledRemaining(5m, Hour)],
+                [],
+                0,
+                1)
+            {
+                OwnEffort = new WorkItemEffort(5m, Hour),
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        _ = await NewDispatcher(store).DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, new TenantId(Tenant), new WorkItemId(WorkId), new Obligation("New item")), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemView survivor = await QueryGetWorkItemAsync(store, survivorId).ConfigureAwait(true);
+        survivor.Found.ShouldBeTrue();
+        survivor.Remaining.ShouldBe(5m);
+        (await store.GetAsync<WorksWhatsNextTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+    }
+
     private static WorkItemProjectionDispatcher NewDispatcher(IReadModelStore store)
         => new(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance);
 

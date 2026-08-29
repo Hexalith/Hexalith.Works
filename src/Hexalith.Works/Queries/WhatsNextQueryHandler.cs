@@ -55,21 +55,54 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             return Success([]);
         }
 
-        ReadModelEntry<WorksWhatsNextTenantIndex> entry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.WhatsNextIndexKey(tenantId), cancellationToken)
+        ReadModelEntry<WorksWhatsNextTenantIndex> currentEntry = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId), cancellationToken)
             .ConfigureAwait(false);
-
-        if (entry.Value is not { } index)
+        if (currentEntry.Value is not null)
         {
-            // Missing/unavailable read model: bounded empty result; do not fabricate freshness.
-            return Success([]);
+            return WorksWhatsNextTenantIndexValidation.IsValidCurrent(currentEntry.Value)
+                ? Success(CurrentItems(tenantId, currentEntry.Value))
+                : Success([]);
         }
 
-        IEnumerable<WhatsNextItem> ordered = index.Items.Values.OrderBy(static item => item, WhatsNextOrdering.Instance);
-        IReadOnlyList<WhatsNextItem> authorized = WhatsNextQueryAuthorization.FilterList(tenantId, ordered);
+        ReadModelEntry<WorksWhatsNextTenantIndex> legacyEntry = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.WhatsNextIndexKey(tenantId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (legacyEntry.Value is not null)
+        {
+            return WorksWhatsNextTenantIndexValidation.IsUsableLegacy(legacyEntry.Value)
+                ? Success(AuthorizedItems(tenantId, legacyEntry.Value.Items.Values))
+                : Success([]);
+        }
 
-        return Success(authorized);
+        // A rebuild can commit between the first current-schema miss and this legacy miss. Re-read the
+        // authoritative key once so that the atomic legacy-delete/current-write switch cannot look empty.
+        currentEntry = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return currentEntry.Value is not null && WorksWhatsNextTenantIndexValidation.IsValidCurrent(currentEntry.Value)
+            ? Success(CurrentItems(tenantId, currentEntry.Value))
+            : Success([]);
     }
+
+    private static IReadOnlyList<WhatsNextItem> CurrentItems(string tenantId, WorksWhatsNextTenantIndex index)
+    {
+        var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
+        return AuthorizedItems(
+            tenantId,
+            index.Items.Values.Where(item => item?.WorkItemId is not null && members.Contains(item.WorkItemId.Value)));
+    }
+
+    private static IReadOnlyList<WhatsNextItem> AuthorizedItems(string tenantId, IEnumerable<WhatsNextItem> items)
+        => WhatsNextQueryAuthorization.FilterList(
+            tenantId,
+            items.OrderBy(static item => item, WhatsNextOrdering.Instance));
 
     private static QueryResult Success(IReadOnlyList<WhatsNextItem> items)
         => QueryResult.FromPayload(JsonSerializer.SerializeToElement(items, s_jsonOptions), WorksReadModelKeys.WhatsNextProjectionType);

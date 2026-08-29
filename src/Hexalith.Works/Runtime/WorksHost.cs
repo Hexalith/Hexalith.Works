@@ -47,9 +47,19 @@ internal static class WorksHost
         // traceId correlation extension; payload-bearing detail stays out per the logging/privacy rules.
         _ = builder.Services.AddProblemDetails();
 
-        // Dapr-backed persisted read models for the what's-next projection/query adapter.
+        // Dapr-backed persisted read models for the what's-next projection/query adapter. A sealed shared
+        // rebuild may emit one current write plus one legacy-key retirement per admitted aggregate, together
+        // with the current and legacy tenant manifests, so the operation bound is sized to the platform's
+        // 10,000-aggregate admission bound. The canonical-byte ceiling is the tighter of the two and is what
+        // actually bounds a rebuild: the manifest embeds every written document, so a tenant well below the
+        // operation bound can still exceed 4 MiB. That is deliberate — an oversized rebuild is refused whole
+        // by fail-closed canonical-byte validation before staging, never promoted in part.
         builder.Services.AddDaprClient();
-        _ = builder.Services.AddEventStoreReadModelStore();
+        _ = builder.Services.AddEventStoreReadModelStore(static options =>
+        {
+            options.MaxOperations = (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 2) + 2;
+            options.MaxCanonicalManifestBytes = 4 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes;
+        });
 
         // EventStore publishes options-free PascalCase Works payloads on one shared work.events topic; the
         // case-insensitive reader also accepts camelCase compatibility deliveries. Register the SDK's durable

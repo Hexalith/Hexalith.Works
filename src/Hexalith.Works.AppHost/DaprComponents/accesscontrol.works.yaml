@@ -30,6 +30,9 @@ spec:
           - name: /project
             httpVerb: ['POST']
             action: allow
+          - name: /project/rebuild/shared/v1
+            httpVerb: ['POST']
+            action: allow
           - name: /replay-state
             httpVerb: ['POST']
             action: allow

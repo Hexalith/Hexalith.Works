@@ -215,6 +215,41 @@ public sealed class WorkItemProjectionQueryAdapterTests
     }
 
     [Fact]
+    public async Task Undecodable_non_relationship_event_refuses_rolled_shapes_on_the_ordinary_path()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var work = new WorkItemId(WorkId);
+
+        // A childless leaf whose known, non-state-affecting event cannot be decoded: skipping it silently and
+        // publishing the surviving events' total would expose a number this stream cannot prove. The refusal
+        // must not depend on the event happening to be a ChildSpawned.
+        ProjectionResponse response = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(WorkId, 1, tenant, work, new Obligation("Do the thing"), new WorkItemEffort(10m, Hour)), 1),
+                Dto(new WorkItemAssigned(WorkId, 2, tenant, work, Binding), 2),
+                new ProjectionEventDto(nameof(ProgressReported), [0x7B], "json", 3, default, "corr-1"),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp persisted = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        persisted.ExposedChildCount.ShouldBe(0);
+        persisted.OwnRemaining.ShouldBe(new OwnRemaining(10m, Hour));
+        persisted.RolledRemaining.ShouldBeNull();
+        persisted.RolledRemainingByUnit.ShouldBeEmpty();
+
+        WhatsNextItem returned = response.State.Deserialize<WhatsNextItem>(Web).ShouldNotBeNull();
+        returned.RolledRemaining.ShouldBeNull();
+        returned.RolledRemainingByUnit.ShouldBeEmpty();
+
+        JsonElement queryItem = (await QueryWhatsNextAsync(store).ConfigureAwait(true)).ShouldHaveSingleItem();
+        queryItem.GetProperty("rolledRemaining").ValueKind.ShouldBe(JsonValueKind.Null);
+        queryItem.GetProperty("rolledRemainingByUnit").EnumerateArray().ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Mixed_unit_parent_and_child_refuse_scalar_and_per_unit_totals_across_adapter_outputs()
     {
         var store = new InMemoryReadModelStore();
@@ -805,6 +840,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
         WorksWhatsNextTenantIndex legacy = JsonSerializer
             .Deserialize<WorksWhatsNextTenantIndex>("""{"items":{}}""", Web)
             .ShouldNotBeNull();
+        legacy.SchemaVersion.ShouldBe(0);
         legacy.LastSequences.ShouldBeEmpty();
         legacy.LastSequences[WorkId] = 1;
         legacy.LastSequences[WorkId].ShouldBe(1);

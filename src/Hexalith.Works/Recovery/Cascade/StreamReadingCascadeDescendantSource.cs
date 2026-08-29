@@ -115,17 +115,46 @@ public sealed class StreamReadingCascadeDescendantSource(
     {
         try
         {
-            ReadModelEntry<WorkItemRollUp> entry = await _store
+            ReadModelEntry<WorksWhatsNextTenantIndex> currentIndexEntry = await _store
+                .GetAsync<WorksWhatsNextTenantIndex>(
+                    WorksReadModelKeys.StateStoreName,
+                    WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (currentIndexEntry.Value is not null)
+            {
+                return await IsCurrentTerminalAsync(
+                    tenantId,
+                    workItemId,
+                    currentIndexEntry.Value,
+                    cancellationToken).ConfigureAwait(false);
+            }
+
+            ReadModelEntry<WorkItemRollUp> legacyEntry = await _store
                 .GetAsync<WorkItemRollUp>(
                     WorksReadModelKeys.StateStoreName,
                     WorksReadModelKeys.RollUpKey(tenantId, workItemId),
                     cancellationToken)
                 .ConfigureAwait(false);
+            if (MatchesIdentity(legacyEntry.Value, tenantId, workItemId))
+            {
+                return IsTerminal(legacyEntry.Value!);
+            }
 
-            return entry.Value?.Status is WorkItemStatus.Completed
-                or WorkItemStatus.Cancelled
-                or WorkItemStatus.Rejected
-                or WorkItemStatus.Expired;
+            // Close the atomic rebuild commit window between an initial current-manifest miss and the
+            // subsequent legacy-roll-up miss. A second miss is the bounded fail-closed result.
+            currentIndexEntry = await _store
+                .GetAsync<WorksWhatsNextTenantIndex>(
+                    WorksReadModelKeys.StateStoreName,
+                    WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId),
+                    cancellationToken)
+                .ConfigureAwait(false);
+            return currentIndexEntry.Value is not null
+                && await IsCurrentTerminalAsync(
+                    tenantId,
+                    workItemId,
+                    currentIndexEntry.Value,
+                    cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -139,4 +168,36 @@ public sealed class StreamReadingCascadeDescendantSource(
             return false;
         }
     }
+
+    private async Task<bool> IsCurrentTerminalAsync(
+        string tenantId,
+        string workItemId,
+        WorksWhatsNextTenantIndex index,
+        CancellationToken cancellationToken)
+    {
+        if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index)
+            || !index.MemberWorkItemIds.Contains(workItemId, StringComparer.Ordinal))
+        {
+            return false;
+        }
+
+        ReadModelEntry<WorkItemRollUp> entry = await _store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentRollUpKey(tenantId, workItemId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return MatchesIdentity(entry.Value, tenantId, workItemId) && IsTerminal(entry.Value!);
+    }
+
+    private static bool IsTerminal(WorkItemRollUp rollUp)
+        => rollUp.Status is WorkItemStatus.Completed
+            or WorkItemStatus.Cancelled
+            or WorkItemStatus.Rejected
+            or WorkItemStatus.Expired;
+
+    private static bool MatchesIdentity(WorkItemRollUp? rollUp, string tenantId, string workItemId)
+        => rollUp is not null
+            && string.Equals(rollUp.TenantId?.Value, tenantId, StringComparison.Ordinal)
+            && string.Equals(rollUp.WorkItemId?.Value, workItemId, StringComparison.Ordinal);
 }

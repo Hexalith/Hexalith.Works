@@ -71,6 +71,25 @@ status, parent/child structure, tenant, diagnostics, and freshness watermark, wh
 `RolledRemainingByUnit` are exposed and persisted as unavailable (`null` / empty). This 2026-08-27 refusal
 decision does not weaken or change the pure projection's co-available recursive behavior.
 
+The operator-triggered shared rebuild supplies a sealed tenant inventory to one co-available projection
+instance through EventStore's internal `/project/rebuild/shared/v1` lifecycle. It reconstructs relationships
+from both `ChildSpawned` and `WorkItemCreated.Parent`, sanitizes incomplete evidence conservatively, and stages
+schema-v2 tenant-index and per-item documents as one bounded single-store manifest. Commit exposes that manifest
+atomically and retires candidate-known legacy keys; abort and retry never expose staged values. Readers continue
+using legacy keys until the v2 membership index is committed, then refuse every per-item document not listed by
+that authoritative index.
+Operators must keep ordinary projection delivery quiesced from authoritative inventory capture through Commit,
+or provide an equivalent platform fence, and resume/catch up delivery afterward. The Works rebuild handler does
+not arbitrate a concurrent live writer against the manifest's `LastWrite` operations.
+
+After Commit, an ordinary single-aggregate dispatch cannot re-observe a child that only named its parent in
+`WorkItemCreated` — that child appends nothing to the parent's stream. The adapter therefore reads the
+aggregate's persisted document for the active generation, retains any reconciled child identities the current
+replay cannot derive, and refuses both rolled shapes for that dispatch. A reconciled document is never
+overwritten with a single-aggregate substitute total, and no Works event detaches a child, so retained
+structure can only become more complete. A known Works event that cannot be decoded is treated the same way:
+incomplete evidence refuses the rolled shapes instead of publishing an unprovable number.
+
 Persisted roll-ups accept only an incoming model whose `LatestAcceptedSourceSequence` is not older than the
 currently stored model. The adapter applies that comparison inside `ReadModelWritePolicy`'s ETag reload/retry
 loop; it has no unconditional-save fallback. Equal-sequence replay remains allowed so deterministic documents

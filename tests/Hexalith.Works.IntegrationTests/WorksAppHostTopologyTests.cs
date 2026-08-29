@@ -319,6 +319,25 @@ public sealed class WorksAppHostTopologyTests
     {
         YamlMappingNode worksAccessControl = Mapping(LoadYaml("accesscontrol.works.yaml"), "spec", "accessControl");
         Scalar(worksAccessControl, "defaultAction").ShouldBe("deny");
+        YamlMappingNode eventStorePolicy = Sequence(worksAccessControl, "policies").Children
+            .Cast<YamlMappingNode>()
+            .Single(static policy => string.Equals(
+                Scalar(policy, "appId"),
+                EventStoreName,
+                StringComparison.Ordinal));
+        Scalar(eventStorePolicy, "defaultAction").ShouldBe("deny");
+        YamlMappingNode sharedRebuildOperation = Sequence(eventStorePolicy, "operations").Children
+            .Cast<YamlMappingNode>()
+            .Single(static operation => string.Equals(
+                Scalar(operation, "name"),
+                "/project/rebuild/shared/v1",
+                StringComparison.Ordinal));
+        Scalar(sharedRebuildOperation, "action").ShouldBe("allow");
+        Sequence(sharedRebuildOperation, "httpVerb").Children
+            .Cast<YamlScalarNode>()
+            .Select(static verb => verb.Value ?? string.Empty)
+            .ShouldBe(["POST"]);
+
         YamlMappingNode replayPolicy = Sequence(worksAccessControl, "policies").Children
             .Cast<YamlMappingNode>()
             .Single(static policy => string.Equals(

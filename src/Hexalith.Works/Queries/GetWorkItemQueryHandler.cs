@@ -54,19 +54,90 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         var tenantId = new TenantId(query.TenantId);
         var workItemId = new WorkItemId(query.AggregateId);
 
-        ReadModelEntry<WorkItemRollUp> entry = await _store
+        ReadModelEntry<WorksWhatsNextTenantIndex> currentIndexEntry = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(query.TenantId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (currentIndexEntry.Value is not null)
+        {
+            return await ReadCurrentAsync(
+                query.TenantId,
+                query.AggregateId,
+                tenantId,
+                workItemId,
+                currentIndexEntry.Value,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        ReadModelEntry<WorkItemRollUp> legacyEntry = await _store
             .GetAsync<WorkItemRollUp>(
                 WorksReadModelKeys.StateStoreName,
                 WorksReadModelKeys.RollUpKey(query.TenantId, query.AggregateId),
                 cancellationToken)
             .ConfigureAwait(false);
+        if (MatchesIdentity(legacyEntry.Value, query.TenantId, query.AggregateId))
+        {
+            return Found(legacyEntry.Value!);
+        }
 
-        WorkItemView view = entry.Value is { } rollUp
-            ? ToView(rollUp)
-            : WorkItemView.NotFound(tenantId, workItemId);
-
-        return QueryResult.FromPayload(JsonSerializer.SerializeToElement(view, s_jsonOptions), WorksReadModelKeys.WorkItemViewProjectionType);
+        // A rebuild can atomically delete the legacy roll-up and publish the current manifest between the
+        // two reads above. Re-read the current manifest once to close that commit window.
+        currentIndexEntry = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(query.TenantId),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return currentIndexEntry.Value is not null
+            ? await ReadCurrentAsync(
+                query.TenantId,
+                query.AggregateId,
+                tenantId,
+                workItemId,
+                currentIndexEntry.Value,
+                cancellationToken).ConfigureAwait(false)
+            : NotFound(tenantId, workItemId);
     }
+
+    private async Task<QueryResult> ReadCurrentAsync(
+        string tenantIdValue,
+        string workItemIdValue,
+        TenantId tenantId,
+        WorkItemId workItemId,
+        WorksWhatsNextTenantIndex index,
+        CancellationToken cancellationToken)
+    {
+        if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index)
+            || !index.MemberWorkItemIds.Contains(workItemIdValue, StringComparer.Ordinal))
+        {
+            return NotFound(tenantId, workItemId);
+        }
+
+        ReadModelEntry<WorkItemRollUp> entry = await _store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentRollUpKey(tenantIdValue, workItemIdValue),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return MatchesIdentity(entry.Value, tenantIdValue, workItemIdValue)
+            ? Found(entry.Value!)
+            : NotFound(tenantId, workItemId);
+    }
+
+    private static bool MatchesIdentity(WorkItemRollUp? rollUp, string tenantId, string workItemId)
+        => rollUp is not null
+            && string.Equals(rollUp.TenantId?.Value, tenantId, StringComparison.Ordinal)
+            && string.Equals(rollUp.WorkItemId?.Value, workItemId, StringComparison.Ordinal);
+
+    private static QueryResult Found(WorkItemRollUp rollUp)
+        => QueryResult.FromPayload(JsonSerializer.SerializeToElement(ToView(rollUp), s_jsonOptions), WorksReadModelKeys.WorkItemViewProjectionType);
+
+    private static QueryResult NotFound(TenantId tenantId, WorkItemId workItemId)
+        => QueryResult.FromPayload(
+            JsonSerializer.SerializeToElement(WorkItemView.NotFound(tenantId, workItemId), s_jsonOptions),
+            WorksReadModelKeys.WorkItemViewProjectionType);
 
     private static WorkItemView ToView(WorkItemRollUp rollUp)
         => new(

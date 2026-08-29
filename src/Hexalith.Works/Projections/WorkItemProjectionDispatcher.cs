@@ -32,7 +32,9 @@ namespace Hexalith.Works.Projections;
 /// EventStore <c>/project</c> contract delivers one aggregate's event stream per call, so the cross-aggregate
 /// "rolled remaining" contribution from sibling/child work items cannot be reconciled within a single dispatch.
 /// Parent rolled totals are therefore persisted and exposed as unavailable while reliable local evidence and
-/// parent/child structure are preserved.</para>
+/// parent/child structure are preserved. Child identities reconciled by the shared rebuild are retained across
+/// later single-aggregate dispatches so an ordinary replay never republishes a single-stream substitute total
+/// over a reconciled document.</para>
 /// <para>Logging is bounded to metadata (tenant id, work-item id, event-type names, projection type, counts) —
 /// never event payloads, obligations, secrets, tokens, or full command bodies (AC #4 / NFR-6).</para>
 /// </remarks>
@@ -40,24 +42,11 @@ public sealed class WorkItemProjectionDispatcher
 {
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
-    // The readable Works event catalog keyed by simple type name. Built once from the Contracts assembly so a
-    // ProjectionEventDto's EventTypeName (short or fully qualified) maps to the concrete event type for decoding.
-    private static readonly IReadOnlyDictionary<string, Type> s_eventTypesByName = typeof(WorkItemCreated).Assembly
-        .GetTypes()
-        .Where(type => type is { IsAbstract: false } && typeof(IEventPayload).IsAssignableFrom(type))
-        .ToDictionary(type => type.Name, StringComparer.Ordinal);
-
     private static readonly Action<ILogger, string, string, string, int, bool, Exception?> s_projected =
         LoggerMessage.Define<string, string, string, int, bool>(
             LogLevel.Information,
             new EventId(4500, "Projected"),
             "Projected work item {WorkItemId} for tenant {TenantId} (correlation {CorrelationId}) from {EventCount} events; whatsNextChanged={Changed}.");
-
-    private static readonly Action<ILogger, string, string, string, string, Exception?> s_skippedEvent =
-        LoggerMessage.Define<string, string, string, string>(
-            LogLevel.Warning,
-            new EventId(4501, "SkippedEvent"),
-            "Skipped undecodable projection event {EventType} for work item {WorkItemId} (tenant {TenantId}, correlation {CorrelationId}).");
 
     private readonly IReadModelStore _store;
     private readonly IProjectionChangeNotifier? _notifier;
@@ -96,15 +85,16 @@ public sealed class WorkItemProjectionDispatcher
 
         var tenant = new TenantId(request.TenantId);
         var workItemId = new WorkItemId(request.AggregateId);
-        string correlationId = CorrelationIdOf(request.Events);
+        string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(request.Events);
 
         var whatsNext = new WhatsNextQueueProjection();
         var rollUp = new WorkItemRollUpProjection();
         var decodedEvents = new List<(long Sequence, IEventPayload Payload)>();
         bool changed = false;
+        bool malformedEvidence = false;
         int decoded = 0;
         bool childContributionMayExist = (request.Events ?? []).Any(dto => dto is not null
-            && string.Equals(SimpleTypeName(dto.EventTypeName), nameof(ChildSpawned), StringComparison.Ordinal));
+            && string.Equals(WorkItemProjectionEventDecoder.SimpleTypeName(dto.EventTypeName), nameof(ChildSpawned), StringComparison.Ordinal));
 
         foreach (ProjectionEventDto? dto in request.Events ?? [])
         {
@@ -113,15 +103,29 @@ public sealed class WorkItemProjectionDispatcher
                 continue;
             }
 
-            IEventPayload? payload = Decode(dto, tenant, workItemId, correlationId);
+            WorkItemProjectionEventDecodeResult decode = WorkItemProjectionEventDecoder.Decode(
+                dto,
+                tenant,
+                workItemId,
+                correlationId,
+                _logger);
+            if (decode.Malformed)
+            {
+                if (PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
+                {
+                    throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
+                }
+
+                // A known Works event that cannot be decoded is incomplete evidence, exactly as it is on the
+                // shared-rebuild path: skipping it silently and then publishing an available rolled total
+                // would expose a number this stream cannot prove.
+                malformedEvidence = true;
+            }
+
+            IEventPayload? payload = decode.Payload;
             if (payload is null)
             {
                 continue;
-            }
-
-            if (!WorksEventIdentity.Matches(payload, request.TenantId, request.AggregateId))
-            {
-                throw new InvalidOperationException("Projection event payload is outside the requested stream identity.");
             }
 
             var delivery = new WorkItemRollUpEvent(tenant, workItemId, dto.SequenceNumber, payload);
@@ -131,7 +135,51 @@ public sealed class WorkItemProjectionDispatcher
             decoded++;
         }
 
-        WorkItemRollUp? model = ToBoundarySafeRollUp(rollUp.Get(tenant, workItemId), childContributionMayExist);
+        WorkItemRollUp? projected = rollUp.Get(tenant, workItemId);
+        bool useCurrentSchema = false;
+        bool retainsReconciledChildren = false;
+        if (projected is not null)
+        {
+            useCurrentSchema = await UseCurrentSchemaAsync(tenant, cancellationToken).ConfigureAwait(false);
+
+            // A shared rebuild reconciles children this single-aggregate replay cannot observe: a child that
+            // names its parent in WorkItemCreated appends nothing to the parent's stream, so folding the
+            // parent's own events alone yields a childless node. Merge the persisted child identities into the
+            // replayed ones and refuse both rolled shapes, rather than overwriting a reconciled document with a
+            // single-stream substitute total. No Works event ever detaches a child, so retained structure can
+            // only become more complete, never wrong. The merge is a union rather than a wholesale replacement
+            // or a count comparison: a parent reconciled from a WorkItemCreated.Parent child can later spawn
+            // its own children, and either side alone is then incomplete.
+            WorkItemRollUp? persisted = await ReadPersistedRollUpAsync(tenant, workItemId, useCurrentSchema, cancellationToken).ConfigureAwait(false);
+            if (persisted?.ChildWorkItemIds is { Count: > 0 } reconciled)
+            {
+                List<WorkItemId> merged = [.. projected.ChildWorkItemIds ?? []];
+                foreach (WorkItemId child in reconciled)
+                {
+                    if (!string.IsNullOrWhiteSpace(child?.Value)
+                        && !merged.Exists(known => string.Equals(known.Value, child.Value, StringComparison.Ordinal)))
+                    {
+                        merged.Add(child);
+                    }
+                }
+
+                if (merged.Count > (projected.ChildWorkItemIds?.Count ?? 0))
+                {
+                    // Ordinal work-item id is the published child ordering key (WorkItemRollUpProjection).
+                    merged.Sort(static (first, second) => StringComparer.Ordinal.Compare(first.Value, second.Value));
+                    retainsReconciledChildren = true;
+                    projected = projected with
+                    {
+                        ChildWorkItemIds = merged,
+                        ExposedChildCount = merged.Count,
+                    };
+                }
+            }
+        }
+
+        WorkItemRollUp? model = WorkItemProjectionBoundarySanitizer.Sanitize(
+            projected,
+            childContributionMayExist || malformedEvidence || retainsReconciledChildren);
         WhatsNextItem? item = whatsNext
             .WhatsNext(tenant, (lookupTenant, lookupWorkItemId) =>
                 string.Equals(lookupTenant.Value, tenant.Value, StringComparison.Ordinal)
@@ -148,6 +196,7 @@ public sealed class WorkItemProjectionDispatcher
                 workItemId,
                 model,
                 request.Events,
+                useCurrentSchema,
                 cancellationToken).ConfigureAwait(false);
 
             // The roll-up is written first and acts as this aggregate's own ordering guard. If a concurrent
@@ -161,6 +210,7 @@ public sealed class WorkItemProjectionDispatcher
                     item,
                     model.LatestAcceptedSourceSequence,
                     request.Events,
+                    useCurrentSchema,
                     cancellationToken).ConfigureAwait(false);
             }
         }
@@ -189,6 +239,7 @@ public sealed class WorkItemProjectionDispatcher
         WhatsNextItem? item,
         long incomingLastSequence,
         IReadOnlyList<ProjectionEventDto>? events,
+        bool useCurrentSchema,
         CancellationToken cancellationToken)
     {
         // Carry tenant + correlation context and a bounded event-type summary into the read-model write so a
@@ -204,15 +255,30 @@ public sealed class WorkItemProjectionDispatcher
         _ = await ReadModelWritePolicy.UpdateAsync<WorksWhatsNextTenantIndex>(
             _store,
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.WhatsNextIndexKey(tenant.Value),
+            useCurrentSchema
+                ? WorksReadModelKeys.CurrentWhatsNextIndexKey(tenant.Value)
+                : WorksReadModelKeys.WhatsNextIndexKey(tenant.Value),
             current =>
             {
+                if (useCurrentSchema && !WorksWhatsNextTenantIndexValidation.IsValidCurrent(current))
+                {
+                    throw new InvalidOperationException("The current Works tenant manifest is missing or uses an unsupported schema.");
+                }
+
+                if (!useCurrentSchema && current is not null && !WorksWhatsNextTenantIndexValidation.IsUsableLegacy(current))
+                {
+                    throw new InvalidOperationException("The legacy Works tenant index is malformed.");
+                }
+
                 var items = current is null
                     ? new Dictionary<string, WhatsNextItem>(StringComparer.Ordinal)
                     : new Dictionary<string, WhatsNextItem>(current.Items, StringComparer.Ordinal);
                 var lastSequences = current is null
                     ? new Dictionary<string, long>(StringComparer.Ordinal)
                     : new Dictionary<string, long>(current.LastSequences, StringComparer.Ordinal);
+                var members = current is null
+                    ? new HashSet<string>(StringComparer.Ordinal)
+                    : new HashSet<string>(current.MemberWorkItemIds, StringComparer.Ordinal);
 
                 // Additive-rollout compatibility: when this aggregate id has no LastSequences entry, an
                 // eligible legacy item still carries ordering authority on its own accepted-source watermark.
@@ -242,12 +308,15 @@ public sealed class WorkItemProjectionDispatcher
                     incomingAccepted = false;
                     return new WorksWhatsNextTenantIndex
                     {
+                        SchemaVersion = useCurrentSchema ? WorksReadModelKeys.CurrentSchemaVersion : 0,
                         Items = items,
                         LastSequences = lastSequences,
+                        MemberWorkItemIds = [.. members.Order(StringComparer.Ordinal)],
                     };
                 }
 
                 incomingAccepted = true;
+                _ = members.Add(aggregateId);
                 lastSequences[aggregateId] = incomingLastSequence;
                 if (item is not null)
                 {
@@ -260,8 +329,10 @@ public sealed class WorkItemProjectionDispatcher
 
                 return new WorksWhatsNextTenantIndex
                 {
+                    SchemaVersion = useCurrentSchema ? WorksReadModelKeys.CurrentSchemaVersion : 0,
                     Items = items,
                     LastSequences = lastSequences,
+                    MemberWorkItemIds = [.. members.Order(StringComparer.Ordinal)],
                 };
             },
             context,
@@ -276,6 +347,7 @@ public sealed class WorkItemProjectionDispatcher
         WorkItemId workItemId,
         WorkItemRollUp model,
         IReadOnlyList<ProjectionEventDto>? events,
+        bool useCurrentSchema,
         CancellationToken cancellationToken)
     {
         ReadModelWriteContext context = new ReadModelWriteContext(
@@ -286,7 +358,9 @@ public sealed class WorkItemProjectionDispatcher
         return await ReadModelWritePolicy.UpdateAsync<WorkItemRollUp>(
             _store,
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value),
+            useCurrentSchema
+                ? WorksReadModelKeys.CurrentRollUpKey(tenant.Value, workItemId.Value)
+                : WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value),
             current => current is not null && current.LatestAcceptedSourceSequence > model.LatestAcceptedSourceSequence
                 ? current
                 : model,
@@ -295,14 +369,49 @@ public sealed class WorkItemProjectionDispatcher
             cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    private static WorkItemRollUp? ToBoundarySafeRollUp(WorkItemRollUp? model, bool childContributionMayExist)
-        => model is not null && (model.ExposedChildCount > 0 || childContributionMayExist)
-            ? model with
+    /// <summary>Reads this aggregate's persisted roll-up for the active generation, fail-closed on identity.</summary>
+    private async Task<WorkItemRollUp?> ReadPersistedRollUpAsync(
+        TenantId tenant,
+        WorkItemId workItemId,
+        bool useCurrentSchema,
+        CancellationToken cancellationToken)
+    {
+        ReadModelEntry<WorkItemRollUp> entry = await _store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                useCurrentSchema
+                    ? WorksReadModelKeys.CurrentRollUpKey(tenant.Value, workItemId.Value)
+                    : WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value),
+                cancellationToken)
+            .ConfigureAwait(false);
+        WorkItemRollUp? persisted = entry.Value;
+        return persisted is not null
+            && string.Equals(persisted.TenantId?.Value, tenant.Value, StringComparison.Ordinal)
+            && string.Equals(persisted.WorkItemId?.Value, workItemId.Value, StringComparison.Ordinal)
+                ? persisted
+                : null;
+    }
+
+    private async Task<bool> UseCurrentSchemaAsync(TenantId tenant, CancellationToken cancellationToken)
+    {
+        ReadModelEntry<WorksWhatsNextTenantIndex> current = await _store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(tenant.Value),
+                cancellationToken)
+            .ConfigureAwait(false);
+        if (current.Value is not null)
+        {
+            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(current.Value))
             {
-                RolledRemaining = null,
-                RolledRemainingByUnit = [],
+                throw new InvalidOperationException("The current Works tenant manifest is missing required collections or uses an unsupported schema.");
             }
-            : model;
+
+            return true;
+        }
+
+        return false;
+    }
 
     private async Task MaintainPendingDateAwaitIndexAsync(
         TenantId tenant,
@@ -406,51 +515,6 @@ public sealed class WorkItemProjectionDispatcher
             context,
             _logger,
             cancellationToken: cancellationToken).ConfigureAwait(false);
-    }
-
-    private IEventPayload? Decode(ProjectionEventDto dto, TenantId tenant, WorkItemId workItemId, string correlationId)
-    {
-        string simpleName = SimpleTypeName(dto.EventTypeName);
-        if (!s_eventTypesByName.TryGetValue(simpleName, out Type? eventType))
-        {
-            s_skippedEvent(_logger, dto.EventTypeName, workItemId.Value, tenant.Value, correlationId, null);
-            return null;
-        }
-
-        try
-        {
-            IEventPayload? payload = JsonSerializer.Deserialize(dto.Payload, eventType, s_webOptions) as IEventPayload;
-            if (payload is null && PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
-            {
-                throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
-            }
-
-            return payload;
-        }
-        catch (JsonException)
-        {
-            if (PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
-            {
-                throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
-            }
-
-            s_skippedEvent(_logger, dto.EventTypeName, workItemId.Value, tenant.Value, correlationId, null);
-            return null;
-        }
-    }
-
-    private static string CorrelationIdOf(IReadOnlyList<ProjectionEventDto>? events)
-        => events?.FirstOrDefault(e => !string.IsNullOrWhiteSpace(e?.CorrelationId))?.CorrelationId ?? string.Empty;
-
-    private static string SimpleTypeName(string eventTypeName)
-    {
-        if (string.IsNullOrEmpty(eventTypeName))
-        {
-            return eventTypeName;
-        }
-
-        int lastDot = eventTypeName.LastIndexOf('.');
-        return lastDot >= 0 ? eventTypeName[(lastDot + 1)..] : eventTypeName;
     }
 
     /// <summary>Minimal state echoed back when a work item is not in the eligible "what's next" set.</summary>

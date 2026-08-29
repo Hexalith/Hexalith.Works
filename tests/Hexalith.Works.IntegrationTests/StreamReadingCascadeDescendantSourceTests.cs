@@ -41,6 +41,7 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             .Returns(CreateParentPage());
 
         IReadModelStore store = Substitute.For<IReadModelStore>();
+        ConfigureNoCurrentManifest(store);
         store
             .GetAsync<WorkItemRollUp>(
                 WorksReadModelKeys.StateStoreName,
@@ -127,6 +128,7 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
             .Returns(CreateChildPage(s_activeChild));
         IReadModelStore store = Substitute.For<IReadModelStore>();
+        ConfigureNoCurrentManifest(store);
         store
             .GetAsync<WorkItemRollUp>(
                 WorksReadModelKeys.StateStoreName,
@@ -154,6 +156,7 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
             .Returns(CreateChildPage(s_activeChild));
         IReadModelStore store = Substitute.For<IReadModelStore>();
+        ConfigureNoCurrentManifest(store);
         store
             .GetAsync<WorkItemRollUp>(
                 WorksReadModelKeys.StateStoreName,
@@ -172,6 +175,76 @@ public sealed class StreamReadingCascadeDescendantSourceTests
             TestContext.Current.CancellationToken);
 
         descendants.ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
+    }
+
+    /// <summary>A valid current manifest is authoritative: only listed descendants may use current roll-ups.</summary>
+    [Fact]
+    public async Task Current_manifest_gates_terminality_by_membership_without_legacy_fallback()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway
+            .ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(CreateParentPage());
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(s_tenant.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(new ReadModelEntry<WorksWhatsNextTenantIndex>(
+                new WorksWhatsNextTenantIndex
+                {
+                    SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion,
+                    MemberWorkItemIds = [s_terminalChild.Value, s_activeChild.Value],
+                },
+                "current-etag"));
+        store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentRollUpKey(s_tenant.Value, s_terminalChild.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(new ReadModelEntry<WorkItemRollUp>(CreateRollUp(s_terminalChild, WorkItemStatus.Completed), "terminal-etag"));
+        store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentRollUpKey(s_tenant.Value, s_activeChild.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(new ReadModelEntry<WorkItemRollUp>(CreateRollUp(s_activeChild, WorkItemStatus.InProgress), "active-etag"));
+        store
+            .GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(s_tenant.Value, s_missingChild.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(new ReadModelEntry<WorkItemRollUp>(CreateRollUp(s_missingChild, WorkItemStatus.Completed), "legacy-etag"));
+
+        var source = new StreamReadingCascadeDescendantSource(
+            gateway,
+            store,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance);
+
+        IReadOnlyList<CascadeDescendant> descendants = await source.GetDescendantsAsync(
+            s_tenant.Value,
+            s_parent.Value,
+            TestContext.Current.CancellationToken);
+
+        descendants.Single(value => value.WorkItemId == s_terminalChild).IsTerminal.ShouldBeTrue();
+        descendants.Single(value => value.WorkItemId == s_activeChild).IsTerminal.ShouldBeFalse();
+        descendants.Single(value => value.WorkItemId == s_missingChild).IsTerminal.ShouldBeFalse();
+        _ = store.DidNotReceive().GetAsync<WorkItemRollUp>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(s_tenant.Value, s_missingChild.Value),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static void ConfigureNoCurrentManifest(IReadModelStore store)
+    {
+        store
+            .GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.CurrentWhatsNextIndexKey(s_tenant.Value),
+                Arg.Any<CancellationToken>())
+            .Returns(new ReadModelEntry<WorksWhatsNextTenantIndex>(null, null));
     }
 
     private static StreamReadPage CreateChildPage(WorkItemId child)

@@ -63,9 +63,25 @@ All notable changes to Hexalith.Works will be documented in this file.
   not be decoded or accepted — instead of retaining each child's spawn-time effort. Own effort, lifecycle
   status (including terminal status), parent/child structure, tenant identity, diagnostics, and the
   accepted-source watermark are preserved, and locally complete leaf totals remain available.
+- Operator-triggered shared roll-up reconciliation through EventStore's internal
+  `/project/rebuild/shared/v1` lifecycle. A sealed tenant inventory is folded through one relationship-aware
+  graph using both `ChildSpawned` and `WorkItemCreated.Parent`; bounded staging leaves the live generation
+  untouched, and commit atomically promotes schema-v2 membership/index and per-item documents while retiring
+  candidate-known legacy keys. Incomplete relationship evidence keeps reliable local fields and refuses both
+  rolled shapes. Operators must keep ordinary `/project` delivery for the tenant quiesced from inventory
+  capture through commit, or supply an equivalent platform fence: the Works handler does not arbitrate a
+  concurrent last-write projection writer (see `docs/eventstore-api-surface-constraints.md`).
 
 ### Changed
 
+- Works projection readers and normal `/project` writes now preserve legacy visibility until a tenant's v2
+  membership index is committed. After that boundary, readers use only v2 keys and authoritative membership,
+  so stale or otherwise unlisted per-item documents cannot be queried. Both roll-up readers also require a
+  stored document's embedded tenant/work-item identity to match the requested key, so a mis-keyed persisted
+  document is refused instead of served.
+- Ordinary `/project` dispatches retain the child identities a shared rebuild reconciled for an aggregate and
+  refuse both rolled shapes rather than republishing a single-aggregate substitute total over a reconciled
+  document; a known Works event that cannot be decoded is likewise treated as incomplete evidence.
 - Runtime `/project` per-item roll-up and tenant what's-next index persistence is now monotonic on each
   accepted EventStore envelope position: per-item roll-ups use the shared optimistic-concurrency write policy,
   and the tenant what's-next index retains per-item sequence tombstones so delayed older full replays cannot

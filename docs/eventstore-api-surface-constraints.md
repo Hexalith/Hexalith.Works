@@ -38,7 +38,13 @@ EventStore does not expose an explicit `expectedVersion` append argument. Optimi
 
 ## Online Rebuild
 
-EventStore online rebuild is operator-initiated, checkpoint-per-aggregate, and pausable through `IProjectionRebuildOrchestrator`, `ProjectionRebuildCheckpoint`, and `ProjectionRebuildStatus`. It is not a shadow-projection plus atomic-swap model. Later Works projection stories must align per-tenant rebuild behavior to the checkpoint orchestrator before depending on the earlier architecture wording.
+EventStore's aggregate projection rebuild remains operator-initiated, checkpoint-per-aggregate, and pausable
+through `IProjectionRebuildOrchestrator`, `ProjectionRebuildCheckpoint`, and `ProjectionRebuildStatus`; that
+path is not a shadow-projection plus atomic-swap model. EventStore also exposes the internal, versioned
+`/project/rebuild/shared/v1` lifecycle for projections that require a sealed set of co-available aggregate
+histories. Its Begin/Accumulate/Finalize/Stage/Commit protocol validates bounded candidates and promotes one
+single-store `IReadModelBatchStagingStore` manifest atomically. Works uses that shared lifecycle for tenant-wide
+roll-up reconciliation while retaining the checkpoint path for independent aggregate projections.
 
 ## Story 4.5 — Command/Event Pipeline Under Aspire (runtime adapter proof)
 
@@ -104,6 +110,22 @@ verified EventStore domain-service surface is:
   index. These two keys remain separate, non-atomic read models: each is independently monotonic and they
   converge on replay rather than claiming a cross-key transaction. The pending date-await index maintained by
   the same dispatch is outside this guarantee: it keeps its pre-existing raw stream-sequence watermark.
+- **Shared roll-up reconciliation (2026-08-29):** Works registers the public
+  `WorkItemSharedProjectionRebuildHandler` for EventStore's internal `/project/rebuild/shared/v1` route. The
+  operator supplies a sealed authoritative tenant inventory; the handler folds all complete histories through
+  one pure roll-up and what's-next graph, discovers edges from both `ChildSpawned` and
+  `WorkItemCreated.Parent`, and applies the same boundary sanitizer as normal `/project`. Missing, malformed,
+  unknown, cross-tenant, cyclic, or multiply-parented relationship evidence keeps reliable local fields but
+  makes both rolled shapes unavailable. Stage writes only a bounded candidate envelope. Commit atomically
+  promotes a schema-v2 tenant membership index and its per-item documents while deleting the candidate-known
+  unversioned keys. Until that commit, readers and ordinary dispatch continue using existing legacy keys; once
+  the v2 index exists, membership is authoritative and makes any unlisted historical document unreachable.
+  The Dapr ACL admits this route only from EventStore, and EventStore's candidate/manifest limits fail closed
+  before any live mutation.
+  Operational consistency requires ordinary projection delivery to remain quiesced from inventory capture
+  through Commit, or an equivalent platform fence that excludes live writers. Delivery resumes and catches up
+  after Commit. The Works handler does not itself prevent a concurrent ordinary `/project` writer from
+  overwriting, or being overwritten by, a `LastWrite` manifest operation.
 
 ### Build reconciliation
 

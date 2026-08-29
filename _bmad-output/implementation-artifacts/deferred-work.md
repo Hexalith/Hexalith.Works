@@ -429,7 +429,9 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:123
 source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: ToBoundarySafeRollUp is applied only on the write path of a dispatch, and the dispatcher is the only writer of WorksReadModelKeys.RollUpKey and the what's-next tenant index. A child-only dispatch never rewrites the parent's keys, WhatsNextQueryHandler returns stored values verbatim with no read-side sanitization, WorksReadModelKeys carries no schema/version token, and no startup replay, rebuild, or invalidation path exists. A parent that appends no further events of its own therefore keeps serving its spawn-time total indefinitely. Every adapter test starts from a fresh InMemoryReadModelStore, so no test observes a pre-change document. Closing this needs a re-projection/backfill or read-side guard, which the approved adapter-boundary approach ("whenever the dispatched item has child contributions") does not cover.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-shared-rollup-reconciliation
+resolution-undo: 58378fc662e0ae296c6b3166d2b6631fbfb9de554de32a461c8865100db10bdb 2026-08-29 7374617475733a206f70656e
 decision: 2026-08-27 Version and backfill — Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.
 decision: 2026-08-27 Version and backfill — Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.
 
@@ -439,7 +441,9 @@ location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:
 source_spec: `spec-refuse-stale-persisted-rollups.md`
 severity: medium
 reason: CreateWorkItem accepts a Parent, and WorkItemRollUpProjection.Project adds the parent->child edge from WorkItemCreated.Parent on the child's stream. That create emits nothing on the parent's stream, so the parent's own dispatch sees ChildContributionCount == 0 and no ChildSpawned event name, ToBoundarySafeRollUp does not fire, and the parent is persisted as a leaf with an available rolled total that excludes those children. This predates the refusal change; detecting it from a single dispatch would require a cross-aggregate store read or merge protocol, which the intent's Block If excludes.
-status: open
+status: done 2026-08-29
+resolution: resolved by sweep bundle dw-shared-rollup-reconciliation
+resolution-undo: 58378fc662e0ae296c6b3166d2b6631fbfb9de554de32a461c8865100db10bdb 2026-08-29 7374617475733a206f70656e
 decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
 decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
 
@@ -651,6 +655,22 @@ status: open
 origin: review-budget-followup
 location: n/a
 source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
+status: open
+
+### DW-73: The pending-date-await index and tenant registry stay unversioned and are neither rebuilt nor pruned by the shared reconciliation, so a work item dropped from a tenant's authoritative membership can r
+origin: spec-deferred c1087044cae6
+location: src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs
+source_spec: `spec-shared-rollup-reconciliation.md`
+severity: medium
+reason: WorkItemSharedRebuildManifestBuilder emits operations only for the v2 tenant index, per-item roll-ups, and candidate-known legacy roll-up keys; WorksReadModelKeys.PendingDateAwaitIndexKey and PendingDateAwaitRegistryKey carry no generation token and appear in no manifest operation. Recovery therefore still enumerates awaits for ids that GetWorkItemQueryHandler now refuses as non-members. The underlying orphan-after-erasure gap predates this change; membership-based unreachability makes it observable from the query surface.
+status: open
+
+### DW-74: Follow-up review still recommended for dw-shared-rollup-reconciliation after the damping cap was spent
+origin: review-budget-followup
+location: n/a
+source_spec: `spec-shared-rollup-reconciliation.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
 status: open
