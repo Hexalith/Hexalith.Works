@@ -520,6 +520,7 @@ origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register
 location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:119
 reason: Event processing can return `Processed` after `MarkCompletedAsync` fails, leaving no durable deduplication marker for a later duplicate delivery. This behavior predates Story 4.8.
 status: open
+decision: 2026-08-29 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
 
 ### DW-57: Event processor does not reject non-work domains
 
