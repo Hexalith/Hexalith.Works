@@ -627,7 +627,8 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:145
 source_spec: `spec-projection-write-ordering-guard.md`
 severity: medium
 reason: Before this bundle, an ineligible replay removed the tenant-index item before unconditionally saving the roll-up and retained no tombstone. A crash between those writes can leave no record of the newer ineligible sequence, so a later older eligible replay cannot be distinguished without a migration or backfill decision.
-status: open
+status: done 2026-08-31
+resolution: already resolved: commit 103dcfde9816706d4f8bd6b2f82654bde27f0f0c; src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs:100-146 reconstructs LastSequences for every authoritative member, atomically publishes the current-schema index, and retires the legacy index.
 
 ### DW-68: The retained tenant-index sequence watermark is never pruned, so the single per-tenant what's-next document grows by one permanent entry per work item ever projected.
 origin: spec-deferred c229b8333c33
