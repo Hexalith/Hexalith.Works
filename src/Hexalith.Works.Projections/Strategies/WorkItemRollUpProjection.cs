@@ -38,10 +38,12 @@ public sealed class WorkItemRollUpProjection
 
         // Refuse a mismatched or malformed delivery before any node is allocated: a payload whose tenant/id
         // disagrees with the delivery header must not fabricate an empty phantom node in Get()/Snapshot().
-        // A corrupted stream is refused, not thrown on -- AllowsDelivery owns the well-formedness floor
-        // (missing payload, missing identities, unsupported payload type) so replay cannot wedge here.
+        // A corrupted stream is refused, not thrown on -- the exact descriptor and AllowsDelivery own the
+        // well-formedness floor (missing payload, missing identities, unsupported payload type) so replay cannot wedge here.
         // The identity comparison itself is policy-governed; the floor is not.
-        if (delivery.Sequence <= 0 || !_tenantIsolation.AllowsDelivery(delivery))
+        if (delivery.Sequence <= 0
+            || !WorkItemRollUpPayloadDescriptor.TryResolve(delivery.Payload, out WorkItemRollUpPayloadDescriptor? descriptor)
+            || !_tenantIsolation.AllowsDelivery(delivery, descriptor))
         {
             return;
         }
@@ -49,24 +51,12 @@ public sealed class WorkItemRollUpProjection
         NodeKey key = NodeKey.From(delivery.TenantId, delivery.WorkItemId);
         RollUpNode node = GetOrAdd(key, delivery.TenantId, delivery.WorkItemId);
 
-        if (!node.Accept(delivery.Sequence, delivery.Payload))
+        if (!node.Accept(delivery.Sequence, descriptor, delivery.Payload))
         {
             return;
         }
 
-        switch (delivery.Payload)
-        {
-            case WorkItemCreated created when created.Parent is not null:
-                AddEdge(NodeKey.From(created.Parent.TenantId, created.Parent.WorkItemId), key);
-                break;
-            case ChildSpawned spawned:
-                NodeKey childKey = NodeKey.From(spawned.TenantId, spawned.ChildWorkItemId);
-                RollUpNode child = GetOrAdd(childKey, spawned.TenantId, spawned.ChildWorkItemId);
-                child.MergeSpawnFacts(spawned);
-                AddEdge(key, childKey);
-                Rebuild(child);
-                break;
-        }
+        descriptor.ApplyTopology(this, node, delivery.Payload);
 
         Rebuild(node);
     }
@@ -131,105 +121,57 @@ public sealed class WorkItemRollUpProjection
             node.LatestAcceptedSourceSequence = Math.Max(node.LatestAcceptedSourceSequence, 1);
         }
 
-        foreach ((long sequence, IEventPayload payload) in node.Events)
+        foreach ((long sequence, (WorkItemRollUpPayloadDescriptor Descriptor, IEventPayload Payload) accepted) in node.Events)
         {
             node.LatestAcceptedSourceSequence = Math.Max(node.LatestAcceptedSourceSequence, sequence);
-            ApplyPayload(node, payload);
+            accepted.Descriptor.ApplyFold(this, node, accepted.Payload);
         }
     }
 
-    private void ApplyPayload(RollUpNode node, IEventPayload payload)
+    /// <summary>
+    /// Applies the accepted <see cref="WorkItemCreated"/> topology effect.
+    /// </summary>
+    /// <param name="node">The accepted delivery's node.</param>
+    /// <param name="created">The typed payload.</param>
+    internal void ApplyTopology(RollUpNode node, WorkItemCreated created)
     {
-        switch (payload)
+        if (created.Parent is not null)
         {
-            case WorkItemCreated created:
-                node.Status = WorkItemStatus.Created;
-                node.OwnEffort = created.InitialEffort;
-                node.Parent = created.Parent;
-                node.Terminal = false;
-                if (created.Parent is not null && !_tenantIsolation.AllowsEdge(created.Parent.TenantId, node.TenantId))
-                {
-                    // AddEdge refuses the cross-tenant parent edge; surface that refusal as a
-                    // deterministic metadata-only diagnostic without degrading the node — tenant
-                    // isolation is by-design behavior, not a stale retained value.
-                    node.Diagnose(nameof(WorkItemCreated), created.Sequence);
-                }
-
-                break;
-            case ProgressReported progress when !node.Terminal && node.OwnEffort is not null:
-                if (node.OwnEffort.Unit != progress.Unit)
-                {
-                    node.Refuse(nameof(ProgressReported), progress.Sequence);
-                    break;
-                }
-
-                // Read-side defense against a corrupted stream: the write side rejects non-positive
-                // deltas, but a persisted one must refuse-and-diagnose instead of throwing inside
-                // WorkItemEffort.Report and wedging every rebuild of this aggregate.
-                if (progress.DoneDelta <= 0)
-                {
-                    node.Refuse(nameof(ProgressReported), progress.Sequence);
-                    break;
-                }
-
-                node.OwnEffort = node.OwnEffort.Report(progress.DoneDelta);
-                break;
-            case ReEstimated reEstimated when !node.Terminal:
-                if (node.OwnEffort is not null && node.OwnEffort.Unit != reEstimated.Unit)
-                {
-                    node.Refuse(nameof(ReEstimated), reEstimated.Sequence);
-                    break;
-                }
-
-                // Read-side defense against a corrupted stream: a persisted negative estimate would
-                // throw inside WorkItemEffort and wedge every rebuild of this aggregate.
-                if (reEstimated.Estimated < 0)
-                {
-                    node.Refuse(nameof(ReEstimated), reEstimated.Sequence);
-                    break;
-                }
-
-                node.OwnEffort = node.OwnEffort is null
-                    ? new WorkItemEffort(reEstimated.Estimated, reEstimated.Unit)
-                    : node.OwnEffort.ReEstimate(reEstimated.Estimated);
-                break;
-            case WorkItemAssigned assigned when !node.Terminal:
-                node.Status = WorkItemStatus.Assigned;
-                break;
-            case WorkItemQueued queued when !node.Terminal:
-                node.Status = WorkItemStatus.Queued;
-                break;
-            case WorkItemClaimed claimed when !node.Terminal:
-                node.Status = WorkItemStatus.InProgress;
-                break;
-            case WorkItemSuspended suspended when !node.Terminal:
-                node.Status = WorkItemStatus.Suspended;
-                break;
-            case WorkItemResumed resumed when !node.Terminal:
-                node.Status = WorkItemStatus.InProgress;
-                break;
-            case WorkItemRejected rejected when rejected.Requeue && !node.Terminal:
-                node.Status = WorkItemStatus.Queued;
-                break;
-            case WorkItemCompleted:
-                SetTerminal(node, WorkItemStatus.Completed);
-                break;
-            case WorkItemCancelled:
-                SetTerminal(node, WorkItemStatus.Cancelled);
-                break;
-            case WorkItemExpired:
-                SetTerminal(node, WorkItemStatus.Expired);
-                break;
-            case WorkItemRejected rejected when !rejected.Requeue:
-                SetTerminal(node, WorkItemStatus.Rejected);
-                break;
+            AddEdge(NodeKey.From(created.Parent.TenantId, created.Parent.WorkItemId), node.Key);
         }
     }
 
-    private static void SetTerminal(RollUpNode node, WorkItemStatus status)
+    /// <summary>
+    /// Applies the accepted <see cref="ChildSpawned"/> topology effect.
+    /// </summary>
+    /// <param name="node">The accepted delivery's node.</param>
+    /// <param name="spawned">The typed payload.</param>
+    internal void ApplyTopology(RollUpNode node, ChildSpawned spawned)
     {
-        node.Status = status;
-        node.Terminal = true;
+        NodeKey childKey = NodeKey.From(spawned.TenantId, spawned.ChildWorkItemId);
+        RollUpNode child = GetOrAdd(childKey, spawned.TenantId, spawned.ChildWorkItemId);
+        child.MergeSpawnFacts(spawned);
+        AddEdge(node.Key, childKey);
+        Rebuild(child);
+    }
+
+    /// <summary>
+    /// Applies the accepted <see cref="WorkItemCreated"/> sorted-fold effect.
+    /// </summary>
+    /// <param name="node">The node being rebuilt.</param>
+    /// <param name="created">The typed payload.</param>
+    internal void ApplyPayload(RollUpNode node, WorkItemCreated created)
+    {
+        node.Status = WorkItemStatus.Created;
+        node.OwnEffort = created.InitialEffort;
+        node.Parent = created.Parent;
+        node.Terminal = false;
+        if (created.Parent is not null && !_tenantIsolation.AllowsEdge(created.Parent.TenantId, node.TenantId))
+        {
+            // AddEdge refuses the cross-tenant parent edge; surface that refusal as a deterministic
+            // metadata-only diagnostic without degrading the node.
+            node.Diagnose(nameof(WorkItemCreated), created.Sequence);
+        }
     }
 
     private WorkItemRollUp ToReadModel(RollUpNode node, HashSet<NodeKey> traversal)
@@ -385,19 +327,19 @@ public sealed class WorkItemRollUpProjection
             => new(tenantId.Value, workItemId.Value);
     }
 
-    private sealed class RollUpNode(TenantId tenantId, WorkItemId workItemId)
+    internal sealed class RollUpNode(TenantId tenantId, WorkItemId workItemId)
     {
-        public NodeKey Key { get; } = NodeKey.From(tenantId, workItemId);
+        private NodeKey Key { get; } = NodeKey.From(tenantId, workItemId);
 
         public TenantId TenantId { get; } = tenantId;
 
         public WorkItemId WorkItemId { get; } = workItemId;
 
-        public SortedDictionary<long, IEventPayload> Events { get; } = [];
+        public SortedDictionary<long, (WorkItemRollUpPayloadDescriptor Descriptor, IEventPayload Payload)> Events { get; } = [];
 
-        public HashSet<NodeKey> ChildKeys { get; } = [];
+        private HashSet<NodeKey> ChildKeys { get; } = [];
 
-        public NodeKey? ParentKey { get; set; }
+        private NodeKey? ParentKey { get; set; }
 
         public ParentWorkItemReference? Parent { get; set; }
 
@@ -419,12 +361,13 @@ public sealed class WorkItemRollUpProjection
 
         public ParentWorkItemReference? SpawnParent { get; private set; }
 
-        public bool HasCreatedEvent => Events.Values.OfType<WorkItemCreated>().Any();
+        public bool HasCreatedEvent => Events.Values.Any(accepted => accepted.Payload is WorkItemCreated);
 
-        public bool Accept(long sequence, IEventPayload payload)
+        public bool Accept(long sequence, WorkItemRollUpPayloadDescriptor descriptor, IEventPayload payload)
         {
+            ArgumentNullException.ThrowIfNull(descriptor);
             ArgumentNullException.ThrowIfNull(payload);
-            return Events.TryAdd(sequence, payload);
+            return Events.TryAdd(sequence, (descriptor, payload));
         }
 
         public void MergeSpawnFacts(ChildSpawned spawned)

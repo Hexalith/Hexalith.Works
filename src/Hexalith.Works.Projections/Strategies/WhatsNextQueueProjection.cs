@@ -1,5 +1,4 @@
 using Hexalith.EventStore.Contracts.Events;
-using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
@@ -47,7 +46,9 @@ public sealed class WhatsNextQueueProjection
         ArgumentNullException.ThrowIfNull(delivery);
         ArgumentNullException.ThrowIfNull(delivery.Payload);
 
-        if (delivery.Sequence <= 0 || !EventMatchesDelivery(delivery))
+        if (delivery.Sequence <= 0
+            || !WhatsNextPayloadDescriptor.TryResolve(delivery.Payload, out WhatsNextPayloadDescriptor? descriptor)
+            || !descriptor.MatchesIdentity(delivery))
         {
             return new WhatsNextProjectionChange(false, delivery.TenantId);
         }
@@ -60,7 +61,7 @@ public sealed class WhatsNextQueueProjection
         // so the post-Accept signature still reflects the pre-delivery eligibility/order — capturing `before`
         // here is equivalent to capturing it earlier, while skipping the O(n log n) rebuild on the expected
         // at-least-once duplicate-delivery path (NFR-9/B2).
-        if (!node.Accept(delivery.Sequence, delivery.Payload))
+        if (!node.Accept(delivery.Sequence, descriptor, delivery.Payload))
         {
             return new WhatsNextProjectionChange(false, delivery.TenantId);
         }
@@ -88,135 +89,17 @@ public sealed class WhatsNextQueueProjection
         return BuildEligibleItems(tenantId, rollUpLookup);
     }
 
-    private static bool EventMatchesDelivery(WorkItemRollUpEvent delivery)
-        => delivery.Payload switch
-        {
-            WorkItemCreated e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ChildSpawned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemAssigned e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemQueued e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemClaimed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemSuspended e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemResumed e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemRescheduled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ProgressReported e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            ReEstimated e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemCompleted e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemCancelled e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemExpired e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-            WorkItemRejected e => e.TenantId == delivery.TenantId && e.WorkItemId == delivery.WorkItemId,
-
-            // Fail closed: an event type this projection does not know cannot prove its payload agrees
-            // with the delivery header, so it must never be accepted into a sequence slot.
-            _ => false,
-        };
-
     private static bool IsEligible(WorkItemStatus status)
         => status is WorkItemStatus.Queued or WorkItemStatus.Assigned;
 
-    private static void Rebuild(ItemNode node)
+    private void Rebuild(ItemNode node)
     {
         node.ResetProjectionState();
-        foreach ((long sequence, IEventPayload payload) in node.Events)
+        foreach ((long sequence, (WhatsNextPayloadDescriptor Descriptor, IEventPayload Payload) accepted) in node.Events)
         {
             node.LatestAcceptedSourceSequence = Math.Max(node.LatestAcceptedSourceSequence, sequence);
-            ApplyPayload(node, payload);
+            accepted.Descriptor.ApplyFold(this, node, accepted.Payload);
         }
-    }
-
-    private static void ApplyPayload(ItemNode node, IEventPayload payload)
-    {
-        switch (payload)
-        {
-            case WorkItemCreated created:
-                node.Status = WorkItemStatus.Created;
-                node.Schedule = created.Schedule;
-                node.ExecutorBinding = created.ExecutorBinding;
-                node.OwnEffort = created.InitialEffort;
-                node.AwaitConditions.Clear();
-                node.Terminal = false;
-                break;
-
-            // A queued item keeps its last ExecutorBinding (the last raw act): WorkItemQueued carries no
-            // binding and does not clear it — "who currently owns a Queued item" is what's-next
-            // presentation, not aggregate-state mutation (D2/D6, lifecycle-transition-matrix.md).
-            case WorkItemAssigned assigned when !node.Terminal:
-                node.Status = WorkItemStatus.Assigned;
-                node.ExecutorBinding = assigned.Binding;
-                break;
-            case WorkItemQueued when !node.Terminal:
-                node.Status = WorkItemStatus.Queued;
-                break;
-            case WorkItemClaimed claimed when !node.Terminal:
-                node.Status = WorkItemStatus.InProgress;
-                node.ExecutorBinding = claimed.Binding;
-                break;
-            case WorkItemSuspended suspended when !node.Terminal:
-                node.Status = WorkItemStatus.Suspended;
-                node.AwaitConditions.Clear();
-                node.AwaitConditions.AddRange(suspended.AwaitConditions);
-                break;
-            case WorkItemResumed when !node.Terminal:
-                node.Status = WorkItemStatus.InProgress;
-                node.AwaitConditions.Clear();
-                break;
-            case WorkItemRescheduled rescheduled when !node.Terminal:
-                node.Schedule = rescheduled.Schedule;
-                break;
-
-            // Own burn-down mirrors the roll-up's own-effort derivation, refuse-don't-coerce on a unit
-            // mismatch (retain the last valid value). A non-positive delta or negative estimate from a
-            // corrupted stream is refused the same way — read-side defense, because WorkItemEffort would
-            // throw and wedge every rebuild of this aggregate. There is no Degraded surface on the
-            // what's-next read model — the roll-up read model owns degradation diagnostics.
-            case ProgressReported progress when !node.Terminal && node.OwnEffort is { } reported:
-                if (reported.Unit == progress.Unit && progress.DoneDelta > 0)
-                {
-                    node.OwnEffort = reported.Report(progress.DoneDelta);
-                }
-
-                break;
-            case ReEstimated reEstimated when !node.Terminal:
-                if (reEstimated.Estimated < 0)
-                {
-                    break;
-                }
-
-                if (node.OwnEffort is { } estimated)
-                {
-                    if (estimated.Unit == reEstimated.Unit)
-                    {
-                        node.OwnEffort = estimated.ReEstimate(reEstimated.Estimated);
-                    }
-                }
-                else
-                {
-                    node.OwnEffort = new WorkItemEffort(reEstimated.Estimated, reEstimated.Unit);
-                }
-
-                break;
-            case WorkItemRejected rejected when rejected.Requeue && !node.Terminal:
-                node.Status = WorkItemStatus.Queued;
-                break;
-            case WorkItemCompleted:
-                SetTerminal(node, WorkItemStatus.Completed);
-                break;
-            case WorkItemCancelled:
-                SetTerminal(node, WorkItemStatus.Cancelled);
-                break;
-            case WorkItemExpired:
-                SetTerminal(node, WorkItemStatus.Expired);
-                break;
-            case WorkItemRejected rejected when !rejected.Requeue:
-                SetTerminal(node, WorkItemStatus.Rejected);
-                break;
-        }
-    }
-
-    private static void SetTerminal(ItemNode node, WorkItemStatus status)
-    {
-        node.Status = status;
-        node.Terminal = true;
     }
 
     private static OwnRemaining? ToOwnRemaining(ItemNode node)
@@ -296,13 +179,13 @@ public sealed class WhatsNextQueueProjection
             => new(tenantId.Value, workItemId.Value);
     }
 
-    private sealed class ItemNode(TenantId tenantId, WorkItemId workItemId)
+    internal sealed class ItemNode(TenantId tenantId, WorkItemId workItemId)
     {
         public TenantId TenantId { get; } = tenantId;
 
         public WorkItemId WorkItemId { get; } = workItemId;
 
-        public SortedDictionary<long, IEventPayload> Events { get; } = [];
+        public SortedDictionary<long, (WhatsNextPayloadDescriptor Descriptor, IEventPayload Payload)> Events { get; } = [];
 
         public WorkItemStatus Status { get; set; }
 
@@ -318,10 +201,11 @@ public sealed class WhatsNextQueueProjection
 
         public long LatestAcceptedSourceSequence { get; set; }
 
-        public bool Accept(long sequence, IEventPayload payload)
+        public bool Accept(long sequence, WhatsNextPayloadDescriptor descriptor, IEventPayload payload)
         {
+            ArgumentNullException.ThrowIfNull(descriptor);
             ArgumentNullException.ThrowIfNull(payload);
-            return Events.TryAdd(sequence, payload);
+            return Events.TryAdd(sequence, (descriptor, payload));
         }
 
         public void ResetProjectionState()
