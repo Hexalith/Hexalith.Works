@@ -666,6 +666,7 @@ source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: DispatchAsync serializes `item` into ProjectionResponse unconditionally, and `indexAccepted` is computed and then discarded. Before this change the writes were unconditional, so the response always matched persisted state; a refused stale replay now returns a document the store does not hold, with no field distinguishing accepted from refused. Adding an acceptance signal changes the projection response contract, which this story's Block If fences off.
 status: open
+decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 
 ### DW-72: Follow-up review still recommended for dw-projection-write-ordering-guard after the damping cap was spent
 origin: review-budget-followup

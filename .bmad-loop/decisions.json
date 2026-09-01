@@ -34,5 +34,14 @@
     "key": "1",
     "label": "Add no-op outcome",
     "resolution": ""
+  },
+  "DW-71": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.",
+    "key": "1",
+    "label": "Return persisted state",
+    "resolution": ""
   }
 }
