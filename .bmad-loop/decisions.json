@@ -25,5 +25,14 @@
     "key": "1",
     "label": "Shard retained watermarks",
     "resolution": ""
+  },
+  "DW-69": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Add a backward-compatible write-or-no-change transform result or overload to ReadModelWritePolicy, skip TrySaveAsync for no-change, update Works callers, and add platform concurrency tests.",
+    "key": "1",
+    "label": "Add no-op outcome",
+    "resolution": ""
   }
 }

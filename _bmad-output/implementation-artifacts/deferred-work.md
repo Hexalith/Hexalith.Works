@@ -649,6 +649,7 @@ source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: ReadModelWritePolicy.UpdateAsync unconditionally calls TrySaveAsync with whatever the transform returns, so both ordering guards refuse at the value surface only: the persisted document is unchanged, but the version advances and a concurrent legitimate writer can lose an attempt from its bounded retry budget. This is the pre-existing platform contract (the old unconditional SaveAsync also wrote), so the change adds no write it did not already make; suppressing the write needs a no-op signal in the EventStore write policy, which this story's Block If fences off.
 status: open
+decision: 2026-09-01 Add no-op outcome — Add a backward-compatible write-or-no-change transform result or overload to ReadModelWritePolicy, skip TrySaveAsync for no-change, update Works callers, and add platform concurrency tests.
 
 ### DW-70: The sibling pending-date-await index transform still mutates the instance it loaded, so a rejected write can leave that mutation visible in a reference-returning store.
 origin: spec-deferred 6f4552a53c41
