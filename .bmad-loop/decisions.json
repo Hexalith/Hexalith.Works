@@ -43,5 +43,14 @@
     "key": "1",
     "label": "Return persisted state",
     "resolution": ""
+  },
+  "DW-77": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.",
+    "key": "1",
+    "label": "Adopt MSBuildLocator",
+    "resolution": ""
   }
 }

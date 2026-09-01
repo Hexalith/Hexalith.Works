@@ -715,6 +715,7 @@ source_spec: `spec-msbuild-dependency-discovery.md`
 severity: medium
 reason: The test project captures $(MSBuildToolsPath) into an AssemblyMetadataAttribute at compile time and copies the SDK's Microsoft.Build* assemblies next to the test host. A build-once/test-elsewhere pipeline, or an SDK patch installed between build and test, makes ConfigureInstalledMsBuild throw and fails the whole architecture lane. Replacing the hand bootstrap with MSBuildLocator adds a package dependency and is a design decision beyond this bundle.
 status: open
+decision: 2026-09-01 Adopt MSBuildLocator — Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.
 
 ### DW-78: The Release lane pins Platform=AnyCPU for every evaluated project regardless of its declared Platforms.
 origin: spec-deferred 27c11709b8c0
