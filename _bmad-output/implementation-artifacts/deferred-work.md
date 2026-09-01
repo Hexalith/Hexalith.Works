@@ -49,7 +49,9 @@ resolution: already resolved: src/Hexalith.Works.Server/Aggregates/WorkTreeAttac
 origin: migrated from legacy ledger ("Deferred from: code review of 1-3-reference-sibling-modules-without-copying-data (2026-06-16)"), 2026-08-27
 location: src/Hexalith.Works.Contracts/ValueObjects/ConversationCorrelationId.cs
 reason: Unlike `PartyId`, `TenantId`, and `WorkItemId`, `ConversationCorrelationId` does not use `AggregateIdentity` and therefore accepts colons, whitespace, non-ASCII text, and unbounded length; tighten it if it begins participating in a composite key or topic where tenant-isolation-safe identity rules matter.
-status: open
+status: done 2026-09-01
+resolution: closed by human decision: ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
+decision: 2026-09-01 Close as opaque reference — ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 
 ### DW-7: Persisted parent roll-up never converges to child progress
 
