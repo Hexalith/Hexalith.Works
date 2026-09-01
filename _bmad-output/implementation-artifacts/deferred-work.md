@@ -740,6 +740,7 @@ source_spec: `spec-msbuild-dependency-discovery.md`
 severity: medium
 reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
 status: open
+decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 
 ### DW-81: Runtime-adapter confinement still decides EventStore-runtime and Dapr direction from owning-file XML and basename prefixes.
 origin: spec-deferred b052bd148f70

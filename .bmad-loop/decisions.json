@@ -52,5 +52,14 @@
     "key": "1",
     "label": "Adopt MSBuildLocator",
     "resolution": ""
+  },
+  "DW-80": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.",
+    "key": "1",
+    "label": "Evaluate supported lanes",
+    "resolution": ""
   }
 }
