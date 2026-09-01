@@ -757,6 +757,7 @@ source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: Dropping `Version=10.0.0.0`/`SpecificVersion` was tried and reintroduces MSB3277 (unification with the SDK's System.Configuration.ConfigurationManager), so the pin is load-bearing under the repository's zero-warning bar. An SDK band that ships a different EventLog assembly version will therefore need this literal edited. This is the same installed-SDK coupling as the MSBuild-layout entry above, but a distinct literal.
 status: open
+decision: 2026-09-01 Use portable dependency loading — Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.
 
 ### DW-83: Follow-up review still recommended for dw-msbuild-dependency-discovery after the damping cap was spent
 origin: review-budget-followup

@@ -61,5 +61,14 @@
     "key": "1",
     "label": "Evaluate supported lanes",
     "resolution": ""
+  },
+  "DW-82": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.",
+    "key": "1",
+    "label": "Use portable dependency loading",
+    "resolution": ""
   }
 }
