@@ -640,6 +640,7 @@ source_spec: `spec-projection-write-ordering-guard.md`
 severity: medium
 reason: WorksWhatsNextTenantIndex.LastSequences keeps an entry after the item leaves the eligible set and nothing removes it. Before this bundle the document was bounded by the currently eligible item count. It is read, copied, and rewritten on every dispatch for the tenant and read on every what's-next query, so a long-lived tenant eventually meets the state-store value-size limit. The sibling PendingDateAwaitTenantIndex has the same unbounded shape, so a retention policy (cap, TTL, or compaction) is a cross-index design decision rather than a local fix.
 status: open
+decision: 2026-09-01 Shard retained watermarks — Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.
 
 ### DW-69: A refused stale replay still issues a conditional write through ReadModelWritePolicy, bumping the key's ETag instead of skipping the store round-trip.
 origin: spec-deferred c87599ee7a12

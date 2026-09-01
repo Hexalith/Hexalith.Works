@@ -16,5 +16,14 @@
     "key": "1",
     "label": "Durable completion retry",
     "resolution": ""
+  },
+  "DW-68": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.",
+    "key": "1",
+    "label": "Shard retained watermarks",
+    "resolution": ""
   }
 }
