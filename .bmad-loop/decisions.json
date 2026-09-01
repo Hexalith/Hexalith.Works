@@ -7,5 +7,14 @@
     "key": "1",
     "label": "Direct Server test reference",
     "resolution": ""
+  },
+  "DW-56": {
+    "answered_at": "2026-09-01",
+    "bundle_name": "",
+    "effect": "build",
+    "intent": "Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.",
+    "key": "1",
+    "label": "Durable completion retry",
+    "resolution": ""
   }
 }
