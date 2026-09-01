@@ -50,6 +50,7 @@ origin: migrated from legacy ledger ("Deferred from: code review of 1-3-referenc
 location: src/Hexalith.Works.Contracts/ValueObjects/ConversationCorrelationId.cs
 reason: Unlike `PartyId`, `TenantId`, and `WorkItemId`, `ConversationCorrelationId` does not use `AggregateIdentity` and therefore accepts colons, whitespace, non-ASCII text, and unbounded length; tighten it if it begins participating in a composite key or topic where tenant-isolation-safe identity rules matter.
 status: done 2026-09-01
+decision: 2026-09-01 Close as opaque reference — ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 resolution: closed by human decision: ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 decision: 2026-09-01 Close as opaque reference — ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 
@@ -641,6 +642,7 @@ severity: medium
 reason: WorksWhatsNextTenantIndex.LastSequences keeps an entry after the item leaves the eligible set and nothing removes it. Before this bundle the document was bounded by the currently eligible item count. It is read, copied, and rewritten on every dispatch for the tenant and read on every what's-next query, so a long-lived tenant eventually meets the state-store value-size limit. The sibling PendingDateAwaitTenantIndex has the same unbounded shape, so a retention policy (cap, TTL, or compaction) is a cross-index design decision rather than a local fix.
 status: open
 decision: 2026-09-01 Shard retained watermarks — Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.
+decision: 2026-09-01 Shard retained watermarks — Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.
 
 ### DW-69: A refused stale replay still issues a conditional write through ReadModelWritePolicy, bumping the key's ETag instead of skipping the store round-trip.
 origin: spec-deferred c87599ee7a12
@@ -649,6 +651,7 @@ source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: ReadModelWritePolicy.UpdateAsync unconditionally calls TrySaveAsync with whatever the transform returns, so both ordering guards refuse at the value surface only: the persisted document is unchanged, but the version advances and a concurrent legitimate writer can lose an attempt from its bounded retry budget. This is the pre-existing platform contract (the old unconditional SaveAsync also wrote), so the change adds no write it did not already make; suppressing the write needs a no-op signal in the EventStore write policy, which this story's Block If fences off.
 status: open
+decision: 2026-09-01 Add no-op outcome — Add a backward-compatible write-or-no-change transform result or overload to ReadModelWritePolicy, skip TrySaveAsync for no-change, update Works callers, and add platform concurrency tests.
 decision: 2026-09-01 Add no-op outcome — Add a backward-compatible write-or-no-change transform result or overload to ReadModelWritePolicy, skip TrySaveAsync for no-change, update Works callers, and add platform concurrency tests.
 
 ### DW-70: The sibling pending-date-await index transform still mutates the instance it loaded, so a rejected write can leave that mutation visible in a reference-returning store.
@@ -666,6 +669,7 @@ source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: DispatchAsync serializes `item` into ProjectionResponse unconditionally, and `indexAccepted` is computed and then discarded. Before this change the writes were unconditional, so the response always matched persisted state; a refused stale replay now returns a document the store does not hold, with no field distinguishing accepted from refused. Adding an acceptance signal changes the projection response contract, which this story's Block If fences off.
 status: open
+decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 
 ### DW-72: Follow-up review still recommended for dw-projection-write-ordering-guard after the damping cap was spent
@@ -716,6 +720,7 @@ severity: medium
 reason: The test project captures $(MSBuildToolsPath) into an AssemblyMetadataAttribute at compile time and copies the SDK's Microsoft.Build* assemblies next to the test host. A build-once/test-elsewhere pipeline, or an SDK patch installed between build and test, makes ConfigureInstalledMsBuild throw and fails the whole architecture lane. Replacing the hand bootstrap with MSBuildLocator adds a package dependency and is a design decision beyond this bundle.
 status: open
 decision: 2026-09-01 Adopt MSBuildLocator — Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.
+decision: 2026-09-01 Adopt MSBuildLocator — Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.
 
 ### DW-78: The Release lane pins Platform=AnyCPU for every evaluated project regardless of its declared Platforms.
 origin: spec-deferred 27c11709b8c0
@@ -741,6 +746,7 @@ severity: medium
 reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
 status: open
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
+decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 
 ### DW-81: Runtime-adapter confinement still decides EventStore-runtime and Dapr direction from owning-file XML and basename prefixes.
 origin: spec-deferred b052bd148f70
@@ -757,6 +763,7 @@ source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: Dropping `Version=10.0.0.0`/`SpecificVersion` was tried and reintroduces MSB3277 (unification with the SDK's System.Configuration.ConfigurationManager), so the pin is load-bearing under the repository's zero-warning bar. An SDK band that ships a different EventLog assembly version will therefore need this literal edited. This is the same installed-SDK coupling as the MSBuild-layout entry above, but a distinct literal.
 status: open
+decision: 2026-09-01 Use portable dependency loading — Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.
 decision: 2026-09-01 Use portable dependency loading — Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.
 
 ### DW-83: Follow-up review still recommended for dw-msbuild-dependency-discovery after the damping cap was spent
