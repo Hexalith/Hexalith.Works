@@ -773,3 +773,13 @@ source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
 status: open
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-02)
+
+### DW-84: Story 4.8's diff bundles out-of-scope schema-v2 migration and roll-up convergence work into `WorkItemProjectionDispatcher`
+origin: code-review 4-8-register-and-reconcile-date-reminders-durably
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:143-213,394-413; src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs (new file)
+source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+severity: medium
+reason: Out of scope per Dev Notes — Story 4.8's own Dev Notes explicitly place "the persisted parent roll-up convergence limitation (deferred-work F-PROJ-1)" out of scope, yet this diff's dispatcher changes (a schema-v2 migration path via `UseCurrentSchemaAsync`/`CurrentWhatsNextIndexKey`/`CurrentRollUpKey`, a roll-up child-reconciliation merge against persisted state, `WorkItemProjectionBoundarySanitizer`, and monotonic-write watermarks) are substantially about exactly that. None of it is named in the story's Tasks, File List, or its own test-summary "Production code changed" bullets. Needs its own tracked story with explicit acceptance criteria and test plan rather than riding along inside a reminders story.
+status: open
