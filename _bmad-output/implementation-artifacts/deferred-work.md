@@ -517,7 +517,8 @@ location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:
 source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: The fitness test compares Contracts payloads with WorkItemRollUpTenantIsolation's identity registry only. WorkItemRollUpProjection.ApplyPayload holds a second, ungated switch. Adding any concrete non-rejection Contracts payload turns the gate red, and the only way to green it is a registry entry -- which converts a fail-closed refusal into a silent no-op acceptance that still advances LatestAcceptedSourceSequence. The spec's Approach scopes the allowlist to the identity registry, so binding ApplyPayload is a separate change.
-status: open
+status: done 2026-09-05
+resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 binds roll-up admission to descriptor-owned effects; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:12-32,41-72 enforces complete Contracts coverage and explicit effects.
 
 ### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up st
 origin: spec-deferred 05c45a10513b
@@ -525,7 +526,8 @@ location: src/Hexalith.Works.Projections/Strategies/WhatsNextQueueProjection.cs:
 source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: WhatsNextQueueProjection.EventMatchesDelivery enumerates the same 14 payload types with a fail-closed `_ => false` fallthrough and is driven in production by WorkItemProjectionDispatcher.DispatchAsync. None of its 37 unit tests enumerate payload types, and no architecture test ties its accepted set to Contracts. A 15th non-rejection event would be silently dropped from the tenant what's-next index with a green suite. The spec's Never clause forbids modifying unrelated projections, so this is out of scope for this bundle.
-status: open
+status: done 2026-09-05
+resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 replaces the what's-next allowlist with effect-bearing descriptors; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:27-32,41-72 gates it against Contracts.
 
 ### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests
 origin: spec-deferred 3bd2f3fc99d1
