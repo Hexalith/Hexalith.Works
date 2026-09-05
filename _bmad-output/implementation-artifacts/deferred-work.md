@@ -535,7 +535,8 @@ location: references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Capt
 source_spec: `spec-dapr-subscription-operations-hardening.md`
 severity: high
 reason: DeadLetterEnvelopeParser requires data.messageId, tenantId, domain, aggregateId, correlationId and one of the eventTypeName/eventName/eventType aliases; a missing field collapses the identity to "unidentified-<hash>" and permanently disqualifies the item from replay. Every fixture (DeadLetterEnvelopeParserTests, DeadLetterCaptureBodyTests) is a UTF-8 literal typed into the test file, and nothing in either repository builds one by serializing the real producer envelope. This is not hypothetical: the first pass of this story shipped exactly that defect (the parser accepted only eventName/eventType while the publisher emits eventTypeName) and human review, not a test, caught it. Caused by this change but not trivially fixable: Hexalith.EventStore.Operations.Tests would need a reference to Hexalith.EventStore.Server to serialize EventEnvelope, which is a deliberate dependency-surface decision for a shared submodule rather than an in-pass patch.
-status: open
+status: done 2026-09-05
+resolution: already resolved: EventStore commit 5a9b502f7ee59612a9ab393ab93e06f1ff6d0010, pinned by Works commit d9235f5d864404c17baa7e33275ecf280da42726; references/Hexalith.EventStore/tests/Hexalith.EventStore.Operations.Tests/StructuredCloudEventFixture.cs:17-50 now serializes the real Server.Events.EventEnvelope and DeadLetterEnvelopeParserTests.cs:61-74 asserts parser identity against it.
 decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
 decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
 
@@ -784,4 +785,15 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:143-213
 source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
 severity: medium
 reason: Out of scope per Dev Notes — Story 4.8's own Dev Notes explicitly place "the persisted parent roll-up convergence limitation (deferred-work F-PROJ-1)" out of scope, yet this diff's dispatcher changes (a schema-v2 migration path via `UseCurrentSchemaAsync`/`CurrentWhatsNextIndexKey`/`CurrentRollUpKey`, a roll-up child-reconciliation merge against persisted state, `WorkItemProjectionBoundarySanitizer`, and monotonic-write watermarks) are substantially about exactly that. None of it is named in the story's Tasks, File List, or its own test-summary "Production code changed" bullets. Needs its own tracked story with explicit acceptance criteria and test plan rather than riding along inside a reminders story.
+status: done 2026-09-05
+resolution: already resolved: Commits 535d1b464810b5fd5650a386d43a09c2596554b4 and 103dcfde9816706d4f8bd6b2f82654bde27f0f0c separately implemented and completed the ordering and schema-v2/reconciliation work under _bmad-output/implementation-artifacts/spec-projection-write-ordering-guard.md:1-6,87-99 and spec-shared-rollup-reconciliation.md:1-6,70-82.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-05)
+
+### DW-85: `WorkItemRollUpPayloadCoverageTests` is now a near-strict subset of `ProjectionPayloadCoverageTests`'s roll-up coverage assertion
+origin: code-review 4-8-register-and-reconcile-date-reminders-durably
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/WorkItemRollUpPayloadCoverageTests.cs
+source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+severity: low
+reason: Pre-existing, not caused by this diff — the overlap was created when `ProjectionPayloadCoverageTests.cs` was added in the prior 4.8 review round (commit `01d527a`), which duplicates `WorkItemRollUpPayloadCoverageTests`'s single coverage assertion (minus `EffectDisposition`/intentional-no-op checks). This diff only updates the older test to compile against the renamed `WorkItemRollUpPayloadDescriptor.Catalog` API. Two overlapping tests must now be kept in sync by hand; consider retiring or consolidating the older, narrower test.
 status: open
