@@ -111,6 +111,57 @@ public class WorksDomainEventProcessorTests
         }
     }
 
+    private sealed class LegacyCompletionMarkerStore : IEventStoreDomainEventMarkerStore
+    {
+        public int CompletionCount { get; private set; }
+
+        public int ReleaseCount { get; private set; }
+
+        public Task<EventStoreDomainEventMarkerAcquisitionResult> TryAcquireAsync(
+            string messageId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+
+        public Task MarkCompletedAsync(string messageId, CancellationToken cancellationToken = default)
+        {
+            CompletionCount++;
+            return Task.CompletedTask;
+        }
+
+        public Task ReleaseAsync(string messageId, CancellationToken cancellationToken = default)
+        {
+            ReleaseCount++;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingTwoPhaseMarkerStore : IEventStoreDomainEventMarkerStore
+    {
+        public List<CancellationToken> CompletionTokens { get; } = [];
+
+        public List<CancellationToken> DispatchTokens { get; } = [];
+
+        public Task<EventStoreDomainEventMarkerAcquisitionResult> TryAcquireAsync(
+            string messageId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+
+        public Task<bool> MarkDispatchedAsync(string messageId, CancellationToken cancellationToken = default)
+        {
+            DispatchTokens.Add(cancellationToken);
+            return Task.FromResult(true);
+        }
+
+        public Task MarkCompletedAsync(string messageId, CancellationToken cancellationToken = default)
+        {
+            CompletionTokens.Add(cancellationToken);
+            return Task.CompletedTask;
+        }
+
+        public Task ReleaseAsync(string messageId, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+    }
+
     private sealed class CapturingLogger<T> : ILogger<T>
     {
         public List<IReadOnlyDictionary<string, object?>> StructuredEntries { get; } = [];
@@ -217,6 +268,70 @@ public class WorksDomainEventProcessorTests
             Arg.Is<WorkItemCancelled>(value => value == @event),
             Arg.Any<EventStoreDomainEventContext>(),
             Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>The interface-default compatibility branch completes a legacy marker store exactly once.</summary>
+    [Fact]
+    public async Task Works_processor_legacy_marker_store_completes_exactly_once()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var markerStore = new LegacyCompletionMarkerStore();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBA"),
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        markerStore.CompletionCount.ShouldBe(1);
+        markerStore.ReleaseCount.ShouldBe(0);
+        await handler.Received(1).HandleAsync(
+            Arg.Is<WorkItemCancelled>(value => value == @event),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>Post-handler marker transitions ignore a request token canceled by the handler.</summary>
+    [Fact]
+    public async Task Works_processor_post_handler_finalization_ignores_canceled_request_token()
+    {
+        using var cancellation = new CancellationTokenSource();
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        _ = handler
+            .HandleAsync(
+                Arg.Any<WorkItemCancelled>(),
+                Arg.Any<EventStoreDomainEventContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                cancellation.Cancel();
+                return Task.CompletedTask;
+            });
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var markerStore = new RecordingTwoPhaseMarkerStore();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBB"),
+            cancellation.Token);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        cancellation.IsCancellationRequested.ShouldBeTrue();
+        markerStore.DispatchTokens.ShouldBe([CancellationToken.None]);
+        markerStore.CompletionTokens.ShouldBe([CancellationToken.None]);
     }
 
     /// <summary>
@@ -354,6 +469,36 @@ public class WorksDomainEventProcessorTests
         await markerStore.DidNotReceiveWithAnyArgs().MarkCompletedAsync(default!, Arg.Any<CancellationToken>());
     }
 
+    /// <summary>An unknown marker acquisition result remains retryable and carries diagnostic context.</summary>
+    [Fact]
+    public async Task Works_processor_logs_unsupported_marker_acquisition_result()
+    {
+        const string messageId = "01ARZ3NDEKTSV4RRFFQ69G5FBC";
+        IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
+        markerStore
+            .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((EventStoreDomainEventMarkerAcquisitionResult)999);
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            logger);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, messageId),
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.RetryableInProgress);
+        logger.StructuredEntries
+            .Any(entry => entry.ContainsKey("MessageId")
+                && entry.ContainsKey("AcquisitionResult")
+                && Equals(entry["MessageId"], messageId)
+                && Equals(entry["AcquisitionResult"], (EventStoreDomainEventMarkerAcquisitionResult)999))
+            .ShouldBeTrue();
+    }
+
     /// <summary>An envelope with an invalid message id is rejected before the marker is even acquired.</summary>
     [Fact]
     public async Task Works_processor_rejects_invalid_envelope_before_marker_acquisition()
@@ -373,6 +518,36 @@ public class WorksDomainEventProcessorTests
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
         await markerStore.DidNotReceiveWithAnyArgs().TryAcquireAsync(default!, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>Invalid metadata after acquisition releases the marker so a corrected delivery can run.</summary>
+    [Fact]
+    public async Task Works_processor_post_acquisition_invalid_envelope_releases_for_corrected_redelivery()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        EventStoreDomainEventEnvelope valid = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBD");
+
+        EventStoreDomainEventProcessingResult invalid = await processor.ProcessAsync(
+            valid with { AggregateId = " " },
+            TestContext.Current.CancellationToken);
+        EventStoreDomainEventProcessingResult corrected = await processor.ProcessAsync(
+            valid,
+            TestContext.Current.CancellationToken);
+
+        invalid.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        corrected.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        await handler.Received(1).HandleAsync(
+            Arg.Is<WorkItemCancelled>(value => value == @event),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
     }
 
     /// <summary>A foreign or differently-cased domain is rejected before any marker access.</summary>
@@ -474,6 +649,7 @@ public class WorksDomainEventProcessorTests
     [Fact]
     public async Task Works_processor_dispatch_marker_failure_escapes_without_release_and_logs_context()
     {
+        const string messageId = "01ARZ3NDEKTSV4RRFFQ69G5FB9";
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
         IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
         var registrations = new ServiceCollection();
@@ -488,7 +664,7 @@ public class WorksDomainEventProcessorTests
 
         _ = await Should.ThrowAsync<InvalidOperationException>(
             () => processor.ProcessAsync(
-                CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB9"),
+                CreateEnvelope(@event, messageId),
                 TestContext.Current.CancellationToken));
 
         await handler.Received(1).HandleAsync(
@@ -497,7 +673,9 @@ public class WorksDomainEventProcessorTests
             Arg.Any<CancellationToken>());
         markerStore.ReleaseCount.ShouldBe(0);
         logger.StructuredEntries
-            .Any(entry => entry.ContainsKey("ReasonCode")
+            .Any(entry => entry.ContainsKey("MessageId")
+                && Equals(entry["MessageId"], messageId)
+                && entry.ContainsKey("ReasonCode")
                 && Convert.ToString(entry["ReasonCode"])!.StartsWith("dispatch-", StringComparison.Ordinal))
             .ShouldBeTrue();
     }

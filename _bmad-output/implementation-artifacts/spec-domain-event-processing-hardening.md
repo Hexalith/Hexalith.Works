@@ -2,11 +2,11 @@
 title: 'Harden domain event completion and isolation'
 type: 'bugfix'
 created: '2026-09-05'
-status: 'in-review'
+status: 'done'
 baseline_revision: '547c6d896d256ba9630f713054ea2b073262f0ef'
 baseline_commit: '547c6d896d256ba9630f713054ea2b073262f0ef'
 review_loop_iteration: 1
-followup_review_recommended: false
+followup_review_recommended: true
 context: []
 warnings: [multiple-goals]
 deferred: []
@@ -105,6 +105,34 @@ deferred: []
   - `[medium]` `[bad_spec]` the strongest joined durability proof did not exercise the DAPR-backed marker through a live state component — verified from the test surface; the spec now adds a focused Redis/DAPR sidecar protocol test.
   - `[low]` `[reject]` domain isolation lacked an external HTTP-level foreign-domain proof — the processor test exercises the exact ledger defect before marker access, while an additional transport test is unlikely to expose different everyday behavior and would add disproportionate fixture complexity.
 
+### 2026-09-05 — Review pass 2
+- verdicts: 24 findings — high 0, medium 8, low 14, false 2, maybe-false 0
+- findings:
+  - `[medium]` `[patch]` DAPR transitions could overwrite a persisted `InProgress` marker owned by another attempt — verified in `ClassifyExistingState`; the state is now rejected contextually and covered by a focused test.
+  - `[medium]` `[patch]` unknown durable acquisition state was collapsed to an undocumented `-1` result — verified in `TryAcquireAsync`; it now throws with message ID and stored-state context, and its test asserts fail-closed behavior.
+  - `[low]` `[patch]` Works returned retryable for an unsupported acquisition result without a diagnostic — verified in the unmatched-result branch; a structured warning now records the result and message ID.
+  - `[low]` `[reject]` caller-independent finalization had no additional processor-owned deadline — custom stores can theoretically hang, but DAPR supplies transport timeout behavior and introducing a new timeout policy/configuration is disproportionate to this bundle's caller-cancellation requirement.
+  - `[low]` `[reject]` raw DAPR read/save exceptions lacked store-level message and target wrapping — processor-level failure logs already correlate the message, while wrapping every transport/cancellation exception would alter public exception semantics for negligible additional everyday value.
+  - `[low]` `[patch]` Works marker-failure logs omitted the marker message ID — verified in the generated event; `MessageId` is now present at every call and asserted by the logging test.
+  - `[low]` `[patch]` documentation named ETags and first-write concurrency but omitted the required strong-consistency capability — both reference pages now name all three state-component prerequisites.
+  - `[low]` `[patch]` `stream-replay-api.md` still described the DAPR store as recording only terminal completion — the text now accurately says it omits a pre-handler lease while persisting `Dispatched` and `Completed`.
+  - `[medium]` `[patch]` rollout guidance omitted rollback safety while `Dispatched` markers may remain — both pages now require the new cohort to finish pending markers before old consumers restart.
+  - `[low]` `[patch]` compatibility documentation did not state that default-method stores retain their prior durability limits — the reference now states the limitation and the override needed for recoverable completion-only delivery.
+  - `[medium]` `[patch]` unit coverage omitted the central ETag-checked `Dispatched` to `Completed` transition — a focused test now asserts the existing ETag, `FirstWrite`, and `Completed` replacement.
+  - `[low]` `[reject]` the live Redis test omitted a forced replica/concurrent-writer race — monotonic conflict behavior is deterministically covered at the store seam, while a timing-dependent live race would be unreliable and the documented protocol intentionally provides no pre-handler exclusion.
+  - `[low]` `[reject]` processor exceptions were not repeated through full generic and Works HTTP hosts — both unchanged endpoint delegates directly await the processor without catching, existing endpoint tests pin retryable result mappings, and duplicating two host fixtures would be disproportionate.
+  - `[medium]` `[patch]` post-acquisition invalid-envelope tests did not prove release permits a corrected redelivery — both processor suites now run a corrected delivery through the same in-memory marker and assert one handler invocation.
+  - `[medium]` `[patch]` the final convergence read after five rejected DAPR writes was not explicitly asserted strong — accepted as pre-verified; a sequenced test now observes the advanced marker on the sixth strong read.
+  - `[medium]` `[patch]` Works did not exercise the legacy-store `MarkDispatchedAsync == false` branch — accepted as pre-verified; a compatibility test now proves exactly one completion and no release.
+  - `[medium]` `[patch]` Works did not prove post-handler transitions ignore a canceled request token — accepted as pre-verified; a handler now cancels the request and the test asserts `CancellationToken.None` for both marker calls.
+  - `[low]` `[reject]` the production Works durability path is tested compositionally instead of as one joined delivery fixture — direct Works failure/redelivery tests plus the fresh-client Redis test cover the changed seams without another high-cost host/broker fixture.
+  - `[low]` `[reject]` non-acknowledgement is not asserted through an HTTP response — the unchanged endpoint does not catch the verified processor exception, so ASP.NET's existing failure path supplies the non-success response.
+  - `[low]` `[reject]` redelivery is simulated by a second processor call rather than a broker — the behavioral contract is at marker reacquisition and is directly covered with malformed retry payload and one handler invocation.
+  - `[low]` `[reject]` the live durability test does not include the Works processor — it intentionally proves persistence across fresh DAPR clients, while the Works suite independently proves the processor's state-machine behavior.
+  - `[low]` `[reject]` carried: foreign-domain isolation is not repeated through the HTTP subscription route — the processor test still exercises the exact defect before marker access and a second transport fixture remains disproportionate.
+  - `[false]` `[reject]` carried: built-in-only completion-pending support was said to diverge from a universal-provider reading — the compatibility-safe reading remains defensible, and documentation now makes the legacy limitation explicit.
+  - `[false]` `[reject]` carried: the review-stage parent gitlink had not yet advanced — submodule-first commit and parent pointer finalization occur after review, so the interim dirty marker was not an omitted deliverable.
+
 ## Design Notes
 
 Use explicit values `Acquired=0`, `Completed=1`, `InProgress=2`, `CompletionPending=3` and `InProgress=0`, `Completed=1`, `Dispatched=2`. Add `Task<bool> MarkDispatchedAsync`: the default awaits legacy `MarkCompletedAsync` once and returns `false` (already terminal), while built-in stores persist `Dispatched` and return `true` (completion remains). Immediately after handlers succeed, disable release, invoke that method, and call strict `MarkCompletedAsync` only when it returns `true`. A failed post-handler marker write must be logged and escape; terminal-skip branches retain their existing best-effort completion helper.
@@ -124,3 +152,25 @@ Tests must cover explicit enum ordinals; in-memory release preserving `Dispatche
 - `dotnet tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests.dll -class Hexalith.EventStore.Server.LiveSidecar.Tests.Integration.DomainEventMarkerLiveSidecarTests` (from `references/Hexalith.EventStore`) -- expected: Redis-backed marker protocol passes when the documented DAPR prerequisites are available.
 - `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:MinVerVersionOverride=1.0.0` -- expected: clean cross-repository build.
 - `dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksDomainEventProcessorTests` -- expected: focused Works tests pass.
+
+## Auto Run Result
+
+- Summary: added a durable post-dispatch marker phase with completion-only redelivery to the generic and Works processors; made DAPR marker decisions strong, checked, monotonic, and fail-closed; preserved compatibility with legacy marker stores; rejected foreign Works domains before marker access; and documented deployment/rollback constraints.
+- Files changed:
+  - EventStore subscription marker contract, state records, DAPR/in-memory stores, and generic processor — implement the compatible two-phase completion protocol.
+  - EventStore marker/processor tests and Redis live-sidecar test — cover ordinals, conflicts, failures, redelivery, release, compatibility, and durable state.
+  - EventStore reference documentation — describe state-component capabilities, completion recovery, compatibility limits, rollout, and rollback.
+  - Works processor and logging — enforce exact domain isolation, completion-only recovery, strict post-handler finalization, and contextual marker diagnostics.
+  - Works processor tests — cover domain rejection, completion failure/redelivery, persistent failure, legacy stores, caller cancellation, release, and logging.
+- Review findings: pass 2 applied 13 patch entries (medium 8, low 5), deferred 0, and rejected 11. Rejections were the custom-store deadline and exception-wrapping suggestions (low likelihood or altered public policy), nondeterministic live concurrency and duplicate endpoint/broker/host fixtures (disproportionate to the already-covered seams), two carried low transport-surface requests, and two carried false workflow/intent claims.
+- Follow-up review recommendation: `true` because this first auto-run pass patched eight medium verification or state-safety entries. Specific residual review risk: validate that the new fail-closed DAPR state handling and compatibility branch remain coherent under downstream provider implementations.
+- Verification performed:
+  - EventStore Client Debug build passed with 0 warnings and 0 errors.
+  - Focused EventStore marker/processor suite passed: 43 total, 0 failed, 0 skipped.
+  - EventStore live-sidecar Debug build passed with 0 warnings and 0 errors.
+  - Redis/DAPR live-sidecar marker protocol passed: 1 total, 0 failed, 0 skipped.
+  - The full Works IntegrationTests Release dependency build failed in unchanged projection sources with 21 errors: `CS0177` in `WorkItemRollUpPayloadDescriptor.cs:146` and `WhatsNextPayloadDescriptor.cs:177`, plus `CS0122` accesses to `RollUpNode` members in `WorkItemRollUpProjection.cs`.
+  - Narrow fallback builds for `Hexalith.Works` and `Hexalith.Works.IntegrationTests` with `BuildProjectReferences=false` both passed with 0 warnings and 0 errors.
+  - Focused Works processor suite passed: 20 total, 0 failed, 0 skipped.
+  - Diff whitespace checks passed for the bundle-owned files.
+- Residual risks: the unrelated `Hexalith.Works.Projections` compile failures prevent verification of the complete Works dependency graph. Concurrent workspace activity committed the main bundle changes and advanced several submodule pointers during review; unrelated story-4.8 working-tree edits were preserved and excluded from this bundle's final changes.
