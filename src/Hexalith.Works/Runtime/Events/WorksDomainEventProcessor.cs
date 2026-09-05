@@ -36,9 +36,15 @@ internal sealed class WorksDomainEventProcessor
     {
         ArgumentNullException.ThrowIfNull(envelope);
 
-        if (!ValidateEnvelope(envelope))
+        if (!string.Equals(envelope.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal))
         {
-            WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-envelope-metadata");
+            WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-domain");
+            return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+        }
+
+        if (!IsValidMessageId(envelope.MessageId))
+        {
+            WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-message-id");
             return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
         }
 
@@ -56,6 +62,18 @@ internal sealed class WorksDomainEventProcessor
             return EventStoreDomainEventProcessingResult.Duplicate;
         }
 
+        if (acquisition == EventStoreDomainEventMarkerAcquisitionResult.CompletionPending)
+        {
+            await MarkCompletedStrictAsync(envelope).ConfigureAwait(false);
+            WorksDomainEventLog.Duplicate(
+                _logger,
+                envelope.EventTypeName,
+                envelope.TenantId,
+                envelope.AggregateId,
+                envelope.CorrelationId);
+            return EventStoreDomainEventProcessingResult.Duplicate;
+        }
+
         if (acquisition != EventStoreDomainEventMarkerAcquisitionResult.Acquired)
         {
             return EventStoreDomainEventProcessingResult.RetryableInProgress;
@@ -64,6 +82,13 @@ internal sealed class WorksDomainEventProcessor
         bool releaseMarkerOnFailure = true;
         try
         {
+            if (!ValidateEnvelopeAfterAcquisition(envelope))
+            {
+                WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-envelope-metadata");
+                await ReleaseSafelyAsync(envelope).ConfigureAwait(false);
+                return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+            }
+
             if (!string.Equals(envelope.SerializationFormat, "json", StringComparison.OrdinalIgnoreCase))
             {
                 await CompleteSkippedAsync(envelope, "unsupported-serialization-format").ConfigureAwait(false);
@@ -118,7 +143,12 @@ internal sealed class WorksDomainEventProcessor
             }
 
             releaseMarkerOnFailure = false;
-            await MarkCompletedSafelyAsync(envelope).ConfigureAwait(false);
+            bool completionPending = await MarkDispatchedStrictAsync(envelope).ConfigureAwait(false);
+            if (completionPending)
+            {
+                await MarkCompletedStrictAsync(envelope).ConfigureAwait(false);
+            }
+
             return EventStoreDomainEventProcessingResult.Processed;
         }
         catch
@@ -225,17 +255,18 @@ internal sealed class WorksDomainEventProcessor
             => _dispatch(serviceProvider, @event, context, cancellationToken);
     }
 
-    private static bool ValidateEnvelope(EventStoreDomainEventEnvelope envelope)
+    private static bool ValidateEnvelopeAfterAcquisition(EventStoreDomainEventEnvelope envelope)
     {
-        return !string.IsNullOrWhiteSpace(envelope.MessageId)
-            && IsValidUniqueId(envelope.MessageId)
-            && !string.IsNullOrWhiteSpace(envelope.AggregateId)
+        return !string.IsNullOrWhiteSpace(envelope.AggregateId)
             && !string.IsNullOrWhiteSpace(envelope.TenantId)
             && !string.IsNullOrWhiteSpace(envelope.EventTypeName)
             && !string.IsNullOrWhiteSpace(envelope.CorrelationId)
             && !string.IsNullOrWhiteSpace(envelope.SerializationFormat)
             && envelope.Payload is { Length: > 0 };
     }
+
+    private static bool IsValidMessageId(string messageId)
+        => !string.IsNullOrWhiteSpace(messageId) && IsValidUniqueId(messageId);
 
     private static bool IsValidUniqueId(string value)
     {
@@ -280,6 +311,46 @@ internal sealed class WorksDomainEventProcessor
                 envelope.AggregateId,
                 envelope.CorrelationId,
                 $"complete-{exception.GetType().Name}");
+        }
+    }
+
+    private async Task<bool> MarkDispatchedStrictAsync(EventStoreDomainEventEnvelope envelope)
+    {
+        try
+        {
+            return await _markerStore
+                .MarkDispatchedAsync(envelope.MessageId, CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            WorksDomainEventLog.MarkerFailure(
+                _logger,
+                envelope.EventTypeName,
+                envelope.TenantId,
+                envelope.AggregateId,
+                envelope.CorrelationId,
+                $"dispatch-{exception.GetType().Name}");
+            throw;
+        }
+    }
+
+    private async Task MarkCompletedStrictAsync(EventStoreDomainEventEnvelope envelope)
+    {
+        try
+        {
+            await _markerStore.MarkCompletedAsync(envelope.MessageId, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            WorksDomainEventLog.MarkerFailure(
+                _logger,
+                envelope.EventTypeName,
+                envelope.TenantId,
+                envelope.AggregateId,
+                envelope.CorrelationId,
+                $"complete-{exception.GetType().Name}");
+            throw;
         }
     }
 
