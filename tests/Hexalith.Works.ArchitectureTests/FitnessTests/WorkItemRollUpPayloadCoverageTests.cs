@@ -17,7 +17,8 @@ public sealed class WorkItemRollUpPayloadCoverageTests
             .OrderBy(type => type.FullName, StringComparer.Ordinal)];
         Type[] expectedSupportedTypes = [.. contractPayloadTypes
             .Where(type => !typeof(IRejectionEvent).IsAssignableFrom(type))];
-        Type[] actualSupportedTypes = [.. WorkItemRollUpTenantIsolation.SupportedPayloadTypes
+        Type[] actualSupportedTypes = [.. WorkItemRollUpPayloadDescriptor.Catalog
+            .Select(static descriptor => descriptor.PayloadType)
             .OrderBy(type => type.FullName, StringComparer.Ordinal)];
 
         contractPayloadTypes.ShouldNotBeEmpty("The Contracts-derived payload universe must not pass vacuously.");

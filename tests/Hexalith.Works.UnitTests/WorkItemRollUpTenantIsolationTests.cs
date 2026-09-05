@@ -63,8 +63,8 @@ public sealed class WorkItemRollUpTenantIsolationTests
         // hops -- so only a direct assertion on the defaults stops one of them silently flipping to permissive.
         WorkItemRollUpTenantIsolation policy = new();
 
-        policy.AllowsDelivery(Envelope(Created(Tenant, LocalChild, 5m))).ShouldBeTrue();
-        policy.AllowsDelivery(new WorkItemRollUpEvent(Tenant, LocalChild, 1, Created(OtherTenant, LocalChild, 5m)))
+        AllowsDelivery(policy, Envelope(Created(Tenant, LocalChild, 5m))).ShouldBeTrue();
+        AllowsDelivery(policy, new WorkItemRollUpEvent(Tenant, LocalChild, 1, Created(OtherTenant, LocalChild, 5m)))
             .ShouldBeFalse();
 
         policy.AllowsEdge(Tenant, Tenant).ShouldBeTrue();
@@ -131,7 +131,8 @@ public sealed class WorkItemRollUpTenantIsolationTests
         Type[] fixtureTypes = [.. _supportedPayloadFixtures
             .Select(static payload => payload.GetType())
             .OrderBy(type => type.FullName, StringComparer.Ordinal)];
-        Type[] registryTypes = [.. WorkItemRollUpTenantIsolation.SupportedPayloadTypes
+        Type[] registryTypes = [.. WorkItemRollUpPayloadDescriptor.Catalog
+            .Select(static descriptor => descriptor.PayloadType)
             .OrderBy(type => type.FullName, StringComparer.Ordinal)];
 
         fixtureTypes.ShouldBe(
@@ -409,6 +410,12 @@ public sealed class WorkItemRollUpTenantIsolationTests
             new Obligation($"obligation-{tenantId.Value}-{workItemId.Value}"),
             new WorkItemEffort(remaining, Hour),
             Parent: parent);
+
+    private static bool AllowsDelivery(WorkItemRollUpTenantIsolation policy, WorkItemRollUpEvent delivery)
+    {
+        _ = WorkItemRollUpPayloadDescriptor.TryResolve(delivery.Payload, out WorkItemRollUpPayloadDescriptor? descriptor);
+        return policy.AllowsDelivery(delivery, descriptor);
+    }
 
     private static WorkItemRollUpEvent Envelope(IEventPayload payload)
         => payload switch
