@@ -65,12 +65,12 @@ internal sealed class WorksDomainEventProcessor
         if (acquisition == EventStoreDomainEventMarkerAcquisitionResult.CompletionPending)
         {
             await MarkCompletedStrictAsync(envelope).ConfigureAwait(false);
-            WorksDomainEventLog.Duplicate(
-                _logger,
-                envelope.EventTypeName,
-                envelope.TenantId,
-                envelope.AggregateId,
-                envelope.CorrelationId);
+
+            // Deliberately not the routine Duplicate log: this branch only runs after an earlier attempt
+            // dispatched handlers and failed to complete its marker, which is the signal an operator needs
+            // to see when draining Dispatched markers. The remaining envelope metadata is not decoded on
+            // this path and may legitimately be blank, so only the marker message id is recorded.
+            WorksDomainEventLog.CompletionRecovered(_logger, envelope.MessageId);
             return EventStoreDomainEventProcessingResult.Duplicate;
         }
 
@@ -317,7 +317,7 @@ internal sealed class WorksDomainEventProcessor
                 envelope.TenantId,
                 envelope.AggregateId,
                 envelope.CorrelationId,
-                $"complete-{exception.GetType().Name}");
+                $"complete-best-effort-{exception.GetType().Name}");
         }
     }
 
@@ -358,7 +358,7 @@ internal sealed class WorksDomainEventProcessor
                 envelope.TenantId,
                 envelope.AggregateId,
                 envelope.CorrelationId,
-                $"complete-{exception.GetType().Name}");
+                $"complete-strict-{exception.GetType().Name}");
             throw;
         }
     }

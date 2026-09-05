@@ -2,7 +2,7 @@
 title: "Hexalith.Works — Product Requirements Document"
 status: final
 created: 2026-06-14
-updated: 2026-06-14
+updated: 2026-09-05
 ---
 
 # PRD: Hexalith.Works
@@ -20,7 +20,7 @@ Hexalith.Works is the small, durable spine that owns a unit of *work to be done*
 
 The defining bet is **"everything is a Party":** system, user, and external-by-email collapse into one **Executor Binding** (`PartyId + Channel + AuthorityLevel`), so assignment, reassignment, and human⇄AI handoff run identically for a bot, a colleague, or a customer — with zero branching on executor type. A second bet, laid structurally in v1 and realized later, is **AI in the loop but never in the system-of-record:** the canonical event is the raw act, and any interpretation of it is a recomputable projection.
 
-v1 proves the spine. It delivers a pure, event-sourced domain assembly — the aggregate, its lifecycle, its raw-act events, the recursive (cost-ready) roll-up, the executor binding, the module ports as abstractions, and an Aspire host that runs it under test — so that the LLM-native interaction, executor routing, cost governance, and security-hardening themes can be built on top without reshaping the core.
+v1 proves the spine. It delivers a pure, event-sourced domain assembly — the aggregate, its lifecycle, its raw-act events, the recursive (cost-ready) roll-up, the executor binding, and the module ports as abstractions — plus the canonical two-line EventStore domain-service host. A platform-owned Aspire AppHost composes Works with its substrate dependencies for integration testing, so the LLM-native interaction, executor routing, cost governance, and security-hardening themes can be built on top without reshaping the core or duplicating platform hosting inside the domain module.
 
 ## 2. Target User
 
@@ -39,7 +39,7 @@ v1 proves the spine. It delivers a pure, event-sourced domain assembly — the a
 
 *These are co-primary audiences of the **product** (per the brief) who are not **direct v1 consumers** because the surfaces they need are deferred — a v1 scoping cut, not a narrowing of the thesis.*
 
-- **End users via channel surfaces** — people creating/advancing work from email, chatbot, MCP tools, or CLI. The brief commits to "omnichannel capture from day one" *as a product vision*; v1 lays the **Channel** seam so the model is channel-ready but ships no production channel adapter (Theme 3). v1's direct consumer is the builder, exercising the kernel through the Aspire test host. *(This is the one place the PRD deliberately tightens the brief's "day one" language to "seam on day one, adapter later" — see §5.)*
+- **End users via channel surfaces** — people creating/advancing work from email, chatbot, MCP tools, or CLI. The brief commits to "omnichannel capture from day one" *as a product vision*; v1 lays the **Channel** seam so the model is channel-ready but ships no production channel adapter (Theme 3). v1's direct consumer is the builder, exercising the kernel through the platform-owned Aspire topology. *(This is the one place the PRD deliberately tightens the brief's "day one" language to "seam on day one, adapter later" — see §5.)*
 - **Tenant admins setting escalation ladders / spend caps** — the policy surfaces they configure are Themes 4 & 5.
 - **Auditors querying a signed non-repudiation record** — the raw-act event model is laid in v1; the auditor-facing query/UI and signed-link enforcement are Theme 6.
 
@@ -151,7 +151,7 @@ The aggregate enforces a defined set of legal transitions. The forward path is `
 Each state change and progress fact is recorded as a past-tense Domain Event capturing the acting Party, timestamp, and verbatim payload.
 
 **Consequences (testable):**
-- v1 event catalog (names final for v1; additively extensible): `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`. `[ASSUMPTION: this closes the open-ended "…" event list from the brainstorm; names follow ecosystem past-tense convention. WorkItemRescheduled carries Priority and/or Due-Date changes (FR-9).]`
+- v1 event catalog (names final for v1; additively extensible): `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`, `ConversationLinked`. `[ASSUMPTION: this closes the open-ended "…" event list from the brainstorm; names follow ecosystem past-tense convention. WorkItemRescheduled carries Priority and/or Due-Date changes (FR-9); ConversationLinked realizes FR-21's additive post-creation reference link.]`
 - Events store the Raw Act (verbatim reported values), not interpreted/derived values; the acting Party identity and timestamp are recorded (via the binding and the EventStore envelope — Works does not populate envelope metadata).
 - The ordered event stream **is** the Work Item's narrative history (the brainstorm's "comment stream and event stream are two views of one history"); `ProgressReported`, `ReEstimated`, and abnormal-termination events may carry an optional human-readable note. Conversational dialogue itself is delegated to `Hexalith.Conversations` by correlation ID (FR-21).
 - Rejection outcomes implement `IRejectionEvent` and do not mix success and rejection payloads in one result.
@@ -292,7 +292,7 @@ Identities, dialogue, persistence, isolation, and IDs are Reference Value Object
 **Consequences (testable):**
 - Identity → `Hexalith.Parties` (PartyId); dialogue → `Hexalith.Conversations` (correlation ID); persistence/events → `Hexalith.EventStore`; isolation → `Hexalith.Tenants`; IDs → `Hexalith.Commons`.
 - The aggregate stores correlation IDs, not denormalized copies of referenced data.
-- A Conversation correlation ID can be linked to a Work Item at creation or via a later command (and emitted on the corresponding event); it is optional and resolved on demand. The comment narrative and the event stream are two views of one history (FR-7); Works holds the correlation ID rather than its own comment store. `[ASSUMPTION: v1 references a Conversation by ID; it does not implement comment storage.]`
+- A Conversation correlation ID can be supplied at creation or linked later with `LinkConversation`, which emits `ConversationLinked`; it is optional and resolved on demand. The first link is authoritative: repeating the same link is an idempotent no-op, while attempting to replace it with a different ID is a domain rejection that leaves state unchanged. A new link is accepted only while the Work Item is non-terminal; exact duplicate retries remain no-ops after terminal closure. The comment narrative and the event stream are two views of one history (FR-7); Works holds the correlation ID rather than its own comment store. `[ASSUMPTION: v1 references a Conversation by ID; it does not implement comment storage.]`
 
 #### FR-22: Expose module ports as abstractions
 The domain depends on `IExpectationResolver` and `IExecutorRouter` as ports, with a no-LLM `IExpectationResolver` implementation shipped in v1.
@@ -307,25 +307,26 @@ v1 includes a written owns-vs-references boundary decision record as a tracked a
 **Consequences (testable):**
 - The record enumerates, for each sibling module, what Works owns vs. references and why, and is referenced by the architecture phase.
 
-### 4.7 Aspire Test Host & Harness
+### 4.7 Platform-Hosted Runtime Test Harness
 
-**Description:** v1 ships a repository-specific .NET Aspire host that stands up the dependencies the kernel needs to run, so the full event-sourced lifecycle can be exercised by manual and automated tests. No production channel adapter (MCP/CLI/email) ships in v1.
+**Description:** v1 ships the canonical EventStore domain-service host for Works. A platform-owned .NET Aspire AppHost stands up the shared dependencies needed to exercise the full event-sourced lifecycle in manual and automated tests. Works does not ship its own AppHost, Aspire, or ServiceDefaults project, and no production channel adapter (MCP/CLI/email) ships in v1.
 
 **Functional Requirements:**
 
-#### FR-24: Run the kernel under an Aspire host
-An Aspire AppHost wires Works and its substrate dependencies for local manual and automated testing.
+#### FR-24: Run the kernel through the platform-hosted domain-service topology
+Works exposes the canonical EventStore domain-service host, and a platform-owned Aspire AppHost composes Works with EventStore and shared infrastructure for local manual and automated testing.
 
 **Consequences (testable):**
-- The end-to-end lifecycle (create → progress → spawn → suspend → resume → complete) runs under the Aspire host with correct Roll-Up.
-- The host follows the existing `ServiceDefaults`/health/telemetry pattern; no production adapters are included.
+- The end-to-end lifecycle (create → progress → spawn → suspend → resume → complete) runs under the platform-owned Aspire topology with correct Roll-Up.
+- The Works repository contains no `*.AppHost`, `*.Aspire`, or `*.ServiceDefaults` project and does not duplicate platform health, telemetry, projection/query, Dapr, or subscription plumbing.
+- The Works executable uses the EventStore domain-service SDK; a missing reusable runtime capability is added to the platform first and then consumed by Works.
 
 #### FR-25: Exercise the command pipeline in tests
 The kernel is exercisable through its command/event pipeline in automated tests without production adapters.
 
 **Consequences (testable):**
 - Tier-1 tests (aggregate `Handle`/`Apply`, projection handlers) run pure — no Dapr, network, browser, or containers.
-- Integration tests use the substrate's testing fakes/builders or Aspire topology only where a real boundary is genuinely needed.
+- Integration tests use the substrate's testing fakes/builders or the platform-owned Aspire topology only where a real boundary is genuinely needed.
 
 ## 5. Non-Goals (Explicit)
 
@@ -345,7 +346,7 @@ The kernel is exercisable through its command/event pipeline in automated tests 
 - The suspend/resume saga: child-completion + date/timer native, generic external resume port (FR-14–FR-16).
 - The Executor Binding (`PartyId + Channel + AuthorityLevel`), uniform assign/reassign/handoff, push+pull, AuthorityLevel carried-not-enforced (FR-17–FR-19).
 - Thin-core boundaries: "what's next" query, Reference Value Objects, ports (`IExpectationResolver` no-LLM impl + `IExecutorRouter` abstraction), boundary decision record (FR-20–FR-23).
-- The Aspire test host and test harness (FR-24–FR-25).
+- The canonical EventStore domain-service host plus a platform-owned Aspire integration harness (FR-24–FR-25).
 
 ### 6.2 Out of Scope for MVP
 
@@ -364,7 +365,7 @@ Timing is load-bearing for Works and is documented in the brief/addendum: 2026 i
 Works' v1 public surface is its **domain contract**, consumed by Hexalith builders: the Domain Events, commands, the Executor Binding value object, the Reference Value Objects, the lifecycle, and the ports. Because the substrate is event-sourced, the surface's compatibility rules are strict and inherited from the ecosystem:
 
 - **Additive, serialization-tolerant evolution only.** No `V2` event types; every event ever produced must remain backward-compatibly deserializable. The v1 event catalog (FR-7) and the AuthorityLevel set (FR-19) are designed to grow additively.
-- **Package boundaries** follow the ecosystem layout — `Contracts` (events/commands/models, low-dependency, no infrastructure), `Server` (domain behavior), `Projections` (roll-up + "what's next"), `Aspire`/AppHost, `Testing`. Contracts stay infrastructure-free.
+- **Package boundaries** follow the ecosystem layout — `Contracts` (events/commands/models, low-dependency, no infrastructure), `Server` (domain behavior), `Projections` (roll-up + "what's next"), a minimal EventStore domain-service executable, and `Testing`. Contracts stay infrastructure-free; topology and ServiceDefaults remain platform-owned.
 - **Runtime targets** are inherited: .NET 10, C# nullable + warnings-as-errors, Dapr as the only permitted infrastructure abstraction in domain services, `System.Text.Json` conventions, `Hexalith.PolymorphicSerializations` for event payloads.
 
 *(Detailed substrate constraints and a proposed event/port shape for architecture are in `addendum.md`.)*
@@ -391,10 +392,10 @@ Works' v1 public surface is its **domain contract**, consumed by Hexalith builde
 *v1 is foundation software; acceptance is defined by build signals from the brief rather than usage metrics. Each SM cross-references the FR(s) it validates.*
 
 **Primary (build signals)**
-- **SM-1 — Full event-sourced lifecycle, durable across restart.** The sequence create → progress → spawn child → suspend-on-event → resume → complete runs end-to-end under the Aspire host; and a Work Item suspended mid-saga rehydrates from its event stream after a restart and resumes correctly (durability is a fact, not a claim). *Validates FR-1, FR-6–FR-8, FR-14–FR-16, FR-24.*
+- **SM-1 — Full event-sourced lifecycle, durable across restart.** The sequence create → progress → spawn child → suspend-on-event → resume → complete runs end-to-end under the platform-owned Aspire topology; and a Work Item suspended mid-saga rehydrates from its event stream after a restart and resumes correctly (durability is a fact, not a claim). *Validates FR-1, FR-6–FR-8, FR-14–FR-16, FR-24.*
 - **SM-2 — Correct roll-up.** For any constructed Work Tree, rolled Remaining equals own + recursive descendants' Remaining, and updates as descendants progress. *Validates FR-11–FR-13.*
 - **SM-3 — Zero branching on executor kind.** Assign/reassign/handoff across system, user, and external bindings execute through the identical code path; a test (and code inspection) confirms no domain branch on executor kind. *Validates FR-17, FR-19.*
-- **SM-4 — Pure domain assembly.** The domain assembly has zero technical/infrastructure layers; all cross-module concerns are behind Reference Value Objects and ports; green build + green tests under Aspire. *Validates FR-21–FR-25.*
+- **SM-4 — Pure domain assembly.** The domain assembly has zero duplicated technical/infrastructure layers; all cross-module concerns are behind Reference Value Objects, handlers, ports, and the EventStore domain-service SDK; green build + green tests under the platform-owned Aspire topology. *Validates FR-21–FR-25.*
 
 **Secondary**
 - **SM-5 — Handoff = one operation.** Reassigning between a human and an AI Executor in either direction is a single symmetric operation, demonstrated by test. *Validates FR-17.*

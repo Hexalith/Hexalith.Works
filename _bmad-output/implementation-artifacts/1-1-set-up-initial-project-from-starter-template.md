@@ -6,6 +6,12 @@ baseline_commit: 0fe247f165ec622ec077fa193e4bf6721ecf12c1
 
 Status: done
 
+> **Superseded hosting target (approved 2026-09-05):** This completed artifact preserves the
+> scaffold and evidence produced under the former Works-owned AppHost/ServiceDefaults architecture.
+> The current baseline prohibits those projects in a domain module. Story 4.9 now owns migration to
+> an equivalent platform-owned topology and removal of the obsolete Works hosting projects; this
+> historical completion record is intentionally not rewritten.
+
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
 ## Story

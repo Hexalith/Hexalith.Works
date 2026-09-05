@@ -1,7 +1,8 @@
 ---
 title: "Readiness conflict correction — hosting ownership, rebuild consistency, claim concurrency, and conversation linking"
-status: proposed-awaiting-review
+status: approved
 created: 2026-09-05
+approved: 2026-09-05
 trigger: "Sprint-planning readiness verdict CONCERNS: four conflicts between the Hexalith baseline, planning artifacts, runtime documentation, and FR-21 story coverage."
 mode: batch
 scope: major
@@ -472,12 +473,18 @@ Success criteria:
 | 5.5 Handoff plan | [x] | Section 5. |
 | 6.1 Checklist completion | [x] | All applicable analysis items addressed. |
 | 6.2 Proposal accuracy | [x] | Cross-checked against current baseline, runtime docs, code surface, and sprint status. |
-| 6.3 User approval | [!] Action-needed | Awaiting explicit approval after batch review. |
-| 6.4 Sprint-status update | [!] Action-needed | Apply only after approval: add Stories 1.5 and 4.9 as backlog. |
-| 6.5 Handoff confirmation | [!] Action-needed | Confirm recipients and platform-host owner after approval. |
+| 6.3 User approval | [x] | Administrator explicitly approved the batch proposal on 2026-09-05. |
+| 6.4 Sprint-status update | [x] | Added Stories 1.5 and 4.9 as backlog; preserved Story 4.8 as `in-progress`. |
+| 6.5 Handoff confirmation | [x] | Routed to Product Manager/Owner, Solution Architect, EventStore/platform owner, Developer, and Test Architect/QA. Naming the concrete platform-host repository and owner remains Story 4.9's prerequisite decision. |
 
-## 7. Approval Gate
+## 7. Approval Record
 
-No PRD, architecture, epic, story, sprint-status, source, test, or runtime document has been changed by this
-proposal. After review, approval authorizes the planning-artifact and sprint-status edits described above; it
-does not by itself authorize cross-repository implementation or deletion of the existing hosting projects.
+Administrator approved this proposal on **2026-09-05**. The approved planning changes were applied to
+the PRD and addendum, architecture, epic/story backlog, boundary decision record, lifecycle-transition
+matrix, historical Story 1.1/4.3 notes, and sprint status. Stories 1.5 and 4.9 were added as `backlog`;
+Story 4.8 remains `in-progress`.
+
+Approval does **not** authorize source/runtime implementation, cross-repository relocation, or deletion
+of the existing hosting projects. Before Story 4.9 enters implementation, the Solution Architect must
+name the platform-host repository and owner. Equivalent platform topology evidence must be green before
+any obsolete Works hosting asset is removed.

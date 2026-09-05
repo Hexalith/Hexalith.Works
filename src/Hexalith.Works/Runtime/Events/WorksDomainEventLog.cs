@@ -64,4 +64,11 @@ internal static partial class WorksDomainEventLog
         ILogger logger,
         EventStoreDomainEventMarkerAcquisitionResult acquisitionResult,
         string messageId);
+
+    /// <summary>Logs a redelivery that only finished a durable marker left dispatched by an earlier attempt.</summary>
+    [LoggerMessage(
+        EventId = 4805,
+        Level = LogLevel.Information,
+        Message = "Works domain event message {MessageId} was already dispatched by an earlier attempt; its durable marker was completed without redispatching handlers.")]
+    internal static partial void CompletionRecovered(ILogger logger, string messageId);
 }

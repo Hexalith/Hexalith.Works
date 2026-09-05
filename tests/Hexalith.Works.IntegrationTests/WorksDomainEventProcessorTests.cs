@@ -3,6 +3,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,28 @@ namespace Hexalith.Works.IntegrationTests;
 public class WorksDomainEventProcessorTests
 {
     private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
+
+    private sealed class CompletionAlwaysFailingMarkerStore : IEventStoreDomainEventMarkerStore
+    {
+        public int ReleaseCount { get; private set; }
+
+        public Task<EventStoreDomainEventMarkerAcquisitionResult> TryAcquireAsync(
+            string messageId,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+
+        public Task<bool> MarkDispatchedAsync(string messageId, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("dispatch must not run on a terminal-skip path");
+
+        public Task MarkCompletedAsync(string messageId, CancellationToken cancellationToken = default)
+            => throw new InvalidOperationException("synthetic completion failure");
+
+        public Task ReleaseAsync(string messageId, CancellationToken cancellationToken = default)
+        {
+            ReleaseCount++;
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class DispatchThenCompletionFailsOnceMarkerStore : IEventStoreDomainEventMarkerStore
     {
@@ -718,6 +741,82 @@ public class WorksDomainEventProcessorTests
             TestContext.Current.CancellationToken);
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.SkippedNoHandlers);
+    }
+
+
+    /// <summary>
+    /// The pre-acquisition domain gate accepts the value the Works command submitter actually stamps, carried
+    /// through the camelCase wire shape the subscription endpoint binds. Every other test in this class builds
+    /// its envelope in-process with a literal domain, so nothing else would catch the gate rejecting production
+    /// traffic — a rejection that is acknowledged as HTTP 200 and silently drops every Works event.
+    /// </summary>
+    [Fact]
+    public async Task Works_processor_accepts_the_submitted_work_domain_through_the_wire_envelope_shape()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            new InMemoryEventStoreDomainEventMarkerStore(),
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        EventStoreDomainEventEnvelope published = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBC") with
+        {
+            Domain = WorkCommandSubmission.WorkDomain,
+        };
+
+        // Round-trip through the web-cased JSON the publisher emits and the minimal-API endpoint binds, so a
+        // renamed or dropped "domain" property fails here instead of silently in production.
+        string wire = JsonSerializer.Serialize(published, s_web);
+        wire.ShouldContain("\"domain\":\"work\"");
+        EventStoreDomainEventEnvelope delivered = JsonSerializer
+            .Deserialize<EventStoreDomainEventEnvelope>(wire, s_web)
+            .ShouldNotBeNull();
+        delivered.Domain.ShouldBe(WorkCommandSubmission.WorkDomain);
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            delivered,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        await handler.Received(1).HandleAsync(
+            Arg.Is<WorkItemCancelled>(value => value == @event),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// Terminal skips keep their best-effort completion: a failed marker write is swallowed and the skip result
+    /// still stands. Strict, delivery-failing completion is reserved for the post-handler and completion-only
+    /// paths, where side effects have already run.
+    /// </summary>
+    [Fact]
+    public async Task Works_processor_terminal_skip_keeps_its_outcome_when_completion_persistence_fails()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var markerStore = new CompletionAlwaysFailingMarkerStore();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        EventStoreDomainEventEnvelope envelope = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBD") with
+        {
+            SerializationFormat = "xml",
+        };
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            envelope,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        markerStore.ReleaseCount.ShouldBe(0);
+        await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
     }
 
     private static EventStoreDomainEventEnvelope CreateEnvelope(

@@ -2,7 +2,7 @@
 title: "Hexalith.Works PRD — Addendum (downstream depth)"
 status: final
 created: 2026-06-14
-updated: 2026-06-14
+updated: 2026-09-05
 ---
 
 # Addendum — Hexalith.Works PRD
@@ -19,15 +19,15 @@ These bound the v1 requirements; the architecture phase makes them concrete. Sou
 - **Domain purity:** aggregate `Handle(...)` is pure → returns domain results/events; projection/state `Apply(...)` mutates only in-memory state. Domain rejections are events implementing `IRejectionEvent`; infrastructure failures are exceptions/dead-letter paths. A `DomainResult` never mixes success and rejection payloads.
 - **Schema evolution:** additive and serialization-tolerant only; **no `V2` event types**; every event ever produced must remain backward-compatibly deserializable; tolerate unknown-but-additive fields. `System.Text.Json` conventions; `Hexalith.PolymorphicSerializations` for event/command payloads.
 - **Naming:** file-scoped namespaces under `Hexalith.*`; commands are imperative with no `Command` suffix (e.g., `CreateWorkItem`); events are past-tense with no `Event` suffix (e.g., `WorkItemCreated`); prefer sealed records; async methods `Async`-suffixed; private fields `_camelCase`; interfaces `I`-prefixed.
-- **Package layout:** `Contracts` (events/commands/models — low-dependency, no infra) · `Server` (domain behavior) · `Projections` (read side) · `Client` (consumer integration, if needed) · `Aspire`/`AppHost` (topology) · `Testing` (reusable test utilities). Dependency direction strict and machine-checkable; Contracts stay low-dependency.
+- **Package layout:** `Contracts` (events/commands/models — low-dependency, no infra) · `Server` (domain behavior) · `Projections` (read side) · `Client` (consumer integration, if needed) · a minimal EventStore domain-service executable · `Testing` (reusable test utilities). Topology and ServiceDefaults are platform-owned; a Works domain module ships no `*.AppHost`, `*.Aspire`, or `*.ServiceDefaults` project. Dependency direction is strict and machine-checkable; Contracts stay low-dependency.
 - **Testing:** xUnit (match the surrounding module's major version), Shouldly assertions, NSubstitute mocks; Tier-1 tests pure (no Dapr/Aspire/network/containers); EventStore/Tenants testing fakes/builders before new doubles; tenant-isolation and rejection paths need negative-path tests.
-- **Repo discipline:** `works` is an umbrella repo; only root submodules are initialized (never `--recursive`, never nested submodules). Works should contain domain code only; the Aspire host is the one acceptable technical component here.
+- **Repo discipline:** `works` is an umbrella repo; only root submodules are initialized (never `--recursive`, never nested submodules). Works contains domain-centric code plus the canonical minimal EventStore domain-service host; the Aspire topology lives in a designated platform/host repository.
 
 ## Non-binding event / port sketch (for the architect)
 
 Illustrative only — the PRD's FRs are the contract; these shapes are a starting point, not a decision.
 
-**v1 Domain Event catalog (FR-7):** `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`. Each carries the verbatim Raw Act; acting-Party identity + timestamp come from the binding + EventStore envelope. Theme 4 adds a `WorkItemRouted`-style event additively (no V2, no reshape).
+**v1 Domain Event catalog (FR-7):** `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`, `ConversationLinked`. Each carries the verbatim Raw Act; acting-Party identity + timestamp come from the binding + EventStore envelope. `ConversationLinked` additively realizes FR-21's post-creation reference link. Theme 4 adds a `WorkItemRouted`-style event additively (no V2, no reshape).
 
 **Executor Binding value object (FR-17/19):** `ExecutorBinding(PartyId, Channel, AuthorityLevel)` — `Channel` an extensible enum/value (MCP, CLI, Chatbot, Email, …); `AuthorityLevel` the proposed ordered set `{ Read, Contribute, Coordinate, Administer }` (carried-not-enforced in v1).
 
@@ -39,7 +39,7 @@ Illustrative only — the PRD's FRs are the contract; these shapes are a startin
 - `IExpectationResolver` — `Expectation Resolve(WorkItemState state)`; v1 ships a no-LLM implementation returning a structured/empty default. Theme 3 supplies an AI-inferring adapter.
 - `IExecutorRouter` — abstraction only in v1 (no implementation wired); Theme 4 supplies routing/escalation adapters.
 
-**Reference Value Objects (FR-21):** correlation IDs only — `PartyId` (Parties), `ConversationId` (Conversations), `TenantId` (Tenants), aggregate/ID helpers (Commons). No denormalized copies.
+**Reference Value Objects (FR-21):** correlation IDs only — `PartyId` (Parties), `ConversationId` (Conversations), `TenantId` (Tenants), aggregate/ID helpers (Commons). `LinkConversation` records a post-creation reference through `ConversationLinked`; the first link is authoritative, same-ID retries are no-ops, and conflicting relinks are domain-rejected. No denormalized copies.
 
 ## Deferred-theme mechanism depth
 

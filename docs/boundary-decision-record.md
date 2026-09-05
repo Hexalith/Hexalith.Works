@@ -6,6 +6,13 @@ abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realiz
 (boundary decision record). Aligned with NFR-5 (domain purity) and NFR-11 (natural-language-is-data
 boundary).
 
+> **Approved course correction — 2026-09-05:** FR-21 now includes the additive
+> `LinkConversation` → `ConversationLinked` path owned by Story 1.5. Works ships only domain-centric
+> projects plus the canonical minimal EventStore domain-service executable; it ships no AppHost,
+> Aspire, or ServiceDefaults project. A designated platform/host repository owns Aspire topology
+> and generic runtime plumbing. The Solution Architect must name that repository and owner before
+> Story 4.9 enters implementation.
+
 ## Purpose
 
 Works is the **coordination** bounded context. It owns the facts required to coordinate work —
@@ -32,8 +39,8 @@ schemas it does not own.
 | Module | Works references (system of record stays in the sibling) | Works does **not** own |
 | --- | --- | --- |
 | **Parties** | Executor / actor **identity** via `PartyId` (a Works-owned reference value object holding the stable party id). | Party profiles, display names, contact details, party lifecycle. |
-| **Conversations** | Optional **dialogue** correlation via `ConversationCorrelationId`. | Conversation content, messages, comments, threads. |
-| **EventStore** | **Persistence**: event append/replay, envelopes, and aggregate identity (`AggregateIdentity`) come from EventStore.Contracts. | The storage substrate, envelope/metadata shape, concurrency mechanism, online-rebuild checkpointing. |
+| **Conversations** | Optional **dialogue** correlation via `ConversationCorrelationId`, supplied at creation or linked later through `LinkConversation` → `ConversationLinked`. | Conversation content, messages, comments, threads, titles, participants, and relink policy outside the stored correlation fact. |
+| **EventStore** | **Persistence and runtime SDK**: event append/replay, envelopes, aggregate identity (`AggregateIdentity`), Dapr ETag concurrency, projection/rebuild lifecycles, standard service defaults, and generic delivery/query/subscription plumbing. | The storage substrate, envelope/metadata shape, concurrency mechanism, rebuild orchestration, or platform runtime plumbing. |
 | **Tenants** | **Isolation**: every Works fact is tenant-scoped via `TenantId`; cross-tenant parent references are rejected at the writer. | Tenant registration, tenant profile, tenant lifecycle/onboarding. |
 | **Commons** | **ID generation** and shared primitives — supplied at the edge, outside the aggregate. | The identifier-generation algorithm itself; the kernel never generates IDs. |
 | **PolymorphicSerializations** | **Payload (de)serialization** of event/command contracts in the wider ecosystem. | The serialization registry/policy. Works-owned reference value objects (`PartyId`, `ExpectationReference`) are plain `System.Text.Json` records and need no polymorphic registration. |
@@ -45,10 +52,11 @@ schemas it does not own.
   from Parties, not from a stale Works copy.
 - **Dialogue → Conversations.** The conversation around a work item is dialogue, owned by
   Conversations. Works carries only a correlation id, so message content never lands in a Works event
-  and the natural-language-is-data boundary (NFR-11) holds.
+  and the natural-language-is-data boundary (NFR-11) holds. The first correlation may be supplied at
+  creation or added later; repeating the same ID is a no-op and a conflicting relink is rejected.
 - **Persistence → EventStore.** Append/replay/envelopes are an infrastructure concern. The Works
   kernel stays pure (NFR-5): no clock, generated id, I/O, or Dapr in command handling or replay — the
-  command pipeline owns that decision in a later story.
+  EventStore domain-service SDK and platform-owned host compose that machinery outside the kernel.
 - **Isolation → Tenants.** Tenancy is the isolation boundary. Works scopes every fact by `TenantId`
   and treats a foreign-tenant parent as a distinct reference rather than coercing it.
 - **ID generation → Commons.** Deterministic replay forbids the kernel from minting ids; ids are
@@ -58,6 +66,39 @@ schemas it does not own.
 
 Counter-metrics **SM-C1** (do not grow the kernel) and **SM-C2** (do not over-fit to deferred themes)
 are binding: this story ships the named seams, not the machinery behind them.
+
+## Conversation-link ownership and lifecycle-neutral semantics
+
+`ConversationCorrelationId` is a Works-owned reference value object whose target remains owned by
+Conversations. `CreateWorkItem` and `SpawnChild` may supply it at creation. Story 1.5 adds
+`LinkConversation` and `ConversationLinked` so an existing non-terminal item without a link can record
+one later. The first accepted link is authoritative and replayable; Works never resolves or copies
+conversation content while handling the command.
+
+- Repeating the authoritative correlation returns `DomainResult.NoOp` in any lifecycle state,
+  including after terminal closure.
+- Supplying a different correlation after one is authoritative emits
+  `WorkItemConversationLinkRejected` and preserves the original link.
+- Adding a first link to an unlinked terminal item emits
+  `WorkItemTransitionRejected(currentStatus, "LinkConversation")` and preserves closure.
+- Handling the command before creation is domain-rejected and never creates either resource.
+
+This additive change takes the durable polymorphic catalog from 37 to **40** types: 15 commands,
+15 success events, and 10 rejection events. Existing payload bytes and type names remain unchanged.
+
+## Hosting and runtime ownership
+
+Works owns the pure contracts, aggregate behavior, projections/query transformations, mechanical
+reactor translations, tests, and the canonical minimal EventStore domain-service executable. That
+executable uses `AddEventStoreDomainService(...)` and `UseEventStoreDomainService()` and does not fork
+platform capabilities.
+
+The designated platform/host repository owns Aspire composition, ServiceDefaults, Dapr components,
+health and telemetry, generic command/event delivery, projection/query storage plumbing,
+subscriptions, reminders, and recovery orchestration. Story 4.9 migrates the historical Works-owned
+hosting topology only after the platform topology has equivalent passing evidence. Until the Solution
+Architect names that repository and owner, migration may not begin and the current host assets may not
+be removed.
 
 ## Preserved deferred seams — explicitly NOT v1 behavior
 
@@ -89,6 +130,11 @@ ownership model. None of them is implemented or wired in v1.
 
 ## Notes and cross-references
 
+The Story 4.1–4.8 notes below preserve what each completed story proved at the time. References to a
+Works-owned AppHost, ServiceDefaults, or host-edge runtime describe the historical topology and are
+superseded by the approved 2026-09-05 boundary plus Story 4.9. Catalog counts of 37 are likewise
+point-in-time evidence before Story 1.5's additive three contracts; the corrected target is 40.
+
 - Dependency direction is enforced by fitness tests: `Contracts` references only
   `EventStore.Contracts`; `Server`, `Projections`, and `Reactor` reference inward to `Contracts`
   only. The new `Ports/` (Contracts) and `Resolvers/` (Server) folders add no forbidden reference.
@@ -105,8 +151,8 @@ ownership model. None of them is implemented or wired in v1.
   (return-to-pool), `ClaimWorkItem` (`InProgress` entry) — with **no** executor-kind-specific command or
   event (`HandoffToBot`, `ReassignToHuman`, `WorkItemHandedOff`, …); reassignment and hand-off differ only
   by `ExecutorBinding` field values. Hand-off is symmetric in both directions and **auditable** through the
-  ordered raw-act event history (each `WorkItemAssigned` is a distinct act, never collapsed). The frozen v1
-  catalog stays 37 — Story 4.2 adds no contract type (a fitness test asserts both the no-kind-vocabulary
+  ordered raw-act event history (each `WorkItemAssigned` is a distinct act, never collapsed). At Story 4.2
+  completion the catalog stayed 37 — that story added no contract type (a fitness test asserts both the no-kind-vocabulary
   rule and the catalog size).
 - **Story 4.3 (claim queued work / single-claim-wins).** Single-claim-wins is the **composition** of the
   Works kernel lifecycle (`Queued/Assigned → Claim = Accept(InProgress)`; all else `R`) and the
@@ -119,7 +165,8 @@ ownership model. None of them is implemented or wired in v1.
   claim-eligibility, routing, escalation, ranking, or AI-decision type, and **no** new
   `ClaimRejected`/`ConcurrencyRejected` rejection — claim is **unconditional** in v1 (any tenant Executor
   may claim a queued item; eligibility is the deferred Theme-4 executor-routing seam `IExecutorRouter`
-  above), `AuthorityLevel` stays carried-not-enforced, and the v1 catalog stays 37 (fitness-asserted). The
+  above), `AuthorityLevel` stays carried-not-enforced, and the catalog stayed 37 at Story 4.3 completion
+  (fitness-asserted). The
   claimable pool itself is a read projection (Story 4.4), not an authoritative queue aggregate.
 - **Story 4.4 (resolve the tenant's what's-next queue).** The tenant "what's next" queue is realized as a
   **pure read projection + query-shaping** over Works' own events (`WhatsNextQueueProjection` +
@@ -131,13 +178,13 @@ ownership model. None of them is implemented or wired in v1.
   `ProjectQueryTenantFilter`) are **distinct controls** (defense-in-depth, D2/NFR-1); `AuthorityLevel`
   stays carried-not-enforced (no `IExecutorRouter` impl — the Theme-4 routing/eligibility seam above is
   still abstraction-only). Works adds **no** routing/eligibility/escalation/ranking type and **no** durable
-  catalog type — the v1 catalog stays 37 (fitness-asserted) and the golden corpus is byte-compatible. The
+  catalog type — the catalog stayed 37 at Story 4.4 completion (fitness-asserted) and the golden corpus is byte-compatible. The
   notifier requirement is met by **referencing** the substrate seam
   `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore
   owns the SignalR broadcast); the live query/notifier runtime is the deferred Aspire wiring (Stories
   4.5/4.6), and **no web shell, DataGrid, MCP, chatbot, or email surface** ships in v1.
-- **Story 4.5 (prove the command/event pipeline under Aspire).** The new runnable host (`src/Hexalith.Works`)
-  and the Works AppHost are an **adapter-edge runtime proof only** — they consume the deferred Story 4.4 seams,
+- **Story 4.5 (historical command/event pipeline proof under Aspire).** The runnable host
+  (`src/Hexalith.Works`) and former Works AppHost were an **adapter-edge runtime proof only** — they consume the deferred Story 4.4 seams,
   they do not move behavior into the kernel. The boundary stays exactly as the EventStore row above states:
   **EventStore owns** persistence, ETag-backed concurrency on the atomic actor-state save,
   envelopes/metadata, and the public command/query gateway (`/api/v1/commands`, `/api/v1/queries`);
@@ -146,12 +193,15 @@ ownership model. None of them is implemented or wired in v1.
   for discovery) and the read-model transformations (the pure `WhatsNext`/roll-up projections, persisted by a
   host-edge `/project` adapter + `WhatsNextQueryHandler`). The kernel (`Contracts`, `Server`, `Projections`,
   `Reactor`) remains free of Dapr, ASP.NET hosting, EventStore runtime, clocks, I/O, and logging
-  (fitness-asserted); the host is the **only** Works source project allowed those adapters. `AuthorityLevel`
+  (fitness-asserted); at that point the host was the **only** Works source project allowed those adapters.
+  Story 4.9 removes that exception and moves generic plumbing to the platform. `AuthorityLevel`
   stays carried-not-enforced, there is still no `IExecutorRouter` implementation, and **no** production UI, MCP,
-  chatbot, email, routing, cost, or security-hardening surface is composed. The v1 catalog stays **37** and the
+  chatbot, email, routing, cost, or security-hardening surface is composed. The catalog stayed **37** at
+  Story 4.5 completion and the
   golden corpus is byte-unchanged (no durable type added by the adapter/query/read-model code).
-- **Story 4.6 (prove reminder and reactor recovery).** Date-based resumes and terminal-cascade restart recovery
-  are still **adapter-edge orchestration**, not new kernel behavior. Works owns only deterministic reminder
+- **Story 4.6 (historical reminder and reactor recovery proof).** Date-based resumes and
+  terminal-cascade restart recovery are **adapter-edge orchestration**, not new kernel behavior. The
+  historical Works host implemented deterministic reminder
   naming, Dapr actor reminder registration/fire handling, startup reconciliation over configured tenant streams,
   terminal-cascade delivery sequencing, and bounded checkpoint records in the shared state store. **EventStore
   still owns** persistence, envelopes, optimistic concurrency, command submission/status, stream reads, and
@@ -161,7 +211,7 @@ ownership model. None of them is implemented or wired in v1.
   network/filesystem I/O, command gateways, and checkpoint stores (fitness-asserted). The current recovery scan
   is bounded to configured tenants because the EventStore/Dapr surfaces do not expose cross-tenant enumeration;
   this is documented as a substrate limitation, not hidden in the domain. No reminder/checkpoint/read-model
-  runtime type enters the polymorphic catalog, so the v1 catalog stays **37** and the golden corpus remains
+  runtime type enters the polymorphic catalog, so the catalog stayed **37** at Story 4.6 completion and the golden corpus remains
   byte-compatible. **Recovery trigger decision (SUPERSEDED by Story 4.8, see below):** at 4.6, reminders/resumes
   were reconciliation-on-recovery only — registered/reissued when the host (re)starts and scans pending date
   awaits — not registered at suspend time. Story 4.8 reverses this per architecture decision C2 (reaffirmed by the
@@ -230,7 +280,7 @@ ownership model. None of them is implemented or wired in v1.
   is the steady-state trigger, mirroring Story 4.7's other live translators. Recovery no longer needs per-tenant
   hand configuration: the `/project` dispatcher maintains a durable **pending-date-await index** (a per-tenant
   index document plus one well-known tenant-registry document, both plain host-edge `System.Text.Json` read models,
-  so the v1 catalog stays **37**), and the startup reconciler discovers tenants from that registry, reads each
+  so the catalog stayed **37** at Story 4.8 completion), and the startup reconciler discovers tenants from that registry, reads each
   tenant's index, and re-folds each candidate's per-aggregate stream for truth before acting — the index is
   discovery, the stream is authoritative, so a stale entry can never cause a wrong reissue. The removed
   `Works:Recovery:Tenants` gate (and its AppHost forwarding) means reconciliation runs on by default
@@ -240,7 +290,8 @@ ownership model. None of them is implemented or wired in v1.
   `WorkItemAggregate.Handle`/reactor kernel stays clock-free (AC #4, fitness-asserted).
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
-- EventStore API-surface constraints from Story 1.1 (ETag-based concurrency, checkpoint-per-aggregate
-  online rebuild) are unchanged by this story; it adds no command-pipeline wiring.
+- EventStore API-surface constraints from Story 1.1 (ETag-based concurrency and
+  checkpoint-per-aggregate rebuild) are unchanged by this story; shared relationship-aware rebuilds
+  additionally require capture-through-Commit delivery quiescence/fencing.
 - Sources: `epics.md` FR-2/FR-21/FR-22/FR-23, NFR-5/NFR-11, SM-C1/SM-C2; `architecture.md` AR-18
   (ports realization), AR-19 (boundary decision record), Architectural Boundaries, Deferred Decisions.

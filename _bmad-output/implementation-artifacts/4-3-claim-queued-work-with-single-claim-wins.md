@@ -6,6 +6,13 @@ baseline_commit: 2dd46d0
 
 Status: done
 
+> **Concurrency terminology correction (approved 2026-09-05):** Works commands do not supply an
+> expected version or ETag. EventStore owns optimistic concurrency through the Dapr state-store ETag,
+> retries a conflict from freshly rehydrated state, and normally yields the existing
+> `WorkItemTransitionRejected(InProgress, "Claim")` for the losing claim. Retry exhaustion is an
+> infrastructure `ConcurrencyConflict`. The implementation evidence below remains historical and
+> valid; the authoritative planning criteria are corrected in `epics.md`.
+
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
 ## Story

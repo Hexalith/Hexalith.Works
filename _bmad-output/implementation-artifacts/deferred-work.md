@@ -545,7 +545,9 @@ decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
 location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:119
 reason: Event processing can return `Processed` after `MarkCompletedAsync` fails, leaving no durable deduplication marker for a later duplicate delivery. This behavior predates Story 4.8.
-status: open
+status: done 2026-09-05
+resolution: resolved by sweep bundle dw-domain-event-processing-hardening
+resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
 decision: 2026-09-01 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
 decision: 2026-08-29 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
 
@@ -554,7 +556,9 @@ decision: 2026-08-29 Durable completion retry — Extend the EventStore marker p
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
 location: src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:227
 reason: Event processing validates envelope metadata and payload identity but does not reject an envelope whose `Domain` is not `work`. This behavior predates Story 4.8.
-status: open
+status: done 2026-09-05
+resolution: resolved by sweep bundle dw-domain-event-processing-hardening
+resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
 
 ### DW-58: Sibling smoke-test prerequisite probes still collapse caller-requested cancellation into an unavailable result.
 origin: spec-deferred dc9e48616d2d

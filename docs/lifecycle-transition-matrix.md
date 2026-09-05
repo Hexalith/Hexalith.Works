@@ -2,8 +2,10 @@
 
 > **Single source of truth.** This document enumerates every legal, illegal, and idempotent outcome
 > of the work-item lifecycle state machine. It mirrors the pure transition table in
-> `src/Hexalith.Works.Server/Aggregates/WorkItemLifecycle.cs` **1:1**. Later lifecycle stories
-> (2.3 / 2.4 / 2.5, 3.5, 3.6, 4.1–4.3, 4.6) **reference this artifact and must not choose transition
+> `src/Hexalith.Works.Server/Aggregates/WorkItemLifecycle.cs` **1:1** for implemented lifecycle
+> operations. The approved Story 1.5 Conversation-link rule is recorded separately below until it is
+> implemented. Later lifecycle stories (1.5, 2.3 / 2.4 / 2.5, 3.5, 3.6, 4.1–4.3, 4.6)
+> **reference this artifact and must not choose transition
 > behavior locally.** If the code table and this document ever disagree, that is a defect — they are
 > changed together.
 >
@@ -25,9 +27,11 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 > duplicate or late create can never reset an existing lifecycle (a retry cannot un-terminal a closed
 > item). Additionally, a command-supplied `InitialEffort` whose `Done` is not zero on
 > `CreateWorkItem`/`SpawnChild` is refused with the additive rejection `WorkItemInitialEffortRejected`
-> instead of being coerced to zero (refuse-don't-coerce), which extends the frozen v1 catalog
-> additively from 36 to **37** types (14 success events + 14 commands + 9 rejection events); mentions
-> of the pre-fix count of 36 elsewhere in this document and in older decision records predate this fix.
+> instead of being coerced to zero (refuse-don't-coerce), which extended the implemented catalog
+> additively from 36 to **37** types (14 success events + 14 commands + 9 rejection events). Approved
+> Story 1.5 adds `LinkConversation`, `ConversationLinked`, and
+> `WorkItemConversationLinkRejected`, producing a **40**-type target catalog (15 + 15 + 10) without
+> changing existing payloads.
 
 ## Lifecycle commands → events
 
@@ -50,6 +54,23 @@ An illegal transition emits no success event and produces **no state change**; t
 `WorkItemTransitionRejected` rejection event (carrying `FromStatus` + `AttemptedAct`) to the caller.
 This is distinct from the terminal `Rejected` **status**, which is reached only by
 `RejectWorkItem(Requeue: false)`.
+
+## Conversation-link act (Story 1.5, approved and not yet implemented)
+
+`LinkConversation` is a lifecycle-neutral reference act: it never changes `Status`. It adds the
+optional `ConversationCorrelationId` that FR-21 permits after creation while preserving terminal
+closure and the Conversations ownership boundary.
+
+| Current state/link | Requested correlation | Outcome |
+|---|---|---|
+| `Unknown` / no state | Any | Domain rejection; no implicit Work Item or Conversation creation. |
+| Any non-terminal status / no link | New correlation | Emit `ConversationLinked`; retain current status. |
+| Any status, including terminal / same authoritative link | Same correlation | `DomainResult.NoOp`; emit no duplicate event. |
+| Any status / authoritative link exists | Different correlation | Emit `WorkItemConversationLinkRejected`; retain original link and status. |
+| Any terminal status / no link | New correlation | Emit `WorkItemTransitionRejected(currentStatus, "LinkConversation")`; retain closure. |
+
+The event contains only the correlation reference and normal raw-act fields. It never contains
+conversation messages, titles, participants, profiles, or a Conversations implementation type.
 
 ## Progress act
 

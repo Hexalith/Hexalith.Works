@@ -9,7 +9,8 @@ inputDocuments:
   - '_bmad-output/planning-artifacts/ux-designs/ux-works-2026-06-14/DESIGN.md'
   - '_bmad-output/planning-artifacts/ux-designs/ux-works-2026-06-14/EXPERIENCE.md'
 project_name: 'Hexalith.Works'
-scopeNote: 'v1 = Themes 1 & 2 (headless event-sourced domain kernel + Aspire test host). No production UI or channel adapters; UX requirements recorded for traceability, only v1-actionable ones generate stories.'
+lastUpdated: '2026-09-05'
+scopeNote: 'v1 = Themes 1 & 2 (headless event-sourced domain kernel + minimal EventStore domain-service host). Aspire topology and ServiceDefaults are platform-owned. No production UI or channel adapters; UX requirements recorded for traceability, only v1-actionable ones generate stories.'
 ---
 
 # Hexalith.Works - Epic Breakdown
@@ -22,8 +23,9 @@ spec (DESIGN.md + EXPERIENCE.md) into implementable stories.
 
 **Scope reminder (load-bearing):** v1 delivers **Themes 1 & 2 only** — a pure, event-sourced domain
 assembly (the `WorkItem` aggregate, its lifecycle, raw-act events, recursive roll-up, executor
-binding, module ports as abstractions) plus a repository-specific .NET Aspire host that runs it
-under test. v1 ships **no** production channel adapters and **no** end-user UI. Counter-metrics
+binding, module ports as abstractions) plus the canonical minimal EventStore domain-service host.
+A platform-owned .NET Aspire topology runs it under integration test. v1 ships **no** production
+channel adapters and **no** end-user UI. Counter-metrics
 **SM-C1** ("don't grow the kernel") and **SM-C2** ("don't over-fit v1 to deferred themes") are
 explicit guardrails: UX components, email-as-UI, routing, cost, and security enforcement are
 **Themes 3–6** and are recorded here only for traceability — they generate **no v1 stories**.
@@ -63,10 +65,12 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   bidirectional; terminals (Cancelled|Rejected|Expired) reachable per FR-10. Illegal transitions are
   domain rejections (`IRejectionEvent`), not exceptions. No transition out of a terminal state.
 - **FR-7: Record raw-act domain events** — Each state change/progress fact is a past-tense Domain
-  Event capturing acting Party + timestamp + verbatim payload. Frozen v1 catalog (14, additively
+  Event capturing acting Party + timestamp + verbatim payload. The v1 success-event catalog (15,
+  additively
   extensible): `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`,
   `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`,
-  `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`.
+  `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`,
+  `ConversationLinked`.
   Events store the Raw Act, not interpreted values; the ordered stream **is** the item's history.
 - **FR-8: Report progress and complete by Remaining=0** — `ProgressReported` decreases Remaining by
   the Done delta (clamped at 0); reaching 0 → `Completed` + `WorkItemCompleted`. An **unestimated**
@@ -127,8 +131,11 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   filtering in addition to tenant scoping; projection/query only — no routing engine.
 - **FR-21: Reference sibling modules, never copy them** — Identity→`Parties` (PartyId),
   dialogue→`Conversations` (correlation ID), persistence/events→`EventStore`,
-  isolation→`Tenants`, IDs→`Commons`; aggregate stores correlation IDs, not denormalized copies; a
-  Conversation ID is optional/linkable and resolved on demand (no comment store in v1).
+  isolation→`Tenants`, IDs→`Commons`; aggregate stores correlation IDs, not denormalized copies.
+  An optional Conversation ID may be supplied at creation or linked later through
+  `LinkConversation` → `ConversationLinked`; the first link is authoritative, a same-ID retry is a
+  no-op, a different-ID relink is domain-rejected, and a new first link is accepted only while the
+  item is non-terminal. Works remains no comment store.
 - **FR-22: Expose module ports as abstractions** — Domain depends on `IExpectationResolver` (no-LLM
   impl **shipped** in v1) and `IExecutorRouter` (**abstraction only**, no impl wired); the domain
   assembly compiles + all tests pass with no `IExecutorRouter` wired; no LLM/cost/routing/infra type
@@ -137,12 +144,13 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   boundary decision record (`docs/boundary-decision-record.md`) as a tracked artifact referenced by
   the architecture phase.
 
-**4.7 Aspire Test Host & Harness**
+**4.7 Platform-Hosted Runtime Test Harness**
 
-- **FR-24: Run the kernel under an Aspire host** — An Aspire AppHost wires Works + substrate
-  dependencies for local manual + automated testing; the end-to-end lifecycle
-  (create → progress → spawn → suspend → resume → complete) runs with correct Roll-Up; follows the
-  ServiceDefaults/health/telemetry pattern; no production adapters.
+- **FR-24: Run the kernel in the platform topology** — Works ships the canonical minimal EventStore
+  domain-service host. A designated platform-owned Aspire AppHost wires Works + substrate dependencies
+  for local manual + automated testing; the end-to-end lifecycle (create → progress → spawn → suspend
+  → resume → complete) runs with correct Roll-Up. Works ships no AppHost/Aspire/ServiceDefaults project
+  and duplicates no platform health, telemetry, Dapr, projection/query, or subscription plumbing.
 - **FR-25: Exercise the command pipeline in tests** — Kernel exercisable through its command/event
   pipeline without production adapters; Tier-1 tests run pure (no Dapr/network/browser/containers);
   integration tests use substrate fakes/builders or Aspire topology only at real boundaries.
@@ -160,12 +168,15 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   results/events; `Apply(...)` mutates only in-memory state; domain rejections are `IRejectionEvent`;
   infrastructure failures are exceptions/dead-letter; Works returns **payloads only** (EventStore
   owns envelope metadata); `DomainResult` never mixes success + rejection.
-- **NFR-3: Concurrency** — Single-writer/optimistic (expected-version) per Work Item; concurrent
-  conflicting commands (e.g., two claims on one `Queued` item) resolve to exactly one success and
-  domain rejections for the rest; no lost updates.
+- **NFR-3: Concurrency** — Commands carry no caller-supplied expected version or ETag. EventStore
+  owns single-writer serialization and Dapr state-store ETag concurrency. Concurrent claims resolve
+  to one success; the normal retry path re-handles the loser against fresh state and emits the existing
+  `WorkItemTransitionRejected(InProgress, "Claim")`. Retry exhaustion is an infrastructure
+  `ConcurrencyConflict`; no lost updates or loser publication occurs.
 - **NFR-4: Projections are rebuildable** — Roll-Up and "what's next" derive purely from event
-  streams, are replayable from scratch, hold no authoritative state; rebuild is **online /
-  non-disruptive** and per-tenant partitionable (shadow + atomic swap or versioned key).
+  streams, are replayable from scratch, hold no authoritative state. During a shared tenant rebuild,
+  readers continue serving the old committed generation while ordinary projection delivery is
+  quiesced or fenced from inventory capture through atomic Commit; delivery then resumes and catches up.
 - **NFR-5: Domain purity** — Domain assembly (Contracts/Server/Projections) takes no infra and no
   LLM/cost/routing dependency; `Handle`/`Apply` (and the reactor's pure translation) read no clock,
   RNG, or I/O; IDs supplied at the edge. Enforced by **build-time fitness functions** (banned-symbol
@@ -198,20 +209,23 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
 
 - **AR-1 [STARTER TEMPLATE — first story]** — Scaffold the module at the umbrella-repo root using
   the **Hexalith canonical domain-module layout via `Hexalith.Builds`, donor = `Hexalith.Parties`**,
-  taking only the reduced v1 subset. v1 project set: `Contracts`, `Server`, `Projections`,
-  `Reactor` (adapter), `Testing`, `AppHost`, `ServiceDefaults`, `samples/SampleHost`; root config
-  (`global.json`, `Directory.*`, `Hexalith.Works.slnx`, `aspire.config.json`, semantic-release +
-  commitlint). **Deliberately NOT scaffolded:** `.Client` (minimal/optional), `.UI`/`.Mcp`/portals/
-  `.Security` (Themes 3–6; SM-C1/SM-C2). This is the **first implementation story** and a
-  precondition for SM-1/SM-4 (green build + green tests under Aspire).
+  taking only the reduced v1 subset. Intended Works-owned projects: `Contracts`, `Server`,
+  `Projections`, pure `Reactor` translators, the canonical minimal `Hexalith.Works` EventStore
+  domain-service executable, `Testing`, and focused tests. AppHost, Aspire, ServiceDefaults, Dapr
+  components, delivery, scheduling, query/projection plumbing, and subscription infrastructure are
+  platform-owned. **Deliberately NOT scaffolded in Works:** those platform projects plus `.Client`,
+  `.UI`/`.Mcp`/portals/`.Security` (Themes 3–6; SM-C1/SM-C2). Story 1.1's historical completion
+  predates this boundary; Story 4.9 owns the safe migration.
 - **AR-2 [first-story verification]** — Verify the **live `Hexalith.EventStore` API surface**
-  supports expected-version append, the projection infra (`CachingProjectionActor`, ETag actors,
-  notifiers), and online rebuild before relying on the chosen patterns.
+  owns Dapr ETag-backed aggregate saves (with no expected-version append argument), canonical envelope
+  sequencing, projection/notifier seams, and both checkpoint-per-aggregate and shared staged rebuild
+  lifecycles. Shared rebuild requires delivery quiescence/fencing through atomic Commit.
 - **AR-3 (A1) Aggregate-ID at the edge** — ID assigned at the command-creation edge via the
   `Hexalith.Commons` helper and passed into `CreateWorkItem`; `Handle` never generates IDs
   (deterministic replay; idempotent create on retry).
-- **AR-4 (A5/B2) Every event carries `(AggregateId, Sequence)`** — Contracts-level decision enabling
-  order-tolerant projections; required on all 14 events.
+- **AR-4 (A5/B2) State-changing events carry `(AggregateId, Sequence)`** — Contracts-level decision
+  enabling order-tolerant projections; applies to all 15 success events after `ConversationLinked` is
+  added. Frozen rejection payloads retain context-only shapes.
 - **AR-5 (A2) Priority = ordered enum** — `{Critical, High, Normal, Low}`, additive-tolerant; backs
   "what's next" ordering (vs numeric routing bands — YAGNI, SM-C2).
 - **AR-6 (A3/E2) Unit immutability & validation domains** — Unit immutable after first estimate;
@@ -227,9 +241,12 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   and **synchronous** (incl. `Done = Remaining 0 → Completed`); **rolled-Remaining** is an eventual
   projection with a **distinct type/field/serialized shape** so no consumer can gate control flow on
   the eventual value.
-- **AR-10 (B1) Single-aggregate claim under expected-version** — Claim is a single-aggregate
-  operation on the `WorkItem`; the claimable pool is a **read projection**, not an authoritative
-  queue aggregate; two racing claims → one commits, loser gets `ClaimRejected`.
+- **AR-10 (B1) Single-aggregate claim under EventStore ETag concurrency** — Claim is a
+  single-aggregate operation on the `WorkItem`; commands contain no expected version or ETag; the
+  claimable pool is a **read projection**, not an authoritative queue aggregate. Two racing claims →
+  one commits; EventStore retries the loser from fresh state and the normal path emits the existing
+  `WorkItemTransitionRejected(InProgress, "Claim")`. Retry exhaustion is infrastructure
+  `ConcurrencyConflict`, not a new domain event.
 - **AR-11 (B2) No reliance on pub/sub ordering** — Dapr pub/sub is at-least-once, **not ordered**;
   write-order comes from the single-writer actor; read-path correctness from idempotent,
   order-tolerant projections + offset dedup.
@@ -238,44 +255,48 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   `Handle`); drives child-completion → parent-resume (FR-15) and cascade cancel/expire → descendants
   (FR-10); contract = at-least-once delivery + **idempotent target commands** + **checkpoint-driven,
   resumable cascade** off a re-readable "descendants still needing cancel" projection. The pure
-  translation is unit-testable; runtime (delivery/checkpoint/reminders) lives in `Reactor/Dispatch|
-  Cascade|Timer`, wired by `AppHost`.
+  translation is unit-testable in Works; runtime delivery, checkpoint, subscription, and reminder
+  composition is EventStore/platform-owned and wired by the designated external platform host.
 - **AR-13 (C1/RR) 9-state cancel/expire transition table** — Enumerate the per-state cancel/expire
   decision for each of the 9 statuses (e.g., cancelling an already-`Completed` child is a defined
   domain decision) before the reactor can safely cascade.
-- **AR-14 (C2) Dapr actor reminders for date resumes** — A `WorkItem` parked on `DateReached`
-  registers a self-targeted, durable reminder; on fire it raises `ResumeWorkItem(date)` — `Handle`
-  never reads a clock. Durable across crash/restart; **reconciliation-on-recovery** re-scans
-  `DateReached` await-conditions for firings lost before being recorded; reminder name = a
-  deterministic function of `(workItemId, awaitConditionKey)`.
+- **AR-14 (C2) Dapr actor reminders for date resumes** — Platform runtime observes a `WorkItem`
+  parked on `DateReached` and registers a self-targeted, durable reminder; on fire it raises
+  `ResumeWorkItem(date)` — `Handle` never reads a clock. Durable across crash/restart;
+  **reconciliation-on-recovery** re-scans `DateReached` await-conditions for firings lost before being
+  recorded; reminder name = a deterministic function of `(workItemId, awaitConditionKey)`.
 - **AR-15 (C3) Deadlines advisory-until-fired** — The kernel may hold a "live" item that is, in
   reality, overdue; no v1 query detects this without the timer firing. Recorded explicitly;
   **re-validate against Theme 5** before that theme builds.
 - **AR-16 (C4) AwaitCondition discriminated set** — `{ ChildCompleted(childId) | DateReached(instant)
   | ExternalSignal(correlationId) }`; a Suspended item holds a **set** and resumes on first match;
   the concrete external adapter is deferred to Theme 3 (the correlation key is the contract it fills).
-- **AR-17 (E1) Online per-tenant projection rebuild** — Shadow projection + atomic swap or versioned
-  projection key; per-tenant partitionable; produces state identical to a cold rebuild with no
-  partial-state leak to readers.
+- **AR-17 (E1) Reader-available per-tenant projection rebuild** — EventStore's shared staged
+  lifecycle accumulates a sealed tenant inventory and atomically commits one manifest. Readers use
+  the old committed generation until Commit; ordinary delivery must be quiesced or fenced from
+  inventory capture through Commit, then resumes and catches up. No partial candidate leaks to readers.
 - **AR-18 Ports realization (FR-22)** — `IExpectationResolver` no-LLM impl shipped; `IExecutorRouter`
   abstraction only, no impl wired; domain references no LLM/cost/routing/infra type.
 - **AR-19 Boundary decision record (FR-23)** — `docs/boundary-decision-record.md` is a tracked v1
   deliverable enumerating owns-vs-references per sibling module.
 - **AR-20 Pinned versions via central package management** — SDK `10.0.301` (rollForward
-  latestPatch), Dapr `1.18.4`, .NET Aspire `13.4.6`, xUnit **v3** `3.2.2` + Microsoft.Testing.Platform;
-  ecosystem-pinned by policy (align to current sibling pins, do not casually upgrade).
+  latestPatch) and xUnit **v3** `3.2.2` + Microsoft.Testing.Platform are Works-owned pins. Dapr and
+  .NET Aspire pins are owned by the designated platform host and aligned to compatible EventStore
+  requirements; do not duplicate those pins in Works.
 - **AR-21 Test taxonomy & build gates** — *unit* (pure `Handle`/`Apply`/validators); *property*
   (FsCheck roll-up convergence under permutation + duplication — RR-1); *architecture-fitness*
   (purity/banned-symbols, no-branch-on-kind, dependency-direction — SM-3/SM-4, continuous);
   *contract* (serialization back-compat golden-payload corpus — RR-6; Dapr pub/sub envelope);
-  *integration/topology* (Aspire persist-then-publish seam); *chaos* (crash-at-step-boundary incl.
-  **SM-1b** mid-reactor-step convergence; rebuild-while-live). **SM-C2 is a review-gate, not a
+  *integration/topology* (platform Aspire persist-then-publish seam); *chaos* (crash-at-step-boundary
+  incl. **SM-1b** mid-reactor-step convergence; reader-available rebuild with delivery fenced).
+  **SM-C2 is a review-gate, not a
   build-gate.**
 - **AR-22 Naming, structure & dependency direction** — file-scoped namespaces under
   `Hexalith.Works.*`; commands imperative (no `Command` suffix), events past-tense (no `Event`
   suffix), sealed records, one public type per file; machine-checkable dependency direction
-  `Contracts ← Server ← Projections`, adapters (`Reactor`/`AppHost`/`ServiceDefaults`) reference
-  inward, **kernel references no adapter**.
+  `Contracts ← Server ← Projections`; pure `Reactor` translators and the minimal EventStore
+  domain-service host reference inward; the external platform host composes the published module;
+  **kernel references no adapter**, and Works ships no AppHost/Aspire/ServiceDefaults project.
 
 ### UX Design Requirements
 
@@ -305,7 +326,8 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
   progress signal. Ties FR-6/FR-14.
 - **UX-DR6 `[v1]` Unified raw-act history is queryable** — the event stream exposes actor +
   timestamp + verbatim Raw Act (past-tense) for a future history timeline; Works holds the
-  Conversation correlation ID, not a comment store. Ties FR-7/FR-21.
+  Conversation correlation ID, including additive `ConversationLinked` history, not a comment store.
+  Ties FR-7/FR-21.
 
 **Deferred — recorded for traceability, NO v1 stories:**
 
@@ -358,16 +380,18 @@ FR-17: Epic 4 - Uniform executor binding and handoff.
 FR-18: Epic 4 - Push/pull queue and single-claim-wins.
 FR-19: Epic 4 - AuthorityLevel carried on binding.
 FR-20: Epic 4 - "What's next" ordering.
-FR-21: Epic 1 - Reference sibling modules, never copy them.
+FR-21: Epic 1 - Reference sibling modules and link a Conversation at creation or later (Story 1.5).
 FR-22: Epic 1 - Module ports as abstractions.
 FR-23: Epic 1 - Boundary decision record.
-FR-24: Epic 4 - Aspire host.
-FR-25: Epic 4 - Command pipeline test harness.
+FR-24: Epic 4 - Platform-owned Aspire host and Works domain-service composition (Story 4.9).
+FR-25: Epic 4 - Command pipeline test harness in the platform topology.
 
 ## Epic List
 
 ### Epic 1: Builder-Ready Work Item Kernel
-A Hexalith builder can scaffold Works as a pure event-sourced module, create a tenant-scoped Work Item, reference sibling modules by ID, and rely on clear owns-vs-references boundaries.
+A Hexalith builder can scaffold Works as a pure event-sourced module, create a tenant-scoped Work Item,
+link an optional Conversation at creation or later, reference sibling modules by ID, and rely on clear
+owns-vs-references boundaries.
 **FRs covered:** FR-1, FR-2, FR-21, FR-22, FR-23.
 
 ### Epic 2: Reliable Single-Item Lifecycle and Burn-Down
@@ -379,12 +403,16 @@ A coordinator can spawn child work, suspend a parent on await-conditions, resume
 **FRs covered:** FR-5, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16.
 
 ### Epic 4: Shared Work Execution and Builder Runtime Validation
-Teams, agents, and external parties can share one executor model: assign, reassign, claim, and hand off work through the same Party binding, while builders can validate the complete command/event pipeline under the Aspire host.
+Teams, agents, and external parties can share one executor model: assign, reassign, claim, and hand off
+work through the same Party binding, while builders validate the complete command/event pipeline in a
+platform-owned Aspire topology without shipping platform infrastructure from Works.
 **FRs covered:** FR-17, FR-18, FR-19, FR-20, FR-24, FR-25.
 
 ## Epic 1: Builder-Ready Work Item Kernel
 
-A Hexalith builder can scaffold Works as a pure event-sourced module, create a tenant-scoped Work Item, reference sibling modules by ID, and rely on clear owns-vs-references boundaries.
+A Hexalith builder can scaffold Works as a pure event-sourced module, create a tenant-scoped Work Item,
+link an optional Conversation at creation or later, reference sibling modules by ID, and rely on clear
+owns-vs-references boundaries.
 
 ### Story 1.1: Set Up Initial Project from Starter Template
 
@@ -396,8 +424,12 @@ So that I can implement the Work Item kernel in a verified, buildable module wit
 
 **Given** the Hexalith.Works umbrella repository with only root-level submodules available
 **When** the Works module scaffold is created
-**Then** the repository contains the v1 project set defined by architecture: `Hexalith.Works.Contracts`, `Hexalith.Works.Server`, `Hexalith.Works.Projections`, `Hexalith.Works.Reactor`, `Hexalith.Works.ServiceDefaults`, `Hexalith.Works.AppHost`, `Hexalith.Works.Testing`, and focused test projects
-**And** no `.UI`, `.Mcp`, portal, `.Security`, routing, LLM, cost-governance, or production channel adapter project is created.
+**Then** the intended Works-owned project set is `Hexalith.Works.Contracts`,
+`Hexalith.Works.Server`, `Hexalith.Works.Projections`, pure `Hexalith.Works.Reactor` translators,
+the canonical minimal `Hexalith.Works` EventStore domain-service executable,
+`Hexalith.Works.Testing`, and focused test projects
+**And** Works contains no `*.AppHost`, `*.Aspire`, `*.ServiceDefaults`, `.UI`, `.Mcp`, portal,
+`.Security`, routing, LLM, cost-governance, or production channel-adapter project.
 
 **Given** the scaffolded module
 **When** package and build configuration is inspected
@@ -409,11 +441,14 @@ So that I can implement the Work Item kernel in a verified, buildable module wit
 **When** dependency direction is checked
 **Then** `Contracts` remains low-dependency and infrastructure-free
 **And** `Server` and `Projections` do not reference adapter, Dapr runtime, UI, LLM, routing, or cost-governance types
-**And** adapter-ring projects reference inward without creating cycles.
+**And** the pure reactor and minimal domain-service host reference inward without creating cycles
+**And** platform runtime composition stays outside the Works repository.
 
 **Given** the scaffolded module
 **When** the live `Hexalith.EventStore` API surface is verified
-**Then** the implementation notes or tests confirm whether expected-version append, projection infrastructure, ETag/notifier support, and online rebuild support are available for later stories
+**Then** the implementation notes or tests confirm the absence of a caller expected-version append
+argument, EventStore-owned Dapr ETag concurrency, canonical envelope sequencing, projection/notifier
+seams, and the delivery-fenced shared rebuild lifecycle for later stories
 **And** any mismatch is recorded as a first-story implementation constraint before domain behavior depends on it.
 
 **Given** the scaffolded module
@@ -425,6 +460,11 @@ So that I can implement the Work Item kernel in a verified, buildable module wit
 **When** implemented scope is reviewed
 **Then** it contains scaffold, build configuration, dependency boundaries, baseline build/test proof, and live EventStore API-surface verification only
 **And** Work Item lifecycle, burn-down, roll-up, suspend/resume, executor-binding, and reactor runtime behavior remain in their later stories.
+
+_Supersession note (approved 2026-09-05): Story 1.1's historical implementation created Works-owned
+AppHost and ServiceDefaults projects before the stricter domain-module baseline was adopted. Its
+completion evidence remains historical; Story 4.9 owns the safe platform migration and subsequent
+removal of those projects._
 
 ### Story 1.2: Create a Tenant-Scoped Work Item
 
@@ -530,6 +570,46 @@ So that future LLM, routing, cost, security, and sibling-module integrations att
 **Then** they preserve the named seams for AI-inferred expectations, executor routing, cost meter/spend governance, and trust/security hardening
 **And** they explicitly state that those deferred capabilities are not v1 behavior.
 
+### Story 1.5: Link a Conversation After Work Item Creation
+
+As a Hexalith builder,
+I want to link an existing Work Item to a Conversation after creation,
+So that FR-21 supports late correlation without copying dialogue or rewriting history.
+
+**Acceptance Criteria:**
+
+**Given** an existing non-terminal Work Item has no Conversation reference
+**When** `LinkConversation` is handled with a tenant-scoped Work Item identity and a
+`ConversationCorrelationId`
+**Then** `ConversationLinked` is emitted as a state-changing raw act
+**And** replay makes that Conversation reference authoritative without copying messages or other
+Conversation data.
+
+**Given** a Work Item already references a Conversation
+**When** `LinkConversation` repeats the same `ConversationCorrelationId`
+**Then** the command returns `DomainResult.NoOp`
+**And** no duplicate event is emitted, including when the Work Item is terminal.
+
+**Given** a Work Item already references one Conversation
+**When** `LinkConversation` supplies a different `ConversationCorrelationId`
+**Then** `WorkItemConversationLinkRejected` is emitted as an `IRejectionEvent`
+**And** the original Conversation reference remains unchanged.
+
+**Given** a terminal Work Item has no Conversation reference
+**When** a new first link is attempted
+**Then** the command emits `WorkItemTransitionRejected(currentStatus, "LinkConversation")`
+**And** terminal history is not mutated.
+
+**Given** no Work Item state exists
+**When** `LinkConversation` is handled
+**Then** the command is domain-rejected
+**And** no Work Item or Conversation is created implicitly.
+
+**Given** the additive contracts are registered
+**When** catalog and golden-payload tests run
+**Then** the catalog contains 15 commands, 15 success events, and 10 rejection events (40 total)
+**And** every previously persisted payload remains backward-compatible with no `V2` type.
+
 ## Epic 2: Reliable Single-Item Lifecycle and Burn-Down
 
 An executor can advance one Work Item through the full lifecycle, report progress, re-estimate, reschedule, complete by Remaining=0, and terminate work through cancel/reject/expire with raw-act events.
@@ -591,7 +671,7 @@ So that the Work Item history is durable, auditable, and independent of interpre
 **Then** it contains a past-tense domain event from the v1 catalog
 **And** the event stores the verbatim reported values required to replay the act.
 
-**Given** a domain event is emitted
+**Given** an accepted state-changing success event is emitted
 **When** its payload is inspected
 **Then** it carries `AggregateId` and `Sequence` for order-tolerant projections
 **And** Works does not populate or spoof EventStore envelope metadata.
@@ -949,7 +1029,9 @@ So that an open subtree cannot keep burning down after its parent has terminated
 
 ## Epic 4: Shared Work Execution and Builder Runtime Validation
 
-Teams, agents, and external parties can share one executor model: assign, reassign, claim, and hand off work through the same Party binding, while builders can validate the complete command/event pipeline under the Aspire host.
+Teams, agents, and external parties can share one executor model: assign, reassign, claim, and hand
+off work through the same Party binding, while builders validate the complete command/event pipeline
+through the platform-owned Aspire topology.
 
 ### Story 4.1: Bind Work to a Uniform Party Executor
 
@@ -1030,10 +1112,15 @@ So that system agents and people can pull from the same backlog without double o
 **Then** `WorkItemClaimed` is emitted
 **And** the item transitions to `InProgress` bound to the claimant.
 
-**Given** two executors race to claim the same `Queued` Work Item
-**When** both commands use the same expected version
-**Then** exactly one claim succeeds
-**And** the loser receives an observable domain rejection such as `ClaimRejected` or `ConcurrencyRejected`.
+**Given** two executors race after EventStore has rehydrated the same persisted `Queued` state
+**When** their candidate updates contend on EventStore's Dapr state-store ETag
+**Then** exactly one atomic save succeeds
+**And** EventStore retries the conflict from freshly rehydrated state
+**And** the normal retry path produces the existing
+`WorkItemTransitionRejected(InProgress, "Claim")`, without adding `ClaimRejected` or
+`ConcurrencyRejected`
+**And** retry exhaustion surfaces an infrastructure `ConcurrencyConflict` without loser append,
+publication, or dead-letter side effects.
 
 **Given** a Work Item is not `Queued`
 **When** an executor attempts to claim it
@@ -1047,7 +1134,9 @@ So that system agents and people can pull from the same backlog without double o
 
 **Given** claim behavior is tested
 **When** deterministic concurrency tests run
-**Then** they prove single-claim-wins through expected-version conflict rather than timing-dependent thread races.
+**Then** they exercise the EventStore actor/persister conflict injector and prove save, retry,
+re-handle, publication, and retry-exhaustion behavior without timing-dependent thread races
+**And** no Works command exposes an expected-version or ETag field.
 
 ### Story 4.4: Resolve the Tenant's What's Next Queue
 
@@ -1081,17 +1170,19 @@ So that assigned and claimable work can be ordered without introducing a routing
 **Then** no item from another tenant is returned
 **And** logs do not expose payloads or personal data.
 
-### Story 4.5: Prove the Command/Event Pipeline Under Aspire
+### Story 4.5: Prove the Command/Event Pipeline in the Platform Topology
 
 As a Hexalith builder,
-I want an Aspire-hosted proof of the Works command/event pipeline,
+I want a platform-Aspire-hosted proof of the Works command/event pipeline,
 So that I can verify the kernel, projections, and substrate wiring without shipping production adapters.
 
 **Acceptance Criteria:**
 
-**Given** the Works AppHost is started for local testing
+**Given** the designated platform-owned AppHost composes the minimal Works domain service for local testing
 **When** topology is inspected
-**Then** it wires Works, ServiceDefaults, EventStore dependencies, projection infrastructure, and Dapr components needed for command/event tests
+**Then** the platform wires Works, ServiceDefaults, EventStore dependencies, projection infrastructure,
+and Dapr components needed for command/event tests
+**And** Works itself contains no AppHost/Aspire/ServiceDefaults project or duplicated generic platform plumbing
 **And** it does not expose production UI, MCP, chatbot, email, routing, cost, or security-hardening adapters.
 
 **Given** the command/event pipeline is exercised under Aspire
@@ -1102,7 +1193,11 @@ So that I can verify the kernel, projections, and substrate wiring without shipp
 **Given** integration and smoke tests run
 **When** configured v1 test lanes complete
 **Then** Tier-1 tests remain pure and do not require Aspire
-**And** Aspire is used only for boundary/runtime proof.
+**And** the platform Aspire topology is used only for boundary/runtime proof.
+
+_Topology ownership correction (approved 2026-09-05): the original implementation evidence used a
+Works-owned AppHost. Story 4.9 migrates that proof to the designated platform host before the obsolete
+Works hosting projects are removed._
 
 **Given** observability is inspected
 **When** pipeline errors occur
@@ -1127,18 +1222,19 @@ So that date resumes and cascade continuation survive restarts without making th
 **Then** the reminder name is deterministic
 **And** duplicate registration does not produce duplicate accepted resume events.
 
-**Given** the AppHost restarts while date-based resumes are pending
+**Given** the platform-hosted runtime restarts while date-based resumes are pending
 **When** recovery runs
 **Then** reminder reconciliation re-scans pending `DateReached` Await-Conditions
 **And** firings lost before recording are reissued as idempotent resume commands.
 
 **Given** Story 3.6 provides pure cascade command intents and idempotent target commands
 **When** the reactor runtime dispatches cascade commands
-**Then** Story 4.6 owns at-least-once dispatch, checkpoint persistence, checkpoint replay, and AppHost restart proof
+**Then** Story 4.6 owns the behavioral proof for at-least-once dispatch, checkpoint persistence,
+checkpoint replay, and platform-runtime restart
 **And** checkpoint state is persisted after each target command attempt or at a documented safe boundary.
 
 **Given** the reactor restarts during cascade processing
-**When** checkpoint replay resumes under Aspire
+**When** checkpoint replay resumes in the platform Aspire topology
 **Then** outstanding descendants still requiring termination are discovered from a re-readable projection
 **And** already-terminal descendants are not terminated again
 **And** the test proves convergence after a mid-cascade restart without adding clock, Dapr, or infrastructure dependencies to the kernel.
@@ -1147,6 +1243,10 @@ So that date resumes and cascade continuation survive restarts without making th
 **When** parent terminal events or child-completion events are processed
 **Then** the reactor emits only mechanical command intents
 **And** all domain decisions still round-trip through aggregate `Handle`.
+
+_Topology ownership correction (approved 2026-09-05): reminder, delivery, checkpoint, and recovery
+composition is platform/EventStore-owned. Story 4.9 relocates the historical Works-host wiring while
+retaining these behavioral requirements._
 
 ### Story 4.7: Trigger Reactor Translators from the Live Event Stream
 
@@ -1161,7 +1261,7 @@ So that cascade and child-completion resume actually execute in the live topolog
 
 **Acceptance Criteria:**
 
-**Given** the Works host runs under the Aspire topology
+**Given** the minimal Works domain service runs within the platform-owned Aspire topology
 **When** a parent Work Item reaches `Cancelled` or `Expired`
 **Then** an at-least-once event consumption path invokes the cascade dispatcher
 **And** active descendants receive idempotent terminal commands discovered from a re-readable projection
@@ -1173,7 +1273,7 @@ So that cascade and child-completion resume actually execute in the live topolog
 **And** the parent resumes via an idempotent `ResumeWorkItem` submission
 **And** every decision still round-trips through aggregate `Handle`.
 
-**Given** the host crashes mid-cascade
+**Given** the platform-hosted Works runtime crashes mid-cascade
 **When** it restarts
 **Then** a startup recovery pass discovers incomplete cascade checkpoints from a durable index and drives checkpoint replay
 **And** the cascade converges without duplicate terminal effects (live SM-1b lane).
@@ -1181,7 +1281,11 @@ So that cascade and child-completion resume actually execute in the live topolog
 **Given** the new consumption path is inspected
 **When** fitness and governance tests run
 **Then** the kernel and reactor projects remain free of any new dependency
-**And** the host contains no shadow-kernel conditional a pure `Handle` could not have produced.
+**And** the platform runtime contains no shadow-kernel conditional a pure `Handle` could not have produced.
+
+_Topology ownership correction (approved 2026-09-05): event-subscription and recovery plumbing is
+owned by EventStore/platform components and composed by the designated platform host. Story 4.9 owns
+the migration of the historical Works-host implementation._
 
 ### Story 4.8: Register and Reconcile Date Reminders Durably
 
@@ -1207,7 +1311,7 @@ So that date-based resumes execute in steady state and survive recovery without 
 **Then** the scan reads a tenant-scoped pending-date-await index read model maintained by the projection dispatcher plus per-aggregate stream reads
 **And** it never issues the tenant-wide null-aggregate stream read the gateway rejects.
 
-**Given** the host restarts after reminder firings were lost before recording
+**Given** the platform-hosted runtime restarts after reminder firings were lost before recording
 **When** recovery completes
 **Then** overdue awaits are reissued as idempotent resume commands and future awaits are re-registered
 **And** reconciliation operates without per-tenant hand configuration (live SM-1 lane).
@@ -1216,3 +1320,57 @@ So that date-based resumes execute in steady state and survive recovery without 
 **When** fitness tests run
 **Then** `Handle` and the reactor remain clock-free
 **And** all time enters as commands from the reminder adapter.
+
+_Topology ownership correction (approved 2026-09-05): durable reminder registration and
+reconciliation stay required, but their generic runtime composition moves to the designated platform
+host under Story 4.9._
+
+### Story 4.9: Migrate Works Hosting to the Platform Boundary
+
+As a Hexalith platform maintainer,
+I want Works hosted through the shared EventStore domain-service SDK and a platform-owned Aspire topology,
+So that domain modules contain domain code rather than duplicated hosting and infrastructure plumbing.
+
+**Acceptance Criteria:**
+
+**Given** the Works repository is inspected after migration
+**When** its solution and published artifacts are enumerated
+**Then** no `Hexalith.Works.AppHost`, `Hexalith.Works.ServiceDefaults`, or other Works-owned
+`*.AppHost`, `*.Aspire`, or `*.ServiceDefaults` project remains.
+
+**Given** the runnable Works domain service starts
+**When** its composition is inspected
+**Then** it uses the canonical `AddEventStoreDomainService(...)` and
+`UseEventStoreDomainService()` SDK path
+**And** it does not fork platform service defaults, health, telemetry, projection/query actors,
+Dapr wiring, event delivery, or subscription plumbing.
+
+**Given** Works requires domain-specific projections, queries, reminder intents, or reactor translations
+**When** those capabilities are implemented
+**Then** they use documented EventStore handler/store interfaces and remain pure or domain-focused
+**And** any missing reusable runtime capability is added to EventStore/platform first rather than
+copied into Works.
+
+**Given** local and automated topology tests run from the designated platform host repository
+**When** the migration evidence is collected
+**Then** create, progress, spawn, suspend, child resume, date resume, cascade, claim conflict, query,
+ordinary projection, and shared rebuild scenarios retain equivalent or stronger evidence.
+
+**Given** a shared projection rebuild runs
+**When** inventory capture through atomic Commit is in progress
+**Then** readers remain on the prior committed generation
+**And** ordinary projection delivery is quiesced or excluded by an equivalent platform fence
+**And** delivery resumes and catches up after Commit.
+
+**Given** repository architecture tests run
+**When** a Works-owned hosting project or generic platform-plumbing implementation is introduced
+**Then** the tests fail with a clear boundary violation.
+
+**Given** migration sequencing is reviewed
+**When** obsolete Works hosting projects are removed
+**Then** the replacement platform topology is already green
+**And** rollback consists of restoring the prior host composition until the platform lane is accepted.
+
+**Prerequisite decision:** The Solution Architect must name the platform/host repository and owner
+before this story enters implementation. No current Works hosting project is removed before that target
+has equivalent passing runtime evidence.
