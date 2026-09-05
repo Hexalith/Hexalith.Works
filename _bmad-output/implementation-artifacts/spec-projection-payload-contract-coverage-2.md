@@ -3,7 +3,7 @@ title: 'Projection payload contract coverage completion'
 type: 'bugfix'
 created: '2026-09-01'
 status: ready-for-dev
-baseline_revision: 'df46f716565237074e3c1bd7f09e7eeaf411cc16'
+baseline_revision: 01d527abcf7d8f5f2b279de56afcf6f9a4437f89
 baseline_commit: 'df46f716565237074e3c1bd7f09e7eeaf411cc16'
 review_loop_iteration: 0
 followup_review_recommended: false
