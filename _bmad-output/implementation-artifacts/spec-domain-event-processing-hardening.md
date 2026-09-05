@@ -2,7 +2,7 @@
 title: 'Harden domain event completion and isolation'
 type: 'bugfix'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'in-review'
 baseline_revision: '547c6d896d256ba9630f713054ea2b073262f0ef'
 baseline_commit: '547c6d896d256ba9630f713054ea2b073262f0ef'
 review_loop_iteration: 1

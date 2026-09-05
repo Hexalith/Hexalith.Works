@@ -74,8 +74,14 @@ internal sealed class WorksDomainEventProcessor
             return EventStoreDomainEventProcessingResult.Duplicate;
         }
 
+        if (acquisition == EventStoreDomainEventMarkerAcquisitionResult.InProgress)
+        {
+            return EventStoreDomainEventProcessingResult.RetryableInProgress;
+        }
+
         if (acquisition != EventStoreDomainEventMarkerAcquisitionResult.Acquired)
         {
+            WorksDomainEventLog.UnsupportedAcquisition(_logger, acquisition, envelope.MessageId);
             return EventStoreDomainEventProcessingResult.RetryableInProgress;
         }
 
@@ -306,6 +312,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
                 envelope.AggregateId,
@@ -326,6 +333,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
                 envelope.AggregateId,
@@ -345,6 +353,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
                 envelope.AggregateId,
@@ -364,6 +373,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
                 envelope.AggregateId,

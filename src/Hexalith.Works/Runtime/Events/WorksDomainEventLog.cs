@@ -1,3 +1,5 @@
+using Hexalith.EventStore.Client.Subscriptions;
+
 using Microsoft.Extensions.Logging;
 
 namespace Hexalith.Works.Runtime.Events;
@@ -43,12 +45,23 @@ internal static partial class WorksDomainEventLog
     [LoggerMessage(
         EventId = 4803,
         Level = LogLevel.Warning,
-        Message = "Works domain event marker operation failed for {EventTypeName}, tenant {TenantId}, work item {WorkItemId}, correlation {CorrelationId}. ReasonCode={ReasonCode}.")]
+        Message = "Works domain event marker operation failed for message {MessageId}, {EventTypeName}, tenant {TenantId}, work item {WorkItemId}, correlation {CorrelationId}. ReasonCode={ReasonCode}.")]
     internal static partial void MarkerFailure(
         ILogger logger,
+        string messageId,
         string eventTypeName,
         string tenantId,
         string workItemId,
         string correlationId,
         string reasonCode);
+
+    /// <summary>Logs an unsupported marker acquisition result that remains retryable.</summary>
+    [LoggerMessage(
+        EventId = 4804,
+        Level = LogLevel.Warning,
+        Message = "Marker store returned unsupported acquisition result {AcquisitionResult} for Works domain event {MessageId}; keeping delivery retryable.")]
+    internal static partial void UnsupportedAcquisition(
+        ILogger logger,
+        EventStoreDomainEventMarkerAcquisitionResult acquisitionResult,
+        string messageId);
 }
