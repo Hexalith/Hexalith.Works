@@ -78,7 +78,17 @@ internal static class PendingDateAwaitStreamReader
                 break;
             }
 
-            from = result.Metadata.LastSequenceReturned is { } lastSequence ? lastSequence + 1 : from;
+            if (result.Metadata.LastSequenceReturned is not { } lastSequence)
+            {
+                // A truncated page with no last sequence returned (documented as possible "when the page is
+                // empty") carries no cursor to advance from. Looping would silently re-read the same page until
+                // the page budget is exhausted and then fail closed with a message that misdescribes the actual
+                // condition as a page-budget overrun. Fail closed immediately instead, with an accurate reason.
+                throw new InvalidOperationException(
+                    $"Stream for aggregate '{workItemId}' reported a truncated page with no last sequence returned; the read cursor cannot advance.");
+            }
+
+            from = lastSequence + 1;
         }
 
         if (stillTruncated)

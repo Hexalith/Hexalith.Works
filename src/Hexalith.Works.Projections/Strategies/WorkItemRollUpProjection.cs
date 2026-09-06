@@ -321,7 +321,7 @@ public sealed class WorkItemRollUpProjection
         return false;
     }
 
-    private readonly record struct NodeKey(string TenantId, string WorkItemId)
+    internal readonly record struct NodeKey(string TenantId, string WorkItemId)
     {
         public static NodeKey From(TenantId tenantId, WorkItemId workItemId)
             => new(tenantId.Value, workItemId.Value);
@@ -329,7 +329,7 @@ public sealed class WorkItemRollUpProjection
 
     internal sealed class RollUpNode(TenantId tenantId, WorkItemId workItemId)
     {
-        private NodeKey Key { get; } = NodeKey.From(tenantId, workItemId);
+        internal NodeKey Key { get; } = NodeKey.From(tenantId, workItemId);
 
         public TenantId TenantId { get; } = tenantId;
 
@@ -337,9 +337,9 @@ public sealed class WorkItemRollUpProjection
 
         public SortedDictionary<long, (WorkItemRollUpPayloadDescriptor Descriptor, IEventPayload Payload)> Events { get; } = [];
 
-        private HashSet<NodeKey> ChildKeys { get; } = [];
+        internal HashSet<NodeKey> ChildKeys { get; } = [];
 
-        private NodeKey? ParentKey { get; set; }
+        internal NodeKey? ParentKey { get; set; }
 
         public ParentWorkItemReference? Parent { get; set; }
 

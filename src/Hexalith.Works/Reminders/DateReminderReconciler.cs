@@ -28,9 +28,32 @@ public sealed class DateReminderReconciler(
     private readonly ILogger<DateReminderReconciler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <summary>Runs one reconciliation pass and returns the reissued/rescheduled counts.</summary>
+    /// <remarks>
+    /// When the source can only scan some tenants cleanly (<see cref="PendingDateAwaitScanIncompleteException"/>),
+    /// this method still acts on the partial results collected from the tenants that did scan cleanly — so one
+    /// unreadable tenant stream never blocks reissue/reschedule for every other tenant — and then rethrows the
+    /// same exception once processing is done, so the caller (<see cref="ReminderReconciliationService"/>) still
+    /// sees the pass as incomplete and retries it.
+    /// </remarks>
     public async Task<ReminderReconciliationOutcome> ReconcileAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<PendingDateAwait> pending = await _source.GetPendingDateAwaitsAsync(cancellationToken).ConfigureAwait(false);
+        IReadOnlyList<PendingDateAwait> pending;
+        PendingDateAwaitScanIncompleteException? incompleteScan = null;
+        try
+        {
+            pending = await _source.GetPendingDateAwaitsAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (PendingDateAwaitScanIncompleteException ex)
+        {
+            incompleteScan = ex;
+            pending = ex.PartialResults;
+
+            // Log the incomplete-scan detail now, before acting on the partial results below: if a later
+            // submit/schedule call also throws, that new exception must not silently discard this one's
+            // failed-tenant count and cause.
+            WorksRecoveryLog.PendingDateAwaitScanIncomplete(_logger, ex.FailedTenantCount, ex);
+        }
+
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
         int reissued = 0;
@@ -77,6 +100,11 @@ public sealed class DateReminderReconciler(
             WorksRecoveryLog.DateRemindersReconciled(_logger, byTenant.Key, tenantReissued, tenantRescheduled);
             reissued += tenantReissued;
             rescheduled += tenantRescheduled;
+        }
+
+        if (incompleteScan is not null)
+        {
+            throw incompleteScan;
         }
 
         return new ReminderReconciliationOutcome(reissued, rescheduled);

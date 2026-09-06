@@ -7,7 +7,7 @@ namespace Hexalith.Works.Reminders;
 /// pass as incomplete for retry (Story 4.8 code-review remediation: a single unreadable tenant stream must
 /// not silently starve reminder discovery for every other tenant).
 /// </summary>
-public sealed class PendingDateAwaitScanIncompleteException : Exception
+internal sealed class PendingDateAwaitScanIncompleteException : Exception
 {
     /// <summary>Initializes a new instance of the <see cref="PendingDateAwaitScanIncompleteException"/> class.</summary>
     /// <param name="partialResults">The pending date awaits discovered from the tenants that scanned successfully.</param>
@@ -17,11 +17,8 @@ public sealed class PendingDateAwaitScanIncompleteException : Exception
         IReadOnlyList<PendingDateAwait> partialResults,
         int failedTenantCount,
         Exception? innerException)
-        : base(
-            $"Pending date-await discovery failed for {failedTenantCount} tenant(s); {partialResults?.Count ?? 0} awaits were discovered from the tenants that scanned successfully.",
-            innerException)
+        : base(BuildMessage(partialResults, failedTenantCount), innerException)
     {
-        ArgumentNullException.ThrowIfNull(partialResults);
         PartialResults = partialResults;
         FailedTenantCount = failedTenantCount;
     }
@@ -31,4 +28,13 @@ public sealed class PendingDateAwaitScanIncompleteException : Exception
 
     /// <summary>Gets the number of tenants whose scan failed.</summary>
     public int FailedTenantCount { get; }
+
+    // Validating and formatting in one helper, evaluated as a base(...) constructor argument, guarantees the
+    // null check runs before any message text is built — a null partialResults throws ArgumentNullException
+    // instead of silently discarding the "0 awaits" fallback text that a null-conditional would have produced.
+    private static string BuildMessage(IReadOnlyList<PendingDateAwait> partialResults, int failedTenantCount)
+    {
+        ArgumentNullException.ThrowIfNull(partialResults);
+        return $"Pending date-await discovery failed for {failedTenantCount} tenant(s); {partialResults.Count} awaits were discovered from the tenants that scanned successfully.";
+    }
 }

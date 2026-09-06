@@ -35,6 +35,18 @@ internal static class WorksRecoveryLog
             new EventId(4603, "RecoveryStepFailed"),
             "Recovery step did not complete; reason {Reason}. It will be retried at-least-once and remains idempotent.");
 
+    private static readonly Action<ILogger, string, Exception?> s_pendingDateAwaitTenantScanFailed =
+        LoggerMessage.Define<string>(
+            LogLevel.Warning,
+            new EventId(4604, "PendingDateAwaitTenantScanFailed"),
+            "Pending date-await scan failed for tenant {TenantId}; other tenants are still scanned and the overall pass is signalled incomplete for retry.");
+
+    private static readonly Action<ILogger, int, Exception?> s_pendingDateAwaitScanIncomplete =
+        LoggerMessage.Define<int>(
+            LogLevel.Warning,
+            new EventId(4605, "PendingDateAwaitScanIncomplete"),
+            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s); reconciliation still acts on the partial results and will retry.");
+
     private static readonly Action<ILogger, string, string, int, Exception?> s_cascadeCheckpointed =
         LoggerMessage.Define<string, string, int>(
             LogLevel.Information,
@@ -82,6 +94,12 @@ internal static class WorksRecoveryLog
 
     public static void RecoveryStepFailed(ILogger logger, string reason, Exception? exception = null)
         => s_recoveryFailed(logger, reason, exception);
+
+    public static void PendingDateAwaitTenantScanFailed(ILogger logger, string tenantId, Exception exception)
+        => s_pendingDateAwaitTenantScanFailed(logger, tenantId, exception);
+
+    public static void PendingDateAwaitScanIncomplete(ILogger logger, int failedTenantCount, Exception? exception)
+        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, exception);
 
     public static void CascadeCheckpointed(ILogger logger, string tenantId, string parentWorkItemId, int targetCount)
         => s_cascadeCheckpointed(logger, parentWorkItemId, tenantId, targetCount, null);

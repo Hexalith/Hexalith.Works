@@ -13,7 +13,7 @@ public sealed class BuildConfigurationTests
         string root = RepositoryRoot.Locate();
         JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
 
-        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.301");
+        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.400");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
         // Aspire reconciled to 13.4.6 to match the checked-out Hexalith.EventStore submodule.

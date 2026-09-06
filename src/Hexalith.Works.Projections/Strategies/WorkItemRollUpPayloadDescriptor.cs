@@ -143,7 +143,15 @@ internal sealed class WorkItemRollUpPayloadDescriptor
     internal static bool TryResolve(
         IEventPayload? payload,
         [NotNullWhen(true)] out WorkItemRollUpPayloadDescriptor? descriptor)
-        => payload is not null && _catalog.TryGetValue(payload.GetType(), out descriptor);
+    {
+        if (payload is null)
+        {
+            descriptor = null;
+            return false;
+        }
+
+        return _catalog.TryGetValue(payload.GetType(), out descriptor);
+    }
 
     /// <summary>
     /// Reads and validates the payload identity owned by this descriptor.

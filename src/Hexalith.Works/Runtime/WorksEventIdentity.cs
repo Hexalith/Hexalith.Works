@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
 
@@ -15,9 +17,23 @@ internal static class WorksEventIdentity
             return false;
         }
 
-        object? payloadAggregate = type.GetProperty("AggregateId")?.GetValue(payload);
-        return string.Equals(payloadTenant.Value, tenantId, StringComparison.Ordinal)
-            && string.Equals(payloadWorkItem.Value, aggregateId, StringComparison.Ordinal)
-            && (payloadAggregate is null || string.Equals(payloadAggregate as string, aggregateId, StringComparison.Ordinal));
+        if (!string.Equals(payloadTenant.Value, tenantId, StringComparison.Ordinal)
+            || !string.Equals(payloadWorkItem.Value, aggregateId, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        PropertyInfo? aggregateIdProperty = type.GetProperty("AggregateId");
+        if (aggregateIdProperty is null)
+        {
+            // Every rejection event (IRejectionEvent) is documented to carry no AggregateId at all — its
+            // TenantId/WorkItemId pair is its whole identity contract, already checked above. Any other
+            // payload shape missing AggregateId fails closed instead of being silently treated as a match:
+            // every known non-rejection Works lifecycle event carries the property, so its absence there
+            // signals an unexpected shape this identity check must not vouch for.
+            return payload is IRejectionEvent;
+        }
+
+        return string.Equals(aggregateIdProperty.GetValue(payload) as string, aggregateId, StringComparison.Ordinal);
     }
 }

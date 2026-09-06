@@ -119,10 +119,48 @@ public sealed class DateReminderRecoveryRuntimeTests
         scheduler.Registrations.Keys.ShouldHaveSingleItem().ShouldContain(DateReminderName.Prefix);
     }
 
+    [Fact]
+    public async Task Reconciler_acts_on_partial_results_then_rethrows_when_the_source_scan_is_incomplete()
+    {
+        // A source reporting a partial, incomplete scan (Story 4.8 code-review remediation: one unreadable
+        // tenant must not block reissue/reschedule for the tenants that did scan cleanly) must still have its
+        // good-tenant results acted upon, and the reconciler must still surface the pass as incomplete so the
+        // caller (ReminderReconciliationService) retries it.
+        var partialResults = new List<PendingDateAwait>
+        {
+            new("tenant-alpha", "due-work", DueInstant, AwaitCondition.DateReached(DueInstant).CorrelationKey),
+        };
+        var source = new IncompleteScanPendingDateAwaitSource(partialResults, failedTenantCount: 1);
+        var scheduler = new RecordingReminderScheduler();
+        var submitter = new RecordingWorkCommandSubmitter();
+        var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero));
+        var reconciler = new DateReminderReconciler(
+            source,
+            scheduler,
+            submitter,
+            timeProvider,
+            NullLogger<DateReminderReconciler>.Instance);
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => reconciler.ReconcileAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(1);
+        submitter.Submissions.ShouldHaveSingleItem(
+            "The tenant that scanned cleanly must still be acted upon even though the overall pass is incomplete.");
+    }
+
     private sealed class FakePendingDateAwaitSource(IReadOnlyList<PendingDateAwait> awaits) : IPendingDateAwaitSource
     {
         public Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(awaits);
+    }
+
+    private sealed class IncompleteScanPendingDateAwaitSource(IReadOnlyList<PendingDateAwait> partialResults, int failedTenantCount)
+        : IPendingDateAwaitSource
+    {
+        public Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
+            => throw new PendingDateAwaitScanIncompleteException(partialResults, failedTenantCount, new InvalidOperationException("simulated tenant scan failure"));
     }
 
     private sealed class RecordingReminderScheduler : IDateReminderScheduler

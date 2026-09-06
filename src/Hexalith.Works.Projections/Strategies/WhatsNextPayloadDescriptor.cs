@@ -174,7 +174,15 @@ internal sealed class WhatsNextPayloadDescriptor
     /// <param name="descriptor">The resolved descriptor.</param>
     /// <returns><see langword="true"/> when the exact payload type is accepted; otherwise, <see langword="false"/>.</returns>
     internal static bool TryResolve(IEventPayload? payload, [NotNullWhen(true)] out WhatsNextPayloadDescriptor? descriptor)
-        => payload is not null && _catalog.TryGetValue(payload.GetType(), out descriptor);
+    {
+        if (payload is null)
+        {
+            descriptor = null;
+            return false;
+        }
+
+        return _catalog.TryGetValue(payload.GetType(), out descriptor);
+    }
 
     /// <summary>
     /// Determines whether this descriptor's payload identity matches the delivery header exactly.

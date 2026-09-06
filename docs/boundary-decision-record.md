@@ -288,6 +288,19 @@ point-in-time evidence before Story 1.5's additive three contracts; the correcte
   the gateway 400-rejects is retired. Idempotency is unchanged: deterministic `DateReminderName`/correlation ids
   make suspend-time registration and recovery reissue converge to a single accepted `WorkItemResumed`. The
   `WorkItemAggregate.Handle`/reactor kernel stays clock-free (AC #4, fitness-asserted).
+  **Accepted limitation — unbounded index/registry growth (documented 2026-09-05, not fixed):**
+  `PendingDateAwaitTenantIndex.LastSequences` gets one permanent watermark entry per work item ever dispatched
+  through `/project` in a tenant — not only items that ever held a `DateReached` await — with no pruning, and
+  `PendingDateAwaitTenantRegistry.Tenants` is append-only forever (a tenant is never removed once it has had a
+  pending date await). This is the mirror-image gap of the cascade-checkpoint index, which got a
+  `CascadeCheckpointIndexStaleAfterHours` retention knob (`WorksRecoveryOptions`, consumed and clamped by
+  `CascadeRecoveryReconciler`) precisely because unbounded growth there was judged worth fixing; the pending-
+  date-await index has no analogous mechanism. Accepted as a documented tradeoff rather than building pruning
+  now: both documents are read wholesale (no Dapr key enumeration), so the cost of the growth is O(n) storage
+  and one extra cheap read per stale registry tenant on recovery — not a correctness or availability risk at
+  the item/tenant volumes this module currently serves. Revisit if/when tenant or work-item cardinality makes
+  either document's read/write cost material; a stale-after retention knob mirroring
+  `CascadeCheckpointIndexStaleAfterHours` is the natural fix.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency and

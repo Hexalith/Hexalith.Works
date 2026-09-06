@@ -22,7 +22,7 @@ deferred: []
 
 ## Boundaries & Constraints
 
-**Always:** Preserve existing enum numeric values; use caller-token-independent finalization; make DAPR transitions monotonic and fail when persistence is not confirmed; preserve `Dispatched` and `Completed` markers on release; keep existing terminal-skip outcomes and endpoint mappings; use exact ordinal `work` domain matching.
+**Always:** Start a re-drive from the current `HEAD` only when the superproject and every root-declared submodule working tree are clean; preserve and stop on any unrelated pre-existing change instead of overwriting, staging, or absorbing it into this story. Preserve existing enum numeric values; use caller-token-independent finalization; make DAPR transitions monotonic and fail when persistence is not confirmed; preserve `Dispatched` and `Completed` markers on release; keep existing terminal-skip outcomes and endpoint mappings; use exact ordinal `work` domain matching.
 
 **Never:** Acknowledge a completion failure as `Processed`; redispatch handlers from a completion-pending marker; let a foreign-domain envelope acquire or complete a Works marker; edit the deferred-work ledger; add a second persistence mechanism or a new processing-result enum.
 
@@ -35,6 +35,7 @@ deferred: []
 | Completion redelivery | Existing `Dispatched` marker | Complete only; no decode or handler call; return `Duplicate` | Repeated completion failure remains retryable |
 | Foreign domain | `Domain` is null, differently cased, or not `work` | Return `FailedInvalidPayload` before marker access | Terminal invalid-envelope handling |
 | Existing/unknown marker | `Completed`, `InProgress`, or unknown state | Duplicate, retryable, or fail-closed respectively | Never reacquire unknown durable state |
+| Re-drive precondition | Superproject or a root-declared submodule working tree is dirty before implementation | Stop before modifying the story and preserve the existing changes | Do not overwrite, stage, or absorb unrelated work |
 
 </intent-contract>
 
@@ -64,6 +65,7 @@ deferred: []
 - Given DAPR rejects or cannot confirm a marker transition, when processing reaches that transition, then the failure is surfaced and no success result is fabricated.
 - Given a marker is already `Completed` or `InProgress`, when the message is delivered, then existing duplicate or retryable behavior remains unchanged.
 - Given a Works envelope whose domain is not exactly `work`, when it is processed, then it is rejected before marker acquisition and no handler runs.
+- Given a re-drive starts from the current `HEAD`, when the superproject and root-declared submodule working trees are inspected, then implementation proceeds only if they are clean; otherwise the existing changes are preserved and the story stops before modification.
 
 ## Spec Change Log
 
@@ -193,4 +195,3 @@ Tests must cover explicit enum ordinals; in-memory release preserving `Dispatche
 - `dotnet tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests.dll -class Hexalith.EventStore.Server.LiveSidecar.Tests.Integration.DomainEventMarkerLiveSidecarTests` (from `references/Hexalith.EventStore`) -- expected: Redis-backed marker protocol passes when the documented DAPR prerequisites are available.
 - `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:MinVerVersionOverride=1.0.0` -- expected: clean cross-repository build.
 - `dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksDomainEventProcessorTests` -- expected: focused Works tests pass.
-

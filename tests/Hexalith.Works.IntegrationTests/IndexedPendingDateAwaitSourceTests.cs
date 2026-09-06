@@ -149,8 +149,13 @@ public sealed class IndexedPendingDateAwaitSourceTests
             Options.Create(options),
             NullLogger<IndexedPendingDateAwaitSource>.Instance);
 
-        await Should.ThrowAsync<InvalidOperationException>(() => source
-            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        // A per-aggregate fail-closed guard is a scan failure like any other at the cross-tenant level: it is
+        // isolated to this (sole) tenant rather than left to propagate as the raw InvalidOperationException.
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => source.GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+        thrown.FailedTenantCount.ShouldBe(1);
+        thrown.InnerException.ShouldBeOfType<InvalidOperationException>();
     }
 
     [Fact]
@@ -165,8 +170,12 @@ public sealed class IndexedPendingDateAwaitSourceTests
             [WorkFuture] = page with { Events = [malformed] },
         });
 
-        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, gateway)
-            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, gateway)
+                .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+        thrown.FailedTenantCount.ShouldBe(1);
+        thrown.InnerException.ShouldBeOfType<InvalidOperationException>();
     }
 
     [Fact]
@@ -183,10 +192,76 @@ public sealed class IndexedPendingDateAwaitSourceTests
             [WorkFuture] = Story48Streams.Page(TenantA, WorkFuture, Created("work-other")),
         });
 
-        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, wrongDomainGateway)
-            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
-        await Should.ThrowAsync<InvalidOperationException>(() => NewSource(store, wrongPayloadGateway)
-            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        (await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, wrongDomainGateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true))
+            .InnerException.ShouldBeOfType<InvalidOperationException>();
+        (await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, wrongPayloadGateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true))
+            .InnerException.ShouldBeOfType<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Fails_closed_immediately_when_a_truncated_page_reports_no_last_sequence_instead_of_stalling_the_cursor()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        int callCount = 0;
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                callCount++;
+                return Task.FromResult(Story48Streams.PageAt(TenantA, WorkFuture, 1, isTruncated: true));
+            });
+        var options = new WorksRecoveryOptions { MaxStreamPagesPerTenant = 5 };
+        var source = new IndexedPendingDateAwaitSource(
+            store,
+            gateway,
+            Options.Create(options),
+            NullLogger<IndexedPendingDateAwaitSource>.Instance);
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => source.GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.InnerException.ShouldNotBeNull().Message.ShouldContain("no last sequence returned");
+        callCount.ShouldBe(1, "The reader must fail closed on the first truncated-with-no-cursor page rather than looping until the page budget is exhausted.");
+    }
+
+    [Fact]
+    public async Task Isolates_a_single_tenant_scan_failure_and_still_returns_partial_results_from_the_others()
+    {
+        const string TenantB = "tenant-beta";
+        var store = new Story47InMemoryReadModelStore();
+        var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, TenantB } };
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, registry, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        var indexA = new PendingDateAwaitTenantIndex();
+        indexA.Entries[WorkFuture] = [new PendingDateAwait(TenantA, WorkFuture, s_future, AwaitCondition.DateReached(s_future).CorrelationKey)];
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(TenantA), indexA, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        var indexB = new PendingDateAwaitTenantIndex();
+        indexB.Entries[WorkDue] = [new PendingDateAwait(TenantB, WorkDue, s_past, AwaitCondition.DateReached(s_past).CorrelationKey)];
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(TenantB), indexB, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+                return string.Equals(request.Tenant, TenantB, StringComparison.Ordinal)
+                    ? Task.FromException<StreamReadPage>(new InvalidOperationException("simulated gateway failure"))
+                    : Task.FromResult(Story48Streams.Page(TenantA, WorkFuture, Created(WorkFuture), SuspendedOnDate(WorkFuture, s_future)));
+            });
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, gateway).GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(1);
+        PendingDateAwait onlyResult = thrown.PartialResults.ShouldHaveSingleItem();
+        onlyResult.TenantId.ShouldBe(TenantA);
+        onlyResult.WorkItemId.ShouldBe(WorkFuture);
     }
 
     [Fact]
