@@ -150,5 +150,8 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             rollUp.OwnEffort?.Remaining,
             rollUp.OwnEffort?.Unit,
             rollUp.Parent,
-            rollUp.LatestAcceptedSourceSequence);
+            rollUp.LatestAcceptedSourceSequence)
+        {
+            ConversationCorrelationId = rollUp.ConversationCorrelationId,
+        };
 }

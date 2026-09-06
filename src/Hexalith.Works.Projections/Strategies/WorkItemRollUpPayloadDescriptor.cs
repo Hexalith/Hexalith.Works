@@ -99,6 +99,21 @@ internal sealed class WorkItemRollUpPayloadDescriptor
             static payload => (payload.TenantId, payload.WorkItemId),
             static (_, node, _) => SetStatusWhenActive(node, WorkItemStatus.InProgress)),
         ForIntentionalNoOp<WorkItemRescheduled>(static payload => (payload.TenantId, payload.WorkItemId)),
+        ForFold<ConversationLinked>(
+            static payload => payload.ConversationCorrelationId is null
+                ? default
+                : (payload.TenantId, payload.WorkItemId),
+            static (_, node, payload) =>
+            {
+                if (node.ConversationCorrelationId is null)
+                {
+                    node.ConversationCorrelationId = payload.ConversationCorrelationId;
+                }
+                else if (node.ConversationCorrelationId != payload.ConversationCorrelationId)
+                {
+                    node.Refuse(nameof(ConversationLinked), payload.Sequence);
+                }
+            }),
     }.ToFrozenDictionary(descriptor => descriptor.PayloadType);
 
     private readonly Action<WorkItemRollUpProjection, WorkItemRollUpProjection.RollUpNode, IEventPayload>? _applyFold;

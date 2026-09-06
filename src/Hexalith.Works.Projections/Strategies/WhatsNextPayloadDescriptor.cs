@@ -135,6 +135,7 @@ internal sealed class WhatsNextPayloadDescriptor
                     SetTerminal(node, WorkItemStatus.Rejected);
                 }
             }),
+        ForIntentionalNoOp<ConversationLinked>(static payload => (payload.TenantId, payload.WorkItemId)),
     }.ToFrozenDictionary(descriptor => descriptor.PayloadType);
 
     private readonly Action<WhatsNextQueueProjection, WhatsNextQueueProjection.ItemNode, IEventPayload>? _applyFold;

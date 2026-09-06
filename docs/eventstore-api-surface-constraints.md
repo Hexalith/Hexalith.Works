@@ -2,6 +2,27 @@
 
 Story 1.1 verified the live `Hexalith.EventStore` source surface before Works depends on domain behavior in later stories.
 
+## Schema compatibility contract (VAL-H11)
+
+Story 1.5 closes VAL-H11 for the 40-type Works v1 catalog. The compatibility rules below apply to
+aggregate replay, `/project`, shared rebuild, and live subscription/recovery readers.
+
+| Concern | Bound compatibility rule |
+| --- | --- |
+| Concrete writer | Durable event payloads and command bodies use options-free concrete `System.Text.Json`: exact PascalCase CLR property names, no `$type`, no envelope fields. Existing type names and bytes never change. |
+| Tolerant reader direction | EventStore's shared case-insensitive reader and Works projection readers accept both the exact PascalCase form and the frozen camelCase Web form. New readers read all old payloads; old readers ignore additive properties on known types. |
+| Optional/default fields | Additive read-model fields are nullable. A missing `ConversationCorrelationId` in an older `WorkItemRollUp` or `WorkItemView` document reads as `null`; no empty or generated identifier is substituted. |
+| Polymorphic identity | Each durable command/event/rejection retains its unversioned CLR type-name discriminator in the generated polymorphic registry. `V2` aliases and renamed discriminators are forbidden for this change. |
+| Enum and unknown type | Existing enum strings remain closed: an unknown enum value is malformed, never coerced. An unknown event type is not interpreted as another event; current readers skip/acknowledge it according to their bounded surface, while shared rebuild marks its history incomplete. |
+| Malformed known payload | Replay/binding fails rather than fabricating required values. Projection logs bounded metadata; reminder-affecting malformed events halt that projection path, other malformed evidence refuses reliable rolled totals, and shared rebuild marks the candidate incomplete. |
+| Rejections | Rejection payloads persist at EventStore envelope positions but apply as aggregate-state no-ops and are excluded from read-model accepted-source watermarks. |
+| Story 1.5 projection effect | `ConversationLinked` folds the opaque reference into aggregate state, `WorkItemRollUp`, and `WorkItemView`. What's-next accepts it only to advance the accepted-source watermark; eligibility and ordering do not change. `WorkItemConversationLinkRejected` remains a replay/projection no-op. |
+| Rollout order | Deploy readers, generated mapper registration, aggregate replay, and projection descriptors before enabling a producer of `LinkConversation`/`ConversationLinked`. Then enable producers; rollback must retain those readers while any new payload may remain in a stream. |
+
+The Web and exact EventPersister corpora bind both new event shapes bidirectionally, and the separate
+LinkConversation command fixture binds its exact concrete writer bytes. The corpus tests continue to
+exercise every pre-existing file, so additive catalog growth cannot rewrite historical payload bytes.
+
 ## Canonical Stream Sequencing
 
 Verified against the current EventStore pin `c61739206fd89619b7d29dfb0812225a234066bb`
@@ -166,7 +187,8 @@ runnable host edge:
   subtree/status projection would improve skip-before-dispatch fidelity without changing the kernel boundary.
 
 No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable polymorphic command/event/rejection
-catalog type. `WorkItemV1Catalog.Count` remains **37** and the golden corpus is byte-compatible.
+catalog type. The count was **37** at Story 4.6 completion; Story 1.5 later raised the current catalog to
+**40**, with all pre-existing golden bytes still compatible.
 
 ## Story 4.8 — Register and Reconcile Date Reminders Durably
 
@@ -198,8 +220,9 @@ recovery-discovery model while keeping every read per-aggregate.
   `Works:Recovery:Tenants` forwarding are removed; `ReminderReconciliationService` runs whenever
   `RunReconciliationOnStartup` (default `true`). The whole pass stays crash-safe by idempotency (deterministic
   `DateReminderName`/correlation ids), not checkpoints.
-- **Catalog unchanged.** The index and registry records are host-edge STJ, not `[PolymorphicSerialization]` types;
-  `WorkItemV1Catalog.Count` stays **37** and the golden corpus is byte-compatible.
+- **Catalog unchanged by Story 4.8.** The index and registry records are host-edge STJ, not
+  `[PolymorphicSerialization]` types. The count was **37** at Story 4.8 completion; Story 1.5 later
+  raised the current catalog to **40**, with all pre-existing golden bytes still compatible.
 
 ## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
 
@@ -253,5 +276,5 @@ surface documented below is unchanged from the original `c6b72caa` verification.
   descendant, and a fresh AppHost replayed the durable incomplete checkpoint to cancel the outstanding
   descendant with exactly one terminal event on each.
 
-No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog;
-`WorkItemV1Catalog.Count` remains **37** after the prior correct-course addition.
+No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog.
+The count was **37** after that story's prior correct-course addition and is **40** after Story 1.5.

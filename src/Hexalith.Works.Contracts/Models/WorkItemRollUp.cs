@@ -54,4 +54,9 @@ public sealed record WorkItemRollUp(
     /// which <see cref="OwnRemaining"/> alone does not convey.
     /// </summary>
     public WorkItemEffort? OwnEffort { get; init; }
+
+    /// <summary>
+    /// Gets the opaque correlation to the Conversations-owned dialogue, when one has been established.
+    /// </summary>
+    public ConversationCorrelationId? ConversationCorrelationId { get; init; }
 }

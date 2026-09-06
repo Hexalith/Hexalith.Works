@@ -1,5 +1,6 @@
 using Hexalith.EventStore.Client.Aggregates;
 using Hexalith.EventStore.Client.Attributes;
+using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.State;
@@ -13,8 +14,8 @@ namespace Hexalith.Works;
 /// EventStore domain-service runtime. EventStore's assembly scanner only discovers concrete
 /// <see cref="EventStoreAggregate{TState}"/> subclasses, while the Works kernel keeps command handling in a
 /// pure static class that must not inherit EventStore runtime types (that would violate the
-/// <c>Server -&gt; Contracts</c> dependency direction). Each <c>Handle</c> wrapper therefore delegates verbatim
-/// to the corresponding pure <see cref="KernelAggregate"/> handler — no domain logic lives here.
+/// <c>Server -&gt; Contracts</c> dependency direction). Each <c>Handle</c> wrapper delegates to the corresponding
+/// pure <see cref="KernelAggregate"/> handler; envelope-aware wrappers also enforce adapter-boundary identity.
 /// </summary>
 /// <remarks>
 /// Decorated with <c>[EventStoreDomain("work")]</c> because the naming convention would otherwise derive
@@ -67,6 +68,21 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     /// <summary>Delegates <see cref="RescheduleWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(RescheduleWorkItem command, WorkItemState? state)
         => KernelAggregate.Handle(command, state);
+
+    /// <summary>Validates the addressed stream and delegates <see cref="LinkConversation"/> to the pure kernel handler.</summary>
+    public static DomainResult Handle(LinkConversation command, WorkItemState? state, CommandEnvelope envelope)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(envelope);
+        if (!string.Equals(envelope.Domain, "work", StringComparison.Ordinal)
+            || !string.Equals(envelope.TenantId, command.TenantId?.Value, StringComparison.Ordinal)
+            || !string.Equals(envelope.AggregateId, command.WorkItemId?.Value, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("LinkConversation payload identity does not match its command envelope.");
+        }
+
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="CancelWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(CancelWorkItem command, WorkItemState? state)

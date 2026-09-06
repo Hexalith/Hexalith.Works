@@ -378,6 +378,48 @@ public static class WorkItemAggregate
         ]);
     }
 
+    public static DomainResult Handle(LinkConversation command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        ArgumentNullException.ThrowIfNull(command.ConversationCorrelationId);
+
+        EnsureEstablishedIdentityMatches(command.TenantId, command.WorkItemId, state);
+
+        ConversationCorrelationId? existing = state?.ConversationCorrelationId;
+        if (existing == command.ConversationCorrelationId)
+        {
+            return DomainResult.NoOp();
+        }
+
+        if (existing is not null)
+        {
+            return DomainResult.Rejection([
+                new WorkItemConversationLinkRejected(
+                    command.TenantId,
+                    command.WorkItemId,
+                    existing,
+                    command.ConversationCorrelationId),
+            ]);
+        }
+
+        WorkItemStatus from = CurrentStatus(state);
+        if (!IsLive(from))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(LinkConversation));
+        }
+
+        return DomainResult.Success([
+            new ConversationLinked(
+                command.WorkItemId.Value,
+                NextSequence(state),
+                command.TenantId,
+                command.WorkItemId,
+                command.ConversationCorrelationId),
+        ]);
+    }
+
     public static DomainResult Handle(CancelWorkItem command, WorkItemState? state)
     {
         ArgumentNullException.ThrowIfNull(command);
@@ -445,6 +487,19 @@ public static class WorkItemAggregate
             or WorkItemStatus.Queued
             or WorkItemStatus.InProgress
             or WorkItemStatus.Suspended;
+
+    private static void EnsureEstablishedIdentityMatches(TenantId tenantId, WorkItemId workItemId, WorkItemState? state)
+    {
+        if (state is null || state.Status == WorkItemStatus.Unknown)
+        {
+            return;
+        }
+
+        if (state.TenantId != tenantId || state.WorkItemId != workItemId)
+        {
+            throw new InvalidOperationException("LinkConversation payload identity does not match the established work-item state.");
+        }
+    }
 
     private static DomainResult Reject(TenantId tenantId, WorkItemId workItemId, WorkItemStatus from, string attemptedAct)
         => DomainResult.Rejection([new WorkItemTransitionRejected(tenantId, workItemId, from, attemptedAct)]);

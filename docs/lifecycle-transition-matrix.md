@@ -3,8 +3,9 @@
 > **Single source of truth.** This document enumerates every legal, illegal, and idempotent outcome
 > of the work-item lifecycle state machine. It mirrors the pure transition table in
 > `src/Hexalith.Works.Server/Aggregates/WorkItemLifecycle.cs` **1:1** for implemented lifecycle
-> operations. The approved Story 1.5 Conversation-link rule is recorded separately below until it is
-> implemented. Later lifecycle stories (1.5, 2.3 / 2.4 / 2.5, 3.5, 3.6, 4.1–4.3, 4.6)
+> operations. Story 1.5's implemented Conversation-link rule is recorded separately because it is
+> lifecycle-neutral and deliberately leaves `WorkItemLifecycle` unchanged. Later lifecycle stories
+> (2.3 / 2.4 / 2.5, 3.5, 3.6, 4.1–4.3, 4.6)
 > **reference this artifact and must not choose transition
 > behavior locally.** If the code table and this document ever disagree, that is a defect — they are
 > changed together.
@@ -27,11 +28,10 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 > duplicate or late create can never reset an existing lifecycle (a retry cannot un-terminal a closed
 > item). Additionally, a command-supplied `InitialEffort` whose `Done` is not zero on
 > `CreateWorkItem`/`SpawnChild` is refused with the additive rejection `WorkItemInitialEffortRejected`
-> instead of being coerced to zero (refuse-don't-coerce), which extended the implemented catalog
-> additively from 36 to **37** types (14 success events + 14 commands + 9 rejection events). Approved
-> Story 1.5 adds `LinkConversation`, `ConversationLinked`, and
-> `WorkItemConversationLinkRejected`, producing a **40**-type target catalog (15 + 15 + 10) without
-> changing existing payloads.
+> instead of being coerced to zero (refuse-don't-coerce), which extended the catalog additively from
+> 36 to 37 types. Story 1.5 then added `LinkConversation`, `ConversationLinked`, and
+> `WorkItemConversationLinkRejected`; the implemented catalog is now **40** types (15 success events
+> + 15 commands + 10 rejection events) without changing existing payloads.
 
 ## Lifecycle commands → events
 
@@ -55,7 +55,7 @@ An illegal transition emits no success event and produces **no state change**; t
 This is distinct from the terminal `Rejected` **status**, which is reached only by
 `RejectWorkItem(Requeue: false)`.
 
-## Conversation-link act (Story 1.5, approved and not yet implemented)
+## Conversation-link act (Story 1.5, implemented)
 
 `LinkConversation` is a lifecycle-neutral reference act: it never changes `Status`. It adds the
 optional `ConversationCorrelationId` that FR-21 permits after creation while preserving terminal
@@ -216,7 +216,7 @@ Notes:
   state and lands on the existing `InProgress + Claim = R` cell →
   `WorkItemTransitionRejected(InProgress, "Claim")`. The loser's observable rejection is therefore the
   **existing** `WorkItemTransitionRejected` (DC1) — **no** `ClaimRejected`/`ConcurrencyRejected` type is
-  added and the v1 catalog stays **37**. Configured retry exhaustion returns the infrastructure
+  added by claim. The catalog was 37 at Story 4.3 completion and is **40** after Story 1.5. Configured retry exhaustion returns the infrastructure
   `ConcurrencyConflict`, not a domain rejection, with no loser append, publication, or dead-letter effect.
   Executable conflict coverage is
   `WorkItemClaimPersistenceConflictTests.RetryingClaimAfterPersistenceConflictCommitsWinnerAndPublishesLoserRejection`

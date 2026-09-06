@@ -1,0 +1,14 @@
+{
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "existingConversationCorrelationId": {
+    "value": "conversation-456"
+  },
+  "proposedConversationCorrelationId": {
+    "value": "conversation-789"
+  }
+}

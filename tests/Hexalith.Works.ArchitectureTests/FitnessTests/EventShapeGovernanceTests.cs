@@ -17,8 +17,8 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 /// </summary>
 public sealed class EventShapeGovernanceTests
 {
-    private const int NonRejectionEventCatalogSize = 14;
-    private const int CommandCatalogSize = 14;
+    private const int NonRejectionEventCatalogSize = 15;
+    private const int CommandCatalogSize = 15;
 
     [Fact]
     public void P0_NonRejectionDomainEventsAreSealedCarryAggregateIdAndSequenceAndAvoidEventSuffix()
@@ -27,7 +27,7 @@ public sealed class EventShapeGovernanceTests
 
         eventTypes.Length.ShouldBe(
             NonRejectionEventCatalogSize,
-            "The non-rejection domain event catalog is frozen at 14; a different count is either a discovery regression or an undeclared catalog change.");
+            "The non-rejection domain event catalog is frozen at 15; a different count is either a discovery regression or an undeclared catalog change.");
 
         string[] violations = [.. eventTypes.SelectMany(EventShapeViolations)];
 
@@ -41,7 +41,7 @@ public sealed class EventShapeGovernanceTests
 
         commandTypes.Length.ShouldBe(
             CommandCatalogSize,
-            "The command catalog is frozen at 14; a different count is either a discovery regression or an undeclared catalog change.");
+            "The command catalog is frozen at 15; a different count is either a discovery regression or an undeclared catalog change.");
 
         string[] violations = [.. commandTypes.SelectMany(CommandShapeViolations)];
 

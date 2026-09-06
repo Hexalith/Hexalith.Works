@@ -61,6 +61,142 @@ public sealed class GetWorkItemQueryHandlerTests
     }
 
     [Fact]
+    public async Task Linked_conversation_is_persisted_and_exposed_as_only_its_opaque_reference()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var conversation = new ConversationCorrelationId("conversation-456");
+        var created = new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Build the thing"));
+        var linked = new ConversationLinked(WorkId, 2, tenant, item, conversation);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(linked, 2),
+                Dto(created, 1),
+                Dto(linked, 2),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemRollUp> persisted = await store.GetAsync<WorkItemRollUp>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        persisted.Value.ShouldNotBeNull().ConversationCorrelationId.ShouldBe(conversation);
+        persisted.Value.LatestAcceptedSourceSequence.ShouldBe(2);
+
+        WorkItemView view = await QueryGetWorkItemAsync(store, WorkId).ConfigureAwait(true);
+        view.ConversationCorrelationId.ShouldBe(conversation);
+        JsonElement serialized = JsonSerializer.SerializeToElement(view, Web);
+        serialized.GetProperty("conversationCorrelationId").GetProperty("value").GetString().ShouldBe("conversation-456");
+        serialized.ToString().ShouldNotContain("message", Case.Insensitive);
+        serialized.ToString().ShouldNotContain("participant", Case.Insensitive);
+    }
+
+    [Fact]
+    public async Task Create_time_conversation_is_persisted_and_queried_without_a_link_event()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var conversation = new ConversationCorrelationId("conversation-created");
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(
+                    WorkId,
+                    1,
+                    tenant,
+                    item,
+                    new Obligation("Created with a conversation"),
+                    ConversationCorrelationId: conversation), 1),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemRollUp> persisted = await store.GetAsync<WorkItemRollUp>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        persisted.Value.ShouldNotBeNull().ConversationCorrelationId.ShouldBe(conversation);
+
+        WorkItemView view = await QueryGetWorkItemAsync(store, WorkId).ConfigureAwait(true);
+        view.Found.ShouldBeTrue();
+        view.ConversationCorrelationId.ShouldBe(conversation);
+        view.LatestAcceptedSourceSequence.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Malformed_null_link_cannot_clear_create_time_conversation_or_advance_its_watermark()
+    {
+        var store = new InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var conversation = new ConversationCorrelationId("conversation-created");
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(Tenant, "work", WorkId,
+            [
+                Dto(new WorkItemCreated(
+                    WorkId,
+                    1,
+                    tenant,
+                    item,
+                    new Obligation("Created with a conversation"),
+                    ConversationCorrelationId: conversation), 1),
+                Dto(new ConversationLinked(WorkId, 2, tenant, item, null!), 2),
+            ]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemView view = await QueryGetWorkItemAsync(store, WorkId).ConfigureAwait(true);
+        view.Found.ShouldBeTrue();
+        view.ConversationCorrelationId.ShouldBe(conversation);
+        view.LatestAcceptedSourceSequence.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Legacy_rollup_json_without_conversation_property_remains_queryable()
+    {
+        const string legacyJson = """
+            {
+              "tenantId": { "value": "tenant-alpha" },
+              "workItemId": { "value": "legacy-work" },
+              "status": "Assigned",
+              "parent": null,
+              "ownRemaining": { "value": 5, "unit": { "value": "hour" } },
+              "rolledRemaining": { "value": 5, "unit": { "value": "hour" } },
+              "rolledRemainingByUnit": [
+                { "value": 5, "unit": { "value": "hour" } }
+              ],
+              "childWorkItemIds": [],
+              "latestAcceptedSourceSequence": 1,
+              "degraded": false,
+              "projectionDiagnostics": [],
+              "ownEffort": { "estimated": 5, "unit": { "value": "hour" }, "done": 0 }
+            }
+            """;
+        var store = new InMemoryReadModelStore();
+        WorkItemRollUp legacy = JsonSerializer.Deserialize<WorkItemRollUp>(legacyJson, Web).ShouldNotBeNull();
+        legacy.ConversationCorrelationId.ShouldBeNull();
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, "legacy-work"),
+            legacy,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemView view = await QueryGetWorkItemAsync(store, "legacy-work").ConfigureAwait(true);
+
+        view.Found.ShouldBeTrue();
+        view.Status.ShouldBe(WorkItemStatus.Assigned);
+        view.Remaining.ShouldBe(5m);
+        view.ConversationCorrelationId.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Fails_closed_to_not_found_for_an_unknown_work_item()
     {
         var store = new InMemoryReadModelStore();

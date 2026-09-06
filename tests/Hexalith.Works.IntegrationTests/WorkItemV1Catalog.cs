@@ -7,15 +7,15 @@ using Hexalith.Works.Contracts.ValueObjects;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Shared, frozen sample of the v1 catalog (established in Story 2.2, extended by Story 2.3/2.4): one
+/// Shared, frozen sample of the v1 catalog (established in Story 2.2 and extended additively): one
 /// instance of every decorated success event, command, and rejection event. Used by both the
 /// polymorphic-resolution test (AC #5) and the
 /// concrete-shape additivity guard (AC #1/#2/#3) so the two views cannot drift apart.
 /// </summary>
 internal static class WorkItemV1Catalog
 {
-    /// <summary>14 success events + 14 commands + 9 rejection events.</summary>
-    internal const int Count = 37;
+    /// <summary>15 success events + 15 commands + 10 rejection events.</summary>
+    internal const int Count = 40;
 
     /// <summary>
     /// Envelope / transport fields owned by EventStore that must never leak into a domain payload
@@ -37,10 +37,14 @@ internal static class WorkItemV1Catalog
 
     internal static WorkItemId Child { get; } = new("child-001");
 
+    internal static ConversationCorrelationId Conversation { get; } = new("conversation-456");
+
+    internal static ConversationCorrelationId ProposedConversation { get; } = new("conversation-789");
+
     /// <summary>The full v1 catalog as base-typed payloads.</summary>
     internal static IReadOnlyList<Polymorphic> All =>
     [
-        // 14 success events.
+        // 15 success events.
         new WorkItemCreated("work-001", 1, Tenant, Item, Obligation),
         new WorkItemAssigned("work-001", 2, Tenant, Item, Binding),
         new WorkItemQueued("work-001", 3, Tenant, Item),
@@ -55,8 +59,9 @@ internal static class WorkItemV1Catalog
         new WorkItemRejected("work-001", 12, Tenant, Item, Requeue: false),
         new WorkItemExpired("work-001", 13, Tenant, Item),
         new ChildSpawned("work-001", 14, Tenant, Item, Child, new Obligation("Break out child work")),
+        new ConversationLinked("work-001", 15, Tenant, Item, Conversation),
 
-        // 14 commands.
+        // 15 commands.
         new CreateWorkItem(Tenant, Item, "Prepare the first tenant-scoped work item"),
         new AssignWorkItem(Tenant, Item, Binding),
         new QueueWorkItem(Tenant, Item),
@@ -71,8 +76,9 @@ internal static class WorkItemV1Catalog
         new RejectWorkItem(Tenant, Item),
         new ExpireWorkItem(Tenant, Item),
         new SpawnChild(Tenant, Item, Child, "Break out child work", SuspendParentUntilChildCompletes: true),
+        new LinkConversation(Tenant, Item, Conversation),
 
-        // 9 rejection events.
+        // 10 rejection events.
         new WorkItemTransitionRejected(Tenant, Item, WorkItemStatus.Created, "Assign"),
         new WorkItemProgressRejected(Tenant, Item, "Progress unit must match the established effort unit."),
         new WorkItemReEstimateRejected(Tenant, Item, "Re-estimate unit must match the established effort unit."),
@@ -82,5 +88,6 @@ internal static class WorkItemV1Catalog
         new WorkItemCannotReferenceSecondParent(Tenant, Item, Parent, new ParentWorkItemReference(Tenant, new WorkItemId("parent-002"))),
         new WorkItemTreeCycleRejected(Tenant, Item, Parent, Item),
         new WorkItemTreeDepthExceeded(Tenant, Item, Parent, 32, 33),
+        new WorkItemConversationLinkRejected(Tenant, Item, Conversation, ProposedConversation),
     ];
 }

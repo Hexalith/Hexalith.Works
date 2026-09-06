@@ -350,7 +350,7 @@ public sealed class EnvelopeCanonicalSequencingTests
     public void EveryV1RejectionApplyAndReplayPathIsANoOpForUnknownAndPopulatedState()
     {
         IRejectionEvent[] rejections = WorkItemV1Catalog.All.OfType<IRejectionEvent>().ToArray();
-        rejections.Length.ShouldBe(9, "The frozen v1 catalog must still hold exactly 9 rejection payloads.");
+        rejections.Length.ShouldBe(10, "The frozen v1 catalog must hold exactly 10 rejection payloads.");
 
         foreach (IRejectionEvent rejection in rejections)
         {

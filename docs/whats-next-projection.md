@@ -115,6 +115,12 @@ duplicate delivery, and out-of-order delivery converge to the same read model an
 Independent aggregate projection uses EventStore's checkpoint rebuild; relationship-aware roll-up repair uses
 its bounded shared lifecycle and atomic single-store promotion (see `docs/eventstore-api-surface-constraints.md`).
 
+`ConversationLinked` is accepted as a state-changing delivery and therefore advances this watermark,
+but it is an intentional what's-next no-op: it changes neither eligibility nor ordering and emits no
+projection-change notification. The per-item `WorkItemRollUp` and `get-work-item` `WorkItemView` expose
+the nullable opaque `ConversationCorrelationId`; `WhatsNextItem` deliberately does not copy dialogue or
+add a routing input. Duplicate and out-of-order link deliveries converge through the same sorted fold.
+
 The persisted tenant index retains `LastSequences[workItemId]` even after an item becomes ineligible. Inside
 the ETag retry transform, a strictly greater retained sequence refuses an older eligible or ineligible replay;
 an equal sequence may refresh the deterministic item document or tombstone. During additive rollout, an
@@ -158,8 +164,9 @@ logging later.
 The projection, comparator, filter, and change-signal are pure code in `Hexalith.Works.Projections` (read
 model `WhatsNextItem` in `Hexalith.Works.Contracts`), referencing only Works contracts (+
 `EventStore.Contracts`). They do not read EventStore, repositories, files, clocks, Dapr, runtime
-configuration, UI, routing, LLM, or cost-governance services. Story 4.4 adds **no** event, command, or
-rejection type — the v1 catalog stays **37** and the golden corpus stays byte-compatible (DC3). The live
+configuration, UI, routing, LLM, or cost-governance services. Story 4.4 added **no** event, command, or
+rejection type; its completion count of 37 is historical. Story 1.5's additive link contracts make the
+current v1 catalog **40**, while all pre-existing golden bytes remain byte-compatible (DC3). The live
 `IDomainQueryHandler` / `/query` endpoint, `IReadModelStore` persistence, and the
 `IProjectionChangeNotifier` / SignalR broadcast are the deferred runtime adapters (Stories 4.5/4.6), gated
 on the EventStore projection-model reconciliation.

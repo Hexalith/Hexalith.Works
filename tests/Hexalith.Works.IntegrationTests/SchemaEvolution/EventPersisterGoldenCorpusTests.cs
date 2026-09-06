@@ -41,7 +41,7 @@ public sealed class EventPersisterGoldenCorpusTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        catalog.Count.ShouldBe(23, "The frozen v1 catalog must contain 14 success and 9 rejection event payloads.");
+        catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
         fixtures.ShouldBe(
             catalog.Keys.Order(StringComparer.Ordinal),
             ignoreOrder: false,

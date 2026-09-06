@@ -1,0 +1,13 @@
+{
+  "aggregateId": "work-001",
+  "sequence": 15,
+  "tenantId": {
+    "value": "tenant-alpha"
+  },
+  "workItemId": {
+    "value": "work-001"
+  },
+  "conversationCorrelationId": {
+    "value": "conversation-456"
+  }
+}

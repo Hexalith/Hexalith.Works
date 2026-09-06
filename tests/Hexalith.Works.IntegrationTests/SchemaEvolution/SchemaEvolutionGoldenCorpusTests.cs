@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Serialization;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Events.Rejections;
 using Hexalith.Works.Contracts.ValueObjects;
 using Shouldly;
 
@@ -52,7 +53,7 @@ public sealed class SchemaEvolutionGoldenCorpusTests
             .Order(StringComparer.Ordinal)
             .ToArray();
 
-        catalog.Count.ShouldBe(23, "The frozen v1 catalog must contain 14 success and 9 rejection event payloads.");
+        catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
         fixtures.ShouldBe(
             catalog.Keys.Order(StringComparer.Ordinal),
             ignoreOrder: false,
@@ -204,6 +205,24 @@ public sealed class SchemaEvolutionGoldenCorpusTests
         deserialized.Schedule.Priority.ShouldBe(Priority.High);
         deserialized.Schedule.DueDate.ShouldBe(new DateOnly(2026, 7, 15));
         deserialized.Note.ShouldBe("deadline moved");
+    }
+
+    [Fact]
+    public void Conversation_link_events_deserialize_from_frozen_bytes_and_round_trip()
+    {
+        ConversationLinked linked = RoundTrip<ConversationLinked>("ConversationLinked.v1.json");
+        linked.AggregateId.ShouldBe("work-001");
+        linked.Sequence.ShouldBe(15);
+        linked.TenantId.ShouldBe(WorkItemV1Catalog.Tenant);
+        linked.WorkItemId.ShouldBe(WorkItemV1Catalog.Item);
+        linked.ConversationCorrelationId.ShouldBe(WorkItemV1Catalog.Conversation);
+
+        WorkItemConversationLinkRejected rejected = RoundTrip<WorkItemConversationLinkRejected>(
+            "WorkItemConversationLinkRejected.v1.json");
+        rejected.TenantId.ShouldBe(WorkItemV1Catalog.Tenant);
+        rejected.WorkItemId.ShouldBe(WorkItemV1Catalog.Item);
+        rejected.ExistingConversationCorrelationId.ShouldBe(WorkItemV1Catalog.Conversation);
+        rejected.ProposedConversationCorrelationId.ShouldBe(WorkItemV1Catalog.ProposedConversation);
     }
 
     [Fact]

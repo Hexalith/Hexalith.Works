@@ -29,7 +29,7 @@ public sealed class ProjectionPayloadCoverageTests
             contractPayloadTypes,
             [.. WhatsNextPayloadDescriptor.Catalog.Select(
                 descriptor => (descriptor.PayloadType, descriptor.EffectDisposition))],
-            [typeof(ChildSpawned)]);
+            [typeof(ChildSpawned), typeof(ConversationLinked)]);
     }
 
     private static void VerifyCatalog(

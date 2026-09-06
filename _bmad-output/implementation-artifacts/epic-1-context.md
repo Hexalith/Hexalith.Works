@@ -1,6 +1,6 @@
 # Epic 1 Context: Builder-Ready Work Item Kernel
 
-<!-- Generated from planning artifacts. Regenerate with compile-epic-context if planning docs change. -->
+<!-- Compiled from planning artifacts. Edit freely. Regenerate with compile-epic-context if planning docs change. -->
 
 ## Goal
 

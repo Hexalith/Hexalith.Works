@@ -12,7 +12,7 @@ namespace Hexalith.Works.Projections;
 /// </summary>
 /// <remarks>
 /// Plain <c>System.Text.Json</c> host-edge read model — NOT a <c>[PolymorphicSerialization]</c> durable catalog
-/// type (the durable catalog stays 37). Entries reuse the <see cref="PendingDateAwait"/> record.
+/// type (the durable catalog stays 40 after Story 1.5). Entries reuse the <see cref="PendingDateAwait"/> record.
 /// </remarks>
 public sealed class PendingDateAwaitTenantIndex
 {

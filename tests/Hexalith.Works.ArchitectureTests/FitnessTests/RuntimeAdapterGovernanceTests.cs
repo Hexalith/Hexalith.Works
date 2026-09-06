@@ -145,7 +145,7 @@ public sealed class RuntimeAdapterGovernanceTests
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(37, "Subscription envelopes, reminder/checkpoint/index records, and source records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
+        polymorphicCatalogCount.ShouldBe(40, "Subscription envelopes, reminder/checkpoint/index records, and source records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
     }
 
     [Fact]

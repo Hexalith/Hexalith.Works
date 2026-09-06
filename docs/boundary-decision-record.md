@@ -6,13 +6,12 @@ abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realiz
 (boundary decision record). Aligned with NFR-5 (domain purity) and NFR-11 (natural-language-is-data
 boundary).
 
-> **Approved course correction — 2026-09-05:** FR-21 now includes the additive
-> `LinkConversation` → `ConversationLinked` path owned by Story 1.5. Works ships only domain-centric
-> projects plus the canonical minimal EventStore domain-service executable; it ships no AppHost,
-> Aspire, or ServiceDefaults project. A designated platform/host repository owns Aspire topology
-> and generic runtime plumbing. Named 2026-09-06 (architecture AD-20): that repository is
-> **`Hexalith.Platform`** (github.com/Hexalith/Hexalith.Platform), owned by the Platform
-> Maintainer (Hexalith); Story 4.9 may enter implementation.
+> **Conversation link implemented; hosting migration pending — 2026-09-06:** FR-21's additive
+> `LinkConversation` → `ConversationLinked` path was delivered by Story 1.5. The separately approved
+> hosting course correction remains pending Story 4.9: Works still ships its AppHost and Aspire wiring
+> until that story moves topology and generic runtime plumbing to **`Hexalith.Platform`**
+> (github.com/Hexalith/Hexalith.Platform), owned by the Platform Maintainer (Hexalith), leaving Works
+> with domain-centric projects plus the canonical minimal EventStore domain-service executable.
 
 ## Purpose
 
@@ -71,7 +70,7 @@ are binding: this story ships the named seams, not the machinery behind them.
 ## Conversation-link ownership and lifecycle-neutral semantics
 
 `ConversationCorrelationId` is a Works-owned reference value object whose target remains owned by
-Conversations. `CreateWorkItem` and `SpawnChild` may supply it at creation. Story 1.5 adds
+Conversations. `CreateWorkItem` and `SpawnChild` may supply it at creation. Story 1.5 implements
 `LinkConversation` and `ConversationLinked` so an existing non-terminal item without a link can record
 one later. The first accepted link is authoritative and replayable; Works never resolves or copies
 conversation content while handling the command.
@@ -86,6 +85,9 @@ conversation content while handling the command.
 
 This additive change takes the durable polymorphic catalog from 37 to **40** types: 15 commands,
 15 success events, and 10 rejection events. Existing payload bytes and type names remain unchanged.
+The reader/writer direction, nullable read-model rollout, unknown-type behavior, and reader-first
+deployment order are bound by the VAL-H11 compatibility matrix in
+`docs/eventstore-api-surface-constraints.md`.
 
 ## Hosting and runtime ownership
 
@@ -135,7 +137,7 @@ ownership model. None of them is implemented or wired in v1.
 The Story 4.1–4.8 notes below preserve what each completed story proved at the time. References to a
 Works-owned AppHost, ServiceDefaults, or host-edge runtime describe the historical topology and are
 superseded by the approved 2026-09-05 boundary plus Story 4.9. Catalog counts of 37 are likewise
-point-in-time evidence before Story 1.5's additive three contracts; the corrected target is 40.
+point-in-time evidence before Story 1.5's additive three contracts; the current implemented count is 40.
 
 - Dependency direction is enforced by fitness tests: `Contracts` references only
   `EventStore.Contracts`; `Server`, `Projections`, and `Reactor` reference inward to `Contracts`

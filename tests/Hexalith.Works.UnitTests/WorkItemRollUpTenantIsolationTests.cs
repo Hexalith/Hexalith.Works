@@ -39,6 +39,7 @@ public sealed class WorkItemRollUpTenantIsolationTests
         new WorkItemSuspended(LocalChild.Value, 2, Tenant, LocalChild, [AwaitCondition.ExternalSignal("resume")]),
         new WorkItemResumed(LocalChild.Value, 2, Tenant, LocalChild, AwaitCondition.ExternalSignal("resume")),
         new WorkItemRescheduled(LocalChild.Value, 2, Tenant, LocalChild, new WorkItemSchedule(Priority.Normal)),
+        new ConversationLinked(LocalChild.Value, 2, Tenant, LocalChild, new ConversationCorrelationId("conversation-456")),
     ];
 
     public static TheoryData<IEventPayload> SupportedDeliveryPayloads

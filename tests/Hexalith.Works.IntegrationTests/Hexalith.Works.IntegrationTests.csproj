@@ -35,6 +35,8 @@
     <None Include="SchemaEvolution\Golden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
     <!-- Exact options-free EventPersister payload bytes, deliberately separate from the Web fixtures. -->
     <None Include="SchemaEvolution\EventPersisterGolden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Exact options-free command payload bytes for additive command-contract changes. -->
+    <None Include="SchemaEvolution\CommandGolden\**\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

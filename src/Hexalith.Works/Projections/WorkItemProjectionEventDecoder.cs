@@ -56,6 +56,12 @@ internal static partial class WorkItemProjectionEventDecoder
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
+            if (payload is ConversationLinked { ConversationCorrelationId: null })
+            {
+                LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
+                return new WorkItemProjectionEventDecodeResult(null, true, true);
+            }
+
             if (!WorksEventIdentity.Matches(payload, tenantId.Value, workItemId.Value))
             {
                 throw new InvalidOperationException("Projection event payload is outside the requested stream identity.");

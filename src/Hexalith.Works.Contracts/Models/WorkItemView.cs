@@ -36,6 +36,11 @@ public sealed record WorkItemView(
     ParentWorkItemReference? Parent,
     long LatestAcceptedSourceSequence)
 {
+    /// <summary>
+    /// Gets the opaque correlation to the Conversations-owned dialogue, when one has been established.
+    /// </summary>
+    public ConversationCorrelationId? ConversationCorrelationId { get; init; }
+
     /// <summary>Creates the fail-closed "not found" view for a work item that has no projected read model.</summary>
     /// <param name="tenantId">The tenant the lookup was scoped to.</param>
     /// <param name="workItemId">The requested work item identifier.</param>

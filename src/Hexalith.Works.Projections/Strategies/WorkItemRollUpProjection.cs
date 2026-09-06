@@ -118,6 +118,7 @@ public sealed class WorkItemRollUpProjection
             node.Status = WorkItemStatus.Created;
             node.OwnEffort = node.SpawnInitialEffort;
             node.Parent = node.SpawnParent;
+            node.ConversationCorrelationId = node.SpawnConversationCorrelationId;
             node.LatestAcceptedSourceSequence = Math.Max(node.LatestAcceptedSourceSequence, 1);
         }
 
@@ -165,6 +166,7 @@ public sealed class WorkItemRollUpProjection
         node.Status = WorkItemStatus.Created;
         node.OwnEffort = created.InitialEffort;
         node.Parent = created.Parent;
+        node.ConversationCorrelationId = created.ConversationCorrelationId;
         node.Terminal = false;
         if (created.Parent is not null && !_tenantIsolation.AllowsEdge(created.Parent.TenantId, node.TenantId))
         {
@@ -213,6 +215,7 @@ public sealed class WorkItemRollUpProjection
             Degraded = IsDegraded(node, []),
             ProjectionDiagnostics = CollectDiagnostics(node, []),
             OwnEffort = node.OwnEffort,
+            ConversationCorrelationId = node.ConversationCorrelationId,
         };
     }
 
@@ -347,6 +350,8 @@ public sealed class WorkItemRollUpProjection
 
         public WorkItemEffort? OwnEffort { get; set; }
 
+        public ConversationCorrelationId? ConversationCorrelationId { get; set; }
+
         public bool Terminal { get; set; }
 
         public bool Degraded { get; private set; }
@@ -360,6 +365,8 @@ public sealed class WorkItemRollUpProjection
         public WorkItemEffort? SpawnInitialEffort { get; private set; }
 
         public ParentWorkItemReference? SpawnParent { get; private set; }
+
+        public ConversationCorrelationId? SpawnConversationCorrelationId { get; private set; }
 
         public bool HasCreatedEvent => Events.Values.Any(accepted => accepted.Payload is WorkItemCreated);
 
@@ -381,6 +388,7 @@ public sealed class WorkItemRollUpProjection
             HasSpawnFacts = true;
             SpawnInitialEffort = spawned.InitialEffort;
             SpawnParent = new ParentWorkItemReference(spawned.TenantId, spawned.WorkItemId);
+            SpawnConversationCorrelationId = spawned.ConversationCorrelationId;
         }
 
         public void ResetProjectionState()
@@ -388,6 +396,7 @@ public sealed class WorkItemRollUpProjection
             Parent = null;
             Status = WorkItemStatus.Unknown;
             OwnEffort = null;
+            ConversationCorrelationId = null;
             Terminal = false;
             Degraded = false;
             ProjectionDiagnostics.Clear();

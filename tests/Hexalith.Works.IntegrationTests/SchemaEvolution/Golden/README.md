@@ -16,7 +16,7 @@ Rules:
 - **Never mint a `…V2` type.** A version suffix is forbidden below version 2 by design; back-compat is
   achieved by additive fields, not new types.
 
-`SchemaEvolutionGoldenCorpusTests` binds filenames bidirectionally to all 23 catalog event payload
+`SchemaEvolutionGoldenCorpusTests` binds filenames bidirectionally to all 25 catalog event payload
 types, deserializes each frozen file, round-trips it, and injects an unknown field to prove additive
 tolerance. To add a new event to the compatibility corpus, serialize a representative instance with
 `new JsonSerializerOptions(JsonSerializerDefaults.Web)` and freeze the output here.
