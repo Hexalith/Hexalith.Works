@@ -26,11 +26,11 @@ namespace Hexalith.Works.IntegrationTests;
 /// and restart replays an interrupted checkpoint.
 /// </summary>
 /// <remarks>
-/// This Tier-3 lane requires the same Redis, Dapr placement, scheduler, and Docker prerequisites as the other
-/// Aspire pipeline tests. It first proves the completed-child consumer re-reads the parent await and submits a
-/// live resume. It then widens the boundary between two cascade targets with the operational pacing option,
-/// stops after the first child reaches terminal state, and restarts against the same durable store to prove both
-/// descendants converge with exactly one accepted terminal event each.
+/// This Tier-3 lane requires Docker and a <c>dapr init</c> Redis; the AppHost owns its mTLS-enabled Sentry,
+/// placement, and scheduler services. It first proves the completed-child consumer re-reads the parent await and
+/// submits a live resume. It then widens the boundary between two cascade targets with the operational pacing
+/// option, stops after the first child reaches terminal state, and restarts against the same durable store to
+/// prove both descendants converge with exactly one accepted terminal event each.
 /// </remarks>
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksCascadeRecoveryPipelineSmokeTests
@@ -62,8 +62,6 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             Assert.Skip(PrerequisiteUnavailableReason(unavailablePort.Value));
             return;
         }
-
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
         // Phase 1: the live parent-terminal subscription dispatches child A, then the pacing interval creates
         // a deterministic stop boundary before child B. Disposing the AppHost simulates the process loss.
@@ -97,11 +95,9 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
         }).ConfigureAwait(true);
     }
 
-    /// <summary>The prerequisite gate reports the first unreachable OS-resolved port and stops probing.</summary>
+    /// <summary>The prerequisite gate reports the first unreachable external-service port and stops probing.</summary>
     [Theory]
     [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(2)]
     public async Task Prerequisite_probe_reports_first_unavailable_port_in_skip_reason(int unavailablePortIndex)
     {
         IReadOnlyList<int> ports = PrerequisitePorts();
@@ -122,7 +118,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
         PrerequisiteUnavailableReason(actualUnavailablePort).ShouldContain($":{actualUnavailablePort}");
     }
 
-    /// <summary>The prerequisite gate probes every OS-resolved port and reports no failure when all are reachable.</summary>
+    /// <summary>The prerequisite gate probes every external-service port and reports no failure when all are reachable.</summary>
     [Fact]
     public async Task Prerequisite_probe_reports_no_unavailable_port_when_all_ports_are_reachable()
     {
@@ -556,6 +552,8 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
             [
                 "--EnableKeycloak=false",
+                "--environment=Development",
+                "--DcpPublisher:RandomizePorts=false",
                 $"--Works:Recovery:CascadeTargetIntervalMilliseconds={cascadeTargetIntervalMilliseconds}",
             ],
             startupCts.Token)
@@ -722,9 +720,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
 
     private static IReadOnlyList<int> PrerequisitePorts()
     {
-        int placementPort = OperatingSystem.IsWindows() ? 6050 : 50005;
-        int schedulerPort = OperatingSystem.IsWindows() ? 6060 : 50006;
-        return [6379, placementPort, schedulerPort];
+        return [6379];
     }
 
     private static async Task<int?> FirstUnavailablePrerequisitePortAsync(
@@ -746,7 +742,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
     private static string PrerequisiteUnavailableReason(int port)
     {
         return $"Aspire cascade-recovery prerequisite port localhost:{port} is unavailable. "
-            + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.";
+            + "Start Docker and run `dapr init` to run this lane.";
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)

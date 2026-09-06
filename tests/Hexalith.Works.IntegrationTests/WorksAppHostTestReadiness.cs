@@ -4,6 +4,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 
+using Hexalith.Works.Projections;
 using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ namespace Hexalith.Works.IntegrationTests;
 internal static class WorksAppHostTestReadiness
 {
     private static readonly Version MinimumDaprRuntimeVersion = new(1, 18, 3);
+    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
 
     /// <summary>Keeps expected AppHost/Dapr diagnostics from flooding the in-process runner.</summary>
     public static void ConfigureHarnessLogging(IDistributedApplicationTestingBuilder builder)
@@ -107,6 +109,10 @@ internal static class WorksAppHostTestReadiness
             return await app.ResourceNotifications
                 .WaitForResourceHealthyAsync(resourceName, cancellationToken)
                 .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -254,6 +260,10 @@ internal static class WorksAppHostTestReadiness
             {
                 lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
             }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastDiagnostic = "The Dapr metadata request exceeded the HTTP client timeout.";
+            }
 
             await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         }
@@ -313,6 +323,10 @@ internal static class WorksAppHostTestReadiness
             {
                 lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
             }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastDiagnostic = "The Dapr reminder inspection request exceeded the HTTP client timeout.";
+            }
 
             await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
         }
@@ -320,6 +334,130 @@ internal static class WorksAppHostTestReadiness
         throw new TimeoutException(
             $"[registration] Deterministic reminder '{reminderName}' for actor '{actorId}' was not observable "
             + $"within 30 seconds. {lastDiagnostic}");
+    }
+
+    /// <summary>Waits until the exact await is present in the durable tenant discovery index.</summary>
+    public static async Task WaitForPendingDateAwaitIndexedAsync(
+        HttpClient sidecarClient,
+        PendingDateAwait pendingAwait,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(sidecarClient);
+        ArgumentNullException.ThrowIfNull(pendingAwait);
+
+        string key = WorksReadModelKeys.PendingDateAwaitIndexKey(pendingAwait.TenantId);
+        string path = $"/v1.0/state/{WorksReadModelKeys.StateStoreName}/{Uri.EscapeDataString(key)}";
+        DateTime deadline = DateTime.UtcNow.AddSeconds(60);
+        string lastDiagnostic = "No pending-date-await index response was received.";
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using HttpResponseMessage response = await sidecarClient
+                    .GetAsync(path, cancellationToken)
+                    .ConfigureAwait(false);
+                string body = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                lastDiagnostic = $"Status={(int)response.StatusCode} ({response.StatusCode}); Body={Bound(body)}";
+                if (response.IsSuccessStatusCode && !string.IsNullOrWhiteSpace(body))
+                {
+                    PendingDateAwaitTenantIndex? index = JsonSerializer.Deserialize<PendingDateAwaitTenantIndex>(body, s_web);
+                    if (index is not null
+                        && index.Entries.TryGetValue(pendingAwait.WorkItemId, out IReadOnlyList<PendingDateAwait>? entries)
+                        && entries.Any(candidate => candidate == pendingAwait))
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
+            }
+            catch (JsonException ex)
+            {
+                lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastDiagnostic = "The pending-date-await index request exceeded the HTTP client timeout.";
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException(
+            $"[registration/index] Pending date await for work item '{pendingAwait.WorkItemId}' was not durable "
+            + $"in tenant '{pendingAwait.TenantId}' within 60 seconds. {lastDiagnostic}");
+    }
+
+    /// <summary>
+    /// Removes the exact scheduler reminder while leaving the actor registration state and pending-await index intact.
+    /// </summary>
+    public static async Task DeleteReminderAsync(
+        HttpClient sidecarClient,
+        PendingDateAwait pendingAwait,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(sidecarClient);
+        ArgumentNullException.ThrowIfNull(pendingAwait);
+
+        string actorId = DateReminderName.ActorId(pendingAwait.TenantId, pendingAwait.WorkItemId);
+        string reminderName = DateReminderName.For(
+            pendingAwait.TenantId,
+            pendingAwait.WorkItemId,
+            pendingAwait.CorrelationKey);
+        string path = $"/v1.0/actors/{Uri.EscapeDataString(nameof(DateReminderActor))}/"
+            + $"{Uri.EscapeDataString(actorId)}/reminders/{Uri.EscapeDataString(reminderName)}";
+
+        using HttpResponseMessage delete = await sidecarClient
+            .DeleteAsync(path, cancellationToken)
+            .ConfigureAwait(false);
+        string deleteBody = await delete.Content
+            .ReadAsStringAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (!delete.IsSuccessStatusCode)
+        {
+            throw new InvalidOperationException(
+                $"[registration] Could not remove deterministic reminder '{reminderName}' for recovery proof. "
+                + $"Status={(int)delete.StatusCode} ({delete.StatusCode}); Body={Bound(deleteBody)}");
+        }
+
+        DateTime deadline = DateTime.UtcNow.AddSeconds(30);
+        string lastDiagnostic = "The deleted reminder remained observable.";
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using HttpResponseMessage response = await sidecarClient
+                    .GetAsync(path, cancellationToken)
+                    .ConfigureAwait(false);
+                string body = await response.Content
+                    .ReadAsStringAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                lastDiagnostic = $"Status={(int)response.StatusCode} ({response.StatusCode}); Body={Bound(body)}";
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return;
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastDiagnostic = "The Dapr reminder deletion check exceeded the HTTP client timeout.";
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException(
+            $"[registration] Deterministic reminder '{reminderName}' for actor '{actorId}' was still observable "
+            + $"30 seconds after deletion. {lastDiagnostic}");
     }
 
     private static string Bound(string value)

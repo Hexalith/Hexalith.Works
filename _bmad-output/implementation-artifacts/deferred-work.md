@@ -817,3 +817,27 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md`
   summary: Review the concurrent Story 4.8 scheduler's embedded-etcd network exposure.
   evidence: `DaprSelfHostedMtls.AddControlPlane` passes `--etcd-client-listen-address=0.0.0.0`; co-networked containers can reach that listener even though its port is not published to the host, so the scheduler should bind loopback unless remote clients are required.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Reject null-correlation `ConversationLinked` evidence in the what's-next projection.
+  evidence: The separately committed Story 1.5 descriptor treats a null correlation as an accepted intentional no-op and can advance the source watermark for malformed evidence; Story 4.8 does not own that projection contract.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Validate persisted `ConversationLinked` identity before applying it to aggregate state.
+  evidence: The separately committed Story 1.5 replay overload validates the correlation only, so a foreign tenant/work-item/aggregate identity in corrupted persisted evidence could become authoritative and reject a later legitimate link.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Add independent domain and tenant mismatch coverage for the Story 1.5 runtime envelope boundary.
+  evidence: The pre-verified review found only aggregate-ID mismatch coverage; removing either the domain or tenant comparison currently leaves the focused adapter tests green.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Add malformed required-field dispatch coverage for `LinkConversation`.
+  evidence: The pre-verified review found no raw runtime-adapter case with missing/null tenant, work-item, or conversation correlation, so the separately committed Story 1.5 fail-closed guards can regress undetected.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Audit stale concurrent-review records at the end of the deferred-work ledger.
+  evidence: Two Story 1.5 review entries describe a now-unasserted default control plane and localhost workload ACL domains, but the current Story 4.8 topology asserts the default path and retains `public` for workload/policy trust domains; existing records are append-only in this workflow.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Separate or reconcile the three submodule pointer advances bundled with the earlier Story 4.8 commit.
+  evidence: Parties, Projects, and Tenants pointers advanced relative to the 4.8 baseline despite its no-submodule constraint; they are already committed concurrent user-owned changes and were preserved as required by repository instructions.

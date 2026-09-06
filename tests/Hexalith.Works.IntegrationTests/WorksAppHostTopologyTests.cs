@@ -21,7 +21,9 @@ public sealed class WorksAppHostTopologyTests
     private const string EventStoreAdminName = "eventstore-admin";
     private const string EventStoreOperationsName = "eventstore-operations";
     private const string PubSubName = "pubsub";
+    private const string PlacementName = "dapr-placement-mtls";
     private const string ResiliencyName = "resiliency";
+    private const string SchedulerName = "dapr-scheduler-mtls";
     private const string SentryName = "dapr-sentry";
     private const string StateStoreName = "statestore";
     private const string WorksName = "works";
@@ -228,6 +230,179 @@ public sealed class WorksAppHostTopologyTests
             .ShouldNotContain(static name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase));
     }
 
+    /// <summary>Verifies the default local topology owns a TLS actor control plane with durable scheduler data.</summary>
+    [Fact]
+    public async Task DefaultAppHostComposesTheMtlsActorControlPlane()
+    {
+        IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                ["--EnableKeycloak=false"],
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        ContainerResource placement = builder.Resources
+            .OfType<ContainerResource>()
+            .Single(static resource => string.Equals(resource.Name, PlacementName, StringComparison.Ordinal));
+        ContainerResource scheduler = builder.Resources
+            .OfType<ContainerResource>()
+            .Single(static resource => string.Equals(resource.Name, SchedulerName, StringComparison.Ordinal));
+
+        AssertControlPlaneImageAndCredentials(placement, "./placement");
+        AssertControlPlaneImageAndCredentials(scheduler, "./scheduler");
+
+        string[] placementArgs = await EvaluateArgsAsync(placement);
+        placementArgs.ShouldContain("--tls-enabled");
+        placementArgs.ShouldContain("--sentry-address=dapr-sentry:50001");
+        placementArgs.ShouldContain("--trust-domain=localhost");
+        placementArgs.ShouldContain("--trust-anchors-file=/var/run/dapr/credentials/ca.crt");
+
+        string[] schedulerArgs = await EvaluateArgsAsync(scheduler);
+        schedulerArgs.ShouldContain("--tls-enabled");
+        schedulerArgs.ShouldContain("--sentry-address=dapr-sentry:50001");
+        schedulerArgs.ShouldContain("--trust-domain=localhost");
+        schedulerArgs.ShouldContain("--trust-anchors-file=/var/run/dapr/credentials/ca.crt");
+        schedulerArgs.ShouldContain("--etcd-data-dir=/var/lock/dapr/scheduler");
+        schedulerArgs.ShouldContain("--override-broadcast-host-port=localhost:51006");
+        schedulerArgs.ShouldNotContain("--etcd-client-listen-address=0.0.0.0");
+
+        AssertGrpcEndpoint(placement, port: 51005, targetPort: 50005);
+        AssertGrpcEndpoint(scheduler, port: 51006, targetPort: 50006);
+        ContainerMountAnnotation schedulerData = scheduler.Annotations.OfType<ContainerMountAnnotation>()
+            .Single(static mount => string.Equals(mount.Target, "/var/lock", StringComparison.Ordinal));
+        schedulerData.Type.ShouldBe(ContainerMountType.Volume);
+        schedulerData.Source.ShouldBe("hexalith-works-dapr-scheduler");
+        schedulerData.IsReadOnly.ShouldBeFalse();
+
+        WaitedResources(placement).ShouldBe([SentryName]);
+        WaitedResources(scheduler).ShouldBe([SentryName]);
+        foreach (ProjectResource project in builder.Resources
+                     .OfType<ProjectResource>()
+                     .Where(static resource => resource.TryGetAnnotationsOfType<DaprSidecarAnnotation>(out _)))
+        {
+            WaitedResources(project).ShouldContain(PlacementName);
+            WaitedResources(project).ShouldContain(SchedulerName);
+            DaprSidecarOptions options = SidecarOptions(Sidecar(project));
+            options.PlacementHostAddress.ShouldBe("localhost:51005");
+            options.SchedulerHostAddress.ShouldBe("localhost:51006");
+        }
+    }
+
+    /// <summary>A partial external actor control-plane tuple is rejected before any topology is built.</summary>
+    [Theory]
+    [InlineData("--Dapr:PlacementHostAddress=localhost:6050")]
+    [InlineData("--Dapr:SchedulerHostAddress=localhost:6060")]
+    public async Task AppHostRejectsOneSidedActorControlPlaneConfiguration(string configuredEndpoint)
+    {
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
+            _ = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                    ["--EnableKeycloak=false", configuredEndpoint],
+                    TestContext.Current.CancellationToken)
+                .ConfigureAwait(true));
+
+        exception.Message.ShouldContain("Configure both", Case.Sensitive);
+    }
+
+    /// <summary>Issuer material is rejected when an operator points its directory into the checkout.</summary>
+    [Fact]
+    public async Task AppHostRejectsRepositoryLocalCertificateDirectory()
+    {
+        string repositoryDirectory = Path.Combine(LocateRepositoryRoot(), "src");
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
+            _ = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                    ["--EnableKeycloak=false", $"--Dapr:Mtls:CertificateDirectory={repositoryDirectory}"],
+                    TestContext.Current.CancellationToken)
+                .ConfigureAwait(true));
+
+        exception.Message.ShouldContain("must resolve outside the repository", Case.Sensitive);
+    }
+
+    /// <summary>AppHost credentials and control-plane identity replace inherited sidecar values.</summary>
+    [Fact]
+    public async Task SidecarEnvironmentUsesTheAppHostOwnedControlPlaneIdentity()
+    {
+        string certificateDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-topology-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(certificateDirectory);
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "ca.crt"), "test-anchor", cancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.crt"), "test-chain", cancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.key"), "test-key", cancellationToken);
+
+        try
+        {
+            IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                    ["--EnableKeycloak=false", $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}"],
+                    TestContext.Current.CancellationToken)
+                .ConfigureAwait(true);
+            IDaprSidecarResource sidecar = Sidecar(Project(builder, WorksName));
+            var inherited = new Dictionary<string, object>(StringComparer.Ordinal)
+            {
+                ["DAPR_TRUST_ANCHORS"] = "stale-anchor",
+                ["DAPR_CERT_CHAIN"] = "stale-chain",
+                ["DAPR_CERT_KEY"] = "stale-key",
+                ["DAPR_CONTROLPLANE_TRUST_DOMAIN"] = "stale-domain",
+                ["DAPR_CONTROLPLANE_NAMESPACE"] = "stale-namespace",
+                ["NAMESPACE"] = "stale-namespace",
+            };
+
+            Dictionary<string, object> environment = await EvaluateEnvironmentAsync(
+                sidecar,
+                builder.ExecutionContext,
+                inherited);
+
+            StringValue(environment, "DAPR_TRUST_ANCHORS").ShouldBe("test-anchor");
+            StringValue(environment, "DAPR_CERT_CHAIN").ShouldBe("test-chain");
+            StringValue(environment, "DAPR_CERT_KEY").ShouldBe("test-key");
+            StringValue(environment, "DAPR_CONTROLPLANE_TRUST_DOMAIN").ShouldBe("localhost");
+            StringValue(environment, "DAPR_CONTROLPLANE_NAMESPACE").ShouldBe("default");
+            StringValue(environment, "NAMESPACE").ShouldBe("default");
+        }
+        finally
+        {
+            Directory.Delete(certificateDirectory, recursive: true);
+        }
+    }
+
+    /// <summary>An external-looking symlink cannot redirect issuer material back into the checkout.</summary>
+    [Fact]
+    public async Task AppHostRejectsCertificateDirectorySymlinkedIntoTheRepository()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.Skip("Creating directory symlinks requires host-specific privileges on Windows.");
+            return;
+        }
+
+        string temporaryDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-topology-link-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temporaryDirectory);
+        string linkedDirectory = Path.Combine(temporaryDirectory, "credentials");
+        _ = Directory.CreateSymbolicLink(linkedDirectory, LocateRepositoryRoot());
+
+        try
+        {
+            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
+                _ = await DistributedApplicationTestingBuilder
+                    .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                        ["--EnableKeycloak=false", $"--Dapr:Mtls:CertificateDirectory={linkedDirectory}"],
+                        TestContext.Current.CancellationToken)
+                    .ConfigureAwait(true));
+
+            exception.Message.ShouldContain("must resolve outside the repository", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(linkedDirectory);
+            Directory.Delete(temporaryDirectory);
+        }
+    }
+
     /// <summary>Verifies actor state-store metadata and app scopes from parsed YAML nodes.</summary>
     [Fact]
     public void StateStoreComponentHasExactActorMetadataAndScopes()
@@ -427,6 +602,16 @@ public sealed class WorksAppHostTopologyTests
         YamlMappingNode mtls = Mapping(configuration, "spec", "mtls");
         Scalar(mtls, "enabled").ShouldBe("true");
         Scalar(mtls, "sentryAddress").ShouldBe("127.0.0.1:50001");
+        Scalar(mtls, "controlPlaneTrustDomain").ShouldBe("localhost");
+
+        YamlMappingNode accessControl = Mapping(configuration, "spec", "accessControl");
+        Scalar(accessControl, "trustDomain").ShouldBe("public");
+        Sequence(accessControl, "policies").Children
+            .Cast<YamlMappingNode>()
+            .ShouldAllBe(static policy => string.Equals(
+                Scalar(policy, "trustDomain"),
+                "public",
+                StringComparison.Ordinal));
     }
 
     private static IReadOnlyDictionary<string, string> ParseScopes(string value)
@@ -521,13 +706,14 @@ public sealed class WorksAppHostTopologyTests
             .Single(component => string.Equals(component.Name, name, StringComparison.Ordinal));
 
     private static async Task<Dictionary<string, object>> EvaluateEnvironmentAsync(
-        ProjectResource resource,
-        DistributedApplicationExecutionContext executionContext)
+        IResource resource,
+        DistributedApplicationExecutionContext executionContext,
+        Dictionary<string, object>? initialEnvironment = null)
     {
         var context = new EnvironmentCallbackContext(
             executionContext,
             resource,
-            new Dictionary<string, object>(),
+            initialEnvironment ?? new Dictionary<string, object>(),
             TestContext.Current.CancellationToken);
         foreach (EnvironmentCallbackAnnotation annotation in resource.Annotations.OfType<EnvironmentCallbackAnnotation>())
         {
@@ -535,6 +721,42 @@ public sealed class WorksAppHostTopologyTests
         }
 
         return context.EnvironmentVariables;
+    }
+
+    private static async Task<string[]> EvaluateArgsAsync(ContainerResource resource)
+    {
+        var args = new List<object>();
+        var context = new CommandLineArgsCallbackContext(args, resource, TestContext.Current.CancellationToken);
+        foreach (CommandLineArgsCallbackAnnotation annotation in resource.Annotations.OfType<CommandLineArgsCallbackAnnotation>())
+        {
+            await annotation.Callback(context).ConfigureAwait(true);
+        }
+
+        return [.. args.Select(static argument => argument.ToString() ?? string.Empty)];
+    }
+
+    private static void AssertControlPlaneImageAndCredentials(ContainerResource resource, string entrypoint)
+    {
+        ContainerImageAnnotation image = resource.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
+        image.Image.ShouldBe("daprio/dapr");
+        image.Tag.ShouldBe("1.18.3");
+        resource.Entrypoint.ShouldBe(entrypoint);
+        resource.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
+
+        ContainerMountAnnotation credentials = resource.Annotations.OfType<ContainerMountAnnotation>()
+            .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/credentials", StringComparison.Ordinal));
+        credentials.Type.ShouldBe(ContainerMountType.BindMount);
+        credentials.Source.ShouldNotBeNull().ShouldNotStartWith(LocateRepositoryRoot(), Case.Sensitive);
+        credentials.IsReadOnly.ShouldBeTrue();
+    }
+
+    private static void AssertGrpcEndpoint(ContainerResource resource, int port, int targetPort)
+    {
+        EndpointAnnotation grpc = resource.Annotations.OfType<EndpointAnnotation>()
+            .Single(static endpoint => string.Equals(endpoint.Name, "grpc", StringComparison.Ordinal));
+        grpc.Port.ShouldBe(port);
+        grpc.TargetPort.ShouldBe(targetPort);
+        grpc.IsProxied.ShouldBeTrue();
     }
 
     private static string[] HealthKeys(ProjectResource resource)
@@ -566,7 +788,7 @@ public sealed class WorksAppHostTopologyTests
             .Select(static annotation => annotation.Resource.Name)
             .Order(StringComparer.Ordinal)];
 
-    private static string[] WaitedResources(ProjectResource resource)
+    private static string[] WaitedResources(IResource resource)
         => [.. resource.Annotations
             .OfType<WaitAnnotation>()
             .Select(static annotation => annotation.Resource.Name)

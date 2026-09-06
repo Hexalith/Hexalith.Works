@@ -1,3 +1,5 @@
+using System.Runtime.Serialization;
+
 namespace Hexalith.Works.Reminders;
 
 /// <summary>
@@ -10,9 +12,10 @@ namespace Hexalith.Works.Reminders;
 /// <param name="Instant">The awaited UTC instant.</param>
 /// <param name="CorrelationKey">The deterministic await correlation key (the round-trip instant string).</param>
 /// <param name="DueTimeMilliseconds">The non-negative delay, in milliseconds, until the reminder should fire.</param>
+[DataContract]
 public sealed record DateReminderRegistration(
-    string TenantId,
-    string WorkItemId,
-    DateTimeOffset Instant,
-    string CorrelationKey,
-    double DueTimeMilliseconds);
+    [property: DataMember(Name = "TenantId", Order = 1, IsRequired = true)] string TenantId,
+    [property: DataMember(Name = "WorkItemId", Order = 2, IsRequired = true)] string WorkItemId,
+    [property: DataMember(Name = "Instant", Order = 3, IsRequired = true)] DateTimeOffset Instant,
+    [property: DataMember(Name = "CorrelationKey", Order = 4, IsRequired = true)] string CorrelationKey,
+    [property: DataMember(Name = "DueTimeMilliseconds", Order = 5, IsRequired = true)] double DueTimeMilliseconds);

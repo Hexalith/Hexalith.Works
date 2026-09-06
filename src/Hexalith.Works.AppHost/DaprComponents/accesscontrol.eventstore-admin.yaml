@@ -12,6 +12,7 @@ spec:
   mtls:
     enabled: true
     sentryAddress: "127.0.0.1:50001"
+    controlPlaneTrustDomain: "localhost"
   accessControl:
     defaultAction: allow
     trustDomain: "public"

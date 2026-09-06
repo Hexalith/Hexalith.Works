@@ -2644,3 +2644,72 @@ The approved Story 4.8 scope forbids weakening/bypassing the ACL and does not au
 plane topology. Those experiments were therefore removed. No actor/scheduler defect was reached, so
 `DateReminderActor` and `DaprDateReminderScheduler` remain unchanged. Steady-state and recovery live acceptance
 remain incomplete at the submission boundary; story and sprint status were not advanced to done.
+
+## Live SM-1 resolution — passed after approved mTLS scope expansion
+
+The human subsequently approved the self-hosted Sentry/mTLS topology while retaining the existing ACLs. The
+AppHost now owns Dapr 1.18.3 Sentry, TLS-enabled placement, and TLS-enabled Scheduler resources. Sidecars reach
+the two actor-control-plane resources through fixed localhost DCP proxies; Scheduler state uses the named
+`hexalith-works-dapr-scheduler` volume. Certificates and the issuer private key remain outside the repository and
+are mounted read-only into placement/Scheduler. The four receiver configurations keep their application/workload
+ACL trust domain at `public`, while Sentry, placement, Scheduler, and `spec.mtls.controlPlaneTrustDomain` use the
+Dapr CLI 1.18 standalone default `localhost`. The Works policy remains deny-by-default.
+
+After mTLS made the authorized EventStore invocation succeed, the live trace reached the reminder boundary and
+found the actual callback defect: Dapr actor remoting could not serialize `DateReminderRegistration`. Adding the
+required `[DataContract]`/`[DataMember]` metadata fixed the boundary. Review remediation then froze explicit
+required member names/order, added a forward-read fixture, and made the recovery proof loss-sensitive: each
+recovery fact observes its exact durable pending-await index entry, deletes the corresponding Dapr Scheduler
+reminder, and only then restarts. The first version's fixed five-second index wait failed once under real timing;
+the exact durable-index gate removed that race without extending the delivery timeout. The future path also
+reasserts that its deadline remains future after host-2 readiness.
+
+Final verification on the current checkout:
+
+```text
+dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal
+# 0 warnings, 0 errors
+
+dotnet exec tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests.dll -reporter verbose
+# 567/567 passed
+
+dotnet exec tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -reporter verbose
+# 236/236 passed
+
+dotnet exec tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests.dll -reporter verbose
+# 3/3 passed
+
+dotnet exec tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll \
+  -class- '*SmokeTests' -reporter verbose
+# 287/287 passed, 0 skipped
+
+dotnet exec tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll \
+  -class '*WorksAppHostTopologyTests' -reporter verbose
+# 14/14 passed
+
+dotnet exec tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll \
+  -class '*WorksReminderRecoveryPipelineSmokeTests' -reporter verbose
+# 4/4 passed, 0 skipped, 923.387 seconds
+
+dotnet exec tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll \
+  -class '*WorksCommandPipelineSmokeTests' -reporter verbose
+# 1/1 passed, 0 skipped, 105.366 seconds
+
+dotnet exec tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll \
+  -class '*WorksCascadeRecoveryPipelineSmokeTests' -reporter verbose
+# 18/18 passed, 0 skipped, 332.959 seconds
+```
+
+The combined reminder class proves all four live boundaries together: steady registration/fire without restart;
+overdue discovery/reissue across three AppHost lifecycles with no tenant configuration and with the original
+Scheduler reminder removed; future re-registration and later fire across two lifecycles after the same deliberate
+loss; and certificate-backed ACL authorization (`eventstore` allowed, `eventstore-admin` denied with 403 at Works
+`/process`). `dapr --version` reported CLI 1.18.0/runtime 1.18.3.
+`aspire ps --format Json --non-interactive` returned `[]` after every final live run. `git diff --check` passed and
+a private-key-content scan of the diff returned no matches.
+
+Story 4.8 adds no durable command/event/rejection type. The current checkout's catalog is **40** because the
+separately committed Story 1.5 added three types after the historical 4.8 baseline of 37; the 4.8 catalog delta
+remains zero. During diagnosis, credential text was accidentally exposed by a hidden-resource description. That
+bundle was immediately rotated: the active directory is mode 0700 with credential files mode 0600, and the old
+bundle is quarantined at `/tmp/hexalith-works-exposed-20260906T2044` with directory mode 0700.

@@ -28,9 +28,10 @@ namespace Hexalith.Works.IntegrationTests;
 /// the runnable Works domain service.
 /// </summary>
 /// <remarks>
-/// <para>It is Tier-3: it requires Docker, a `dapr init` Redis, and the Dapr placement/scheduler services. When
-/// those prerequisites are absent (e.g. the headless sandbox) the test <see cref="Assert.Skip(string)"/>s with a
-/// clear reason rather than failing — a miswired topology still fails via the model-inspection lane
+/// <para>It is Tier-3: it requires Docker and a <c>dapr init</c> Redis. The AppHost owns the mTLS-enabled Sentry,
+/// placement, and scheduler services used by this lane. When Redis is absent (e.g. the headless sandbox) the test
+/// <see cref="Assert.Skip(string)"/>s with a clear reason rather than failing — a miswired topology still fails via
+/// the model-inspection lane
 /// (<c>WorksAppHostTopologyTests</c>), and the deterministic adapter convergence is proven by
 /// <c>WorkItemProjectionQueryAdapterTests</c>.</para>
 /// <para>Auth uses the EventStore EnableKeycloak=false symmetric-key dev path; the signing key matches the
@@ -52,18 +53,18 @@ public sealed class WorksCommandPipelineSmokeTests
         if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
         {
             Assert.Skip(
-                "Aspire command-pipeline prerequisites missing (Redis :6379 + Dapr placement :50005 + scheduler :50006). "
-                + "Start Docker, run `dapr init`, and start the placement/scheduler services to run this lane.");
+                "Aspire command-pipeline prerequisite missing (dapr-init Redis on :6379). "
+                + "Start Docker and run `dapr init` to run this lane.");
             return;
         }
-
-        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], startupCts.Token)
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                ["--EnableKeycloak=false", "--environment=Development", "--DcpPublisher:RandomizePorts=false"],
+                startupCts.Token)
             .ConfigureAwait(true);
 
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
@@ -168,12 +169,7 @@ public sealed class WorksCommandPipelineSmokeTests
 
     private static async Task<bool> PrerequisitesAvailableAsync(CancellationToken cancellationToken)
     {
-        int placementPort = OperatingSystem.IsWindows() ? 6050 : 50005;
-        int schedulerPort = OperatingSystem.IsWindows() ? 6060 : 50006;
-
-        return await IsPortReachableAsync(6379, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(placementPort, cancellationToken).ConfigureAwait(false)
-            && await IsPortReachableAsync(schedulerPort, cancellationToken).ConfigureAwait(false);
+        return await IsPortReachableAsync(6379, cancellationToken).ConfigureAwait(false);
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)

@@ -97,7 +97,7 @@ _Added by the 2026-07-21 correct-course (audit findings F-RT-3 critical, F-RT-5 
 
 ### Review Findings
 
-- [ ] [Review][Patch] [High] Fix the live Dapr actor-reminder callback path and make AC #1's smoke test fail after prerequisites pass when no resume occurs [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:108]
+- [x] [Review][Patch] [High] Fix the live Dapr actor-reminder callback path and make AC #1's smoke test fail after prerequisites pass when no resume occurs [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:108] — resolved 2026-09-06: composed the missing mTLS actor control plane, then traced the reached callback path to Dapr actor remoting rejecting `DateReminderRegistration`; added its data-contract metadata and a serializer regression fact. The combined live class now passes 4/4 with no skips.
 - [x] [Review][Patch] [High] Propagate incomplete reconciliation scans and retry startup reconciliation with bounded backoff until success or the configured limit [src/Hexalith.Works/Reminders/ReminderReconciliationService.cs:28]
 - [x] [Review][Patch] [High] Preserve a per-aggregate sequence watermark so an older replay cannot remove or overwrite a newer pending-date index entry [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:214]
 - [x] [Review][Patch] [High] Make the recovery smoke establish durable-index state, prove zero pre-restart resumes, execute a genuine repeated reconciliation pass, and align its test-summary claim [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:85]
@@ -115,7 +115,7 @@ _Added by the 2026-07-21 correct-course (audit findings F-RT-3 critical, F-RT-5 
 
 ### Review Findings (2026-09-01, bmad-code-review)
 
-- [ ] [Review][Patch] [High] Diagnose and fix the Aspire AppHost's `DistributedApplication.StartAsync` failure (`TaskCanceledException` after 5m 08s, per this diff's own `test-summary.md`), which currently blocks all Tier-3 live proof for this story — not just AC #1's reminder-callback lane already tracked above, but AC #2/#3's recovery lane too. Root cause is undiagnosed; verified it is **not** the `works` resource dropping its explicit `.WaitFor(eventStore)`/`.WithReference(eventStore)` (that dependency is preserved internally by `AddEventStoreDomainModule`'s `References=[eventStore.EventStore]`/`WaitFor=[eventStore.EventStore]` in `references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/HexalithEventStoreDomainModuleExtensions.cs:73-74`). Investigate the newer topology this same diff adds to `src/Hexalith.Works.AppHost/Program.cs`: the `eventstore-operations` project + its own Dapr sidecar, and the `resiliency` Dapr component now wired via reflection (`SidecarOf`) into every discovered sidecar. Resolved 2026-09-02: investigate now rather than deferring. [src/Hexalith.Works.AppHost/Program.cs]
+- [x] [Review][Patch] [High] Diagnose and fix the Aspire AppHost's `DistributedApplication.StartAsync` failure (`TaskCanceledException` after 5m 08s, per this diff's own `test-summary.md`), which currently blocks all Tier-3 live proof for this story — not just AC #1's reminder-callback lane already tracked above, but AC #2/#3's recovery lane too. Root cause is undiagnosed; verified it is **not** the `works` resource dropping its explicit `.WaitFor(eventStore)`/`.WithReference(eventStore)` (that dependency is preserved internally by `AddEventStoreDomainModule`'s `References=[eventStore.EventStore]`/`WaitFor=[eventStore.EventStore]` in `references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/HexalithEventStoreDomainModuleExtensions.cs:73-74`). Investigate the newer topology this same diff adds to `src/Hexalith.Works.AppHost/Program.cs`: the `eventstore-operations` project + its own Dapr sidecar, and the `resiliency` Dapr component now wired via reflection (`SidecarOf`) into every discovered sidecar. Resolved 2026-09-06: explicit Development environment forwarding fixed the operations-host exit, and AppHost-owned mTLS Sentry/placement/Scheduler plus fixed test-harness proxy ports closed the remaining control-plane startup failures. The reminder, command, and cascade live lanes all start and pass. [src/Hexalith.Works.AppHost/Program.cs]
 - [x] [Review][Defer] [Medium] This diff bundles substantial functionality outside Story 4.8's own declared scope into `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs` and the wholesale-new `src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs`: a schema-v2 migration path (`UseCurrentSchemaAsync`, `CurrentWhatsNextIndexKey`/`CurrentRollUpKey`, read at `WorkItemProjectionDispatcher.cs:143` once per dispatch and reused across awaited I/O — a plausible stale-key race under concurrent tenant migration), a roll-up child-reconciliation merge against persisted state, `WorkItemProjectionBoundarySanitizer`, and monotonic-write watermarks. None of this is mentioned in the story's Tasks, its File List annotations ("maintain index + registry" only), or the test-summary's own "Production code changed" bullets for Story 4.8. The Dev Notes explicitly place "the persisted parent roll-up convergence limitation (deferred-work F-PROJ-1)" **out of scope** for this story, yet these dispatcher changes are substantially about exactly that. Also confirmed two related File List gaps that fit the same pattern: `WorksHost.cs:82` (not in the File List) is where `WorkItemSuspendedReminderHandler` actually gets registered, and `WorksDomainEventProcessorTests.cs` (also not in the File List) already covers `WorkItemSuspended` dispatch, resolving the concern that checked-off Review Finding line above it. [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:143-213,394-413] — deferred, reason: out of scope per Dev Notes (F-PROJ-1 was already named as deferred); split into its own tracked story with explicit acceptance criteria and test plan. Tracked as DW-84 in deferred-work.md.
 - [x] [Review][Patch] [Medium] Document the pending-date-await index/registry unbounded-growth tradeoff in `docs/boundary-decision-record.md`: `PendingDateAwaitTenantIndex.LastSequences` (`WorkItemProjectionDispatcher.MaintainPendingDateAwaitIndexAsync`, `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:415-482`) gets one permanent entry per work item ever dispatched through `/project` in a tenant — not only items that ever had a `DateReached` await — with no pruning; same for `PendingDateAwaitTenantRegistry.Tenants`, which is append-only forever. This diff's own `CascadeCheckpointIndex` got a `CascadeCheckpointIndexStaleAfterHours` retention knob (verified consumed and clamped in `CascadeRecoveryReconciler.cs:42`); the pending-date-await index has no analogous mechanism. Resolved 2026-09-02: accept as a documented limitation rather than building pruning now. [docs/boundary-decision-record.md] — resolved 2026-09-05: added the "Accepted limitation" paragraph to the Story 4.8 entry.
 - [x] [Review][Patch] [Medium] Reconcile Story 4.8's test-count and result-count claims in `_bmad-output/implementation-artifacts/tests/test-summary.md`: it claims "+18" new IntegrationTests but the four new test files contain 27 `[Fact]`/`[Theory]` methods (verified by count: `PendingDateAwaitIndexDispatcherTests.cs` has 11, not the claimed 7; `IndexedPendingDateAwaitSourceTests.cs` has 9, not the claimed 5; `ReminderReconciliationServiceTests.cs` isn't mentioned at all). Separately, the embedded "2026-08-28 code-review rerun" paragraph reports UnitTests 528/528, ArchitectureTests 207/207, deterministic IntegrationTests 198/198 — numbers that don't reconcile with the rest of the same document (496/44/37 elsewhere) and read as pasted from an unrelated run. This is the exact "test-count bookkeeping drift" failure mode the story's own Dev Notes name as this repo's most recurring review finding. [_bmad-output/implementation-artifacts/tests/test-summary.md] — resolved 2026-09-05: corrected the per-file counts with an explicit correction note, added the omitted `ReminderReconciliationServiceTests`, and appended a dated "2026-09-05 code-review remediation session" section with counts verified against this session's actual binary runs (UnitTests 529/529, ArchitectureTests 236/236, PropertyTests 3/3, deterministic IntegrationTests 268/268).
@@ -263,6 +263,18 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Debug Log References
 
+- **2026-09-06 live-proof completion:** after the human approved the Sentry/mTLS scope expansion, direct `daprd`
+  probes separated Dapr's `localhost` control-plane trust domain from the certificate-issued `public` workload
+  trust domain. AppHost-owned TLS placement and Scheduler resources replaced the plaintext `dapr init` pair;
+  Scheduler data persists in a named volume and every sidecar waits for the three control-plane resources. The
+  mTLS ACL fact then passed (`eventstore` allowed to Works `/process`, `eventstore-admin` denied with 403). Live
+  Works logs subsequently isolated `DateReminderRegistration` as non-serializable at the actor-remoting boundary;
+  `[DataContract]`/`[DataMember]` fixed it. Review then froze required member names/order and strengthened both
+  recovery facts to observe the exact durable index, delete the original Scheduler reminder, and require startup
+  recreation. Final results: reminder class 4/4 with no skips in 923.387s; command smoke 1/1 in 105.366s; cascade
+  class 18/18 in 332.959s; Release build 0 warnings/errors; Unit 567/567, Architecture 236/236, Property 3/3,
+  non-smoke Integration 287/287, topology 14/14. The current catalog is 40 only because separately committed
+  Story 1.5 added three types; Story 4.8's catalog delta is zero.
 - **2026-09-06 Story 4.8 runtime-proof session:** aligned the AppHost SDK to 13.5.3 and upgraded the local Dapr
   runtime from 1.18.2 to 1.18.3 without clearing Redis. The first focused three-fact run finished naturally after
   924 seconds with all facts timing out in `DistributedApplication.StartAsync`; DCP logs isolated
@@ -293,10 +305,18 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
-> The original 2026-07-23 completion notes below are historical. The 2026-08-28 code-review remediation supersedes
-> its live-lane status: callback failure is no longer skipped, but the current acceptance run was blocked earlier
-> by Aspire AppHost startup timing out before any reminder assertion executed.
+> The original 2026-07-23 and intermediate remediation notes below are historical. The 2026-09-06 final live
+> resolution supersedes their blocker status.
 
+- **2026-09-06 final live resolution:** the previously recorded blocker is closed. The AppHost composes a
+  self-hosted Dapr 1.18.3 mTLS control plane (Sentry, placement, durable Scheduler) without weakening Works'
+  deny-by-default ACL or committing credentials. Control-plane identity uses `localhost`; workload ACL identity
+  remains `public`. The reached actor-remoting path exposed and fixed the missing data-contract metadata on
+  `DateReminderRegistration`, whose required member names/order and forward-read payload are now frozen.
+  Recovery facts wait for the exact durable pending-await index, delete the original Scheduler reminder, and
+  prove startup recreation; the future deadline is rechecked after host-2 readiness. All steady, overdue
+  recovery, future recovery, and mTLS allow/deny facts pass together; the affected command/cascade lanes also
+  pass.
 - **2026-09-06 runtime-proof remediation:** Aspire 13.5.3 is now pinned consistently and its CLI bundle enabled.
   The AppHost startup hang is fixed by carrying the AppHost environment to the operations workload. The live
   harness proves and reports each evidence-ladder boundary (resource health → sidecar version → actor/placement/
@@ -332,6 +352,7 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 ### File List
 
 **Production — `src/Hexalith.Works/`**
+- `Reminders/DateReminderRegistration.cs` (2026-09-06: Dapr actor-remoting data contract)
 - `Reminders/WorkItemSuspendedReminderHandler.cs` (new)
 - `Reminders/PendingDateAwaitStreamReader.cs` (new)
 - `Reminders/IndexedPendingDateAwaitSource.cs` (new)
@@ -351,8 +372,16 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `global.json` (2026-09-06: AppHost SDK 13.5.3 pin)
 - `src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj` (2026-09-06: SDK 13.5.3 + CLI bundle)
 - `src/Hexalith.Works.AppHost/Program.cs` (delete `Works:Recovery:Tenants` forwarding; 2026-09-06: forward the
-  AppHost environment to `eventstore-operations` so the Development live lane starts without weakening its
-  non-Development token guard)
+  AppHost environment to `eventstore-operations`, compose the default mTLS placement/Scheduler pair, and support
+  an explicit externally managed endpoint pair)
+- `src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs` (2026-09-06: external Sentry credentials plus TLS-enabled
+  placement/durable Scheduler resources; review hardening for authoritative sidecar identity, symlink-aware
+  certificate containment, cross-drive paths, and loopback-only embedded etcd)
+- `src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.yaml`
+- `src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.works.yaml`
+- `src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.eventstore-admin.yaml`
+- `src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.eventstore-operations.yaml`
+- `src/Hexalith.Works.AppHost/DaprComponents/sentry.yaml`
 
 **Tests — `tests/Hexalith.Works.IntegrationTests/`**
 - `PendingDateAwaitIndexDispatcherTests.cs` (new)
@@ -363,8 +392,15 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `ReminderReconciliationServiceTests.cs` (bounded startup retry)
 - `Story48Streams.cs` (new — shared stream-page helper)
 - `WorksReminderRecoveryPipelineSmokeTests.cs` (reworked into recovery + steady-state facts)
-- `WorksAppHostTestReadiness.cs` (2026-09-06: bounded phase diagnostics plus Dapr/actor/reminder readiness probes)
-- `WorksAppHostTopologyTests.cs` (2026-09-06: explicit Development test environment + operations forwarding pin)
+- `DateReminderRegistrationSerializationTests.cs` (2026-09-06: actor-remoting round trip, frozen forward-read
+  payload, and missing-required-member rejection)
+- `WorksAppHostTestReadiness.cs` (2026-09-06: bounded phase diagnostics plus Dapr/actor/reminder readiness probes;
+  durable-index observation and exact reminder deletion for loss-sensitive recovery proof)
+- `WorksAppHostTopologyTests.cs` (2026-09-06: explicit Development environment, operations forwarding, Sentry,
+  mTLS placement/Scheduler, credential mounts, fixed proxy ports, durable Scheduler volume, workload/policy trust
+  domains, one-sided endpoint rejection, authoritative sidecar environment, and certificate-path rejection)
+- `WorksCommandPipelineSmokeTests.cs` (2026-09-06: AppHost-owned control-plane prerequisites and fixed test ports)
+- `WorksCascadeRecoveryPipelineSmokeTests.cs` (2026-09-06: AppHost-owned control-plane prerequisites and fixed test ports)
 - `DateReminderRecoveryRuntimeTests.cs` (2026-09-05: +1 fact — reconciler acts on partial results then rethrows)
 - `WorksEventIdentityTests.cs` (new 2026-09-05 — fail-closed/rejection-event identity matching)
 - `PendingDateAwaitScanIncompleteExceptionTests.cs` (new 2026-09-05 — constructor null-check ordering)
@@ -395,6 +431,23 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ## Change Log
 
+- 2026-09-06 — Review remediation closed the in-scope findings: recovery now proves the exact pending-await index
+  is durable, deletes the Dapr Scheduler reminder, and observes overdue reissue/future re-registration after a
+  genuine restart; sidecar control-plane identity is explicit and overwrites stale inherited values; certificate
+  containment resolves symlinks and handles Windows drive roots; embedded etcd uses loopback; caller cancellation
+  and HTTP timeout diagnostics remain distinct; global test environment mutation is gone; ACL trust domains and
+  partial endpoint configuration are pinned; and the reminder data contract freezes required names/order plus a
+  forward-read fixture. Final gates: build 0/0; Unit 567; Architecture 236; Property 3; deterministic Integration
+  287; topology 14; reminder live 4 in 923.387 seconds; command live 1 in 105.366 seconds; cascade class 18 in
+  332.959 seconds — all pass with zero live skips.
+- 2026-09-06 — Completed the approved live-proof expansion: composed AppHost-owned Dapr 1.18.3 TLS placement and
+  durable Scheduler alongside Sentry; preserved the deny-by-default workload ACL and external credentials;
+  corrected the control-plane/workload trust-domain split; pinned the topology; fixed
+  `DateReminderRegistration` actor-remoting serialization; made recovery deadlines readiness-relative; and
+  aligned the affected live harnesses with explicit Development/fixed-port settings. Final gates: build 0/0;
+  Unit 567, Architecture 236, Property 3, deterministic Integration 280, topology 9, reminder live 4, command
+  live 1, cascade class 18 — all pass with zero skips in the live runs. Current catalog 40 due separately
+  completed Story 1.5; Story 4.8 adds no catalog type.
 - 2026-09-06 — Runtime-proof remediation aligned Aspire to 13.5.3, enabled its CLI bundle, fixed the AppHost
   startup hang by forwarding `DOTNET_ENVIRONMENT` to `eventstore-operations`, and added phase-specific resource,
   sidecar, actor, deterministic-reminder, submission, and delivery diagnostics. The local Dapr runtime was

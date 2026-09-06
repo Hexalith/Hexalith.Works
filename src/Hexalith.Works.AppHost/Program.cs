@@ -7,11 +7,19 @@ using Projects;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-// Dapr init exposes placement/scheduler on 6050/6060 in the containerized layout and 50005/50006 in the
-// native/slim layout. Resolve the reachable pair and give every sidecar the same explicit actor substrate.
-(string? daprPlacementHostAddress, string? daprSchedulerHostAddress) = AspireDaprLocalServiceEndpoints.Resolve(
-    builder.Configuration[AspireDaprLocalServiceEndpoints.PlacementHostAddressKey],
-    builder.Configuration[AspireDaprLocalServiceEndpoints.SchedulerHostAddressKey]);
+string? configuredPlacementHostAddress =
+    builder.Configuration[AspireDaprLocalServiceEndpoints.PlacementHostAddressKey];
+string? configuredSchedulerHostAddress =
+    builder.Configuration[AspireDaprLocalServiceEndpoints.SchedulerHostAddressKey];
+bool hasConfiguredPlacement = !string.IsNullOrWhiteSpace(configuredPlacementHostAddress);
+bool hasConfiguredScheduler = !string.IsNullOrWhiteSpace(configuredSchedulerHostAddress);
+if (hasConfiguredPlacement != hasConfiguredScheduler)
+{
+    throw new InvalidOperationException(
+        $"Configure both '{AspireDaprLocalServiceEndpoints.PlacementHostAddressKey}' and "
+        + $"'{AspireDaprLocalServiceEndpoints.SchedulerHostAddressKey}', or configure neither so the AppHost "
+        + "can compose its mTLS-enabled local control plane.");
+}
 
 // Resolve local-development Dapr component / access-control paths. builder.AppHostDirectory keeps this working
 // under both `dotnet run` and Aspire.Hosting.Testing.
@@ -30,6 +38,30 @@ string sentryConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "sentr
 // user Dapr directory, then make every sidecar wait for the healthy Sentry resource before reading that bundle.
 (IResourceBuilder<ContainerResource> sentry, string sentryCertificateDirectory) =
     DaprSelfHostedMtls.AddSentry(builder, sentryConfigPath);
+
+// A sidecar with mTLS enabled also requires TLS-enabled actor control-plane services. The containers created by
+// `dapr init` are plaintext, so use an AppHost-owned placement/scheduler pair by default and persist Scheduler's
+// reminder database in its own named volume. Explicit endpoints remain available for an externally managed,
+// mTLS-compatible pair and are required as a complete placement/scheduler tuple.
+IResourceBuilder<ContainerResource>? daprPlacement = null;
+IResourceBuilder<ContainerResource>? daprScheduler = null;
+string? daprPlacementHostAddress;
+string? daprSchedulerHostAddress;
+if (hasConfiguredPlacement)
+{
+    (daprPlacementHostAddress, daprSchedulerHostAddress) = AspireDaprLocalServiceEndpoints.Resolve(
+        configuredPlacementHostAddress,
+        configuredSchedulerHostAddress);
+}
+else
+{
+    (daprPlacement, daprScheduler) = DaprSelfHostedMtls.AddControlPlane(
+        builder,
+        sentry,
+        sentryCertificateDirectory);
+    daprPlacementHostAddress = DaprSelfHostedMtls.PlacementHostAddress;
+    daprSchedulerHostAddress = DaprSelfHostedMtls.SchedulerHostAddress;
+}
 
 // Model the resiliency CRD as a local Dapr resource so every sidecar that must enforce the committed policy
 // receives its directory on --resources-path explicitly, instead of picking the file up incidentally because
@@ -175,7 +207,9 @@ foreach (ProjectResource project in builder.Resources
         builder.CreateResourceBuilder(project),
         SidecarOf(project)!,
         sentry,
-        sentryCertificateDirectory);
+        sentryCertificateDirectory,
+        daprPlacement,
+        daprScheduler);
 }
 
 if (security is not null)
