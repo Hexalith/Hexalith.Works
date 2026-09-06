@@ -7,4 +7,4 @@ status: blocked
 ## Auto Run Result
 
 Status: blocked
-Blocking condition: dirty working tree; `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md` is an unrelated untracked file present before Story 1.5 implementation.
+Blocking condition: dirty working tree; staged changes exist in the Story 1.5 result artifact and `architecture.md`, `_bmad-output/planning-artifacts/architecture/` is untracked, multiple root submodule worktrees are modified, and the workflow-required Epic 1 context refresh differs from `HEAD`.
