@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hexalith.Works Architecture Validation</title>
+    <style>
+        :root { color-scheme: light; --ink:#162238; --muted:#58667a; --line:#d7dfeb; --panel:#f5f8fc; --critical:#9d1c20; --high:#a24d00; --medium:#725a00; --accent:#194d7e; --good:#17643a; }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin:0; color:var(--ink); background:#eef3f8; font:16px/1.58 system-ui,-apple-system,"Segoe UI",sans-serif; }
+        a { color:#075a9c; text-underline-offset:.14em; }
+        a:focus-visible { outline:3px solid #f4b942; outline-offset:2px; }
+        code { overflow-wrap:anywhere; font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-size:.9em; }
+        .skip { position:absolute; left:-9999px; top:.5rem; padding:.6rem; background:#fff; }
+        .skip:focus { left:.5rem; z-index:10; }
+        header { color:#fff; background:linear-gradient(135deg,#102946,#1c507b); padding:2.5rem max(1rem,calc((100% - 1120px)/2)); }
+        header h1 { margin:0 0 .4rem; font-size:clamp(1.8rem,4vw,3rem); line-height:1.12; }
+        header p { margin:.3rem 0; max-width:80ch; }
+        main { width:min(1120px,calc(100% - 2rem)); margin:1.4rem auto 3rem; }
+        section { background:#fff; border:1px solid var(--line); border-radius:12px; padding:clamp(1rem,2vw,1.6rem); margin:1rem 0; box-shadow:0 4px 18px rgba(21,45,72,.06); }
+        h2 { margin:.1rem 0 1rem; font-size:1.45rem; }
+        h3 { margin:.1rem 0 .8rem; font-size:1.16rem; }
+        .verdict { border-left:7px solid var(--critical); background:#fff1f1; font-size:1.12rem; font-weight:750; }
+        .meta { color:var(--muted); }
+        .badge { display:inline-block; padding:.15rem .55rem; border-radius:999px; color:#fff; font-size:.76rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; vertical-align:.08em; }
+        .critical { background:var(--critical); }
+        .high { background:var(--high); }
+        .medium { background:var(--medium); }
+        .finding { border-left:5px solid var(--line); padding-left:1rem; margin:1.7rem 0 2rem; }
+        .finding.c { border-color:var(--critical); }
+        .finding.h { border-color:var(--high); }
+        .finding p { margin:.55rem 0; }
+        .label { font-weight:750; }
+        .table-wrap { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; font-size:.93rem; }
+        caption { text-align:left; font-weight:750; margin-bottom:.5rem; }
+        th, td { border:1px solid var(--line); padding:.55rem .65rem; text-align:left; vertical-align:top; }
+        th { background:#eaf0f7; }
+        tbody tr:nth-child(even) { background:#fafcff; }
+        .counts td:not(:first-child), .counts th:not(:first-child) { text-align:center; }
+        .score { font-size:1.12rem; font-weight:750; color:var(--critical); }
+        .artifacts li { margin:.35rem 0; }
+        footer { width:min(1120px,calc(100% - 2rem)); margin:0 auto 2rem; color:var(--muted); }
+        @media (max-width:680px) { main,footer { width:min(100% - 1rem,1120px); } section { border-radius:8px; } th,td { padding:.45rem; } }
+        @media print { body { background:#fff; font-size:10pt; } header { background:#fff; color:#000; padding:.5cm 0; } main,footer { width:100%; margin:0; } section { border:0; box-shadow:none; break-inside:auto; padding:.25cm 0; } .finding { break-inside:avoid; } a { color:#000; text-decoration:none; } a[href^="http"]::after { content:" (" attr(href) ")"; font-size:8pt; } }
+    </style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to report</a>
+<header>
+    <h1>Architecture Validation Report</h1>
+    <p>Hexalith.Works · Validate intent · 5 September 2026</p>
+</header>
+<main id="main">
+    <section class="verdict" aria-labelledby="verdict-title">
+        <h2 id="verdict-title">Gate verdict</h2>
+        <p>FAIL — the document is not a safe current architecture spine until five critical ownership, consistency, and trust-boundary decisions are resolved.</p>
+    </section>
+
+    <section aria-labelledby="scope-title">
+        <h2 id="scope-title">Scope and evidence</h2>
+        <p>This run assessed <a href="../architecture.md"><code>architecture.md</code></a>, a <strong>732-line legacy architecture decision document</strong>, as an architecture spine. The source was not modified. Its SHA-256 is <code>431071620f48b4abc2e70b905ee633b22aff568b89aa301b80d680c7593aed7f</code>.</p>
+        <p>Raw reviewer counts overlap and must not be added as if they represented distinct defects.</p>
+        <div class="table-wrap">
+            <table class="counts">
+                <caption>Raw lens counts and deduplicated report counts</caption>
+                <thead><tr><th scope="col">Input</th><th scope="col">Critical</th><th scope="col">High</th><th scope="col">Medium</th><th scope="col">Low</th><th scope="col">Result</th></tr></thead>
+                <tbody>
+                    <tr><td><a href="reviews/review-rubric-walker.md">Rubric walker</a></td><td>1</td><td>4</td><td>2</td><td>0</td><td>Fail</td></tr>
+                    <tr><td><a href="reviews/review-adversarial-divergence.md">Adversarial divergence</a></td><td>3</td><td>7</td><td>0</td><td>0</td><td>Fail</td></tr>
+                    <tr><td><a href="reviews/review-technology-reality.md">Technology/reality</a></td><td>0</td><td>4</td><td>3</td><td>0</td><td>Fail</td></tr>
+                    <tr><td><a href="reviews/review-security-data-integrity.md">Security/data integrity</a></td><td>2</td><td>4</td><td>1</td><td>0</td><td>Reject</td></tr>
+                    <tr><td><a href="lint-spine.json">Deterministic lint</a></td><td>0</td><td>0</td><td>0</td><td>8</td><td>Eight false positives</td></tr>
+                    <tr><th scope="row">Deduplicated report</th><th>5</th><th>12</th><th>4</th><th>0</th><th>Fail</th></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>The eight lint flags are brace-token checks for <code>{tenant}</code>, <code>{domain}</code>, and <code>{id}</code> at source lines 44, 63, 234, 321, and 539. They are intentional key-shape notation, not unfilled template placeholders, so all eight are false positives and are ignored. The linter cannot assess the legacy decision blocks because the source has no <code>AD-n</code> entries with <code>Binds</code> / <code>Prevents</code> / <code>Rule</code> fields; its mechanical result is not evidence that decision shape is sound.</p>
+    </section>
+
+    <section aria-labelledby="critical-title">
+        <h2 id="critical-title"><span class="badge critical">Critical</span> Five decision blockers</h2>
+
+        <article class="finding c" id="val-c01">
+            <h3>VAL-C01 — Platform-host ownership and migration allocation are unbound</h3>
+            <p><span class="label">Issue:</span> Works-owned AppHost, ServiceDefaults, delivery, scheduling, projections/queries, and subscriptions are prohibited, but the destination repository, accountable owner, and seam-by-seam capability allocation are unnamed.</p>
+            <p><span class="label">Divergence/risk:</span> Works can delete adapter behavior while the platform composes only the minimal executable; reminders, cascades, checkpoints, subscriptions, and projections then have no owner. Story 4.9 is blocked.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L151">architecture.md:151–179</a>, <a href="../architecture.md#L506">506–508</a>, <a href="../architecture.md#L524">524–528</a>, <a href="../architecture.md#L586">586–591</a>, <a href="../architecture.md#L631">631–647</a>.</p>
+            <p><span class="label">Live/spec evidence:</span> the mandatory boundary forbids domain-owned plumbing (<a href="../../../references/Hexalith.AI.Tools/hexalith-llm-instructions.md#L121">hexalith-llm-instructions.md:121–134</a>); the solution retains both host projects (<a href="../../../Hexalith.Works.slnx#L50">Hexalith.Works.slnx:50–58</a>); Works registers its runtime behaviors (<a href="../../../src/Hexalith.Works/Runtime/WorksHost.cs#L64">WorksHost.cs:64–121</a>); AppHost owns Dapr/topic/store composition (<a href="../../../src/Hexalith.Works.AppHost/Program.cs#L54">Program.cs:54–136</a>); the approved proposal requires target and owner (<a href="../sprint-change-proposal-2026-09-05.md#L377">sprint-change-proposal:377–406</a>, <a href="../sprint-change-proposal-2026-09-05.md#L427">427–431</a>). The graph mixes Aspire AppHost SDK 13.4.6 with hosting 13.5.3; the cited official line is <a href="https://www.nuget.org/packages/Aspire.Hosting/13.5.3">Aspire.Hosting 13.5.3</a>.</p>
+            <p><span class="label">Lenses:</span> RW-01, ADV-03, TECH-02. <span class="label">Disposition:</span> <strong>Discuss.</strong> Name repository, team, packages, supported Aspire family, conformance lane, and migration matrix before Story 4.9 or deletion. No autofix was applied.</p>
+        </article>
+
+        <article class="finding c" id="val-c02">
+            <h3>VAL-C02 — Tree mutation has no authoritative atomic owner</h3>
+            <p><span class="label">Issue:</span> A pure aggregate promises a single-parent, acyclic, bounded, tenant-closed tree without assigning who reserves the child edge, derives ancestry/depth, or serializes competing attaches.</p>
+            <p><span class="label">Divergence/risk:</span> Two compliant parents can accept the same child from stale or empty caller facts, creating multiple parents or a cycle.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L34">architecture.md:34–36</a>, <a href="../architecture.md#L96">96</a>, <a href="../architecture.md#L244">244</a>, <a href="../architecture.md#L276">276</a>, <a href="../architecture.md#L285">285</a>.</p>
+            <p><span class="label">Live evidence:</span> <a href="../../../src/Hexalith.Works.Contracts/Commands/SpawnChild.cs#L10">SpawnChild.cs:10–32</a> accepts caller-fed facts; <a href="../../../src/Hexalith.Works.Server/Aggregates/WorkTreeAttachmentGuard.cs#L30">WorkTreeAttachmentGuard.cs:30–69</a> can only inspect those facts; <a href="../../../docs/work-tree-shape-guard.md#L35">work-tree-shape-guard.md:35–42</a> confirms no authoritative store read.</p>
+            <p><span class="label">Lenses:</span> ADV-01, SEC-DI-03. <span class="label">Disposition:</span> <strong>Discuss.</strong> Choose child-owned conditional attachment, tree registry, or saga; bind authority, freshness/version, concurrency, conflict, and repair. No autofix was applied.</p>
+        </article>
+
+        <article class="finding c" id="val-c03">
+            <h3>VAL-C03 — Incremental recursive roll-up cannot run through the stated seam</h3>
+            <p><span class="label">Issue:</span> The architecture binds incremental descendant-to-ancestor roll-up, but live EventStore <code>/project</code> supplies one aggregate stream and cannot reconcile later child changes.</p>
+            <p><span class="label">Divergence/risk:</span> Works has no graph input while the platform legitimately persists roll-up as unavailable; FR-11 is delivered only after an operator rebuild.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L36">architecture.md:36</a>, <a href="../architecture.md#L96">96</a>, <a href="../architecture.md#L239">239</a>, <a href="../architecture.md#L276">276</a>, <a href="../architecture.md#L623">623–629</a>.</p>
+            <p><span class="label">Live/spec evidence:</span> <a href="../prds/prd-works-2026-06-14/prd.md#L191">prd.md:191–198</a> requires incremental ancestor updates; <a href="../../../src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs#L18">WorkItemProjectionDispatcher.cs:18–37</a> documents the aggregate-local limitation; <a href="../../../docs/work-roll-up-projection.md#L67">work-roll-up-projection.md:67–100</a> says only shared rebuild yields a coherent tree.</p>
+            <p><span class="label">Lens:</span> ADV-02. <span class="label">Disposition:</span> <strong>Discuss.</strong> Choose durable relationship fan-out, explicit child contributions, or a rebuild-only product contract and bind ownership, inputs, ordering, failure, freshness, and unavailable semantics. No autofix was applied.</p>
+        </article>
+
+        <article class="finding c" id="val-c04">
+            <h3>VAL-C04 — Tenant keys are not authorization or identity provenance</h3>
+            <p><span class="label">Issue:</span> Tenant scoping and query authorization are required, but no authoritative tenant/actor source, principal binding, delegation model, or action policy is defined; “real auth” is deferred.</p>
+            <p><span class="label">Divergence/risk:</span> A caller can select another tenant and pass every equality check; key prefixes only prevent accidental collisions after identity is trusted.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L44">architecture.md:44</a>, <a href="../architecture.md#L244">244–246</a>, <a href="../architecture.md#L402">402–404</a>.</p>
+            <p><span class="label">Live evidence:</span> commands carry caller tenant values (<a href="../../../src/Hexalith.Works.Contracts/Commands/CreateWorkItem.cs#L18">CreateWorkItem.cs:18–29</a>); queries use envelope tenant directly (<a href="../../../src/Hexalith.Works/Queries/WhatsNextQueryHandler.cs#L47">WhatsNextQueryHandler.cs:47–65</a>, <a href="../../../src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs#L47">GetWorkItemQueryHandler.cs:47–61</a>); missing predicates authorize (<a href="../../../src/Hexalith.Works.Projections/Strategies/WhatsNextQueryAuthorization.cs#L6">WhatsNextQueryAuthorization.cs:6–33</a>).</p>
+            <p><span class="label">Lens:</span> SEC-DI-01. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind authentication, derived claims, mismatch denial, workload delegation, policy ownership, and command/query/admin/rebuild/replay authorization. No autofix was applied.</p>
+        </article>
+
+        <article class="finding c" id="val-c05">
+            <h3>VAL-C05 — Events, reminders, replay, and callbacks lack trusted-origin rules</h3>
+            <p><span class="label">Issue:</span> Delivery rules cover duplicates and order, not producer authenticity or direct-route protection.</p>
+            <p><span class="label">Divergence/risk:</span> A forged self-consistent high-sequence event can poison watermarks and trigger cascade, expiry, cancellation, or resume. Idempotency does not authenticate origin.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L251">architecture.md:251–254</a>, <a href="../architecture.md#L631">631–647</a>.</p>
+            <p><span class="label">Live evidence:</span> the route has no app authentication (<a href="../../../src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs#L16">WorksDomainEventEndpointExtensions.cs:16–28</a>); config says production must add mTLS (<a href="../../../src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.works.yaml#L8">accesscontrol.works.yaml:8–9</a>); processing validates only supplied-field agreement (<a href="../../../src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs#L117">WorksDomainEventProcessor.cs:117–145</a>) before side effects (<a href="../../../src/Hexalith.Works/Runtime/WorksHost.cs#L68">WorksHost.cs:68–82</a>).</p>
+            <p><span class="label">Lens:</span> SEC-DI-02. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind workload/sidecar identity, trust domain, deny-by-default reachability, TLS/ACLs, exclusive producers, and negative migration tests. No autofix was applied.</p>
+        </article>
+    </section>
+
+    <section aria-labelledby="high-title">
+        <h2 id="high-title"><span class="badge high">High</span> Twelve convergent-contract defects</h2>
+
+        <article class="finding h" id="val-h01">
+            <h3>VAL-H01 — Automatic expiry has no trigger, policy authority, or recovery design</h3>
+            <p><span class="label">Issue:</span> C2 schedules resume only; E2 leaves Due-Date/TTL source unresolved. No owner schedules, cancels, reschedules, emits, or recovers <code>ExpireWorkItem</code>. <span class="label">Risk:</span> compliant implementations can deliver no expiry, Due-Date-only, TTL-only, or incompatible recovery.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L261">architecture.md:261–267</a>, <a href="../architecture.md#L649">649–655</a>. <span class="label">Evidence:</span> <a href="../prds/prd-works-2026-06-14/prd.md#L175">prd.md:175–183</a>; <a href="../../../src/Hexalith.Works.Contracts/Commands/ExpireWorkItem.cs#L6">ExpireWorkItem.cs:6–10</a>; <a href="../../../src/Hexalith.Works/Runtime/WorksHost.cs#L64">WorksHost.cs:64–89</a>.</p>
+            <p><span class="label">Lens:</span> RW-02. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind policy authority, trigger owner, registration identity, reschedule/cancel, delivery/idempotency, and missed-firing recovery—or change FR-10. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h02">
+            <h3>VAL-H02 — The dependency rule contradicts the machine-enforced graph</h3>
+            <p><span class="label">Issue/risk:</span> <code>Contracts ← Server ← Projections</code> says Projections depends on Server; live rules make Server, Projections, and Reactor direct Contracts dependants. Following the source creates a forbidden reference.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L326">architecture.md:326–334</a>, <a href="../architecture.md#L530">530–532</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj#L8">Projections.csproj:8–10</a>; <a href="../../../tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs#L7">DependencyDirectionTests.cs:7–25</a>; <a href="../../../docs/boundary-decision-record.md#L138">boundary-decision-record.md:138–140</a>.</p>
+            <p><span class="label">Lens:</span> RW-03. <span class="label">Disposition:</span> <strong>Autofix in Update.</strong> State <code>Server → Contracts</code>, <code>Projections → Contracts</code>, <code>Reactor → Contracts</code>. Validation applied no change.</p>
+        </article>
+
+        <article class="finding h" id="val-h03">
+            <h3>VAL-H03 — “Creation order” is absent and replaced by ID order</h3>
+            <p><span class="label">Issue/risk:</span> A2/FR-20 require Priority → Due Date → creation order, but no comparable creation coordinate exists and the live comparer uses arbitrary WorkItem ID. Different producers/consumers can return opposite orders.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L232">architecture.md:232–240</a>, <a href="../architecture.md#L614">614–621</a>. <span class="label">Evidence:</span> <a href="../prds/prd-works-2026-06-14/prd.md#L281">prd.md:281–287</a>; <a href="../epics.md#L1141">epics.md:1141–1157</a>; <a href="../../../src/Hexalith.Works.Projections/Strategies/WhatsNextOrdering.cs#L62">WhatsNextOrdering.cs:62–71</a>; <a href="../../../src/Hexalith.Works.Contracts/Models/WhatsNextItem.cs#L27">WhatsNextItem.cs:27–38</a>; <a href="../../../docs/whats-next-projection.md#L16">whats-next-projection.md:16–32</a>.</p>
+            <p><span class="label">Lenses:</span> RW-04, ADV-08. <span class="label">Disposition:</span> <strong>Discuss.</strong> Add a replay-stable creation coordinate and tie rules, or approve identity order across PRD/epics/architecture. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h04">
+            <h3>VAL-H04 — The legacy shape has unstable decision identity</h3>
+            <p><span class="label">Issue/risk:</span> Analysis, rationale, seed, repeated rules, and self-validation coexist without stable <code>AD-n</code> or Binds/Prevents/Rule fields; <code>D-1</code>/<code>D1</code> and <code>D-2</code>/<code>D2</code> collide. References can target the wrong decision and duplicated prose drifts.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L22">architecture.md:22–24</a>, <a href="../architecture.md#L90">90–129</a>, <a href="../architecture.md#L209">209–287</a>, <a href="../architecture.md#L444">444–591</a>, <a href="../architecture.md#L593">593–732</a>. <span class="label">Evidence:</span> <a href="lint-spine.json">lint-spine.json</a> and <a href="reviews/review-rubric-walker.md#rw-05--high--legacy-document-shape-makes-decision-identity-and-enforcement-ambiguous">RW-05</a>.</p>
+            <p><span class="label">Lens:</span> RW-05. <span class="label">Disposition:</span> <strong>Discuss.</strong> Distill stable decision blocks, retain a legacy-label map, and subordinate volatile seed to authoritative code. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h05">
+            <h3>VAL-H05 — Version claims are stale and conflate Dapr runtime with SDK</h3>
+            <p><span class="label">Issue/risk:</span> The source mixes .NET 10.0.300/10.0.301, Dapr 1.18.4, xUnit 3.2.2, Fluent rc.3, and unsupported “current/compatible” wording. Live pins are .NET 10.0.400, Dapr .NET SDK 1.18.5, xUnit 4.0.0, Fluent rc.5, with Aspire 13.4.6/13.5.3 mixed. Builders can choose the wrong runtime or downgrade packages.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L61">architecture.md:61</a>, <a href="../architecture.md#L189">189–202</a>, <a href="../architecture.md#L263">263</a>, <a href="../architecture.md#L453">453–455</a>, <a href="../architecture.md#L595">595–601</a>. <span class="label">Evidence:</span> <a href="../../../global.json#L1">global.json:1–11</a>; <a href="../../../references/Hexalith.Builds/Props/Directory.Packages.props#L109">central pins:109–146</a>, <a href="../../../references/Hexalith.Builds/Props/Directory.Packages.props#L226">226–227</a>, <a href="../../../references/Hexalith.Builds/Props/Directory.Packages.props#L318">318–321</a>.</p>
+            <p>Official evidence: <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0">.NET SDK 10.0.400</a>, <a href="https://github.com/dapr/dotnet-sdk/releases">Dapr .NET SDK releases</a>, <a href="https://xunit.net/releases/v3/4.0.0">xUnit 4.0.0/MTP v2</a>, <a href="https://www.nuget.org/packages/Microsoft.FluentUI.AspNetCore.Components">Fluent UI history</a>, <a href="https://www.nuget.org/packages/Aspire.Hosting/13.5.3">Aspire.Hosting 13.5.3</a>, <a href="https://github.com/dapr/dapr/releases">Dapr runtime releases</a>.</p>
+            <p><span class="label">Lenses:</span> RW-06, TECH-01/02/03. <span class="label">Disposition:</span> <strong>Autofix in Update</strong> for authoritative pin sources and separate runtime/SDK fields; <strong>Discuss</strong> Aspire family and production runtime pin. Validation applied no change.</p>
+        </article>
+
+        <article class="finding h" id="val-h06">
+            <h3>VAL-H06 — Cascade checkpoints are neither concurrency-safe nor operationally fail-safe</h3>
+            <p><span class="label">Issue/risk:</span> No checkpoint key/state machine, monotonic concurrency, message identity, replica ownership, durable retry, health degradation, or alerting is bound. Concurrent reconcilers can regress completion or strand indexes; exhausted recovery can remain healthy.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L99">architecture.md:99–101</a>, <a href="../architecture.md#L253">253</a>, <a href="../architecture.md#L374">374–377</a>, <a href="../architecture.md#L623">623–629</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works/Recovery/Cascade/CascadeDispatcher.cs#L170">CascadeDispatcher.cs:170–209</a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs#L7">checkpoint store:7–13</a>, <a href="../../../src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs#L39">39–80</a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs#L19">recovery service:19–32</a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryReconciler.cs#L43">reconciler:43–96</a>.</p>
+            <p><span class="label">Lenses:</span> ADV-04, SEC-DI-05. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind monotonic CAS/fencing, deterministic identities, replica rules, index convergence, durable retry, degraded readiness, metrics/alerts, and audited disposition. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h07">
+            <h3>VAL-H07 — Reminder recovery and end-to-end durability are underspecified</h3>
+            <p><span class="label">Issue/risk:</span> C2 calls reminders durable while discovery remains a gap. Registration can be lost, tenant-wide scan rejected, or one-shot callback exhausted without continuous recovery or unhealthy evidence.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L103">architecture.md:103</a>, <a href="../architecture.md#L261">261–264</a>, <a href="../architecture.md#L649">649–655</a>, <a href="../architecture.md#L706">706–710</a>. <span class="label">Evidence:</span> <a href="../epics.md#L1290">epics.md:1290–1299</a>; <a href="../../../src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs#L11">IndexedPendingDateAwaitSource.cs:11–79</a>; <a href="../../../src/Hexalith.Works/Reminders/ReminderReconciliationService.cs#L9">ReminderReconciliationService.cs:9–60</a>; <a href="../../../src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs#L19">WorksRecoveryOptions.cs:19–29</a>.</p>
+            <p>Official Dapr sources verify persisted registration while narrowing the end-to-end claim: <a href="https://v1-15.docs.dapr.io/concepts/dapr-services/scheduler/">Scheduler 1.15</a> and <a href="https://docs.dapr.io/developing-applications/building-blocks/actors/actors-timers-reminders/">actor reminders</a>.</p>
+            <p><span class="label">Lenses:</span> ADV-05, TECH-03, SEC-DI-05. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind authoritative truth, discovery/index order, scan bounds/failure, Scheduler HA/backup, callback policy, continuous retry/alerting, cleanup, and the exact guarantee. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h08">
+            <h3>VAL-H08 — Shared rebuild has atomic visibility but no delivery fence</h3>
+            <p><span class="label">Issue/risk:</span> Generation staging and marker-gated promotion exist, but no fence token, writer epoch, capture watermark, or delivery coordinator does. Live writes can be omitted or overwritten between inventory capture and Commit.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L47">architecture.md:47</a>, <a href="../architecture.md#L105">105–106</a>, <a href="../architecture.md#L265">265</a>, <a href="../architecture.md#L623">623–629</a>. <span class="label">Evidence:</span> <a href="../../../docs/work-roll-up-projection.md#L75">work-roll-up-projection.md:75–84</a>; <a href="../../../docs/whats-next-projection.md#L73">whats-next-projection.md:73–82</a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreDomainServiceExtensions.cs#L374">EventStore route:374–400</a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelBatchProtocol.cs#L281">atomic visibility:281–327</a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainSharedProjectionRebuildDispatcher.cs#L20">dispatcher:20–99</a>, <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainSharedProjectionRebuildDispatcher.cs#L346">346–403</a>.</p>
+            <p><span class="label">Lenses:</span> ADV-06, TECH-04. <span class="label">Disposition:</span> <strong>Discuss.</strong> Define admitted writers, epoch/token, capture watermark, rejection/queueing, atomic scope, abort/resume, and catch-up proof. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h09">
+            <h3>VAL-H09 — Universal key derivation conflicts with namespaces and privileged registries</h3>
+            <p><span class="label">Issue/risk:</span> The source derives every key/topic/reminder/group from one tenant key, but live code uses a shared topic, hashed reminder, generation keys, notifier groups, and global recovery indexes. Subscribers can disagree, reminders can collide if tenant is omitted, and cross-tenant registries lack a governed exception.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L321">architecture.md:321–324</a>, <a href="../architecture.md#L402">402–404</a>, <a href="../architecture.md#L539">539–540</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works.AppHost/Program.cs#L57">Program.cs:57–69</a>; <a href="../../../src/Hexalith.Works/Reminders/DateReminderName.cs#L30">DateReminderName.cs:30–53</a>; <a href="../../../src/Hexalith.Works/Projections/WorksReadModelKeys.cs#L24">WorksReadModelKeys.cs:24–59</a>; <a href="../../../docs/whats-next-projection.md#L137">whats-next-projection.md:137–145</a>; <a href="../../../src/Hexalith.Works/Projections/PendingDateAwaitTenantRegistry.cs#L3">tenant registry:3–11</a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs#L20">checkpoint index:20–23</a>.</p>
+            <p><span class="label">Lenses:</span> ADV-07, SEC-DI-06. <span class="label">Disposition:</span> <strong>Discuss.</strong> Create a namespace/ownership table and choose tenant partitioning or a narrow isolated, ACL-protected, audited control-plane exception. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h10">
+            <h3>VAL-H10 — Aggregate ID assignment is not command idempotency</h3>
+            <p><span class="label">Issue/risk:</span> A1 claims retries are idempotent from aggregate ID alone, without transport key reuse/scope, digest, retention, result replay, or deterministic internal-message identity. Clients can receive rejection versus deduplicated success for the same logical retry.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L234">architecture.md:234–235</a>, <a href="../architecture.md#L253">253</a>, <a href="../architecture.md#L374">374–377</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works.Contracts/Commands/CreateWorkItem.cs#L17">CreateWorkItem.cs:17–29</a>; <a href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L18">WorkItemAggregate.cs:18–25</a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Commands/SubmitCommandRequest.cs#L5">SubmitCommandRequest.cs:5–26</a>.</p>
+            <p><span class="label">Lens:</span> ADV-09. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind tenant-scoped transport identity, retry reuse, digest collision, retention, exact-result replay, and deterministic reactor/reminder IDs; distinguish dedup, semantic no-op, and projection offsets. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h11">
+            <h3>VAL-H11 — Schema evolution and quarantine are not a compatibility contract</h3>
+            <p><span class="label">Issue/risk:</span> “Additive/tolerant” does not bind wire names, defaults/nulls, compatibility direction, discriminator or enum behavior, rollout, or consistent malformed/unknown handling. Old readers can fail; subscriptions can acknowledge data that projections reject; rebuilds can silently omit evidence.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L63">architecture.md:63–65</a>, <a href="../architecture.md#L309">309–315</a>, <a href="../architecture.md#L359">359–361</a>, <a href="../architecture.md#L409">409–426</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works.Contracts/ValueObjects/Channel.cs#L5">Channel.cs:5–18</a>; <a href="../../../tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs#L9">WorkItemV1Catalog.cs:9–18</a>; <a href="../../../tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventShapeGovernanceTests.cs#L18">EventShapeGovernanceTests.cs:18–44</a>; <a href="../../../src/Hexalith.Works/Runtime/WorksEventDecoder.cs#L24">WorksEventDecoder.cs:24–44</a>; <a href="../../../src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs#L69">endpoint:69–81</a>; <a href="../../../src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs#L108">dispatcher:108–117</a>.</p>
+            <p><span class="label">Lenses:</span> ADV-10, SEC-DI-07. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind a reader/writer matrix, wire/discriminator rules, expand-migrate-contract rollout, catalog authority, and durable fail-safe quarantine/replay. No autofix was applied.</p>
+        </article>
+
+        <article class="finding h" id="val-h12">
+            <h3>VAL-H12 — Immutable event data has no privacy lifecycle</h3>
+            <p><span class="label">Issue/risk:</span> “Do not log payloads” does not classify durable fields or bind minimization, encryption/key ownership, access audit, retention, legal hold, offboarding, erasure/crypto-shredding, DLQ, backup, or snapshot controls. Raw free text and identities can remain indefinitely unmanaged.</p>
+            <p><span class="label">Source:</span> <a href="../architecture.md#L49">architecture.md:49</a>, <a href="../architecture.md#L226">226–230</a>, <a href="../architecture.md#L406">406–407</a>. <span class="label">Evidence:</span> <a href="../../../src/Hexalith.Works.Contracts/Events/WorkItemCreated.cs#L8">WorkItemCreated.cs:8–18</a>; <a href="../../../src/Hexalith.Works.Contracts/Events/ProgressReported.cs#L8">ProgressReported.cs:8–15</a>; <a href="../../../src/Hexalith.Works.Contracts/Events/WorkItemAssigned.cs#L8">WorkItemAssigned.cs:8–13</a>; <a href="../../../tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGolden/WorkItemCreated.v1.json#L1">WorkItemCreated.v1.json:1</a>; <a href="../../../tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGolden/ProgressReported.v1.json#L1">ProgressReported.v1.json:1</a>.</p>
+            <p><span class="label">Lens:</span> SEC-DI-04. <span class="label">Disposition:</span> <strong>Discuss.</strong> Bind classification/minimization, references, encryption/key lifecycle, least privilege, audit, retention/hold/offboarding, and supported erasure before production admission. No autofix was applied.</p>
+        </article>
+    </section>
+
+    <section aria-labelledby="medium-title">
+        <h2 id="medium-title"><span class="badge medium">Medium</span> Concise tail</h2>
+        <p>These four deduplicated findings do not outrank the blockers. Full evidence remains in the individual reviews.</p>
+        <div class="table-wrap"><table>
+            <caption>Medium findings</caption>
+            <thead><tr><th scope="col">ID</th><th scope="col">Finding and evidence</th><th scope="col">Lens</th><th scope="col">Disposition</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">VAL-M01</th><td>“Build-time” enforcement is not wired and the focused architecture-test project fails compilation before execution. Source: <a href="../architecture.md#L102">102–105</a>, <a href="../architecture.md#L391">391–399</a>, <a href="../architecture.md#L423">423–427</a>, <a href="../architecture.md#L584">584–589</a>. Evidence: <a href="../../../Directory.Build.targets#L1">Directory.Build.targets:1–2</a>, <a href="../../../tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs#L10">BuildConfigurationTests.cs:10–20</a>.</td><td>RW-07</td><td>Discuss an explicit CI/test lane or accurate wording; repair the lane.</td></tr>
+                <tr><th scope="row">VAL-M02</th><td>“Dapr pub/sub is not ordered” is too absolute. At-least-once is portable; ordering is component/configuration-specific, so Works should forbid relying on it. Source: <a href="../architecture.md#L252">252</a>, <a href="../architecture.md#L668">668–669</a>. Official evidence: <a href="https://docs.dapr.io/developing-applications/building-blocks/pubsub/pubsub-overview/">Dapr pub/sub</a>, <a href="https://docs.dapr.io/reference/components-reference/supported-pubsub/setup-gcp-pubsub/">GCP ordering</a>.</td><td>TECH-05</td><td>Autofix in Update; not applied.</td></tr>
+                <tr><th scope="row">VAL-M03</th><td>Same-actor races are normally turn-serialized; ETag conflict is a fallback, not the required loser mechanism. Source: <a href="../architecture.md#L97">97</a>, <a href="../architecture.md#L251">251</a>, <a href="../architecture.md#L397">397–400</a>. Evidence: <a href="https://docs.dapr.io/developing-applications/building-blocks/actors/actors-features-concepts/">Dapr actor concurrency</a>, <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Actors/AggregateActor.cs#L1024">AggregateActor.cs:1024–1121</a>.</td><td>TECH-06</td><td>Autofix in Update; not applied.</td></tr>
+                <tr><th scope="row">VAL-M04</th><td>Default <code>AddProblemDetails</code> does not prove RFC 9457 plus tenant/correlation and no-leakage. Source: <a href="../architecture.md#L49">49</a>, <a href="../architecture.md#L250">250</a>, <a href="../architecture.md#L367">367</a>. Evidence: <a href="../../../src/Hexalith.Works/Runtime/WorksHost.cs#L45">WorksHost.cs:45–48</a>, <a href="../../../tests/Hexalith.Works.IntegrationTests/WorksDomainEventSubscriptionTests.cs#L159">test:159–166</a>, <a href="https://www.rfc-editor.org/rfc/rfc9457.html">RFC 9457</a>, <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/error-handling-api?view=aspnetcore-10.0">ASP.NET Core guidance</a>, <a href="https://github.com/dotnet/aspnetcore/issues/52414">tracking issue</a>.</td><td>TECH-07</td><td>Autofix wording in Update and add conformance tests; not applied.</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+
+    <section aria-labelledby="score-title">
+        <h2 id="score-title">Good-spine checklist</h2>
+        <p class="score">0 of 8 dimensions pass; 5 fail and 3 remain concerns.</p>
+        <p>Strong local rules—pure event-sourced handling, envelope sequencing, tenant-hop checks, order-tolerant projection posture, mechanical reactor, and atomic read-model promotion—should be retained, but they do not close the cross-unit seams.</p>
+        <div class="table-wrap"><table>
+            <caption>Checklist scorecard</caption>
+            <thead><tr><th scope="col">Dimension</th><th scope="col">Result</th><th scope="col">Assessment</th></tr></thead>
+            <tbody>
+                <tr><th scope="row">Real divergence points fixed</th><td>Fail</td><td>Host ownership, trust, tree attachment, live roll-up, expiry, recovery, and ordering remain open or contradictory.</td></tr>
+                <tr><th scope="row">Rules enforceable and preventive</th><td>Fail</td><td>Legacy blocks lack stable decision fields; claimed build gates are not operational.</td></tr>
+                <tr><th scope="row">Deferred items safe</th><td>Concern</td><td>Themes 3–6 are mostly deferred cleanly, but auth/privacy, host ownership, and expiry are current requirements.</td></tr>
+                <tr><th scope="row">Named technology current</th><td>Fail</td><td>Active pins conflict with authoritative files; Dapr runtime and SDK are conflated.</td></tr>
+                <tr><th scope="row">Brownfield ratification</th><td>Fail</td><td>Dependency, namespaces, ordering, projection seam, runtime layout, and test-gate claims differ from live code.</td></tr>
+                <tr><th scope="row">Spec capability coverage</th><td>Concern</td><td>FR-10 expiry, FR-11 incremental recursion, and FR-20 creation order are not delivered by the selected seams.</td></tr>
+                <tr><th scope="row">Inherited constraints honored</th><td>Fail</td><td>The platform boundary is stated but not executable without a destination, owner, and allocation.</td></tr>
+                <tr><th scope="row">Structural dimensions complete</th><td>Concern</td><td>Domain/data/test are rich; deployment ownership, trust, recovery operations, and privacy lifecycle are incomplete.</td></tr>
+            </tbody>
+        </table></div>
+    </section>
+
+    <section aria-labelledby="plan-title">
+        <h2 id="plan-title">Prioritized update plan</h2>
+        <ol>
+            <li><strong>Decision workshop:</strong> resolve VAL-C01 through VAL-C05—platform owner/allocation, atomic tree authority, live recursive roll-up, tenant/actor authority, and trusted origins. Settle expiry and creation-order product forks at the same time.</li>
+            <li><strong>Correct document/live-code contracts:</strong> fix dependency/version facts; bind cascade, reminder, rebuild, namespaces/control plane, idempotency, schema/quarantine, privacy, and test gates; distill stable <code>AD-n</code> blocks with a legacy-label map.</li>
+            <li><strong>Reconcile and rerun:</strong> update PRD/epics where decisions changed, prove Story 4.9’s matrix and negative/conformance tests in the named host, then rerun lint and all four lenses.</li>
+        </ol>
+    </section>
+
+    <section aria-labelledby="artifacts-title">
+        <h2 id="artifacts-title">Review artifacts</h2>
+        <ul class="artifacts">
+            <li><a href="lint-spine.json">Deterministic lint JSON</a></li>
+            <li><a href="reviews/review-rubric-walker.md">Rubric walker review</a></li>
+            <li><a href="reviews/review-adversarial-divergence.md">Adversarial divergence review</a></li>
+            <li><a href="reviews/review-technology-reality.md">Technology/reality review</a></li>
+            <li><a href="reviews/review-security-data-integrity.md">Security/data-integrity review</a></li>
+        </ul>
+        <p>This report is a validation artifact only. No finding was applied to <a href="../architecture.md"><code>architecture.md</code></a>.</p>
+    </section>
+</main>
+<footer><p>Hexalith.Works architecture Reviewer Gate · source hash fixed above for reproducibility.</p></footer>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "ok": false,
+  "spine": "ARCHITECTURE-SPINE.md",
+  "total_findings": 8,
+  "by_severity": {
+    "low": 8
+  },
+  "findings": [
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{tenant}'",
+      "location": "ARCHITECTURE-SPINE.md (line 44)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{domain}'",
+      "location": "ARCHITECTURE-SPINE.md (line 44)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{tenant}'",
+      "location": "ARCHITECTURE-SPINE.md (line 63)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{domain}'",
+      "location": "ARCHITECTURE-SPINE.md (line 63)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{tenant}'",
+      "location": "ARCHITECTURE-SPINE.md (line 234)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{tenant}'",
+      "location": "ARCHITECTURE-SPINE.md (line 321)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{tenant}'",
+      "location": "ARCHITECTURE-SPINE.md (line 539)"
+    },
+    {
+      "category": "placeholder",
+      "severity": "low",
+      "detail": "possible unfilled template token (verify): '{id}'",
+      "location": "ARCHITECTURE-SPINE.md (line 539)"
+    }
+  ]
+}
