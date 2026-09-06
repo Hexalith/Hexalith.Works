@@ -2,8 +2,8 @@
 title: 'Harden domain event completion and isolation'
 type: 'bugfix'
 created: '2026-09-05'
-status: 'blocked'
-baseline_revision: '547c6d896d256ba9630f713054ea2b073262f0ef'
+status: ready-for-dev
+baseline_revision: 7e7ef4effb396282594c130fc78ff599bd8321fb
 baseline_commit: '547c6d896d256ba9630f713054ea2b073262f0ef'
 review_loop_iteration: 0
 followup_review_recommended: false
@@ -194,41 +194,3 @@ Tests must cover explicit enum ordinals; in-memory release preserving `Dispatche
 - `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:MinVerVersionOverride=1.0.0` -- expected: clean cross-repository build.
 - `dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksDomainEventProcessorTests` -- expected: focused Works tests pass.
 
-## Auto Run Result
-
-Status: blocked
-Blocking condition: patch verification failed — the Works half of the `## Verification` section cannot be executed because `src/Hexalith.Works.Projections` does not compile at `HEAD`, for reasons that predate this story's baseline.
-
-### Follow-up review pass (2026-09-05, pass 3)
-
-This run re-reviewed the completed change with four independent layers (blind, edge-case, verification-gap, intent-alignment) over the combined superproject + `Hexalith.EventStore` diff since `547c6d896d256ba9630f713054ea2b073262f0ef`.
-
-**Summary of change under review (unchanged from the original run):** a durable post-dispatch marker phase (`Dispatched` / `CompletionPending`) added to the EventStore marker protocol and consumed by both the generic and Works processors, plus an exact-ordinal `work` domain guard ahead of any Works marker operation.
-
-**Patches applied in this pass:**
-- `src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs` — added `CompletionRecovered` (EventId 4805, Information) so a completion-only recovery is distinguishable from routine dedup.
-- `src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs` — the completion-pending branch now emits `CompletionRecovered` with the marker message id instead of the routine `Duplicate` event (whose envelope fields are legitimately blank on that path); the swallowing and rethrowing completion helpers now emit distinct `complete-best-effort-` / `complete-strict-` reason codes.
-- `references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Subscriptions/EventStoreDomainEventProcessor.cs` — the same recovery branch now logs at `Information` rather than `Debug`.
-- `references/Hexalith.EventStore/docs/reference/{nuget-packages,stream-replay-api}.md` — state that the default in-memory marker store holds `Dispatched` in process memory only, so a restart between dispatch and completion redispatches handlers.
-- `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs` — added `Works_processor_accepts_the_submitted_work_domain_through_the_wire_envelope_shape` (proves the new domain gate accepts an envelope stamped with `WorkCommandSubmission.WorkDomain` after a round trip through the web-cased JSON the endpoint binds) and `Works_processor_terminal_skip_keeps_its_outcome_when_completion_persistence_fails` (pins the deliberate best-effort completion on terminal-skip paths), plus the `CompletionAlwaysFailingMarkerStore` fixture they use.
-
-**Review findings breakdown:** 37 findings — 0 high, 4 medium, 20 low, 13 false. Patched entries this pass: 1 medium (the domain-gate accept-side proof, grouped with the optional-DTO-field finding) and 4 low (reason-code ambiguity, recovery-log observability in both processors, in-memory durability documentation, terminal-skip completion-failure coverage). 0 items deferred. Every rejected finding and its recorded reason is in the `## Review Triage Log` entry for pass 3 above; 8 rows were carried unchanged from passes 1 and 2.
-
-**Follow-up review recommendation:** `false`. On a follow-up pass only a patched `high` warrants another round, and this pass patched none.
-
-**Verification performed:**
-- `dotnet build tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj --configuration Debug -p:UseHexalithProjectReferences=true` — succeeded, 0 warnings, 0 errors.
-- `dotnet tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests.dll -class ...EventStoreDomainEventMarkerStoreTests -class ...EventStoreDomainEventProcessorTests` — 43 tests, 0 failed, 0 skipped.
-- `dotnet build tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj --configuration Debug -p:UseHexalithProjectReferences=true` — succeeded.
-- `dotnet tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests.dll -class ...DomainEventMarkerLiveSidecarTests` — 1 test, 0 failed (the Redis-backed `Dispatched` → `Completed` path ran live).
-- `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:MinVerVersionOverride=1.0.0` — **FAILED**: 21 × `CS0122` in `src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs`. `RollUpNode.Key`, `RollUpNode.ChildKeys`, and `RollUpNode.ParentKey` are declared `private` inside the nested `RollUpNode` class but are read by the enclosing `WorkItemRollUpProjection`, which C# does not permit.
-- `dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class ...WorksDomainEventProcessorTests` — **not run** (no test assembly could be produced).
-
-**Blocker detail.** The failure is not caused by this change or by this pass's patches. `git stash` of the three modified working-tree files reproduces the identical 21 errors at pristine `HEAD`, and `git log` attributes the file's last change to `df46f71` ("Refactor WorkItem Roll-Up Projection and Tenant Isolation", 2026-09-01), which is an ancestor of this story's baseline `547c6d89`. `src/Hexalith.Works/Hexalith.Works.csproj` has a `ProjectReference` to `Hexalith.Works.Projections`, so neither `Hexalith.Works` nor any Works test project has been buildable since that commit — which also means this spec's recorded "clean cross-repository build" verification could not have passed while the spec was moved to `done`.
-
-The mechanical repair is to widen those three `RollUpNode` members from `private` to `public` (matching every other member of that internal nested class), but that is another story's code and outside this change's scope, so the decision is handed back rather than taken here.
-
-**Residual risks:**
-- The five patches above compile only as far as the EventStore submodule proves; the two new Works tests and the two Works source edits are unbuilt and unrun until the `Hexalith.Works.Projections` break is resolved.
-- The working tree is intentionally left dirty with those patches (the `bad_spec`/`intent_gap` revert rules do not apply to a patch pass), and nothing was committed.
-- The coordinated-rollout safety property (drain old consumers before `Dispatched` can exist; drain `Dispatched` to `Completed` before rollback) remains documentation-only, as carried from passes 1 and 2.

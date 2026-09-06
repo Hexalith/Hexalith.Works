@@ -2347,21 +2347,34 @@ UnitTests **496**, PropertyTests **3**, ArchitectureTests **44**; IntegrationTes
   `WorkItemSuspendedReminderHandler`, `IndexedPendingDateAwaitSource`, `PendingDateAwaitStreamReader`. No durable
   catalog type added — `WorkItemV1Catalog.Count` stays **37**; the golden corpus is byte-unchanged.
 
-## Tests added — IntegrationTests +18 (deterministic, Tier-1, no Docker/Dapr)
+## Tests added (deterministic, Tier-1, no Docker/Dapr)
 
-- `PendingDateAwaitIndexDispatcherTests` (**7**): a date suspension upserts the tenant index and registers the
-  tenant; resume and terminal events remove the entry; a non-date suspension writes nothing to the index or
-  registry; colliding inner ids across two tenants never merge; double-dispatch of the same stream is idempotent;
-  index + registry round-trip through `System.Text.Json`.
-- `WorkItemSuspendedReminderHandlerTests` (**6**): registers a reminder with the correct due time for a future
-  await; zero due time for an already-due await; registers nothing for a non-date suspension; registers nothing
-  when the folded stream shows the item already resumed (DD-1, not-a-raw-event); reads only the suspended aggregate
-  with a non-null `AggregateId`; propagates a gateway failure so the subscription marker stays retryable.
-- `IndexedPendingDateAwaitSourceTests` (**5**): discovers awaits from registry → index → per-aggregate re-fold;
+> **2026-09-05 correction (code-review remediation):** the original "+18" headline and the per-file counts below
+> undercounted the actual `[Fact]`/`[Theory]` methods in these files (verified by direct count against the
+> checked-out files) and omitted `ReminderReconciliationServiceTests` entirely. Counts below are the actual method
+> counts in each file at the point cited; see "Tests added this session (2026-09-05)" further down for what this
+> remediation pass itself added on top of these.
+
+- `PendingDateAwaitIndexDispatcherTests` (**11**, not the originally claimed 7): a date suspension upserts the
+  tenant index and registers the tenant; resume and terminal events remove the entry; a non-date suspension writes
+  nothing to the index or registry; colliding inner ids across two tenants never merge; double-dispatch of the same
+  stream is idempotent; index + registry round-trip through `System.Text.Json`; coordinated concurrent updates to
+  the singleton registry and same-tenant aggregate index; a per-aggregate sequence watermark rejects an older
+  replay's index removal/overwrite.
+- `WorkItemSuspendedReminderHandlerTests` (**6**, matches the original claim): registers a reminder with the
+  correct due time for a future await; zero due time for an already-due await; registers nothing for a non-date
+  suspension; registers nothing when the folded stream shows the item already resumed (DD-1, not-a-raw-event);
+  reads only the suspended aggregate with a non-null `AggregateId`; propagates a gateway failure so the
+  subscription marker stays retryable.
+- `IndexedPendingDateAwaitSourceTests` (**9** as of the 2026-08-28 remediation, not the originally claimed 5; **11**
+  after this session added 2 more — see below): discovers awaits from registry → index → per-aggregate re-fold;
   skips a stale index entry whose stream shows the await cleared; returns nothing for an empty registry without any
   stream read; never constructs a null-`AggregateId` read (captured requests asserted); the unchanged
   `DateReminderReconciler` stays idempotent over the new source (due reissued once across two passes, future
-  rescheduled deterministically).
+  rescheduled deterministically); fails closed on a page-budget-exhausted truncated page, a malformed known
+  lifecycle event, and a page/payload outside the requested stream identity.
+- `ReminderReconciliationServiceTests` (**1**): bounded startup-reconciliation retry with backoff until success or
+  the configured attempt limit — omitted from the original "+18" tally entirely.
 
 ## Tests reworked
 
@@ -2445,6 +2458,90 @@ ASPNETCORE_ENVIRONMENT=Development \
 # Suspend_time_registration_...: SKIP in the WSL2 dapr-init sandbox (actor reminder did not fire); PASS where the Scheduler delivers.
 # Cascade lane (same work.events subscription) independently PASSES, confirming subscription + gateway health.
 ```
+
+## Story 4.8 — 2026-09-05 code-review remediation session
+
+This session closed the open Medium/Low review findings from the 2026-09-01 and 2026-09-05 review rounds
+(cross-tenant scan blast-radius isolation actually wired in, exception constructor/visibility fixes, the
+stream-reader cursor-stall bug, the `WorksEventIdentity` fail-closed gap, doc/citation fixes) and, while
+validating, found and fixed a pre-existing build break unrelated to Story 4.8's own scope: commit `df46f71`
+("Refactor WorkItem Roll-Up Projection and Tenant Isolation") had left `WorkItemRollUpPayloadDescriptor.TryResolve`
+and `WhatsNextPayloadDescriptor.TryResolve` with an out-parameter definite-assignment bug (CS0177: a `&&`
+short-circuit expression body never assigns `out descriptor` on the false branch) and `WorkItemRollUpProjection`'s
+nested `RollUpNode`/`NodeKey` types with `private` members the enclosing class cannot reach (CS0122/CS0053) — the
+solution did not build in Release at session start. Both are minimal, mechanical fixes (block bodies with an
+explicit early `descriptor = null; return false;`; widening three members and one nested type from `private` to
+`internal`, all still assembly-only) with no behavior change, verified by the full test re-run below. Also fixed
+an unrelated, pre-existing `ArchitectureTests` failure: `BuildConfigurationTests.P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk`
+still asserted the stale `10.0.301` SDK pin after commit `0904f06` bumped `global.json` to `10.0.400` without
+updating this test — corrected the assertion to match the checked-in `global.json`.
+
+Production fixes this session (Story 4.8 findings only):
+
+- `IndexedPendingDateAwaitSource.GetPendingDateAwaitsAsync` now isolates a single tenant's scan failure (log +
+  skip, continue scanning the rest) instead of aborting the whole cross-tenant scan, then throws
+  `PendingDateAwaitScanIncompleteException` (now actually wired in, not dead code) carrying the partial results
+  from the tenants that scanned cleanly and the failed-tenant count.
+- `DateReminderReconciler.ReconcileAsync` catches that exception, still acts on the partial results (so the
+  tenants that scanned cleanly are not blocked by the one that didn't), then rethrows so
+  `ReminderReconciliationService` still sees the pass as incomplete and retries it.
+- `PendingDateAwaitScanIncompleteException` made `internal` (was `public` with no external consumer) and its
+  constructor now validates `partialResults` via a `BuildMessage` helper evaluated as the `base(...)` argument,
+  so a null list throws `ArgumentNullException` before any message text is built (previously the null-tolerant
+  `?? 0` formatting ran first and was dead code).
+- `PendingDateAwaitStreamReader.RebuildAsync` fails closed immediately with an accurate message when a truncated
+  page reports no `LastSequenceReturned` (previously it silently re-read the same page every remaining iteration
+  until the page budget was exhausted, then reported a misleading "page budget exceeded" message).
+- `WorksEventIdentity.Matches` fails closed when a **non-rejection** payload type has no `AggregateId` property
+  (previously any missing property silently passed). Rejection events (`IRejectionEvent`) are the documented,
+  deliberate exception — all nine of them (`WorkItemTransitionRejected`, `WorkItemTreeCycleRejected`, etc.) carry
+  no `AggregateId` at all, so they still match by `TenantId`+`WorkItemId` alone; the first version of this fix
+  (fail closed unconditionally) broke `WorkItemProjectionQueryAdapterTests` for exactly this reason and was
+  corrected before landing.
+- `docs/boundary-decision-record.md`: documented the pending-date-await index/registry unbounded-growth tradeoff
+  as an accepted limitation (mirrors the cascade-checkpoint index's `CascadeCheckpointIndexStaleAfterHours`
+  retention knob, which this index has no analogue of).
+- `_bmad-output/implementation-artifacts/deferred-work.md`: tightened DW-53's citation to
+  `ProjectionPayloadCoverageTests.cs:12-26` so it no longer overlaps DW-54's `27-32` what's-next citation.
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`: normalized to consistent CRLF line endings (5 lines
+  had drifted to LF-only against the file's own majority convention and `.editorconfig`'s `end_of_line = crlf`).
+
+Tests added this session (2026-09-05):
+
+- `IndexedPendingDateAwaitSourceTests` +2: `Isolates_a_single_tenant_scan_failure_and_still_returns_partial_results_from_the_others`
+  (two tenants, one gateway-read failure, asserts `PendingDateAwaitScanIncompleteException.PartialResults`/
+  `FailedTenantCount`) and `Fails_closed_immediately_when_a_truncated_page_reports_no_last_sequence_instead_of_stalling_the_cursor`
+  (asserts exactly one gateway call, not a budget-exhausting loop). The three existing fail-closed tests
+  (page-budget-exhausted, malformed lifecycle event, wrong stream identity ×2) were updated to expect
+  `PendingDateAwaitScanIncompleteException` wrapping the original `InvalidOperationException`, since a
+  single-tenant scenario's fail-closed guard now surfaces through the same per-tenant isolation path.
+- `DateReminderRecoveryRuntimeTests` +1: `Reconciler_acts_on_partial_results_then_rethrows_when_the_source_scan_is_incomplete`.
+- `WorksEventIdentityTests` (new file, 5 facts): matches on full agreement; fails closed for a non-rejection
+  payload with no `AggregateId` property; matches a rejection-event payload with no `AggregateId` property by
+  tenant/work-item alone; fails closed on a disagreeing or null `AggregateId` value.
+- `PendingDateAwaitScanIncompleteExceptionTests` (new file, 2 facts): null `partialResults` throws
+  `ArgumentNullException`; a valid instance exposes the count/inner-exception it was constructed with.
+
+Verification (this session, full re-run after all fixes above):
+
+```
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal   # 0 warnings, 0 errors
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests                     # 529/529
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests      # 236/236
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests              # 3/3
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"   # 268/268, 0 skipped
+```
+
+Not run: `dotnet test` (broken in this sandbox per the validation ladder; the four binaries above are the
+narrowest relevant checks). The Tier-3 smoke facts are reported separately below (Live SM-1 result).
+
+**This session's own Tier-3 attempt (honest, inconclusive):** `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class *SmokeTests`
+was run against confirmed-present live Dapr prerequisites (`dapr_placement`/`dapr_scheduler`/`dapr_redis` already
+up on 6050/6060/6379). It ran 13+ minutes consuming almost no CPU — the same stuck-not-crashing symptom as the
+already-open `DistributedApplication.StartAsync` hang finding — and was terminated before its failure-detail
+output flushed, so this session adds no new root-cause evidence beyond confirming the blocker still reproduces.
+The AppHost startup finding stays open exactly as the prior review rounds left it; see the story's Debug Log and
+Review Findings for the full note.
 
 # Runtime Characterization — Claim Persistence Conflicts (2026-08-28)
 

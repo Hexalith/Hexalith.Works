@@ -518,7 +518,7 @@ source_spec: `spec-rollup-contract-drift-hardening.md`
 severity: medium
 reason: The fitness test compares Contracts payloads with WorkItemRollUpTenantIsolation's identity registry only. WorkItemRollUpProjection.ApplyPayload holds a second, ungated switch. Adding any concrete non-rejection Contracts payload turns the gate red, and the only way to green it is a registry entry -- which converts a fail-closed refusal into a silent no-op acceptance that still advances LatestAcceptedSourceSequence. The spec's Approach scopes the allowlist to the identity registry, so binding ApplyPayload is a separate change.
 status: done 2026-09-05
-resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 binds roll-up admission to descriptor-owned effects; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:12-32,41-72 enforces complete Contracts coverage and explicit effects.
+resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 binds roll-up admission to descriptor-owned effects; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:12-26,41-72 enforces complete Contracts coverage and explicit effects (lines 12-20 derive the shared Contracts-payload universe, 21-26 is the roll-up-specific VerifyCatalog call, 41-72 is the shared VerifyCatalog helper both the roll-up and what's-next assertions call; tightened 2026-09-05 to stop overlapping DW-54's what's-next citation at 27-32).
 
 ### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up st
 origin: spec-deferred 05c45a10513b
