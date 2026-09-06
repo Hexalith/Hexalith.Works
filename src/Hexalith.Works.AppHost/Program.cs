@@ -24,6 +24,12 @@ string resiliencyConfigPath = ResolveDaprConfigPath(
     Path.Combine("resiliency", "resiliency.yaml"));
 string stateStoreComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "statestore.yaml");
 string pubSubComponentPath = ResolveDaprConfigPath(builder.AppHostDirectory, "pubsub.yaml");
+string sentryConfigPath = ResolveDaprConfigPath(builder.AppHostDirectory, "sentry.yaml");
+
+// Self-hosted Dapr does not compose Sentry automatically. Keep its generated issuer material in the external
+// user Dapr directory, then make every sidecar wait for the healthy Sentry resource before reading that bundle.
+(IResourceBuilder<ContainerResource> sentry, string sentryCertificateDirectory) =
+    DaprSelfHostedMtls.AddSentry(builder, sentryConfigPath);
 
 // Model the resiliency CRD as a local Dapr resource so every sidecar that must enforce the committed policy
 // receives its directory on --resources-path explicitly, instead of picking the file up incidentally because
@@ -113,6 +119,10 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
 IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventStoreOperations>("eventstore-operations")
     .WithHttpEndpoint()
     .WithHttpHealthCheck("/alive")
+    // Project resources do not implicitly inherit the AppHost environment under Aspire.Hosting.Testing. Keep
+    // the operations host on the same environment so its Development-only token fallback matches the rest of
+    // this composed topology; outside Development its existing fail-closed token validation is preserved.
+    .WithEnvironment("DOTNET_ENVIRONMENT", builder.Environment.EnvironmentName)
     .WithEnvironment("EventStoreOperations__PubSubName", "pubsub")
     .WithEnvironment("EventStoreOperations__TopicName", "deadletter.work.events")
     .WithEnvironment("EventStoreOperations__CaptureRoute", "/dead-letters/work/events")
@@ -152,6 +162,20 @@ foreach (IDaprSidecarResource sidecar in builder.Resources
     .Distinct())
 {
     _ = builder.CreateResourceBuilder(sidecar).WithReference(resiliency);
+}
+
+// Dapr's service-invocation ACL obtains app id, namespace, and trust domain from the caller's Sentry-issued
+// SPIFFE certificate. Configure every composed sidecar, including non-invoking receivers, so all Dapr traffic
+// remains mutually authenticated and a future invocation cannot silently fall back to an identity-less caller.
+foreach (ProjectResource project in builder.Resources
+    .OfType<ProjectResource>()
+    .Where(static project => SidecarOf(project) is not null))
+{
+    DaprSelfHostedMtls.ConfigureSidecar(
+        builder.CreateResourceBuilder(project),
+        SidecarOf(project)!,
+        sentry,
+        sentryCertificateDirectory);
 }
 
 if (security is not null)

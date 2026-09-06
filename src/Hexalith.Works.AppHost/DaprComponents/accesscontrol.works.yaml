@@ -5,13 +5,16 @@
 # commands (/process), queries (/query), projection rebuilds (/project), and replay state (/replay-state), and
 # the operations workload may reach only /work/events to redeliver a captured dead letter.
 #
-# WARNING: Local development only -- the trust domain and namespace are the dapr-init defaults and callers are
-# not mutually authenticated. Production must additionally enable mTLS so an app id cannot simply be asserted.
+# WARNING: Local development only -- the trust domain and namespace are backed by the AppHost's self-hosted
+# Sentry. Production must use its platform-managed Dapr control plane and certificate lifecycle.
 apiVersion: dapr.io/v1alpha1
 kind: Configuration
 metadata:
   name: accesscontrol-works
 spec:
+  mtls:
+    enabled: true
+    sentryAddress: "127.0.0.1:50001"
   accessControl:
     defaultAction: deny
     trustDomain: "public"

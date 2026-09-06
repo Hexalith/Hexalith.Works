@@ -7,12 +7,14 @@ using System.Text;
 using System.Text.Json;
 
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Reminders;
 
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -37,7 +39,8 @@ namespace Hexalith.Works.IntegrationTests;
 /// <c>WorkItemSuspendedReminderHandlerTests</c>, <c>PendingDateAwaitIndexDispatcherTests</c>,
 /// <c>IndexedPendingDateAwaitSourceTests</c>, and <c>DateReminderRecoveryRuntimeTests</c>; these lanes prove the
 /// end-to-end resume acceptance under a real Aspire topology.</para>
-/// <para><b>No hand configuration (AC #3).</b> The AppHost is launched with only <c>--EnableKeycloak=false</c>.
+/// <para><b>No hand configuration (AC #3).</b> The AppHost is launched with <c>--EnableKeycloak=false</c> and an
+/// explicit Development environment, but no Works recovery-tenant arguments.
 /// Story 4.8 removed the <c>Works:Recovery:Tenants</c> forwarding; the restart's <c>ReminderReconciliationService</c>
 /// runs on by default and discovers the tenants with pending date awaits from the durable registry the
 /// <c>/project</c> dispatcher maintains, then re-folds each candidate's per-aggregate stream (every stream read
@@ -81,9 +84,13 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
         // Host 1 — park a future await, give the projection poller time to durably index it, and prove no resume
         // occurred before shutdown. It becomes overdue only while the host is genuinely down.
-        await WithAppHostAsync(ct, async (client, token) =>
+        PendingDateAwait overdueAwait = PendingAwait(RecoveryItem, recoveryInstant);
+        await WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
             await ParkSuspendedOnDateAsync(client, RecoveryItem, recoveryInstant, token).ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, overdueAwait, token)
+                .ConfigureAwait(false);
             await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
             (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false)).ShouldBe(0);
         }).ConfigureAwait(true);
@@ -96,7 +103,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         // Host 2 — restart against the same Redis WITHOUT any --Works:Recovery:Tenants argument. Recovery
         // auto-discovers the parked await from the durable registry+index (no hand configuration), re-folds the
         // per-aggregate stream, finds it overdue, and reissues the resume through the reconciler → command gateway.
-        await WithAppHostAsync(ct, async (client, token) =>
+        await WithAppHostAsync(ct, async (_, client, _, token) =>
         {
             (await WaitForResumedCountAsync(client, RecoveryItem, atLeast: 1, token).ConfigureAwait(false))
                 .ShouldBe(1, "Recovery must auto-discover the overdue await from the durable index (no hand config) and resume it exactly once.");
@@ -108,7 +115,7 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         }).ConfigureAwait(true);
 
         // Host 3 — a second genuine startup reconciliation against the same durable state must remain convergent.
-        await WithAppHostAsync(ct, async (client, token) =>
+        await WithAppHostAsync(ct, async (_, client, _, token) =>
         {
             (await CountResumedAsync(client, RecoveryItem, token).ConfigureAwait(false)).ShouldBe(1);
         }).ConfigureAwait(true);
@@ -126,18 +133,28 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
         Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
         DateTimeOffset futureInstant = DateTimeOffset.UtcNow.AddSeconds(90);
-        await WithAppHostAsync(ct, async (client, token) =>
+        PendingDateAwait futureAwait = PendingAwait(FutureRecoveryItem, futureInstant);
+        await WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
             await ParkSuspendedOnDateAsync(client, FutureRecoveryItem, futureInstant, token).ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, futureAwait, token)
+                .ConfigureAwait(false);
             await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
             (await CountResumedAsync(client, FutureRecoveryItem, token).ConfigureAwait(false)).ShouldBe(0);
         }).ConfigureAwait(true);
 
         DateTimeOffset.UtcNow.ShouldBeLessThan(futureInstant, "The second host must observe a genuinely future await.");
-        await WithAppHostAsync(ct, async (client, token) =>
+        await WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, futureAwait, token)
+                .ConfigureAwait(false);
             (await WaitForResumedCountAsync(client, FutureRecoveryItem, atLeast: 1, token).ConfigureAwait(false))
                 .ShouldBe(1, "Startup recovery must re-register the future reminder and its later scheduler firing must resume exactly once.");
+            await Task.Delay(TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
+            (await CountResumedAsync(client, FutureRecoveryItem, token).ConfigureAwait(false))
+                .ShouldBe(1, "Future-reminder recovery must not add a duplicate WorkItemResumed.");
         }).ConfigureAwait(true);
     }
 
@@ -158,40 +175,124 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
         // Steady state (AC #1): suspend on a near-future date; the reminder registered at suspend time on the live
         // work.events subscription must fire via the Dapr Scheduler and resume the item with NO restart.
-        await WithAppHostAsync(ct, async (client, token) =>
+        await WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
-            await ParkSuspendedOnDateAsync(client, SteadyItem, DateTimeOffset.UtcNow.AddSeconds(10), token).ConfigureAwait(false);
+            DateTimeOffset instant = DateTimeOffset.UtcNow.AddSeconds(30);
+            PendingDateAwait steadyAwait = PendingAwait(SteadyItem, instant);
+            await ParkSuspendedOnDateAsync(client, SteadyItem, instant, token).ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, steadyAwait, token)
+                .ConfigureAwait(false);
             int resumed = await WaitForResumedCountAsync(client, SteadyItem, atLeast: 1, token).ConfigureAwait(false);
             resumed.ShouldBe(1, "Suspend-time registration + Dapr Scheduler fire must resume the item exactly once with no restart.");
+            await Task.Delay(TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
+            (await CountResumedAsync(client, SteadyItem, token).ConfigureAwait(false))
+                .ShouldBe(1, "Suspend-time delivery must not add a duplicate WorkItemResumed.");
+        }).ConfigureAwait(true);
+    }
+
+    [Fact]
+    public async Task MtlsAllowsEventStoreAndDeniesAnUnauthorizedCallerAtWorksProcess()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        if (!await PrerequisitesAvailableAsync(ct).ConfigureAwait(true))
+        {
+            Assert.Skip("Aspire reminder-recovery prerequisites are not running.");
+            return;
+        }
+
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+        string authorizedItem = "work-mtls-" + Guid.NewGuid().ToString("N")[..12];
+        await WithAppHostAsync(ct, async (app, client, _, token) =>
+        {
+            var tenant = new TenantId(Tenant);
+            var workItem = new WorkItemId(authorizedItem);
+            await SubmitToTerminalAsync(
+                client,
+                authorizedItem,
+                nameof(CreateWorkItem),
+                new CreateWorkItem(tenant, workItem, "mTLS authorization proof"),
+                token).ConfigureAwait(false);
+
+            ResourceEvent adminResource = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "eventstore-admin", token)
+                .ConfigureAwait(false);
+            using HttpClient unauthorizedSidecar = WorksAppHostTestReadiness.CreateDaprClient(
+                adminResource,
+                "EventStore Admin");
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/v1.0/invoke/works/method/process")
+            {
+                Content = JsonContent.Create(new { }),
+            };
+            using HttpResponseMessage response = await unauthorizedSidecar
+                .SendAsync(request, token)
+                .ConfigureAwait(false);
+            response.StatusCode.ShouldBe(
+                HttpStatusCode.Forbidden,
+                "The Sentry identity for eventstore-admin is not authorized for Works /process.");
         }).ConfigureAwait(true);
     }
 
     // Starts the full AppHost topology with NO recovery-tenant configuration (Story 4.8: recovery discovers tenants
     // from the durable registry), waits for eventstore + works to be healthy, runs the body against the eventstore
     // gateway client, and disposes both the application and the builder — so the next call is a genuine restart.
-    private static async Task WithAppHostAsync(CancellationToken cancellationToken, Func<HttpClient, CancellationToken, Task> body)
+    private static async Task WithAppHostAsync(
+        CancellationToken cancellationToken,
+        Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body)
     {
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(["--EnableKeycloak=false"], startupCts.Token)
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                ["--EnableKeycloak=false", "--environment=Development"],
+                startupCts.Token)
             .ConfigureAwait(true);
 
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
         try
         {
-            await app.StartAsync(startupCts.Token).ConfigureAwait(true);
-            await app.ResourceNotifications.WaitForResourceHealthyAsync("eventstore", startupCts.Token).ConfigureAwait(true);
-            await app.ResourceNotifications.WaitForResourceHealthyAsync("works", startupCts.Token).ConfigureAwait(true);
+            try
+            {
+                await app.StartAsync(startupCts.Token).ConfigureAwait(true);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+            {
+                throw new InvalidOperationException(
+                    "[startup/readiness] The Aspire AppHost could not start the reminder smoke topology. "
+                    + WorksAppHostTestReadiness.DescribeResourceStates(
+                        app,
+                        ["dapr-sentry", "eventstore", "works", "eventstore-operations", "eventstore-admin"]),
+                    ex);
+            }
+
+            _ = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "eventstore", startupCts.Token)
+                .ConfigureAwait(true);
+            ResourceEvent worksResource = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "works", startupCts.Token)
+                .ConfigureAwait(true);
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
             await WorksAppHostTestReadiness
                 .WaitForEventStoreCommandRuntimeAsync(client, startupCts.Token)
                 .ConfigureAwait(true);
-            await body(client, startupCts.Token).ConfigureAwait(true);
+            using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
+            await WorksAppHostTestReadiness
+                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token)
+                .ConfigureAwait(true);
+            try
+            {
+                await body(app, client, sidecarClient, startupCts.Token).ConfigureAwait(true);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+            {
+                throw new InvalidOperationException(
+                    "[runtime] Reminder smoke body failed after startup/readiness probes passed.",
+                    ex);
+            }
         }
         finally
         {
@@ -259,9 +360,13 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", MintToken());
 
         using HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-        response.StatusCode.ShouldBe(HttpStatusCode.Accepted, $"{commandType} submission must return 202 Accepted.");
+        string responseBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        string diagnosticBody = responseBody.Length <= 2_000 ? responseBody : responseBody[..2_000] + "…";
+        response.StatusCode.ShouldBe(
+            HttpStatusCode.Accepted,
+            $"[submission] {commandType} must return 202 Accepted. Body={diagnosticBody}");
 
-        JsonElement result = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken).ConfigureAwait(false);
+        JsonElement result = JsonSerializer.Deserialize<JsonElement>(responseBody);
         return result.GetProperty("correlationId").GetString()!;
     }
 
@@ -308,8 +413,13 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         }
 
-        return count;
+        throw new TimeoutException(
+            $"[delivery] Work item '{workItemId}' did not reach {atLeast} accepted {nameof(WorkItemResumed)} "
+            + $"event(s) within 90 seconds; observed {count}.");
     }
+
+    private static PendingDateAwait PendingAwait(string workItemId, DateTimeOffset instant)
+        => new(Tenant, workItemId, instant, AwaitCondition.DateReached(instant).CorrelationKey);
 
     // Counts accepted WorkItemResumed events in the parked item's re-readable per-aggregate stream.
     private static async Task<int> CountResumedAsync(HttpClient client, string workItemId, CancellationToken cancellationToken)

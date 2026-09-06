@@ -11,6 +11,9 @@ kind: Configuration
 metadata:
   name: accesscontrol
 spec:
+  mtls:
+    enabled: true
+    sentryAddress: "127.0.0.1:50001"
   accessControl:
     defaultAction: allow
     trustDomain: "public"

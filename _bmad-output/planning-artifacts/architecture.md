@@ -57,11 +57,13 @@ legacy-label map at the end of this section._
 ### AD-03 `[ADOPTED]` — Priority is a small ordered enum *(legacy A2)*
 
 - **Binds:** `Priority = Critical/High/Normal/Low`, additive-tolerant; input to "what's next"
-  ordering (Priority → Due Date → creation order; none sorts last).
+  ordering (Priority → Due Date → deterministic identity order; none sorts last).
 - **Prevents:** numeric routing bands leaking Theme-4 machinery into v1.
-- **Rule:** ordering logic consumes the enum's declared order only. The FR-20 creation-order
-  coordinate is a still-open product fork (VAL-H03) routed through `bmad-correct-course`; the live
-  identity-order substitute must not be documented as creation order.
+- **Rule:** ordering logic consumes the enum's declared order only. The FR-20 tiebreak is
+  **deterministic identity order** (`WorkItemId` ordinal) — the VAL-H03 product fork was resolved
+  by the approved 2026-09-06 correct-course; Works records no cross-aggregate creation coordinate.
+  Edge originators are advised (not bound) to mint sortable ULIDs via `Hexalith.Commons` so
+  identity order approximates creation order in practice.
 
 ### AD-04 `[ADOPTED]` — Unit immutable after first estimate *(legacy A3)*
 
@@ -439,7 +441,7 @@ blocks Story 4.9 entry, but R-flagged items block its acceptance.
 
 | Finding | Status | Revisit condition |
 |---|---|---|
-| VAL-H03 — FR-20 creation order vs live identity order | **Product fork** — route through `bmad-correct-course`; do not document the substitute as creation order | Before Epic 4 closure |
+| VAL-H03 — FR-20 creation order vs live identity order | **Resolved 2026-09-06** — approved correct-course blessed deterministic identity order (`WorkItemId` ordinal) as the FR-20 tiebreak; PRD/epics/AD-03 amended, no creation coordinate added | Closed (sprint-change-proposal-2026-09-06) |
 | VAL-H06 — cascade checkpoint concurrency protocol (monotonic states, ETag/CAS, replica ownership) | Bound in AD-20 matrix **R7** spec work | Story 4.9 R7 acceptance |
 | VAL-H07 — reminder end-to-end durability (Scheduler HA/backup, callback failure policy, continuous retry/alerting) | Narrowed by AD-11; full binding in **R6** | Story 4.9 R6 acceptance |
 | VAL-H08 — shared-rebuild capture-through-Commit fence protocol | Allocated to EventStore SDK + platform in **R4** (AD-16) | Story 4.9 R4 acceptance |
@@ -665,7 +667,7 @@ evidence; this section is the current target architecture.
 - **A1 — Aggregate-ID derivation:** assigned at the command-creation edge via **`Hexalith.Commons`** ID helper and passed into `CreateWorkItem`; `Handle` never generates IDs. *Rationale:* keeps `Handle` pure, makes replay deterministic, enables domain-level idempotent create (client retry → same ID; the transport idempotency contract remains open — VAL-H10). *Affects:* Contracts (command shape), all test builders.
 - **A4 — Burn-Down:** `Meter(Unit, Estimated, Done)` with derived `Remaining` (never < 0); one **Effort** meter in v1; a parallel **Cost** meter reuses the identical type (Theme 5). *Affects:* Contracts, Server, Projections.
 - **A3 — Unit:** per-item value object, **immutable after first estimate**; `ProgressReported`/`ReEstimated` must carry the same Unit or are rejected; mixed-Unit roll-up exposes **per-Unit subtotals**, never a coerced single figure.
-- **A2 — Priority:** small **ordered enum** (`Critical/High/Normal/Low`), additive-tolerant; backs "what's next" ordering (Priority → Due Date → creation order; none sorts last). *Rationale:* YAGNI vs numeric routing bands (Theme 4, SM-C2).
+- **A2 — Priority:** small **ordered enum** (`Critical/High/Normal/Low`), additive-tolerant; backs "what's next" ordering (Priority → Due Date → deterministic identity order; none sorts last — VAL-H03 resolved 2026-09-06). *Rationale:* YAGNI vs numeric routing bands (Theme 4, SM-C2).
 - **A5 — Roll-Up projection (AD-06, flattened form):** one LWW slot per **descendant**, keyed by **`(descendantId, descendantEventSequence)`** and valued with that descendant's **own contribution** per Unit; `rolled = own + Σ descendant slots`; **idempotent + order-tolerant** (stale/lower-sequence writes ignored; replays don't double-count; each slot written only from its own descendant's stream). Built on EventStore projection infra (CachingProjectionActor, ETag actors, notifiers). Live ancestor delivery is the **registry-backed fan-out (AD-22)** — ancestors resolved from the Work-Tree Registry read model with a freshness witness. *Validates SM-2; mitigates RR-1.*
 - **B3 — Consistency split (type-separated):** own-Remaining + Status are **aggregate-authoritative and synchronous** (including `Done = Remaining 0 → Completed`); **rolled-Remaining is an eventually-consistent projection** with a distinct type/field/serialized shape so no consumer can gate control flow on it.
 
@@ -1189,6 +1191,7 @@ The platform host is named (AD-20: `Hexalith.Platform`, Platform Maintainer (Hex
 Story 4.9 by reproducing and proving equivalent topology per the AD-20 migration matrix in
 `Hexalith.Platform` before deleting the Works-owned AppHost/ServiceDefaults projects. Story 1.5
 additively implements post-creation Conversation linking. Route the AD-21 Work-Tree Registry and
-AD-22 fan-out into the backlog through sprint planning, and route the FR-20 creation-order fork
-(VAL-H03) through `bmad-correct-course`. Re-run sprint-planning readiness after the story
-specifications are implementation-ready.
+AD-22 fan-out into the backlog through sprint planning — binding the VAL-H10 transport-idempotency
+contract at the R11 seam first. The FR-20 creation-order fork (VAL-H03) is resolved: deterministic
+identity order (approved correct-course, 2026-09-06). Re-run sprint-planning readiness after the
+story specifications are implementation-ready.

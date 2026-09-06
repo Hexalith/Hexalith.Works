@@ -2574,3 +2574,73 @@ tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.Integra
 
 Broader solution and full-suite counts are intentionally left to the enclosing workflow's final verification run;
 the focused characterization count is **2/2**.
+
+---
+
+# Story 4.8 Runtime-Proof Remediation — 2026-09-06
+
+This session aligned the Works AppHost SDK with its Aspire 13.5.3 hosting packages, enabled the paired Aspire CLI
+bundle, fixed the diagnosed AppHost-startup resource relation, and strengthened the Tier-3 reminder lane with
+phase-specific diagnostics. No command/event/rejection type changed; the durable catalog remains **37**.
+
+## Deterministic verification
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+# succeeded
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal
+# 0 warnings, 0 errors
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 529/529 passed
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 236/236 passed
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- '*SmokeTests'
+# 268/268 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class Hexalith.Works.ArchitectureTests.FitnessTests.BuildConfigurationTests
+# 6/6 passed
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class Hexalith.Works.IntegrationTests.WorksAppHostTopologyTests
+# 7/7 passed
+```
+
+`dapr --version` reported CLI **1.18.0** and runtime **1.18.3**. The local upgrade preserved the existing Redis
+container/data. `aspire stop --non-interactive` reported no running AppHost after verification, and the process
+list contained no AppHost, DCP, generated `dapr run`, or app-side `daprd` process.
+
+## Live SM-1 result — blocked after readiness, before reminder registration
+
+Prerequisites were present, so none of the focused facts skipped. Before the AppHost fix, the three-fact focused
+class completed naturally after 924 seconds with all facts timing out in `DistributedApplication.StartAsync`.
+DCP logs showed `eventstore-operations` exiting on its non-Development application-channel-token guard while
+`eventstore-admin` waited for it. Forwarding the AppHost `DOTNET_ENVIRONMENT` fixed this startup relationship.
+
+The next full three-fact run completed naturally in 279 seconds. Every fact passed:
+
+- AppHost start;
+- healthy EventStore and Works resources;
+- Dapr runtime 1.18.3 compatibility;
+- Works `DateReminderActor` advertisement with actor runtime `RUNNING` and `hostReady=true`;
+- connected placement and scheduler.
+
+Each fact then failed on its first CreateWorkItem submission with HTTP 500, before a deterministic reminder could
+be registered or inspected. The retained response body included the failure correlation and tenant. DCP logs
+isolated the inner failure to EventStore's `DaprDomainServiceInvoker`: HTTP **403 Forbidden** invoking AppId
+`works`, method `process`; the Works application received no `/process` request. Target-sidecar debug evidence and
+Dapr 1.18.3's ACL implementation explain the boundary: the committed Works policy is deny-by-default and matches
+caller app/namespace/trust-domain from a certificate-backed SPIFFE identity, while this self-hosted topology has
+mTLS disabled and no Sentry. Setting the local namespace cannot create that identity.
+
+The approved Story 4.8 scope forbids weakening/bypassing the ACL and does not authorize adding Sentry/mTLS control
+plane topology. Those experiments were therefore removed. No actor/scheduler defect was reached, so
+`DateReminderActor` and `DaprDateReminderScheduler` remain unchanged. Steady-state and recovery live acceptance
+remain incomplete at the submission boundary; story and sprint status were not advanced to done.

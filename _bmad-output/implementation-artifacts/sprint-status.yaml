@@ -37,6 +37,8 @@
 generated: 2026-06-15T18:47:50+02:00
 last_updated: 2026-09-05 # code-review: 4-8 follow-up fix for per-tenant scan isolation resolved; Aspire AppHost startup and actor-reminder callback findings remain open
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
+# correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
+#   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
 project: works
 project_key: NOKEY
 tracking_system: file-system

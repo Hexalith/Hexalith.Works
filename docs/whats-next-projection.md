@@ -27,8 +27,10 @@ An item with **neither** Priority **nor** Due Date lands at the bottom by constr
 due-date max sentinel) — FR-4 "neither sorts last". The identity tiebreak is chosen over first-seen arrival
 order because it is a **pure function of identity** — stable across rebuilds and immune to out-of-order or
 duplicate delivery (B2/NFR-4). Works has no creation timestamp in the kernel (`WorkItemState` carries only
-a per-aggregate `Sequence`; envelope timestamps are EventStore-owned), so "creation order" is realized as
-this rebuild-deterministic identity order. Within a tenant, inner ids are distinct, so the comparator is a
+a per-aggregate `Sequence`; envelope timestamps are EventStore-owned). Deterministic identity order is the
+approved FR-20 tiebreak (correct-course 2026-09-06, resolving VAL-H03) — not a stand-in for creation
+order; edges minting ids with the Commons sortable ULID generator get identity order that approximates
+creation order in practice. Within a tenant, inner ids are distinct, so the comparator is a
 **strict total order** — no two distinct items ever compare equal.
 
 ## Read-model contract (`WhatsNextItem`)

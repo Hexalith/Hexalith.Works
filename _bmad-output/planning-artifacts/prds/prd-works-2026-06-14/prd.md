@@ -282,7 +282,7 @@ The Executor Binding carries an AuthorityLevel describing what the Executor may 
 The system exposes a read-side query returning a tenant's claimable/assigned Work Items ordered by Priority then Due Date.
 
 **Consequences (testable):**
-- The query returns `Queued` and `Assigned` items for a tenant ordered by Priority (then earliest Due Date, then creation order); items with neither sort last.
+- The query returns `Queued` and `Assigned` items for a tenant ordered by Priority (then earliest Due Date, then deterministic identity order — `WorkItemId` ordinal, a replay-stable strict total order); items with neither sort last. Works records no cross-aggregate creation coordinate; edges that want the tiebreak to approximate true creation order should mint ids with the `Hexalith.Commons` sortable ULID generator (guidance, not an enforced contract). *(Amended 2026-09-06: was "creation order" — VAL-H03 resolved by approved correct-course.)*
 - The query is served by the substrate's query/projection infrastructure (not custom read routing) and applies query-side authorization/result filtering in addition to tenant scoping (§9).
 - This is a Projection/query only — no routing, assignment, or ranking *engine* (that is Theme 4).
 

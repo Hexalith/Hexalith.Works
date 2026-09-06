@@ -22,6 +22,7 @@ public sealed class WorksAppHostTopologyTests
     private const string EventStoreOperationsName = "eventstore-operations";
     private const string PubSubName = "pubsub";
     private const string ResiliencyName = "resiliency";
+    private const string SentryName = "dapr-sentry";
     private const string StateStoreName = "statestore";
     private const string WorksName = "works";
     private const string SourceTopic = "work.events";
@@ -37,6 +38,7 @@ public sealed class WorksAppHostTopologyTests
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
                 [
                     "--EnableKeycloak=false",
+                    "--environment=Development",
                     "--Dapr:PlacementHostAddress=localhost:6050",
                     "--Dapr:SchedulerHostAddress=localhost:6060",
                 ],
@@ -47,6 +49,30 @@ public sealed class WorksAppHostTopologyTests
         ProjectResource adminServer = Project(builder, EventStoreAdminName);
         ProjectResource operations = Project(builder, EventStoreOperationsName);
         ProjectResource works = Project(builder, WorksName);
+        ContainerResource sentry = builder.Resources
+            .OfType<ContainerResource>()
+            .Single(static resource => string.Equals(resource.Name, SentryName, StringComparison.Ordinal));
+
+        ContainerImageAnnotation sentryImage = sentry.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
+        sentryImage.Image.ShouldBe("daprio/sentry");
+        sentryImage.Tag.ShouldBe("1.18.3");
+        sentry.Entrypoint.ShouldBe("/sentry");
+        EndpointAnnotation sentryGrpc = sentry.Annotations.OfType<EndpointAnnotation>()
+            .Single(static endpoint => string.Equals(endpoint.Name, "grpc", StringComparison.Ordinal));
+        sentryGrpc.Port.ShouldBe(50001);
+        sentryGrpc.TargetPort.ShouldBe(50001);
+        sentryGrpc.IsProxied.ShouldBeFalse();
+        EndpointAnnotation sentryHealth = sentry.Annotations.OfType<EndpointAnnotation>()
+            .Single(static endpoint => string.Equals(endpoint.Name, "health", StringComparison.Ordinal));
+        sentryHealth.TargetPort.ShouldBe(8080);
+        sentry.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
+        ContainerMountAnnotation credentialsMount = sentry.Annotations.OfType<ContainerMountAnnotation>()
+            .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/credentials", StringComparison.Ordinal));
+        credentialsMount.Source.ShouldNotBeNull().ShouldNotStartWith(LocateRepositoryRoot(), Case.Sensitive);
+        credentialsMount.IsReadOnly.ShouldBeFalse();
+        sentry.Annotations.OfType<ContainerMountAnnotation>()
+            .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/config/sentry.yaml", StringComparison.Ordinal))
+            .IsReadOnly.ShouldBeTrue();
 
         HealthKeys(eventStore).ShouldBe(Sorted(["eventstore_http_/alive_200_check"]));
         HealthKeys(works).ShouldBe(Sorted(["works_http_/alive_200_check"]));
@@ -105,11 +131,12 @@ public sealed class WorksAppHostTopologyTests
         // domain-module reference and the explicit EventStore__CommandGateway__BaseAddress endpoint reference
         // contributes the second. Counted rather than de-duplicated so losing either one fails here.
         ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName]);
-        WaitedResources(works).ShouldBe([EventStoreName, StateStoreName]);
+        WaitedResources(eventStore).ShouldBe([SentryName]);
+        WaitedResources(works).ShouldBe([SentryName, EventStoreName, StateStoreName]);
         ReferencedResources(adminServer).ShouldBe([EventStoreName, EventStoreOperationsName]);
-        WaitedResources(adminServer).ShouldBe([EventStoreOperationsName]);
+        WaitedResources(adminServer).ShouldBe([SentryName, EventStoreOperationsName]);
         ReferencedResources(operations).ShouldBe([WorksName]);
-        WaitedResources(operations).ShouldBe([StateStoreName, WorksName]);
+        WaitedResources(operations).ShouldBe([SentryName, StateStoreName, WorksName]);
 
         // The bounded inbound retry budget only holds where the CRD's directory reaches --resources-path, so no
         // composed sidecar may be missing the reference — including one added after this test was written.
@@ -122,6 +149,7 @@ public sealed class WorksAppHostTopologyTests
         ];
         allSidecars.Length.ShouldBe(4);
         allSidecars.ShouldAllBe(sidecar => ReferencedComponents(sidecar).Contains(ResiliencyName));
+        allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 1);
 
         Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
         StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId").ShouldBe(WorksName);
@@ -160,6 +188,7 @@ public sealed class WorksAppHostTopologyTests
         StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
 
         Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
+        StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
         StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
         StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");
         StringValue(operationsEnvironment, "EventStoreOperations__CaptureRoute").ShouldBe("/dead-letters/work/events");
@@ -318,6 +347,7 @@ public sealed class WorksAppHostTopologyTests
     public void AccessControlConfigurationsDenyByDefaultAndGrantExactlyOneCallerPath()
     {
         YamlMappingNode worksAccessControl = Mapping(LoadYaml("accesscontrol.works.yaml"), "spec", "accessControl");
+        AssertMtls(LoadYaml("accesscontrol.works.yaml"));
         Scalar(worksAccessControl, "defaultAction").ShouldBe("deny");
         YamlMappingNode eventStorePolicy = Sequence(worksAccessControl, "policies").Children
             .Cast<YamlMappingNode>()
@@ -359,6 +389,7 @@ public sealed class WorksAppHostTopologyTests
             LoadYaml("accesscontrol.eventstore-operations.yaml"),
             "spec",
             "accessControl");
+        AssertMtls(LoadYaml("accesscontrol.eventstore-operations.yaml"));
         Scalar(operationsAccessControl, "defaultAction").ShouldBe("deny");
         YamlMappingNode operatorPolicy = Sequence(operationsAccessControl, "policies").Children
             .Cast<YamlMappingNode>()
@@ -374,6 +405,28 @@ public sealed class WorksAppHostTopologyTests
             .Cast<YamlScalarNode>()
             .Select(static verb => verb.Value ?? string.Empty))
             .ShouldBe(Sorted(["GET", "POST"]));
+    }
+
+    /// <summary>Verifies every receiver configuration and Sentry use the same enabled mTLS control plane.</summary>
+    [Fact]
+    public void DaprConfigurationsUseTheSameSelfHostedSentry()
+    {
+        AssertMtls(LoadYaml("accesscontrol.yaml"));
+        AssertMtls(LoadYaml("accesscontrol.eventstore-admin.yaml"));
+        AssertMtls(LoadYaml("accesscontrol.eventstore-operations.yaml"));
+        AssertMtls(LoadYaml("accesscontrol.works.yaml"));
+
+        YamlMappingNode sentryMtls = Mapping(LoadYaml("sentry.yaml"), "spec", "mtls");
+        Scalar(sentryMtls, "enabled").ShouldBe("true");
+        Scalar(sentryMtls, "workloadCertTTL").ShouldBe("24h");
+        Scalar(sentryMtls, "allowedClockSkew").ShouldBe("15m");
+    }
+
+    private static void AssertMtls(YamlMappingNode configuration)
+    {
+        YamlMappingNode mtls = Mapping(configuration, "spec", "mtls");
+        Scalar(mtls, "enabled").ShouldBe("true");
+        Scalar(mtls, "sentryAddress").ShouldBe("127.0.0.1:50001");
     }
 
     private static IReadOnlyDictionary<string, string> ParseScopes(string value)

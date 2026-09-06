@@ -263,6 +263,27 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Debug Log References
 
+- **2026-09-06 Story 4.8 runtime-proof session:** aligned the AppHost SDK to 13.5.3 and upgraded the local Dapr
+  runtime from 1.18.2 to 1.18.3 without clearing Redis. The first focused three-fact run finished naturally after
+  924 seconds with all facts timing out in `DistributedApplication.StartAsync`; DCP logs isolated
+  `eventstore-operations` exiting because its Development-only application-channel-token fallback was not active,
+  while `eventstore-admin` waited for that resource. Forwarding the AppHost `DOTNET_ENVIRONMENT` fixed startup;
+  the topology model then passed 7/7. A full focused rerun finished naturally in 279 seconds: every fact reached
+  healthy EventStore/Works resources and a Works Dapr 1.18.3 sidecar advertising `DateReminderActor` with actor
+  runtime `RUNNING`, `hostReady=true`, placement connected, and scheduler connected. All three then failed at the
+  first CreateWorkItem submission (HTTP 500), before reminder registration. The bounded response body retained
+  the correlation/tenant; DCP application logs isolated the inner failure to EventStore's
+  `DaprDomainServiceInvoker`: `403 Forbidden` invoking AppId `works`, method `process`; the Works application saw
+  no `/process` request. Target-sidecar debug output and the Dapr 1.18.3 ACL implementation confirmed the local
+  self-hosted topology provides no certificate-backed SPIFFE caller identity (mTLS disabled; no Sentry), so the
+  existing Works `defaultAction: deny` applies. The ineffective namespace/debug experiments were removed; the
+  ACL was not weakened, no mTLS/Sentry topology was added, and actor code was not patched because execution never
+  reached the reminder boundary.
+- **2026-09-06 deterministic verification:** exact restore succeeded; Release solution build 0 warnings / 0
+  errors; UnitTests 529/529, ArchitectureTests 236/236, PropertyTests 3/3, IntegrationTests excluding
+  `*SmokeTests` 268/268; focused BuildConfigurationTests 6/6 and WorksAppHostTopologyTests 7/7. Catalog remains
+  37. `dapr --version` reported CLI 1.18.0/runtime 1.18.3. `aspire stop --non-interactive` reported no running
+  AppHost, corroborated by the process list.
 - Baseline (HEAD `ff329cc`, after Story 4.7 landed): `dotnet build Hexalith.Works.slnx -c Release` → 0 warnings / 0 errors. UnitTests **496**, PropertyTests **3**, ArchitectureTests **44**, all green. (Story-spec baseline `9526c31` predates 4.7; 4.7 added no unit/arch count drift.)
 - Post-change: build 0/0; UnitTests **496**, PropertyTests **3**, ArchitectureTests **44** (incl. 3 new host-edge governance tokens); IntegrationTests deterministic (`-class- "*SmokeTests"`) **143/143**, 0 skipped.
 - Tier-3 diagnosis: a two-host isolation run (park on a past `DateReached` → host 1; restart with no `--Works:Recovery:Tenants` → host 2) returned `steadyResume=0, recoveryResume=1`. Recovery (AC #2/#3) is proven live; the Dapr actor-reminder fire (AC #1 steady-state, Story-4.6 `DateReminderActor`/Scheduler path, never exercised live before) did not deliver in the WSL2 `dapr init` sandbox. `ResourceLoggerService.WatchAsync` surfaced no Works logs in this harness, so the behavioral two-host probe was used instead. Cascade smoke lane (same `work.events` subscription) passes independently, confirming subscription + gateway health.
@@ -275,6 +296,14 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 > The original 2026-07-23 completion notes below are historical. The 2026-08-28 code-review remediation supersedes
 > its live-lane status: callback failure is no longer skipped, but the current acceptance run was blocked earlier
 > by Aspire AppHost startup timing out before any reminder assertion executed.
+
+- **2026-09-06 runtime-proof remediation:** Aspire 13.5.3 is now pinned consistently and its CLI bundle enabled.
+  The AppHost startup hang is fixed by carrying the AppHost environment to the operations workload. The live
+  harness proves and reports each evidence-ladder boundary (resource health → sidecar version → actor/placement/
+  scheduler readiness → exact reminder → delivery/exactly-once), and no longer skips once prerequisites are
+  present. The former startup blocker is closed; the current live blocker is the pre-existing self-hosted
+  deny-by-default invocation ACL rejecting `eventstore -> works/process` without a SPIFFE identity. Both steady
+  and recovery facts stop at submission, so no new live-pass claim is made and status is not advanced to done.
 
 - **Code-review remediation (2026-08-28):** added explicit containerized/native Dapr placement+scheduler endpoint
   resolution; bounded startup reconciliation retry; complete-scan propagation; positive options validation;
@@ -319,7 +348,11 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `Program.cs` (register the suspend handler)
 
 **Production — AppHost**
-- `src/Hexalith.Works.AppHost/Program.cs` (delete `Works:Recovery:Tenants` forwarding)
+- `global.json` (2026-09-06: AppHost SDK 13.5.3 pin)
+- `src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj` (2026-09-06: SDK 13.5.3 + CLI bundle)
+- `src/Hexalith.Works.AppHost/Program.cs` (delete `Works:Recovery:Tenants` forwarding; 2026-09-06: forward the
+  AppHost environment to `eventstore-operations` so the Development live lane starts without weakening its
+  non-Development token guard)
 
 **Tests — `tests/Hexalith.Works.IntegrationTests/`**
 - `PendingDateAwaitIndexDispatcherTests.cs` (new)
@@ -330,6 +363,8 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `ReminderReconciliationServiceTests.cs` (bounded startup retry)
 - `Story48Streams.cs` (new — shared stream-page helper)
 - `WorksReminderRecoveryPipelineSmokeTests.cs` (reworked into recovery + steady-state facts)
+- `WorksAppHostTestReadiness.cs` (2026-09-06: bounded phase diagnostics plus Dapr/actor/reminder readiness probes)
+- `WorksAppHostTopologyTests.cs` (2026-09-06: explicit Development test environment + operations forwarding pin)
 - `DateReminderRecoveryRuntimeTests.cs` (2026-09-05: +1 fact — reconciler acts on partial results then rethrows)
 - `WorksEventIdentityTests.cs` (new 2026-09-05 — fail-closed/rejection-event identity matching)
 - `PendingDateAwaitScanIncompleteExceptionTests.cs` (new 2026-09-05 — constructor null-check ordering)
@@ -337,12 +372,14 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 **Tests — `tests/Hexalith.Works.ArchitectureTests/`**
 - `FitnessTests/RuntimeAdapterGovernanceTests.cs` (host-edge token list +3)
 - `FitnessTests/BuildConfigurationTests.cs` (2026-09-05: fixed stale `10.0.301` SDK-pin assertion to match the
-  checked-in `global.json` `10.0.400`, unrelated pre-existing drift found while verifying this session's changes)
+  checked-in `global.json` `10.0.400`, unrelated pre-existing drift found while verifying this session's changes;
+  2026-09-06: Aspire AppHost SDK assertion 13.5.3)
 
 **Docs**
 - `docs/boundary-decision-record.md` (2026-09-05: + unbounded-growth tradeoff paragraph)
 - `docs/eventstore-api-surface-constraints.md`
 - `_bmad-output/implementation-artifacts/tests/test-summary.md` (2026-09-05: corrected counts + new session section)
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
 - `_bmad-output/implementation-artifacts/deferred-work.md` (2026-09-05: tightened DW-53's citation range)
 
 **Sprint tracking**
@@ -357,6 +394,16 @@ claude-opus-4-8 (Claude Code dev-story workflow).
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-06 — Runtime-proof remediation aligned Aspire to 13.5.3, enabled its CLI bundle, fixed the AppHost
+  startup hang by forwarding `DOTNET_ENVIRONMENT` to `eventstore-operations`, and added phase-specific resource,
+  sidecar, actor, deterministic-reminder, submission, and delivery diagnostics. The local Dapr runtime was
+  upgraded to 1.18.3 without clearing Redis. All deterministic gates are green (build 0/0; 529 Unit, 236
+  Architecture, 3 Property, 268 non-smoke Integration), but all three live facts now stop honestly at the next
+  boundary: EventStore receives 403 invoking `works/process` because the existing self-hosted, mTLS-disabled
+  topology cannot supply the SPIFFE caller identity required by the deny-by-default ACL. Per the approved scope,
+  the ACL was not weakened, Sentry/mTLS topology was not added, actor code was not changed, and story/sprint
+  completion status was not advanced.
 
 - 2026-09-05 — Code-review remediation session (this session). Closed the remaining Medium/Low review findings
   from the 2026-09-01/2026-09-05 rounds: per-tenant scan-failure isolation actually wired in

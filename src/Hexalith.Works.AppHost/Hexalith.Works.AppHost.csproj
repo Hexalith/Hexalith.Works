@@ -1,9 +1,10 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.4.6">
+<Project Sdk="Aspire.AppHost.Sdk/13.5.3">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsPublishable>true</IsPublishable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
     <HexalithEventStoreBasePath>$(HexalithEventStoreRoot)\src</HexalithEventStoreBasePath>
     <HexalithTenantsBasePath>$(HexalithTenantsRoot)\src</HexalithTenantsBasePath>
   </PropertyGroup>

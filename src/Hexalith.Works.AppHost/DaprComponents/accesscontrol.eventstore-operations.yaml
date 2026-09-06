@@ -6,6 +6,9 @@ kind: Configuration
 metadata:
   name: accesscontrol-eventstore-operations
 spec:
+  mtls:
+    enabled: true
+    sentryAddress: "127.0.0.1:50001"
   accessControl:
     defaultAction: deny
     trustDomain: "public"

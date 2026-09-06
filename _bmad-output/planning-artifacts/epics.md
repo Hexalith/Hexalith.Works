@@ -126,8 +126,9 @@ explicit guardrails: UX components, email-as-UI, routing, cost, and security enf
 **4.6 Thin-Core Boundaries & Module Ports**
 
 - **FR-20: Resolve a "what's next" ordering** — Read-side query returning a tenant's
-  `Queued`+`Assigned` items ordered by Priority → earliest Due Date → creation order (neither sorts
-  last); served by substrate query/projection infra; applies query-side authorization/result
+  `Queued`+`Assigned` items ordered by Priority → earliest Due Date → deterministic identity order
+  (`WorkItemId` ordinal; neither sorts last — amended 2026-09-06, VAL-H03 resolved by approved
+  correct-course); served by substrate query/projection infra; applies query-side authorization/result
   filtering in addition to tenant scoping; projection/query only — no routing engine.
 - **FR-21: Reference sibling modules, never copy them** — Identity→`Parties` (PartyId),
   dialogue→`Conversations` (correlation ID), persistence/events→`EventStore`,
@@ -401,6 +402,12 @@ An executor can advance one Work Item through the full lifecycle, report progres
 ### Epic 3: Work Tree Roll-Up and Durable Await
 A coordinator can spawn child work, suspend a parent on await-conditions, resume on matching triggers, and trust recursive remaining-effort roll-up across a tenant-safe work tree.
 **FRs covered:** FR-5, FR-11, FR-12, FR-13, FR-14, FR-15, FR-16.
+_Pending additions (2026-09-06 architecture update): the AD-21 Work-Tree Registry and AD-22
+registry-backed fan-out stories are routed into this epic through sprint planning.
+**Predecessor:** the VAL-H10 transport-idempotency contract must be bound at the AD-20 R11
+command-submission seam (deterministic MessageId/causation derivation for the
+reserve→spawn→release translations) **before the registry story is drafted** — Solution Architect,
+via the architecture workflow._
 
 ### Epic 4: Shared Work Execution and Builder Runtime Validation
 Teams, agents, and external parties can share one executor model: assign, reassign, claim, and hand off
@@ -1153,7 +1160,7 @@ So that assigned and claimable work can be ordered without introducing a routing
 
 **Given** returned Work Items have Priority and Due Date values
 **When** the query orders results
-**Then** it sorts by Priority, then earliest Due Date, then creation order
+**Then** it sorts by Priority, then earliest Due Date, then deterministic identity order (`WorkItemId` ordinal)
 **And** items with neither Priority nor Due Date sort last.
 
 **Given** returned Work Items include burn-down, status, and executor data

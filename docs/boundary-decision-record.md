@@ -10,8 +10,9 @@ boundary).
 > `LinkConversation` → `ConversationLinked` path owned by Story 1.5. Works ships only domain-centric
 > projects plus the canonical minimal EventStore domain-service executable; it ships no AppHost,
 > Aspire, or ServiceDefaults project. A designated platform/host repository owns Aspire topology
-> and generic runtime plumbing. The Solution Architect must name that repository and owner before
-> Story 4.9 enters implementation.
+> and generic runtime plumbing. Named 2026-09-06 (architecture AD-20): that repository is
+> **`Hexalith.Platform`** (github.com/Hexalith/Hexalith.Platform), owned by the Platform
+> Maintainer (Hexalith); Story 4.9 may enter implementation.
 
 ## Purpose
 
@@ -93,12 +94,13 @@ reactor translations, tests, and the canonical minimal EventStore domain-service
 executable uses `AddEventStoreDomainService(...)` and `UseEventStoreDomainService()` and does not fork
 platform capabilities.
 
-The designated platform/host repository owns Aspire composition, ServiceDefaults, Dapr components,
-health and telemetry, generic command/event delivery, projection/query storage plumbing,
-subscriptions, reminders, and recovery orchestration. Story 4.9 migrates the historical Works-owned
-hosting topology only after the platform topology has equivalent passing evidence. Until the Solution
-Architect names that repository and owner, migration may not begin and the current host assets may not
-be removed.
+The designated platform/host repository — **`Hexalith.Platform`**, owned by the Platform
+Maintainer (Hexalith), per architecture AD-20 (2026-09-06) — owns Aspire composition,
+ServiceDefaults, Dapr components, health and telemetry, generic command/event delivery,
+projection/query storage plumbing, subscriptions, reminders, and recovery orchestration. Story 4.9
+migrates the historical Works-owned hosting topology only after the platform topology has
+equivalent passing evidence. Migration may begin; a current host asset may be removed only after
+the corresponding AD-20 migration-matrix row is green in the `Hexalith.Platform` conformance lane.
 
 ## Preserved deferred seams — explicitly NOT v1 behavior
 
