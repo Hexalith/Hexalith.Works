@@ -2,7 +2,7 @@
 title: 'Complete Story 4.8 durable reminder runtime proof'
 type: 'bugfix'
 created: '2026-09-06'
-status: 'in-review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: '062426c97ed7e8be24b51094234cd70f8c79169b'
