@@ -802,19 +802,19 @@ severity: low
 reason: Pre-existing, not caused by this diff — the overlap was created when `ProjectionPayloadCoverageTests.cs` was added in the prior 4.8 review round (commit `01d527a`), which duplicates `WorkItemRollUpPayloadCoverageTests`'s single coverage assertion (minus `EffectDisposition`/intentional-no-op checks). This diff only updates the older test to compile against the renamed `WorkItemRollUpPayloadDescriptor.Catalog` API. Two overlapping tests must now be kept in sync by hand; consider retiring or consolidating the older, narrower test.
 status: open
 
-- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Complete deterministic and live verification for the concurrent Story 4.8 AppHost-owned Dapr placement/scheduler path.
   evidence: The default branch composes placement and scheduler on ports 51005/51006, but the topology test forces external endpoints and command/cascade/reminder prerequisites still require the superseded 50005/50006 or 6050/6060 services, so the owned path can remain unasserted or skip.
 
-- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Pin configuration- and policy-level Dapr ACL trust domains in the concurrent Story 4.8 topology tests.
   evidence: All four YAML files changed those values to `localhost`, while deterministic tests assert only `spec.mtls.controlPlaneTrustDomain`; restoring `public` on an allow policy would leave tests green and deny the intended Sentry identity.
 
-- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Reconcile the concurrent Story 4.8 specification with its current localhost trust domain and the 40-type catalog baseline.
   evidence: Its implementation note still recommends `controlPlaneTrustDomain: "public"`, and its frozen constraint/verification still says catalog 37 even though the concurrent code uses `localhost` and Story 1.5 makes the current catalog 40.
 
-- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Review the concurrent Story 4.8 scheduler's embedded-etcd network exposure.
   evidence: `DaprSelfHostedMtls.AddControlPlane` passes `--etcd-client-listen-address=0.0.0.0`; co-networked containers can reach that listener even though its port is not published to the host, so the scheduler should bind loopback unless remote clients are required.
 
@@ -841,3 +841,8 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Separate or reconcile the three submodule pointer advances bundled with the earlier Story 4.8 commit.
   evidence: Parties, Projects, and Tenants pointers advanced relative to the 4.8 baseline despite its no-submodule constraint; they are already committed concurrent user-owned changes and were preserved as required by repository instructions.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-06)
+
+- DeleteReminderAsync GET-after-DELETE may need to treat 204 as gone (`tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:441`). Unverified on Dapr 1.18.3; live 4/4 implies GET returns 404 here. Settle by capturing the GET status immediately after a successful DELETE against this runtime.
+- deferred-work.md gained unstructured concurrent-review bullets without DW-id fields (`_bmad-output/implementation-artifacts/deferred-work.md:805`). Append-only ledger from a concurrent review; several bullets are already contradicted by this patch. Needs a sweep, not an in-band 4.8 code fix.

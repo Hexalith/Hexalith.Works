@@ -492,3 +492,35 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 - Checklist pass applied during creation. The story pre-empts the known failure modes for this slice: reinventing Story 4.6's components (Task 1 inventories them; tasks rewire, not rebuild), placing runtime code outside the host edge (governance guards named), issuing the 400-rejected null-`AggregateId` read (banned explicitly, with a recording-fake assertion required), re-adding hand configuration (the `Tenants` gate removal is a task, not a hint), growing the durable catalog (index records pinned as plain STJ, catalog stays 37), trusting stale docs (catalog-36 prose and stale version pins flagged), fake completion of Tier-3 lanes (the fbc78e58 gateway-timeout blocker is named with explicit honest-reporting instructions), and building Story 4.7's subscription surface out of turn (dependency decision DD-1 with a standalone default path).
 - Remaining implementation risks, carried openly: (a) the exact trigger timing of the EventStore runtime's `/project` dispatch is verified in Task 1, not assumed — if dispatch turns out to be lazy rather than post-append in the live topology, the steady-state trigger may need 4.7's subscription surface, making 4.7 a hard prerequisite (report as a blocker rather than working around); (b) the Tier-3 lanes may stay blocked by the drifted EventStore submodule's gateway-submit timeout — the deterministic proofs plus honest blocker documentation are the fallback the validation ladder expects.
+
+### Review Findings (2026-09-06, bmad-code-review)
+
+Latest File List increment vs `062426c` (~2713 lines). Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor.
+
+- [ ] [Review][Decision] Boundary-decision-record 4.9 migration-start language shipped in this 4.8 increment — Commit `33a27e2` adds Hexalith.Platform ownership and "Migration may begin" to `docs/boundary-decision-record.md` while implementing 4.8 mTLS. Spec-4-8 forbids absorbing Story 4.9. Revert those paragraphs into 4.9, or keep them as the already-decided hosting destination restated while 4.8 touched the same file.
+
+- [ ] [Review][Patch] Live AC #1/#3 proofs can treat a successful Scheduler fire as a registration or delete failure [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:201]
+- [ ] [Review][Patch] Live skip gates probe only Redis :6379, so occupied AppHost control-plane ports hang instead of skip [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:528]
+- [ ] [Review][Patch] Sidecar credential read is single-shot and accepts empty PEM after Sentry reports healthy [src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs:186]
+- [ ] [Review][Patch] Sentry `--trust-domain=localhost` is not pinned by EvaluateArgsAsync [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:54]
+- [ ] [Review][Patch] Missing required DataContract members other than Instant are untested [tests/Hexalith.Works.IntegrationTests/DateReminderRegistrationSerializationTests.cs:63]
+- [ ] [Review][Patch] Fitness test pins Aspire 13.5.3 only in global.json, not the AppHost Sdk or AspireUseCliBundle [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:20]
+- [ ] [Review][Patch] WaitForResourceHealthyAsync rethrows startup-budget cancellation without a resource snapshot [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:113]
+- [ ] [Review][Patch] WithAppHostAsync wraps phase-tagged body failures in a generic [runtime] message [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:327]
+- [ ] [Review][Patch] WaitForWorksActorRuntimeAsync does not fail-closed on a missing or unparseable runtimeVersion [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:221]
+- [ ] [Review][Patch] Placement readiness uses Contains("connected"), which matches "disconnected" [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:239]
+- [ ] [Review][Patch] WaitForPendingDateAwaitIndexedAsync can NullReferenceException when Entries is JSON-null [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:368]
+
+- [x] [Review][Defer] DeleteReminderAsync GET-after-DELETE may need to treat 204 as gone [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:441] — deferred: unverified on Dapr 1.18.3; live 4/4 implies GET returns 404 here. Settle by capturing the GET status immediately after a successful DELETE against this runtime.
+- [x] [Review][Defer] deferred-work.md gained unstructured concurrent-review bullets without DW-id fields [_bmad-output/implementation-artifacts/deferred-work.md:805] — deferred: append-only ledger from a concurrent review; several bullets are already contradicted by this patch (`ShouldNotContain("--etcd-client-listen-address=0.0.0.0")`, Redis-only skip gates, `AssertMtls` policy domains). Needs a sweep, not an in-band 4.8 code fix.
+
+**Rejected:**
+- `false` — "`DAPR_CERT_KEY` PEM in sidecar env is a missing secret wrap": Dapr consumes the issuer key through that env var; `SidecarEnvironmentUsesTheAppHostOwnedControlPlaneIdentity` pins it; `DescribeResourceStates` dumps state/health/exit only; credential files remain outside the repository.
+- `false` — "empty/whitespace `Dapr:Mtls:CertificateDirectory` accepts cwd": null uses `~/.dapr/certs/hexalith-works`; paths inside the repo throw; empty `GetFullPath` fails closed.
+- `false` — "non-Linux hosts skip `--user` so Sentry cannot write issuer files": `--user` exists so a Linux host can read Sentry-created files; Docker Desktop without `--user` still writes and the files remain visible.
+- `false` — "`DateReminderRegistration` accepts empty required strings and silently schedules": `DateReminderName.For` throws on whitespace; empty remoting values cannot reach `RegisterReminderAsync`.
+- `false` — "`AppHostModelExposesTheExactCommandEventTopology` forces plaintext 6050/6060 against mTLS Sentry": that fact inspects explicit override forwarding; the default TLS pair is pinned in `DefaultAppHostComposesTheMtlsActorControlPlane`; reminder smokes do not pass those args.
+- `false` — "this diff absorbs Story 1.5 catalog/VAL-H11 work": `ShouldBe(40)` matches the separately committed 1.5 catalog; 4.8 adds no catalog type; VAL-H11/sprint 1.5 hunks come from `0b38153` in shared File List docs.
+- `false` — "`DateReminderRegistrationSerializationTests` in IntegrationTests / one-row cascade theory / mismatched skip reasons": the serializer facts run and pin remoting; the cascade helper still works with one Redis port; skip wording is cosmetic.
+- rejected spec-edit — contradictory 403 vs 4/4 completion notes and spec-4-8 "no actor change" / catalog-37 frozen text: the fix is editing the spec/story under review.
+- `low` — `DeleteReminderAsync` has no retry on the initial DELETE transport timeout: uncommon in this serialized live class; retry/backoff is more than a direct correction.

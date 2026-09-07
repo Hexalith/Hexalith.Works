@@ -34,6 +34,10 @@ public sealed class ScaffoldGovernanceTests
         ".Channel",
     ];
 
+    // Keep in lockstep with tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.Count.
+    // Stories 4.2/4.3/4.4 add no durable types; they pin the current catalog rather than a story-local 40.
+    private const int CurrentV1CatalogCount = 40;
+
     [Fact]
     public void P0_ScaffoldContainsOnlyTheV1ProjectSet()
     {
@@ -355,7 +359,7 @@ public sealed class ScaffoldGovernanceTests
     // assertion: Story 4.2 introduces no new event, command, or rejection, so the v1 catalog stays at
     // its then-frozen count (37 before Story 1.5 additively raised the current catalog to 40).
     [Fact]
-    public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays40()
+    public void P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndAddsNoCatalogTypes()
     {
         string root = RepositoryRoot.Locate();
 
@@ -410,7 +414,7 @@ public sealed class ScaffoldGovernanceTests
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(40, "Story 4.2 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays 40.");
+        polymorphicCatalogCount.ShouldBe(CurrentV1CatalogCount, "Story 4.2 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays pinned.");
     }
 
     // Story 4.3 / AC #4 + DC1/DC4: claim is unconditional in v1 — any tenant Executor may claim a Queued
@@ -418,12 +422,12 @@ public sealed class ScaffoldGovernanceTests
     // decision record (those are a Theme-4 routing concern). Single-claim-wins is realized as the pure
     // lifecycle + EventStore's ETag-backed atomic actor-state save; the loser's observable rejection is the
     // existing WorkItemTransitionRejected, NOT a new ClaimRejected/ConcurrencyRejected type (DC1).
-    // This mirrors P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndCatalogStays40: it
+    // This mirrors P0_WorkItemSurfaceHasNoExecutorKindSpecificHandoffOrReassignTypeAndAddsNoCatalogTypes: it
     // matches on declared TYPE names (not raw substrings) so legitimate ClaimWorkItem/WorkItemClaimed and
     // XML-comment "claim"/"routing" mentions stay valid, and it is paired with the frozen-catalog assertion
     // so adding a claim-specific or concurrency rejection type breaks the build.
     [Fact]
-    public void P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndCatalogStays40()
+    public void P0_WorkItemSurfaceHasNoClaimEligibilityRoutingOrConcurrencyRejectionTypeAndAddsNoCatalogTypes()
     {
         string root = RepositoryRoot.Locate();
 
@@ -481,7 +485,7 @@ public sealed class ScaffoldGovernanceTests
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(40, "Story 4.3 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays 40.");
+        polymorphicCatalogCount.ShouldBe(CurrentV1CatalogCount, "Story 4.3 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays pinned.");
     }
 
     // Story 4.4 / AC #1+#4 + DC1/DC2/DC3: the tenant "what's next" queue is a pure read projection +
@@ -492,7 +496,7 @@ public sealed class ScaffoldGovernanceTests
     // "routing"/"SignalR" mentions stay valid, and it is paired with the frozen-catalog assertion so adding a
     // durable what's-next type breaks the build.
     [Fact]
-    public void P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndCatalogStays40()
+    public void P0_WorkItemSurfaceHasNoWhatsNextRoutingEligibilityOrLiveSurfaceTypeAndAddsNoCatalogTypes()
     {
         string root = RepositoryRoot.Locate();
 
@@ -557,7 +561,7 @@ public sealed class ScaffoldGovernanceTests
         int polymorphicCatalogCount = typeof(AssignWorkItem).Assembly.GetTypes()
             .Count(type => !type.IsAbstract && type != typeof(Polymorphic) && typeof(Polymorphic).IsAssignableFrom(type));
 
-        polymorphicCatalogCount.ShouldBe(40, "Story 4.4 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays 40.");
+        polymorphicCatalogCount.ShouldBe(CurrentV1CatalogCount, "Story 4.4 adds no event, command, or rejection type; the current v1 catalog (WorkItemV1Catalog.Count) stays pinned.");
     }
 
     // Story 4.4 / AC #5 + NFR-6: the pure kernel performs no logging — it never references ILogger or a log

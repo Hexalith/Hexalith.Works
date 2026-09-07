@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-09-06 # Stories 1.5 and 4.8 implementations ready for review
+last_updated: 2026-09-07 # Story 1.5 review patches applied; Story 4.8 remains in review
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
@@ -50,7 +50,7 @@ development_status:
   1-2-create-a-tenant-scoped-work-item: done
   1-3-reference-sibling-modules-without-copying-data: done
   1-4-expose-boundary-ports-and-decision-record: done
-  1-5-link-a-conversation-after-creation: review
+  1-5-link-a-conversation-after-creation: done
   epic-1-retrospective: optional
   epic-2: in-progress
   2-1-define-the-lifecycle-state-machine: done

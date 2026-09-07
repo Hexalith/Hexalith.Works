@@ -4,6 +4,7 @@ using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.State;
+using Hexalith.Works.Runtime;
 
 using KernelAggregate = Hexalith.Works.Server.Aggregates.WorkItemAggregate;
 
@@ -74,7 +75,7 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(envelope);
-        if (!string.Equals(envelope.Domain, "work", StringComparison.Ordinal)
+        if (!string.Equals(envelope.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
             || !string.Equals(envelope.TenantId, command.TenantId?.Value, StringComparison.Ordinal)
             || !string.Equals(envelope.AggregateId, command.WorkItemId?.Value, StringComparison.Ordinal))
         {

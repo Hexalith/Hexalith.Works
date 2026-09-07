@@ -4,6 +4,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Results;
+using Hexalith.EventStore.Contracts.Serialization;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
@@ -77,6 +78,54 @@ public sealed class LinkConversationRuntimeAdapterTests
 
         exception.InnerException.ShouldBeOfType<InvalidOperationException>()
             .Message.ShouldContain("does not match its command envelope", Case.Sensitive);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_fails_closed_when_envelope_domain_differs()
+    {
+        var aggregate = new WorkItemEventStoreAggregate();
+        var command = new LinkConversation(Tenant, Item, Conversation);
+        CommandEnvelope mismatched = CommandFor(command) with { Domain = "party" };
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(mismatched, currentState: null));
+
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain("does not match its command envelope", Case.Sensitive);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_fails_closed_when_envelope_tenant_differs()
+    {
+        var aggregate = new WorkItemEventStoreAggregate();
+        var command = new LinkConversation(Tenant, Item, Conversation);
+        CommandEnvelope mismatched = CommandFor(command) with { TenantId = "tenant-beta" };
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(mismatched, currentState: null));
+
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain("does not match its command envelope", Case.Sensitive);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_fails_closed_when_conversation_correlation_is_omitted()
+    {
+        var aggregate = new WorkItemEventStoreAggregate();
+        byte[] payload = JsonSerializer.SerializeToUtf8Bytes(
+            new { TenantId = new { Value = Tenant.Value }, WorkItemId = new { Value = Item.Value } },
+            EventStorePayloadSerialization.Options);
+        CommandEnvelope envelope = CommandFor(new LinkConversation(Tenant, Item, Conversation)) with
+        {
+            Payload = payload,
+        };
+        DomainServiceCurrentState current = CurrentState(
+            new WorkItemCreated(Item.Value, 1, Tenant, Item, new Obligation("Link runtime work")));
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(envelope, current));
+
+        exception.InnerException.ShouldBeOfType<ArgumentNullException>();
     }
 
     private static CommandEnvelope CommandFor(LinkConversation command)

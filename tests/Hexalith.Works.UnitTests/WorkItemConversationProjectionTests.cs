@@ -120,6 +120,22 @@ public sealed class WorkItemConversationProjectionTests
         item.LatestAcceptedSourceSequence.ShouldBe(3);
     }
 
+    [Fact]
+    public void Null_conversation_link_is_refused_before_it_can_advance_the_whats_next_watermark()
+    {
+        var projection = new WhatsNextQueueProjection();
+        var created = new WorkItemCreated(Item.Value, 1, Tenant, Item, new Obligation("Link projection work"));
+        var assigned = new WorkItemAssigned(Item.Value, 2, Tenant, Item, Binding);
+
+        projection.Project(Delivery(1, created));
+        projection.Project(Delivery(2, assigned));
+        projection.Project(Delivery(3, new ConversationLinked(Item.Value, 3, Tenant, Item, null!)));
+
+        WhatsNextItem item = projection.WhatsNext(Tenant).ShouldHaveSingleItem();
+        item.Status.ShouldBe(WorkItemStatus.Assigned);
+        item.LatestAcceptedSourceSequence.ShouldBe(2);
+    }
+
     private static WorkItemRollUpEvent Delivery(long sequence, Hexalith.EventStore.Contracts.Events.IEventPayload payload)
         => new(Tenant, Item, sequence, payload);
 }

@@ -60,6 +60,27 @@ context:
 - Given projected events arrive duplicated or out of order, when read models rebuild and persist, then the correlation and accepted-source watermark converge deterministically and queries expose only the opaque reference.
 - Given catalog, architecture, polymorphic, golden-corpus, and dependency tests run, then the catalog is 40 (15/15/10), all three new contracts have frozen coverage, prior bytes still pass, and no Conversations implementation dependency exists.
 
+### Review Findings
+
+- [x] [Review][Patch] Refuse null-correlation ConversationLinked in the what's-next identity reader so malformed evidence cannot advance LatestAcceptedSourceSequence [`src/Hexalith.Works.Projections/Strategies/WhatsNextPayloadDescriptor.cs:138`]
+- [x] [Review][Patch] Add ProcessAsync cases that mismatch only CommandEnvelope.Domain and only CommandEnvelope.TenantId [`tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs:68`]
+- [x] [Review][Patch] Add a ProcessAsync case whose LinkConversation JSON omits ConversationCorrelationId and asserts fail-closed [`tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs:26`]
+- [x] [Review][Patch] Assert refused rolled totals on the dispatcher malformed-null-link query path [`tests/Hexalith.Works.IntegrationTests/GetWorkItemQueryHandlerTests.cs:132`]
+- [x] [Review][Patch] Note the envelope-aware three-argument LinkConversation wrapper in the Story 4.5 discovery contract [`docs/eventstore-api-surface-constraints.md:80`]
+- [x] [Review][Patch] Pin Story 4.2/4.3/4.4 catalog assertions to WorkItemV1Catalog.Count instead of baking 40 into method names [`tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:358`]
+- [x] [Review][Patch] Compare envelope.Domain to WorkCommandSubmission.WorkDomain instead of the literal "work" [`src/Hexalith.Works/WorkItemEventStoreAggregate.cs:77`]
+- [x] [Review][Patch] Retag the four concurrent Story 4.8 deferred-work rows so a later 1.5 sweep does not own AppHost/ACL/etcd debt [`_bmad-output/implementation-artifacts/deferred-work.md:805`]
+
+Rejected:
+- false — Spawn WorkItemCreated overwrite of spawn-time conversation: Rebuild copies spawn facts only when there is no WorkItemCreated; ApplyPayload then applies the child's birth record, matching OwnEffort/Parent.
+- false — Spawn conversation never reaches child get-work-item via parent /project: EventStore /project is per aggregate; the child's queryable create-time correlation is WorkItemCreated on the child stream, and spawn facts are the shared-rebuild placeholder already used for effort/parent.
+- false — Apply(ConversationLinked) without payload identity checks: Handle is the sole writer and other Apply overloads trust stored events the same way; a foreign identity requires corrupt persistence, not this command path.
+- false — Unknown state with an orphan ConversationCorrelationId no-ops instead of transition-rejecting: Handle cannot emit ConversationLinked except from a live status, which requires WorkItemCreated first.
+- false — WorksEventDecoder must reject null-correlation ConversationLinked: no reminder or reactor handler consumes that type; a decoded payload is skipped as no-handler or ignored by date-await reconstruction.
+- spec-edit — Spec front matter `status: done` vs sprint `review`: workflow rejects findings whose fix is to edit this spec.
+- spec-edit — Stale implementation-note counts and verification wording: workflow rejects findings whose fix is to edit this spec.
+- low — No dispatcher/query case for create-time vs conflicting ConversationLinked diagnostics: the fold is already covered by WorkItemConversationProjectionTests; dispatcher uses the same Project path.
+
 ## Implementation Notes
 
 - Added the three polymorphic contracts, pure aggregate handling/replay, runtime wrapper, nullable roll-up/view fields, deterministic projections, query exposure, catalog governance, fixtures, and maintained documentation.

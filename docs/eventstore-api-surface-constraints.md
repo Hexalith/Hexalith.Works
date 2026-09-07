@@ -77,8 +77,11 @@ verified EventStore domain-service surface is:
   `EventStoreProjection<TReadModel>`). The pure static `WorkItemAggregate` is **not** discovered. The host
   therefore provides `WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemState>` decorated
   `[EventStoreDomain("work")]` (the convention would otherwise derive `work-item-event-store`), declaring one
-  `public static DomainResult Handle(TCommand, WorkItemState?)` wrapper per Works command that delegates verbatim
-  to the pure kernel. No EventStore runtime inheritance leaks into `Server` — the `Server -> Contracts` direction
+  `public static DomainResult Handle(TCommand, WorkItemState?)` wrapper per Works command that delegates to the
+  pure kernel. `LinkConversation` is the envelope-aware exception:
+  `Handle(LinkConversation, WorkItemState?, CommandEnvelope)` fail-closes when envelope domain, tenant, or
+  aggregate id disagrees with the payload. No EventStore runtime inheritance leaks into `Server` — the
+  `Server -> Contracts` direction
   is preserved (fitness-asserted).
 - **Canonical host shape.** A domain module is two lines — `builder.AddEventStoreDomainService(assembly)` then
   `app.UseEventStoreDomainService()`. The SDK supplies the platform service defaults (health/OpenTelemetry),

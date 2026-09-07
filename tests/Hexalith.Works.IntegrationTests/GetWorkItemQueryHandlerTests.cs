@@ -147,10 +147,20 @@ public sealed class GetWorkItemQueryHandlerTests
                     tenant,
                     item,
                     new Obligation("Created with a conversation"),
+                    new WorkItemEffort(8m, Hour),
                     ConversationCorrelationId: conversation), 1),
                 Dto(new ConversationLinked(WorkId, 2, tenant, item, null!), 2),
             ]),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemRollUp> persisted = await store.GetAsync<WorkItemRollUp>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        persisted.Value.ShouldNotBeNull().ConversationCorrelationId.ShouldBe(conversation);
+        persisted.Value.LatestAcceptedSourceSequence.ShouldBe(1);
+        persisted.Value.RolledRemaining.ShouldBeNull();
+        persisted.Value.RolledRemainingByUnit.ShouldBeEmpty();
 
         WorkItemView view = await QueryGetWorkItemAsync(store, WorkId).ConfigureAwait(true);
         view.Found.ShouldBeTrue();
