@@ -2345,7 +2345,7 @@ UnitTests **496**, PropertyTests **3**, ArchitectureTests **44**; IntegrationTes
   `Tenants.Count == 0` gate are removed; the AppHost `Works:Recovery:Tenants` forwarding block is deleted.
 - **Governance:** `RuntimeAdapterGovernanceTests` host-edge confinement token list extended with
   `WorkItemSuspendedReminderHandler`, `IndexedPendingDateAwaitSource`, `PendingDateAwaitStreamReader`. No durable
-  catalog type added — `WorkItemV1Catalog.Count` stays **37**; the golden corpus is byte-unchanged.
+  catalog type added — `WorkItemV1Catalog.Count` is **40** (Story 1.5; Story 4.8's delta is zero); the golden corpus is byte-unchanged.
 
 ## Tests added (deterministic, Tier-1, no Docker/Dapr)
 
@@ -2581,7 +2581,7 @@ the focused characterization count is **2/2**.
 
 This session aligned the Works AppHost SDK with its Aspire 13.5.3 hosting packages, enabled the paired Aspire CLI
 bundle, fixed the diagnosed AppHost-startup resource relation, and strengthened the Tier-3 reminder lane with
-phase-specific diagnostics. No command/event/rejection type changed; the durable catalog remains **37**.
+phase-specific diagnostics. No command/event/rejection type changed; the durable catalog remains **37** (2026-09-06 session snapshot; current count is 40 / 4.8 delta 0).
 
 ## Deterministic verification
 
@@ -2904,4 +2904,4 @@ Consequence for the evidence above: the **Tier-3 4/4 live pass (957.974 s) was p
 `8745b14b`**, the pin in effect when it ran. After the move to `d45206f7` the deterministic gates were re-run and
 are unchanged — Release build 0 warnings / 0 errors, UnitTests 568/568, ArchitectureTests 237/237,
 PropertyTests 3/3, deterministic IntegrationTests 317/317 — but the live lane has **not** been re-run against
-`d45206f7`. A re-run is advisable before treating the live proof as current for that pin.
+`d45206f7`. Close-out 2026-09-08: that recorded 4/4 remains evidence from `8745b14b`; the live reminder/mTLS lane was not re-run on HEAD `c6efdbba` (after intermediate pin `57c0ad56`).
