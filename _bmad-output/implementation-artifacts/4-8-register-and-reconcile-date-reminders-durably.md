@@ -317,6 +317,27 @@ claude-opus-4-8 (Claude Code dev-story workflow).
   `P0_AppHostProgramUsesPlatformEventStoreHelpersNotHandRolledDaprWiring` was updated from the old
   single-argument call shape to the call plus the shared client-id constant. This is submodule drift, not
   Story 4.8 functionality.
+- **2026-09-08 Tier-3 root cause: the submodule bump took the whole live lane down.** With prerequisites
+  present (dapr-init Redis on :6379, control-plane ports free), the first live attempt failed in
+  `DistributedApplication.StartAsync` with the new diagnostic naming the culprit exactly:
+  `eventstore[state=Finished,health=unknown,exit=134]` while sentry/placement/scheduler were all Healthy. DCP's
+  captured stderr gave the reason: `OptionsValidationException: Authentication:JwtBearer requires either
+  'Authority' (production OIDC) or 'SigningKey' (development symmetric key) to be configured.` Diffing the
+  submodule across the pin bump (`910fda6a` → `8745b14b`, superproject HEAD `52a56c6`) shows
+  `src/Hexalith.EventStore/appsettings.Development.json` **lost its entire `Authentication:JwtBearer` block**
+  (issuer `hexalith-dev`, audience `hexalith-eventstore`, key `DevOnlySigningKey-AtLeast32Chars!`,
+  `RequireHttpsMetadata:false`) — the exact values every Works smoke lane mints against. Repaired in
+  `src/Hexalith.Works.AppHost/Program.cs` by composing that development symmetric-key validation for
+  `eventstore` and `eventstore-admin` on the `--EnableKeycloak=false` path, mirroring the EventStore AppHost's
+  own `ConfigureLocalSymmetricValidation` (overridable via `Works:Authentication:DevSigningKey`; the host still
+  refuses symmetric keys outside Development). Also required: the EventStore/Operations/Admin hosts carry
+  `SuppressBuild=true` and must be built explicitly before a live run, per Task 5.
+- **2026-09-08 live-lane hazard found by the new port gate (and bounded because of it).** Aspire leaks a DCP
+  controller holding the fixed control-plane proxy ports (51005/51006) after a killed run — and after an
+  ordinary `WorksAppHostTopologyTests` run, which builds testing builders without starting them. The new gate
+  now waits up to 60 seconds for each port to free before deciding it is foreign-held, then skips with the port
+  and holder named. That is a deliberate trade: an actionable skip beats a five-minute `StartAsync` budget
+  burning on a port that can never bind. Operator note: `ss -ltnp | grep 5100` finds the leaked `dcp` process.
 - **2026-09-08 substrate re-verification (the HIGH cursor finding).** Read the pinned submodule directly rather
   than trusting comments: `StreamReadRequest.FromSequence` is documented "exclusive lower bound",
   `AggregateActor.ReadEventsRangeAsync` computes `startSequence = fromSequence + 1`,
@@ -325,6 +346,22 @@ claude-opus-4-8 (Claude Code dev-story workflow).
   `StreamsController` inline comment saying "paginate by setting FromSequence = lastSequenceReturned + 1" is
   wrong about its own API. `PendingDateAwaitStreamReader` was following that comment and dropped exactly one
   event per page boundary.
+- **2026-09-08 Tier-3 live result (after the two repairs above): 4/4 PASS, 0 skipped, 957.974 seconds.**
+  `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class
+  "…WorksReminderRecoveryPipelineSmokeTests" -class "…WorksMtlsAuthorizationSmokeTests"` ran every fact with the
+  prerequisites genuinely present: steady-state suspend-time registration → Dapr Scheduler fire → resume with no
+  restart (AC #1); overdue recovery auto-discovered from the durable index across three AppHost lifecycles with
+  no tenant configuration and the original Scheduler reminder deliberately deleted (AC #2/#3); future-await
+  re-registration and its later fire across two lifecycles; and the mTLS ACL fact (`eventstore` allowed,
+  `eventstore-admin` 403 at Works `/process`). Each fact now runs in its own tenant, so this is four independent
+  proofs rather than four views of one shared tenant's state.
+- **2026-09-08 external commits and a submodule move mid-session (not this session's doing).** An external
+  actor (author `Jérôme Piquot`, 08:51) committed the working tree as `39643e5` and `42c4318`, which carry this
+  session's work **plus unrelated submodule pointer bumps** (`Hexalith.Builds`, `Hexalith.EventStore`,
+  `Hexalith.FrontComposer`, `Hexalith.Parties`, `Hexalith.Projects`) — notably EventStore `8745b14b` →
+  `d45206f7`. Nothing was reverted. The Tier-3 4/4 live pass was produced against `8745b14b`; after the move the
+  deterministic gates were re-run against `d45206f7` and are unchanged (build 0/0; 568 / 237 / 3 / 317), but the
+  live lane has not been re-run against the newer pin.
 - **2026-09-08 deterministic verification:** `dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1
   -v minimal` → 0 warnings / 0 errors. Direct xUnit v3 binaries: UnitTests **568/568**, ArchitectureTests
   **237/237**, PropertyTests **3/3**, IntegrationTests excluding `*SmokeTests` **317/317**, 0 skipped. Catalog
@@ -584,7 +621,10 @@ _Docs_
   failures, snapshot-on-budget-expiry, exact placement `connected`, fail-closed runtime version, tolerance for a
   reminder that already fired, and bounded empty-PEM-refusing credential reads. Also repaired a pre-existing
   AppHost build break from the HEAD submodule bump. Gates: build 0/0; UnitTests 568, ArchitectureTests 237,
-  PropertyTests 3, deterministic IntegrationTests 317 — all green, 0 skipped.
+  PropertyTests 3, deterministic IntegrationTests 317 — all green, 0 skipped. Tier-3: the reminder +
+  mTLS live classes pass **4/4 with zero skips in 957.974 s**, after repairing two pre-existing submodule-drift
+  breakages that had taken the whole live lane down (the AppHost client-credentials signature change, and the
+  EventStore host losing its development JWT settings in `appsettings.Development.json`).
 
 - 2026-09-06 — Review remediation closed the in-scope findings: recovery now proves the exact pending-await index
   is durable, deletes the Dapr Scheduler reminder, and observes overdue reissue/future re-registration after a

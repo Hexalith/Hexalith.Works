@@ -2822,3 +2822,86 @@ tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.Integra
 
 The durable catalog guard still asserts **40** (Story 1.5's count); Story 4.8's own catalog delta remains zero —
 the parking record, index, and registry are plain host-edge `System.Text.Json` read models.
+
+## Story 4.8 — 2026-09-08 Tier-3 lane status (honest)
+
+Prerequisites were genuinely present this session (dapr-init Redis listening on :6379; the AppHost-owned
+control-plane ports free), so the live lane ran rather than skipping.
+
+**Root cause found and repaired: the submodule bump took the whole live lane down before any Works code ran.**
+The first attempt failed in `DistributedApplication.StartAsync` with the harness's new diagnostic naming the
+culprit precisely — `eventstore[state=Finished,health=unknown,exit=134]` while sentry, placement and scheduler
+were all `Healthy`. DCP's captured stderr:
+
+```
+OptionsValidationException: Authentication:JwtBearer requires either 'Authority' (production OIDC)
+or 'SigningKey' (development symmetric key) to be configured.
+```
+
+Diffing `references/Hexalith.EventStore` across the pin bump at superproject HEAD `52a56c6`
+(`910fda6a` → `8745b14b`) shows `src/Hexalith.EventStore/appsettings.Development.json` **lost its entire
+`Authentication:JwtBearer` block** — issuer `hexalith-dev`, audience `hexalith-eventstore`, signing key
+`DevOnlySigningKey-AtLeast32Chars!`, `RequireHttpsMetadata: false`. Those are exactly the values every Works
+smoke lane mints its dev token against, and nothing in the Works AppHost supplied them. Repaired in
+`src/Hexalith.Works.AppHost/Program.cs`: on the `--EnableKeycloak=false` path the AppHost now composes that
+development symmetric-key validation for `eventstore` and `eventstore-admin`, mirroring the EventStore AppHost's
+own `ConfigureLocalSymmetricValidation` and overridable through `Works:Authentication:DevSigningKey`. The
+EventStore host still refuses symmetric keys outside Development, and the AppHost environment is forwarded
+explicitly because project resources do not inherit it under `Aspire.Hosting.Testing`.
+
+The EventStore, Admin.Server, and Operations hosts carry `SuppressBuild=true`; they were rebuilt explicitly
+before each live attempt, as Task 5 requires.
+
+**Live-lane hazard the new port gate exposed.** Aspire leaks a DCP controller that keeps the fixed control-plane
+proxy ports (51005/51006) bound after a killed run — and after an ordinary `WorksAppHostTopologyTests` run, which
+builds testing builders without ever starting them. Two attempts skipped for this reason with an accurate message
+naming the port. The gate now waits up to 60 seconds for each port to free before deciding it is foreign-held, so
+ordinary teardown lag does not skip; a genuinely stuck holder still does. This is a deliberate trade — an
+actionable skip beats a five-minute `StartAsync` budget spent on a port that can never bind. Operator note:
+`ss -ltnp | grep -E ':5100[56]'` finds the leaked `dcp` process; `docker ps` finds leftover `dapr-*-mtls`
+containers.
+
+### Live result after both repairs — 4/4 PASS, 0 skipped, 957.974 s
+
+```bash
+# EventStore hosts carry SuppressBuild=true — build them explicitly first
+DOTNET_CLI_HOME=/tmp dotnet build references/Hexalith.EventStore/src/Hexalith.EventStore/Hexalith.EventStore.csproj -c Release
+DOTNET_CLI_HOME=/tmp dotnet build references/Hexalith.EventStore/src/Hexalith.EventStore.Admin.Server.Host/Hexalith.EventStore.Admin.Server.Host.csproj -c Release
+DOTNET_CLI_HOME=/tmp dotnet build references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj -c Release
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests" \
+  -class "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests"
+# Total: 4, Errors: 0, Failed: 0, Skipped: 0, Time: 957.974s
+```
+
+The four facts prove, each in its **own** tenant (new this session — they previously shared one):
+
+1. **AC #1 steady state** — suspend on a near-future `DateReached`, the reminder registered at suspend time on
+   the live `work.events` subscription fires through the Dapr Scheduler, and the item resumes exactly once with
+   no restart.
+2. **AC #2/#3 overdue recovery** — a parked await is proven durable in the exact pending-date-await index, its
+   Scheduler reminder is deliberately deleted, zero resumes are confirmed pre-restart, and across three AppHost
+   lifecycles (with no `--Works:Recovery:Tenants` argument) recovery auto-discovers and reissues it exactly once
+   and stays convergent.
+3. **Future re-registration** — a still-future await, its reminder deleted, is re-registered by startup recovery
+   and its later Scheduler firing resumes the item exactly once.
+4. **mTLS authorization** — `eventstore`'s Sentry identity is allowed at Works `/process` while
+   `eventstore-admin` is denied 403 by the deny-by-default ACL.
+
+Environment note: after any live run, remove leftover `dapr-*-mtls` containers and any leaked
+`dcp run-controllers` process before the next one, or the port gate will (correctly) skip.
+
+### Session-end note — external commits and a submodule move mid-session
+
+While this session was running, an external actor (author `Jérôme Piquot`, 2026-09-08 08:51) committed the
+working tree as `39643e5` and `42c4318`. Those commits carry this session's work **plus unrelated submodule
+pointer bumps** (`Hexalith.Builds`, `Hexalith.EventStore`, `Hexalith.FrontComposer`, `Hexalith.Parties`,
+`Hexalith.Projects`) that this session neither made nor requested — notably `Hexalith.EventStore`
+`8745b14b` to `d45206f7`. Nothing was reverted; the state is left as committed.
+
+Consequence for the evidence above: the **Tier-3 4/4 live pass (957.974 s) was produced against EventStore
+`8745b14b`**, the pin in effect when it ran. After the move to `d45206f7` the deterministic gates were re-run and
+are unchanged — Release build 0 warnings / 0 errors, UnitTests 568/568, ArchitectureTests 237/237,
+PropertyTests 3/3, deterministic IntegrationTests 317/317 — but the live lane has **not** been re-run against
+`d45206f7`. A re-run is advisable before treating the live proof as current for that pin.
