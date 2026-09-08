@@ -53,6 +53,12 @@ internal static class WorksRecoveryLog
             new EventId(4606, "PendingDateAwaitCandidateScanFailed"),
             "Pending date-await candidate stream {WorkItemId} in tenant {TenantId} could not be read; the remaining candidates are still scanned and the overall pass is signalled incomplete for retry.");
 
+    private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitParkedCandidateSkipped =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Information,
+            new EventId(4607, "PendingDateAwaitParkedCandidateSkipped"),
+            "Pending date-await candidate {WorkItemId} in tenant {TenantId} is parked; it is skipped without a stream read and does not mark the scan incomplete.");
+
     private static readonly Action<ILogger, string, string, int, Exception?> s_cascadeCheckpointed =
         LoggerMessage.Define<string, string, int>(
             LogLevel.Information,
@@ -109,6 +115,13 @@ internal static class WorksRecoveryLog
 
     public static void PendingDateAwaitCandidateScanFailed(ILogger logger, string tenantId, string workItemId, Exception exception)
         => s_pendingDateAwaitCandidateScanFailed(logger, workItemId, tenantId, exception);
+
+    /// <summary>Logs that a parked pending-date-await candidate was skipped without a stream read.</summary>
+    /// <param name="logger">The recovery logger.</param>
+    /// <param name="tenantId">The tenant of the parked candidate.</param>
+    /// <param name="workItemId">The parked work item.</param>
+    public static void PendingDateAwaitParkedCandidateSkipped(ILogger logger, string tenantId, string workItemId)
+        => s_pendingDateAwaitParkedCandidateSkipped(logger, workItemId, tenantId, null);
 
     public static void CascadeCheckpointed(ILogger logger, string tenantId, string parentWorkItemId, int targetCount)
         => s_cascadeCheckpointed(logger, parentWorkItemId, tenantId, targetCount, null);

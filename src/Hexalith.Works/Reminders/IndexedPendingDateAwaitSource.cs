@@ -26,6 +26,9 @@ namespace Hexalith.Works.Reminders;
 /// <see cref="PendingDateAwaitScanIncompleteException"/> after every tenant has been attempted, carrying the
 /// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
 /// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
+/// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a clean skip: its stream
+/// cannot be rebuilt, so counting it incomplete would burn startup reconciliation's retry budget on a
+/// terminal projection failure.
 /// </remarks>
 internal sealed class IndexedPendingDateAwaitSource(
     IReadModelStore store,
@@ -109,6 +112,20 @@ internal sealed class IndexedPendingDateAwaitSource(
             // whole system) because of one wedged work item.
             try
             {
+                ReadModelEntry<WorkItemProjectionParking> parking = await _store
+                    .GetAsync<WorkItemProjectionParking>(
+                        WorksReadModelKeys.StateStoreName,
+                        WorksReadModelKeys.ProjectionParkingKey(tenant, workItemId),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+                if (parking.Value is { Parked: true })
+                {
+                    // Terminal /project disposition: the stream cannot be folded. Do not read it and do not
+                    // count the candidate as a scan failure — that would mark a healthy pass incomplete.
+                    WorksRecoveryLog.PendingDateAwaitParkedCandidateSkipped(_logger, tenant, workItemId);
+                    continue;
+                }
+
                 pending.AddRange(await PendingDateAwaitStreamReader
                     .RebuildAsync(_gateway, tenant, workItemId, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
                     .ConfigureAwait(false));

@@ -322,6 +322,69 @@ public sealed class IndexedPendingDateAwaitSourceTests
     }
 
     [Fact]
+    public async Task Skips_a_parked_candidate_without_reading_its_stream_or_marking_the_scan_incomplete()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkDue, s_past), (WorkFuture, s_future)).ConfigureAwait(true);
+        await store
+            .SaveAsync(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkDue),
+                new WorkItemProjectionParking { FailedSequence = 2, FailureCount = 5, Parked = true },
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        var requests = new List<StreamReadRequest>();
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+                requests.Add(request);
+                return string.Equals(request.AggregateId, WorkDue, StringComparison.Ordinal)
+                    ? Task.FromException<StreamReadPage>(new InvalidOperationException("parked stream must not be read"))
+                    : Task.FromResult(Story48Streams.Page(TenantA, WorkFuture, Created(WorkFuture), SuspendedOnDate(WorkFuture, s_future)));
+            });
+
+        IReadOnlyList<PendingDateAwait> pending = await NewSource(store, gateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        pending.ShouldHaveSingleItem().WorkItemId.ShouldBe(WorkFuture);
+        requests.ShouldAllBe(request => request.AggregateId == WorkFuture);
+    }
+
+    [Fact]
+    public async Task Still_fails_a_candidate_that_has_parking_history_but_is_not_yet_parked()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkDue, s_past), (WorkFuture, s_future)).ConfigureAwait(true);
+        await store
+            .SaveAsync(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkDue),
+                new WorkItemProjectionParking { FailedSequence = 2, FailureCount = 2, Parked = false },
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+                return string.Equals(request.AggregateId, WorkDue, StringComparison.Ordinal)
+                    ? Task.FromException<StreamReadPage>(new InvalidOperationException("simulated transient decode failure"))
+                    : Task.FromResult(Story48Streams.Page(TenantA, WorkFuture, Created(WorkFuture), SuspendedOnDate(WorkFuture, s_future)));
+            });
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, gateway)
+                .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.FailedCandidateCount.ShouldBe(1);
+        thrown.PartialResults.ShouldHaveSingleItem().WorkItemId.ShouldBe(WorkFuture);
+    }
+
+    [Fact]
     public async Task Reconciler_over_the_indexed_source_reissues_due_and_reschedules_future_idempotently()
     {
         var store = new Story47InMemoryReadModelStore();

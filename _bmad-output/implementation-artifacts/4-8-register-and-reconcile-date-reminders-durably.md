@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -733,7 +733,7 @@ Latest File List increment vs `062426c` (~2713 lines). Layers: blind-hunter, edg
 
 _Production reminder / index / recovery only (`ff329cc...HEAD` over `Reminders/`, dispatcher, parking, recovery/runtime, `Program.cs`; 24 files, +1589/−329). Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor. Groups 2–4 (AppHost/mTLS, tests, docs) were not in this diff._
 
-- [ ] [Review][Decision] A parked date-await candidate keeps every startup reconciliation incomplete — `ParkOrRetryAsync` acknowledges the dispatch before `MaintainPendingDateAwaitIndexAsync`, so a previously indexed item stays in `PendingDateAwaitTenantIndex.Entries`. `IndexedPendingDateAwaitSource` does not read `WorkItemProjectionParking`; `PendingDateAwaitStreamReader.RebuildAsync` then throws on the same undecodable event, the candidate is counted as failed, and `DateReminderReconciler` processes partial results then rethrows. `ReminderReconciliationService` burns `ReminderReconciliationMaxAttempts` and gives up until the next process start. Other tenants/candidates still recover (per-candidate isolation is real); the parked item cannot be recovered from stream truth. Options: skip parked keys in the scan (do not count them incomplete); tombstone the index entry when parking; treat a parked candidate as a clean skip; or accept the 5-attempt incomplete pass as the parked-item tax. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:102-125] [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:160-163]
+- [x] [Review][Decision] A parked date-await candidate keeps every startup reconciliation incomplete — **Decided 2026-09-08 (human): skip parked keys in the scan.** Do not count them incomplete, do not tombstone the index, do not change the stream reader. — **Implemented 2026-09-08:** `ScanTenantAsync` reads `WorkItemProjectionParking` before `RebuildAsync`; a `Parked` candidate is skipped (no stream read, no `failedCandidateCount`) and logged as `PendingDateAwaitParkedCandidateSkipped`. A not-yet-parked parking document still rebuilds and can mark the scan incomplete. Proven by `IndexedPendingDateAwaitSourceTests.Skips_a_parked_candidate_without_reading_its_stream_or_marking_the_scan_incomplete` and `.Still_fails_a_candidate_that_has_parking_history_but_is_not_yet_parked`.
 
 - [ ] [Review][Patch] **MEDIUM** — `ProjectionParkedDispatchSkipped` (EventId 4503) is unreachable: once `Parked` is true the transform returns the document unchanged, so `FailureCount` stays equal to `maxFailures` and every later poller pass logs `ProjectionAggregateParked` at Error instead of the skip Warning [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:615-647]
 - [ ] [Review][Patch] **MEDIUM** — payload identity mismatch throws out of `WorkItemProjectionEventDecoder.Decode` (and `NotSupportedException` is not caught there, unlike `WorksEventDecoder`); `ParkOrRetryAsync` never runs, so a permanently wrong-identity or STJ-unsupported state-affecting event 500s `/project` forever [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:65-76]
