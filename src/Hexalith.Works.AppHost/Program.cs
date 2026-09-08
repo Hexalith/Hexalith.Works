@@ -216,9 +216,57 @@ if (security is not null)
 {
     _ = eventStore.WithJwtBearerSecurity(security);
     _ = adminServer.WithJwtBearerSecurity(security);
+    // The EventStore Aspire security helper now requires an explicit OIDC client id and per-run user-name /
+    // password parameters for client-credential token acquisition. Values come from the same
+    // LocalAuthentication:* configuration keys the EventStore AppHost reads, falling back to a per-run random
+    // password so no credential is ever checked in. Only the Keycloak-enabled path reaches this branch; the
+    // live smoke lanes run with --EnableKeycloak=false and leave `security` null.
+    IResourceBuilder<ParameterResource> worksClientUsername = builder.AddParameter(
+        "works-client-username",
+        () => builder.Configuration["LocalAuthentication:TenantAUsername"] is { Length: > 0 } configuredUsername
+            ? configuredUsername
+            : "tenant-a-user");
+    IResourceBuilder<ParameterResource> worksClientPassword = builder.AddParameter(
+        "works-client-password",
+        () => builder.Configuration["LocalAuthentication:TenantAPassword"] is { Length: > 0 } configuredPassword
+            ? configuredPassword
+            : Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24)),
+        secret: true);
+
     _ = works
         .WithJwtBearerSecurity(security)
-        .WithEventStoreClientCredentials(security);
+        .WithEventStoreClientCredentials(
+            security,
+            HexalithEventStoreSecurityOptions.DefaultEventStoreClientId,
+            worksClientUsername,
+            worksClientPassword);
+}
+else
+{
+    // Development symmetric-key validation for the `--EnableKeycloak=false` topology the Tier-3 live lanes use.
+    // The EventStore host used to carry these values in its own appsettings.Development.json; the submodule bump
+    // at superproject HEAD 52a56c6 (EventStore 910fda6a → 8745b14b) removed that block, and the host's
+    // ValidateEventStoreAuthenticationOptions then fails at startup with "requires either 'Authority' … or
+    // 'SigningKey'", taking every live lane down before any Works code runs. Composing them here mirrors the
+    // EventStore AppHost's own ConfigureLocalSymmetricValidation and matches the dev token the smoke lanes mint
+    // (issuer hexalith-dev, audience hexalith-eventstore). The key is a development-only literal, overridable
+    // through Works:Authentication:DevSigningKey; the host still refuses symmetric keys outside Development.
+    string devSigningKey = builder.Configuration["Works:Authentication:DevSigningKey"] is { Length: > 0 } configuredKey
+        ? configuredKey
+        : "DevOnlySigningKey-AtLeast32Chars!";
+    foreach (IResourceBuilder<ProjectResource> jwtValidator in new[] { eventStore, adminServer })
+    {
+        _ = jwtValidator
+            // Project resources do not implicitly inherit the AppHost environment under
+            // Aspire.Hosting.Testing, and the symmetric-key path is Development-only by contract.
+            .WithEnvironment("DOTNET_ENVIRONMENT", builder.Environment.EnvironmentName)
+            .WithEnvironment("Authentication__JwtBearer__Authority", string.Empty)
+            .WithEnvironment("Authentication__JwtBearer__Issuer", "hexalith-dev")
+            .WithEnvironment("Authentication__JwtBearer__Audience", HexalithEventStoreSecurityOptions.DefaultAudience)
+            .WithEnvironment("Authentication__JwtBearer__ValidAudiences__0", HexalithEventStoreSecurityOptions.DefaultAudience)
+            .WithEnvironment("Authentication__JwtBearer__SigningKey", devSigningKey)
+            .WithEnvironment("Authentication__JwtBearer__RequireHttpsMetadata", "false");
+    }
 }
 
 // Story 4.8 removed the hand-configured Works:Recovery:Tenants forwarding: the date-reminder reconciliation

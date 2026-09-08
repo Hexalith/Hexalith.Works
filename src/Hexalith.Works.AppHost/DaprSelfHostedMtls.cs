@@ -21,6 +21,12 @@ internal static class DaprSelfHostedMtls
     private const int SchedulerHostPort = 51006;
     private const int SentryPort = 50001;
 
+    /// <summary>How many times a Sentry-issued credential is re-read while it is missing, locked, or empty.</summary>
+    private const int CredentialReadAttempts = 20;
+
+    /// <summary>The delay between credential read attempts (20 attempts ≈ 9.5 seconds of budget).</summary>
+    private static readonly TimeSpan CredentialReadRetryDelay = TimeSpan.FromMilliseconds(500);
+
     internal const string PlacementHostAddress = "localhost:51005";
     internal const string SchedulerHostAddress = "localhost:51006";
 
@@ -175,23 +181,55 @@ internal static class DaprSelfHostedMtls
         }));
     }
 
+    /// <summary>
+    /// Reads one Sentry-issued credential, retrying while it is missing, unreadable, or still empty.
+    /// </summary>
+    /// <remarks>
+    /// Sentry reporting healthy does not mean it has finished flushing its issuer material to the mounted
+    /// directory, and a single-shot read that happens to observe a zero-length file would otherwise hand the
+    /// sidecar an empty PEM — which fails much later as an opaque mTLS handshake error instead of here. Fail
+    /// closed with the real reason once the bounded budget is spent.
+    /// </remarks>
     private static async Task<string> ReadCredentialAsync(
         string certificateDirectory,
         string fileName,
         CancellationToken cancellationToken)
     {
         string path = Path.Combine(certificateDirectory, fileName);
-        try
+        Exception? lastFailure = null;
+        string lastReason = "the credential file never became readable";
+
+        for (int attempt = 0; attempt < CredentialReadAttempts; attempt++)
         {
-            return await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+            if (attempt > 0)
+            {
+                await Task.Delay(CredentialReadRetryDelay, cancellationToken).ConfigureAwait(false);
+            }
+
+            try
+            {
+                string content = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
+                if (!string.IsNullOrWhiteSpace(content))
+                {
+                    return content;
+                }
+
+                lastFailure = null;
+                lastReason = "the credential file was still empty";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                lastFailure = ex;
+                lastReason = $"{ex.GetType().Name}: {ex.Message}";
+            }
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            throw new InvalidOperationException(
-                $"Dapr Sentry credential '{path}' was unavailable after Sentry became healthy. "
-                + "Keep the certificate directory outside the repository and ensure the Sentry container user can write it.",
-                ex);
-        }
+
+        throw new InvalidOperationException(
+            $"Dapr Sentry credential '{path}' was unavailable after Sentry became healthy: {lastReason} "
+            + $"(retried {CredentialReadAttempts} times over "
+            + $"{(CredentialReadAttempts - 1) * CredentialReadRetryDelay.TotalSeconds:0.#} seconds). "
+            + "Keep the certificate directory outside the repository and ensure the Sentry container user can write it.",
+            lastFailure);
     }
 
     private static string ResolveCertificateDirectory(IDistributedApplicationBuilder builder)

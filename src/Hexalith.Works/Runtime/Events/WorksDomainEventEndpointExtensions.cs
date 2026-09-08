@@ -1,6 +1,6 @@
-using Hexalith.EventStore.Client.Subscriptions;
-
 using Dapr;
+
+using Hexalith.EventStore.Client.Subscriptions;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

@@ -8,8 +8,9 @@ namespace Hexalith.Works.Reminders;
 /// <summary>
 /// Rebuilds one work item's currently-pending <c>DateReached</c> awaits from its persisted per-aggregate stream
 /// (Story 4.8). Every read carries an <c>AggregateId</c> so it never issues the tenant-wide, null-aggregate read
-/// the EventStore gateway 400-rejects; paging advances by <c>FromSequence = LastSequenceReturned + 1</c> with a
-/// null continuation token (the gateway fail-closes on any non-null token). Shared by the steady-state suspend
+/// the EventStore gateway 400-rejects; paging advances by setting the <em>exclusive</em>
+/// <c>FromSequence = LastSequenceReturned</c> with a null continuation token (the gateway fail-closes on any
+/// non-null token). Shared by the steady-state suspend
 /// handler and the recovery source so both discover truth through the single pure
 /// <see cref="PendingDateAwaitProjection"/> fold rather than a second, drift-prone one.
 /// </summary>
@@ -88,7 +89,11 @@ internal static class PendingDateAwaitStreamReader
                     $"Stream for aggregate '{workItemId}' reported a truncated page with no last sequence returned; the read cursor cannot advance.");
             }
 
-            from = lastSequence + 1;
+            // StreamReadRequest.FromSequence is an EXCLUSIVE lower bound (the server reads from
+            // fromSequence + 1 and the gateway fake filters SequenceNumber > fromSequence), so the next page
+            // starts at the last sequence returned — NOT at last + 1, which would skip exactly one event per
+            // page boundary from the stream this story treats as its source of truth.
+            from = lastSequence;
         }
 
         if (stillTruncated)
@@ -96,7 +101,7 @@ internal static class PendingDateAwaitStreamReader
             // The stream still has unread pages after the configured page budget: rebuilding pending-await state
             // from what was read would be silently partial. Fail closed instead of risking a wrong reissue.
             throw new InvalidOperationException(
-                $"Stream for aggregate '{workItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerTenant)} per-aggregate page budget while still truncated.");
+                $"Stream for aggregate '{workItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerAggregate)} per-aggregate page budget while still truncated.");
         }
 
         IReadOnlyList<IEventPayload> ordered = [.. events.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];

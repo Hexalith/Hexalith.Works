@@ -4,8 +4,9 @@ namespace Hexalith.Works.Projections;
 /// Deterministic, tenant-scoped read-model keys for the Works runtime projection/query adapter. Every key
 /// embeds the tenant id so cross-tenant inner-id collisions (a <c>WorkItemId.Value</c> is the raw inner id,
 /// not tenant-composed) can never share a read-model entry. Keys are generation-qualified from
-/// <see cref="CurrentSchemaVersion"/> onward; the unversioned <c>Legacy*</c> keys remain the active
-/// generation for a tenant until a shared rebuild commits its current-schema manifest.
+/// <see cref="CurrentSchemaVersion"/> onward; the historical unversioned keys (<see cref="WhatsNextIndexKey"/>,
+/// <see cref="RollUpKey"/>) remain the active generation for a tenant until a shared rebuild commits its
+/// current-schema manifest.
 /// </summary>
 internal static class WorksReadModelKeys
 {
@@ -25,10 +26,6 @@ internal static class WorksReadModelKeys
     public static string WhatsNextIndexKey(string tenantId)
         => $"projection:works:whats-next:{tenantId}";
 
-    /// <summary>Builds the historical unversioned tenant index key.</summary>
-    public static string LegacyWhatsNextIndexKey(string tenantId)
-        => WhatsNextIndexKey(tenantId);
-
     /// <summary>Builds the current-schema singleton tenant index key.</summary>
     public static string CurrentWhatsNextIndexKey(string tenantId)
         => $"projection:works:whats-next:v{CurrentSchemaVersion}:{tenantId}";
@@ -37,17 +34,39 @@ internal static class WorksReadModelKeys
     public static string RollUpKey(string tenantId, string workItemId)
         => $"projection:works:rollup:{tenantId}:{workItemId}";
 
-    /// <summary>Builds the historical unversioned per-work-item roll-up key.</summary>
-    public static string LegacyRollUpKey(string tenantId, string workItemId)
-        => RollUpKey(tenantId, workItemId);
-
     /// <summary>Builds the current-schema per-work-item roll-up key.</summary>
     public static string CurrentRollUpKey(string tenantId, string workItemId)
         => $"projection:works:rollup:v{CurrentSchemaVersion}:{tenantId}:{workItemId}";
 
+    /// <summary>
+    /// Builds the per-work-item projection parking key: the bounded-failure record that stops a permanently
+    /// undecodable aggregate from being redispatched forever.
+    /// </summary>
+    public static string ProjectionParkingKey(string tenantId, string workItemId)
+        => $"projection:works:parked:{tenantId}:{workItemId}";
+
+    /// <summary>
+    /// The one tenant id the Works host refuses. <see cref="PendingDateAwaitIndexKey"/> renders
+    /// <c>projection:works:pending-date-await:tenants</c> for it, byte-identical to
+    /// <see cref="PendingDateAwaitRegistryKey"/> — a tenant with this id would overwrite the registry with its
+    /// own index document, which deserializes into an empty registry and silently disables date-reminder
+    /// recovery for every tenant. The durable registry key is deliberately left as it is (no migration); the id
+    /// is rejected where tenant ids enter the host instead.
+    /// </summary>
+    public const string ReservedTenantId = "tenants";
+
+    /// <summary>Returns whether the tenant id collides with the well-known pending-date-await registry key.</summary>
+    public static bool IsReservedTenantId(string? tenantId)
+        => string.Equals(tenantId, ReservedTenantId, StringComparison.Ordinal);
+
     /// <summary>Builds the singleton-per-tenant pending-date-await index key.</summary>
+    /// <exception cref="InvalidOperationException">The tenant id is <see cref="ReservedTenantId"/>.</exception>
     public static string PendingDateAwaitIndexKey(string tenantId)
-        => $"projection:works:pending-date-await:{tenantId}";
+        => IsReservedTenantId(tenantId)
+            ? throw new InvalidOperationException(
+                $"Tenant id '{ReservedTenantId}' is reserved: its pending-date-await index key would be identical to "
+                + $"the well-known pending-date-await tenant registry key '{PendingDateAwaitRegistryKey}'.")
+            : $"projection:works:pending-date-await:{tenantId}";
 
     /// <summary>
     /// The well-known singleton key of the pending-date-await tenant registry (Story 4.8). This one durable

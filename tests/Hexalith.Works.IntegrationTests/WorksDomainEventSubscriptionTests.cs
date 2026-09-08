@@ -8,7 +8,9 @@ using Dapr;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.DomainService;
+using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Projections.SharedRebuild;
+using Hexalith.Works.Reminders;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
@@ -109,6 +111,14 @@ public sealed class WorksDomainEventSubscriptionTests
                 scope.ServiceProvider
                     .GetServices<IAsyncDomainProjectionHandler>()
                     .OfType<WorkItemSharedProjectionRebuildHandler>()
+                    .ShouldHaveSingleItem();
+
+                // Story 4.8 AC #1's steady-state trigger is this registration and nothing else: without it the
+                // processor returns SkippedNoHandlers → 200 OK, silently reverting date resumes to restart-only
+                // recovery while every deterministic handler test stays green.
+                scope.ServiceProvider
+                    .GetServices<IEventStoreDomainEventHandler<WorkItemSuspended>>()
+                    .OfType<WorkItemSuspendedReminderHandler>()
                     .ShouldHaveSingleItem();
                 ReadModelBatchOptions batchOptions = scope.ServiceProvider
                     .GetRequiredService<IOptions<ReadModelBatchOptions>>()

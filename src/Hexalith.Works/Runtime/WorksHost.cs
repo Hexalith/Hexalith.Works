@@ -13,6 +13,7 @@ using Hexalith.Works.Runtime.Events;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Runtime;
 
@@ -50,10 +51,11 @@ internal static class WorksHost
         // Dapr-backed persisted read models for the what's-next projection/query adapter. A sealed shared
         // rebuild may emit one current write plus one legacy-key retirement per admitted aggregate, together
         // with the current and legacy tenant manifests, so the operation bound is sized to the platform's
-        // 10,000-aggregate admission bound. The canonical-byte ceiling is the tighter of the two and is what
-        // actually bounds a rebuild: the manifest embeds every written document, so a tenant well below the
-        // operation bound can still exceed 4 MiB. That is deliberate — an oversized rebuild is refused whole
-        // by fail-closed canonical-byte validation before staging, never promoted in part.
+        // 10,000-aggregate admission bound, and the manifest's canonical-byte ceiling is raised to match.
+        // Neither is the first ceiling a large rebuild meets: the accumulating candidate state is checked
+        // against ProjectionDispatchOptions.MaxSharedRebuildCandidateBytes (1 MiB by default, never raised
+        // here) on every accumulate, long before any manifest is built. All three are fail-closed — an
+        // oversized rebuild is refused whole before staging, never promoted in part.
         builder.Services.AddDaprClient();
         _ = builder.Services.AddEventStoreReadModelStore(static options =>
         {
@@ -85,6 +87,15 @@ internal static class WorksHost
         // replay. The Dapr actor reminders, gateway command path, stores, and clock all live here at the host
         // edge; the pure kernel stays clock-/Dapr-free. The reconciliation pass is gated by Works:Recovery
         // configuration.
+        // Projection-adapter options (Works:Projection): the bounded undecodable-event parking budget that keeps a
+        // permanently poisoned aggregate from looping the projection poller forever.
+        _ = builder.Services.AddOptions<WorksProjectionOptions>()
+            .Bind(builder.Configuration.GetSection(WorksProjectionOptions.SectionName))
+            .Validate(
+                static options => options.MaxUndecodableEventDispatchesBeforeParking > 0,
+                "MaxUndecodableEventDispatchesBeforeParking must be greater than zero.")
+            .ValidateOnStart();
+
         _ = builder.Services.AddWorksDateReminderActors();
         _ = builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
         configureServices?.Invoke(builder.Services);
@@ -108,7 +119,8 @@ internal static class WorksHost
             var dispatcher = new WorkItemProjectionDispatcher(
                 store,
                 services.GetService<IProjectionChangeNotifier>(),
-                loggerFactory.CreateLogger<WorkItemProjectionDispatcher>());
+                loggerFactory.CreateLogger<WorkItemProjectionDispatcher>(),
+                services.GetService<IOptions<WorksProjectionOptions>>()?.Value);
             return Results.Ok(await dispatcher.DispatchAsync(request, cancellationToken).ConfigureAwait(false));
         });
 

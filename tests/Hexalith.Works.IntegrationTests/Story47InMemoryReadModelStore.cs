@@ -14,6 +14,7 @@ internal sealed class Story47InMemoryReadModelStore : IReadModelStore
     private readonly Dictionary<string, (object Value, int Version)> _entries = new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<object>> _successfulWrites = new(StringComparer.Ordinal);
     private readonly List<string> _successfulWriteKeys = [];
+    private readonly Dictionary<string, int> _getFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, int> _saveFailures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, int> _trySaveRejections = new(StringComparer.Ordinal);
     private int _coordinatedArrivals;
@@ -97,6 +98,16 @@ internal sealed class Story47InMemoryReadModelStore : IReadModelStore
         }
     }
 
+    /// <summary>Fails the next reads for a key without changing its persisted state.</summary>
+    public void FailNextGets(string storeName, string key, int count = 1)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
+        lock (_sync)
+        {
+            _getFailures[ScopedKey(storeName, key)] = count;
+        }
+    }
+
     /// <summary>Fails the next unconditional writes for a key without changing its persisted state.</summary>
     public void FailNextSaves(string storeName, string key, int count = 1)
     {
@@ -117,6 +128,11 @@ internal sealed class Story47InMemoryReadModelStore : IReadModelStore
         cancellationToken.ThrowIfCancellationRequested();
         lock (_sync)
         {
+            if (Consume(_getFailures, ScopedKey(storeName, key)))
+            {
+                throw new InvalidOperationException($"Injected read failure for '{key}'.");
+            }
+
             return Task.FromResult(_entries.TryGetValue(ScopedKey(storeName, key), out (object Value, int Version) entry)
                 ? new ReadModelEntry<TValue>((TValue)entry.Value, entry.Version.ToString(System.Globalization.CultureInfo.InvariantCulture))
                 : new ReadModelEntry<TValue>(null, null));

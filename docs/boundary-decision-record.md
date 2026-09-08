@@ -104,6 +104,13 @@ migrates the historical Works-owned hosting topology only after the platform top
 equivalent passing evidence. Migration may begin; a current host asset may be removed only after
 the corresponding AD-20 migration-matrix row is green in the `Hexalith.Platform` conformance lane.
 
+**Provenance of the two paragraphs above (recorded 2026-09-08).** The `Hexalith.Platform` ownership and the
+"migration may begin" clause were both settled by the **2026-09-06 architecture gate** (decisions AD-01…AD-25;
+AD-20 names the host repository and unblocks Story 4.9). They were written into this record while Story 4.8 was
+editing the same file for its mTLS work, so they **restate an already-decided outcome** — they are not Story 4.9
+implementation work, and Story 4.8 absorbed none of Story 4.9's scope. Human ruling 2026-09-08: keep them here,
+with this provenance note so the text cannot be mistaken for 4.9 execution.
+
 ## Preserved deferred seams — explicitly NOT v1 behavior
 
 These four capabilities have **named seams** so future themes attach without changing the kernel's
@@ -305,6 +312,28 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   the item/tenant volumes this module currently serves. Revisit if/when tenant or work-item cardinality makes
   either document's read/write cost material; a stale-after retention knob mirroring
   `CascadeCheckpointIndexStaleAfterHours` is the natural fix.
+  **2026-09-08 review remediation (bounds the growth above, and four related decisions).**
+  (1) The index write is now **guarded**: `/project` touches the pending-date-await index only when the dispatch
+  holds pending date awaits or the index already carries an entry or watermark for that aggregate. This bounds
+  the growth documented above to items that ever held an await, and removes the singleton-key write contention
+  that could exhaust `ReadModelWritePolicy`'s bounded retry and turn an ordinary dispatch into a 500. Tombstone
+  semantics are unchanged for items that ever held an await; an item that never held one simply has no entry,
+  and a stale index entry remains harmless because the stream is truth.
+  (2) Recovery now **degrades per candidate, not per tenant**: one unreadable work-item stream no longer
+  discards the awaits already collected for its tenant. `PendingDateAwaitScanIncompleteException` carries a
+  second `FailedCandidateCount` field alongside the unchanged `FailedTenantCount`, and the pass is still
+  signalled incomplete so it is retried.
+  (3) The tenant id `tenants` is **reserved and refused at the host edge** (`/project` and the `work.events`
+  processor): its index key would be byte-identical to the well-known registry key and would silently disable
+  reminder recovery for every tenant. The durable registry key is deliberately unchanged — no migration.
+  (4) Index/what's-next **removal is reachable again** when the roll-up yields no model despite real
+  (non-rejection) state evidence, using the delivered stream's own watermark against the persisted
+  `LastSequences` entry. Empty and rejection-only replays still write nothing, as they must.
+  (5) A permanently undecodable state-affecting event now **parks its aggregate** after
+  `Works:Projection:MaxUndecodableEventDispatchesBeforeParking` (default 5) consecutive failures on the same
+  sequence: the dispatch is acknowledged with a distinct error log and recorded at
+  `projection:works:parked:{tenantId}:{workItemId}`, so the projection poller stops redispatching it forever.
+  Decoding stays fail-closed for every attempt inside the budget, so transient causes still retry.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency and

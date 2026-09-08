@@ -142,13 +142,13 @@ internal static class WorkItemSharedRebuildManifestBuilder
 
         cancellationToken.ThrowIfCancellationRequested();
         operations.Add(ReadModelBatchOperation.Delete(
-            WorksReadModelKeys.LegacyWhatsNextIndexKey(identity.TenantId),
+            WorksReadModelKeys.WhatsNextIndexKey(identity.TenantId),
             ReadModelBatchConcurrency.IdempotentAbsent));
         foreach (string member in members.OrderBy(static id => id, StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
             operations.Add(ReadModelBatchOperation.Delete(
-                WorksReadModelKeys.LegacyRollUpKey(identity.TenantId, member),
+                WorksReadModelKeys.RollUpKey(identity.TenantId, member),
                 ReadModelBatchConcurrency.IdempotentAbsent));
         }
 

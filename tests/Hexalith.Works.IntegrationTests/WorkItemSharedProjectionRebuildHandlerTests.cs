@@ -60,17 +60,17 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             Web).ShouldNotBeNull();
         await store.SaveAsync(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyWhatsNextIndexKey(Tenant),
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
             legacyIndex,
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         await store.SaveAsync(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             staleParent,
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         await store.SaveAsync(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ChildId),
+            WorksReadModelKeys.RollUpKey(Tenant, ChildId),
             RollUp(Tenant, ChildId, 88m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
@@ -96,7 +96,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
         WorkItemView stagedView = await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true);
         stagedView.Found.ShouldBeTrue();
@@ -130,11 +130,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
         (await store.GetAsync<WorksWhatsNextTenantIndex>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyWhatsNextIndexKey(Tenant),
+            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
         store.HasPendingEnvelope(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant)).ShouldBeFalse();
     }
@@ -437,7 +437,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true)).Found.ShouldBeTrue();
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
 
         // A second dispatch of the same stream must not lose the retained evidence and re-expose a total.
@@ -539,7 +539,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         created.RolledRemaining.ShouldBe(new RolledRemaining(6m, Hour));
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, newId),
+            WorksReadModelKeys.RollUpKey(Tenant, newId),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
         (await QueryWorkItemAsync(store, Tenant, newId).ConfigureAwait(true)).Found.ShouldBeTrue();
         (await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true))
@@ -553,7 +553,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         var store = new InMemoryReadModelStore();
         await store.SaveAsync(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             RollUp(Tenant, ParentId, 42m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
@@ -577,7 +577,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.LegacyRollUpKey(Tenant, ParentId),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
     }
 
@@ -620,6 +620,73 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             candidate,
             new ProjectionRequest(Tenant, "work", " ", ChildHistory(Tenant)),
             TestContext.Current.CancellationToken)).ConfigureAwait(true);
+    }
+
+    [Theory]
+    [InlineData("party", WorkItemSharedProjectionRebuildHandler.ProjectionTypeName)]
+    [InlineData("work", "some-other-projection")]
+    [InlineData("party", "some-other-projection")]
+    public async Task Every_lifecycle_step_refuses_an_identity_outside_the_works_rollup_route(string domain, string projectionType)
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        DomainSharedProjectionRebuildIdentity valid = Identity(Tenant, "rebuild-identity");
+        var foreign = new DomainSharedProjectionRebuildIdentity(
+            Tenant,
+            domain,
+            projectionType,
+            valid.OperationId,
+            valid.CatalogFingerprint);
+        DomainSharedProjectionRebuildCandidate candidate = await handler
+            .CreateEmptyCandidateAsync(valid, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        // The route guard is what keeps another domain's rebuild from being staged through the Works handler,
+        // so it must hold on every entry point, not only the first one a test happens to call.
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => handler.CreateEmptyCandidateAsync(foreign, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => handler.AccumulateAsync(
+            foreign,
+            candidate,
+            new ProjectionRequest(Tenant, "work", ChildId, ChildHistory(Tenant)),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        _ = await Should.ThrowAsync<InvalidOperationException>(
+            () => handler.FinalizeAsync(foreign, candidate, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+    }
+
+    [Theory]
+    [InlineData("tenant-beta", "work")]
+    [InlineData(Tenant, "party")]
+    public async Task Accumulate_refuses_history_from_another_tenant_or_domain(string historyTenant, string historyDomain)
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-cross-tenant");
+        DomainSharedProjectionRebuildCandidate candidate = await handler
+            .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => handler.AccumulateAsync(
+            identity,
+            candidate,
+            new ProjectionRequest(historyTenant, historyDomain, ChildId, ChildHistory(Tenant)),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        thrown.Message.ShouldContain("outside its tenant/domain identity");
+    }
+
+    [Fact]
+    public async Task Single_aggregate_projection_dispatch_is_refused_as_an_unsupported_capability()
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+
+        // This handler only serves the shared-rebuild lifecycle; the ordinary /project dispatch belongs to
+        // WorkItemProjectionDispatcher and must be refused here rather than silently succeeding.
+        DomainProjectionHandlerResult result = await handler.ProjectAsync(
+            new ProjectionRequest(Tenant, "work", ParentId, ParentHistory(Tenant)),
+            "dispatch-1",
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        result.Status.ShouldBe(ProjectionDispatchStatus.Failed);
+        result.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.UnsupportedCapability);
     }
 
     private static DomainSharedProjectionRebuildRequest Accumulate(

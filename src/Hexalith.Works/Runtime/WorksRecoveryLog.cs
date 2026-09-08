@@ -41,11 +41,17 @@ internal static class WorksRecoveryLog
             new EventId(4604, "PendingDateAwaitTenantScanFailed"),
             "Pending date-await scan failed for tenant {TenantId}; other tenants are still scanned and the overall pass is signalled incomplete for retry.");
 
-    private static readonly Action<ILogger, int, Exception?> s_pendingDateAwaitScanIncomplete =
-        LoggerMessage.Define<int>(
+    private static readonly Action<ILogger, int, int, Exception?> s_pendingDateAwaitScanIncomplete =
+        LoggerMessage.Define<int, int>(
             LogLevel.Warning,
             new EventId(4605, "PendingDateAwaitScanIncomplete"),
-            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s); reconciliation still acts on the partial results and will retry.");
+            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s) and {FailedCandidateCount} candidate aggregate(s); reconciliation still acts on the partial results and will retry.");
+
+    private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitCandidateScanFailed =
+        LoggerMessage.Define<string, string>(
+            LogLevel.Warning,
+            new EventId(4606, "PendingDateAwaitCandidateScanFailed"),
+            "Pending date-await candidate stream {WorkItemId} in tenant {TenantId} could not be read; the remaining candidates are still scanned and the overall pass is signalled incomplete for retry.");
 
     private static readonly Action<ILogger, string, string, int, Exception?> s_cascadeCheckpointed =
         LoggerMessage.Define<string, string, int>(
@@ -98,8 +104,11 @@ internal static class WorksRecoveryLog
     public static void PendingDateAwaitTenantScanFailed(ILogger logger, string tenantId, Exception exception)
         => s_pendingDateAwaitTenantScanFailed(logger, tenantId, exception);
 
-    public static void PendingDateAwaitScanIncomplete(ILogger logger, int failedTenantCount, Exception? exception)
-        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, exception);
+    public static void PendingDateAwaitScanIncomplete(ILogger logger, int failedTenantCount, int failedCandidateCount, Exception? exception)
+        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, failedCandidateCount, exception);
+
+    public static void PendingDateAwaitCandidateScanFailed(ILogger logger, string tenantId, string workItemId, Exception exception)
+        => s_pendingDateAwaitCandidateScanFailed(logger, workItemId, tenantId, exception);
 
     public static void CascadeCheckpointed(ILogger logger, string tenantId, string parentWorkItemId, int targetCount)
         => s_cascadeCheckpointed(logger, parentWorkItemId, tenantId, targetCount, null);

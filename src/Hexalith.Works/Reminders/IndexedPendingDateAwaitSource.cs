@@ -19,9 +19,10 @@ namespace Hexalith.Works.Reminders;
 /// the tenant registry is durable data, not <c>Works:Recovery:Tenants</c>.
 /// </summary>
 /// <remarks>
-/// A single tenant's stream-read failure is isolated (logged + skipped) rather than aborting the whole
-/// cross-tenant scan: a persistently-unreadable stream in one tenant must not silently starve reminder
-/// discovery/recovery for every other tenant. The scan still marks itself incomplete by throwing
+/// A stream-read failure is isolated (logged + skipped) at both levels — one unreadable candidate aggregate
+/// never aborts the rest of its own tenant's candidates, and one unreadable tenant never aborts the rest of the
+/// cross-tenant scan: a persistently-unreadable stream must not silently starve reminder discovery/recovery for
+/// everything else. The scan still marks itself incomplete by throwing
 /// <see cref="PendingDateAwaitScanIncompleteException"/> after every tenant has been attempted, carrying the
 /// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
 /// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
@@ -52,6 +53,7 @@ internal sealed class IndexedPendingDateAwaitSource(
 
         var pending = new List<PendingDateAwait>();
         int failedTenantCount = 0;
+        int failedCandidateCount = 0;
         Exception? lastFailure = null;
 
         foreach (string tenant in registry.Tenants)
@@ -59,7 +61,10 @@ internal sealed class IndexedPendingDateAwaitSource(
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                pending.AddRange(await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false));
+                TenantScanResult tenantScan = await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false);
+                pending.AddRange(tenantScan.Pending);
+                failedCandidateCount += tenantScan.FailedCandidateCount;
+                lastFailure = tenantScan.LastFailure ?? lastFailure;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -73,36 +78,59 @@ internal sealed class IndexedPendingDateAwaitSource(
             }
         }
 
-        if (failedTenantCount > 0)
+        if (failedTenantCount > 0 || failedCandidateCount > 0)
         {
-            throw new PendingDateAwaitScanIncompleteException(pending, failedTenantCount, lastFailure);
+            throw new PendingDateAwaitScanIncompleteException(pending, failedTenantCount, failedCandidateCount, lastFailure);
         }
 
         return pending;
     }
 
-    private async Task<IReadOnlyList<PendingDateAwait>> ScanTenantAsync(string tenant, CancellationToken cancellationToken)
+    private async Task<TenantScanResult> ScanTenantAsync(string tenant, CancellationToken cancellationToken)
     {
         ReadModelEntry<PendingDateAwaitTenantIndex> entry = await _store
             .GetAsync<PendingDateAwaitTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(tenant), cancellationToken)
             .ConfigureAwait(false);
         if (entry.Value is null || entry.Value.Entries.Count == 0)
         {
-            return [];
+            return new TenantScanResult([], 0, null);
         }
 
         var pending = new List<PendingDateAwait>();
+        int failedCandidateCount = 0;
+        Exception? lastFailure = null;
         foreach (string workItemId in entry.Value.Entries.Keys)
         {
-            // The index only tells us which aggregates to inspect; the stream is authoritative. Any failed
-            // candidate aborts this tenant's scan and propagates so the caller (GetPendingDateAwaitsAsync)
-            // isolates the failure to this tenant, logs it, and keeps scanning the remaining tenants rather
-            // than treating one unreadable stream as reason to abandon the whole cross-tenant pass.
-            pending.AddRange(await PendingDateAwaitStreamReader
-                .RebuildAsync(_gateway, tenant, workItemId, _options.MaxStreamPagesPerTenant, cancellationToken)
-                .ConfigureAwait(false));
+            // The index only tells us which aggregates to inspect; the stream is authoritative. One unreadable
+            // candidate stream is isolated to that candidate: the awaits already collected for this tenant are
+            // kept, the remaining candidates are still scanned, and the failure is rolled into the pass-level
+            // PendingDateAwaitScanIncompleteException so the retry still happens. Recovery must degrade to the
+            // items it can read, never collapse for the whole tenant (and, in a single-tenant topology, for the
+            // whole system) because of one wedged work item.
+            try
+            {
+                pending.AddRange(await PendingDateAwaitStreamReader
+                    .RebuildAsync(_gateway, tenant, workItemId, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
+                    .ConfigureAwait(false));
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                failedCandidateCount++;
+                lastFailure = ex;
+                WorksRecoveryLog.PendingDateAwaitCandidateScanFailed(_logger, tenant, workItemId, ex);
+            }
         }
 
-        return pending;
+        return new TenantScanResult(pending, failedCandidateCount, lastFailure);
     }
+
+    /// <summary>One tenant's scan outcome: what was discovered, and how much of it could not be read.</summary>
+    private sealed record TenantScanResult(
+        IReadOnlyList<PendingDateAwait> Pending,
+        int FailedCandidateCount,
+        Exception? LastFailure);
 }

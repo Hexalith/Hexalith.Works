@@ -42,6 +42,27 @@ public sealed class WorkItemProjectionDispatcher
 {
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
+    private static readonly Action<ILogger, string, string, long, int, int, Exception?> s_projectionDecodeFailed =
+        LoggerMessage.Define<string, string, long, int, int>(
+            LogLevel.Warning,
+            new EventId(4501, "ProjectionDecodeFailed"),
+            "Work item {WorkItemId} for tenant {TenantId} could not decode a state-affecting event at sequence "
+            + "{SequenceNumber} ({FailureCount} of {MaxFailures} consecutive attempts); the dispatch fails closed and is retried.");
+
+    private static readonly Action<ILogger, string, string, long, int, Exception?> s_projectionAggregateParked =
+        LoggerMessage.Define<string, string, long, int>(
+            LogLevel.Error,
+            new EventId(4502, "ProjectionAggregateParked"),
+            "Work item {WorkItemId} for tenant {TenantId} is parked after {FailureCount} consecutive failures to "
+            + "decode the state-affecting event at sequence {SequenceNumber}; it is no longer redispatched and needs operator action.");
+
+    private static readonly Action<ILogger, string, string, long, Exception?> s_projectionParkedDispatchSkipped =
+        LoggerMessage.Define<string, string, long>(
+            LogLevel.Warning,
+            new EventId(4503, "ProjectionParkedDispatchSkipped"),
+            "Work item {WorkItemId} for tenant {TenantId} remains parked on the undecodable event at sequence "
+            + "{SequenceNumber}; this dispatch is acknowledged without projecting.");
+
     private static readonly Action<ILogger, string, string, string, int, bool, Exception?> s_projected =
         LoggerMessage.Define<string, string, string, int, bool>(
             LogLevel.Information,
@@ -51,21 +72,25 @@ public sealed class WorkItemProjectionDispatcher
     private readonly IReadModelStore _store;
     private readonly IProjectionChangeNotifier? _notifier;
     private readonly ILogger<WorkItemProjectionDispatcher> _logger;
+    private readonly WorksProjectionOptions _options;
 
     /// <summary>Initializes a new instance of the <see cref="WorkItemProjectionDispatcher"/> class.</summary>
     /// <param name="store">The persisted read-model store.</param>
     /// <param name="notifier">The projection-change notifier, or <see langword="null"/> when none is wired.</param>
     /// <param name="logger">The bounded-metadata logger.</param>
+    /// <param name="options">The projection adapter options, or <see langword="null"/> for the defaults.</param>
     public WorkItemProjectionDispatcher(
         IReadModelStore store,
         IProjectionChangeNotifier? notifier,
-        ILogger<WorkItemProjectionDispatcher> logger)
+        ILogger<WorkItemProjectionDispatcher> logger,
+        WorksProjectionOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         ArgumentNullException.ThrowIfNull(logger);
         _store = store;
         _notifier = notifier;
         _logger = logger;
+        _options = options ?? new WorksProjectionOptions();
     }
 
     /// <summary>
@@ -83,6 +108,17 @@ public sealed class WorkItemProjectionDispatcher
             throw new InvalidOperationException("Projection request domain is not the Works domain.");
         }
 
+        if (WorksReadModelKeys.IsReservedTenantId(request.TenantId))
+        {
+            // /project is one of the two places a tenant id enters this host. Fail closed here rather than
+            // letting the reserved id reach the read-model keys, where its pending-date-await index key would
+            // be byte-identical to the well-known pending-date-await tenant registry key and would silently
+            // disable date-reminder recovery for every tenant.
+            throw new InvalidOperationException(
+                $"Tenant id '{WorksReadModelKeys.ReservedTenantId}' is reserved by the Works host: its "
+                + "pending-date-await index key collides with the well-known pending-date-await tenant registry key.");
+        }
+
         var tenant = new TenantId(request.TenantId);
         var workItemId = new WorkItemId(request.AggregateId);
         string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(request.Events);
@@ -92,6 +128,7 @@ public sealed class WorkItemProjectionDispatcher
         var decodedEvents = new List<(long Sequence, IEventPayload Payload)>();
         bool changed = false;
         bool malformedEvidence = false;
+        bool stateEvidenceDelivered = false;
         int decoded = 0;
         bool childContributionMayExist = (request.Events ?? []).Any(dto => dto is not null
             && string.Equals(WorkItemProjectionEventDecoder.SimpleTypeName(dto.EventTypeName), nameof(ChildSpawned), StringComparison.Ordinal));
@@ -113,6 +150,18 @@ public sealed class WorkItemProjectionDispatcher
             {
                 if (PendingDateAwaitProjection.IsStateAffectingEventType(dto.EventTypeName))
                 {
+                    // Fail closed — but not forever. A permanently undecodable state-affecting event would
+                    // otherwise 500 this endpoint on every ProjectionPollerService pass, blocking this
+                    // aggregate's roll-up and what's-next writes for good with no terminal disposition. After a
+                    // bounded number of consecutive failures at the same sequence, the aggregate is parked: the
+                    // dispatch is acknowledged so the poller stops redispatching it, and a distinct error log
+                    // names the one visible aggregate an operator has to deal with. Transient causes still get
+                    // their retries before that point.
+                    if (await ParkOrRetryAsync(tenant, request.AggregateId, dto.SequenceNumber, request.Events, cancellationToken).ConfigureAwait(false))
+                    {
+                        return NotEligibleResponse();
+                    }
+
                     throw new InvalidOperationException("A state-affecting Works projection event could not be decoded.");
                 }
 
@@ -126,6 +175,14 @@ public sealed class WorkItemProjectionDispatcher
             if (payload is null)
             {
                 continue;
+            }
+
+            if (payload is not IRejectionEvent)
+            {
+                // A non-rejection delivery is genuine state evidence for this aggregate. It is what separates
+                // "the roll-up refused real events" from "there was nothing to project" (an empty or
+                // rejection-only replay), which must never touch the authoritative read models.
+                stateEvidenceDelivered = true;
             }
 
             var delivery = new WorkItemRollUpEvent(tenant, workItemId, dto.SequenceNumber, payload);
@@ -213,6 +270,25 @@ public sealed class WorkItemProjectionDispatcher
                     cancellationToken).ConfigureAwait(false);
             }
         }
+        else if (stateEvidenceDelivered && MaxSequence(request.Events) is { } deliveredLastSequence)
+        {
+            // The roll-up yielded no model even though this replay carried real (non-rejection) state
+            // evidence, so there is no model to guard the write with — but index removal must stay reachable:
+            // otherwise a stale eligible entry and its LastSequences watermark are retained forever. The
+            // delivered stream's own last sequence is the incoming watermark, and UpsertTenantIndexAsync's
+            // internal monotonic guard compares it against the persisted LastSequences entry (never against
+            // `model`), so a stale replay still loses. An empty or rejection-only replay is deliberately NOT
+            // this case: it proves nothing about the item and must not mutate the authoritative models.
+            useCurrentSchema = await UseCurrentSchemaAsync(tenant, cancellationToken).ConfigureAwait(false);
+            indexAccepted = await UpsertTenantIndexAsync(
+                tenant,
+                request.AggregateId,
+                item,
+                deliveredLastSequence,
+                request.Events,
+                useCurrentSchema,
+                cancellationToken).ConfigureAwait(false);
+        }
 
         await MaintainPendingDateAwaitIndexAsync(tenant, request.AggregateId, decodedEvents, request.Events, cancellationToken).ConfigureAwait(false);
 
@@ -225,12 +301,25 @@ public sealed class WorkItemProjectionDispatcher
 
         s_projected(_logger, request.AggregateId, tenant.Value, correlationId, decoded, changed, null);
 
-        JsonElement state = item is not null
-            ? JsonSerializer.SerializeToElement(item, s_webOptions)
-            : JsonSerializer.SerializeToElement(new WhatsNextProjectionState(false), s_webOptions);
-
-        return new ProjectionResponse(WorksReadModelKeys.WhatsNextProjectionType, state);
+        return item is not null
+            ? new ProjectionResponse(
+                WorksReadModelKeys.WhatsNextProjectionType,
+                JsonSerializer.SerializeToElement(item, s_webOptions))
+            : NotEligibleResponse();
     }
+
+    /// <summary>The response for a work item that is not in the eligible "what's next" set.</summary>
+    private static ProjectionResponse NotEligibleResponse()
+        => new(
+            WorksReadModelKeys.WhatsNextProjectionType,
+            JsonSerializer.SerializeToElement(new WhatsNextProjectionState(false), s_webOptions));
+
+    /// <summary>The greatest delivered source sequence in a projection request, or null when none was delivered.</summary>
+    private static long? MaxSequence(IReadOnlyList<ProjectionEventDto>? events)
+        => (events ?? [])
+            .Where(static value => value is not null)
+            .Select(static value => (long?)value.SequenceNumber)
+            .Max();
 
     private async Task<bool> UpsertTenantIndexAsync(
         TenantId tenant,
@@ -438,18 +527,27 @@ public sealed class WorkItemProjectionDispatcher
             await EnsureTenantRegisteredAsync(tenant.Value, events, cancellationToken).ConfigureAwait(false);
         }
 
-        ReadModelWriteContext context = new ReadModelWriteContext(
-            Category: "works pending-date-await index",
-            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
-            .WithEventDiagnostics(events ?? []);
-        long? incomingLastSequence = events!
-            .Where(static value => value is not null)
-            .Select(static value => (long?)value.SequenceNumber)
-            .Max();
+        long? incomingLastSequence = MaxSequence(events);
         if (incomingLastSequence is null)
         {
             return;
         }
+
+        if (pending.Count == 0 && !await HasPendingDateAwaitHistoryAsync(tenant, aggregateId, cancellationToken).ConfigureAwait(false))
+        {
+            // This aggregate has never held a date await, so there is nothing to record or tombstone. Writing
+            // anyway would make every /project dispatch in the tenant — not only date-await items — contend on
+            // the one singleton index key, where ReadModelWritePolicy's bounded retry can exhaust and turn an
+            // ordinary projection dispatch into a 500 plus a poller retry. It would also grow the document by
+            // one permanent LastSequences entry per work item ever dispatched. Items that ever held an await
+            // keep their tombstone: the guard below only skips aggregates the index has never heard of.
+            return;
+        }
+
+        ReadModelWriteContext context = new ReadModelWriteContext(
+            Category: "works pending-date-await index",
+            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            .WithEventDiagnostics(events ?? []);
 
         _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantIndex>(
             _store,
@@ -457,28 +555,111 @@ public sealed class WorkItemProjectionDispatcher
             WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value),
             current =>
             {
+                // Build replacement dictionaries rather than mutating the store's instance: the update func
+                // must be idempotent because ReadModelWritePolicy can run it again on every ETag retry, and an
+                // in-place mutation of `current` would leak this attempt's edits into the next one's baseline.
                 PendingDateAwaitTenantIndex index = current ?? new PendingDateAwaitTenantIndex();
-                if (index.LastSequences.TryGetValue(aggregateId, out long storedLastSequence)
+                var lastSequences = new Dictionary<string, long>(index.LastSequences, StringComparer.Ordinal);
+                var entries = new Dictionary<string, IReadOnlyList<PendingDateAwait>>(index.Entries, StringComparer.Ordinal);
+                if (lastSequences.TryGetValue(aggregateId, out long storedLastSequence)
                     && storedLastSequence >= incomingLastSequence.Value)
                 {
-                    return index;
+                    return new PendingDateAwaitTenantIndex { Entries = entries, LastSequences = lastSequences };
                 }
 
-                index.LastSequences[aggregateId] = incomingLastSequence.Value;
+                lastSequences[aggregateId] = incomingLastSequence.Value;
                 if (pending.Count > 0)
                 {
-                    index.Entries[aggregateId] = pending;
+                    entries[aggregateId] = pending;
                 }
                 else
                 {
-                    _ = index.Entries.Remove(aggregateId);
+                    _ = entries.Remove(aggregateId);
                 }
 
-                return index;
+                return new PendingDateAwaitTenantIndex { Entries = entries, LastSequences = lastSequences };
             },
             context,
             _logger,
             cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Records one consecutive failure to decode a state-affecting event at <paramref name="sequenceNumber"/> and
+    /// returns whether this aggregate is now parked (and the dispatch must be acknowledged instead of retried).
+    /// </summary>
+    /// <remarks>
+    /// The counter is keyed by the failing sequence, so it counts <em>consecutive failures on the same poisoned
+    /// event</em>: a failure at a different sequence restarts the count, and a healthy aggregate never
+    /// accumulates one. Nothing is read or written on the healthy dispatch path.
+    /// </remarks>
+    private async Task<bool> ParkOrRetryAsync(
+        TenantId tenant,
+        string aggregateId,
+        long sequenceNumber,
+        IReadOnlyList<ProjectionEventDto>? events,
+        CancellationToken cancellationToken)
+    {
+        int maxFailures = _options.MaxUndecodableEventDispatchesBeforeParking;
+        ReadModelWriteContext context = new ReadModelWriteContext(
+            Category: "works projection parking",
+            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            .WithEventDiagnostics(events ?? []);
+
+        WorkItemProjectionParking parking = await ReadModelWritePolicy.UpdateAsync<WorkItemProjectionParking>(
+            _store,
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.ProjectionParkingKey(tenant.Value, aggregateId),
+            current =>
+            {
+                if (current is not null && current.FailedSequence == sequenceNumber && current.Parked)
+                {
+                    return current;
+                }
+
+                int failureCount = current is not null && current.FailedSequence == sequenceNumber
+                    ? current.FailureCount + 1
+                    : 1;
+                return new WorkItemProjectionParking
+                {
+                    FailedSequence = sequenceNumber,
+                    FailureCount = failureCount,
+                    Parked = failureCount >= maxFailures,
+                };
+            },
+            context,
+            _logger,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        if (!parking.Parked)
+        {
+            s_projectionDecodeFailed(_logger, aggregateId, tenant.Value, sequenceNumber, parking.FailureCount, maxFailures, null);
+            return false;
+        }
+
+        if (parking.FailureCount == maxFailures)
+        {
+            s_projectionAggregateParked(_logger, aggregateId, tenant.Value, sequenceNumber, parking.FailureCount, null);
+        }
+        else
+        {
+            s_projectionParkedDispatchSkipped(_logger, aggregateId, tenant.Value, sequenceNumber, null);
+        }
+
+        return true;
+    }
+
+    /// <summary>Returns whether the tenant index already carries an entry or tombstone for this aggregate.</summary>
+    private async Task<bool> HasPendingDateAwaitHistoryAsync(TenantId tenant, string aggregateId, CancellationToken cancellationToken)
+    {
+        ReadModelEntry<PendingDateAwaitTenantIndex> entry = await _store
+            .GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value),
+                cancellationToken)
+            .ConfigureAwait(false);
+        return entry.Value is { } index
+            && (index.Entries.ContainsKey(aggregateId) || index.LastSequences.ContainsKey(aggregateId));
     }
 
     private async Task EnsureTenantRegisteredAsync(

@@ -8,6 +8,7 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Reminders;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -171,6 +172,12 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         var store = new Story47InMemoryReadModelStore();
         WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
 
+        // The item genuinely held a date await, so the index carries an entry for it...
+        _ = await dispatcher.DispatchAsync(
+            Request(TenantA, WorkId, Created(TenantA, WorkId, 1), SuspendedOnDate(TenantA, WorkId, 2, s_future)),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        // ...a newer replay clears it and leaves the tombstone watermark...
         _ = await dispatcher.DispatchAsync(
             Request(
                 TenantA,
@@ -179,6 +186,8 @@ public sealed class PendingDateAwaitIndexDispatcherTests
                 SuspendedOnDate(TenantA, WorkId, 2, s_future),
                 new WorkItemResumed(WorkId, 3, new TenantId(TenantA), new WorkItemId(WorkId), AwaitCondition.DateReached(s_future))),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        // ...and an older replay redelivered afterwards cannot resurrect the cleared await.
         _ = await dispatcher.DispatchAsync(
             Request(TenantA, WorkId, Created(TenantA, WorkId, 1), SuspendedOnDate(TenantA, WorkId, 2, s_future)),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -186,6 +195,66 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         PendingDateAwaitTenantIndex index = await ReadIndexAsync(store, TenantA).ConfigureAwait(true);
         index.Entries.ShouldNotContainKey(WorkId);
         index.LastSequences[WorkId].ShouldBe(3);
+    }
+
+    [Fact]
+    public async Task An_item_that_never_held_a_date_await_writes_no_index_document_at_all()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        _ = await dispatcher.DispatchAsync(
+            Request(TenantA, WorkId, Created(TenantA, WorkId, 1)),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        // Writing a LastSequences tombstone for every work item ever dispatched would make every /project
+        // dispatch in the tenant contend on this one singleton key and grow it without bound.
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(TenantA)).ShouldBe(0);
+        ReadModelEntry<PendingDateAwaitTenantIndex> entry = await store
+            .GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(TenantA),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        entry.Value.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task A_projection_request_for_another_domain_is_refused()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        // Without this guard a foreign aggregate id would be admitted into the tenant's authoritative
+        // MemberWorkItemIds manifest.
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            new ProjectionRequest(
+                TenantA,
+                "party",
+                WorkId,
+                [Dto(Created(TenantA, WorkId, 1), 1)]),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        thrown.Message.ShouldContain("domain");
+        store.SuccessfulWriteKeys.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_reserved_tenant_id_is_refused_at_the_project_host_edge()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            Request(WorksReadModelKeys.ReservedTenantId, WorkId, Created(WorksReadModelKeys.ReservedTenantId, WorkId, 1)),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        // Its index key would be byte-identical to the well-known registry key and would silently disable
+        // date-reminder recovery for every tenant.
+        thrown.Message.ShouldContain(WorksReadModelKeys.ReservedTenantId);
+        thrown.Message.ShouldContain("registry");
     }
 
     [Fact]
@@ -206,6 +275,71 @@ public sealed class PendingDateAwaitIndexDispatcherTests
             TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
         (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Undecodable_state_affecting_event_parks_the_aggregate_after_the_configured_failure_budget()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 3 };
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+        var request = new ProjectionRequest(
+            TenantA,
+            "work",
+            WorkId,
+            [new ProjectionEventDto(nameof(WorkItemSuspended), "{"u8.ToArray(), "json", 7, default, "corr-1")]);
+
+        // Fail closed for every attempt inside the budget: a transient cause must still be retried.
+        for (int attempt = 1; attempt < options.MaxUndecodableEventDispatchesBeforeParking; attempt++)
+        {
+            _ = await Should.ThrowAsync<InvalidOperationException>(
+                () => dispatcher.DispatchAsync(request, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        }
+
+        // The budget is spent: acknowledge instead of 500ing forever, so the projection poller stops
+        // redispatching this one aggregate rather than looping on it for the life of the deployment.
+        _ = await dispatcher.DispatchAsync(request, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        _ = await dispatcher.DispatchAsync(request, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
+        parking.Value.FailedSequence.ShouldBe(7);
+        parking.Value.FailureCount.ShouldBe(options.MaxUndecodableEventDispatchesBeforeParking);
+
+        // Nothing about the poisoned aggregate was ever projected.
+        (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_failure_at_a_new_sequence_restarts_the_parking_budget()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 3 };
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            new ProjectionRequest(TenantA, "work", WorkId, [new ProjectionEventDto(nameof(WorkItemSuspended), "{"u8.ToArray(), "json", 7, default, "corr-1")]),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            new ProjectionRequest(TenantA, "work", WorkId, [new ProjectionEventDto(nameof(WorkItemSuspended), "{"u8.ToArray(), "json", 9, default, "corr-1")]),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        // The budget counts consecutive failures on the same poisoned event, so an unrelated later failure
+        // cannot inherit an old count and park an aggregate that has only failed once.
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().FailedSequence.ShouldBe(9);
+        parking.Value.FailureCount.ShouldBe(1);
+        parking.Value.Parked.ShouldBeFalse();
     }
 
     [Fact]

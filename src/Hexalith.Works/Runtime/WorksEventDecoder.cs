@@ -38,15 +38,16 @@ internal static class WorksEventDecoder
         {
             return JsonSerializer.Deserialize(payload, eventType, s_web) as IEventPayload;
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or ArgumentException or NotSupportedException)
         {
+            // A persisted payload whose value-object or [JsonConstructor] guard rejects it (an empty required
+            // id, a null value object) throws ArgumentException/ArgumentNullException out of the constructor
+            // rather than JsonException. It is malformed evidence exactly like unparseable JSON, so it must
+            // return null here and take the callers' fail-closed path for state-affecting events — never
+            // escape the decoder as an unclassified exception.
             return null;
         }
     }
-
-    /// <summary>Returns whether the event type name identifies a known Works event.</summary>
-    public static bool IsKnownEventType(string eventTypeName)
-        => !string.IsNullOrEmpty(eventTypeName) && s_eventTypesByName.ContainsKey(SimpleTypeName(eventTypeName));
 
     private static string SimpleTypeName(string eventTypeName)
     {

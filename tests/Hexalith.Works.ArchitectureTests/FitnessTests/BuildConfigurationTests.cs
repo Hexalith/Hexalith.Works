@@ -20,6 +20,30 @@ public sealed class BuildConfigurationTests
         globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>().ShouldBe("13.5.3");
     }
 
+    /// <summary>
+    /// The AppHost project must carry the same pinned Aspire SDK version and the CLI bundle the live lanes need.
+    /// Pinning only <c>global.json</c> leaves the project's own <c>Sdk</c> attribute free to drift, which is what
+    /// actually decides the AppHost build.
+    /// </summary>
+    [Fact]
+    public void P0_AppHostProjectPinsTheSameAspireSdkAndCliBundle()
+    {
+        string root = RepositoryRoot.Locate();
+        string appHostProjectPath = Path.Combine(root, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj");
+        XDocument appHostProject = XDocument.Load(appHostProjectPath);
+        JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
+
+        string pinnedAspireSdk = globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>()
+            ?? throw new InvalidOperationException("global.json must pin Aspire.AppHost.Sdk.");
+
+        appHostProject.Root.ShouldNotBeNull().Attribute("Sdk")?.Value.ShouldBe(
+            $"Aspire.AppHost.Sdk/{pinnedAspireSdk}",
+            "The AppHost project Sdk attribute must pin the same Aspire version as global.json.");
+        PropertyValue(appHostProject, "AspireUseCliBundle").ShouldBe(
+            "true",
+            "The AppHost must keep the Aspire CLI bundle enabled for the live lanes.");
+    }
+
     [Fact]
     public void P0_RootBuildConfigurationKeepsWarningsAsErrorsAndCentralPackages()
     {

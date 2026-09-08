@@ -30,7 +30,7 @@ public static class WorksRecoveryExtensions
 
         _ = services.AddOptions<WorksRecoveryOptions>()
             .Bind(configuration.GetSection(WorksRecoveryOptions.SectionName))
-            .Validate(static options => options.MaxStreamPagesPerTenant > 0, "MaxStreamPagesPerTenant must be greater than zero.")
+            .Validate(static options => options.EffectiveMaxStreamPagesPerAggregate > 0, "MaxStreamPagesPerAggregate must be greater than zero (the deprecated MaxStreamPagesPerTenant alias binds to the same budget).")
             .Validate(static options => options.ReminderReconciliationMaxAttempts > 0, "ReminderReconciliationMaxAttempts must be greater than zero.")
             .Validate(static options => options.ReminderReconciliationRetryDelayMilliseconds >= 0, "ReminderReconciliationRetryDelayMilliseconds cannot be negative.")
             .ValidateOnStart();

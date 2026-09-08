@@ -193,40 +193,6 @@ No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable pol
 catalog type. The count was **37** at Story 4.6 completion; Story 1.5 later raised the current catalog to
 **40**, with all pre-existing golden bytes still compatible.
 
-## Story 4.8 — Register and Reconcile Date Reminders Durably
-
-Story 4.8 closes the runtime-wiring gap the 2026-07-21 audit found: date resumes must execute in the live topology
-in steady state and on recovery, without per-tenant hand configuration. It changes the stream-read usage and the
-recovery-discovery model while keeping every read per-aggregate.
-
-- **Suspend-time registration on the live event stream (AC #1).** A new
-  `IEventStoreDomainEventHandler<WorkItemSuspended>` on Story 4.7's `work.events` subscription re-folds the
-  suspended aggregate's per-aggregate stream through the pure `PendingDateAwaitProjection` and registers one durable
-  Dapr reminder per pending `DateReached` await. Registration is derived from the folded **current** pending set,
-  never a raw event in isolation, so a suspend redelivered after the item resumed registers nothing. The
-  subscription (immediate on publish) — not the `/project` dispatch (delivered by EventStore's
-  `ProjectionPollerService` on a per-domain refresh cadence, so poll-interval latency) — is the steady-state
-  trigger.
-- **Durable pending-date-await index replaces the hand-configured scan (AC #2/#3).** The `/project` dispatcher now
-  also maintains, alongside the what's-next and roll-up read models, a per-tenant pending-date-await index document
-  (`projection:works:pending-date-await:{tenantId}`) plus one well-known tenant-registry document
-  (`projection:works:pending-date-await:tenants`), both plain host-edge `System.Text.Json` read models upserted via
-  `ReadModelWritePolicy.UpdateAsync` (registry written before index so a crash strands only an empty read, never a
-  hidden entry). The registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration
-  and the gateway exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
-- **Index is discovery, stream is truth.** The recovery source enumerates the registry, reads each tenant's index,
-  and re-folds every candidate's per-aggregate stream (`AggregateId` always set) before acting — a stale index
-  entry whose stream has resumed contributes nothing. The `StreamsController` null-`AggregateId` 400 rejection
-  (verified against submodule `6a8f3866`) is therefore no longer load-bearing for reminders; the tenant-wide
-  null-aggregate scan is retired.
-- **On by default, no hand configuration (AC #3).** `WorksRecoveryOptions.Tenants` and its AppHost
-  `Works:Recovery:Tenants` forwarding are removed; `ReminderReconciliationService` runs whenever
-  `RunReconciliationOnStartup` (default `true`). The whole pass stays crash-safe by idempotency (deterministic
-  `DateReminderName`/correlation ids), not checkpoints.
-- **Catalog unchanged by Story 4.8.** The index and registry records are host-edge STJ, not
-  `[PolymorphicSerialization]` types. The count was **37** at Story 4.8 completion; Story 1.5 later
-  raised the current catalog to **40**, with all pre-existing golden bytes still compatible.
-
 ## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
 
 Story 4.7 verified the checked-out subscription and publisher surfaces at EventStore commit `440ff4c`. The
@@ -281,3 +247,57 @@ surface documented below is unchanged from the original `c6b72caa` verification.
 
 No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog.
 The count was **37** after that story's prior correct-course addition and is **40** after Story 1.5.
+
+## Story 4.8 — Register and Reconcile Date Reminders Durably
+
+Story 4.8 closes the runtime-wiring gap the 2026-07-21 audit found: date resumes must execute in the live topology
+in steady state and on recovery, without per-tenant hand configuration. It changes the stream-read usage and the
+recovery-discovery model while keeping every read per-aggregate.
+
+- **Suspend-time registration on the live event stream (AC #1).** A new
+  `IEventStoreDomainEventHandler<WorkItemSuspended>` on Story 4.7's `work.events` subscription re-folds the
+  suspended aggregate's per-aggregate stream through the pure `PendingDateAwaitProjection` and registers one durable
+  Dapr reminder per pending `DateReached` await. Registration is derived from the folded **current** pending set,
+  never a raw event in isolation, so a suspend redelivered after the item resumed registers nothing. The
+  subscription (immediate on publish) — not the `/project` dispatch (delivered by EventStore's
+  `ProjectionPollerService` on a per-domain refresh cadence, so poll-interval latency) — is the steady-state
+  trigger.
+- **Durable pending-date-await index replaces the hand-configured scan (AC #2/#3).** The `/project` dispatcher now
+  also maintains, alongside the what's-next and roll-up read models, a per-tenant pending-date-await index document
+  (`projection:works:pending-date-await:{tenantId}`) plus one well-known tenant-registry document
+  (`projection:works:pending-date-await:tenants`), both plain host-edge `System.Text.Json` read models upserted via
+  `ReadModelWritePolicy.UpdateAsync` (registry written before index so a crash strands only an empty read, never a
+  hidden entry). The registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration
+  and the gateway exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
+- **Index is discovery, stream is truth.** The recovery source enumerates the registry, reads each tenant's index,
+  and re-folds every candidate's per-aggregate stream (`AggregateId` always set) before acting — a stale index
+  entry whose stream has resumed contributes nothing. The `StreamsController` null-`AggregateId` 400 rejection
+  (verified against submodule `6a8f3866`) is therefore no longer load-bearing for reminders; the tenant-wide
+  null-aggregate scan is retired.
+- **On by default, no hand configuration (AC #3).** `WorksRecoveryOptions.Tenants` and its AppHost
+  `Works:Recovery:Tenants` forwarding are removed; `ReminderReconciliationService` runs whenever
+  `RunReconciliationOnStartup` (default `true`). The whole pass stays crash-safe by idempotency (deterministic
+  `DateReminderName`/correlation ids), not checkpoints.
+- **`StreamReadRequest.FromSequence` is an EXCLUSIVE lower bound.** The server reads from `fromSequence + 1`
+  (`AggregateActor.ReadEventsRangeAsync`) and the gateway fake filters `SequenceNumber > fromSequence`, so a page
+  cursor advances to `FromSequence = LastSequenceReturned` — **not** `LastSequenceReturned + 1`, which silently
+  drops exactly one event per page boundary. EventStore's own paging (`DaprBackupCommandService`) uses the same
+  no-increment cursor; the `+ 1` wording in `StreamsController`'s inline comment is misleading and must not be
+  copied. `ContinuationToken` stays null (the gateway fail-closes on any non-null token) and `PageSize` ≤ 1000.
+- **The page budget is per aggregate.** `WorksRecoveryOptions.MaxStreamPagesPerAggregate` bounds the pages read
+  for one work item, and is spent once per work item — not once per tenant. The former
+  `Works:Recovery:MaxStreamPagesPerTenant` key still binds as a deprecated alias and wins when set, so existing
+  configuration keeps working.
+- **`tenants` is a reserved tenant id.** `PendingDateAwaitIndexKey("tenants")` would render the registry key
+  byte-for-byte, overwriting the registry with an index document that deserializes to an empty tenant set and
+  silently disabling reminder recovery for every tenant. The durable registry key is deliberately unchanged (no
+  migration); the id is refused where tenant ids enter the host — the `/project` dispatcher and the `work.events`
+  subscription processor — and by the key builder itself.
+- **A permanently undecodable state-affecting event parks its aggregate.** Decoding stays fail-closed, but after
+  `Works:Projection:MaxUndecodableEventDispatchesBeforeParking` (default 5) consecutive failures on the *same*
+  sequence, the `/project` dispatch is acknowledged with a distinct error log and the aggregate is recorded as
+  parked (`projection:works:parked:{tenantId}:{workItemId}`), so `ProjectionPollerService` stops redispatching it
+  forever. The blast radius is one visible aggregate rather than a permanent poller loop.
+- **Catalog unchanged by Story 4.8.** The index, registry, and parking records are host-edge STJ, not
+  `[PolymorphicSerialization]` types. The count was **37** at Story 4.8 completion; Story 1.5 later
+  raised the current catalog to **40**, with all pre-existing golden bytes still compatible.

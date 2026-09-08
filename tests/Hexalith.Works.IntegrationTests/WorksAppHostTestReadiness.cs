@@ -96,10 +96,19 @@ internal static class WorksAppHostTestReadiness
     /// <summary>
     /// Waits for one AppHost resource and retains its state when startup cannot make it healthy.
     /// </summary>
+    /// <param name="app">The running distributed application.</param>
+    /// <param name="resourceName">The resource to wait for.</param>
+    /// <param name="cancellationToken">The readiness token, usually the bounded startup budget.</param>
+    /// <param name="callerCancellationToken">
+    /// The caller's own (test-level) token. Only a cancellation of <em>this</em> token is a genuine abort that
+    /// rethrows unchanged; the startup budget expiring is a readiness failure and must carry the resource
+    /// snapshot that explains it, which is the whole reason this wrapper exists.
+    /// </param>
     public static async Task<ResourceEvent> WaitForResourceHealthyAsync(
         DistributedApplication app,
         string resourceName,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        CancellationToken callerCancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(app);
         ArgumentException.ThrowIfNullOrWhiteSpace(resourceName);
@@ -110,7 +119,7 @@ internal static class WorksAppHostTestReadiness
                 .WaitForResourceHealthyAsync(resourceName, cancellationToken)
                 .ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (callerCancellationToken.IsCancellationRequested)
         {
             throw;
         }
@@ -121,9 +130,12 @@ internal static class WorksAppHostTestReadiness
                     + $"Health={current.Snapshot.HealthStatus?.ToString() ?? "unknown"}; "
                     + $"ExitCode={current.Snapshot.ExitCode?.ToString() ?? "none"}."
                 : "No resource snapshot was published.";
+            string budget = ex is OperationCanceledException && cancellationToken.IsCancellationRequested
+                ? "the bounded startup budget expired before it became healthy"
+                : "it did not become healthy";
 
             throw new InvalidOperationException(
-                $"[startup/readiness] Resource '{resourceName}' did not become healthy. {diagnostic}",
+                $"[startup/readiness] Resource '{resourceName}': {budget}. {diagnostic}",
                 ex);
         }
     }
@@ -218,8 +230,18 @@ internal static class WorksAppHostTestReadiness
                         ? runtimeVersionElement.GetString()
                         : null;
 
-                    if (Version.TryParse(runtimeVersionText, out Version? runtimeVersion)
-                        && runtimeVersion < MinimumDaprRuntimeVersion)
+                    if (!Version.TryParse(runtimeVersionText, out Version? runtimeVersion))
+                    {
+                        // An unreported or unparseable runtime version cannot be checked against the minimum,
+                        // so it must fail closed here rather than silently spinning to the readiness timeout
+                        // with a message that blames placement or the actor host.
+                        throw new InvalidOperationException(
+                            "[startup/readiness] Works Dapr sidecar reported no parseable runtimeVersion "
+                            + $"(runtimeVersion={runtimeVersionText ?? "<missing>"}); runtime "
+                            + $"{MinimumDaprRuntimeVersion} or newer is required. {lastDiagnostic}");
+                    }
+
+                    if (runtimeVersion < MinimumDaprRuntimeVersion)
                     {
                         throw new InvalidOperationException(
                             $"[startup/readiness] Works Dapr runtime {runtimeVersion} is incompatible; "
@@ -236,14 +258,13 @@ internal static class WorksAppHostTestReadiness
                         && actorRuntime.TryGetProperty("hostReady", out JsonElement hostReady)
                         && hostReady.ValueKind == JsonValueKind.True
                         && actorRuntime.TryGetProperty("placement", out JsonElement placement)
-                        && (placement.GetString()?.Contains("connected", StringComparison.OrdinalIgnoreCase) ?? false);
+                        && IsPlacementConnected(placement.GetString());
                     bool schedulerConnected = root.TryGetProperty("scheduler", out JsonElement scheduler)
                         && scheduler.TryGetProperty("connected_addresses", out JsonElement addresses)
                         && addresses.ValueKind == JsonValueKind.Array
                         && addresses.GetArrayLength() > 0;
 
-                    if (runtimeVersion is not null
-                        && runtimeVersion >= MinimumDaprRuntimeVersion
+                    if (runtimeVersion >= MinimumDaprRuntimeVersion
                         && actorAdvertised
                         && actorRuntimeReady
                         && schedulerConnected)
@@ -276,10 +297,19 @@ internal static class WorksAppHostTestReadiness
     /// <summary>
     /// Polls Dapr's actor reminder endpoint until the exact deterministic Works reminder is observable.
     /// </summary>
+    /// <param name="sidecarClient">The Works sidecar client.</param>
+    /// <param name="pendingAwait">The await whose deterministic reminder must be observable.</param>
+    /// <param name="cancellationToken">A token to observe for cancellation.</param>
+    /// <param name="alreadyDeliveredAsync">
+    /// An optional probe for the reminder's own observable outcome. A registration that has already fired is
+    /// removed by the actor, so the reminder GET legitimately 404s — without this probe a <em>successful</em>
+    /// scheduler fire would be reported as a registration failure.
+    /// </param>
     public static async Task WaitForReminderRegisteredAsync(
         HttpClient sidecarClient,
         PendingDateAwait pendingAwait,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<CancellationToken, Task<bool>>? alreadyDeliveredAsync = null)
     {
         ArgumentNullException.ThrowIfNull(sidecarClient);
         ArgumentNullException.ThrowIfNull(pendingAwait);
@@ -328,7 +358,21 @@ internal static class WorksAppHostTestReadiness
                 lastDiagnostic = "The Dapr reminder inspection request exceeded the HTTP client timeout.";
             }
 
+            if (alreadyDeliveredAsync is not null
+                && await alreadyDeliveredAsync(cancellationToken).ConfigureAwait(false))
+            {
+                // The reminder already fired and the actor removed it: the registration this waits for is
+                // proven by its own effect, not by the now-absent registration record.
+                return;
+            }
+
             await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
+        }
+
+        if (alreadyDeliveredAsync is not null
+            && await alreadyDeliveredAsync(cancellationToken).ConfigureAwait(false))
+        {
+            return;
         }
 
         throw new TimeoutException(
@@ -364,8 +408,9 @@ internal static class WorksAppHostTestReadiness
                 if (response.IsSuccessStatusCode && !string.IsNullOrWhiteSpace(body))
                 {
                     PendingDateAwaitTenantIndex? index = JsonSerializer.Deserialize<PendingDateAwaitTenantIndex>(body, s_web);
-                    if (index is not null
-                        && index.Entries.TryGetValue(pendingAwait.WorkItemId, out IReadOnlyList<PendingDateAwait>? entries)
+                    if (index?.Entries is { } indexEntries
+                        && indexEntries.TryGetValue(pendingAwait.WorkItemId, out IReadOnlyList<PendingDateAwait>? entries)
+                        && entries is not null
                         && entries.Any(candidate => candidate == pendingAwait))
                     {
                         return;
@@ -399,7 +444,8 @@ internal static class WorksAppHostTestReadiness
     public static async Task DeleteReminderAsync(
         HttpClient sidecarClient,
         PendingDateAwait pendingAwait,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Func<CancellationToken, Task<bool>>? alreadyDeliveredAsync = null)
     {
         ArgumentNullException.ThrowIfNull(sidecarClient);
         ArgumentNullException.ThrowIfNull(pendingAwait);
@@ -418,8 +464,21 @@ internal static class WorksAppHostTestReadiness
         string deleteBody = await delete.Content
             .ReadAsStringAsync(cancellationToken)
             .ConfigureAwait(false);
+        if (delete.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            // Nothing left to remove: the reminder already fired and the actor unregistered it. That is a
+            // successful scheduler fire, not a deletion failure.
+            return;
+        }
+
         if (!delete.IsSuccessStatusCode)
         {
+            if (alreadyDeliveredAsync is not null
+                && await alreadyDeliveredAsync(cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
             throw new InvalidOperationException(
                 $"[registration] Could not remove deterministic reminder '{reminderName}' for recovery proof. "
                 + $"Status={(int)delete.StatusCode} ({delete.StatusCode}); Body={Bound(deleteBody)}");
@@ -459,6 +518,16 @@ internal static class WorksAppHostTestReadiness
             $"[registration] Deterministic reminder '{reminderName}' for actor '{actorId}' was still observable "
             + $"30 seconds after deletion. {lastDiagnostic}");
     }
+
+    /// <summary>
+    /// Returns whether the sidecar's placement status token is exactly "connected".
+    /// </summary>
+    /// <remarks>A substring test also matches "disconnected", which is the opposite of readiness.</remarks>
+    private static bool IsPlacementConnected(string? placementStatus)
+        => placementStatus is not null
+            && placementStatus
+                .Split([':', ' ', ',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Any(static token => string.Equals(token, "connected", StringComparison.OrdinalIgnoreCase));
 
     private static string Bound(string value)
     {

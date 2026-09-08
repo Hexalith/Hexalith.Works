@@ -250,6 +250,17 @@ public sealed class WorksAppHostTopologyTests
         AssertControlPlaneImageAndCredentials(placement, "./placement");
         AssertControlPlaneImageAndCredentials(scheduler, "./scheduler");
 
+        // Sentry issues the workload identities the whole lane depends on, so its own trust domain must be
+        // pinned here too: a drift to any other value silently breaks the control-plane/workload split that
+        // placement, scheduler and every sidecar are pinned against below.
+        ContainerResource sentry = builder.Resources
+            .OfType<ContainerResource>()
+            .Single(static resource => string.Equals(resource.Name, SentryName, StringComparison.Ordinal));
+        string[] sentryArgs = await EvaluateArgsAsync(sentry);
+        sentryArgs.ShouldContain("--trust-domain=localhost");
+        sentryArgs.ShouldContain("--issuer-credentials=/var/run/dapr/credentials");
+        sentryArgs.ShouldContain("--config=/var/run/dapr/config/sentry.yaml");
+
         string[] placementArgs = await EvaluateArgsAsync(placement);
         placementArgs.ShouldContain("--tls-enabled");
         placementArgs.ShouldContain("--sentry-address=dapr-sentry:50001");

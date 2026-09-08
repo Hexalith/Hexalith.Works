@@ -124,7 +124,7 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
         long from = 0;
         bool stillTruncated = false;
 
-        for (int page = 0; page < _options.MaxStreamPagesPerTenant; page++)
+        for (int page = 0; page < _options.EffectiveMaxStreamPagesPerAggregate; page++)
         {
             var request = new StreamReadRequest(
                 Tenant: tenantId,
@@ -165,7 +165,7 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
             // state from what was read would be silently partial. Fail closed instead of risking a wrong
             // resume/no-resume decision.
             throw new InvalidOperationException(
-                $"Stream for aggregate '{workItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerTenant)} page budget while still truncated.");
+                $"Stream for aggregate '{workItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerAggregate)} page budget while still truncated.");
         }
 
         return [.. events.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];

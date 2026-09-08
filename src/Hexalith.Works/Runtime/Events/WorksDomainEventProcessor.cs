@@ -2,6 +2,7 @@ using Hexalith.Commons.UniqueIds;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Projections;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -45,6 +46,16 @@ internal sealed class WorksDomainEventProcessor
         if (!IsValidMessageId(envelope.MessageId))
         {
             WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-message-id");
+            return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+        }
+
+        if (WorksReadModelKeys.IsReservedTenantId(envelope.TenantId))
+        {
+            // The subscription is the other place a tenant id enters this host. The reserved id is refused
+            // before any handler runs: its pending-date-await index key is byte-identical to the well-known
+            // pending-date-await tenant registry key, so admitting it would overwrite the registry with an
+            // index document and silently disable date-reminder recovery for every tenant.
+            WorksDomainEventLog.InvalidEnvelope(_logger, "reserved-tenant-id");
             return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
         }
 

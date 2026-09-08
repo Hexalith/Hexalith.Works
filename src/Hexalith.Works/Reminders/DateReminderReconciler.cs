@@ -1,3 +1,5 @@
+using System.Runtime.ExceptionServices;
+
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
@@ -51,11 +53,43 @@ public sealed class DateReminderReconciler(
             // Log the incomplete-scan detail now, before acting on the partial results below: if a later
             // submit/schedule call also throws, that new exception must not silently discard this one's
             // failed-tenant count and cause.
-            WorksRecoveryLog.PendingDateAwaitScanIncomplete(_logger, ex.FailedTenantCount, ex);
+            WorksRecoveryLog.PendingDateAwaitScanIncomplete(_logger, ex.FailedTenantCount, ex.FailedCandidateCount, ex);
         }
 
         DateTimeOffset now = _timeProvider.GetUtcNow();
 
+        int reissued = 0;
+        int rescheduled = 0;
+
+        try
+        {
+            (reissued, rescheduled) = await ProcessAsync(pending, now, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (incompleteScan is not null && ex is not OperationCanceledException)
+        {
+            // A submit/schedule failure while acting on partial results must not discard the typed
+            // incomplete-scan signal the caller retries on. Rethrow the same typed signal, carrying both causes.
+            throw new PendingDateAwaitScanIncompleteException(
+                incompleteScan.PartialResults,
+                incompleteScan.FailedTenantCount,
+                incompleteScan.FailedCandidateCount,
+                new AggregateException(incompleteScan, ex));
+        }
+
+        if (incompleteScan is not null)
+        {
+            // Capture/Throw preserves the original scan-failure stack trace instead of resetting it here.
+            ExceptionDispatchInfo.Capture(incompleteScan).Throw();
+        }
+
+        return new ReminderReconciliationOutcome(reissued, rescheduled);
+    }
+
+    private async Task<(int Reissued, int Rescheduled)> ProcessAsync(
+        IReadOnlyList<PendingDateAwait> pending,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
         int reissued = 0;
         int rescheduled = 0;
 
@@ -102,12 +136,7 @@ public sealed class DateReminderReconciler(
             rescheduled += tenantRescheduled;
         }
 
-        if (incompleteScan is not null)
-        {
-            throw incompleteScan;
-        }
-
-        return new ReminderReconciliationOutcome(reissued, rescheduled);
+        return (reissued, rescheduled);
     }
 }
 

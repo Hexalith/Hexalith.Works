@@ -160,7 +160,7 @@ public sealed class DateReminderRecoveryRuntimeTests
         : IPendingDateAwaitSource
     {
         public Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
-            => throw new PendingDateAwaitScanIncompleteException(partialResults, failedTenantCount, new InvalidOperationException("simulated tenant scan failure"));
+            => throw new PendingDateAwaitScanIncompleteException(partialResults, failedTenantCount, failedCandidateCount: 0, new InvalidOperationException("simulated tenant scan failure"));
     }
 
     private sealed class RecordingReminderScheduler : IDateReminderScheduler

@@ -2713,3 +2713,112 @@ separately committed Story 1.5 added three types after the historical 4.8 baseli
 remains zero. During diagnosis, credential text was accidentally exposed by a hidden-resource description. That
 bundle was immediately rotated: the active directory is mode 0700 with credential files mode 0600, and the old
 bundle is quarantined at `/tmp/hexalith-works-exposed-20260906T2044` with directory mode 0700.
+
+# Story 4.8 — 2026-09-08 review-remediation session
+
+Scope: the human ruling recorded at the head of the 2026-09-07 review round — **every unchecked
+`[Review][Patch]` item in the 2026-09-06 and 2026-09-07 rounds** (28 items, cosmetic ones included) plus the
+**seven `[Review][Decision]` items** decided by the human on 2026-09-08. The one remaining 2026-09-01
+`[Review][Patch] [Low]` item (`WorksDomainEventProcessor` marker-store failure) stays open and cross-referenced
+to `deferred-work.md` DW-56, as that ruling directs.
+
+## Highest-impact behavioural fix
+
+`PendingDateAwaitStreamReader` advanced its page cursor to `LastSequenceReturned + 1`.
+`StreamReadRequest.FromSequence` is an **exclusive** lower bound — verified directly in the pinned submodule
+(`AggregateActor.ReadEventsRangeAsync` computes `startSequence = fromSequence + 1`; `FakeAggregateActor` filters
+`SequenceNumber > fromSequence`; EventStore's own `DaprBackupCommandService` pages with no increment) — so the
+reader silently dropped exactly one event per page boundary from the stream this story declares as its source of
+truth for both suspend-time registration and recovery. The cursor is now `from = lastSequence`, and
+`IndexedPendingDateAwaitSourceTests.Advances_to_the_next_page_and_folds_the_complete_stream` pins `[0, 1]`.
+
+The identical `+ 1` cursor exists in Story 4.7's `StreamReadingCascadeDescendantSource` and
+`StreamReadingChildCompletionAwaitingParentSource`. Those are out of Story 4.8's scope and were **not** changed;
+they are reported as a follow-up.
+
+## Test-count reconciliation (verified against this session's own binary runs)
+
+| Suite | Before this session | After | Delta |
+| --- | --- | --- | --- |
+| UnitTests | 568 | **568** | 0 (no unit-test file touched) |
+| ArchitectureTests | 236 | **237** | +1 (`P0_AppHostProjectPinsTheSameAspireSdkAndCliBundle`) |
+| PropertyTests | 3 | **3** | 0 |
+| IntegrationTests, deterministic (`-class- "*SmokeTests"`) | 294 at first green run | **317** | +23 |
+
+The +23 deterministic integration tests are, per file:
+`WorksRecoveryOptionsTests` (new, 9 — a 5-case validation theory plus 4 facts),
+`PendingDateAwaitIndexDispatcherTests` (+6: guarded write, reserved tenant, foreign domain, parking ×2, and the
+reworked tombstone fact), `IndexedPendingDateAwaitSourceTests` (+2: per-candidate isolation, tenant-index read
+failure), `WorkItemSharedProjectionRebuildHandlerTests` (+3 methods: a 3-case identity theory, a 2-case
+cross-tenant theory, and the unsupported-capability fact), `WorkItemSuspendedReminderHandlerTests` (+1: duplicate
+delivery), `DateReminderRegistrationSerializationTests` (a fact became a 5-case theory, +4 cases). Counts are
+xUnit **test cases**, which is what the runner reports.
+
+## Production code changed
+
+- `Reminders/PendingDateAwaitStreamReader.cs` — exclusive-`FromSequence` cursor; renamed page budget.
+- `Reminders/IndexedPendingDateAwaitSource.cs` + `PendingDateAwaitScanIncompleteException.cs` — per-candidate
+  failure isolation with a second `FailedCandidateCount` field; `FailedTenantCount` keeps its meaning.
+- `Reminders/DateReminderReconciler.cs` — `ExceptionDispatchInfo.Capture(...).Throw()`; a throwing
+  submit/schedule now rethrows the typed incomplete-scan signal carrying both causes.
+- `Runtime/WorksEventDecoder.cs` — catches guard-clause `ArgumentException`/`NotSupportedException` as malformed;
+  dead `IsKnownEventType` removed.
+- `Runtime/WorksRecoveryOptions.cs` + `WorksRecoveryExtensions.cs` — `MaxStreamPagesPerAggregate` with the legacy
+  `Works:Recovery:MaxStreamPagesPerTenant` key kept as a binding alias that wins when set.
+- `Runtime/WorksProjectionOptions.cs` (new) + `Projections/WorkItemProjectionParking.cs` (new) +
+  `WorkItemProjectionDispatcher` — a permanently undecodable state-affecting event parks its aggregate after
+  `Works:Projection:MaxUndecodableEventDispatchesBeforeParking` (default 5) consecutive failures on the same
+  sequence; decoding stays fail-closed for every attempt inside the budget.
+- `Projections/WorkItemProjectionDispatcher.cs` — the pending-date-await index write is guarded to aggregates
+  that hold or have ever held a date await; its transform builds replacement dictionaries instead of mutating the
+  store's instance; what's-next removal is reachable again when the roll-up refuses real (non-rejection) events.
+- `Projections/WorksReadModelKeys.cs` — `Legacy*` duplicate names deleted; `tenants` reserved and refused at both
+  host edges (the `/project` dispatcher and the `work.events` processor) because its index key would be
+  byte-identical to the registry key; new `ProjectionParkingKey`.
+- `src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs` — bounded 20 × 500 ms credential re-read that refuses an
+  empty PEM instead of handing it to the sidecar.
+
+## Live (Tier-3) lane changes
+
+The live harness moved to `WorksAppHostSmokeHarness`; the mTLS authorization fact moved to its own
+`WorksMtlsAuthorizationSmokeTests` class. Behavioural changes: each reminder fact now owns its own **tenant** (not
+just its own work-item ids), so one fact's auto-discovering reconciliation cannot re-fold another's items; the
+prerequisite gate also refuses to run when an AppHost-owned control-plane port (50001/51005/51006) is already
+bound, skipping with the port named rather than hanging to the 5-minute startup budget; a reminder that has
+already fired (and been removed by the actor) is no longer read as a registration or deletion failure; failures
+keep their innermost phase tag instead of being relabelled `[runtime]`; a startup-budget expiry now carries the
+resource snapshot; placement readiness requires an exact `connected` token (`disconnected` no longer matched); an
+unparseable Dapr `runtimeVersion` fails closed immediately; and a JSON-null `entries` object no longer throws.
+
+## Pre-existing build break repaired to make validation possible (not Story 4.8 functionality)
+
+At session start `dotnet build Hexalith.Works.slnx -c Release` failed with **CS7036** at
+`src/Hexalith.Works.AppHost/Program.cs:221`: HEAD `52a56c6` ("chore: update subproject commits for Hexalith
+references") advanced the EventStore submodule, whose `WithEventStoreClientCredentials` now requires an explicit
+client id plus user-name/password parameter resources. Repaired by mirroring the EventStore AppHost's own
+pattern (`LocalAuthentication:TenantAUsername`/`TenantAPassword` with a per-run random password fallback, and
+`HexalithEventStoreSecurityOptions.DefaultEventStoreClientId`). The governance pin
+`P0_AppHostProgramUsesPlatformEventStoreHelpersNotHandRolledDaprWiring` was updated from the obsolete
+single-argument call shape to the call plus the shared client-id constant.
+
+## Verification commands (this session, exact)
+
+```bash
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -v minimal
+# Build succeeded. 0 Warning(s) 0 Error(s)
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# Total: 568, Failed: 0, Skipped: 0
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# Total: 237, Failed: 0, Skipped: 0
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# Total: 3, Failed: 0, Skipped: 0
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# Total: 317, Failed: 0, Skipped: 0
+```
+
+The durable catalog guard still asserts **40** (Story 1.5's count); Story 4.8's own catalog delta remains zero —
+the parking record, index, and registry are plain host-edge `System.Text.Json` read models.

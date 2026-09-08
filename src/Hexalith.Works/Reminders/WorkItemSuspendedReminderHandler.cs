@@ -45,7 +45,7 @@ internal sealed class WorkItemSuspendedReminderHandler(
         ArgumentNullException.ThrowIfNull(context);
 
         IReadOnlyList<PendingDateAwait> pending = await PendingDateAwaitStreamReader
-            .RebuildAsync(_gateway, @event.TenantId.Value, @event.WorkItemId.Value, _options.MaxStreamPagesPerTenant, cancellationToken)
+            .RebuildAsync(_gateway, @event.TenantId.Value, @event.WorkItemId.Value, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
             .ConfigureAwait(false);
         if (pending.Count == 0)
         {

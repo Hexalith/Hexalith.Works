@@ -69,6 +69,32 @@ public sealed class WorkItemSuspendedReminderHandlerTests
     }
 
     [Fact]
+    public async Task Redelivering_the_same_suspension_registers_the_same_single_reminder_name()
+    {
+        var scheduler = new Story48RecordingScheduler();
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        WorkItemSuspendedReminderHandler handler = NewHandler(gateway, scheduler);
+        WorkItemSuspended suspended = SuspendedOnDate(s_future);
+
+        // AC #1: the subscription is at-least-once, so the identical delivery must converge on exactly one
+        // deterministic reminder rather than a second, competing registration.
+        await handler.HandleAsync(suspended, Context(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await handler.HandleAsync(suspended, Context(), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        scheduler.Calls.Count.ShouldBe(2, "Each delivery re-registers, which is what makes the operation idempotent.");
+        scheduler.Calls
+            .Select(call => DateReminderName.For(call.Await.TenantId, call.Await.WorkItemId, call.Await.CorrelationKey))
+            .Distinct(StringComparer.Ordinal)
+            .ShouldHaveSingleItem();
+        scheduler.Calls.Select(call => call.Await).Distinct().ShouldHaveSingleItem();
+        scheduler.Calls.Select(call => call.DueTime).Distinct().ShouldHaveSingleItem();
+    }
+
+    [Fact]
     public async Task Registers_nothing_for_a_non_date_suspension()
     {
         var scheduler = new Story48RecordingScheduler();

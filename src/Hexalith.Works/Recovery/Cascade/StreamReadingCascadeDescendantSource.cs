@@ -47,7 +47,7 @@ public sealed class StreamReadingCascadeDescendantSource(
             long from = 0;
             bool stillTruncated = false;
 
-            for (int page = 0; page < _options.MaxStreamPagesPerTenant; page++)
+            for (int page = 0; page < _options.EffectiveMaxStreamPagesPerAggregate; page++)
             {
                 var request = new StreamReadRequest(
                     Tenant: tenantId,
@@ -93,7 +93,7 @@ public sealed class StreamReadingCascadeDescendantSource(
                 // EnsureCheckpointAsync never re-discovers once a checkpoint exists, those targets would be
                 // skipped permanently. Fail closed instead (mirrors StreamReadingChildCompletionAwaitingParentSource).
                 throw new InvalidOperationException(
-                    $"Stream for aggregate '{parentWorkItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerTenant)} page budget while still truncated.");
+                    $"Stream for aggregate '{parentWorkItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerAggregate)} page budget while still truncated.");
             }
         }
         catch (OperationCanceledException)

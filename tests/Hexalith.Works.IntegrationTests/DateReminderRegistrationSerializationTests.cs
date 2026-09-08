@@ -59,15 +59,24 @@ public sealed class DateReminderRegistrationSerializationTests
     }
 
     /// <summary>A truncated payload fails closed instead of silently scheduling from default values.</summary>
-    [Fact]
-    public void Missing_required_actor_remoting_member_is_rejected()
+    /// <param name="omittedElement">The exact required element removed from the frozen payload.</param>
+    /// <remarks>
+    /// Every member is <c>IsRequired = true</c>, so every one of them must fail closed — proving it for
+    /// <c>Instant</c> alone would leave four members free to silently default (an empty tenant/work-item id, a
+    /// blank correlation key, or a zero due time that fires immediately) if their metadata ever regressed.
+    /// </remarks>
+    [Theory]
+    [InlineData("<TenantId>tenant-reminder</TenantId>")]
+    [InlineData("<WorkItemId>work-reminder</WorkItemId>")]
+    [InlineData("<Instant xmlns:a=\"http://schemas.datacontract.org/2004/07/System\"><a:DateTime>2026-09-06T19:30:00Z</a:DateTime><a:OffsetMinutes>0</a:OffsetMinutes></Instant>")]
+    [InlineData("<CorrelationKey>2026-09-06T19:30:00.0000000+00:00</CorrelationKey>")]
+    [InlineData("<DueTimeMilliseconds>12345.5</DueTimeMilliseconds>")]
+    public void Missing_required_actor_remoting_member_is_rejected(string omittedElement)
     {
-        string missingInstant = FrozenRegistration.Replace(
-            "<Instant xmlns:a=\"http://schemas.datacontract.org/2004/07/System\"><a:DateTime>2026-09-06T19:30:00Z</a:DateTime><a:OffsetMinutes>0</a:OffsetMinutes></Instant>",
-            string.Empty,
-            StringComparison.Ordinal);
+        string truncated = FrozenRegistration.Replace(omittedElement, string.Empty, StringComparison.Ordinal);
+        truncated.ShouldNotBe(FrozenRegistration, "The omitted element must actually appear in the frozen payload.");
         var serializer = new DataContractSerializer(typeof(DateReminderRegistration));
-        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(missingInstant));
+        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(truncated));
 
         _ = Should.Throw<SerializationException>(() => serializer.ReadObject(stream));
     }
