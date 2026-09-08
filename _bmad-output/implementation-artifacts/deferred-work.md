@@ -866,3 +866,11 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-2.md`
   summary: Reconcile the Story 4.8 catalog sentence in `docs/eventstore-api-surface-constraints.md` with current count 40.
   evidence: Lines 301-302 still say the catalog was 37 at Story 4.8 completion and that Story 1.5 came later; this close-out did not touch that file, and sprint already has Story 1.5 done with `WorkItemV1Catalog.Count` 40.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-08, Group 1)
+
+- No unpark, delete, or operator replay path for `projection:works:parked:{tenant}:{id}` (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:596-650`). Parking's intended terminal disposition is the Error log plus "needs operator action"; an unpark/replay tool is a new ops feature, not an in-band 4.8 fix.
+- Shared rebuild never emits operations for pending-date-await index/registry or parking keys (`src/Hexalith.Works/Projections/SharedRebuild/`). Re-observed; already recorded 2026-09-07 against `spec-shared-rollup-reconciliation.md`.
+- Index durability window + one-shot empty-registry success + retired tenant-wide scan (`src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:41-51`, `ReminderReconciliationService.cs:37-61`). Re-observed; already recorded 2026-09-07 (blind window / no backfill, and the ~5 s give-up).
+- Equal-sequence `PersistRollUpAsync` can overwrite a concurrently merged child set (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:452-454`). Roll-up child-reconciliation / F-PROJ-1 is out of Story 4.8 scope (DW-84 / shared-rebuild).
+- `UseCurrentSchemaAsync` is read once per dispatch and reused across later awaits (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:200`). Documented generation-switch race in the dispatcher rework; not Story 4.8 reminder/index behavior.

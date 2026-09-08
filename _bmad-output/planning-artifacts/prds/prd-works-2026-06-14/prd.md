@@ -2,15 +2,26 @@
 title: "Hexalith.Works — Product Requirements Document"
 status: final
 created: 2026-06-14
-updated: 2026-09-05
+updated: 2026-09-08
 ---
 
 # PRD: Hexalith.Works
 *Working title — confirm.*
 
+### Amendment history
+
+*Every post-final change to this PRD lands here, in the memlog (`.memlog.md`), and as an inline `(Amended …)` note at the changed text, in the same change.*
+
+| Date | Approving proposal | Sections touched | Commit |
+|---|---|---|---|
+| 2026-06-14 | PRD finalized (Fast path; assumptions accepted) | all | `149d789`, `40d3603` |
+| 2026-09-05 | `../../sprint-change-proposal-2026-09-05.md` §4.1 — hosting ownership + Conversation later-link | §1, §2.2, §4.7, FR-7, FR-21, FR-24, §6.1, §8, SM-1, SM-4; addendum package layout, event catalog, reference VOs | `7e7ef4e` |
+| 2026-09-06 | `../../sprint-change-proposal-2026-09-06.md` §4.1 — VAL-H03 FR-20 tiebreak | FR-20 | `33a27e2` *(travelled in an unrelated `feat:` commit)* |
+| 2026-09-08 | 2026-09-08 validation run (grade Fair, material drift) — this update, approved item by item in session | §0, §2.3, §3, §4.1, §4.2 (FR-6, FR-7, FR-8, FR-10), §4.3 (FR-3, FR-13), §4.4 (FR-15, FR-16, **FR-26 new**), §4.5 (FR-17, FR-18), §4.6 (FR-21), §4.7, §5, §6.1, §8, §9, §10, §11, §13, §14; addendum | *(uncommitted)* |
+
 ## 0. Document Purpose
 
-This PRD specifies **v1 (the foundation: Themes 1 & 2)** of Hexalith.Works — the work-item coordination kernel for the Hexalith ecosystem. It is written for the architect who will turn it into a solution design, the developers who will implement the `WorkItem` aggregate, and the owners of the sibling Hexalith modules Works references. It builds on — and does not duplicate — the finalized **product brief** (`../briefs/brief-works-2026-06-14/brief.md`), its **addendum** (foundation action plan, deferred-theme backlog, competitive digest), and the **brainstorming session** (`../../brainstorming/brainstorming-session-2026-06-14-0910.md`, 44 ideas / 6 themes). Vocabulary is anchored in §3 Glossary and used verbatim throughout; features group globally numbered FRs nested under them; and inferred decisions are tagged inline `[ASSUMPTION: …]` and collected in §14. Technical-how depth (detailed substrate constraints, a proposed event catalog, port-shape sketches) lives in `addendum.md` for the architecture phase.
+This PRD specifies **v1 (the foundation: Themes 1 & 2)** of Hexalith.Works — the work-item coordination kernel for the Hexalith ecosystem. It is written for the architect who will turn it into a solution design, the developers who will implement the `WorkItem` aggregate, and the owners of the sibling Hexalith modules Works references. It builds on — and does not duplicate — the finalized **product brief** (`../briefs/brief-works-2026-06-14/brief.md`), its **addendum** (foundation action plan, deferred-theme backlog, competitive digest), and the **brainstorming session** (`../../brainstorming/brainstorming-session-2026-06-14-0910.md`, 44 ideas / 6 themes). Vocabulary is anchored in §3 Glossary and used verbatim throughout; features group globally numbered FRs nested under them; and inferred decisions are tagged inline `[ASSUMPTION: …]` and collected in §14. Technical-how depth (detailed substrate constraints, a proposed event catalog, port-shape sketches, the registry attachment protocol) lives in `addendum.md` for the architecture phase. Post-final amendments are listed in the Amendment history above and marked inline where they land; the Architecture Decision Register (`../../architecture.md`) is cited by `AD-nn` where it has bound a mechanism this PRD deferred (§13).
 
 Scope decision (confirmed 2026-06-14): v1 delivers Themes 1 & 2 as buildable requirements; Themes 3–6 are captured as a forward-looking **Roadmap / Designed-For** section (§12) so the seams laid in v1 — ports, the signed-raw-act audit model, and a cost-ready burn-down — are documented but not specified as v1 work.
 
@@ -51,7 +62,7 @@ v1 proves the spine. It delivers a pure, event-sourced domain assembly — the a
 
 - **UJ-2. A system/AI executor burns down work through one uniform surface.** A service Party — channel = MCP, machine authority — is bound to a Work Item and reports progress in the item's unit until remaining reaches zero, at which point the item completes. The exact same commands would advance a human or external Party; the code path does not branch on executor kind. *Realizes the "everything is a Party / zero branching" build signal.*
 
-- **UJ-3. A work item spawns a child, suspends, and resumes.** An item spawns a child, parks itself on an await-condition (the child's completion), and the engine resumes it when the child completes — the parent's rolled-up remaining effort reflecting the child's burn-down throughout. *Realizes the durable-saga + correct-roll-up build signal.* **Edge case:** if the item is also parked on a date that arrives first, the date trigger resumes it independently.
+- **UJ-3. A work item spawns a child, suspends, and resumes.** An item spawns a child (through the Work-Tree Registry's reserve act — FR-16), parks itself on an await-condition (the child's completion), and the Reactor (FR-26) resumes it when the child completes — the parent's rolled-up remaining effort reflecting the child's burn-down throughout. *Realizes the durable-saga + correct-roll-up build signal.* **Edge case:** if the item is also parked on a date that arrives first, the date trigger resumes it independently.
 
 - **UJ-4. (Deferred — Theme 3 horizon, not built in v1.)** Mary captures a to-do in one line of email; an external supplier she only reaches by inbox advances it with a single tap, no login; the AI's reading of the supplier's reply is a projection over the verbatim signed reply. v1 lays the executor-binding, await-condition, and raw-act event seams this depends on; the email-as-UI, magic links, and NL parsing are Theme 3.
 
@@ -59,7 +70,9 @@ v1 proves the spine. It delivers a pure, event-sourced domain assembly — the a
 
 *Downstream workflows and readers must use these terms exactly. FRs, UJs, and SMs use Glossary terms verbatim.*
 
-- **Work Item** — the irreducible coordination unit and the aggregate root: an obligation with a burn-down, a schedule, a status, an executor binding, optional parent/children, and an optional await-condition. Owns those facts; references everything else.
+- **Work Item** — the irreducible coordination unit and *an* aggregate root: an obligation with a Burn-Down, a Schedule, a Status, an Executor Binding, references to its parent and children, and an optional Await-Condition. Owns those facts; references everything else. The parent→child *edge* itself is owned by the Work-Tree Registry. *(Amended 2026-09-08 — AD-21; was "the aggregate root … optional parent/children".)*
+- **Work-Tree Registry** — the tenant-scoped, event-sourced aggregate that owns every parent→child edge of a tenant's Work Trees and is the sole authority for tree shape (single-parent, acyclic, bounded depth, single-tenant). Attachment is *reserved* in the registry first; the Work Items then record the edge. Its commands and events are part of the v1 domain contract (FR-7, FR-16). *(Added 2026-09-08 — AD-21.)*
+- **Reactor** — the mechanical process manager that owns every cross-aggregate behaviour (registry reservation → spawn, child-completion resume, cascade termination, date/expiry reminders) by translating Domain Events into commands, outside any aggregate. It is what earlier drafts called "the engine" (FR-26). *(Added 2026-09-08.)*
 - **Obligation** — what the Work Item commits to getting done: a human-readable description plus an optional **Expectation** reference. Not an implementation of the work.
 - **Expectation** — a representation of "what is expected now, and from whom," resolved from the item's state by the `IExpectationResolver`. In v1, a structured, non-LLM value; later AI-inferred (Theme 3).
 - **Burn-Down** — the trio of unit-tagged quantities **Estimated**, **Done**, **Remaining** describing progress toward completion. Progress is a fact (remaining decreases), not a status flag. The v1 burn-down is the single Effort **meter**; a second Cost meter reuses the identical machinery later (Theme 5).
@@ -76,7 +89,7 @@ v1 proves the spine. It delivers a pure, event-sourced domain assembly — the a
 - **Schedule** — the Work Item's **Priority** and **Due Date**, giving it standing in a contended queue.
 - **Status** — the resting lifecycle state (see §4.2): one of Created, Assigned, Queued, InProgress, Suspended, Completed, Cancelled, Rejected, Expired. Resumption is a *transition* back into InProgress, not a resting state.
 - **Await-Condition** — an event a Suspended Work Item is parked on. A Work Item may hold **more than one** and resumes on the **first match** — a child completing, a date arriving, or an external signal correlated by ID. (Unifies dependencies, timers, and external triggers into "park until event X.")
-- **Saga** — the spawn→suspend→resume continuation pattern a Work Item embodies.
+- **Saga** — the spawn→suspend→resume continuation pattern a Work Item embodies; its cross-aggregate legs are driven by the Reactor (FR-26).
 - **Raw Act** — the literal, attributable fact recorded as a domain event (who acted, when, and the verbatim payload), as opposed to any interpretation of it.
 - **Domain Event** — a past-tense, additively-versioned record of a Raw Act, serialized via `Hexalith.PolymorphicSerializations` (e.g., `WorkItemCreated`).
 - **Projection** — a recomputable read model derived from the event stream (the Roll-Up and the "what's next" query are projections).
@@ -90,7 +103,7 @@ v1 proves the spine. It delivers a pure, event-sourced domain assembly — the a
 
 ### 4.1 Work Item Aggregate & State
 
-**Description:** The `WorkItem` aggregate is the irreducible coordination unit. It owns its identity, its Obligation (description + optional Expectation reference), its single Executor Binding, its Effort Burn-Down (unit-tagged Estimated/Done/Remaining), its Schedule (Priority + Due Date), its Status, its parent and children references, and its optional Await-Condition. It owns only these facts; identities, dialogue, persistence, and isolation are Reference Value Objects. Realizes UJ-1.
+**Description:** The `WorkItem` aggregate is the irreducible coordination unit. It owns its identity, its Obligation (description + optional Expectation reference), its single Executor Binding, its Effort Burn-Down (unit-tagged Estimated/Done/Remaining), its Schedule (Priority + Due Date), its Status, its references to its parent and children, and its optional Await-Condition. It owns only these facts; identities, dialogue, persistence, and isolation are Reference Value Objects, and the parent→child edges are owned by the Work-Tree Registry (FR-5, FR-13, FR-16). Realizes UJ-1. *(Amended 2026-09-08 — AD-21.)*
 
 **Functional Requirements:**
 
@@ -114,7 +127,8 @@ A Work Item carries Estimated, Done, and Remaining effort, each tagged with the 
 
 **Consequences (testable):**
 - Estimated, Done, and Remaining are expressed in the same Unit for a given item; the Unit is set per-item, not globally.
-- Remaining is derived as Estimated − Done (never below 0) and is the quantity that rolls up.
+- **The Unit is immutable once set** *(2026-09-08 product decision — was §13 OQ6, now AD-04)*: the first accepted estimate (at creation or by the first `ReEstimate`) establishes the item's Unit; a later `ReportProgress` or `ReEstimate` in a different Unit is a domain rejection that leaves Unit, Estimated, and Done unchanged.
+- Estimated is never negative; Remaining is derived as Estimated − Done (never below 0) and is the quantity that rolls up.
 - Mixed-Unit arithmetic across items is never performed implicitly; roll-up across differing units is governed by FR-12. `[ASSUMPTION]`
 
 #### FR-4: Carry a Schedule (Priority + Due Date)
@@ -125,12 +139,12 @@ A Work Item carries a Priority and an optional Due Date that establish its stand
 - A Work Item with neither Priority nor Due Date is valid and sorts last in the "what's next" query (FR-20).
 
 #### FR-5: Hold parent/children references and Await-Conditions
-A Work Item references at most one parent and zero-or-more children, and may hold one or more Await-Conditions while Suspended.
+A Work Item references at most one parent and zero-or-more children, and may hold one or more Await-Conditions while Suspended. The edge behind each reference is owned by the Work-Tree Registry; the Work Item records the reference once the registry has reserved the edge. *(Amended 2026-09-08 — AD-21.)*
 
 **Consequences (testable):**
-- A Work Item has at most one parent; the Work Tree is acyclic (FR-13). `[ASSUMPTION: single-parent, acyclic enforced at spawn time.]`
-- A Suspended Work Item may be parked on multiple Await-Conditions simultaneously and resumes on the first to fire (e.g., a child completing *or* a date arriving — realizing the UJ-3 edge case).
-- Children are referenced by ID (Reference Value Objects), not embedded.
+- A Work Item has at most one parent; the Work Tree is acyclic (FR-13). The guarantee is enforced by the Work-Tree Registry at edge reservation, not by the Work Item at spawn time; the Work Item re-asserts the registry-supplied facts when it records the spawn. *(Amended 2026-09-08 — supersedes the June `[ASSUMPTION: enforced at spawn time]`.)*
+- A Suspended Work Item may be parked on multiple Await-Conditions simultaneously and resumes on the first to fire (e.g., a child completing *or* a date arriving — realizing the UJ-3 edge case). `[ASSUMPTION — confirmed 2026-06-14.]`
+- Children are referenced by ID (Reference Value Objects), not embedded; the authoritative list of a Work Item's children is the registry's `Attached` edges, and the Work Item's own children references are a convenience mirror of them.
 
 ### 4.2 Lifecycle State Machine & Domain Events
 
@@ -141,17 +155,37 @@ A Work Item references at most one parent and zero-or-more children, and may hol
 #### FR-6: Enforce the lifecycle state machine
 The aggregate enforces a defined set of legal transitions. The forward path is `Created → Assigned | Queued → InProgress → Suspended → InProgress → Completed`; in addition, `Assigned ↔ Queued` is bidirectional (FR-18), and the terminal states `Cancelled | Rejected | Expired` are reachable from any non-terminal state per FR-10.
 
+**Legal-transition table** *(normative; added 2026-09-08 as the product-level answer to "which transitions exist" — the architecture's `docs/lifecycle-transition-matrix.md` mirrors it 1:1 and adds mechanism detail).* Legend: `→X` accept, resting at X and emitting the paired event; `R` domain rejection (`WorkItemTransitionRejected`, no state change); `NoOp` acknowledged duplicate, no event.
+
+| From \ Act (event) | Assign (`WorkItemAssigned`) | Queue (`WorkItemQueued`) | Claim (`WorkItemClaimed`) | Suspend (`WorkItemSuspended`) | Resume (`WorkItemResumed`) | Complete (`WorkItemCompleted`) | Cancel (`WorkItemCancelled`) | Reject (`WorkItemRejected`) | Expire (`WorkItemExpired`) |
+|---|---|---|---|---|---|---|---|---|---|
+| **Created** | →Assigned | →Queued | R | R | R | R | →Cancelled | R | →Expired |
+| **Assigned** | →Assigned *(rebind)* | →Queued *(requeue)* | →InProgress | R | R | R | →Cancelled | →Queued *(requeue, default)* / →Rejected *(non-requeue)* | →Expired |
+| **Queued** | →Assigned | R | →InProgress | R | R | R | →Cancelled | R | →Expired |
+| **InProgress** | R | R | R | →Suspended | R | →Completed | →Cancelled | R | →Expired |
+| **Suspended** | R | R | R | R | →InProgress | →Completed | →Cancelled | R | →Expired |
+| **Completed** | R | R | R | R | R | NoOp | R | R | R |
+| **Cancelled** | R | R | R | R | R | R | NoOp | R | R |
+| **Rejected** | R | R | R | R | R | R | R | NoOp *(non-requeue dup)* / R *(requeue)* | R |
+| **Expired** | R | R | R | R | R | R | R | R | NoOp |
+
+Progress and planning acts are not lifecycle transitions: `ReportProgress` is legal only from `InProgress` (and may complete the item — FR-8); `ReEstimate` and `Reschedule` are legal from every non-terminal state and never change Status (FR-9); `LinkConversation` is lifecycle-neutral (FR-21). `SpawnChild` is legal on any non-terminal parent and never changes the parent's Status (FR-16).
+
 **Consequences (testable):**
-- Only transitions in the defined legal set are accepted; any other (e.g., `Completed → InProgress`) is a domain rejection (`IRejectionEvent`), not an exception.
+- Only transitions in the table are accepted; any other (e.g., `Completed → InProgress`) is a domain rejection (`IRejectionEvent`), not an exception; the exact-duplicate terminal act is the only `NoOp`.
 - `Assigned` is the push entry (a specific Executor bound); `Queued` is the pull entry (claimable; see FR-18); an item may move `Assigned → Queued` (requeue) and `Queued → Assigned` (direct assign).
+- **Starting work is a Claim** *(2026-09-08 product decision)*: `Claim` is the single entry into `InProgress` from both `Assigned` and `Queued`, emitting `WorkItemClaimed`. A pushed Executor *claims its own assignment* to start; there is no `WorkItemStarted` event, and the first `ProgressReported` is not a start act — progress on a non-`InProgress` item is rejected.
+- **Reject has two outcomes** *(2026-09-08 product decision, resolving the "terminal state that isn't" ambiguity)*: `Reject` is legal only from `Assigned` (a bound Executor declining before starting). With `Requeue = true` (default) the item rests at `Queued` for reassignment — one `WorkItemRejected` event, no `WorkItemQueued`; with `Requeue = false` the item rests at terminal `Rejected`. The resting status is read from the event's `Requeue` flag. An Executor already `InProgress` cannot reject: it completes, suspends, or is cancelled.
+- **Active work does not change hands directly** *(2026-09-08, recording the architecture's Story 4.2 call)*: `InProgress` and `Suspended` accept neither `Assign` nor `Queue`. Hand-off happens while `Assigned` (a rebind — latest binding wins) or via `Assigned → Queue → Claim` by the new Executor (FR-17, FR-18). `[NOTE FOR PM: this means a mid-work human→AI hand-off requires the current Executor to be cancelled or to finish first; revisit when Theme 4 routing needs live reassignment. Owner: PM; revisit at Theme 4 planning.]`
 - Resumption is a *transition* from `Suspended` back to `InProgress` (FR-15); there is no resting `Resumed` status.
-- No transition is legal out of a terminal state.
+- No transition is legal out of a terminal state (other than the idempotent duplicate `NoOp`).
 
 #### FR-7: Record raw-act domain events
 Each state change and progress fact is recorded as a past-tense Domain Event capturing the acting Party, timestamp, and verbatim payload.
 
 **Consequences (testable):**
-- v1 event catalog (names final for v1; additively extensible): `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`, `ConversationLinked`. `[ASSUMPTION: this closes the open-ended "…" event list from the brainstorm; names follow ecosystem past-tense convention. WorkItemRescheduled carries Priority and/or Due-Date changes (FR-9); ConversationLinked realizes FR-21's additive post-creation reference link.]`
+- v1 `WorkItem` success-event catalog (additively extensible): `WorkItemCreated`, `WorkItemAssigned`, `WorkItemQueued`, `WorkItemClaimed`, `ProgressReported`, `ReEstimated`, `WorkItemRescheduled`, `ChildSpawned`, `WorkItemSuspended`, `WorkItemResumed`, `WorkItemCompleted`, `WorkItemCancelled`, `WorkItemRejected`, `WorkItemExpired`, `ConversationLinked`. `[ASSUMPTION: this closes the open-ended "…" event list from the brainstorm at fifteen `WorkItem` success events; names follow ecosystem past-tense convention. WorkItemRescheduled carries Priority and/or Due-Date changes (FR-9); ConversationLinked realizes FR-21's additive post-creation reference link.]` The addition is additive, preserves every existing payload, and realizes FR-21's post-creation linkage requirement. *(Amended 2026-09-05: `ConversationLinked` added — fifteen events; sprint-change-proposal-2026-09-05 §4.1. Amended 2026-09-08: "names final for v1" dropped — AD-21.)*
+- The Work-Tree Registry's events (edge reserved, attached, released) and a **dedicated spawn-rejection event** carrying `(Tenant, ParentWorkItemId, ChildWorkItemId)` — emitted by the parent when it refuses a reserved spawn so the Reactor can release the edge mechanically — join the catalog additively (FR-16); the existing `WorkItemTransitionRejected` shape stays frozen. Registry contracts are governed like every other contract (catalog + golden corpus, §8). *(Added 2026-09-08 — AD-21.)*
 - Events store the Raw Act (verbatim reported values), not interpreted/derived values; the acting Party identity and timestamp are recorded (via the binding and the EventStore envelope — Works does not populate envelope metadata).
 - The ordered event stream **is** the Work Item's narrative history (the brainstorm's "comment stream and event stream are two views of one history"); `ProgressReported`, `ReEstimated`, and abnormal-termination events may carry an optional human-readable note. Conversational dialogue itself is delegated to `Hexalith.Conversations` by correlation ID (FR-21).
 - Rejection outcomes implement `IRejectionEvent` and do not mix success and rejection payloads in one result.
@@ -161,6 +195,7 @@ An Executor can report progress in the item's Unit; when Remaining reaches 0 the
 
 **Consequences (testable):**
 - `ProgressReported` decreases Remaining by the reported Done delta (clamped at 0).
+- **A progress delta is strictly positive** *(2026-09-08 product decision — was §13 OQ6, now AD-17)*: `ReportProgress` with a delta ≤ 0 is a domain rejection with no state change; there is no "negative progress" — correcting an over-report is a `ReEstimate` (FR-9), which is the planning act for that purpose. Progress in a Unit other than the item's established Unit is likewise rejected (FR-3).
 - Reaching Remaining = 0 transitions the item to `Completed` and emits `WorkItemCompleted`; completion is never set independently of the burn-down for an estimated item.
 - An **unestimated** item (no Estimated set) completes only by an explicit complete act, which also emits `WorkItemCompleted` (it cannot complete via the Remaining=0 path). `[ASSUMPTION — confirmed by acceptance.]`
 - A crash or abandonment leaves Remaining > 0 and the item resumable — "retry" is "continue the burn-down," not a separate state.
@@ -178,9 +213,9 @@ A Work Item can terminate abnormally via Cancel or Expire; a bound Executor can 
 **Consequences (testable):**
 - `WorkItemCancelled` and `WorkItemExpired` are terminal; no further progress is accepted.
 - **Cancel** is an explicit act (authority-gated when enforcement lands; carried-not-enforced in v1, per FR-19).
-- **Reject** (`WorkItemRejected`) is a bound Executor declining its assignment; by default the item returns to `Queued` for reassignment, and it is terminal only when the caller marks it non-requeuable. `[ASSUMPTION — default = requeue.]`
-- **Expire** (`WorkItemExpired`) fires when the Due Date passes (or, absent a Due Date, a configured per-type TTL) without completion; expiry is terminal with no auto-reactivation. `[ASSUMPTION.]`
-- **Cascade:** Cancelling or Expiring a Work Item cascades the same termination to its still-active descendants (a parent's death cancels its open subtree); already-terminal descendants are unaffected. Terminal items contribute 0 to a parent's rolled Remaining (FR-11). `[ASSUMPTION — cascade-cancel chosen over orphaning; resolves the open "parent termination → children" question.]`
+- **Reject** (`WorkItemRejected`) is a bound Executor declining its assignment while `Assigned`; by default the item rests at `Queued` for reassignment, and it reaches terminal `Rejected` only when the caller marks it non-requeuable (FR-6 table). `[ASSUMPTION — default = requeue; confirmed 2026-06-14.]`
+- **Expire** (`WorkItemExpired`) fires when the Due Date passes (or, absent a Due Date, a configured per-type TTL) without completion; expiry is terminal with no auto-reactivation. Expire is legal from every non-terminal state, including `Suspended`. The trigger is the durable reminder adapter (§6.1) issuing an `Expire` command — `Handle` reads no clock; Due-Date/TTL policy values are platform-host configuration, never read by the kernel (§13 item 6). `[ASSUMPTION — confirmed 2026-06-14; trigger ownership added 2026-09-08 per AD-25.]`
+- **Cascade:** Cancelling or Expiring a Work Item cascades the same termination to its still-active descendants (a parent's death cancels its open subtree); already-terminal descendants are unaffected. The cascade is performed by the Reactor over the registry's `Attached` edges and is **eventual** (FR-26 states the window and the descendant's behaviour inside it). Terminal items contribute 0 to a parent's rolled Remaining (FR-11). `[ASSUMPTION — cascade-cancel chosen over orphaning; resolves the open "parent termination → children" question. Confirmed 2026-06-14; owner and consistency added 2026-09-08.]`
 
 ### 4.3 Effort Burn-Down & Recursive Roll-Up
 
@@ -205,11 +240,13 @@ The Roll-Up does not silently sum incompatible Units.
 - For mixed-Unit subtrees, the Roll-Up exposes per-Unit subtotals rather than a coerced single figure. `[ASSUMPTION: no Unit conversion in v1; conversion policy (if any) deferred.]`
 
 #### FR-13: Guard the Work Tree shape
-Spawning enforces an acyclic, single-parent tree within a bounded depth.
+Attaching a child enforces an acyclic, single-parent, single-tenant tree within a bounded depth. The guard is enforced by the **Work-Tree Registry** when the edge is reserved, evaluated against the registry's own state (no staleness window); the Work Item re-asserts the registry-supplied ancestry/depth facts when it records the spawn, as an assertion check, not as the authority. *(Amended 2026-09-08 — AD-21; was "Spawning enforces …".)*
 
 **Consequences (testable):**
-- Attaching a child that would create a cycle or a second parent is rejected as a domain rejection.
-- A Work Tree is **single-tenant**: a parent and child must share a Tenant; a cross-tenant parent/child link is rejected (prevents a cross-tenant roll-up leak). `[ASSUMPTION.]`
+- Attaching a child that would create a cycle or a second parent is rejected as a domain rejection by the registry at reservation; no Work Item is written for a rejected attachment.
+- Concurrent attempts to attach the same child serialize on the registry: exactly one edge is accepted, every other attempt receives a deterministic domain rejection.
+- Caller-supplied tree facts (proposed ancestors, depth, limits) are never trusted as authority; a spawn whose asserted facts disagree with the registry's is rejected by the Work Item.
+- A Work Tree is **single-tenant**: a parent and child must share a Tenant; a cross-tenant parent/child link is rejected (prevents a cross-tenant roll-up leak). `[ASSUMPTION — confirmed 2026-06-14.]`
 - Tree depth is bounded by a configured maximum; exceeding it is rejected. `[ASSUMPTION: default max depth = 32; configurable per tenant/type. The brainstorm states no limit — proposing a guard to bound runaway trees. Breadth/fan-out is not capped; the incremental Roll-Up (FR-11) keeps wide trees affordable.]`
 
 ### 4.4 Suspend / Resume Saga
@@ -226,22 +263,37 @@ An InProgress Work Item can suspend itself, recording the Await-Condition it is 
 - A Suspended item accepts no progress until resumed; it still participates in Roll-Up with its current Remaining.
 
 #### FR-15: Resume on a matching trigger
-The engine resumes a Suspended Work Item when its Await-Condition is satisfied.
+The Reactor (FR-26) resumes a Suspended Work Item when its Await-Condition is satisfied.
 
-Resume is driven by a **resume command** carrying a correlation key matching one of the item's Await-Conditions. The pure aggregate `Handle` never reads a clock or an outside system; date/timer and external signals arrive *as commands* issued by adapters (a timer/scheduler adapter for dates; an external adapter for webhooks/replies — Theme 3), keeping the domain pure.
+Resume is driven by a **resume command** carrying an Await-Condition (kind + correlation key) matching one of the item's current Await-Conditions. The pure aggregate `Handle` never reads a clock or an outside system; child-completion, date/timer, and external signals arrive *as commands* issued by the Reactor and its adapters (the durable reminder adapter for dates — §6.1; an external adapter for webhooks/replies — Theme 3), keeping the domain pure.
 
 **Consequences (testable):**
 - **Child-completion:** a child's `WorkItemCompleted` raises a resume command to a parent parked on that child.
-- **Date/timer:** a timer/scheduler adapter raises a resume command when a parked target date passes (the date is not read inside `Handle`).
-- **External signal:** a resume command carrying the matching external correlation key resumes the item; the concrete external adapter (webhook/reply) is deferred (Theme 3). The correlation key is the contract Theme 3 fills.
-- Resume emits `WorkItemResumed` and returns the item to `InProgress`; a resume whose key matches no current Await-Condition is a domain rejection, and a duplicate of an already-applied resume is an idempotent no-op. `[ASSUMPTION: resume is idempotent — a duplicate trigger is a no-op.]`
+- **Date/timer:** the durable reminder adapter raises a resume command when a parked target date passes (the date is not read inside `Handle`).
+- **External signal:** a resume command carrying the matching external correlation key resumes the item; the concrete external adapter (webhook/reply) is deferred (Theme 3). The correlation key is the contract Theme 3 fills. Matching compares kind *and* key: an external signal whose key text equals a child ID is not a child-completion match.
+- Resume emits `WorkItemResumed`, records the one Await-Condition it consumed, clears the whole Await-Condition set of that suspension, and returns the item to `InProgress`.
+- **One rule for non-matching and duplicate resumes** *(2026-09-08 product decision, aligning FR-15 and §10)*: while `Suspended`, a resume whose Await-Condition matches none of the current set is a **domain rejection** that leaves the set intact; after a resume, repeating the **consumed** Await-Condition is the only resume that is an **idempotent no-op** (so an at-least-once trigger firing twice is harmless); any other resume on a non-`Suspended` item is a domain rejection. The aggregate retains the last consumed Await-Condition to decide this — no unbounded history. Duplicate-command idempotency is the **aggregate's** job, not the substrate's (§10). `[ASSUMPTION — confirmed 2026-06-14 that duplicate triggers are no-ops; narrowed 2026-09-08 to "duplicate of the consumed condition".]`
 
 #### FR-16: Spawn child work
-A Work Item can spawn one or more children, optionally suspending itself awaiting them.
+A Work Item can gain one or more children, optionally suspending itself awaiting them. The **public act is the Work-Tree Registry's reserve command**, which carries the complete child-creation payload verbatim (Obligation, optional Estimated/Unit, Schedule, Executor Binding, Conversation reference, and whether the parent suspends awaiting the child). Once the edge is reserved, the Reactor (FR-26) drives the parent's internal `SpawnChild`, which emits `ChildSpawned` on the parent and creates the child (FR-1 semantics) with a parent reference. `SpawnChild` is not a builder-facing command: it is accepted only from the Reactor's workload identity. *(Amended 2026-09-08 — AD-21; was "A Work Item can spawn … `ChildSpawned` … emits on the parent".)*
 
 **Consequences (testable):**
-- `ChildSpawned` creates a child Work Item (FR-1 semantics) with a parent reference and emits on the parent.
+- A builder or Executor attaches a child by issuing the registry reserve command; a direct `SpawnChild` from an ordinary tenant-member identity is denied (§9 trusted origin).
+- Write order on spawn: (1) the registry records the edge as `Reserved`; (2) the parent emits `ChildSpawned` and the edge becomes `Attached`; (3) the child's own stream begins with `WorkItemCreated` carrying the parent reference. Each step is its own aggregate write; none is atomic with the next.
+- An edge is `Reserved → Attached` on `ChildSpawned` evidence, or `Reserved → Released` when the parent rejects the spawn (via the dedicated spawn-rejection event, FR-7) or when a bounded, platform-configured reservation timeout passes with no creation evidence. A released reservation is a routine race outcome, not an operator case.
+- A duplicate `SpawnChild` for an already-`Attached` identical (parent, child) pair is a defined no-op, never a rejection, so redelivery cannot release a healthy edge.
+- Only `Attached` edges exist for the Roll-Up (FR-11) and for cascade (FR-10); `Reserved` edges are invisible to both.
 - Spawning respects the Work Tree guard (FR-13).
+
+#### FR-26: Own cross-aggregate coordination in the Reactor *(added 2026-09-08)*
+Every behaviour that spans more than one aggregate — registry reservation → parent spawn → child creation (FR-16), a child's completion resuming its parent (FR-15), cascade termination of a subtree (FR-10), and date/expiry reminders (FR-10, FR-15) — is performed by the **Reactor**, a mechanical process manager that translates Domain Events into commands and lives outside the `WorkItem` and Work-Tree Registry aggregates. The aggregates' `Handle` stays pure and single-aggregate (§9); the Reactor is the one place a cross-aggregate step may be taken. *(Resolves the "who owns the saga" gap: the Reactor is what UJ-3 and earlier drafts called "the engine".)*
+
+**Consequences (testable):**
+- **Ownership.** The Reactor is a Works-owned domain library (one of §8's optional domain-focused supporting libraries); the runtime that delivers events to it, checkpoints it, retries it, and fires reminders is substrate/platform-owned (FR-24). Works supplies the translations and the domain intents, never the plumbing.
+- **Mechanical.** The Reactor contains no decision a pure `Handle` could not have produced: each translation is event → command(s) with no policy of its own; every command it issues is idempotent against the target's current state (defined no-op or domain rejection on redelivery); cascade is driven from a checkpoint over a re-readable projection, never an in-memory loop.
+- **Consistency guarantees.** Cross-aggregate effects are **eventual, not synchronous**: the parent's `ChildSpawned`, the child's `WorkItemCreated`, a parent's `WorkItemResumed` after its child completes, and each descendant's cascaded termination are separate writes that land after the triggering event, and every consumer must tolerate the window between them. Within that window: (a) a Suspended parent stays Suspended until the Reactor's resume lands; (b) a descendant of a Cancelled/Expired parent is a separate aggregate that reads no parent status inside `Handle`, so it continues to accept progress — or may complete — until its cascade command arrives; those acts are legitimate Raw Acts, remain in its stream, and a descendant that reached a terminal state first is left unaffected by the cascade (per-state table, FR-6). `[ASSUMPTION — 2026-09-08 product decision: a bounded post-termination window on descendants is accepted in exchange for a pure, single-aggregate `Handle`.]`
+- **Durability.** A crash between the triggering event and the Reactor's command loses nothing: on recovery the Reactor resumes from its checkpoint and re-issues the outstanding commands (including a missed child-completion resume and a half-finished cascade); the idempotency rule above makes re-issue safe.
+- **Provenance.** The Reactor acts under its own authenticated workload identity with an explicit tenant-delegation context, never a borrowed user identity (§9 identity provenance); it is the only originator permitted to submit `SpawnChild`.
 
 ### 4.5 Executor Binding — "Everything is a Party"
 
@@ -255,13 +307,15 @@ A Work Item can be bound to an Executor, and reassigned/handed off to a differen
 **Consequences (testable):**
 - Assigning to a system Party (Channel = MCP, machine authority), an internal-user Party, or an external Party (Channel = email) uses the identical command and emits `WorkItemAssigned`.
 - Human→AI and AI→human handoff is the same reassign operation in either direction.
-- No domain code branches on executor *kind*; the only variation is the binding's field values. *(This is a build-signal acceptance check — see SM-3.)*
+- In v1 the reassign operation is accepted while the item is `Assigned` (rebind) or via requeue-then-claim; active (`InProgress`/`Suspended`) work is not directly reassigned (FR-6 table). *(Added 2026-09-08.)*
+- **One binding, one doer** *(2026-09-08 product decision)*: a Work Item has exactly one Executor Binding — the Party currently responsible for doing the work. Approvers, observers, and the rungs of an escalation ladder are **not** Executor Bindings and never will be: routing candidates and ladder rungs belong to Theme 4's routing decision record behind `IExecutorRouter`; approval and observation grants belong to Theme 6 as Party-scoped participants recorded outside the aggregate. Both attach additively (new events/read models), with no reshape of the binding. The kernel therefore never needs a "second slot".
+- No domain code branches on executor *kind*; the only variation is the binding's field values. *(This is a build-signal acceptance check — see SM-3, which states the two tests that can fail.)*
 
 #### FR-18: Push and Pull coexist
 A Work Item can be pushed (assigned to a specific Executor) or pulled (placed in a shared queue and claimed), and can move between modes.
 
 **Consequences (testable):**
-- A `Queued` item can be claimed by an Executor, emitting `WorkItemClaimed` and transitioning the item to `InProgress` bound to that claimant.
+- A `Queued` item can be claimed by an Executor, emitting `WorkItemClaimed` and transitioning the item to `InProgress` bound to that claimant. The same `Claim` act is how an `Assigned` Executor starts its pushed work (FR-6) — one entry act into `InProgress` for both modes.
 - **Single claim wins:** when two Executors race to claim the same `Queued` item, exactly one succeeds; the loser receives a domain rejection (the item is no longer claimable), serialized by the aggregate's single-writer/optimistic-concurrency model (mechanism detailed at architecture; see §9).
 - An `Assigned` item can be returned to `Queued` (requeue) and a `Queued` item can be directly assigned — both normal transitions; requeue re-emits `WorkItemQueued` (which thus marks every entry into the queue, whether from `Created` or `Assigned`). `[ASSUMPTION: claim "eligibility" filtering is a routing concern and is deferred to Theme 4; v1 allows any Executor of the tenant to claim.]`
 
@@ -270,7 +324,7 @@ The Executor Binding carries an AuthorityLevel describing what the Executor may 
 
 **Consequences (testable):**
 - The binding persists the AuthorityLevel through create/assign/reassign events.
-- `[ASSUMPTION: proposed ordered AuthorityLevel set = { Read, Contribute, Coordinate, Administer }. Read = await/observe; Contribute = report progress, complete own work, answer an Expectation (covers external "confirm" and machine "auto-complete"); Coordinate = assign/reassign, reprioritize, spawn; Administer = approve spend, set caps, cancel. Enforcement is Theme 4/6; the set is additive-tolerant so it can grow without a V2 event.]`
+- `[ASSUMPTION: proposed ordered AuthorityLevel set = { Read, Contribute, Coordinate, Administer }, each describing what the *bound Executor* may do to *this* item. Read = may only await/observe the item it is bound to (e.g., a placeholder binding before real work is delegated); Contribute = report progress, complete own work, answer an Expectation (covers external "confirm" and machine "auto-complete"); Coordinate = assign/reassign, reprioritize, spawn; Administer = approve spend, set caps, cancel. AuthorityLevel is never a role held by some *other* Party over the item — approvers and observers are not bindings (FR-17). Enforcement is Theme 4/6; the set is additive-tolerant so it can grow without a V2 event. Confirmed 2026-06-14; glosses clarified 2026-09-08.]`
 
 ### 4.6 Thin-Core Boundaries & Module Ports
 
@@ -292,7 +346,7 @@ Identities, dialogue, persistence, isolation, and IDs are Reference Value Object
 **Consequences (testable):**
 - Identity → `Hexalith.Parties` (PartyId); dialogue → `Hexalith.Conversations` (correlation ID); persistence/events → `Hexalith.EventStore`; isolation → `Hexalith.Tenants`; IDs → `Hexalith.Commons`.
 - The aggregate stores correlation IDs, not denormalized copies of referenced data.
-- A Conversation correlation ID can be supplied at creation or linked later with `LinkConversation`, which emits `ConversationLinked`; it is optional and resolved on demand. The first link is authoritative: repeating the same link is an idempotent no-op, while attempting to replace it with a different ID is a domain rejection that leaves state unchanged. A new link is accepted only while the Work Item is non-terminal; exact duplicate retries remain no-ops after terminal closure. The comment narrative and the event stream are two views of one history (FR-7); Works holds the correlation ID rather than its own comment store. `[ASSUMPTION: v1 references a Conversation by ID; it does not implement comment storage.]`
+- A Conversation correlation ID can be supplied at creation or linked later with `LinkConversation`, which emits `ConversationLinked`; it is optional and resolved on demand. The first link is authoritative: repeating the same link is an idempotent no-op, while attempting to replace it with a different ID is a domain rejection that leaves state unchanged. A later link is accepted only while the Work Item is non-terminal; exact duplicate retries remain no-ops after terminal closure. Works stores only the correlation ID and never stores conversation content. The comment narrative and the event stream are two views of one history (FR-7). `[ASSUMPTION: v1 references a Conversation by ID; it does not implement comment storage.]` *(Amended 2026-09-05: `LinkConversation`/`ConversationLinked` later-link semantics — sprint-change-proposal-2026-09-05 §4.1.)*
 
 #### FR-22: Expose module ports as abstractions
 The domain depends on `IExpectationResolver` and `IExecutorRouter` as ports, with a no-LLM `IExpectationResolver` implementation shipped in v1.
@@ -309,12 +363,12 @@ v1 includes a written owns-vs-references boundary decision record as a tracked a
 
 ### 4.7 Platform-Hosted Runtime Test Harness
 
-**Description:** v1 ships the canonical EventStore domain-service host for Works. A platform-owned .NET Aspire AppHost stands up the shared dependencies needed to exercise the full event-sourced lifecycle in manual and automated tests. Works does not ship its own AppHost, Aspire, or ServiceDefaults project, and no production channel adapter (MCP/CLI/email) ships in v1.
+**Description:** v1 ships the canonical EventStore domain-service host for Works. A platform-owned .NET Aspire AppHost stands up the shared dependencies needed to exercise the full event-sourced lifecycle in manual and automated tests. Works does not ship its own AppHost, Aspire, or ServiceDefaults project, and no production channel adapter (MCP/CLI/email) ships in v1. *(Amended 2026-09-05: was "an Aspire host that runs it under test" shipped by Works — sprint-change-proposal-2026-09-05 §4.1.)*
 
 **Functional Requirements:**
 
 #### FR-24: Run the kernel through the platform-hosted domain-service topology
-Works exposes the canonical EventStore domain-service host, and a platform-owned Aspire AppHost composes Works with EventStore and shared infrastructure for local manual and automated testing.
+Works exposes the canonical EventStore domain-service host, and a platform-owned Aspire AppHost composes Works with EventStore and shared infrastructure for local manual and automated testing. *(Amended 2026-09-05: was "Run the kernel under an Aspire host" owned by Works — sprint-change-proposal-2026-09-05 §4.1.)*
 
 **Consequences (testable):**
 - The end-to-end lifecycle (create → progress → spawn → suspend → resume → complete) runs under the platform-owned Aspire topology with correct Roll-Up.
@@ -333,7 +387,7 @@ The kernel is exercisable through its command/event pipeline in automated tests 
 - Works is **not** a task database or a system of record for the *content* of work; it owns coordination facts and references the rest.
 - Works is **not** a workflow-diagram/BPMN engine; there are no authored process diagrams — the event log of ad-hoc work is the model.
 - Works does **not** put AI in the system of record; interpretations are Projections over Raw-Act events.
-- v1 builds **no** production channel adapters (email/magic-link, chatbot, MCP, CLI), **no** LLM-native interaction or NL parsing, **no** executor routing/escalation engine, **no** cost meter/spend governance, and **no** security-hardening enforcement (step-up auth, consent/residency routing, DoS guards). These are Themes 3–6 (§12). *(The brainstorm filed MCP-as-actor-channel and CLI-as-scriptable-work under foundation Theme 2; v1 deliberately defers even these non-LLM command surfaces — the kernel-only surface decision — while keeping the Channel seam so they attach later without core changes.)*
+- v1 builds **no** production channel adapters (email/magic-link, chatbot, MCP, CLI), **no** LLM-native interaction or NL parsing, **no** executor routing/escalation engine, **no** cost meter/spend governance, and **no Theme 6 hardening** (step-up auth, signed single-use links, consent/residency routing, DoS guards). These are Themes 3–6 (§12). The platform-owned identity-provenance and trusted-origin **baseline** (authenticated callers, tenant derived from verified claims, deny-before-dispatch, mTLS) is *not* Theme 6 and *is* v1 — see §9. *(Narrowed 2026-09-08 — AD-23/AD-24; was "no security-hardening enforcement".)* *(The brainstorm filed MCP-as-actor-channel and CLI-as-scriptable-work under foundation Theme 2; v1 deliberately defers even these non-LLM command surfaces — the kernel-only surface decision — while keeping the Channel seam so they attach later without core changes.)*
 - Works does **not** re-implement identities, dialogue, persistence, isolation, or ID generation — those remain owned by their sibling modules.
 
 ## 6. MVP Scope
@@ -343,7 +397,10 @@ The kernel is exercisable through its command/event pipeline in automated tests 
 - The `WorkItem` aggregate: identity · obligation (+Expectation reference) · executor binding · unit-tagged effort burn-down (cost-ready) · schedule · status · parent/children refs · await-condition (FR-1–FR-5).
 - The lifecycle state machine and the v1 raw-act Domain Event catalog (FR-6–FR-10).
 - The recursive remaining-effort Roll-Up projection, tree-shape guard, and heterogeneous-unit safety (FR-11–FR-13).
+- The **Work-Tree Registry** aggregate and its reserve/attach/release contract — the public attachment entry and the tree-shape authority (FR-13, FR-16). *(Added 2026-09-08 — AD-21.)*
 - The suspend/resume saga: child-completion + date/timer native, generic external resume port (FR-14–FR-16).
+- The **Reactor** — the mechanical process manager for spawn, child-completion resume, cascade, and reminders (FR-26). *(Added 2026-09-08.)*
+- The **durable reminder adapter** for date-resume and expiry (FR-10, FR-15). Owners *(2026-09-08 — AD-11/AD-25, AD-20 R6)*: Works supplies the domain intents (which reminders to register, cancel, or reschedule from which lifecycle events, and the `Resume`/`Expire` commands they fire); the generic durable-reminder and recovery-reconciliation seam is `Hexalith.EventStore`; scheduler persistence/HA/backup and the callback failure policy are `Hexalith.Platform` (residual openness: architecture VAL-H07). It is not a channel adapter (§4.7): it is the v1 source of the date-triggered resume SM-1 requires.
 - The Executor Binding (`PartyId + Channel + AuthorityLevel`), uniform assign/reassign/handoff, push+pull, AuthorityLevel carried-not-enforced (FR-17–FR-19).
 - Thin-core boundaries: "what's next" query, Reference Value Objects, ports (`IExpectationResolver` no-LLM impl + `IExecutorRouter` abstraction), boundary decision record (FR-20–FR-23).
 - The canonical EventStore domain-service host plus a platform-owned Aspire integration harness (FR-24–FR-25).
@@ -365,7 +422,7 @@ Timing is load-bearing for Works and is documented in the brief/addendum: 2026 i
 Works' v1 public surface is its **domain contract**, consumed by Hexalith builders: the Domain Events, commands, the Executor Binding value object, the Reference Value Objects, the lifecycle, and the ports. Because the substrate is event-sourced, the surface's compatibility rules are strict and inherited from the ecosystem:
 
 - **Additive, serialization-tolerant evolution only.** No `V2` event types; every event ever produced must remain backward-compatibly deserializable. The v1 event catalog (FR-7) and the AuthorityLevel set (FR-19) are designed to grow additively.
-- **Package boundaries** follow the ecosystem layout — `Contracts` (events/commands/models, low-dependency, no infrastructure), `Server` (domain behavior), `Projections` (roll-up + "what's next"), a minimal EventStore domain-service executable, and `Testing`. Contracts stay infrastructure-free; topology and ServiceDefaults remain platform-owned.
+- **Package boundaries** are `Contracts`, `Server`, `Projections`, optional domain-focused supporting libraries, a minimal EventStore domain-service executable, and `Testing`; topology and ServiceDefaults remain platform-owned. `Contracts` holds events/commands/models (low-dependency, no infrastructure); `Server` holds domain behavior — the `WorkItem` and Work-Tree Registry aggregates; `Projections` holds the roll-up and "what's next" read side; the Reactor (FR-26) is the v1 instance of a domain-focused supporting library. Contracts stay infrastructure-free. *(Amended 2026-09-05 — sprint-change-proposal-2026-09-05 §4.1; Reactor/registry placement added 2026-09-08.)*
 - **Runtime targets** are inherited: .NET 10, C# nullable + warnings-as-errors, Dapr as the only permitted infrastructure abstraction in domain services, `System.Text.Json` conventions, `Hexalith.PolymorphicSerializations` for event payloads.
 
 *(Detailed substrate constraints and a proposed event/port shape for architecture are in `addendum.md`.)*
@@ -373,8 +430,9 @@ Works' v1 public surface is its **domain contract**, consumed by Hexalith builde
 ## 9. Cross-Cutting NFRs
 
 - **Tenant isolation (mandatory, every layer).** Every Work Item, aggregate identity, state key, projection key, query, and log is tenant-scoped per the substrate model (`{tenant}:{domain}:{aggregateId}`); managed tenant IDs live in payloads/read models, not in the EventStore envelope tenant. **Query-side authorization/result filtering is required in addition to command-side checks** — tenant scoping alone is not sufficient for read queries (FR-20). Negative-path tests cover both the cross-tenant and the query-side-authorization paths.
+- **Identity provenance & trusted origin (platform-owned baseline).** *(Added 2026-09-08 — AD-23/AD-24.)* Every external caller is authenticated at the platform ingress; the authoritative Tenant and acting Party are **derived from verified claims** through `Hexalith.Tenants` membership — Works never authenticates and never treats a Tenant or actor field carried in a payload or envelope as authority. A payload/envelope identity that disagrees with the derived identity, or a caller with no tenant membership, is **denied before** aggregate dispatch, persistence, or query execution, without disclosing whether the tenant exists. Minimum authorization: commands require an authenticated member of the target Tenant; queries require membership plus result filtering (FR-20); rebuild/replay/repair require an individually audited platform-operator role. Internal originators — the Reactor, reminder callbacks and registration, replay, recovery — act under an authenticated **workload identity with an explicit, auditable tenant-delegation context**, never a borrowed user identity, and origin-restricted commands (`SpawnChild`, reminder callbacks, replay) are accepted only from their designated originator. In production, services reach each other only over mutually authenticated transport inside a declared trust domain behind deny-by-default access control, and an event's canonical position is trusted only after its origin is authenticated. Enforcement, its negative tests, and the operating policy are **platform-owned** (`Hexalith.Platform`); production ingress is prohibited until they are live. This baseline is distinct from Theme 6 hardening (§5, §12) and from AuthorityLevel, which stays carried-not-enforced (FR-19).
 - **Event-sourcing invariants.** Persist-then-publish; aggregate `Handle(...)` is pure and returns domain results/events; projection/state `Apply(...)` mutates only in-memory state; domain rejections are events (`IRejectionEvent`), infrastructure failures are exceptions/dead-letter paths. Works returns event payloads only — EventStore owns envelope metadata.
-- **Concurrency.** Commands against a single Work Item are serialized by the aggregate's single-writer/optimistic-concurrency model; concurrent conflicting commands (e.g., two claims on one `Queued` item — FR-18) resolve to one success and domain rejections for the rest. No lost updates. *(Mechanism is an architecture concern; the behavior is a v1 requirement.)*
+- **Concurrency.** Commands against a single Work Item are serialized by the aggregate's single-writer/optimistic-concurrency model; concurrent conflicting commands (e.g., two claims on one `Queued` item — FR-18) resolve to one success and domain rejections for the rest; if the substrate's bounded conflict retry is exhausted the outcome is an infrastructure failure surfaced to the caller, never a silent loss or a loser publication. No lost updates. *(Mechanism is an architecture concern — AD-08; the behavior is a v1 requirement. Amended 2026-09-08.)*
 - **Projections are rebuildable.** The Roll-Up and "what's next" read models are derivable purely from the event streams and can be rebuilt/replayed from scratch; they hold no authoritative state of their own.
 - **Domain purity.** The domain assembly takes no direct infrastructure dependency and no LLM/cost/routing dependency; those sit behind ports/adapters (FR-22). The aggregate `Handle` reads no clock or external system — time/external triggers enter as commands (FR-15).
 - **Observability.** Structured logging only; never log event payloads, personal data, secrets, or full command bodies. Errors use the ProblemDetails/RFC 9457 pattern with correlation/tenant context.
@@ -383,7 +441,7 @@ Works' v1 public surface is its **domain contract**, consumed by Hexalith builde
 ## 10. Constraints & Guardrails *(seams laid in v1, enforced later)*
 
 - **Audit / non-repudiation (model laid in v1).** Domain Events record the Raw Act — acting Party + timestamp + verbatim payload — so that later interpretation is a recomputable Projection and disputes resolve against the verbatim act. v1 lays this shape; the signed single-use link enforcement and auditor-facing query are Theme 6.
-- **Idempotency (event-sourced).** v1 idempotency rests on two mechanisms: resume is idempotent against current state (a resume whose key no longer matches an Await-Condition is a no-op — FR-15), and the substrate's command/event handling dedups replays by stream offset so an already-applied act is not re-counted (FR-11). Explicit per-act idempotency tokens (Theme 6's single-use-bound links) build on this. `[ASSUMPTION: no explicit per-act token in v1.]`
+- **Idempotency (event-sourced).** v1 idempotency rests on three layers. (1) **Duplicate-command idempotency is the aggregate's job:** every command is decided against current state, so a redelivered command lands on a defined no-op or domain rejection — a resume repeating the consumed Await-Condition is a no-op, a resume matching nothing is a rejection (FR-15); a duplicate terminal act on an already-terminal item is a no-op (FR-6); a duplicate `SpawnChild` for an attached pair is a no-op (FR-16). (2) **Read-side idempotency is the projection's job:** replaying an already-applied event never double-counts (FR-11). (3) **Transport idempotency** — reusing a message/idempotency key so the substrate returns the original result instead of re-handling — is v1 work bound at the internal submission path the Reactor and adapters share, because the registry's reserve→spawn→release translations need deterministic causation IDs (architecture VAL-H10). Theme 6's per-*act* signed single-use links build on all three. *(Amended 2026-09-08: was "resume … no longer matches … is a no-op" and "no explicit per-act token in v1" — the former contradicted FR-15, the latter is narrowed by VAL-H10.)* `[ASSUMPTION: the per-act signed token remains Theme 6; the transport key is v1.]`
 - **Cost-ready burn-down.** The burn-down and roll-up are built so a second (Cost) meter reuses the identical machinery (Theme 5) — no schema reshape required to add it.
 - **NL-is-data boundary (designed-for).** The Expectation/answer-space concept (the `IExpectationResolver` port) is the future prompt-injection boundary: when Theme 3 lands, the **answer-contract does triple duty — UX accelerator, input validator, and prompt-injection boundary** (free text is mapped onto the item's valid action space only, never executed as instructions). v1 ships only the no-LLM resolver, so no NL is interpreted as instructions in v1.
 
@@ -394,14 +452,14 @@ Works' v1 public surface is its **domain contract**, consumed by Hexalith builde
 **Primary (build signals)**
 - **SM-1 — Full event-sourced lifecycle, durable across restart.** The sequence create → progress → spawn child → suspend-on-event → resume → complete runs end-to-end under the platform-owned Aspire topology; and a Work Item suspended mid-saga rehydrates from its event stream after a restart and resumes correctly (durability is a fact, not a claim). *Validates FR-1, FR-6–FR-8, FR-14–FR-16, FR-24.*
 - **SM-2 — Correct roll-up.** For any constructed Work Tree, rolled Remaining equals own + recursive descendants' Remaining, and updates as descendants progress. *Validates FR-11–FR-13.*
-- **SM-3 — Zero branching on executor kind.** Assign/reassign/handoff across system, user, and external bindings execute through the identical code path; a test (and code inspection) confirms no domain branch on executor kind. *Validates FR-17, FR-19.*
+- **SM-3 — Zero branching on executor kind (falsifiable).** Two checks, both of which can fail: (a) adding a new `Channel` value or `AuthorityLevel` value requires **zero changes** in `Server`/`Projections` and **no new event type** — verified by an architecture-fitness test; (b) the identical assign → claim → progress → complete sequence, run over a system (MCP) binding, an internal-user binding, and an external (email) binding, yields event streams that **differ only in the binding's field values** — verified by a golden-corpus diff test. *Validates FR-17, FR-19.* *(Rewritten 2026-09-08; was "a test and code inspection confirm no domain branch on executor kind".)*
 - **SM-4 — Pure domain assembly.** The domain assembly has zero duplicated technical/infrastructure layers; all cross-module concerns are behind Reference Value Objects, handlers, ports, and the EventStore domain-service SDK; green build + green tests under the platform-owned Aspire topology. *Validates FR-21–FR-25.*
 
 **Secondary**
 - **SM-5 — Handoff = one operation.** Reassigning between a human and an AI Executor in either direction is a single symmetric operation, demonstrated by test. *Validates FR-17.*
 
 **Counter-metrics (do not optimize)**
-- **SM-C1 — Don't grow the kernel.** Lines/surface of the Works domain assembly should *not* be maximized; capability that belongs in a sibling module migrating *out* of Works is success, not regression. Counterbalances the temptation to satisfy SM-1 by absorbing technical layers. *Counterbalances SM-1/SM-4.*
+- **SM-C1 — Don't grow the kernel.** Lines/surface of the Works domain assembly should *not* be maximized; capability that belongs in a sibling module migrating *out* of Works is success, not regression. Counterbalances the temptation to satisfy SM-1 by absorbing technical layers. *Counterbalances SM-1/SM-4.* *(2026-09-08: the Work-Tree Registry aggregate and the Reactor are product-approved additions made for correctness — a second aggregate for edge authority, a mechanical translator for cross-aggregate steps — not kernel growth this counter-metric fires on; anything beyond their stated scope is.)*
 - **SM-C2 — Don't over-fit v1 to deferred themes.** Adding speculative routing/cost/security machinery to "prepare" beyond the named seams is a negative; the seams in §10 are sufficient. *Counterbalances the roadmap pressure in §12.*
 
 ## 12. Roadmap / Designed-For (Themes 3–6)
@@ -413,38 +471,43 @@ Works' v1 public surface is its **domain contract**, consumed by Hexalith builde
 | **3 — LLM-native interaction** | AI-inferred Expectation, constrained-safe magic links, NL-always-accepted + confidence-gated auto-apply, status-driven re-inference, email-as-UI | `IExpectationResolver` port; Await-Condition; Channel field; raw-act events |
 | **4 — Executor routing & escalation** | Auto-route + manual override, start-cheap-escalate ladder (small model → premium → human → external) as per-type data policy, explainable decision record (candidates/score/cost/confidence), push↔pull auto-assignment | `IExecutorRouter` port; push/pull states (FR-18); AuthorityLevel (FR-19); assignment events |
 | **5 — Economics & cost governance** | Cost as a second burn-down, spend caps → graceful degradation, cost roll-up, cost-aware (debounced) scheduling | cost-ready burn-down + reusable Roll-Up (FR-11) |
-| **6 — Trust, security & auditability** | Single-use bound expiring idempotent links, forwarding≠authority + step-up auth, NL-is-data enforcement, consent/residency routing, non-repudiation surfaces, cost-cap-as-DoS-guard | raw-act event model (FR-7); idempotency (§10); AuthorityLevel (FR-19) |
+| **6 — Trust, security & auditability** | Single-use bound expiring idempotent links, forwarding≠authority + step-up auth, NL-is-data enforcement, consent/residency routing, non-repudiation surfaces, cost-cap-as-DoS-guard, **approver/observer participants** (Party-scoped grants outside the aggregate — FR-17) | raw-act event model (FR-7); idempotency (§10); AuthorityLevel (FR-19); the platform identity-provenance baseline (§9) |
 
 **One ladder, run both ways.** Theme 4's start-cheap-escalate routing (cheapest capable → premium → human → external) and Theme 5's budget-degrade (full LLM → plain links → static templates → human) are the *same* escalation ladder traversed in opposite directions — one driven by capability/confidence, the other by spend. They should share one policy mechanism, not two.
 
 **Designed-for tensions to revisit at theme time** (from the brainstorm): status-driven re-inference (Theme 3) vs. cost-aware debounce (Theme 5); authored vs. AI-inferred Expectation contract representation (Theme 3); and Theme 5's cost-aware scheduling reaching into the kernel-owned schedule/priority — a boundary call to make so the thin core does not absorb a cost engine (guard with SM-C1/SM-C2).
 
-## 13. Open Questions
+## 13. Open Questions — Resolved by Architecture
 
-*The draft's eight Open Questions (unestimated completion, Expectation representation, AuthorityLevel set, reject/expiry semantics, tree-depth guard, roll-up consistency, heterogeneous-unit roll-up, routing-decision placeholder) were **resolved on 2026-06-14** by user acceptance and now appear as confirmed assumptions in §14 and as FR consequences. The items below are deliberately left to the **architecture / solution-design phase** — they are mechanism decisions, not product-requirement gaps.*
+*The draft's eight Open Questions (unestimated completion, Expectation representation, AuthorityLevel set, reject/expiry semantics, tree-depth guard, roll-up consistency, heterogeneous-unit roll-up, routing-decision placeholder) were **resolved on 2026-06-14** by user acceptance and appear as confirmed assumptions in §14 and as FR consequences. The six mechanism questions this section then deferred to the architecture phase have all been **bound by the Architecture Decision Register** (`../../architecture.md`, AD register added 2026-09-06); the table records where, and the residual openness the register itself keeps. Where a deferred item turned out to carry product semantics, the PRD now states them and the table points to the FR. (Converted 2026-09-08.)*
 
-1. **Aggregate identity derivation** — how the `aggregateId` portion of `{tenant}:{domain}:{aggregateId}` is generated (Commons ID helper) and whether it is caller- or system-assigned.
-2. **Priority representation** — the concrete Priority type and ordering (enum vs. numeric band) backing FR-4/FR-20.
-3. **Optimistic-concurrency mechanism** — the exact ETag/version strategy realizing the §9 concurrency requirement and the single-claim-wins rule (FR-18).
-4. **Timer/scheduler adapter** — the component that raises date/timer resume commands (FR-15) and its delivery guarantees.
-5. **Projection rebuild operations** — operational story for replaying/rebuilding the Roll-Up and "what's next" projections (§9).
-6. **Validation domains** — bounds/validation for `ProgressReported` deltas, Unit immutability after first use, and Due-Date/TTL configuration source.
+| # | Deferred question | Resolved by | Product-level answer | Residual openness |
+|---|---|---|---|---|
+| 1 | Aggregate identity derivation | **AD-02** | The `WorkItemId` is assigned at the command-creation edge with the `Hexalith.Commons` helper and carried on the create command; `Handle` never generates IDs. Edge assignment is not a transport idempotency contract (§10 layer 3). | Transport idempotency — **VAL-H10**, bound at the internal submission seam *before* the registry story is drafted. |
+| 2 | Priority representation | **AD-03** | Priority is a small ordered enum (`Critical / High / Normal / Low`), additive-tolerant; FR-20 orders by Priority → Due Date → deterministic `WorkItemId` order (2026-09-06 correct-course). | None. |
+| 3 | Optimistic-concurrency mechanism | **AD-08** | Same-item commands are serialized by the substrate's single-writer actor; the claim-race loser sees an ordinary domain rejection against freshly committed state; the store-level conflict path is a bounded substrate retry whose exhaustion is an *infrastructure* failure, never a silent loss (FR-18, §9). No Works command carries a version. | None. |
+| 4 | Timer/scheduler adapter | **AD-11**, **AD-25** | Durable, self-targeted actor reminders fire `Resume` (date) and `Expire` (Due Date / TTL) commands; missed firings are reconciled by an indexed recovery pass; owners named in §6.1. | End-to-end reminder durability (scheduler HA/backup, callback failure policy) — **VAL-H07**, platform lane R6. |
+| 5 | Projection rebuild operations | **AD-16** | Rebuild is reader-safe and atomically visible at commit: readers stay on the prior generation until promotion; relationship-aware projections (Roll-Up) rebuild over a sealed tenant inventory. | The capture-through-commit fence protocol — **VAL-H08**, EventStore SDK + platform lane R4. |
+| 6 | Validation domains | **AD-17**, **AD-04** | Product semantics now in the PRD: progress delta strictly > 0 (FR-8); Estimated ≥ 0 and Remaining clamped ≥ 0 (FR-3); Unit immutable after first set (FR-3). Due-Date/TTL policy values are `Hexalith.Platform` host configuration consumed by the reminder adapter; the kernel never reads configuration (FR-10). | None in the PRD. *Downstream correction owed:* epics AR-6 states "delta ≥ 0" and must be aligned to "> 0" (handoff). |
+
+*Two register items touch PRD NFRs without closing them: the governed cross-tenant exception for global recovery registries (**VAL-H09**) is an open exception to §9 tenant isolation and will be reflected there when it closes; the privacy lifecycle for immutable event data (**VAL-H12**) is required before production data is admitted.*
 
 ## 14. Assumptions Index
 
-*Every `[ASSUMPTION]` in the document. All confirmed by the user on 2026-06-14 (accepted as drafted); they remain tagged so the architecture phase can challenge any that prove unworkable.*
+*Every `[ASSUMPTION]` in the document. The June entries were confirmed by the user on 2026-06-14 (accepted as drafted); entries marked **superseded** or **narrowed** were challenged by the architecture phase, as the index invited, and now record what replaced them; entries dated 2026-09-08 were added by this update. Tags stay in place so later phases can challenge any that prove unworkable.*
 
-- §4.1 FR-1 / FR-8 — An unestimated Work Item completes only by an explicit complete act, not by the Remaining=0 rule.
-- §4.1 FR-2 — The Expectation is referenced/resolved on demand, not stored as an interpreted value on the aggregate.
-- §4.1 FR-3 / §4.3 FR-12 — No implicit cross-Unit arithmetic; per-Unit subtotals exposed for mixed subtrees; no Unit conversion in v1.
-- §4.1 FR-5 — A Suspended Work Item may hold multiple Await-Conditions and resumes on the first match.
-- §4.1 FR-5 / §4.3 FR-13 — Single-parent, acyclic, **single-tenant** Work Tree enforced at spawn time; default max depth 32 (configurable); breadth uncapped.
-- §4.2 FR-7 — The v1 event catalog closes the brainstorm's open-ended list; names follow ecosystem past-tense convention.
-- §4.2 FR-10 — Reject defaults to requeue (`Queued`); Expire is Due-Date/TTL-driven and terminal; Cancel/Expire **cascade** to active descendants.
-- §4.3 FR-11 — Roll-Up is an eventually-consistent, idempotent projection on the substrate's projection infrastructure.
-- §4.4 FR-15 — Resume is a command keyed to an Await-Condition and is idempotent (duplicate trigger = no-op).
-- §4.5 FR-18 — Claim "eligibility" filtering is deferred to Theme 4; in v1 any tenant Executor may claim a `Queued` item (single claim wins).
-- §4.5 FR-19 — Proposed ordered AuthorityLevel set `{ Read, Contribute, Coordinate, Administer }`; carried-not-enforced in v1; additive-tolerant.
-- §4.6 FR-21 — v1 references a Conversation by correlation ID; it does not implement comment storage.
-- §9 NFRs — Numeric performance budgets deferred to a later iteration.
-- §10 — v1 idempotency relies on resume-against-state + substrate offset dedup; explicit per-act idempotency tokens deferred.
+- §4.1 FR-1 / FR-8 — An unestimated Work Item completes only by an explicit complete act, not by the Remaining=0 rule. *(Confirmed 2026-06-14.)*
+- §4.1 FR-2 — The Expectation is referenced/resolved on demand, not stored as an interpreted value on the aggregate. *(Confirmed 2026-06-14.)*
+- §4.1 FR-3 / §4.3 FR-12 — No implicit cross-Unit arithmetic; per-Unit subtotals exposed for mixed subtrees; no Unit conversion in v1. *(Confirmed 2026-06-14.)*
+- §4.1 FR-5 — A Suspended Work Item may hold multiple Await-Conditions and resumes on the first match. *(Confirmed 2026-06-14.)*
+- §4.1 FR-5 / §4.3 FR-13 — Single-parent, acyclic, **single-tenant** Work Tree; default max depth 32 (configurable); breadth uncapped. **Superseded in part 2026-09-08 by AD-21:** enforcement moved from "at spawn time, by the Work Item" to "at edge reservation, by the Work-Tree Registry"; the Work Item re-asserts. The shape rules themselves stand.
+- §4.2 FR-7 — The v1 `WorkItem` success-event catalog closes the brainstorm's open-ended list at fifteen events; names follow ecosystem past-tense convention. **Narrowed 2026-09-08 by AD-21:** the catalog is closed for the `WorkItem` aggregate's success events only; registry events and the dedicated spawn-rejection event join additively, and "names final for v1" no longer applies.
+- §4.2 FR-10 — Reject defaults to requeue (`Queued`); Expire is Due-Date/TTL-driven and terminal; Cancel/Expire **cascade** to active descendants. *(Confirmed 2026-06-14; trigger and cascade owner named 2026-09-08 — AD-25, FR-26.)*
+- §4.3 FR-11 — Roll-Up is an eventually-consistent, idempotent projection on the substrate's projection infrastructure. *(Confirmed 2026-06-14.)*
+- §4.4 FR-15 — Resume is a command keyed to an Await-Condition and is idempotent. **Narrowed 2026-09-08:** only a repeat of the *consumed* Await-Condition is a no-op; a non-matching resume is a domain rejection.
+- §4.4 FR-26 — *(2026-09-08)* A bounded post-termination window on descendants — during which they still accept progress until the eventual cascade lands — is accepted in exchange for a pure, single-aggregate `Handle`.
+- §4.5 FR-18 — Claim "eligibility" filtering is deferred to Theme 4; in v1 any tenant Executor may claim a `Queued` item (single claim wins). *(Confirmed 2026-06-14.)*
+- §4.5 FR-19 — Proposed ordered AuthorityLevel set `{ Read, Contribute, Coordinate, Administer }`; carried-not-enforced in v1; additive-tolerant. *(Confirmed 2026-06-14.)*
+- §4.6 FR-21 — v1 references a Conversation by correlation ID; it does not implement comment storage. *(Confirmed 2026-06-14; link semantics amended 2026-09-05.)*
+- §9 NFRs — Numeric performance budgets deferred to a later iteration. *(Confirmed 2026-06-14.)*
+- §10 — v1 idempotency: duplicate-command idempotency is the aggregate's job, read-side idempotency the projection's, and a **transport idempotency key is v1 work** (VAL-H10); only the per-*act* signed token remains Theme 6. **Narrowed 2026-09-08** — was "no explicit per-act token in v1; resume-against-state + substrate offset dedup".
