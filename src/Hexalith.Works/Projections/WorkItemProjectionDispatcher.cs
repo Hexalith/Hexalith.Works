@@ -108,16 +108,10 @@ public sealed class WorkItemProjectionDispatcher
             throw new InvalidOperationException("Projection request domain is not the Works domain.");
         }
 
-        if (WorksReadModelKeys.IsReservedTenantId(request.TenantId))
-        {
-            // /project is one of the two places a tenant id enters this host. Fail closed here rather than
-            // letting the reserved id reach the read-model keys, where its pending-date-await index key would
-            // be byte-identical to the well-known pending-date-await tenant registry key and would silently
-            // disable date-reminder recovery for every tenant.
-            throw new InvalidOperationException(
-                $"Tenant id '{WorksReadModelKeys.ReservedTenantId}' is reserved by the Works host: its "
-                + "pending-date-await index key collides with the well-known pending-date-await tenant registry key.");
-        }
+        // /project is one of the host ingresses a tenant id enters. Fail closed here rather than letting
+        // the reserved id reach the read-model keys, where its pending-date-await index key would be
+        // byte-identical to the well-known pending-date-await tenant registry key.
+        WorksReadModelKeys.ThrowIfReservedTenantId(request.TenantId);
 
         var tenant = new TenantId(request.TenantId);
         var workItemId = new WorkItemId(request.AggregateId);
@@ -546,7 +540,7 @@ public sealed class WorkItemProjectionDispatcher
 
         ReadModelWriteContext context = new ReadModelWriteContext(
             Category: "works pending-date-await index",
-            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            ProjectionType: WorksReadModelKeys.PendingDateAwaitIndexProjectionType)
             .WithEventDiagnostics(events ?? []);
 
         _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantIndex>(
@@ -601,19 +595,33 @@ public sealed class WorkItemProjectionDispatcher
         CancellationToken cancellationToken)
     {
         int maxFailures = _options.MaxUndecodableEventDispatchesBeforeParking;
+        string parkingKey = WorksReadModelKeys.ProjectionParkingKey(tenant.Value, aggregateId);
+        ReadModelEntry<WorkItemProjectionParking> existing = await _store
+            .GetAsync<WorkItemProjectionParking>(WorksReadModelKeys.StateStoreName, parkingKey, cancellationToken)
+            .ConfigureAwait(false);
+        if (existing.Value is { Parked: true } alreadyParked)
+        {
+            // Later poller passes must not increment or rewrite the parking document: first-park stays
+            // EventId 4502; every subsequent acknowledgement is the 4503 skip.
+            s_projectionParkedDispatchSkipped(_logger, aggregateId, tenant.Value, alreadyParked.FailedSequence, null);
+            return true;
+        }
+
         ReadModelWriteContext context = new ReadModelWriteContext(
             Category: "works projection parking",
-            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            ProjectionType: WorksReadModelKeys.ProjectionParkingProjectionType)
             .WithEventDiagnostics(events ?? []);
 
+        bool racedWithExistingPark = false;
         WorkItemProjectionParking parking = await ReadModelWritePolicy.UpdateAsync<WorkItemProjectionParking>(
             _store,
             WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.ProjectionParkingKey(tenant.Value, aggregateId),
+            parkingKey,
             current =>
             {
-                if (current is not null && current.FailedSequence == sequenceNumber && current.Parked)
+                if (current is { Parked: true })
                 {
+                    racedWithExistingPark = true;
                     return current;
                 }
 
@@ -637,15 +645,13 @@ public sealed class WorkItemProjectionDispatcher
             return false;
         }
 
-        if (parking.FailureCount == maxFailures)
+        if (racedWithExistingPark)
         {
-            s_projectionAggregateParked(_logger, aggregateId, tenant.Value, sequenceNumber, parking.FailureCount, null);
-        }
-        else
-        {
-            s_projectionParkedDispatchSkipped(_logger, aggregateId, tenant.Value, sequenceNumber, null);
+            s_projectionParkedDispatchSkipped(_logger, aggregateId, tenant.Value, parking.FailedSequence, null);
+            return true;
         }
 
+        s_projectionAggregateParked(_logger, aggregateId, tenant.Value, sequenceNumber, parking.FailureCount, null);
         return true;
     }
 
@@ -679,7 +685,7 @@ public sealed class WorkItemProjectionDispatcher
 
         ReadModelWriteContext context = new ReadModelWriteContext(
             Category: "works pending-date-await tenant registry",
-            ProjectionType: WorksReadModelKeys.WhatsNextProjectionType)
+            ProjectionType: WorksReadModelKeys.PendingDateAwaitRegistryProjectionType)
             .WithEventDiagnostics(events ?? []);
 
         _ = await ReadModelWritePolicy.UpdateAsync<PendingDateAwaitTenantRegistry>(
@@ -688,9 +694,13 @@ public sealed class WorkItemProjectionDispatcher
             WorksReadModelKeys.PendingDateAwaitRegistryKey,
             existing =>
             {
-                PendingDateAwaitTenantRegistry registry = existing ?? new PendingDateAwaitTenantRegistry();
-                _ = registry.Tenants.Add(tenantId);
-                return registry;
+                // Copy-on-write: ReadModelWritePolicy can rerun this transform on every ETag retry, and an
+                // in-place Add on the store's HashSet would leak this attempt into the next retry's baseline.
+                var tenants = existing is null
+                    ? new HashSet<string>(StringComparer.Ordinal)
+                    : new HashSet<string>(existing.Tenants, StringComparer.Ordinal);
+                _ = tenants.Add(tenantId);
+                return new PendingDateAwaitTenantRegistry { Tenants = tenants };
             },
             context,
             _logger,

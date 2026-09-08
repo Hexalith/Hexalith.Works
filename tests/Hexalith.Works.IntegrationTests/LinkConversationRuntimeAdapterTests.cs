@@ -9,6 +9,7 @@ using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
 using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections;
 
 using Shouldly;
 
@@ -127,6 +128,33 @@ public sealed class LinkConversationRuntimeAdapterTests
 
         exception.InnerException.ShouldBeOfType<ArgumentNullException>();
     }
+
+    [Fact]
+    public async Task ProcessAsync_refuses_reserved_tenant_create_before_persist()
+    {
+        var aggregate = new WorkItemEventStoreAggregate();
+        var command = new CreateWorkItem(new TenantId(WorksReadModelKeys.ReservedTenantId), Item, "Must not persist");
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(CommandForCreate(command), currentState: null));
+
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain(WorksReadModelKeys.ReservedTenantId, Case.Sensitive);
+        exception.InnerException.Message.ShouldContain("registry", Case.Sensitive);
+    }
+
+    private static CommandEnvelope CommandForCreate(CreateWorkItem command)
+        => new(
+            MessageId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            TenantId: command.TenantId.Value,
+            Domain: Domain,
+            AggregateId: command.WorkItemId.Value,
+            CommandType: typeof(CreateWorkItem).FullName!,
+            Payload: JsonSerializer.SerializeToUtf8Bytes(command),
+            CorrelationId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            CausationId: null,
+            UserId: "test-user",
+            Extensions: null);
 
     private static CommandEnvelope CommandFor(LinkConversation command)
         => new(

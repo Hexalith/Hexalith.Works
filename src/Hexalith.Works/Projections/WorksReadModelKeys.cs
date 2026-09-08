@@ -22,6 +22,15 @@ internal static class WorksReadModelKeys
     /// <summary>The stable projection token for the per-work-item consumer read model.</summary>
     public const string WorkItemViewProjectionType = "works-work-item-view";
 
+    /// <summary>The stable projection token for the pending-date-await tenant index.</summary>
+    public const string PendingDateAwaitIndexProjectionType = "works-pending-date-await-index";
+
+    /// <summary>The stable projection token for the pending-date-await tenant registry.</summary>
+    public const string PendingDateAwaitRegistryProjectionType = "works-pending-date-await-registry";
+
+    /// <summary>The stable projection token for the per-aggregate projection-parking record.</summary>
+    public const string ProjectionParkingProjectionType = "works-projection-parking";
+
     /// <summary>Builds the historical unversioned singleton tenant index key.</summary>
     public static string WhatsNextIndexKey(string tenantId)
         => $"projection:works:whats-next:{tenantId}";
@@ -58,6 +67,24 @@ internal static class WorksReadModelKeys
     /// <summary>Returns whether the tenant id collides with the well-known pending-date-await registry key.</summary>
     public static bool IsReservedTenantId(string? tenantId)
         => string.Equals(tenantId, ReservedTenantId, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Refuses <see cref="ReservedTenantId"/> at a host ingress so its pending-date-await index key cannot
+    /// overwrite the well-known tenant registry.
+    /// </summary>
+    /// <param name="tenantId">The tenant id being admitted.</param>
+    /// <exception cref="InvalidOperationException">The tenant id is <see cref="ReservedTenantId"/>.</exception>
+    public static void ThrowIfReservedTenantId(string? tenantId)
+    {
+        if (!IsReservedTenantId(tenantId))
+        {
+            return;
+        }
+
+        throw new InvalidOperationException(
+            $"Tenant id '{ReservedTenantId}' is reserved by the Works host: its "
+            + "pending-date-await index key collides with the well-known pending-date-await tenant registry key.");
+    }
 
     /// <summary>Builds the singleton-per-tenant pending-date-await index key.</summary>
     /// <exception cref="InvalidOperationException">The tenant id is <see cref="ReservedTenantId"/>.</exception>

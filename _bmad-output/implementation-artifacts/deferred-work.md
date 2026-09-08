@@ -874,3 +874,7 @@ status: open
 - Index durability window + one-shot empty-registry success + retired tenant-wide scan (`src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:41-51`, `ReminderReconciliationService.cs:37-61`). Re-observed; already recorded 2026-09-07 (blind window / no backfill, and the ~5 s give-up).
 - Equal-sequence `PersistRollUpAsync` can overwrite a concurrently merged child set (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:452-454`). Roll-up child-reconciliation / F-PROJ-1 is out of Story 4.8 scope (DW-84 / shared-rebuild).
 - `UseCurrentSchemaAsync` is read once per dispatch and reused across later awaits (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:200`). Documented generation-switch race in the dispatcher rework; not Story 4.8 reminder/index behavior.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-3.md`
+  summary: Mixed-case reserved tenant `TENANTS` misses the `/project` Ordinal guard, then `TenantId` lowercases to `tenants`.
+  evidence: Pre-existing order: `ThrowIfReservedTenantId(request.TenantId)` then `new TenantId(...)`. EventStore already lowercases persisted stream identity, so the poller does not send `TENANTS`; a hand-crafted `/project` body could. Not introduced by Group 1.

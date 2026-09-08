@@ -4,6 +4,8 @@ using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.State;
+using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Runtime;
 
 using KernelAggregate = Hexalith.Works.Server.Aggregates.WorkItemAggregate;
@@ -28,53 +30,88 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
 {
     /// <summary>Delegates <see cref="CreateWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(CreateWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="SpawnChild"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(SpawnChild command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="AssignWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(AssignWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="QueueWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(QueueWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="ClaimWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(ClaimWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="SuspendWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(SuspendWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="ResumeWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(ResumeWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="CompleteWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(CompleteWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="ReportProgress"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(ReportProgress command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="ReEstimate"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(ReEstimate command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="RescheduleWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(RescheduleWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Validates the addressed stream and delegates <see cref="LinkConversation"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(LinkConversation command, WorkItemState? state, CommandEnvelope envelope)
     {
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(envelope);
+        RefuseReservedTenant(command, static value => value.TenantId);
+        WorksReadModelKeys.ThrowIfReservedTenantId(envelope.TenantId);
         if (!string.Equals(envelope.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
             || !string.Equals(envelope.TenantId, command.TenantId?.Value, StringComparison.Ordinal)
             || !string.Equals(envelope.AggregateId, command.WorkItemId?.Value, StringComparison.Ordinal))
@@ -87,13 +124,33 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
 
     /// <summary>Delegates <see cref="CancelWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(CancelWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="RejectWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(RejectWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
 
     /// <summary>Delegates <see cref="ExpireWorkItem"/> to the pure kernel handler.</summary>
     public static DomainResult Handle(ExpireWorkItem command, WorkItemState? state)
-        => KernelAggregate.Handle(command, state);
+    {
+        RefuseReservedTenant(command, static value => value.TenantId);
+        return KernelAggregate.Handle(command, state);
+    }
+
+    /// <summary>
+    /// Refuses reserved tenant <c>tenants</c> at the <c>/process</c> adapter edge so that id cannot persist
+    /// a stream the projection poller can never park or index.
+    /// </summary>
+    private static void RefuseReservedTenant<TCommand>(TCommand command, Func<TCommand, TenantId?> tenantId)
+        where TCommand : class
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        WorksReadModelKeys.ThrowIfReservedTenantId(tenantId(command)?.Value);
+    }
 }

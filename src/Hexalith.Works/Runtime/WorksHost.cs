@@ -120,7 +120,7 @@ internal static class WorksHost
                 store,
                 services.GetService<IProjectionChangeNotifier>(),
                 loggerFactory.CreateLogger<WorkItemProjectionDispatcher>(),
-                services.GetService<IOptions<WorksProjectionOptions>>()?.Value);
+                services.GetRequiredService<IOptions<WorksProjectionOptions>>().Value);
             return Results.Ok(await dispatcher.DispatchAsync(request, cancellationToken).ConfigureAwait(false));
         });
 

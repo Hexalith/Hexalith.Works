@@ -3,6 +3,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
 
@@ -541,6 +542,37 @@ public class WorksDomainEventProcessorTests
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
         await markerStore.DidNotReceiveWithAnyArgs().TryAcquireAsync(default!, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>
+    /// Reserved tenant <c>tenants</c> is refused before marker acquisition so deleting the branch fails this
+    /// fact — the subscription must never admit the registry-colliding id into a handler or reminder.
+    /// </summary>
+    [Fact]
+    public async Task Works_processor_rejects_reserved_tenant_before_marker_acquisition()
+    {
+        IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
+        IEventStoreDomainEventHandler<WorkItemSuspended> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemSuspended>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        EventStoreDomainEventEnvelope reserved = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBE") with
+        {
+            TenantId = WorksReadModelKeys.ReservedTenantId,
+        };
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            reserved,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        await markerStore.DidNotReceiveWithAnyArgs().TryAcquireAsync(default!, Arg.Any<CancellationToken>());
+        await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
     }
 
     /// <summary>Invalid metadata after acquisition releases the marker so a corrected delivery can run.</summary>

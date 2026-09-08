@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -480,6 +480,18 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### File List
 
+**2026-09-08 Group 1 host-edge patches**
+- `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs` (already-parked 4503 no-write; registry copy-on-write; distinct ProjectionType tokens)
+- `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs` (identity mismatch → Malformed; catch `NotSupportedException`; skip EventId 4504)
+- `src/Hexalith.Works/Projections/WorksReadModelKeys.cs` (index/registry/parking projection tokens; `ThrowIfReservedTenantId`)
+- `src/Hexalith.Works/WorkItemEventStoreAggregate.cs` (reserved tenant on every `Handle` + LinkConversation envelope)
+- `src/Hexalith.Works/Runtime/WorksHost.cs` (`/project` uses required `IOptions<WorksProjectionOptions>`)
+- `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs` (4503 skip; identity/`NotSupportedException` park; registry mutate)
+- `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs` (reserved tenant before marker)
+- `tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs` (reserved-tenant `CreateWorkItem`)
+- `tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs` (indexed source; projection bind/validate; bound Max=1 `/project`)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (`4-8-…` → `review`)
+
 **2026-09-08 close-out (bookkeeping only)**
 - `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md` (status `review`; catalog prose 40 / 4.8 delta 0)
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` (`4-8-…` → `review`; `last_updated` 2026-09-08)
@@ -735,15 +747,15 @@ _Production reminder / index / recovery only (`ff329cc...HEAD` over `Reminders/`
 
 - [x] [Review][Decision] A parked date-await candidate keeps every startup reconciliation incomplete — **Decided 2026-09-08 (human): skip parked keys in the scan.** Do not count them incomplete, do not tombstone the index, do not change the stream reader. — **Implemented 2026-09-08:** `ScanTenantAsync` reads `WorkItemProjectionParking` before `RebuildAsync`; a `Parked` candidate is skipped (no stream read, no `failedCandidateCount`) and logged as `PendingDateAwaitParkedCandidateSkipped`. A not-yet-parked parking document still rebuilds and can mark the scan incomplete. Proven by `IndexedPendingDateAwaitSourceTests.Skips_a_parked_candidate_without_reading_its_stream_or_marking_the_scan_incomplete` and `.Still_fails_a_candidate_that_has_parking_history_but_is_not_yet_parked`.
 
-- [ ] [Review][Patch] **MEDIUM** — `ProjectionParkedDispatchSkipped` (EventId 4503) is unreachable: once `Parked` is true the transform returns the document unchanged, so `FailureCount` stays equal to `maxFailures` and every later poller pass logs `ProjectionAggregateParked` at Error instead of the skip Warning [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:615-647]
-- [ ] [Review][Patch] **MEDIUM** — payload identity mismatch throws out of `WorkItemProjectionEventDecoder.Decode` (and `NotSupportedException` is not caught there, unlike `WorksEventDecoder`); `ParkOrRetryAsync` never runs, so a permanently wrong-identity or STJ-unsupported state-affecting event 500s `/project` forever [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:65-76]
-- [ ] [Review][Patch] **MEDIUM** — reserved tenant id `tenants` is refused on `/project` and `/work/events` only; `WorkItemEventStoreAggregate` still accepts `/process` for that id, after which every poller dispatch throws before parking and the item never gets reminders or projections [src/Hexalith.Works/WorkItemEventStoreAggregate.cs:29-31]
-- [ ] [Review][Patch] **MEDIUM** — `EnsureTenantRegisteredAsync` mutates `existing.Tenants` in place inside `ReadModelWritePolicy.UpdateAsync`, contrary to the copy-on-write rule the sibling pending-date index transform just adopted; an ETag retry can see a HashSet already changed by the failed attempt [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:689-693]
-- [ ] [Review][Patch] **MEDIUM** — nothing asserts `WorksDomainEventProcessor` refuses `TenantId = "tenants"` before marker acquisition; deleting the branch leaves every processor test green [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:52-60]
-- [ ] [Review][Patch] **MEDIUM** — the built host never asserts `IPendingDateAwaitSource` is `IndexedPendingDateAwaitSource`; a no-op registration disables AC #2/#3 while deterministic source/reconciler tests stay green [src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs:72]
-- [ ] [Review][Patch] **MEDIUM** — `Works:Projection` is bound and `ValidateOnStart`'d on the host, but no test binds an invalid budget or proves `/project` uses the bound value rather than `new WorksProjectionOptions()` defaults [src/Hexalith.Works/Runtime/WorksHost.cs:92-123]
-- [ ] [Review][Patch] `WorkItemProjectionDispatcher` assigns EventId 4501 to `ProjectionDecodeFailed` after removing its local `SkippedEvent` logger, but `WorkItemProjectionEventDecoder.SkippedEvent` still uses EventId 4501, so skip and parking-retry telemetry collapse onto one id [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:48]
-- [ ] [Review][Patch] Pending-date index, tenant-registry, and parking writes all set `ReadModelWriteContext.ProjectionType` to `WhatsNextProjectionType`, so conflict/exhaustion logs cannot be attributed to the document that actually failed [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:547-549]
+- [x] [Review][Patch] **MEDIUM** — `ProjectionParkedDispatchSkipped` (EventId 4503) is unreachable: once `Parked` is true the transform returns the document unchanged, so `FailureCount` stays equal to `maxFailures` and every later poller pass logs `ProjectionAggregateParked` at Error instead of the skip Warning [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:615-647] — resolved 2026-09-08: already-parked documents are detected before increment/write, acknowledged with EventId 4503, and leave `FailureCount` unchanged.
+- [x] [Review][Patch] **MEDIUM** — payload identity mismatch throws out of `WorkItemProjectionEventDecoder.Decode` (and `NotSupportedException` is not caught there, unlike `WorksEventDecoder`); `ParkOrRetryAsync` never runs, so a permanently wrong-identity or STJ-unsupported state-affecting event 500s `/project` forever [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:65-76] — resolved 2026-09-08: identity mismatch returns `Malformed`; `NotSupportedException` is caught like `WorksEventDecoder`; parking starts.
+- [x] [Review][Patch] **MEDIUM** — reserved tenant id `tenants` is refused on `/project` and `/work/events` only; `WorkItemEventStoreAggregate` still accepts `/process` for that id, after which every poller dispatch throws before parking and the item never gets reminders or projections [src/Hexalith.Works/WorkItemEventStoreAggregate.cs:29-31] — resolved 2026-09-08: every adapter `Handle` (and the `LinkConversation` envelope) refuses reserved tenant `tenants` before persist.
+- [x] [Review][Patch] **MEDIUM** — `EnsureTenantRegisteredAsync` mutates `existing.Tenants` in place inside `ReadModelWritePolicy.UpdateAsync`, contrary to the copy-on-write rule the sibling pending-date index transform just adopted; an ETag retry can see a HashSet already changed by the failed attempt [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:689-693] — resolved 2026-09-08: registry transform builds a replacement `HashSet`.
+- [x] [Review][Patch] **MEDIUM** — nothing asserts `WorksDomainEventProcessor` refuses `TenantId = "tenants"` before marker acquisition; deleting the branch leaves every processor test green [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:52-60] — resolved 2026-09-08: `Works_processor_rejects_reserved_tenant_before_marker_acquisition`.
+- [x] [Review][Patch] **MEDIUM** — the built host never asserts `IPendingDateAwaitSource` is `IndexedPendingDateAwaitSource`; a no-op registration disables AC #2/#3 while deterministic source/reconciler tests stay green [src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs:72] — resolved 2026-09-08: built host resolves `IndexedPendingDateAwaitSource`.
+- [x] [Review][Patch] **MEDIUM** — `Works:Projection` is bound and `ValidateOnStart`'d on the host, but no test binds an invalid budget or proves `/project` uses the bound value rather than `new WorksProjectionOptions()` defaults [src/Hexalith.Works/Runtime/WorksHost.cs:92-123] — resolved 2026-09-08: invalid Max fails ValidateOnStart; `/project` uses `IOptions` and a bound Max=1 parks on the first undecodable dispatch.
+- [x] [Review][Patch] `WorkItemProjectionDispatcher` assigns EventId 4501 to `ProjectionDecodeFailed` after removing its local `SkippedEvent` logger, but `WorkItemProjectionEventDecoder.SkippedEvent` still uses EventId 4501, so skip and parking-retry telemetry collapse onto one id [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:48] — resolved 2026-09-08: decoder skip is EventId 4504.
+- [x] [Review][Patch] Pending-date index, tenant-registry, and parking writes all set `ReadModelWriteContext.ProjectionType` to `WhatsNextProjectionType`, so conflict/exhaustion logs cannot be attributed to the document that actually failed [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:547-549] — resolved 2026-09-08: distinct `WorksReadModelKeys` tokens for index, registry, and parking.
 
 - [x] [Review][Defer] No unpark, delete, or operator replay path for `projection:works:parked:{tenant}:{id}` — a later-fixed decoder still leaves the parking document in place [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:596-650] — deferred: parking's intended terminal disposition is the Error log plus "needs operator action"; an unpark/replay tool is a new ops feature, not an in-band 4.8 fix.
 - [x] [Review][Defer] Shared rebuild never emits operations for `PendingDateAwaitIndexKey`, `PendingDateAwaitRegistryKey`, or parking keys [src/Hexalith.Works/Projections/SharedRebuild/] — deferred: already recorded 2026-09-07 against `spec-shared-rollup-reconciliation.md`; this Group 1 pass re-observed the same gap.

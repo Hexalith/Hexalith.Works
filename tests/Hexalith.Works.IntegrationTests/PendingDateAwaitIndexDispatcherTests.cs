@@ -10,6 +10,7 @@ using Hexalith.Works.Projections;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Shouldly;
@@ -343,6 +344,122 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     }
 
     [Fact]
+    public async Task An_already_parked_aggregate_is_acknowledged_with_event_4503_and_no_write()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 1 };
+        var logger = new CapturingLogger();
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger, options);
+        var request = new ProjectionRequest(
+            TenantA,
+            "work",
+            WorkId,
+            [new ProjectionEventDto(nameof(WorkItemSuspended), "{"u8.ToArray(), "json", 7, default, "corr-1")]);
+
+        _ = await dispatcher.DispatchAsync(request, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ResetSuccessfulWriteObservation();
+        logger.Entries.Clear();
+
+        _ = await dispatcher.DispatchAsync(request, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        logger.Entries.ShouldContain(entry => entry.Id == 4503 && entry.Level == LogLevel.Warning);
+        logger.Entries.ShouldNotContain(entry => entry.Id == 4502);
+        store.GetSuccessfulWriteCount(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId)).ShouldBe(0);
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
+        parking.Value.FailureCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task A_foreign_identity_state_affecting_event_parks_instead_of_throwing_before_parking()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 1 };
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+        WorkItemSuspended foreign = SuspendedOnDate(TenantB, "work-other", 1, s_future);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(TenantA, "work", WorkId, [Dto(foreign, 1)]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
+        parking.Value.FailureCount.ShouldBe(1);
+        (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task A_not_supported_decode_failure_is_malformed_and_parks()
+    {
+        // Web STJ turns WorkItemSuspended poison bytes into JsonException/ArgumentException, not
+        // NotSupportedException. The filter is what keeps an STJ-unsupported payload on the park path
+        // instead of escaping Decode; deleting NotSupportedException from it fails this fact.
+        WorkItemProjectionEventDecoder.IsHandledDecodeFailure(new NotSupportedException("stj-unsupported"))
+            .ShouldBeTrue();
+        WorkItemProjectionEventDecoder.IsHandledDecodeFailure(new InvalidOperationException("unclassified"))
+            .ShouldBeFalse();
+
+        var store = new Story47InMemoryReadModelStore();
+        var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 1 };
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(
+                TenantA,
+                "work",
+                WorkId,
+                [new ProjectionEventDto(nameof(WorkItemSuspended), "{"u8.ToArray(), "json", 4, default, "corr-1")]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
+        parking.Value.FailureCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Registry_etag_retry_keeps_both_tenants_without_mutating_the_store_instance()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var seeded = new PendingDateAwaitTenantRegistry();
+        _ = seeded.Tenants.Add(TenantA);
+        HashSet<string> originalTenants = seeded.Tenants;
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            seeded,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.RejectNextTrySaves(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            1);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        _ = await dispatcher.DispatchAsync(
+            Request(TenantB, "work-b", Created(TenantB, "work-b", 1), SuspendedOnDate(TenantB, "work-b", 2, s_future)),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        originalTenants.ShouldBe([TenantA]);
+        (await ReadRegistryAsync(store).ConfigureAwait(true)).Tenants.ShouldBe([TenantA, TenantB], ignoreOrder: true);
+    }
+
+    [Fact]
     public async Task Concurrent_tenants_are_both_retained_in_the_registry_after_an_etag_conflict()
     {
         var store = new Story47InMemoryReadModelStore();
@@ -419,6 +536,25 @@ public sealed class PendingDateAwaitIndexDispatcherTests
 
     private static WorkItemProjectionDispatcher NewDispatcher(IReadModelStore store)
         => new(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance);
+
+    private sealed class CapturingLogger : ILogger<WorkItemProjectionDispatcher>
+    {
+        public List<(int Id, LogLevel Level)> Entries { get; } = [];
+
+        public IDisposable? BeginScope<TState>(TState state)
+            where TState : notnull
+            => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(
+            LogLevel logLevel,
+            EventId eventId,
+            TState state,
+            Exception? exception,
+            Func<TState, Exception?, string> formatter)
+            => Entries.Add((eventId.Id, logLevel));
+    }
 
     private static WorkItemCreated Created(string tenant, string workId, long sequence)
         => new(workId, sequence, new TenantId(tenant), new WorkItemId(workId), new Obligation("Do the thing"));

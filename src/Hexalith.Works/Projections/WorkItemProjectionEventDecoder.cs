@@ -64,17 +64,29 @@ internal static partial class WorkItemProjectionEventDecoder
 
             if (!WorksEventIdentity.Matches(payload, tenantId.Value, workItemId.Value))
             {
-                throw new InvalidOperationException("Projection event payload is outside the requested stream identity.");
+                // A foreign identity is malformed evidence, not an unknown type: return Malformed so
+                // /project can park after the bounded budget instead of throwing before ParkOrRetryAsync
+                // and 500ing the poller forever.
+                return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
             return new WorkItemProjectionEventDecodeResult(payload, true, false);
         }
-        catch (Exception exception) when (exception is JsonException or ArgumentException)
+        catch (Exception exception) when (IsHandledDecodeFailure(exception))
         {
             LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
             return new WorkItemProjectionEventDecodeResult(null, true, true);
         }
     }
+
+    /// <summary>
+    /// Returns whether a serializer failure is malformed evidence rather than an unclassified escape.
+    /// Mirrors <see cref="WorksEventDecoder"/> so <see cref="NotSupportedException"/> parks instead of
+    /// 500ing <c>/project</c> forever.
+    /// </summary>
+    /// <param name="exception">The exception thrown while decoding a known Works event.</param>
+    internal static bool IsHandledDecodeFailure(Exception exception)
+        => exception is JsonException or ArgumentException or NotSupportedException;
 
     /// <summary>Returns the first non-blank correlation id in a projection history.</summary>
     public static string CorrelationIdOf(IReadOnlyList<ProjectionEventDto>? events)
@@ -106,7 +118,7 @@ internal static partial class WorkItemProjectionEventDecoder
     }
 
     [LoggerMessage(
-        EventId = 4501,
+        EventId = 4504,
         Level = LogLevel.Warning,
         Message = "Skipped undecodable projection event {EventType} for work item {WorkItemId} (tenant {TenantId}, correlation {CorrelationId}).")]
     private static partial void SkippedEvent(

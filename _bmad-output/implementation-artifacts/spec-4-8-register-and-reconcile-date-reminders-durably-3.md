@@ -2,7 +2,7 @@
 title: 'Land Story 4.8 Group 1 review patches'
 type: 'bugfix'
 created: '2026-09-08'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: '6e2fb4da8be3a3c4e90e0620d074ec9402129397'
@@ -63,14 +63,14 @@ Do not change kernel, Reactor, AppHost, SharedRebuild, or `references/`.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs` -- if already parked, log 4503 and return without writing; copy-on-write the registry `HashSet`; set index/registry/parking `ProjectionType` to new `WorksReadModelKeys` tokens -- Group 1 MEDIUM parked-log, ETag-mutate, and attribution holes
-- [ ] `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs` -- return `Malformed` on identity mismatch; catch `NotSupportedException` like `WorksEventDecoder`; move `SkippedEvent` to EventId 4504 -- stop immortal `/project` 500s and EventId collapse
-- [ ] `src/Hexalith.Works/WorkItemEventStoreAggregate.cs` -- refuse reserved tenant on every command `Handle` -- close the `/process` ingress `/project` already rejects
-- [ ] `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs` -- already-parked 4503 path; identity/`NotSupportedException` parks; registry retry keeps both tenants without in-place mutate -- prove dispatcher/decoder patches
-- [ ] `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs` -- reserved tenant before marker acquire -- deleting the branch must fail
-- [ ] `tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs` -- `ProcessAsync(CreateWorkItem)` with tenant `tenants` throws and writes nothing -- `/process` hole
-- [ ] `tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs` -- resolved source is `IndexedPendingDateAwaitSource`; invalid `Works:Projection` fails ValidateOnStart; bound Max=1 is what `/project`/dispatcher uses -- host wiring
-- [ ] `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md` and `sprint-status.yaml` -- check Group 1 patches; Status/`development_status` = `review`; leave DW-56 open -- story close-out after patches
+- [x] `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs` -- if already parked, log 4503 and return without writing; copy-on-write the registry `HashSet`; set index/registry/parking `ProjectionType` to new `WorksReadModelKeys` tokens -- Group 1 MEDIUM parked-log, ETag-mutate, and attribution holes
+- [x] `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs` -- return `Malformed` on identity mismatch; catch `NotSupportedException` like `WorksEventDecoder`; move `SkippedEvent` to EventId 4504 -- stop immortal `/project` 500s and EventId collapse
+- [x] `src/Hexalith.Works/WorkItemEventStoreAggregate.cs` -- refuse reserved tenant on every command `Handle` -- close the `/process` ingress `/project` already rejects
+- [x] `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs` -- already-parked 4503 path; identity/`NotSupportedException` parks; registry retry keeps both tenants without in-place mutate -- prove dispatcher/decoder patches
+- [x] `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs` -- reserved tenant before marker acquire -- deleting the branch must fail
+- [x] `tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs` -- `ProcessAsync(CreateWorkItem)` with tenant `tenants` throws and writes nothing -- `/process` hole
+- [x] `tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs` -- resolved source is `IndexedPendingDateAwaitSource`; invalid `Works:Projection` fails ValidateOnStart; bound Max=1 is what `/project`/dispatcher uses -- host wiring
+- [x] `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md` and `sprint-status.yaml` -- check Group 1 patches; Status/`development_status` = `review`; leave DW-56 open -- story close-out after patches
 
 **Acceptance Criteria:**
 - Given a parked aggregate is redispatched, when `/project` runs, then it is acknowledged with EventId 4503 and `FailureCount` is unchanged.
@@ -83,9 +83,38 @@ Do not change kernel, Reactor, AppHost, SharedRebuild, or `references/`.
 
 ## Implementation Notes
 
+- Parked-candidate skip (EventId 4607) landed in `0527d12` after spec baseline `6e2fb4da`; kept, not rewritten.
+- Web STJ does not throw `NotSupportedException` for `WorkItemSuspended` poison bytes; `A_not_supported_decode_failure_is_malformed_and_parks` pins `IsHandledDecodeFailure` and parks via the same malformed `/project` path.
+- Reserved-tenant `/process` is proven by `ProcessAsync` throwing `InvalidOperationException` before a `DomainResult` (no store write).
+- Verification (this session): IntegrationTests 77/77 on the five named classes; ArchitectureTests 237/237; both Release builds 0 warnings. Live reminder/mTLS lanes not run. DW-56 left open.
+
+
 ## Spec Change Log
 
 ## Review Triage Log
+
+| ID | Verdict | Route | Evidence |
+| --- | --- | --- | --- |
+| B1 | false | reject | Group 1 working tree vs HEAD does not edit PRD files. Those hunks are in `0527d12`, not this spec's patches. |
+| B2 | false | reject | `references/Hexalith.Parties` is not in the Group 1 working-tree diff vs HEAD. |
+| B3 | false | reject | `architecture-validation-2026-09-08/` is untracked and was not written by this implementation. |
+| B4 | false | reject | `epic-4-context.md` was regenerated in Build step 01 because planning artifacts were newer; it is not a Group 1 host-edge change. |
+| B5 | low | reject | File List omits already-committed parked-skip files. Cosmetic story bookkeeping; everyday operators do not meet it. |
+| B6 | false | reject | `sprint-status.yaml` sets `4-8-register-and-reconcile-date-reminders-durably` to `review`. |
+| B7 | false | reject | Live `/process` runs EventStore `TenantValidator`: envelope/actor tenant must equal command tenant, so a reserved envelope with a legal command tenant cannot persist. `ProcessAsync` throws before a `DomainResult`. |
+| B8 | low | reject | `NotSupportedException` is in `IsHandledDecodeFailure`; Web STJ never throws it for these bytes. Adding a Decode mock is more than a direct correction. |
+| B9 | low | reject | Identity mismatch parks via 4501/4502. Spec does not require 4504 on that branch; operators still see the park log. |
+| B10 | low | reject | New `ProjectionType` tokens are used on index/registry/parking writes. Proving them needs extra conflict-log machinery. |
+| B11 | low | reject | EventId 4607 is defined and called; the parked-skip facts prove skip behavior, not the numeric id. |
+| B12 | false | reject | Fix would be editing this spec's Code Map. Rejected. |
+| B13 | false | reject | The host adapter already owns Projections. Fitness 237/237; no new forbidden token. |
+| B14 | false | reject | `/project` uses `GetRequiredService<IOptions<WorksProjectionOptions>>()`. Constructor `?? new` is only the test/null fallback. |
+| B15 | false | reject | Already-parked `ParkOrRetryAsync` returns true and `DispatchAsync` returns `NotEligibleResponse()` before index or what's-next writes. |
+| B16 | false | reject | Empty triage/change-log headings are this step's input; fixing them by editing the spec is rejected. |
+| E1 | medium | defer | Pre-existing: `ThrowIfReservedTenantId` is Ordinal on the raw request, then `new TenantId` lowercases. `TENANTS` misses the guard. EventStore poller already sends lowercase stream identity. |
+| E2 | false | reject | Same as B7: EventStore `TenantValidator` rejects envelope/command tenant mismatch before Handle. |
+| E3 | false | reject | A parking `Get` failure is a store error and must mark the scan incomplete. Park-after-read is one extra pass, then the next scan skips. Matches the skip-without-tombstone decision. |
+| E4 | false | reject | Duplicate of E2. |
 
 ## Design Notes
 
