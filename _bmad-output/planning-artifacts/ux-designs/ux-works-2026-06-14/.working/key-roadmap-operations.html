@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  VISUAL-ONLY / NON-COPYABLE REFERENCE-STATE BOARD. Not a page, route, IA,
+  navigation, or capability commitment. DESIGN.md and EXPERIENCE.md win.
+  Raw HTML/CSS does not authorize implementation.
+  This illustrates EXPERIENCE.md horizons and DESIGN/EXPERIENCE.md cost-meter,
+  Roll-Up/freshness, while keeping Theme 4 and Theme 6 source-open.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Works visual reference — roadmap operation states</title>
+  <style>
+    /* Governing spines: EXPERIENCE.md Horizon and source authority plus
+       DESIGN/EXPERIENCE.md cost-meter and Roll-Up/freshness contracts.
+       Visual-only/non-copyable; not a page/route/IA; spines win; raw HTML/CSS
+       is not implementation authorization. */
+    :root { font-family:"Segoe UI",system-ui,sans-serif; background:#e8e8e8; color:#242424; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px; }
+    .warning { max-width:1200px; margin:0 auto 16px; padding:12px 15px; border:2px solid #8a6500; background:#fff7d6; font-weight:700; line-height:1.45; }.warning small { display:block; font-weight:400; }
+    main { max-width:1200px; margin:auto; padding:20px; border:1px solid #bbb; border-radius:7px; background:#fafafa; box-shadow:0 14px 32px #0002; }
+    .kicker { color:#8a6500; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; } h1 { margin:5px 0; font-size:25px; }.lede { max-width:85ch; margin:0 0 18px; color:#555; line-height:1.5; }
+    .board { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }.column { min-width:0; border:1px solid #bbb; border-radius:6px; background:#fff; }.column > header { padding:14px; border-bottom:1px solid #ddd; }.column h2 { margin:3px 0 0; font-size:17px; }.column .body { padding:14px; }.state { display:inline-block; padding:3px 7px; border:1px solid #8a6500; border-radius:3px; color:#725400; font-size:11px; font-weight:800; text-transform:uppercase; }
+    .unavailable { padding:12px; border-left:4px solid #8a6500; background:#fffaf0; }.unavailable h3 { margin:0 0 5px; font-size:14px; }.unavailable p,.notes { margin:5px 0; color:#555; font-size:12px; line-height:1.5; }.no-list { margin:10px 0 0; padding-left:18px; color:#444; font-size:12px; line-height:1.6; }
+    .sample { margin-bottom:12px; padding:12px; border:1px solid #ccc; border-radius:5px; background:#fafafa; }.sample h3 { margin:0 0 4px; font-size:14px; }.sample-label { color:#8a6500; font-size:11px; font-weight:800; text-transform:uppercase; }.meter { height:10px; margin:10px 0 6px; overflow:hidden; border:1px solid #888; border-radius:5px; background:#eee; }.meter i { display:block; width:42%; height:100%; background:#006b75; }.numbers { font-variant-numeric:tabular-nums; font-weight:700; }.totals { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }.total { padding:9px; border:1px solid #ddd; background:#fff; }.total strong { display:block; font-variant-numeric:tabular-nums; }.total span { color:#616161; font-size:11px; }.fresh { margin-top:10px; padding-top:9px; border-top:1px solid #ddd; color:#3d5f34; font-size:12px; }
+    footer { margin-top:16px; padding-top:12px; border-top:1px solid #ddd; color:#555; font-size:12px; line-height:1.5; }
+    @media (max-width:50rem) { body { padding:8px; } main { padding:14px; }.board { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <aside class="warning" role="note">Visual-only, non-copyable reference-state board — not a page, route, IA, navigation, or capability commitment.<small>DESIGN.md and EXPERIENCE.md win. Raw HTML/CSS does not authorize implementation or create Admin/Audit surfaces.</small></aside>
+  <main><span class="kicker">Roadmap reference states only</span><h1>Future operational seams</h1><p class="lede">The board keeps source-open horizons visibly unavailable while illustrating only the Theme 5 Cost composition already documented by the spines. It is not application chrome and has no navigation model.</p>
+    <section class="board" aria-label="Roadmap operation reference states">
+      <article class="column"><header><span class="state">Source-open</span><h2>Theme 4 · routing and escalation</h2></header><div class="body"><div class="unavailable" role="status"><h3>No approved operational surface</h3><p>Routing, escalation, auto-assignment, explainable routing records, and AuthorityLevel enforcement remain source-open.</p></div><ul class="no-list"><li>No Admin route or rail item</li><li>No rung editor, eligibility score, or role control</li><li>No invented Handoff policy; the kernel's auditable Handoff stays distinct</li><li>Capability escalation and Theme 5 budget degradation are one future ladder traversed in opposite directions</li></ul></div></article>
+      <article class="column"><header><span class="state">Theme 5 sample</span><h2>Cost Meter and Roll-Up</h2></header><div class="body"><section class="sample" aria-label="Sample cost meter"><span class="sample-label">Illustrative values · not product defaults or budgets</span><h3>Cost</h3><div class="meter" role="progressbar" aria-label="Sample Cost 42 of sample cap 100 credits" aria-valuemin="0" aria-valuemax="100" aria-valuenow="42"><i></i></div><p class="notes"><span class="numbers">Sample: 42 of 100 credits</span><br>Separate from Effort; inherited semantic roles and text carry the meaning.</p></section><section class="sample" aria-label="Sample cost Roll-Up"><span class="sample-label">Illustrative per-Unit totals</span><h3>Cost Roll-Up</h3><div class="totals"><span class="total"><strong>Sample USD 420</strong><span>Rolled Cost · USD</span></span><span class="total"><strong>Sample EUR 180</strong><span>Rolled Cost · EUR</span></span></div><div class="fresh" role="status">Fresh · sample last-committed evidence; currencies are not converted</div></section><p class="notes">If repair/rebuild declares Cost unavailable, show no zero. Keep any trustworthy last-committed totals labelled with freshness.</p></div></article>
+      <article class="column"><header><span class="state">Source-open</span><h2>Theme 6 · audit and participants</h2></header><div class="body"><div class="unavailable" role="status"><h3>No approved Audit surface</h3><p>Non-repudiation, audit/participant controls, consent/residency, approver/observer grants, and production hardening remain source-open.</p></div><ul class="no-list"><li>No Audit route, rail item, or timeline promise</li><li>No capability or operator-role control inferred here</li><li>No raw event payload, token, or hidden tenant detail</li><li>Theme 6 email link hardening remains in its separate channel reference</li></ul></div></article>
+    </section>
+    <footer>Numbers in the Theme 5 card are explicitly labelled samples to demonstrate meter and per-Unit layout only. They define no budget, currency set, conversion rule, cap, policy, or product default.</footer>
+  </main>
+</body>
+</html>

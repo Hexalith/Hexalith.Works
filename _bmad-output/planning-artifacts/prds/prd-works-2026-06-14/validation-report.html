@@ -5,391 +5,192 @@
 <title>PRD Validation: Hexalith.Works</title>
 <style>
   :root {
-    --bg: #fafaf9;
-    --surface: #ffffff;
-    --border: #e7e5e4;
-    --text: #1c1917;
-    --muted: #78716c;
-
-    --verdict-strong: #16a34a;
-    --verdict-adequate: #65a30d;
-    --verdict-thin: #d97706;
-    --verdict-broken: #dc2626;
-
-    --sev-low: #64748b;
-    --sev-medium: #ca8a04;
-    --sev-high: #ea580c;
-    --sev-critical: #dc2626;
-
-    --grade-exc: #16a34a;
-    --grade-good: #65a30d;
-    --grade-fair: #d97706;
-    --grade-poor: #dc2626;
+    --bg: #fafaf9; --surface: #ffffff; --border: #e7e5e4;
+    --text: #1c1917; --muted: #78716c;
+    --verdict-strong: #16a34a; --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706; --verdict-broken: #dc2626;
+    --sev-low: #64748b; --sev-medium: #ca8a04;
+    --sev-high: #ea580c; --sev-critical: #dc2626;
+    --grade-exc: #16a34a; --grade-good: #65a30d;
+    --grade-fair: #d97706; --grade-poor: #dc2626;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-    font-size: 15px;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
   .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
-
-  header.report-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
+  header.report-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
   .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
-  .grade {
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    color: white;
-    font-size: 15px;
-    white-space: nowrap;
-  }
-  .grade-excellent { background: var(--grade-exc); }
-  .grade-good { background: var(--grade-good); }
-  .grade-fair { background: var(--grade-fair); }
-  .grade-poor { background: var(--grade-poor); }
-
-  .synthesis {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--muted);
-    border-radius: 8px;
-    padding: 18px 22px;
-    margin-bottom: 24px;
-    font-size: 15.5px;
-  }
-  .synthesis p { margin: 0 0 10px; }
-  .synthesis p:last-child { margin-bottom: 0; }
-
-  .dimension-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  .dim-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-  }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; }
+  .grade { padding: 10px 18px; border-radius: 8px; font-weight: 600; color: white; font-size: 15px; white-space: nowrap; }
+  .grade-excellent { background: var(--grade-exc); } .grade-good { background: var(--grade-good); }
+  .grade-fair { background: var(--grade-fair); } .grade-poor { background: var(--grade-poor); }
+  .synthesis { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--muted); border-radius: 8px; padding: 18px 22px; margin-bottom: 24px; font-size: 15.5px; }
+  .synthesis p { margin: 0 0 10px; } .synthesis p:last-child { margin-bottom: 0; }
+  .dimension-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .dim-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
   .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .dim-card .dim-verdict { font-size: 14px; font-weight: 600; }
-
   section.dimension, section.reviewer-section { margin-bottom: 14px; }
-  section.dimension details, section.reviewer-section details {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  section summary {
-    padding: 14px 20px;
-    cursor: pointer;
-    user-select: none;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  section.dimension details, section.reviewer-section details { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  section summary { padding: 14px 20px; cursor: pointer; user-select: none; list-style: none; display: flex; align-items: center; gap: 12px; }
   section summary::-webkit-details-marker { display: none; }
-  section summary::before {
-    content: "▸";
-    display: inline-block;
-    color: var(--muted);
-    transition: transform 0.15s ease;
-  }
+  section summary::before { content: "▸"; display: inline-block; color: var(--muted); transition: transform 0.15s ease; }
   section details[open] summary::before { transform: rotate(90deg); }
-  section summary h2 {
-    display: inline;
-    margin: 0;
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: -0.005em;
-    flex: 1;
-  }
-  .verdict-pill {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: white;
-  }
-  .verdict-strong { background: var(--verdict-strong); }
-  .verdict-adequate { background: var(--verdict-adequate); }
-  .verdict-thin { background: var(--verdict-thin); }
-  .verdict-broken { background: var(--verdict-broken); }
-
+  section summary h2 { display: inline; margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.005em; flex: 1; }
+  .verdict-pill { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: white; }
+  .verdict-strong { background: var(--verdict-strong); } .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); } .verdict-broken { background: var(--verdict-broken); }
   .dim-body { padding: 4px 20px 18px; }
-  .dim-judgment { color: var(--text); font-size: 14.5px; }
-  .dim-judgment p { margin: 0 0 10px; }
-
+  .dim-judgment { color: var(--text); font-size: 14.5px; } .dim-judgment p { margin: 0 0 10px; }
   .findings-list { padding: 0 20px 4px; }
-  article.finding {
-    padding: 14px 0;
-    border-top: 1px solid var(--border);
-  }
+  article.finding { padding: 14px 0; border-top: 1px solid var(--border); }
   article.finding:first-child { border-top: none; }
-  article.finding header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 6px;
-  }
-  .badge {
-    font-size: 10.5px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 1.4;
-  }
-  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
-  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
-  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
-  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
+  article.finding header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .badge { font-size: 10.5px; padding: 3px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.4; }
+  .badge-sev-low { background: rgba(100,116,139,.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202,138,4,.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234,88,12,.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220,38,38,.14); color: var(--sev-critical); }
   .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
   .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
   .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
   .finding-fix strong { color: var(--muted); font-weight: 500; }
-
-  .reviewer-source {
-    font-size: 12px;
-    color: var(--muted);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  }
-
-  .mechanical {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-top: 24px;
-    font-size: 14px;
-  }
+  .reviewer-source { font-size: 12px; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .mechanical { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 14px; }
   .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .mechanical ul { margin: 0; padding-left: 20px; }
-  .mechanical li { margin-bottom: 4px; color: var(--text); }
-
-  footer.report-footer {
-    margin-top: 40px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--muted);
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  }
+  .mechanical ul { margin: 0; padding-left: 20px; } .mechanical li { margin-bottom: 4px; color: var(--text); }
+  footer.report-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
   footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
-  <div class="container">
-
-    <header class="report-header">
-      <div class="title">
-        <h1>Hexalith.Works — Validation Report</h1>
-        <div class="subtitle">_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md (+ addendum.md)</div>
-      </div>
-      <div class="grade grade-fair">Fair</div>
-    </header>
-
-    <div class="synthesis">
-      <p>This is a genuinely good capability-spec PRD: the thesis is sharp and product-specific ("everything is a Party"; raw act canonical, interpretation a projection), scope is tightened honestly against its own brief, every inferred decision is tagged and indexed, and the two September amendments (FR-20 tie-break, FR-21 <code>LinkConversation</code>) are exemplary in precision. What is at risk is Done-ness at the seams between FRs: the lifecycle has no transition or event for an <code>Assigned</code> item starting work, FR-15 and §10 disagree on whether a non-matching resume is a rejection or a no-op, the actor of non-executor acts (assign, cancel, re-estimate) is not captured despite being the second bet, and an undefined "type" concept backs two configuration knobs. With Epics 1–4 built, these gaps have almost certainly been resolved in code without the PRD recording the answer — the practical risk is the PRD ceasing to be the system of record for the contract it claims to own.</p>
-      <p>The two extra reviewers sharpen that risk into a verdict. The adversarial pass argues that the purity rules (a clock-free, single-aggregate <code>Handle</code>) are incompatible with three behaviours the PRD also mandates — spawn-with-parent-link, child-completion resume, cascade-cancel — and that the single Executor Binding cannot hold the approver/observer roles the roadmap depends on; it rates both <em>critical</em>. The downstream-drift pass confirms the first of those was in fact answered on 2026-09-06 by the architecture (AD-21 Work-Tree Registry, a second aggregate that takes edge ownership and the public spawn entry away from <code>WorkItem</code>) with no PRD amendment and no decision-log entry, and that all six §13 Open Questions are already resolved by AD decisions the PRD does not cite. Grade is <strong>Fair</strong> on the rubric (all dimensions strong/adequate, two high findings). If the two adversarial criticals are accepted as written during triage, the grading rule yields <strong>Poor</strong>; if the AD-21 correct-course pass is run, the second critical collapses into the drift finding. Overall drift verdict: <strong>material drift</strong> — not superseded, but the PRD lags the architecture on one structural decision and its audit trail stops in June.</p>
+<div class="container">
+  <header class="report-header">
+    <div class="title">
+      <h1>Hexalith.Works — Validation Report</h1>
+      <div class="subtitle">/home/administrator/projects/hexalith/works/_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md</div>
     </div>
+    <div class="grade grade-poor">Poor</div>
+  </header>
 
-    <div class="dimension-summary">
-      <div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
-      <div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
-      <div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
-      <div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
-      <div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
-      <div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
-      <div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
-    </div>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>Decisions are stated as decisions with dates and reasons, not as considerations: the §0 "Scope decision (confirmed 2026-06-14)", the §1 "defining bet", the §5 "kernel-only surface decision" that explicitly defers MCP/CLI against the brainstorm's Theme 2 filing, FR-10's "cascade-cancel chosen over orphaning", FR-13's "The brainstorm states no limit — proposing a guard", and §6.2's "needs <strong>no v1 event placeholder</strong>" with reasoning. §2.2 names "the one place the PRD deliberately tightens the brief's 'day one' language". §13 cleanly separates the eight draft OQs resolved by acceptance from six architecture-phase mechanism questions, and the counter-metrics (SM-C1, SM-C2) are real trade-offs.</p>
-          <p>Two things keep this from strong. First, there is not a single <code>[NOTE FOR PM]</code> in the document, and there is at least one real tension that deserved one: v1 carries AuthorityLevel but enforces nothing (FR-19), Cancel is "carried-not-enforced in v1" (FR-10), any tenant Executor may claim (FR-18 assumption), and Cancel/Expire cascade to the whole open subtree (FR-10). Read together, any Party in a tenant can kill any Work Tree in v1; FR-9's "An authorized Executor" quietly implies a gate that does not exist. Second, §13 OQ6 ("Validation domains") files product semantics — may <code>ProgressReported</code> carry a negative delta, is Unit immutable after first use — under "mechanism decisions, not product-requirement gaps". Those are domain rules a story writer needs, not ETag strategy.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">v1 authority blast radius unsurfaced</h3><span class="finding-location">FR-9, FR-10 Cancel/Cascade, FR-18 assumption, FR-19</span></header><div class="finding-note">"authorized Executor" (FR-9) has no v1 meaning; combined with cascade-cancel and open claiming, any tenant Party can terminate any subtree. No <code>[NOTE FOR PM]</code> marks this.</div><div class="finding-fix"><strong>Fix:</strong> Add an explicit v1 statement (in §10 or FR-19) that all acts are ungated in v1 and cascade is unguarded, with a <code>[NOTE FOR PM]</code> recording that this is accepted for a headless kernel exercised only by builders; replace "authorized Executor" in FR-9 with "any bound Executor (authority carried-not-enforced)".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Product semantics filed as architecture mechanism</h3><span class="finding-location">§13 OQ6</span></header><div class="finding-note">Negative progress deltas, Unit immutability after first use, and the TTL configuration source govern what an Executor may do, not how it is stored. The drift review adds that the downstream chain now contradicts itself on exactly this point (epics AR-6 "delta ≥ 0" vs architecture AD-17 "delta &gt; 0") and the PRD has no text to arbitrate.</div><div class="finding-fix"><strong>Fix:</strong> Decide the first two in FR-8/FR-3 consequences (e.g. "a negative Done delta is a domain rejection; use <code>ReEstimated</code> to undo"; "Unit is fixed at first estimate; changing it is a rejection") and leave only the configuration source in §13.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">No <code>[NOTE FOR PM]</code> callouts anywhere</h3><span class="finding-location">whole document</span></header><div class="finding-note">Every tension is either resolved-by-acceptance (§14) or pushed to "theme time" (§12). The §12 "Designed-for tensions" (cost-aware scheduling reaching into kernel-owned Schedule) already shape v1 seams and should be PM-visible now.</div><div class="finding-fix"><strong>Fix:</strong> Promote the §12 tensions paragraph to <code>[NOTE FOR PM]</code> callouts with an owner.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>Nothing here is furniture. The Vision (§1) could not be dropped into another PRD — "burns down toward zero remaining effort", "late-resolved reference to a sibling Hexalith module, never copied", "AI in the loop but never in the system-of-record" are load-bearing and reappear as FR consequences. §2.1 uses JTBD rather than personas, and the builder job drives the v1 cut visibly. NFRs (§9) are substrate-specific — <code>{tenant}:{domain}:{aggregateId}</code>, persist-then-publish, <code>IRejectionEvent</code>, query-side authorization — not "must be secure and scalable"; the one qualitative NFR (Performance) says so and tags itself. §7 Why Now is short and self-deprecating ("no moat on any single primitive; the advantage is coherence").</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">SM-5 duplicates SM-3</h3><span class="finding-location">§11</span></header><div class="finding-note">"Handoff = one operation" is the third consequence of FR-17, which SM-3 already validates.</div><div class="finding-fix"><strong>Fix:</strong> Fold SM-5 into SM-3, or repoint it at the Glossary's uncovered claim that "a Party may change Channel mid-work".</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>The PRD has a thesis and the features serve it. Bet 1 (uniform Executor Binding) is realized by §4.5 and validated by SM-3; the "one number" promise by §4.3 and SM-2; the durable-saga promise by §4.4 and SM-1; thin-core purity by §4.6 and SM-4. Prioritization follows from the thesis — v1 is the foundation slice that makes Themes 3–6 additive, and §6.2 names the seam each theme builds on. The scope kind is coherently <em>platform</em>: SMs are build signals, not usage metrics, and the PRD says why. Counter-metrics exist and bite.</p>
-          <p>The one gap: §1 declares a <em>second</em> bet — "the canonical event is the raw act, and any interpretation of it is a recomputable projection" — and no SM validates it. FR-7's raw-act rule and §9's "Projections are rebuildable" are both unmeasured, as are the riskiest v1 behaviours (FR-18 race, FR-10 cascade, FR-20 ordering). For a build-signal acceptance model, an untested bet is a bet the build cannot fail.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Bet 2 and rebuildability have no success metric; SMs are a test plan</h3><span class="finding-location">§1, FR-7, §9 "Projections are rebuildable", §11</span></header><div class="finding-note">SM-1–SM-5 validate FR-1, 6–8, 11–17, 19, 21–25 only; FR-7's raw-act rule, §9 rebuildability, FR-10 cascade, FR-18 race, and FR-20 ordering are unvalidated. The adversarial pass adds that SM-4 "zero duplicated technical/infrastructure layers" and SM-C1 "lines/surface … should not be maximized" have no measure, threshold, or reviewer, and nothing measures the JTBD the PRD opens with — a builder other than the author wiring Works into a module.</div><div class="finding-fix"><strong>Fix:</strong> Add SM-6 "Rebuild from zero: dropping and replaying Roll-Up and 'what's next' projections reproduces identical read models; no event payload carries a derived value"; extend SM-1 (or add an SM) covering the FR-18 race and FR-10 cascade; add one adoption signal (a second Hexalith module consumes Works without a kernel change) and one shape budget (e.g. <code>Contracts</code> public-type count) so SM-C1 can fire.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">"Themes 1 &amp; 2" never defined in the PRD</h3><span class="finding-location">§0, §6.1 heading, §5</span></header><div class="finding-note">The v1 scope unit is imported from the brief; §12 defines Themes 3–6 but a reader of this document alone cannot say what Theme 1 or Theme 2 is. (See also the adversarial high finding on the §0/§5 scope contradiction.)</div><div class="finding-fix"><strong>Fix:</strong> One clause in §0 or §6.1 naming them.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>Structurally this is the right shape: all 25 FRs carry "Consequences (testable)", the event catalog is closed and named, and FR-20 and FR-21 post-amendment are models of what a testable consequence looks like. FR-11's idempotency-under-replay, FR-13's cross-tenant rejection, FR-22's "compiles … without any <code>IExecutorRouter</code> implementation wired", and FR-24's "contains no <code>*.AppHost</code>" are all mechanically checkable.</p>
-          <p>The weakness is between FRs. FR-6 gives a forward path <code>Created → Assigned | Queued → InProgress</code> and FR-7 gives a closed event catalog, but nothing moves an <code>Assigned</code> item to <code>InProgress</code>. FR-15 says a resume "whose key matches no current Await-Condition is a domain rejection" while §10 says the same case "is a no-op"; and the aggregate cannot tell "duplicate of an already-applied resume" from "never matched" unless it retains consumed Await-Conditions, which no FR requires. FR-7 promises "who acted" but sources the acting Party from "the binding and the EventStore envelope" — the assigner, canceller, or re-estimator is generally <em>not</em> the bound Executor, and no command in the PRD carries an actor. These are not edge cases; they are the start of the lifecycle, the idempotency contract, and the second bet.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">No transition or event for <code>Assigned → InProgress</code>; Reject semantics under-specified</h3><span class="finding-location">FR-6, FR-7, FR-10 Reject, FR-18</span></header><div class="finding-note">The catalog has <code>WorkItemClaimed</code> for <code>Queued → InProgress</code> but nothing for a pushed item starting; <code>Created → InProgress</code> and whether <code>ProgressReported</code> is legal in <code>Created</code>/<code>Assigned</code>/<code>Queued</code> are unstated. <code>Rejected</code> is listed as a terminal Status, yet the default <code>WorkItemRejected</code> outcome is Status <code>Queued</code>; whether requeue-by-reject also emits <code>WorkItemQueued</code> and from which states Reject is legal are unstated. (Independently raised as high by the adversarial reviewer.)</div><div class="finding-fix"><strong>Fix:</strong> Publish the full legal-transition table in FR-6 (from-state × command → to-state/event); either add <code>WorkItemStarted</code> to FR-7 or state "the first <code>ProgressReported</code> on an <code>Assigned</code> item transitions it to <code>InProgress</code>"; split Reject into a requeue outcome (Status <code>Queued</code>) and a terminal outcome, and specify legal from-states.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">FR-15 and §10 contradict on non-matching resume</h3><span class="finding-location">FR-15, §10 Idempotency</span></header><div class="finding-note">FR-15: "matches no current Await-Condition is a domain rejection"; §10: "no longer matches an Await-Condition is a no-op — FR-15". The "duplicate … idempotent no-op" branch is undecidable without retained history. The adversarial reviewer adds that §10's reliance on "substrate … dedups replays by stream offset" covers event replay into projections, not an at-least-once timer adapter issuing two distinct commands.</div><div class="finding-fix"><strong>Fix:</strong> Pick one rule; if the no-op branch is kept, add a consequence that consumed/superseded Await-Conditions are retained on the aggregate (or that any resume on a non-<code>Suspended</code> item is a no-op), align §10 wording, and state that duplicate-command idempotency is the aggregate's job.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Acting Party not captured for non-executor acts</h3><span class="finding-location">FR-7, FR-9, FR-10, FR-17</span></header><div class="finding-note">"capturing the acting Party … via the binding and the EventStore envelope" fails for Assign, Reassign, Cancel, ReEstimate, Reschedule, where the actor is not the bound Executor; "Works does not populate envelope metadata". Bet 2 ("who acted, when, and the verbatim payload") is not met.</div><div class="finding-fix"><strong>Fix:</strong> Require every command to carry <code>ActorPartyId</code> and every Raw-Act event to record it in payload; add a negative test that an event without an actor is rejected.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Unestimated item's Roll-Up contribution undefined</h3><span class="finding-location">FR-1 "undefined-until-estimated", FR-11, FR-12</span></header><div class="finding-note">An item with no Estimated has no Remaining and no Unit; whether it contributes 0, is excluded, or is surfaced as an "unestimated count" in per-Unit subtotals is unstated.</div><div class="finding-fix"><strong>Fix:</strong> Add to FR-11: "an unestimated item contributes 0 to rolled Remaining and increments an <code>UnestimatedDescendants</code> count exposed alongside the subtotals".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Creation with an Executor Binding: <code>Created</code> or <code>Assigned</code>?</h3><span class="finding-location">FR-1 consequence 2, FR-6 consequence 2</span></header><div class="finding-note">Creation yields Status <code>Created</code>, but <code>Assigned</code> is defined as "a specific Executor bound" — an engineer cannot tell whether <code>WorkItemCreated</code> with a binding lands in <code>Created</code> (requiring a redundant Assign) or <code>Assigned</code>.</div><div class="finding-fix"><strong>Fix:</strong> State in FR-1: "if an Executor Binding is supplied, creation emits <code>WorkItemCreated</code> followed by <code>WorkItemAssigned</code> and Status is <code>Assigned</code>" (or the alternative).</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Expire has no owner, an undefined knob, and a precedence conflict</h3><span class="finding-location">FR-10 Expire, FR-15, §13 OQ4</span></header><div class="finding-note">"fires when the Due Date passes" is passive; FR-15 names a timer adapter for <em>resume</em> only; "a configured per-type TTL" references a Work Item "type" that does not exist in §3; and a <code>Suspended</code> item parked on a date with a passed Due Date is both "resumes" (FR-5) and "expires" (FR-10). (Escalated to high by the adversarial reviewer — see below.)</div><div class="finding-fix"><strong>Fix:</strong> Add an <code>ExpireWorkItem</code> command raised by the same timer/scheduler adapter, define precedence, and either define "type" in §3 or replace with "per tenant".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Performance NFR is an adjective</h3><span class="finding-location">§9 Performance</span></header><div class="finding-note">"remain responsive for realistically deep/wide trees" is unfalsifiable; the assumption tag is honest but SM-2 still needs a fixture size to be a build signal.</div><div class="finding-fix"><strong>Fix:</strong> Pin a v1 test-tree shape (e.g. depth 32 × fan-out 50, 10⁴ nodes) and a convergence bound for the Roll-Up after a leaf event, tagged <code>[ASSUMPTION]</code>.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Channel change mid-work has no FR</h3><span class="finding-location">§3 Channel, FR-17</span></header><div class="finding-note">Unclear whether it is a reassign (emits <code>WorkItemAssigned</code>) or a distinct act.</div><div class="finding-fix"><strong>Fix:</strong> Add a FR-17 consequence: "changing Channel on the same Party is a reassign that emits <code>WorkItemAssigned</code> with the new binding".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Fate of remaining Await-Conditions after first match unstated</h3><span class="finding-location">FR-5, FR-15</span></header><div class="finding-note">After a date resumes the item, does the child-completion trigger later cause a rejection, a no-op, or a second resume?</div><div class="finding-fix"><strong>Fix:</strong> "resume clears all Await-Conditions; later triggers for cleared conditions follow the FR-15 non-matching rule".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title"><code>ChildSpawned</code> vs the child's own <code>WorkItemCreated</code></h3><span class="finding-location">FR-16</span></header><div class="finding-note">"creates a child Work Item (FR-1 semantics) … and emits on the parent" does not say whether the child stream also receives <code>WorkItemCreated</code>, nor whether spawn-and-suspend is one command or two.</div><div class="finding-fix"><strong>Fix:</strong> State both streams' events and the command shape (now overtaken by AD-21 — fold into the registry correct-course).</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">"Reference to an Expectation" is unlocated</h3><span class="finding-location">FR-1, FR-2, addendum port sketch</span></header><div class="finding-note">FR-1/FR-2 say the Obligation holds an "optional Expectation reference", the FR-2 assumption says it is "referenced/resolved on demand, not stored", and the addendum's <code>Resolve(WorkItemState state)</code> takes no reference.</div><div class="finding-fix"><strong>Fix:</strong> Either name the stored field or drop "reference" and say "resolved on demand from state".</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Scope honesty</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>§5 Non-Goals does real work: it names four things Works is <em>not</em>, and the parenthetical about MCP/CLI is exactly the kind of upstream-contradicting de-scope that is usually done silently. §2.2 Non-Users explains <em>why</em> the brief's co-primary audiences are not v1 consumers. §6.2 attaches a "Seam laid" note to every deferred theme. All 19 inline <code>[ASSUMPTION]</code> tags are indexed in §14 with the confirmation date, and §13's residue is small. The one scope ambiguity: §6.1 lists "date/timer native" as in scope and SM-1 requires the full saga under the Aspire topology, but the timer/scheduler adapter that makes date resume (and Expire) happen is neither a §6.1 deliverable nor a §6.2 deferral.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Timer/scheduler adapter is load-bearing but unowned</h3><span class="finding-location">§6.1 "date/timer native", FR-15 Date/timer, FR-10 Expire, §13 OQ4</span></header><div class="finding-note">Date-driven resume and expiry cannot be exercised in SM-1 without it, yet it is in neither In Scope nor Out of Scope. (Architecture has since bound it: AD-11 durable Dapr actor reminder — the PRD does not say so.)</div><div class="finding-fix"><strong>Fix:</strong> Add to §6.1 "a minimal timer/scheduler adapter (test-harness grade) that raises resume/expire commands", or move date/timer resume to §6.2 and drop it from SM-1.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Downstream usability</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>For a chain-top PRD this is where the discipline shows: FR-1–FR-25 contiguous and unique, UJ-1–UJ-4, SM-1–SM-5 + SM-C1–C2; every §/FR/SM cross-reference in the body resolves. Each feature names the UJ it realizes and each SM the FRs it validates, so epics can be cut by feature and stories by FR consequence. The addendum is correctly non-binding and consistent with the FRs, including the amended <code>LinkConversation</code> semantics.</p>
-          <p>Two things a story writer will trip on. "type" appears as a configuration dimension in FR-10, FR-13, and §12 but there is no Work Item type in the Glossary, §4.1, or FR-1. And amendment provenance is uneven: FR-20 carries "<em>(Amended 2026-09-06 …)</em>", but the frontmatter's <code>updated: 2026-09-05</code> has no corresponding marker anywhere; a downstream reader cannot tell which of FR-15, FR-21, or §4.7 changed from the June baseline the epics were cut from.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Undefined "type" backs two configuration knobs</h3><span class="finding-location">FR-10 Expire, FR-13 depth, §12 Theme 4</span></header><div class="finding-note">No Work Item type exists in §3 or §4.1 — a story for either knob has to invent a taxonomy.</div><div class="finding-fix"><strong>Fix:</strong> Either add <code>Type</code> (or <code>Kind</code>) to the Glossary and FR-1 as an optional discriminator, or change both knobs to "per tenant" and leave per-type policy to Theme 4.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">2026-09-05 amendments unmarked; frontmatter inconsistent</h3><span class="finding-location">frontmatter, FR-7, FR-20, FR-21, FR-24, §4.7, §13, §14</span></header><div class="finding-note">Only FR-20 carries an "Amended" note, dated 2026-09-06, while <code>updated: 2026-09-05</code>. The larger 2026-09-05 amendment (FR-7 <code>ConversationLinked</code>, FR-21 later-link semantics, FR-24 rewrite, §1/§2.2/§4.7/§6.1/§8, SM-1, SM-4) has no inline markers. §14 still asserts "All confirmed by the user on 2026-06-14" and §13 that all draft OQs "were resolved on 2026-06-14". The adversarial reviewer also asks why the Conversation link is the one immutable fact when binding, schedule and estimate are all mutable. (Raised by all three reviewers.)</div><div class="finding-fix"><strong>Fix:</strong> Set <code>updated: 2026-09-06</code>; add an "Amendment history" block (date → proposal → sections → commit); add <em>(Amended 2026-09-05 …)</em> notes to FR-7, FR-21, FR-24 and §4.7 to match the FR-20 convention; update §14; justify FR-21 immutability or allow relink with a <code>ConversationUnlinked</code> event.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">"Done" collides</h3><span class="finding-location">§3 Burn-Down, §3 Remaining, §4.2, FR-8</span></header><div class="finding-note">"Done" is a Burn-Down quantity ("the reported Done delta") <em>and</em> the completion state ("Done = Remaining is 0").</div><div class="finding-fix"><strong>Fix:</strong> Rename the invariant to "Completed ⇔ Remaining = 0" and reserve "Done" for the quantity.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="dimension">
-      <details>
-        <summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>The PRD correctly reads itself as a headless technical capability spec inside a brownfield ecosystem and shapes accordingly: UJs are lean and only four; SMs are build signals with the reason stated; §8 exists because this is a developer product; the substrate constraints are cited by name rather than re-derived; and technical depth is pushed to the addendum. It is neither over-formalized nor under-formalized. The §4.7 amendment toward a platform-owned Aspire AppHost is consistent with the addendum's package-layout rules.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">UJ-3 has no protagonist and UJ-4 sits among v1 journeys</h3><span class="finding-location">§2.3</span></header><div class="finding-note">UJ-3's actor is the Work Item itself ("An item spawns a child, parks itself"), and UJ-4 is the only journey with a named person (Mary) but is explicitly not built.</div><div class="finding-fix"><strong>Fix:</strong> Give UJ-3 a builder or Party actor issuing the spawn/suspend commands, and move UJ-4 under §12 with a back-reference.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="reviewer-section">
-      <details>
-        <summary><h2>Adversarial review</h2><span class="reviewer-source">review-adversarial-general.md</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>The PRD's two bets — "everything is a Party" and "AI in the loop but never in the system-of-record" — are both declared proven by v1 while v1 ships nothing that could disprove them: no adapter inspects the Channel, no policy reads the AuthorityLevel, no interpretation is ever projected, and every Success Metric reduces to "the build is green under Aspire." Underneath that, the document's purity rules (a clock-free, single-aggregate <code>Handle</code>) are incompatible with three behaviours it also mandates (spawn-with-parent-link, child-completion resume, cascade-cancel), and it names an undefined "engine" to paper over the gap. With implementation several epics in, every one of these ambiguities has already been resolved <em>somewhere</em> by an engineer — the FR-20 correct-course shows the pattern — and the PRD as written cannot tell you whether that resolution is compliant.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">The keystone binding cannot hold the roles the roadmap needs, and SM-3 cannot fail in v1</h3><span class="finding-location">§4.5 FR-17/FR-19, §11 SM-3, §12</span></header><div class="finding-note">FR-17 gives a Work Item "its single Executor Binding"; FR-19's proposed set includes <code>Read = await/observe</code> and <code>Administer = approve spend, set caps, cancel</code>. A single slot cannot carry a Contributor doing the work <em>and</em> an Administer approving its spend, an observer, or an escalation ladder's next rung — exactly the Theme 4/6 shapes §12 claims this seam enables. Meanwhile "no domain code branches on executor kind" is trivially true of a kernel that stores three fields and never reads them; the branching moves into adapters where SM-3 does not look.</div><div class="finding-fix"><strong>Fix:</strong> Either make the binding a set (one primary Executor plus zero-or-more role bindings) now, or state explicitly that approvers/observers are <em>not</em> bindings and name where Theme 6 will put them. Rewrite SM-3 to something that can fail: e.g. "adding a fourth Channel value requires zero changes in <code>Server</code>/<code>Projections</code>."</div></article>
-          <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Three cross-aggregate behaviours are required but have no owner under the purity rules</h3><span class="finding-location">§4.4 FR-15/FR-16, §4.2 FR-10 cascade, §4.3 FR-13, §9 Domain purity, §4.7 FR-24</span></header><div class="finding-note"><code>Handle</code> "never reads a clock or an outside system," yet FR-16 creates a child and emits on the parent (one command, two aggregates); FR-15 says a child's <code>WorkItemCompleted</code> raises a resume command to a parent; FR-10 cascades cancel to descendants; FR-13 rejects cycles and cross-tenant links, which requires reading the <em>other</em> aggregate. UJ-3 attributes this to "the engine," the addendum to "internally," and FR-24 forbids Works from owning "subscription plumbing." Two teams will build this differently and both claim compliance. <em>Synthesis note:</em> the drift review shows the architecture answered this on 2026-09-06 with AD-21 (Work-Tree Registry aggregate + reactor-only <code>SpawnChild</code>) without amending the PRD.</div><div class="finding-fix"><strong>Fix:</strong> Add an FR that names the process-manager/saga component, which package owns it, and its consistency guarantees (which aggregate is written first on spawn; whether cascade is synchronous or eventual; what a child does with <code>ProgressReported</code> after its parent is terminal but before the cascade reaches it). In practice: run the AD-21 correct-course into the PRD.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">"Done = Remaining is 0" is three completion paths, and the auto path is irreversible</h3><span class="finding-location">§3 Burn-Down/Remaining, §4.2 FR-8/FR-9</span></header><div class="finding-note">FR-8 auto-completes the moment Remaining hits 0; FR-8 also says an unestimated item "completes only by an explicit complete act"; FR-9 says <code>ReEstimated</code> "adjusts Estimated (and therefore Remaining)," so a downward re-estimate below Done silently completes the item. FR-9 also says "over-run and partial progress are native, not errors" — but an executor who reports the full estimate before actually finishing gets auto-completed into a terminal state and can never re-estimate. Every client will implement "Complete" as a synthetic re-estimate-to-done — some emitting three events, some one.</div><div class="finding-fix"><strong>Fix:</strong> Decide whether Remaining=0 is a <em>precondition</em> for an explicit <code>Complete</code> (recommended: one completion act, one event) or an <em>auto-trigger</em>; if auto, add a <code>Reopen</code> transition or drop "over-run is native"; forbid <code>ReEstimated</code> below Done, or specify that it completes.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Roll-Up requirements are mutually underdetermined; the "single number" promise is withdrawn by FR-12</h3><span class="finding-location">§1 Vision, §4.3 FR-11/FR-12, §11 SM-2</span></header><div class="finding-note">Vision: "an objective's all-in remaining work is a single number." FR-12: mixed-Unit subtrees expose "per-Unit subtotals rather than a coerced single figure" — and nothing prevents a child spawned in <code>tokens</code> under a parent in <code>hours</code>. FR-11 demands both "reflected incrementally" and "idempotent under at-least-once, possibly out-of-order event delivery"; delta-accumulation satisfies the first and fails the second. SM-2 is unfalsifiable against an eventually-consistent projection with no convergence bound: any failing read is "stale but converging."</div><div class="finding-fix"><strong>Fix:</strong> Require the projection to store per-child last-known Remaining (state-based, not delta-based) and name the quiescence condition SM-2 is asserted under. Either constrain Unit inheritance at spawn or downgrade the Vision claim.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Expire smuggles a scheduler, an undefined "type" concept, and actor-less raw acts into a kernel that ships no adapters</h3><span class="finding-location">§4.2 FR-10, §4.4 FR-15, §4.7, §13 OQ-4/OQ-6, §10 Audit</span></header><div class="finding-note">Who fires Expire? FR-15 says timers arrive from "a timer/scheduler adapter" which OQ-4 defers and §4.7 says does not ship, yet SM-1 requires date-triggered resume end-to-end. "Per-type TTL" and FR-13's "per tenant/type" introduce a type that appears nowhere. §10 defines a Raw Act as "acting Party + timestamp + verbatim payload" — a timer-fired <code>WorkItemExpired</code>, or a cascaded <code>WorkItemCancelled</code> on a child, has no acting Party; the non-repudiation model has a hole for every system-originated event. A parent Suspended on a child expires by its own Due Date and cascades onto a child that is 90 % done and not overdue.</div><div class="finding-fix"><strong>Fix:</strong> Add the timer/scheduler adapter to v1 scope explicitly and name its owner; define "type" or delete the two references; specify how configuration enters <code>Handle</code>; define the actor for system-originated events; state whether Expire is legal from <code>Suspended</code>.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">v1's own scope statement contradicts itself and strands work</h3><span class="finding-location">§0, §5, §12</span></header><div class="finding-note">§0: "v1 (the foundation: Themes 1 &amp; 2)." §5: MCP/CLI were filed "under foundation Theme 2; v1 deliberately defers even these." So v1 ≠ Themes 1 &amp; 2, and the deferred Theme-2 items appear in no §12 roadmap row. They are homeless, which is how deferred work becomes forgotten work.</div><div class="finding-fix"><strong>Fix:</strong> Restate scope as "Theme 1 + the kernel subset of Theme 2" and add a roadmap row (or a Theme 3 sub-row) for the non-LLM command surfaces.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">The "what's next" query has no defined consumer; the September tiebreak is arbitrary and called a decision</h3><span class="finding-location">§4.6 FR-20, §4.1 FR-4, §13 OQ-2</span></header><div class="finding-note">FR-20 returns "a tenant's claimable/assigned Work Items" — one list mixing everyone's <code>Assigned</code> items with the shared <code>Queued</code> pool. For whom is that "next"? The amendment fixes the tiebreak to <code>WorkItemId</code> ordinal while conceding creation-order approximation is "guidance, not an enforced contract". "applies query-side authorization/result filtering" names no criterion. Priority's type and direction (OQ-2) are deferred, so FR-4's "sorts last" is untestable.</div><div class="finding-fix"><strong>Fix:</strong> Split into two queries (per-executor and per-tenant pool) or add an executor parameter; name the filter predicate; commit to Priority's ordering direction now; if the id-ordinal tiebreak is acceptable, say so as a product decision.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">The thin core leaks at four visible seams</h3><span class="finding-location">§4.2 FR-7, §4.6 FR-21/FR-22, §3 Obligation, §11 SM-C2</span></header><div class="finding-note">FR-7: events "may carry an optional human-readable note"; FR-21: "Works holds the correlation ID rather than its own comment store." A note-per-event <em>is</em> a comment store. Obligation's "human-readable description" is unbounded, so a 10 KB markdown brief in the aggregate is compliant. FR-22 mandates <code>IExecutorRouter</code> with no implementation and no caller, and <code>IExpectationResolver</code> whose only implementation returns a default — dead abstractions that SM-C2 calls "a negative" when anyone else does it.</div><div class="finding-fix"><strong>Fix:</strong> Bound the description length and forbid notes on events (or admit Works owns a minimal note stream and reconcile FR-21); drop <code>IExecutorRouter</code> from v1 and defer <code>IExpectationResolver</code> until it has a non-trivial caller.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Why Now argues for the synthesis and v1 ships none of it</h3><span class="finding-location">§7</span></header><div class="finding-note">"the whitespace is the synthesis — one audited object where the backlog, the durable saga, and the effort+cost ledger are the same thing." v1 has no cost ledger, no interpretation, no routing, and no channel; the timing argument justifies Themes 3–6, not a headless kernel.</div><div class="finding-fix"><strong>Fix:</strong> Either state the v1-specific timing pressure (e.g. a named sibling module blocked on Works) or move §7 to the brief and replace it with one sentence.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <section class="reviewer-section">
-      <details>
-        <summary><h2>Downstream drift review</h2><span class="reviewer-source">review-downstream-drift.md</span></summary>
-        <div class="dim-body"><div class="dim-judgment">
-          <p>The PRD is still the source of record for <em>product intent</em> — every PRD edit approved in the two September correct-course proposals landed (verified by git diff), the three earlier proposals approved no PRD edits, and the epics' FR inventory tracks the amended FR-7/FR-20/FR-21/FR-24 text. It is no longer the source of record for the <em>kernel's shape</em>: the 2026-09-06 architecture update introduced a second aggregate (AD-21 Work-Tree Registry) and declared its own register the binding contract — none of which was routed back through the PRD or the decision log. Verdict: <strong>material drift</strong>. Checks with no finding: all approved edits present (three wording deltas noted); all 25 FRs mapped to an epic and at least one story — no orphan FRs.</p>
-        </div></div>
-        <div class="findings-list">
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Work-Tree Registry (AD-21) relocates tree-edge ownership and the spawn entry point without a PRD amendment</h3><span class="finding-location">PRD §3, §4.1, FR-5, FR-13, FR-16 ↔ architecture.md AD-21, epics.md Epic 3 / Story 3.2</span></header><div class="finding-note">PRD §3 defines the Work Item as "<em>the</em> aggregate root" that "owns … optional parent/children"; FR-16 says "<code>ChildSpawned</code> … emits on the parent." AD-21 now binds "a tenant-scoped, event-sourced <strong>Work-Tree Registry</strong> aggregate … owns every <code>(tenant, childId) → parentId</code> edge"; "the public entry point is the registry's reserve command, and direct <code>SpawnChild</code> submission is restricted to the reactor's workload identity"; caller-supplied tree facts are "demoted to assertions". Stories 3.1/3.2 ACs still make <code>SpawnChild</code> the caller-facing act; architecture line 463 still says "a single aggregate root". This is a product-visible change (a builder can no longer issue <code>SpawnChild</code>; a new command/event family enters the v1 contract; SM-C1 is engaged) and it went through the architecture workflow only.</div><div class="finding-fix"><strong>Fix:</strong> Run a correct-course pass for AD-21: amend §3 (Work Item is <em>an</em> aggregate root; add "Work-Tree Registry"), §4.1/FR-5 (Work Item <em>references</em> its parent/children), FR-13 (guard enforced at registry reservation), FR-16 (public act is the registry reserve; <code>SpawnChild</code> is reactor-internal), FR-7 (registry events join the catalog additively), §14. Correct architecture.md line 463. Update or supersede Stories 3.1/3.2.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Decision log has no record of either September amendment</h3><span class="finding-location">.decision-log.md ↔ sprint-change-proposal-2026-09-05 §7, -2026-09-06 §4.1</span></header><div class="finding-note">The log promises "Every decision, change, and override is recorded here", yet its last entry is the 2026-06-14 finalize. Git confirms both amendments landed (<code>7e7ef4e</code> 2026-09-05; <code>33a27e2</code> 2026-09-06), so the PRD changed twice after "final" with zero audit-trail entries. The 09-06 PRD edit also travelled in a commit titled "feat: Implement mTLS for Dapr Sentry …", so the commit history does not surface it either.</div><div class="finding-fix"><strong>Fix:</strong> Append two dated entries listing each section touched, the approving proposal, and the commit hash; adopt the rule that any post-final PRD edit adds a log entry in the same change.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">§13 Open Questions are all answered by architecture decisions but still listed as open</h3><span class="finding-location">PRD §13 items 1–6 ↔ AD-02, AD-03, AD-08, AD-11/AD-25, AD-16, AD-17/AD-04</span></header><div class="finding-note">AD-02 binds id derivation; AD-03 <code>Priority = Critical/High/Normal/Low</code>; AD-08 actor turn lock + ETag; AD-11 durable Dapr actor reminder; AD-16 pausable checkpoint rebuild; AD-17 validation domains incl. "Unit immutable after first set". A reader of the PRD alone believes six mechanism questions are unresolved.</div><div class="finding-fix"><strong>Fix:</strong> Convert §13 into a "Resolved by architecture" table: each item → AD-nn, keeping residual openness only where the register says so (item 4 → VAL-H07; item 5 → VAL-H08).</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Baseline security enforcement (AD-23/AD-24) is v1 scope the PRD says v1 does not build</h3><span class="finding-location">PRD §5, §6.2, §9 ↔ architecture.md AD-23, AD-24, AD-20 R10</span></header><div class="finding-note">PRD §5: "v1 builds … <strong>no</strong> security-hardening enforcement". Architecture now binds for v1 OIDC ingress, deny-before-dispatch on binding mismatch, Dapr mTLS with a trust domain, and authenticated provenance before an envelope <code>SequenceNumber</code> is trusted — as Story 4.9 platform acceptance. The PRD has no NFR for identity provenance/authentication.</div><div class="finding-fix"><strong>Fix:</strong> Add a §9 NFR "Identity provenance &amp; trusted origin (platform-owned baseline)" citing AD-23/AD-24 and narrow §5 to "no <em>Theme 6</em> hardening (step-up auth, signed links, consent/residency, DoS)".</div></article>
-          <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">§14 Assumptions Index holds assumptions the architecture has since invalidated or reframed</h3><span class="finding-location">PRD §14 bullets 5 and 14 ↔ AD-21, AD-02, VAL-H10</span></header><div class="finding-note">"Single-parent, acyclic, single-tenant Work Tree enforced <strong>at spawn time</strong>" vs AD-21 (evaluated inside the <em>registry's</em> <code>Handle</code>; the guard "remains as an assertion check, not an authority"). "explicit per-act idempotency tokens deferred" vs VAL-H10 (transport command idempotency is v1 work before the registry story). The index preface still says the architecture phase may "challenge any"; two were challenged and the index was not updated.</div><div class="finding-fix"><strong>Fix:</strong> Mark those two bullets "superseded by AD-21" / "narrowed by VAL-H10" and re-check the FR-7 "closes the event list" bullet once registry contracts are named.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Three approved 2026-09-05 sentences did not land verbatim</h3><span class="finding-location">PRD FR-7, FR-21, §8 ↔ sprint-change-proposal-2026-09-05 §4.1</span></header><div class="finding-note">Approved FR-21 ends "never stores conversation content"; PRD keeps "rather than its own comment store". Approved FR-7 includes "preserves every existing payload" (the testable bit Story 1.5 AC6 relies on) — dropped. Approved §8 lists "optional domain-focused supporting libraries" — omitted, so the <code>Reactor</code> project has no PRD home.</div><div class="finding-fix"><strong>Fix:</strong> Apply the three approved phrases verbatim.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Claim-race loser outcome narrowed downstream but PRD §9/FR-18 not amended</h3><span class="finding-location">PRD FR-18, §9 Concurrency ↔ epics.md NFR-3, AR-10; architecture.md AD-08</span></header><div class="finding-note">PRD: "one success and domain rejections for the rest." Downstream distinguishes a re-handled domain rejection from retry-exhaustion <code>ConcurrencyConflict</code>; deferred-work DW-40 notes nothing at runtime issues two competing claims.</div><div class="finding-fix"><strong>Fix:</strong> Amend §9/FR-18: "the loser receives a domain rejection; if the substrate's bounded conflict retry is exhausted the outcome is an infrastructure failure, never a silent loss."</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">FR-11 recursive phrasing "retired" by AD-06; AD-22 adds roll-up states the PRD lacks</h3><span class="finding-location">PRD FR-11 ↔ architecture.md AD-06, AD-22</span></header><div class="finding-note">AD-06 replaces the recursive form with "rolled = own + Σ descendant slots" (same total); AD-22 reserves "Unavailable" roll-up semantics for repair windows and rebuild staging — a state the PRD has no notion of.</div><div class="finding-fix"><strong>Fix:</strong> Add one FR-11 consequence: "the Roll-Up may expose <em>unavailable</em> for a subtree during a declared repair window or rebuild staging; it never exposes a partial or stale-as-fresh value."</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Unspecified scope — read-model change notifications</h3><span class="finding-location">no FR ↔ epics.md UX-DR1, Story 4.4 AC</span></header><div class="finding-note">Epics require projections to "emit change notifications (live-update friendly)"; no FR or NFR in the PRD requires it.</div><div class="finding-fix"><strong>Fix:</strong> Add a consequence to FR-20/FR-11 or tag UX-DR1 as Theme 3 with no v1 AC.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">Open governed exception to "tenant isolation at every layer" is being negotiated without the PRD</h3><span class="finding-location">PRD §9 Tenant isolation ↔ architecture.md AD-15, VAL-H09</span></header><div class="finding-note">AD-15: "the cross-tenant recovery registries remain an open governed-exception item". If adopted, this is a PRD NFR exception.</div><div class="finding-fix"><strong>Fix:</strong> When VAL-H09 closes, amend §9 with the control-plane exception and its audit condition; until then, add a pointer in §9.</div></article>
-          <article class="finding"><header><span class="badge badge-sev-low">low</span><h3 class="finding-title">FR-7 "names final for v1" will be outgrown by AD-21 contracts</h3><span class="finding-location">PRD FR-7 ↔ architecture.md AD-21</span></header><div class="finding-note">AD-21 adds registry commands/events and "a dedicated additive rejection event"; the "additively extensible" escape hatch holds, but "names final" and the 15-name list will be false once the registry story lands.</div><div class="finding-fix"><strong>Fix:</strong> Fold into the AD-21 correct-course pass.</div></article>
-        </div>
-      </details>
-    </section>
-
-    <div class="mechanical">
-      <h3>Mechanical notes</h3>
-      <ul>
-        <li><strong>Assumptions Index roundtrip.</strong> 19 inline <code>[ASSUMPTION…]</code> tags; all 19 map to a §14 entry. One §14 entry has no inline tag: "§4.1 FR-5 — A Suspended Work Item may hold multiple Await-Conditions and resumes on the first match" — stated as fact in FR-5 and the Glossary. Tag it inline or remove it from the index.</li>
-        <li><strong>ID continuity.</strong> FR-1–FR-25, UJ-1–UJ-4, SM-1–SM-5, SM-C1–SM-C2 contiguous and unique. §13 items are numbered 1–6 without an ID prefix, while §6.2 says "(Resolves draft OQ-8.)" — OQ-8 no longer exists in the document. Dangling reference.</li>
-        <li><strong>Cross-references.</strong> All §-number and FR/SM references in the body resolve. The only semantic mismatch is FR-15 ↔ §10 on non-matching resume (high finding).</li>
-        <li><strong>Glossary drift.</strong> §3 mandates "use these terms exactly", yet 21 occurrences use lowercase forms (<code>burn-down</code>, <code>roll-up</code>, <code>await-condition</code>, <code>executor binding</code>) in §1, §2.3 UJ-3, §4.1, §4.3, §6.1, §10, §12. "meter" is bolded in the Burn-Down entry and used by the addendum but has no Glossary entry. "engine" (UJ-3, FR-15) is undefined and misleading given §9 Domain purity. "type" (FR-10, FR-13, §12) undefined. "Done" collision. "Themes 1 &amp; 2" undefined.</li>
-        <li><strong>UJ protagonists.</strong> UJ-1 "A Hexalith builder"; UJ-2 "A service Party"; UJ-3 none (the Work Item acts); UJ-4 "Mary" (deferred).</li>
-        <li><strong>Required sections.</strong> All present for a chain-top developer-product PRD. Missing: an amendment log. Stale marker: the H1 is still followed by "<em>Working title — confirm.</em>" in a <code>status: final</code> document.</li>
-        <li><strong>Frontmatter.</strong> <code>updated: 2026-09-05</code> while FR-20 is "Amended 2026-09-06"; <code>status: final</code> retained through two substantive amendments.</li>
-        <li><strong>Addendum consistency.</strong> Addendum package layout includes <code>Client (consumer integration, if needed)</code>; PRD §8 omits it. <code>ResumeWorkItem(correlationKey)</code> and the Await-Condition set match FR-14/FR-15; <code>LinkConversation</code> semantics match the amended FR-21 exactly.</li>
-      </ul>
-    </div>
-
-    <footer class="report-footer">
-      <div class="meta">
-        <span>Rubric: .agents/skills/bmad-prd/assets/prd-validation-checklist.md</span>
-        <span>Reviewers: review-rubric.md · review-adversarial-general.md · review-downstream-drift.md</span>
-        <span>Generated: 2026-09-08T12:25:00+02:00</span>
-      </div>
-    </footer>
+  <div class="synthesis">
+    <p>This is a strategically coherent, unusually substantive technical PRD with explicit scope cuts, product bets, testable consequences, and useful counter-metrics. It is not yet safe as an unqualified implementation contract: normative sections disagree on core lifecycle, tree, authorization, and Roll-Up behavior, and the addendum contradicts the security-critical actor-provenance rule.</p>
+    <p>The adversarial, downstream-drift, and readiness passes confirm that coordinated implementation is blocked. The PRD was amended after the prior validation, but architecture and epics still encode the earlier 25-FR design. Isolated pure-domain work may proceed only where the PRD is internally consistent. Across four reviews, 52 finding occurrences consolidate to 5 critical, 13 high, 6 medium, and 3 low issues.</p>
   </div>
+
+  <div class="dimension-summary">
+    <div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color:var(--verdict-adequate)">adequate</div></div>
+    <div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
+    <div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
+    <div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color:var(--verdict-thin)">thin</div></div>
+    <div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color:var(--verdict-adequate)">adequate</div></div>
+    <div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color:var(--verdict-thin)">thin</div></div>
+    <div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
+  </div>
+
+  <section class="dimension"><details>
+    <summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The PRD exposes real decisions: the kernel-only cut, carried-but-unenforced authority, eventual cross-aggregate effects, and no active-work reassignment. It remains unsafe as a clean build/release authorization while normative rules conflict and required platform gates are scattered.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Normative Resume behavior has two answers</h3><span class="finding-location">§4.2 FR-6; §4.4 FR-15</span></header><div class="finding-note">The table rejects Resume from InProgress, while FR-15 requires a consumed-condition replay to be a no-op after the item returns to InProgress.</div><div class="finding-fix"><strong>Fix:</strong> Make FR-15 the single rule and mirror its three outcomes in the table, architecture, epics, and tests.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Release-dependency gates are not actionable</h3><span class="finding-location">§9; §13; addendum handoff</span></header><div class="finding-note">Production ingress and several integration paths are blocked by open platform obligations, but no table says what blocks which phase.</div><div class="finding-fix"><strong>Fix:</strong> Add owner, evidence, and phase impact for every open R/VAL dependency.</div></article>
+    </div>
+  </details></section>
+
+  <section class="dimension"><details>
+    <summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The Vision is specific and falsifiable: “everything is a Party,” Raw Acts instead of AI interpretations in the system of record, and a thin event-sourced coordination kernel. Journeys are appropriately lean, NFRs are product-specific, and the roadmap does not pretend deferred capabilities already exist.</p></div></div>
+  </details></section>
+
+  <section class="dimension"><details>
+    <summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The scope follows a clear thesis. Aggregate/lifecycle, Roll-Up, saga coordination, executor unification, and thin-core boundaries support one coherent spine; SM-1 through SM-6 and the two counter-metrics test the intended product bets.</p></div></div>
+  </details></section>
+
+  <section class="dimension"><details open>
+    <summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-thin">thin</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>Most FRs contain useful legal-state, event, rejection, and concurrency consequences. The dimension is thin because ambiguity remains on the exact child-creation, Resume, terminal Roll-Up, and eventual-coordination paths that SM-1 and SM-2 must certify.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Public Create can bypass the Work-Tree Registry</h3><span class="finding-location">FR-1; FR-13; FR-16</span></header><div class="finding-note">Ordinary Create may supply a parent reference even though registry reserve is the sole public attachment act; the specified ordering can also attach an edge before child creation succeeds.</div><div class="finding-fix"><strong>Fix:</strong> Restrict parent-bearing Create to the Reactor with reservation evidence and make Attached require both parent and child acceptance.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Explicit completion leaves Roll-Up contribution ambiguous</h3><span class="finding-location">§3; FR-8; FR-11; SM-2</span></header><div class="finding-note">Reported Remaining may stay positive after Complete, while terminal contribution must be zero and formulas still sum own Remaining.</div><div class="finding-fix"><strong>Fix:</strong> Name retained meter Remaining and effective RollUpContribution separately.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Eventual coordination has no measurable bound</h3><span class="finding-location">FR-16; FR-26; SM-1</span></header><div class="finding-note">Reservation, child creation, resume, cascade, and reminder recovery lack acknowledgement and failure predicates.</div><div class="finding-fix"><strong>Fix:</strong> Define configured bounds, observable quiescence, timeout outcomes, and cascade closure.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">SM-5 authorizes an impossible active-state change</h3><span class="finding-location">FR-6; FR-17; SM-5</span></header><div class="finding-note">“Mid-work” Channel change conflicts with rejection of Assign/Queue in InProgress and Suspended.</div><div class="finding-fix"><strong>Fix:</strong> Scope SM-5 to Assigned or add a distinct active-state handoff.</div></article>
+    </div>
+  </details></section>
+
+  <section class="dimension"><details>
+    <summary><h2>Scope honesty</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The PRD is candid about v1 exclusions, distinguishes the platform identity baseline from Theme 6 hardening, indexes assumptions, and names deferred tensions. The `final` label nevertheless obscures the difference between a final product contract and readiness for integration or production.</p></div></div>
+    <div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Provisional performance criteria look release-gating</h3><span class="finding-location">§9; SM-2; §14</span></header><div class="finding-note">The PRD says no numeric target is pinned, then gives a 1,600-item fixture, &lt;200 ms read, and 5 s convergence.</div><div class="finding-fix"><strong>Fix:</strong> Either bind them with test conditions or label them non-gating and assign an owner/date.</div></article></div>
+  </details></section>
+
+  <section class="dimension"><details open>
+    <summary><h2>Downstream usability</h2><span class="verdict-pill verdict-thin">thin</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The Glossary, stable IDs, cross-references, and assumptions roundtrip are strong. Extraction remains unsafe while the addendum contradicts actor provenance, the Resume seam has inconsistent terminology, and downstream architecture/epics encode the pre-amendment product.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">The addendum reintroduces spoofable actor provenance</h3><span class="finding-location">addendum event sketch; FR-7; §9</span></header><div class="finding-note">The handoff sketch says actor identity comes from “the binding + EventStore envelope,” while the PRD says Executor Binding never supplies actor identity.</div><div class="finding-fix"><strong>Fix:</strong> State that actor and timestamp come exclusively from trusted envelope metadata and test actor ≠ bound Party.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Resume's external seam is named inconsistently</h3><span class="finding-location">§4.4; §6.1; addendum</span></header><div class="finding-note">It is called both a port and a command issued by Reactor/adapters.</div><div class="finding-fix"><strong>Fix:</strong> Use “Resume command contract plus deferred external adapter”; reserve Port for FR-22 abstractions.</div></article>
+    </div>
+  </details></section>
+
+  <section class="dimension"><details>
+    <summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p>The capability-led shape fits a headless, chain-top developer product. Journeys orient without inflating personas, FRs dominate the document, and implementation depth mostly lives in the addendum.</p></div></div>
+  </details></section>
+
+  <section class="reviewer-section"><details>
+    <summary><h2>Adversarial general review</h2><span class="reviewer-source">review-adversarial-general.md</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p><strong>FAIL — 2 critical, 6 high, 5 medium, 1 low.</strong> This lens stress-tested internal consistency, data integrity, authorization, idempotency, and hidden operational consequences.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Spawn can bypass registry or leave a ghost Attached edge</h3><span class="finding-location">ADV-C01</span></header><div class="finding-note">Direct parent-bearing Create and attach-before-child-success create two integrity failures.</div><div class="finding-fix"><strong>Fix:</strong> Use origin-restricted child Create, evidence-backed state transitions, compensation, and crash-point tests.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Executor-only language conflicts with membership-only authorization</h3><span class="finding-location">ADV-C02</span></header><div class="finding-note">Implementers cannot tell whether actor Party must equal the current binding.</div><div class="finding-fix"><strong>Fix:</strong> Publish the command authorization matrix and actor propagation rule.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Roll-Up formula conflicts with terminal contribution</h3><span class="finding-location">ADV-H01</span></header><div class="finding-note">Explicitly completed items can retain positive Remaining but must contribute zero.</div><div class="finding-fix"><strong>Fix:</strong> Introduce a distinct active contribution value and use it consistently.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Progress correction guidance is false</h3><span class="finding-location">ADV-H02</span></header><div class="finding-note">ReEstimate changes Estimated, not erroneous Done.</div><div class="finding-fix"><strong>Fix:</strong> Add an auditable correction act or declare progress immutable.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Handoff, cascade, query visibility, and idempotency remain contradictory</h3><span class="finding-location">ADV-H03–H06</span></header><div class="finding-note">The PRD promises forbidden active handoff, cannot prove cascade closure, lacks query entitlements, and treats rejection as idempotent replay.</div><div class="finding-fix"><strong>Fix:</strong> Bind observable product semantics for each before story generation.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Unit, ordering, scale, actor, and privacy edge cases remain</h3><span class="finding-location">ADV-M01–M05</span></header><div class="finding-note">The full review covers inheritance truth tables, cross-stream ordering, Registry scale, addendum provenance, and immutable-data handling.</div><div class="finding-fix"><strong>Fix:</strong> Resolve product-visible outcomes and convert mechanism work into owned gates.</div></article>
+    </div>
+  </details></section>
+
+  <section class="reviewer-section"><details>
+    <summary><h2>Downstream drift review</h2><span class="reviewer-source">review-downstream-drift.md</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p><strong>BLOCKED — 2 critical, 6 high, 4 medium, 2 low.</strong> Architecture is dated two days before the current PRD; epics remain largely pre-update. A team can pass current stories while violating the normative PRD.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Registry and FR-26 lack executable story coverage</h3><span class="finding-location">DD-C01</span></header><div class="finding-note">Inventories and stories stop at FR-25 and retain caller-facing spawn.</div><div class="finding-fix"><strong>Fix:</strong> Bind VAL-H10, then reslice Registry/Reactor work and update all inventories.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Story 4.9 omits the production trust gate</h3><span class="finding-location">DD-C02</span></header><div class="finding-note">OIDC, workload delegation, mTLS, broker ACL, and forged-origin tests are absent.</div><div class="finding-fix"><strong>Fix:</strong> Add the complete §9 and AD-23/24 matrix to owned acceptance.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">AD-13 contradicts current Resume semantics</h3><span class="finding-location">DD-H01</span></header><div class="finding-note">Architecture preserves no-current-match = no-op while PRD FR-15 requires rejection.</div><div class="finding-fix"><strong>Fix:</strong> Amend the decision register and epics NFR-9.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Lifecycle, Roll-Up, transport, query, and Party signals are stale</h3><span class="finding-location">DD-H02–H06</span></header><div class="finding-note">Current stories omit the September lifecycle matrix, flattened Roll-Up, v1 transport key, FR-20 views, and SM-3/SM-5 evidence.</div><div class="finding-fix"><strong>Fix:</strong> Correct-course architecture and epics against the 26-FR contract.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Success metrics, limits, and gates have not propagated</h3><span class="finding-location">DD-M01–M04</span></header><div class="finding-note">Downstream artifacts omit SM-6, field bounds, delta &gt; 0, per-tenant policy, and current platform gates; the addendum retains bad actor wording.</div><div class="finding-fix"><strong>Fix:</strong> Add coverage maps, boundary tests, and an explicit entry/acceptance/production gate table.</div></article>
+    </div>
+  </details></section>
+
+  <section class="reviewer-section"><details>
+    <summary><h2>Implementation readiness review</h2><span class="reviewer-source">review-readiness.md</span></summary>
+    <div class="dim-body"><div class="dim-judgment"><p><strong>BLOCKED — 2 critical, 7 high, 3 medium, 1 low.</strong> Isolated pure-domain work may proceed. Epic 3, distributed integration, platform migration, and production/security acceptance may not proceed safely from current artifacts.</p></div></div>
+    <div class="findings-list">
+      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Freeze Resume and registry-backed Create semantics first</h3><span class="finding-location">Readiness criticals</span></header><div class="finding-note">Both issues force incompatible command outcomes and story shapes.</div><div class="finding-fix"><strong>Fix:</strong> Resolve them in the PRD before architecture or Epic 3 continues.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Platform/security contracts are not executable</h3><span class="finding-location">Readiness high findings</span></header><div class="finding-note">Trusted origin, eventual recovery, rebuild fencing, compatibility, and privacy have no complete acceptance path.</div><div class="finding-fix"><strong>Fix:</strong> Turn R4/R6/R7/R11 and VAL-H09/H11/H12 into owned stories and gates.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Plans are not baselined to the 26-FR contract</h3><span class="finding-location">Architecture and epics</span></header><div class="finding-note">Current coverage claims are stale and permit non-conforming implementation.</div><div class="finding-fix"><strong>Fix:</strong> Run a formal correct-course and sprint-planning pass.</div></article>
+      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Performance and cross-repository sequencing remain ambiguous</h3><span class="finding-location">Readiness medium findings</span></header><div class="finding-note">Teams lack binding performance gates and a versioned provider/consumer dependency ledger.</div><div class="finding-fix"><strong>Fix:</strong> Bind test conditions and repository delivery order.</div></article>
+    </div>
+  </details></section>
+
+  <div class="mechanical">
+    <h3>Mechanical notes</h3>
+    <ul>
+      <li>FR, UJ, and SM identifiers are unique. FR-1 through FR-26 exist; FR-26 is presented between FR-16 and FR-17.</li>
+      <li>FR/UJ/SM cross-references resolve, but numeric range shorthand can omit FR-26.</li>
+      <li>The Assumptions Index roundtrips inline assumptions, including superseded and narrowed entries.</li>
+      <li>Glossary drift remains around singular Await-Condition versus the normative set of multiple Await-Conditions.</li>
+      <li>UJ-1 and UJ-2 have no named protagonists; minor for this headless developer product.</li>
+      <li>Brief and brainstorming relative links are off by one directory from the PRD workspace.</li>
+      <li>All four reviewer files and both consolidated reports were regenerated against the September PRD on 2026-09-12.</li>
+    </ul>
+  </div>
+
+  <footer class="report-footer"><div class="meta">
+    <span>Rubric: /home/administrator/projects/hexalith/works/.agents/skills/bmad-prd/assets/prd-validation-checklist.md</span>
+    <span>Generated: 2026-09-12T10:33:47+02:00</span>
+  </div></footer>
+</div>
 </body>
 </html>

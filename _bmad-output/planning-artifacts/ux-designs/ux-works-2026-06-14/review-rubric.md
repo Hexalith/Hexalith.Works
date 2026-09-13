@@ -2,104 +2,100 @@
 
 ## Overall verdict
 
-This is a **strong, source-disciplined spine pair** that a downstream consumer (architect or story-dev, human or AI) can source-extract from cleanly. Every named source resolves, the PRD glossary and UJ vocabulary are inherited verbatim, all four mockups are inline-linked, "spine wins on conflict" is stated in both files, and the Fluent-v5-inheritance posture is applied consistently (deltas only, no restated platform tokens). The contract holds. The few findings are minor cross-file parity gaps (NL escape hatch / Cost meter asymmetry between the two Components tables, one `{rounded.note}` reference that resolves to prose rather than a dimension) — none block extraction or implementation.
+The editorially restructured Works spine pair remains **strong and ready for finalization**. The contents map, merged future-web table, separated horizon/source-precedence subsections, centralized email gate, component subsections, relocated FR audit, and prose edits preserve the full product, source, FrontComposer, state, flow, and mock contracts. All prior regressions remain resolved; this pass found no new defects.
+
+Finding counts: **0 critical, 0 high, 0 medium, 0 low**.
 
 ## 1. Flow coverage — strong
 
-Checked: every UJ in the PRD (UJ-1..4, §2 lines 50–56) against a Key Flow with named protagonist, numbered steps, an explicit `**Climax:**` beat, and a `*Failure:*` path; plus handoff symmetry (folded into UJ-2/UJ-3 per decision log D13).
+The four rendered-PRD journey titles remain verbatim, each with its source protagonist, horizon, numbered steps, climax, and applicable failure/accessibility path (`EXPERIENCE.md:319-379`). UJ-2 still carries active Handoff, actor-mismatch recovery, additive CorrectProgress, and conditional reopen. UJ-3 still uses Reserved → Creating → durable child evidence → Attached and handles deterministic delayed-leg rejection. UJ-4 now points to the centralized email gate without losing Theme 3/6 separation. Dana's explicitly non-source journey still closes the possible web IA without becoming a shipping claim (`EXPERIENCE.md:381-393`).
 
-- UJ-1 (builder wires Works in) → Flow 1 "Wiring Works in (Sam, builder)" — climax + failure present.
-- UJ-2 (system/AI executor on uniform surface) → Flow 2 "(Atlas, a digital coworker, over MCP)" — climax + failure (lost claim).
-- UJ-3 (spawn/suspend/resume saga) → Flow 3 "(Dana, coordinator)" — climax + failure (await never matches); even covers the UJ-3 edge case (date trigger) via the Suspended state row.
-- UJ-4 (email capture + external one-tap) → Flow 4 "(Mary + an emailed supplier)" — climax + failure (NL escape hatch).
+### Editorial regression checks
 
-Each flow carries the verbatim `— UJ-n` tag, so traceability is mechanical. Handoff symmetry is correctly treated as a primitive woven through flows rather than a fifth flow.
+- **Resolved:** moving the FR audit after Key Flows did not alter or replace any source journey.
+- **Resolved:** the split Delivery horizons and Source precedence subsections retain the complete headless-v1, Theme 2 remainder, Themes 3–6, and uncommitted-web partition (`EXPERIENCE.md:30-52`).
 
-### Findings
-- **low** UJ-4 is a *deferred* horizon (PRD line 56: "Deferred — Theme 3 horizon, not built in v1"); the flow is designed ahead of build, which is the agreed session scope and is clearly framed in the spine header. No fix needed — noting so a consumer doesn't mistake Flow 4 for v1-buildable.
+No findings.
 
 ## 2. Token completeness — strong
 
-Checked: every frontmatter token, every `{path.to.token}` prose/component reference, hex presence + light/dark pairing, and the legitimacy of inherited Fluent references.
+`DESIGN.md` still defines no Works color, spacing, or radius overrides and inherits the active FrontComposer/Fluent UI V5 system (`DESIGN.md:67-99`). Both semantic typography tokens are defined and referenced. All 13 frontmatter component objects retain substantive implementation-base and visual-rule values. Contrast evidence remains required for load-bearing inherited combinations.
 
-- All color tokens carry hex; brand, burn-down, cost, and all nine status tokens carry both light and `-dark` variants.
-- Inherited Fluent tokens (neutrals, surfaces, elevation, focus ring, spacing, radii) are referenced by name with explicit "INHERIT / do not restate" comments — correct UI-system-inheritance pattern per the spec.
-- `metric` / `metric-hero` typography deltas are fully specified with the load-bearing `tabular-nums` note.
-- Prose `{colors.*}` / `{typography.*}` references all resolve to defined frontmatter keys.
-- Contrast: stated as a class ("Fluent v5 is WCAG-AA by default; brand deltas contrast-verified" — EXPERIENCE Accessibility Floor) rather than per-combo ratios. Acceptable given the inheritance posture, but see finding.
+No findings.
 
-### Findings
-- **low** Component token `burndown-meter.radius: '{rounded.note}'` and `radius: '{rounded.note}'` reference `rounded.note`, which exists but is a prose note ("Inherit Fluent v5…"), not a dimension. The reference *resolves*, but a naive resolver would flatten a sentence into a `radius` value. *Fix:* either drop the `radius` key (radius is inherited) or point it at a concrete Fluent radius token name.
-- **low** No explicit contrast ratio is stated for the load-bearing burn-down-green-on-track and status-pill-text-on-12%-tint combos. The "AA by default + verified" claim covers it at the policy level. *Fix (optional):* state the two or three load-bearing ratios numerically so a consumer needn't re-derive them.
+## 3. Component coverage — strong
 
-## 3. Component coverage — adequate
+The same 13 canonical Works IDs occur in DESIGN frontmatter, the new `Component contracts` subsection, and `EXPERIENCE.md` Component Patterns (`DESIGN.md:21-60,117-135`; `EXPERIENCE.md:99-117`). Each has meaningful visual and behavioral rules. Splitting `Visual references`, `Component contracts`, and `Work Status variants` improves extraction without changing vocabulary.
 
-Checked: every component name used anywhere has a real (non-stub) row in DESIGN.md.Components (visual) AND EXPERIENCE.md.Component Patterns (behavioral); names compared across both files.
+The merged future-web table preserves the FrontComposer/Fluent contract: Home plus one Module entry, route-backed tabs, generated grids/forms and lifecycle/authorization wrappers, L4 → L2 → generated-default precedence with L3 only on explicit delegation, and one Fluent accordion for sibling titled regions (`EXPERIENCE.md:67-82`). `FcStatusIcon`, visible status text, `FluentBadge`, and the other named bases remain consistent with current FrontComposer sources.
 
-Shared, dual-covered, name-identical: Burn-Down meter, Roll-Up "one number", Status pill, Party chip, Work-tree node, Action-link set, Capture bar, History timeline entry. All carry substantive rules in both files.
+### Editorial regression checks
 
-Asymmetries:
+- **Resolved:** merging IA anatomy and composition into one table retained every surface and its implementation boundary.
+- **Resolved:** component subsections did not orphan or rename any of the 13 canonical components.
 
-### Findings
-- **medium** **NL escape hatch** has a dedicated behavioral row in EXPERIENCE.md.Component Patterns (confidence-gated auto-apply; "NL is data, never instructions") but **no dedicated row** in DESIGN.md.Components — it appears only inline inside the Action-link set entry ("a quieter 'None of these — answer in my words' link beneath"). It is arguably a sub-element of the action-link set rather than a standalone component, but a strict cross-extract finds a behavioral component with no visual peer. *Fix:* add a one-line visual note for the NL escape-hatch link in DESIGN.md.Components, or explicitly mark it a sub-element of the action-link set in EXPERIENCE.md so the asymmetry is intentional.
-- **low** **Cost meter** appears in DESIGN.md.Components (deferred, Theme 5) but has **no row** in EXPERIENCE.md.Component Patterns (it surfaces only in the Heterogeneous-Units / Roll-Up rules and Composition Map). Defensible because it is unbuilt-in-v1 seam-shaping, and the deferral is labeled in DESIGN.md. *Fix (optional):* a one-line "deferred — Theme 5" stub row in EXPERIENCE.md would make the asymmetry self-documenting.
-- **low** **Queue row (DataGrid / FC-TBL)** has a behavioral row in EXPERIENCE.md; in DESIGN.md it is covered as the inherited `FluentDataGrid` ("the FC-TBL surface") rather than a bespoke entry. This is legitimate Fluent inheritance, not a miss — the visual spec is "inherit Fluent." Noted for completeness.
-- **low** Name qualifier drift: DESIGN.md says "Action-link set (email-as-UI)"; EXPERIENCE.md says "Action-link set". Same root name + parenthetical surface qualifier — resolves unambiguously, but exact-match tooling would flag it.
+No findings.
 
 ## 4. State coverage — strong
 
-Checked: walked each IA surface (What's next, Work, Work Item detail, Capture, Admin, Audit, Email-as-UI, MCP/Chatbot) for expected states (cold-load, empty, suspended, error, offline/reconnecting, permission-denied, plus domain-specific states).
+Inherited FrontComposer loading, empty, data, stale/reconnecting/offline, denial, validation, command-lifecycle, and recovery states remain intact, with Works-specific Handoff, correction/reopen, child coordination, Roll-Up, claim-loss, Conversation, and channel states (`EXPERIENCE.md:179-221`). The Burn-Down table still covers determinate, unestimated, zero-estimate, overrun, non-terminal zero, progress-completed, explicit residual-completed, and corrected/reopened behavior (`EXPERIENCE.md:274-287`). Focus, live-update, privacy/localization, reflow, reduced-motion, and forced-colors rules remain complete.
 
-EXPERIENCE.md State Patterns covers: cold load (skeleton), empty queue, empty tree, suspended/awaiting (with inline await-condition + auto-resume), heterogeneous Units, lost claim (concurrency), reconnecting (SignalR drop, numbers freeze), permission denied (hidden not blocked — matches PRD tenant-isolation NFR), email link used/expired, cascade (cancel/reject/expire propagation), and save-failed (ProblemDetails). This set is unusually complete and each treatment cites concrete microcopy.
+### Editorial regression checks
 
-### Findings
-- **low** No explicit state row for **Admin** and **Audit** surfaces (cold/empty/permission). They are deferred-theme surfaces (Themes 4–6) marked thin/seam-shaping in the IA and Composition Map, so this is consistent with the "don't over-fit v1 to deferred themes" PRD directive — but a consumer building those surfaces later has no state guidance. *Fix (defer-acceptable):* note in State Patterns that Admin/Audit states are deferred with the themes.
-- **low** Heterogeneous-Unit handling is treated as a state and as a component rule and as a primitive (banned: implicit cross-Unit conversion) — thorough, not a gap; noted as a strength.
+- **Resolved:** centralizing the Theme 3 email gate removed repeated normative prose while preserving all email/NL state references and keeping Theme 6 hardening separate (`EXPERIENCE.md:209-221,248-256`).
+
+No findings.
 
 ## 5. Visual reference coverage — strong
 
-Checked: every file in `mockups/`, `.working/`, `imports/` is linked inline at the relevant section, named, and that "spine wins on conflict" appears once.
+The new `Visual references` subsection links all nine promoted files at their IA/horizon groups and states exactly what each illustrates (`DESIGN.md:103-115`). The separate historical color exploration also resolves. Every mock remains visibly and structurally visual-only/non-copyable and subordinate to the spines; no mock is orphaned, and `wireframes/`/`imports/` contain no files.
 
-- `mockups/key-whats-next.html` — linked in EXPERIENCE IA composition references.
-- `mockups/key-work-item.html` — linked in DESIGN Burn-Down meter + EXPERIENCE IA.
-- `mockups/key-work-tree.html` — linked in DESIGN Roll-Up + EXPERIENCE IA.
-- `mockups/key-email-as-ui.html` — linked in DESIGN Action-link set + EXPERIENCE IA.
-- `.working/color-themes-1.html` — linked in DESIGN Colors at the `[TASTE]` brand-color note.
-- `imports/` — empty; spines correctly claim no imports/orphans.
+### Prior-regression checks
 
-"Spine wins on conflict" is stated in both the EXPERIENCE header and the IA composition reference, and in DESIGN by reference. All four mockups verified to use the brand `#5B5FC7` and burn-down `#107C10` tokens and `tabular-nums` (email mockup correctly omits burn-down green and uses table-safe styling), so the mocks are token-consistent with DESIGN.md.
+- **Resolved — responsibility actors:** Assigned Claim stays disabled for the DP coordinator when another Party is responsible; the Work Item account and responsibility-bound act history align (`mockups/key-whats-next.html:111,148-178`; `mockups/key-work-item.html:106,114-153`).
+- **Resolved — Assigned progress:** estimated Assigned rows remain at Done 0, with the other Assigned sample unestimated (`mockups/key-whats-next.html:148-170`).
+- **Resolved — Roll-Up arithmetic:** the tree still shows 12 hours from 6 own + 6 child, 7 interactions from 2 own + 3 + 2 active descendants, explicit-completion residual contributing zero, and one visible unestimated active descendant (`mockups/key-work-tree.html:109-176`).
+- **Resolved — mock/spine layout:** Attached tree stays the sole always-visible primary visualization; Roll-Up is first/expanded in the supporting accordion and child coordination follows (`mockups/key-work-tree.html:109-194`; `DESIGN.md:85-91`; `EXPERIENCE.md:67-82`).
 
-### Findings
-- **low** DESIGN Colors `[TASTE]` prose names "three alternative registers (Communication blue, Flow teal, Frontier indigo)"; the linked `color-themes-1.html` contains **four** cards — Momentum (RECOMMENDED, = the chosen blurple), Communication, Flow, Frontier. The prose lists the three *alternatives* to the chosen Momentum, so the count reconciles, but a reader who opens the file sees a "Momentum" card not named in the prose. *Fix:* add "(Momentum — the recommended/shipped register)" to the prose so the linked artifact and the prose name the same set.
+No findings.
 
-## Pass 2 — judgment
+## 6. Bloat & overspecification — adequate
 
-### 6. Bloat & overspecification — strong (lean)
+The restructure improves navigation and removes scattered normative email-gate prose. Delivery horizons and precedence are short dedicated subsections; future-web anatomy and composition now share one table; visual references and component contracts are explicit subsections; and the FR audit sits at the end as a treatment/disposition index. The action matrix and detailed state/accessibility rules remain justified downstream contracts, while volatile mechanics stay owned by the cited PRD/memlog and architecture (`EXPERIENCE.md:42-52,67-82,121-177,395-426`).
 
-No bloat. The two invented EXPERIENCE sections (Composition Map, Channel & Surface Matrix) earn their place: the Composition Map tells downstream dev which FrontComposer leverage level (L2/L3/L4/generated) each surface uses — load-bearing for an AI dev that would otherwise hand-author generated surfaces; the Channel & Surface Matrix encodes the PRD's "channel and executor are orthogonal" invariant as an act×channel grid. DESIGN.md stays disciplined to deltas and does not restate Fluent's palette. The deferred Cost meter / Admin / Audit content is deliberately thin per the PRD non-over-fit directive.
+### Prior-regression check
 
-### 7. Inheritance discipline — strong
+- **Resolved — volatile duplication:** no editorial move reintroduced protocol narration, hard-coded open actor policy, or a second product specification.
 
-- Sources resolve: PRD (`prds/prd-works-2026-06-14/prd.md`), brief (`briefs/brief-works-2026-06-14/brief.md`), and the EXPERIENCE-only third source (`Hexalith.FrontComposer/_bmad-output/project-context.md`) all exist on disk.
-- Glossary verbatim: Work Item, Obligation, Burn-Down, Roll-Up, Party, Channel, AuthorityLevel, Await-Condition, Saga, Raw Act all used exactly as PRD §3 defines them. The nine Status values (Created, Assigned, Queued, InProgress, Suspended, Completed, Cancelled, Rejected, Expired) match PRD §3/§4.2 exactly.
-- UJ mapping verbatim: each Key Flow tagged `— UJ-n` matching the PRD's UJ titles.
-- Microcopy attribution: phrases the spines mirror ("what's next", "one number", "single claim wins") resolve to the PRD; "one tap", "answer in my words", "capture in seconds" resolve to the named brief — all to a declared source, none invented.
-- EXPERIENCE token references resolve to DESIGN tokens (e.g., amber Suspended → `status-suspended`; metric figures → `typography.metric`).
+No findings.
 
-### Findings
-- **low** The DESIGN.md status-phase mnemonic ("Pre-work / Owned (push) / Pool (pull) / Live / Parked / Done / Closed / Refused / Timed out") is an *invented* grouping layered over the PRD's nine statuses. It is accurate (PRD FR-6 explicitly calls Assigned the push entry and Queued the pull entry) and aids comprehension, but the phase labels themselves are not PRD vocabulary. Acceptable as editorial framing; flagged only so a consumer doesn't treat the phase names as glossary terms.
+## 7. Inheritance discipline — strong
 
-### 8. Shape fit — strong
+All nine frontmatter source paths resolve in both spines. Source precedence still gives the five accepted PRD-memlog entries priority over conflicting rendered PRD text, then uses the PRD/addendum for unchanged semantics, FrontComposer for shell/composition, current architecture for compatible constraints, and the brief for vision (`EXPERIENCE.md:42-52`). Exact journey titles, Work Status values, component IDs, glossary capitalization, and horizon boundaries remain consistent.
 
-- DESIGN.md follows the canonical section order: Brand & Style → Colors → Typography → Layout & Spacing → Elevation & Depth → Shapes → Components → Do's and Don'ts. No reorder, no missing-but-present-out-of-order section.
-- EXPERIENCE.md carries the required defaults (Foundation, IA, Voice and Tone, Component Patterns, State Patterns, Interaction Primitives, Accessibility Floor, Key Flows) and the warranted triggered sections (Responsive & Platform — multi-surface; Inspiration & Anti-patterns — earns its place with concrete lifted/rejected calls).
-- Invented sections (Composition Map, Channel & Surface Matrix) are justified above; both are tabular and terse, consistent with the example spines' register.
-- Frontmatter is complete on both files (name, status: final, sources, updated; DESIGN adds description + ui_system).
+All five reconciliation notes remain current and unchanged by the editorial pass. They continue to identify the five overrides, superseded rendered text, all 26 architecture-bound FRs, active Handoff, limited reopen, durable attachment, actor responsibility, host-inherited accent, and source-open details.
+
+### Prior-regression checks
+
+- **Resolved — stale reconciliations:** no stale no-Handoff, no-reopen, membership-only, ChildSpawned-first, configurable-Works-accent, or 25-FR disposition returned.
+- **Resolved — product fidelity:** actor/binding match, trusted system/Reactor origin, Handoff without status change, additive CorrectProgress with limited reopen, durable evidence before Attached, and replay-stable delayed-leg rejection agree across sources, spines, reconciliations, and mocks.
+
+No findings.
+
+## 8. Shape fit — strong
+
+`DESIGN.md` retains canonical top-level order: Brand & Style → Colors → Typography → Layout & Spacing → Elevation & Depth → Shapes → Components → Do's and Don'ts (`DESIGN.md:67-166`). `EXPERIENCE.md` retains every required default plus justified lifecycle, Roll-Up, privacy/localization, responsive/platform, inspiration, and traceability material (`EXPERIENCE.md:24-426`). The 14-entry contents map resolves to the current headings in document order; its FR audit label correctly targets `Functional Requirement Traceability` (`EXPERIENCE.md:22`). Cross-document links to `DESIGN.md#visual-references` and `EXPERIENCE.md#theme-3-email-implementation-gate` resolve.
+
+No findings.
 
 ## Mechanical notes
 
-- **Frontmatter:** both files set `status: final` and `updated: 2026-06-14`. DESIGN.md carries `description` and `ui_system` (good — names the inherited system explicitly). EXPERIENCE.md adds a third source (FrontComposer project-context) not present in DESIGN.md; both DESIGN sources are a subset, which is fine.
-- **Source addenda:** spine frontmatter cites `prd.md` and `brief.md` but not their sibling `addendum.md` files (both exist). The reconcile-prd note explicitly says it anchors on "PRD + addendum," so the addenda are de-facto inherited; consider listing them in frontmatter for an exact contract. (low)
-- **Cross-refs:** all four mockup links and the color-themes link are valid relative paths that resolve to existing files. The `{rounded.note}` self-reference resolves to a key that exists but holds prose (see 2).
-- **Name parity:** the only cross-file name drift is "Action-link set" vs "Action-link set (email-as-UI)" (qualifier) and the NL-escape-hatch / Cost-meter table asymmetry (see 3). No broken or dangling component names.
-- **No orphans:** `imports/` empty as claimed; every visual artifact is referenced.
+- Nine source paths resolve from each spine.
+- All four PRD UJ headings match verbatim and retain protagonist, horizon, numbered steps, climax, and failure/accessibility handling.
+- FR-1 through FR-26 appear exactly once in the final audit table.
+- All 13 canonical component IDs match across DESIGN frontmatter, DESIGN component contracts, and EXPERIENCE Component Patterns.
+- `{typography.inherited}` and `{typography.numeric}` resolve; route, source, and value placeholders are not design-token references.
+- All nine promoted mocks and the historical color exploration resolve from inline links; no mock orphan exists.
+- No Mermaid, `[ASSUMPTION]`, `[NOTE FOR UX]`, `TODO`, or `TBD` marker occurs in either spine.
+- Both spines remain `status: draft`; this zero-finding pass leaves them ready for the parent Finalize step.
+- Findings: **0 critical, 0 high, 0 medium, 0 low**.

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Hexalith.Works Architecture Validation — 2026-09-12</title>
+<style>
+:root {
+    --bg: #edf1f5;
+    --panel: #ffffff;
+    --panel-alt: #f6f8fa;
+    --ink: #17202b;
+    --muted: #566273;
+    --line: #cfd7e1;
+    --link: #075d86;
+    --focus: #0078d4;
+    --critical: #9b1c31;
+    --critical-bg: #fff0f2;
+    --high: #9a4b00;
+    --high-bg: #fff4e8;
+    --medium: #6b5900;
+    --medium-bg: #fff9df;
+    --good: #176b3a;
+    --good-bg: #eaf7ef;
+    --shadow: 0 1px 2px rgba(23, 32, 43, .07), 0 8px 24px rgba(23, 32, 43, .07);
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #10151c;
+        --panel: #18202a;
+        --panel-alt: #202a36;
+        --ink: #e7edf5;
+        --muted: #aab5c4;
+        --line: #354252;
+        --link: #8fd0ee;
+        --focus: #76c7ff;
+        --critical: #ff929f;
+        --critical-bg: #331d23;
+        --high: #f4ae68;
+        --high-bg: #332519;
+        --medium: #e3cb68;
+        --medium-bg: #302b18;
+        --good: #80d69e;
+        --good-bg: #183022;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .45), 0 8px 24px rgba(0, 0, 0, .35);
+        color-scheme: dark;
+    }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.58 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--link); text-underline-offset: .16em; }
+a:focus-visible, [tabindex="0"]:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+code { font-family: ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: .88em; overflow-wrap: anywhere; }
+h1, h2, h3 { line-height: 1.2; text-wrap: balance; }
+h1 { margin: .3rem 0 .7rem; font-size: clamp(2rem, 5vw, 3.25rem); max-width: 23ch; }
+h2 { margin: 0 0 1rem; font-size: clamp(1.45rem, 3vw, 2rem); }
+h3 { margin: 0 0 .7rem; font-size: 1.12rem; }
+p { margin: .55rem 0; }
+.skip { position: absolute; left: .75rem; top: -5rem; z-index: 20; padding: .65rem .9rem; background: var(--panel); border: 2px solid var(--focus); border-radius: .4rem; }
+.skip:focus { top: .75rem; }
+.wrap { width: min(1160px, calc(100% - 2rem)); margin-inline: auto; }
+.masthead { background: var(--panel); border-bottom: 1px solid var(--line); padding: 2.2rem 0 1.5rem; }
+.eyebrow { margin: 0; color: var(--muted); text-transform: uppercase; letter-spacing: .11em; font-size: .78rem; font-weight: 750; }
+.meta { display: flex; flex-wrap: wrap; gap: .4rem 1.3rem; color: var(--muted); font-size: .92rem; }
+.verdict { margin-top: 1.25rem; padding: 1rem 1.15rem; border: 1px solid var(--critical); border-left-width: .5rem; border-radius: .5rem; background: var(--critical-bg); }
+.verdict strong { color: var(--critical); }
+.toc { margin-top: 1.2rem; }
+.toc ul { display: flex; flex-wrap: wrap; gap: .45rem 1rem; list-style: none; margin: 0; padding: 0; }
+.toc a { text-decoration: none; border-bottom: 1px solid var(--line); }
+main { display: grid; gap: 1.2rem; padding: 1.3rem 0 3rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: .75rem; padding: clamp(1rem, 2.5vw, 1.7rem); box-shadow: var(--shadow); }
+.card > p, .card > ol, .card > ul { max-width: 88ch; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .65rem; margin: 1rem 0; }
+.stat { padding: .8rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--panel-alt); text-align: center; }
+.stat b { display: block; font-size: 1.55rem; }
+.stat.critical b { color: var(--critical); }
+.stat.high b { color: var(--high); }
+.stat.medium b { color: var(--medium); }
+.table-wrap { overflow-x: auto; margin: .8rem 0 1rem; border-radius: .4rem; }
+table { width: 100%; border-collapse: collapse; font-size: .91rem; font-variant-numeric: tabular-nums; }
+caption { text-align: left; font-weight: 700; margin-bottom: .45rem; }
+th, td { border: 1px solid var(--line); padding: .5rem .62rem; vertical-align: top; text-align: left; }
+th { background: var(--panel-alt); }
+tbody tr:nth-child(even) { background: var(--panel-alt); }
+.finding { margin: 1.35rem 0 1.7rem; padding: 1rem 1rem 1rem 1.15rem; border: 1px solid var(--line); border-left-width: .42rem; border-radius: .5rem; }
+.finding.critical { border-left-color: var(--critical); background: var(--critical-bg); }
+.finding.high { border-left-color: var(--high); background: var(--high-bg); }
+.badge { display: inline-block; margin-right: .45rem; padding: .12rem .48rem; border-radius: 99rem; color: #fff; font: 750 .7rem/1.5 system-ui, sans-serif; letter-spacing: .07em; text-transform: uppercase; vertical-align: .12rem; }
+.critical .badge { background: #8e1730; }
+.high .badge { background: #8b4300; }
+.finding ul { margin: .5rem 0 0; padding-left: 1.25rem; }
+.finding li { margin: .42rem 0; max-width: 100ch; }
+.finding li > strong:first-child { color: var(--link); }
+.score-fail { color: var(--critical); font-weight: 750; }
+.score-concern { color: var(--medium); font-weight: 750; }
+.score-pass { color: var(--good); font-weight: 750; }
+.note { padding: .8rem 1rem; border-left: .35rem solid var(--link); background: var(--panel-alt); }
+footer { padding: 0 0 2.5rem; color: var(--muted); font-size: .9rem; }
+@media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    table { font-size: .84rem; }
+    .wrap { width: min(100% - 1rem, 1160px); }
+}
+@media print {
+    body { background: #fff; color: #000; }
+    .card { box-shadow: none; break-inside: avoid; }
+    .finding { break-inside: avoid; }
+    .toc, .skip { display: none; }
+    a { color: inherit; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to report content</a>
+<header class="masthead">
+<div class="wrap">
+    <p class="eyebrow">BMad Architecture · Validate · Reviewer Gate</p>
+    <h1>Hexalith.Works Architecture Validation</h1>
+    <p class="meta"><span>Assessment: 2026-09-12</span><span>Target: <code>architecture.md</code>, 1,197 lines</span><span>HEAD: <code>0cbc7c4</code></span><span>SHA-256: <code>2eff9c10…6e7d</code></span></p>
+    <div class="verdict" role="status"><strong>FAIL — update required before AD-21, AD-22, AD-25, or Story 4.9 implementation.</strong> The unchanged spine is not a safe consistency contract for the next cross-repository work because five critical and fourteen high gaps permit silent recovery loss, incompatible roll-up persistence, and divergent tree, security, recovery, and platform behavior.</div>
+    <nav class="toc" aria-label="Report sections"><ul>
+        <li><a href="#scope">Scope</a></li><li><a href="#delta">Delta</a></li><li><a href="#critical">Critical</a></li><li><a href="#high">High</a></li><li><a href="#medium">Medium</a></li><li><a href="#low">Low</a></li><li><a href="#scorecard">Scorecard</a></li><li><a href="#plan">Update plan</a></li><li><a href="#artifacts">Artifacts</a></li>
+    </ul></nav>
+</div>
+</header>
+<main id="main" class="wrap">
+
+<section class="card" id="scope" aria-labelledby="scope-heading">
+<h2 id="scope-heading">Scope and evidence</h2>
+<p>This Validate run assessed <a href="../architecture.md"><code>architecture.md</code></a> as a spine. The binding register and open-findings register occupy lines 26–453. The source SHA-256 is <code>2eff9c10fdd92c3929af71389139b304a2f02690deee9272dd93b0ad56d66e7d</code>; Git blob <code>b37a127d413857978bca4639126532a45e41554c</code> equals the blob at <code>HEAD</code>, and the target has no working-tree diff. Neither architecture nor code was modified.</p>
+<p class="note"><strong>Finding boundary.</strong> A code defect appears here only when it demonstrates a missing, ambiguous, or violated spine rule. The page-cursor defect qualifies because it directly violates AD-09, AD-10, and R7's re-readable recovery contract; unrelated implementation defects remain outside this report.</p>
+<div class="stats" aria-label="Deduplicated finding counts"><div class="stat critical"><b>5</b>Critical</div><div class="stat high"><b>14</b>High</div><div class="stat medium"><b>9</b>Medium</div><div class="stat"><b>3</b>Low</div></div>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Reviewer counts table"><table>
+<caption>Independent reviewer inputs and deduplicated result</caption>
+<thead><tr><th scope="col">Input</th><th scope="col">Critical</th><th scope="col">High</th><th scope="col">Medium</th><th scope="col">Low</th><th scope="col">Verdict</th></tr></thead>
+<tbody>
+<tr><td><a href="reviews/review-rubric-walker.md">Rubric walker</a></td><td>0</td><td>5</td><td>5</td><td>2</td><td>Fail — update required</td></tr>
+<tr><td><a href="reviews/review-adversarial-divergence.md">Adversarial divergence</a></td><td>4</td><td>9</td><td>3</td><td>0</td><td>Fail</td></tr>
+<tr><td><a href="reviews/review-technology-reality.md">Technology reality</a></td><td>0</td><td>2</td><td>2</td><td>1</td><td>Pass with high concerns</td></tr>
+<tr><td><a href="reviews/review-security-data-integrity.md">Security &amp; data integrity</a></td><td>1</td><td>7</td><td>3</td><td>0</td><td>Reject</td></tr>
+<tr><td><a href="reviews/review-code-spec-conformance.md">Code &amp; spec conformance</a></td><td>0</td><td>4</td><td>6</td><td>4</td><td>Fail; 12 ratified / 7 drift / 6 target</td></tr>
+<tr><td><a href="lint-spine.json">Deterministic lint</a></td><td>0</td><td>0</td><td>0</td><td>10 flags</td><td>All false positives</td></tr>
+<tr><th scope="row">Deduplicated report</th><th>5</th><th>14</th><th>9</th><th>3</th><th>Fail — update required</th></tr>
+</tbody></table></div>
+<h3>Lint disposition</h3>
+<p>The ten flags are intentional key-shape tokens: <code>{tenant}</code>, <code>{domain}</code>, and <code>{id}</code> at source lines 448, 473, 492, 666, 756, and 984. <strong>Disposition: ignore.</strong> No duplicate AD ID, missing Binds/Prevents/Rule, version, or other mechanical defect was reported.</p>
+</section>
+
+<section class="card" id="delta" aria-labelledby="delta-heading">
+<h2 id="delta-heading">Changes since 2026-09-08</h2>
+<p>The <a href="../architecture-validation-2026-09-08/ARCHITECTURE-VALIDATION.html">prior HTML report</a> is used only for comparison and presentation. The architecture source is byte-identical, so no architecture-text finding closed; newly observed does not mean newly introduced.</p>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Prior gate delta"><table>
+<thead><tr><th scope="col">Delta</th><th scope="col">Current assessment</th></tr></thead><tbody>
+<tr><td>Improved evidence</td><td>Release build evidence is green; 237/237 architecture tests and 93/93 focused integration tests passed. Build compiles but does not run the architecture-test assembly.</td></tr>
+<tr><td>External closure evidence</td><td><a href="../../../docs/eventstore-api-surface-constraints.md">The compatibility matrix</a> now closes VAL-H11 outside the spine; the spine's open row is stale.</td></tr>
+<tr><td>EventStore substrate</td><td>R11 and core projection/query/rebuild seams exist; R4 fan-out, R6 reminder/reconciliation, and R7 process-runner APIs still do not.</td></tr>
+<tr><td>Reminder handling</td><td><code>5c86eab</code> improves poison containment and ETag transforms, but no unpark/replay, periodic recovery, degraded readiness, cursor correction, or complete canonicalization exists.</td></tr>
+<tr><td>New critical evidence</td><td>The page-cursor skip is newly detected. The Reserved-watermark race is newly isolated. Neither is proved newly introduced.</td></tr>
+<tr><td>Conformance regression</td><td>The map moved from 15/4/6 to 12 ratified / 7 drifted / 6 target; AD-10, AD-11, and AD-19 moved to drift.</td></tr>
+<tr><td>Version reality</td><td>Compatible pins are no longer latest servicing patches, making AD-19's ownership mismatch operationally visible.</td></tr>
+<tr><td>Overdue gates</td><td>VAL-H10 is due at the requirements level; no executable registry story exists.</td></tr>
+</tbody></table></div>
+</section>
+
+<section class="card" id="critical" aria-labelledby="critical-heading">
+<h2 id="critical-heading">Critical findings</h2>
+
+<article class="finding critical" id="val3-c01"><h3><span class="badge">Critical</span>VAL3-C01 — Persisted roll-up contract unbound</h3><ul>
+<li><strong>Issue:</strong> AD-06/22 never bind the persisted slot DTO, keys, atomic visibility, equal-sequence rule, writer ownership, merge seam, or materialization; live state uses one watermark and whole-document replacement.</li>
+<li><strong>Divergence/risk:</strong> Works and EventStore can implement incompatible layouts that each satisfy the formula; replacement can silently erase another slot or own fields.</li>
+<li><strong>Source:</strong> <a href="../architecture.md#L82"><code>architecture.md:82–95</code></a>, <a href="../architecture.md#L263"><code>:263</code></a>, <a href="../architecture.md#L318"><code>:318–342</code></a>.</li>
+<li><strong>Corroboration:</strong> <a href="../../../src/Hexalith.Works.Contracts/Models/WorkItemRollUp.cs#L29"><code>WorkItemRollUp.cs:29</code></a>; <a href="../../../src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs#L440"><code>WorkItemProjectionDispatcher.cs:440</code></a>; <a href="../../../docs/work-roll-up-projection.md#L94"><code>work-roll-up-projection.md:94</code></a>.</li>
+<li><strong>Found by:</strong> ADV-0912-01; CONF-0912-06.</li>
+<li><strong>Disposition:</strong> <strong>Discuss, then autofix in Update.</strong> Choose and bind exact DTO/key/merge/materialization ownership; assign a replacing story before AD-22.</li>
+</ul></article>
+
+<article class="finding critical" id="val3-c02"><h3><span class="badge">Critical</span>VAL3-C02 — “Event alone” cannot produce contribution</h3><ul>
+<li><strong>Issue:</strong> <code>ProgressReported</code> is delta-only, <code>ReEstimated</code> lacks prior Done, and terminal contribution needs folded lifecycle state; Raw-Act rules prohibit derived totals in those payloads.</li>
+<li><strong>Divergence/risk:</strong> Raw-event, folded-state, and enriched-payload implementations write different ancestor totals after normal histories.</li>
+<li><strong>Source:</strong> <a href="../architecture.md#L82"><code>:82–103</code></a>, <a href="../architecture.md#L320"><code>:320–337</code></a>, <a href="../architecture.md#L782"><code>:782–800</code></a>.</li>
+<li><strong>Corroboration:</strong> <a href="../../../src/Hexalith.Works.Contracts/Events/ProgressReported.cs#L8"><code>ProgressReported.cs:8</code></a>; <a href="../../../src/Hexalith.Works.Contracts/Events/ReEstimated.cs#L8"><code>ReEstimated.cs:8</code></a>; <a href="../../../src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs#L222"><code>WorkItemRollUpProjection.cs:222</code></a>.</li>
+<li><strong>Found by:</strong> ADV-0912-02; RW12-03; CONF-0912-06.</li>
+<li><strong>Disposition:</strong> <strong>Autofix after contract confirmation.</strong> A Works folded projection emits an absolute snapshot; R4 transports it without interpreting payloads.</li>
+</ul></article>
+
+<article class="finding critical" id="val3-c03"><h3><span class="badge">Critical</span>VAL3-C03 — No single child-creation and attachment evidence chain</h3><ul>
+<li><strong>Issue:</strong> AD-21 attaches on <code>ChildSpawned</code>, repair asks for child-stream evidence, the PRD requires <code>WorkItemCreated</code>, and no current event carries reservation/witness identity.</li>
+<li><strong>Divergence/risk:</strong> Units can produce an attached edge without a child, or a child the registry does not recognize; replay/timeout follows different authorities.</li>
+<li><strong>Source:</strong> <a href="../architecture.md#L272"><code>:272–316</code></a>, <a href="../architecture.md#L327"><code>:327–333</code></a>, <a href="../prds/prd-works-2026-06-14/prd.md#L287"><code>prd.md:287–296</code></a>.</li>
+<li><strong>Corroboration:</strong> <a href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L71"><code>WorkItemAggregate.cs:71</code></a>; <a href="../../../src/Hexalith.Works.Contracts/Events/WorkItemCreated.cs#L8"><code>WorkItemCreated.cs:8</code></a>; <a href="../../../src/Hexalith.Works.Contracts/Events/ChildSpawned.cs#L8"><code>ChildSpawned.cs:8</code></a>.</li>
+<li><strong>Found by:</strong> ADV-0912-03; RW12-02/05; CONF-0912-03/08.</li>
+<li><strong>Disposition:</strong> <strong>Discuss, then autofix spine and PRD addendum.</strong> Recommended: fenced Reactor create; matching <code>WorkItemCreated</code> is sole attach evidence; registry envelope sequence is the witness.</li>
+</ul></article>
+
+<article class="finding critical" id="val3-c04"><h3><span class="badge">Critical</span>VAL3-C04 — Reserved watermark can acknowledge empty ancestry</h3><ul>
+<li><strong>Issue:</strong> AD-22 says watermark ≥ reservation sequence is fresh, but AD-21 enumerates only Attached edges; immediately after reservation, the predicate is true while ancestry is empty.</li>
+<li><strong>Divergence/risk:</strong> The only child delivery can be acknowledged before attach and never repaired; arrival order changes final roll-up state.</li>
+<li><strong>Source:</strong> <a href="../architecture.md#L293"><code>:293–302</code></a>, <a href="../architecture.md#L327"><code>:327–335</code></a>.</li>
+<li><strong>Corroboration:</strong> Registry is unbuilt; current projection is single-aggregate at <a href="../../../src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs#L96"><code>WorkItemProjectionDispatcher.cs:96</code></a>.</li>
+<li><strong>Found by:</strong> ADV-0912-04; corroborated by RW12-03.</li>
+<li><strong>Disposition:</strong> <strong>Autofix before story drafting.</strong> Require the exact matching Attached transition/sequence, or make attach deterministically backfill contribution.</li>
+</ul></article>
+
+<article class="finding critical" id="val3-c05"><h3><span class="badge">Critical</span>VAL3-C05 — Recovery skips every page-boundary event</h3><ul>
+<li><strong>Issue:</strong> EventStore's cursor is exclusive; two recovery readers add one to the returned last sequence, skipping the next event.</li>
+<li><strong>Divergence/risk:</strong> Boundary child, await, resume, or terminal facts silently disappear; checkpoints become permanently incomplete without health/retry evidence.</li>
+<li><strong>Source:</strong> <a href="../architecture.md#L119"><code>:119–135</code></a> (AD-09/10), <a href="../architecture.md#L266"><code>:266</code></a> (R7). It is an architecture finding specifically because it violates these adopted rules.</li>
+<li><strong>Corroboration:</strong> <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Streams/StreamReadRequest.cs#L8"><code>StreamReadRequest.cs:8</code></a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/StreamReadingCascadeDescendantSource.cs#L75"><code>Cascade reader:75</code></a>; <a href="../../../src/Hexalith.Works/Recovery/ChildCompletion/StreamReadingChildCompletionAwaitingParentSource.cs#L127"><code>Child-completion reader:127</code></a>.</li>
+<li><strong>Found by:</strong> SEC-DI-0912-01; CONF-0912-01.</li>
+<li><strong>Disposition:</strong> <strong>Autofix code/tests immediately, then revalidate.</strong> Reuse the returned last sequence and add &gt;200-event boundary/restart tests. No fix is applied here.</li>
+</ul></article>
+</section>
+
+<section class="card" id="high" aria-labelledby="high-heading">
+<h2 id="high-heading">High findings</h2>
+
+<article class="finding high" id="val3-h01"><h3><span class="badge">High</span>VAL3-H01 — Late SpawnChild is not fenced</h3><ul><li><strong>Issue:</strong> Timeout may release a reservation, but no reservation ID/epoch reaches parent admission.</li><li><strong>Risk:</strong> A delayed valid spawn creates stream topology after terminal release.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L278"><code>:278–316</code></a>; <a href="../../../src/Hexalith.Works.Contracts/Commands/SpawnChild.cs#L19"><code>SpawnChild.cs:19</code></a>; <a href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L71"><code>WorkItemAggregate.cs:71</code></a>.</li><li><strong>Found by:</strong> ADV-0912-05.</li><li><strong>Disposition:</strong> <strong>Discuss/update:</strong> carry and validate a stable reservation ID plus fencing token; bind orphan/compensation behavior.</li></ul></article>
+
+<article class="finding high" id="val3-h02"><h3><span class="badge">High</span>VAL3-H02 — Registry wire/owner/authority contract incomplete</h3><ul><li><strong>Issue:</strong> Exact registry identity, topic, route, reserved ID, registration, translators, timeout, policy enrichment, and sole topology interface are unbound.</li><li><strong>Risk:</strong> Works/EventStore/Platform can subscribe differently, collide IDs, leave seams ownerless, or operate on different trees.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L254"><code>:254–316</code></a>, <a href="../architecture.md#L448"><code>:448</code></a>; <a href="../../../src/Hexalith.Works/Runtime/WorksHost.cs#L66"><code>WorksHost.cs:66</code></a>; <a href="../../../src/Hexalith.Works/Runtime/WorksEventIdentity.cs#L11"><code>WorksEventIdentity.cs:11</code></a>.</li><li><strong>Found by:</strong> ADV-0912-06/07; RW12-05; CONF-0912-08.</li><li><strong>Disposition:</strong> <strong>Discuss/update:</strong> bind wire namespace, one topology enumeration API, owners, and migration.</li></ul></article>
+
+<article class="finding high" id="val3-h03"><h3><span class="badge">High</span>VAL3-H03 — Transport idempotency is overdue</h3><ul><li><strong>Issue:</strong> VAL-H10 remains open; originators derive IDs differently, Works leaves semantic idempotency null, and default retention is 24 hours.</li><li><strong>Risk:</strong> Saga effects can duplicate after retry, migration, retention expiry, backup, or DR replay.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L49"><code>:49–55</code></a>, <a href="../architecture.md#L270"><code>:270</code></a>, <a href="../architecture.md#L449"><code>:449</code></a>; <a href="../../../src/Hexalith.Works/Runtime/EventStoreGatewayWorkCommandSubmitter.cs#L18"><code>submitter:18</code></a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Actors/IdempotencyRetentionOptions.cs#L3"><code>retention:3</code></a>.</li><li><strong>Found by:</strong> ADV-0912-08; SEC-DI-0912-07; RW12-04.</li><li><strong>Disposition:</strong> <strong>Discuss; add an AD before AD-21 work.</strong> Bind key derivation, transport fields, horizon, conflicts, replay result, and delegation identity.</li></ul></article>
+
+<article class="finding high" id="val3-h04"><h3><span class="badge">High</span>VAL3-H04 — Rebuild fence and recovery restore protocol absent</h3><ul><li><strong>Issue:</strong> No epoch, admitted-writer set, watermark, nack/catch-up/abort behavior; reminder discovery and parking are outside promotion.</li><li><strong>Risk:</strong> Acknowledged live writes disappear or overwrite promotion; restore can lose reminder discoverability.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L184"><code>:184–194</code></a>, <a href="../architecture.md#L263"><code>:263</code></a>, <a href="../architecture.md#L327"><code>:327–335</code></a>; <a href="../../../docs/eventstore-api-surface-constraints.md#L137"><code>constraints:137</code></a>.</li><li><strong>Found by:</strong> ADV-0912-09; SEC-DI-0912-04; RW12-03.</li><li><strong>Disposition:</strong> <strong>Discuss/update:</strong> bind epoch protocol, every writer, catch-up proof, and recovery-index restore.</li></ul></article>
+
+<article class="finding high" id="val3-h05"><h3><span class="badge">High</span>VAL3-H05 — Global registry/checkpoint integrity ungoverned</h3><ul><li><strong>Issue:</strong> Singleton registries and read/save checkpoints lack CAS/owner rules; reserved-ID admission is not consistently canonicalized.</li><li><strong>Risk:</strong> Replicas regress completion, tenants collide with control-plane tokens, or mixed-case poison stops recovery.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L174"><code>:174–182</code></a>, <a href="../architecture.md#L445"><code>:445–448</code></a>; <a href="../../../src/Hexalith.Works/Projections/WorksReadModelKeys.cs#L57"><code>WorksReadModelKeys.cs:57</code></a>; <a href="../../../src/Hexalith.Works/Recovery/Cascade/ReadModelCascadeCheckpointStore.cs#L29"><code>checkpoint store:29</code></a>.</li><li><strong>Found by:</strong> ADV-0912-10/15; SEC-DI-0912-05.</li><li><strong>Disposition:</strong> <strong>Autofix canonicalization; discuss/update protocol.</strong> Bind tokens, ownership, CAS/fence, monotonic merge, pruning, audit, and recovery.</li></ul></article>
+
+<article class="finding high" id="val3-h06"><h3><span class="badge">High</span>VAL3-H06 — Tenant delegation and command-origin carrier absent</h3><ul><li><strong>Issue:</strong> AD-23/24 omit signed context and enforcement locus; internal EventStore authentication grants global admin, while Works submits body tenant without delegation evidence.</li><li><strong>Risk:</strong> A compromised workload acts across tenants or invokes wrong command families; different carriers deny valid work.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L344"><code>:344–395</code></a>; <a href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore/Authentication/DaprInternalAuthenticationHandler.cs#L9"><code>DaprInternalAuthenticationHandler.cs:9</code></a>; <a href="../../../src/Hexalith.Works/Runtime/EventStoreGatewayWorkCommandSubmitter.cs#L19"><code>submitter:19</code></a>.</li><li><strong>Found by:</strong> ADV-0912-11; SEC-DI-0912-02; CONF-0912-04.</li><li><strong>Disposition:</strong> <strong>Discuss/update; block production.</strong> Bind signed workload/tenant/purpose/causation context and type-specific gateway policy; prohibit global-admin workload bypass.</li></ul></article>
+
+<article class="finding high" id="val3-h07"><h3><span class="badge">High</span>VAL3-H07 — Reminder/expiry protocol undefined and unbuilt</h3><ul><li><strong>Issue:</strong> Actor/app/ID ownership is unstated; pending intent has no kind; expiry has no due/schedule witness; no story owns automatic expiry.</li><li><strong>Risk:</strong> Reconciliation sends the wrong command or a stale reminder expires rescheduled live work and cascades the mistake.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L137"><code>:137–149</code></a>, <a href="../architecture.md#L265"><code>:265</code></a>, <a href="../architecture.md#L397"><code>:397–416</code></a>; <a href="../../../src/Hexalith.Works/Reminders/PendingDateAwait.cs#L10"><code>PendingDateAwait.cs:10</code></a>; <a href="../../../src/Hexalith.Works.Contracts/Commands/ExpireWorkItem.cs#L12"><code>ExpireWorkItem.cs:12</code></a>.</li><li><strong>Found by:</strong> ADV-0912-12; SEC-DI-0912-08; CONF-0912-02.</li><li><strong>Disposition:</strong> <strong>Discuss/update before AD-25 drafting.</strong> Bind typed intent/index, actor owner, due witness, reconciliation, and a delivery story.</li></ul></article>
+
+<article class="finding high" id="val3-h08"><h3><span class="badge">High</span>VAL3-H08 — AD-13 contradicts authoritative resume semantics</h3><ul><li><strong>Issue:</strong> AD-13 makes no-match a no-op; AD-17, the matrix, PRD, and kernel reject a suspended nonmatch and no-op only the consumed repeat.</li><li><strong>Risk:</strong> Adapters record different checkpoint/audit outcomes; register precedence cannot resolve an internal contradiction.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L159"><code>:159–165</code></a>, <a href="../architecture.md#L196"><code>:196–202</code></a>; <a href="../../../docs/lifecycle-transition-matrix.md#L165"><code>matrix:165</code></a>; <a href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L223"><code>aggregate:223</code></a>.</li><li><strong>Found by:</strong> RW12-01; ADV-0912-13; CONF-0912-07.</li><li><strong>Disposition:</strong> <strong>Autofix Update:</strong> keep AD ID; state exact reject/no-op cases and propagate prose.</li></ul></article>
+
+<article class="finding high" id="val3-h09"><h3><span class="badge">High</span>VAL3-H09 — Current 26-FR contract is not absorbed</h3><ul><li><strong>Issue:</strong> The newer PRD adds FR-26 and cross-unit completion, contribution/count, Unit inheritance, resume, Reactor, query-view, and performance rules; spine still claims 25 FRs.</li><li><strong>Risk:</strong> Registry, projection, query, and platform teams independently choose incompatible newer semantics.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L1"><code>:1–20</code></a>, <a href="../architecture.md#L988"><code>:988–999</code></a>, <a href="../architecture.md#L1062"><code>:1062–1069</code></a>; <a href="../prds/prd-works-2026-06-14/prd.md#L196"><code>PRD:196–354</code></a>.</li><li><strong>Found by:</strong> RW12-02; CONF-0912-03/10.</li><li><strong>Disposition:</strong> <strong>Discuss/update:</strong> confirm the PRD input and distill only load-bearing calls into stable ADs; refresh coverage.</li></ul></article>
+
+<article class="finding high" id="val3-h10"><h3><span class="badge">High</span>VAL3-H10 — Acceptance obligations have no executable work</h3><ul><li><strong>Issue:</strong> Story 4.9 omits the R-row and AD-23/24 proof pinned to it; AD-21/22/25 have no stories; VAL-H10 is due.</li><li><strong>Risk:</strong> Written ACs pass while identity, origin, checkpoint, reminder, namespace, and fence obligations remain unproved.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L344"><code>:344–395</code></a>, <a href="../architecture.md#L436"><code>:436–453</code></a>; <a href="../epics.md#L1335"><code>epics.md:1335–1383</code></a>; <a href="../../implementation-artifacts/sprint-status.yaml#L47"><code>sprint-status:47</code></a>.</li><li><strong>Found by:</strong> RW12-04; CONF-0912-03/04; SEC-DI-0912-07.</li><li><strong>Disposition:</strong> <strong>Discuss/correct-course:</strong> resolve VAL-H10, create ordered stories, and map every obligation to a proof artifact.</li></ul></article>
+
+<article class="finding high" id="val3-h11"><h3><span class="badge">High</span>VAL3-H11 — Recovery can fail while Ready</h3><ul><li><strong>Issue:</strong> Reminder recovery exhausts startup retries, cascade is one swallowed pass, parked work skips authoritative stream reading, and no readiness signal or unpark path exists.</li><li><strong>Risk:</strong> Work remains stranded for a host lifetime while health reports ready.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L137"><code>:137–149</code></a>, <a href="../architecture.md#L267"><code>:267</code></a>; <a href="../../../src/Hexalith.Works/Reminders/ReminderReconciliationService.cs#L30"><code>ReminderReconciliationService.cs:30</code></a>; <a href="../../../src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs#L105"><code>source:105</code></a>.</li><li><strong>Found by:</strong> SEC-DI-0912-03; CONF-0912-05.</li><li><strong>Disposition:</strong> <strong>Autofix/update:</strong> durable periodic retry, unresolved evidence, degraded readiness/alert, audited replay/disposition.</li></ul></article>
+
+<article class="finding high" id="val3-h12"><h3><span class="badge">High</span>VAL3-H12 — Privacy, audit, secrets, retention, backup, and DR unbound</h3><ul><li><strong>Issue:</strong> Raw Acts persist verbatim and “audited” is asserted without classification, sink, encryption/erasure, retention, secret rotation, RPO/RTO, restore order, or drill acceptance.</li><li><strong>Risk:</strong> Cross-repository teams make incompatible irreversible data choices before new contracts or real data arrive.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L303"><code>:303–362</code></a>, <a href="../architecture.md#L451"><code>:451</code></a>, <a href="../architecture.md#L782"><code>:782–786</code></a>, <a href="../architecture.md#L843"><code>:843–848</code></a>; <a href="../../../docs/operations/subscriber-dead-letter-operator.md">existing runbook</a>.</li><li><strong>Found by:</strong> SEC-DI-0912-06; RW12-07.</li><li><strong>Disposition:</strong> <strong>Discuss now; defer only behind a hard gate</strong> before new durable types or non-synthetic shared data.</li></ul></article>
+
+<article class="finding high" id="val3-h13"><h3><span class="badge">High</span>VAL3-H13 — Version authority mismatches live ownership</h3><ul><li><strong>Issue:</strong> AD-19 assigns runtime pins to Platform, but Works hard-codes Dapr images and Platform has none; servicing patches have moved.</li><li><strong>Risk:</strong> Builders update the wrong source or mistake <code>latestPatch</code> for cross-feature-band movement. This is provenance/currentness, not a proven Dapr incompatibility.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L216"><code>:216–242</code></a>; <a href="../../../global.json"><code>global.json</code></a>; <a href="../../../src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs#L47"><code>DaprSelfHostedMtls.cs:47</code></a>; <a href="reviews/review-technology-reality.md#tech-01--high--ad-19s-authority-model-is-not-the-live-version-topology-and-current-securitybug-fix-patches-have-moved">primary-source matrix</a>.</li><li><strong>Found by:</strong> TECH-01; RW12-09; CONF AD-19 map.</li><li><strong>Disposition:</strong> <strong>Discuss/update before Story 4.9 acceptance:</strong> bind current-to-target ownership and refresh through normal dependency validation.</li></ul></article>
+
+<article class="finding high" id="val3-h14"><h3><span class="badge">High</span>VAL3-H14 — Platform target rests on preview and unavailable seams</h3><ul><li><strong>Issue:</strong> Core Aspire is stable, selected Dapr integration is preview, Platform is an empty 13.4.6 scaffold, and EventStore lacks R4/R6/R7; only R11 exists.</li><li><strong>Risk:</strong> Story 4.9 can remove a substantial live host against an unproved target and absent producer capabilities.</li><li><strong>Source/evidence:</strong> <a href="../architecture.md#L226"><code>:226–270</code></a>, <a href="../architecture.md#L1096"><code>:1096–1111</code></a>; <a href="../../../references/Hexalith.Builds/Props/Directory.Packages.props"><code>Directory.Packages.props</code></a>; <a href="reviews/review-technology-reality.md#tech-02--high--the-single-aspire-135x-family-conceals-a-preview-only-dapr-integration-and-no-platform-proof">technology evidence</a>.</li><li><strong>Found by:</strong> TECH-02/03; CONF-0912-04; RW12-04.</li><li><strong>Disposition:</strong> <strong>Discuss/gate:</strong> choose preview policy, label absent seams with producer/version evidence, and retain Works hosting until Platform R1–R11 parity is green.</li></ul></article>
+</section>
+
+<section class="card" id="medium" aria-labelledby="medium-heading"><h2 id="medium-heading">Medium tail</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Medium findings"><table><thead><tr><th scope="col">ID</th><th scope="col">Finding</th><th scope="col">Evidence / lens</th><th scope="col">Disposition</th></tr></thead><tbody>
+<tr><td>VAL3-M01</td><td>Binding altitude is ambiguous between register-only precedence and binding Implementation Patterns.</td><td><a href="../architecture.md#L28">:28–36</a>, <a href="../architecture.md#L1177">:1177–1187</a>; RW12-06</td><td>Autofix exact binding surface.</td></tr>
+<tr><td>VAL3-M02</td><td>Frontmatter says complete while the document is conditional target state.</td><td><a href="../architecture.md#L1">:1–20</a>; RW12-08/11</td><td>Autofix readiness and interim exceptions.</td></tr>
+<tr><td>VAL3-M03</td><td>AD-12/17/18 Rules do not enforce all Binds/Prevents.</td><td><a href="../architecture.md#L151">:151–214</a>; RW12-09</td><td>Autofix falsifiable rules/scope.</td></tr>
+<tr><td>VAL3-M04</td><td>VAL-H11 and VAL-M01 are stale; tests pass explicitly but do not run in build.</td><td><a href="../architecture.md#L449">:449–452</a>; RW12-10, TECH-04</td><td>Autofix evidence and CI owner/command.</td></tr>
+<tr><td>VAL3-M05</td><td>Slot removal needs a separate attachment lifecycle sequence.</td><td><a href="reviews/review-adversarial-divergence.md#adv-0912-14--slot-removal-and-repair-suppression-cannot-be-expressed-in-ad-06s-sequence-space">ADV-0912-14</a></td><td>Autofix with C01.</td></tr>
+<tr><td>VAL3-M06</td><td>Additive tolerance lacks explicit reader/writer/enum/security-field rollout rules.</td><td><a href="reviews/review-adversarial-divergence.md#adv-0912-16--additive-tolerant-does-not-bind-readerwriter-compatibility-for-the-new-cross-repository-contracts">ADV-0912-16</a></td><td>Discuss/update compatibility matrix.</td></tr>
+<tr><td>VAL3-M07</td><td>Quarantine disposition differs across subscription, projection, and rebuild.</td><td><a href="reviews/review-security-data-integrity.md#sec-di-0912-09--quarantine-dispositions-remain-inconsistent">SEC-DI-0912-09</a></td><td>Autofix durable quarantine lifecycle.</td></tr>
+<tr><td>VAL3-M08</td><td>Recovery readers do not uniformly validate page/payload identity and state-affecting decode failures.</td><td><a href="reviews/review-security-data-integrity.md#sec-di-0912-10--recovery-stream-evidence-is-not-uniformly-identity-checked">SEC-DI-0912-10</a></td><td>Autofix shared strict validator/fold.</td></tr>
+<tr><td>VAL3-M09</td><td>Production controls are prose rather than fail-closed configuration; fitness protects the interim host.</td><td><a href="reviews/review-security-data-integrity.md#sec-di-0912-11--production-controls-are-not-fail-closed-configuration">SEC-DI-0912-11</a>; CONF-0912-09</td><td>Discuss; defer to R10 only with hard gate.</td></tr>
+</tbody></table></div></section>
+
+<section class="card" id="low" aria-labelledby="low-heading"><h2 id="low-heading">Low tail</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Low findings"><table><thead><tr><th scope="col">ID</th><th scope="col">Finding</th><th scope="col">Disposition</th></tr></thead><tbody>
+<tr><td>VAL3-L01</td><td>AD-05 <code>Meter</code> vocabulary differs from public <code>WorkItemEffort</code> names (CONF-0912-11).</td><td>Discuss rename/alias or ratify established names.</td></tr>
+<tr><td>VAL3-L02</td><td>Dangling input/review references and historical absent-folder tree mislead consumers (RW12-11; CONF-0912-12).</td><td>Autofix links; label/remove seed.</td></tr>
+<tr><td>VAL3-L03</td><td>Future Fluent UI V5 remains prerelease but is outside Works v1 (<a href="reviews/review-technology-reality.md#tech-05--low--future-fluent-ui-v5-remains-prerelease">TECH-05</a>).</td><td>Defer to first UI theme.</td></tr>
+</tbody></table></div>
+<p>No formal parent spine was inherited. The mandatory Hexalith baseline is honored at target state; adding Inherited Constraints traceability is informational, not a defect.</p>
+</section>
+
+<section class="card" id="scorecard" aria-labelledby="scorecard-heading"><h2 id="scorecard-heading">Good-spine checklist</h2>
+<div class="table-wrap" tabindex="0" role="region" aria-label="Good-spine checklist"><table><thead><tr><th scope="col">Dimension</th><th scope="col">Result</th><th scope="col">Assessment</th></tr></thead><tbody>
+<tr><td>Real divergence points</td><td class="score-fail">Fail</td><td>Roll-up and registry protocol remain underbound.</td></tr>
+<tr><td>Enforceable preventive Rules</td><td class="score-fail">Fail</td><td>AD-13 is wrong; AD-12/17/18/19 have rule/authority defects.</td></tr>
+<tr><td>Safe Deferred/open items</td><td class="score-fail">Fail</td><td>VAL-H10 is due; R4/R6/R7/R8/R10 and AD-21/22/25 lack safe allocation.</td></tr>
+<tr><td>Technology current and fitting</td><td class="score-concern">Concern</td><td>Patches moved, Dapr integration is preview, and target proof/APIs are absent.</td></tr>
+<tr><td>Brownfield ratification</td><td class="score-concern">Concern</td><td>Core is strong; AD-10/11/19 drift and AD-13 contradicts code.</td></tr>
+<tr><td>Driving-spec coverage</td><td class="score-fail">Fail</td><td>Current PRD has 26 FRs; architecture/epics stop at 25.</td></tr>
+<tr><td>Inherited constraints</td><td class="score-pass">Pass, transitional</td><td>No parent spine; target honors the required Hexalith boundary and stack.</td></tr>
+<tr><td>Structural dimensions</td><td class="score-concern">Concern</td><td>Privacy, secrets, DR, environments, supply chain, and runbook ownership are incomplete.</td></tr>
+</tbody></table></div><p><strong>Score: 1 pass, 3 concerns, 4 fails.</strong></p></section>
+
+<section class="card" id="plan" aria-labelledby="plan-heading"><h2 id="plan-heading">Prioritized Update plan</h2><ol>
+<li><strong>Immediate code correctness:</strong> fix C05 and add two-page boundary/restart tests; re-run recovery suites.</li>
+<li><strong>Resolve load-bearing design:</strong> choose roll-up persistence/merge/materialization and the child creation/attach/freshness/fencing chain.</li>
+<li><strong>Update stable ADs:</strong> fix AD-13; bind registry wire/authority, idempotency, rebuild epoch, control-plane concurrency, delegation/origin, and typed expiry witnesses.</li>
+<li><strong>Correct-course planning:</strong> adopt the 2026-09-08 PRD; create registry/fan-out/expiry/Reactor stories; turn R1–R11 and AD-23/24 into named proof.</li>
+<li><strong>Fail closed:</strong> durable periodic recovery/degraded readiness; privacy/audit/secrets/retention/DR gates; production profile/two-phase fitness.</li>
+<li><strong>Reconcile truth:</strong> version ownership, target-seam availability, frontmatter, open rows, compatibility, quarantine, altitude, and hygiene.</li>
+</ol></section>
+
+<section class="card" id="artifacts" aria-labelledby="artifacts-heading"><h2 id="artifacts-heading">Review artifacts</h2><ul>
+<li><a href="ARCHITECTURE-VALIDATION.md">Markdown report</a></li>
+<li><a href="reviews/review-rubric-walker.md">Rubric walker</a> — 12 findings</li>
+<li><a href="reviews/review-adversarial-divergence.md">Adversarial divergence</a> — 16 findings</li>
+<li><a href="reviews/review-technology-reality.md">Technology reality</a> — 5 findings</li>
+<li><a href="reviews/review-security-data-integrity.md">Security &amp; data integrity</a> — 11 findings</li>
+<li><a href="reviews/review-code-spec-conformance.md">Code &amp; spec conformance</a> — 14 findings</li>
+<li><a href="lint-spine.json">Deterministic lint</a> — 10 ignored false positives</li>
+<li><a href="../architecture.md">Target architecture</a> — unchanged</li>
+<li><a href="../architecture-validation-2026-09-08/ARCHITECTURE-VALIDATION.html">Prior comparison report</a></li>
+</ul></section>
+</main>
+<footer class="wrap">Five independent lenses plus deterministic lint, folded and deduplicated on 2026-09-12. This Validate run changed only the two report artifacts.</footer>
+</body>
+</html>

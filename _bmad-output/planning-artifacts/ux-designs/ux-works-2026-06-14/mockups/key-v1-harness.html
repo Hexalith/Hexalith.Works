@@ -1,0 +1,78 @@
+<!doctype html>
+<!--
+  VISUAL-ONLY / NON-COPYABLE KEY SCREEN. DESIGN.md and EXPERIENCE.md win.
+  Raw HTML/CSS does not authorize implementation.
+  This illustrates EXPERIENCE.md Foundation, v1 horizon, Outcome semantics,
+  Security/tenancy, Responsive & Platform, FR-24/25, and UJ-1.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Works visual reference — v1 platform harness</title>
+  <style>
+    /* Governing spines: DESIGN.md Brand & Style; EXPERIENCE.md v1 horizon,
+       outcome semantics, security/tenancy, v1 harness, FR-24/25 and UJ-1.
+       Visual-only/non-copyable; spines win; raw HTML/CSS is not authorization. */
+    :root { color-scheme:dark; font-family:ui-monospace,"Cascadia Code",Consolas,monospace; background:#161616; color:#eee; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:24px; background:#202020; }
+    .warning { max-width:1180px; margin:0 auto 16px; padding:12px 15px; border:2px solid #e3b341; background:#312800; color:#fff4cc; font-family:"Segoe UI",system-ui,sans-serif; font-weight:700; line-height:1.45; }
+    .warning small { display:block; font-weight:400; }
+    main { max-width:1180px; margin:auto; overflow:hidden; border:1px solid #555; border-radius:7px; background:#111; box-shadow:0 16px 34px #0007; }
+    header { padding:18px 20px; border-bottom:1px solid #444; background:#191919; }
+    .kicker { color:#85c7d0; font-size:12px; text-transform:uppercase; letter-spacing:.05em; }
+    h1 { margin:5px 0 6px; font-family:"Segoe UI",system-ui,sans-serif; font-size:24px; }
+    header p { margin:0; max-width:75ch; color:#bbb; line-height:1.5; }
+    .scope { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; border-bottom:1px solid #444; background:#444; }
+    .scope div { padding:13px 16px; background:#151515; }
+    .scope strong { display:block; margin-bottom:4px; color:#fff; font-family:"Segoe UI",system-ui,sans-serif; }
+    .scope span { color:#bbb; font-size:12px; line-height:1.45; }
+    .run { padding:18px 20px; }
+    .run-head { display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px; margin-bottom:12px; color:#bbb; font-size:12px; }
+    .cases { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:13px; }
+    article { min-width:0; border:1px solid #484848; border-radius:5px; background:#181818; }
+    article h2 { display:flex; gap:9px; align-items:center; margin:0; padding:11px 13px; border-bottom:1px solid #404040; font-family:"Segoe UI",system-ui,sans-serif; font-size:15px; }
+    .word { display:inline-block; min-width:96px; padding:2px 7px; border:1px solid currentColor; border-radius:3px; font-size:11px; text-transform:uppercase; text-align:center; }
+    .accepted { color:#7fd37a; } .rejected { color:#ffca67; } .denied { color:#ff8c8c; } .unknown { color:#9fc8ff; }
+    dl { display:grid; grid-template-columns:145px 1fr; gap:6px 12px; margin:0; padding:13px; font-size:12px; line-height:1.5; }
+    dt { color:#999; } dd { min-width:0; margin:0; overflow-wrap:anywhere; }
+    pre { margin:0 13px 13px; padding:11px; overflow:auto; border:1px solid #3f3f3f; background:#0d0d0d; color:#ddd; font:12px/1.5 inherit; white-space:pre-wrap; }
+    footer { padding:12px 20px; border-top:1px solid #444; color:#aaa; font-size:12px; line-height:1.5; }
+    @media (max-width:48rem) { body { padding:8px; } .warning { margin-bottom:8px; } .scope, .cases { grid-template-columns:1fr; } dl { grid-template-columns:1fr; gap:2px; } dd { margin-bottom:5px; } }
+  </style>
+</head>
+<body>
+  <aside class="warning" role="note">Visual-only, non-copyable reference — v1 is a headless kernel.<small>DESIGN.md and EXPERIENCE.md win. This raw HTML/CSS does not authorize a product UI, a production adapter, or a Works-owned host.</small></aside>
+  <main>
+    <header><span class="kicker">v1 · platform-hosted integration evidence</span><h1>Works command-pipeline harness</h1><p>Builder-facing structured test output only. There is no simulated production navigation, no end-user screen, and no production web, MCP, CLI, chatbot, or email adapter.</p></header>
+    <section class="scope" aria-label="Harness boundary">
+      <div><strong>Host ownership</strong><span>Platform supplies the integration topology; Works supplies the pure domain/service path.</span></div>
+      <div><strong>Tenant boundary</strong><span>Target tenant comes from verified scope. A mismatch is denied before dispatch or tenant disclosure.</span></div>
+      <div><strong>Actor boundary</strong><span>Trusted authenticated provenance is compared with the bound Executor for responsibility-bound acts; system/Reactor acts require trusted origin.</span></div>
+    </section>
+    <section class="run" aria-labelledby="run-title">
+      <div class="run-head"><strong id="run-title">Sample evidence run</strong><span>Sample identifiers · structured text does not rely on color</span></div>
+      <div class="cases">
+        <article><h2><span class="word accepted">Accepted</span>Create through normal pipeline</h2><dl><dt>Authenticated tenant</dt><dd>Sample tenant T-ACME</dd><dt>Authenticated actor</dt><dd>Sample Party P-BUILDER · trusted claim</dd><dt>Domain result</dt><dd>Created; optional binding does not change Work Status to Assigned</dd><dt>Evidence</dt><dd>Accepted event observed; aggregate reconstructed under the same tenant</dd></dl><pre aria-label="Accepted structured evidence">outcome: accepted
+work-status: Created
+projection: awaiting latest committed position
+next: verify reconstructed obligation and references</pre></article>
+        <article><h2><span class="word rejected">Rejected</span>Domain rule</h2><dl><dt>Authenticated tenant</dt><dd>Sample tenant T-ACME · matched target</dd><dt>Authenticated actor</dt><dd>Sample Party P-EXECUTOR · matched bound Executor</dd><dt>Attempt</dt><dd>Report progress using a Unit different from the established Unit</dd><dt>Mutation</dt><dd>None; rejection is expected domain evidence, not a host crash</dd></dl><pre aria-label="Rejected structured evidence">outcome: domain-rejected
+work-status: InProgress (unchanged)
+established-unit: interactions
+next: correct the Unit and resubmit</pre></article>
+        <article><h2><span class="word denied">Denied</span>Boundary before dispatch</h2><dl><dt>Verified scope</dt><dd>Authenticated tenant does not match the requested target</dd><dt>Disclosure</dt><dd>No tenant existence, Work Item, binding, or capability detail exposed</dd><dt>Domain event</dt><dd>None implied</dd><dt>Recovery</dt><dd>Restore valid tenant scope; do not retry against hidden data</dd></dl><pre aria-label="Denied structured evidence">outcome: authorization-denied
+dispatch: not-started
+tenant-data: not-disclosed
+next: establish an authorized tenant context</pre></article>
+        <article><h2><span class="word unknown">Unknown</span>Infrastructure result</h2><dl><dt>Dispatch evidence</dt><dd>Transport outcome unavailable after submission</dd><dt>Acceptance</dt><dd>Unknown — neither success nor domain rejection is claimed</dd><dt>Preserved context</dt><dd>Original command evidence and safe correlation retained by the harness</dd><dt>Recovery</dt><dd>Use platform-supported status/evidence diagnosis before any safe retry</dd></dl><pre aria-label="Infrastructure unknown structured evidence">outcome: infrastructure-error
+acceptance: unknown
+input: preserved
+next: inspect authoritative evidence; retry only when safe</pre></article>
+      </div>
+    </section>
+    <footer>Color is supplemental: every case is named in text. The harness proves domain behavior and boundaries; it does not claim the future FrontComposer accessibility contract.</footer>
+  </main>
+</body>
+</html>

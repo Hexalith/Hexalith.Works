@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Works UX Validation Report</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; line-height: 1.55; }
+    body { margin: 0; background: Canvas; color: CanvasText; }
+    main { max-width: 64rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+    header { border-bottom: 0.125rem solid ButtonBorder; padding-bottom: 1rem; }
+    h1 { font-size: clamp(1.75rem, 5vw, 2.5rem); line-height: 1.15; margin: 0 0 0.5rem; }
+    h2 { font-size: 1.3rem; margin: 2rem 0 0.75rem; }
+    p, li { max-width: 76ch; }
+    .meta { color: GrayText; margin: 0.25rem 0; }
+    .verdict { border: 0.125rem solid ButtonBorder; border-left: 0.5rem solid #16813a; border-radius: 0.5rem; margin-top: 1.5rem; padding: 1rem 1.25rem; }
+    .verdict p { margin: 0.35rem 0; }
+    .zero { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; min-width: 44rem; width: 100%; }
+    caption { font-weight: 700; text-align: left; padding-bottom: 0.5rem; }
+    th, td { border: 1px solid ButtonBorder; padding: 0.6rem; text-align: left; vertical-align: top; }
+    th[scope="col"] { background: ButtonFace; color: ButtonText; }
+    td:not(:first-child):not(:nth-child(2)), th:not(:first-child):not(:nth-child(2)) { text-align: center; }
+    ul { padding-left: 1.4rem; }
+    li + li { margin-top: 0.45rem; }
+    footer { border-top: 1px solid ButtonBorder; color: GrayText; margin-top: 2rem; padding-top: 1rem; }
+    @media (forced-colors: active) { .verdict { border-left-color: Highlight; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Works UX Validation Report</h1>
+      <p class="meta">Artifact: ux-works-2026-06-14</p>
+      <p class="meta">Spines: DESIGN.md and EXPERIENCE.md</p>
+      <p class="meta">Validated: <time datetime="2026-09-12">12 September 2026</time></p>
+    </header>
+
+    <section aria-labelledby="final-verdict">
+      <h2 id="final-verdict">Final verdict</h2>
+      <div class="verdict">
+        <p><strong>Strong and ready for finalization.</strong></p>
+        <p>A final rereview of the editorially restructured pair through the rubric, Hexalith/FrontComposer conformance, and accessibility lenses found no new defects and reports a consolidated <span class="zero">0 critical, 0 high, 0 medium, 0 low</span>.</p>
+      </div>
+      <p>This verdict establishes planning-contract readiness. A future implementation remains subject to FrontComposer's inherited conformance, browser/assistive-technology, contrast, and release-evidence gates.</p>
+    </section>
+
+    <section aria-labelledby="lens-results">
+      <h2 id="lens-results">Lens results</h2>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Validation lens results">
+        <table>
+          <caption>Final findings by review lens</caption>
+          <thead><tr><th scope="col">Lens</th><th scope="col">Verdict</th><th scope="col">Critical</th><th scope="col">High</th><th scope="col">Medium</th><th scope="col">Low</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Spine-pair rubric</th><td>Strong; ready for finalization</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">Hexalith / FrontComposer conformance</th><td>Conforms</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">Accessibility and inclusive interaction</th><td>Strong WCAG 2.2 AA implementation contract</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+            <tr><th scope="row">Consolidated</th><td><strong>Strong; ready for finalization</strong></td><td><strong>0</strong></td><td><strong>0</strong></td><td><strong>0</strong></td><td><strong>0</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section aria-labelledby="closure">
+      <h2 id="closure">Closure record</h2>
+      <p>The configured structure/prose document standard was applied without weakening the UX contract: EXPERIENCE now has a resolving 14-entry contents map, future-web anatomy and FrontComposer composition share one surface table, the Theme 3 email implementation gate has one normative location, DESIGN component material uses extractable subsections, and the FR audit is the final treatment/disposition index after the journeys.</p>
+      <p>All original-gate issues are closed:</p>
+      <ul>
+        <li>Accepted PRD-memlog decisions now govern source precedence, actor/origin authorization, active Handoff, additive CorrectProgress with limited reopen, durable attachment, and delayed-leg rejection.</li>
+        <li>UJ-2, UJ-3, lifecycle/action tables, state patterns, and traceability carry the observable UX consequences without inventing open protocol or policy details.</li>
+        <li><code>FcStatusIcon</code> uses its verified six-slot API with visible labels, queued counts use <code>FluentBadge</code>, and Works inherits the FrontComposer accent.</li>
+        <li>Burn-Down edge semantics, row-removal focus, input limits, paused-update speech, and the Theme 3 email evidence gate are explicit.</li>
+        <li>The Dana reference flow closes future web IA without a shipping claim; volatile mechanics remain owned by product and architecture sources.</li>
+        <li>All stale references were regenerated and expanded to nine visual-only, non-copyable artifacts covering every named IA/horizon group.</li>
+      </ul>
+      <p>All second-gate regressions are closed:</p>
+      <ul>
+        <li>What's next and Work Item use lawful responsibility-aware actors and expose unavailable Claim reasons.</li>
+        <li>Assigned estimated work shows zero progress; unestimated work has no determinate meter.</li>
+        <li>Work Tree arithmetic reconciles own work, active Attached descendants, residual terminal work, per-Unit totals, and the unestimated count.</li>
+        <li>The Attached tree is the sole primary visualization; one supporting accordion holds expanded Roll-Up then child-coordination evidence.</li>
+      </ul>
+      <p>The final three-lens rereview explicitly checked those structure and prose changes and found no regression in journeys, horizons, source precedence, component vocabulary, states, accessibility, FrontComposer composition, or visual references.</p>
+    </section>
+
+    <section aria-labelledby="mechanical">
+      <h2 id="mechanical">Mechanical evidence</h2>
+      <ul>
+        <li>All nine frontmatter source paths resolve from both spines.</li>
+        <li>The 14-entry contents map resolves to current headings in document order; its FR audit link targets Functional Requirement Traceability.</li>
+        <li>The merged future-web table retains every surface and L4 → L2 → generated-default precedence, with L3 only when explicitly delegated.</li>
+        <li>The centralized Theme 3 email gate is linked from DESIGN visual/component contracts and relevant EXPERIENCE states, platform rules, and UJ-4; Theme 6 remains separate.</li>
+        <li>The same 13 canonical component IDs appear in DESIGN frontmatter, DESIGN Component contracts, and EXPERIENCE Component Patterns.</li>
+        <li>All four PRD journey headings appear verbatim with complete journey anatomy.</li>
+        <li>The final FR audit contains FR-1 through FR-26 exactly once each after Key Flows.</li>
+        <li>All nine offline HTML references are linked inline with no mock orphan; wireframes and imports are empty.</li>
+        <li>Desktop and 390 CSS px inspection preserves reading order and limits essential two-dimensional movement to labelled grid/tree regions.</li>
+        <li>No unresolved assumption/TODO marker or Mermaid block remains; both typography references resolve.</li>
+        <li>The final post-edit three-lens rereview reports 0 critical, 0 high, 0 medium, and 0 low findings.</li>
+        <li>Scoped whitespace/diff checks pass; this file uses inline CSS only and has no scripts, network assets, or external dependencies.</li>
+      </ul>
+    </section>
+
+    <section aria-labelledby="planning-inputs">
+      <h2 id="planning-inputs">Non-blocking planning inputs</h2>
+      <p>The following remain intentionally source-owned and do not block UX-spine finalization:</p>
+      <ul>
+        <li>exact MCP/CLI tool, resource, command, adapter, and protocol names;</li>
+        <li>the complete executor-bound action classification and final denial copy;</li>
+        <li>Handoff eligibility, confirmation, and recovery policy;</li>
+        <li>CorrectProgress bounds, Unit/note rules, confirmation, and concurrency behavior;</li>
+        <li>the durable child-evidence event/protocol name and distinct Released/Superseded visuals;</li>
+        <li>Theme 4 routing/escalation and future Admin/Audit participant capabilities; and</li>
+        <li>supported-client/high-contrast evidence approval before Theme 3 email implementation.</li>
+      </ul>
+    </section>
+
+    <footer>
+      Reviewer records: review-rubric.md, review-hexalith-conformance.md, and review-accessibility.md.
+    </footer>
+  </main>
+</body>
+</html>

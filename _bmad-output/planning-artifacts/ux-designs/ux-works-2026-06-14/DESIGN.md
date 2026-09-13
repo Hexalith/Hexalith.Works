@@ -1,247 +1,166 @@
 ---
 name: Works
-description: Work-item coordination console for the Hexalith ecosystem. Fluent UI v5 (RC) via Hexalith.FrontComposer; this DESIGN.md specifies the Works brand-layer delta only.
+description: Calm operational visual contract for Work Item coordination through Hexalith.FrontComposer and Blazor Fluent UI V5.
 status: final
+updated: 2026-09-12
 sources:
   - "{planning_artifacts}/prds/prd-works-2026-06-14/prd.md"
+  - "{planning_artifacts}/prds/prd-works-2026-06-14/.memlog.md"
   - "{planning_artifacts}/prds/prd-works-2026-06-14/addendum.md"
   - "{planning_artifacts}/briefs/brief-works-2026-06-14/brief.md"
   - "{planning_artifacts}/briefs/brief-works-2026-06-14/addendum.md"
-ui_system: "Fluent UI v5 (RC, Microsoft.FluentUI.AspNetCore.Components) via Hexalith.FrontComposer"
-colors:
-  # Brand-layer deltas only. All unlisted tokens — neutralBackground*, neutralForeground*,
-  # neutralStroke*, surfaces, elevation, communication blue defaults, focus ring — INHERIT
-  # from Fluent UI v5 design tokens. Do not restate Fluent's palette here.
-  brand-primary: '#5B5FC7'        # Fluent "blurple" — Works identity + primary action + active nav
-  brand-primary-hover: '#4F52B2'
-  brand-foreground: '#FFFFFF'
-  brand-primary-dark: '#9299F7'
-  brand-foreground-dark: '#0E0E1A'
-  # Burn-down (the signature). Done fills over a neutral track; "Done = Remaining is 0".
-  burndown-done: '#107C10'
-  burndown-done-dark: '#54B054'
-  burndown-track: '#EDEBE9'
-  burndown-track-dark: '#3B3A39'
-  # Cost = a SECOND burn-down (Theme 5). Warm gold, never reused for effort.
-  cost-meter: '#C19C00'
-  cost-meter-dark: '#DCC149'
-  # Lifecycle status vocabulary — grouped by phase. Each is paired with a glyph + label;
-  # status is NEVER the sole progress signal (the burn-down is). Light / dark.
-  status-created: '#616161'
-  status-created-dark: '#ADADAD'
-  status-assigned: '#0F6CBD'
-  status-assigned-dark: '#479EF5'
-  status-queued: '#008272'
-  status-queued-dark: '#4DC2B0'
-  status-inprogress: '#5B5FC7'
-  status-inprogress-dark: '#9299F7'
-  status-suspended: '#C19C00'
-  status-suspended-dark: '#DCC149'
-  status-completed: '#107C10'
-  status-completed-dark: '#54B054'
-  status-cancelled: '#8A8886'
-  status-cancelled-dark: '#797775'
-  status-rejected: '#C50F1F'
-  status-rejected-dark: '#F1707B'
-  status-expired: '#A4373A'
-  status-expired-dark: '#E0808A'
+  - "{planning_artifacts}/architecture.md"
+  - "{project-root}/references/Hexalith.FrontComposer/_bmad-output/project-context.md"
+  - "{project-root}/references/Hexalith.FrontComposer/_bmad-output/planning-artifacts/ux-designs/ux-frontcomposer-2026-09-09/DESIGN.md"
+  - "{project-root}/references/Hexalith.FrontComposer/_bmad-output/planning-artifacts/ux-designs/ux-frontcomposer-2026-09-09/EXPERIENCE.md"
 typography:
-  # Body, title, caption, label inherit Fluent v5's Segoe UI Variable ramp. Only the metric
-  # roles are a Works delta — they exist so live-updating numbers don't reflow.
-  metric-hero:
-    fontFamily: 'Segoe UI Variable'
-    fontSize: 40px
-    fontWeight: '600'
-    lineHeight: '1.1'
-    letterSpacing: '-0.01em'
-    note: 'font-variant-numeric: tabular-nums — the roll-up "one number"'
-  metric:
-    fontFamily: 'Segoe UI Variable'
-    fontSize: 20px
-    fontWeight: '600'
-    note: 'font-variant-numeric: tabular-nums — inline burn-down Remaining figures'
-rounded:
-  # Inherits Fluent v5 corner radii. No Works delta.
-  note: 'Inherit Fluent v5 (controlsmall 4px, control 6px, medium 8px). No override.'
-spacing:
-  # Inherits Fluent v5 4px-based spacing scale. Density is governed by FrontComposer's
-  # spec-locked tiers, NOT a hand-authored Works scale.
-  note: 'Inherit Fluent v5 spacing (4/8/12/16/20/24/32…). Density: FrontComposer tiers — ≤1 field Inline · 2–4 CompactInline · ≥5 FullPage.'
+  inherited:
+    note: 'Use the active FrontComposer FcTypoToken mappings and FluentText parameters; Works defines no type ramp.'
+  numeric:
+    note: 'Use an inherited Fluent text role with tabular numerals only where changing values would otherwise jitter.'
 components:
-  burndown-meter:
-    track: '{colors.burndown-track}'
-    done: '{colors.burndown-done}'
-    remaining-number: '{typography.metric}'
-    radius: '2px'
-  rollup-one-number:
-    value: '{typography.metric-hero}'
-    cost-value: '{colors.cost-meter}'
-  status-pill:
-    # background = the status-* token at ~12% tint; text = the status-* token.
-    inprogress: '{colors.status-inprogress}'
-    suspended: '{colors.status-suspended}'
-    completed: '{colors.status-completed}'
-    rejected: '{colors.status-rejected}'
-  party-chip:
-    # identical for every executor kind; differentiated ONLY by a monochrome kind+channel glyph.
-    authority-badge: 'monochrome, escalating weight'
-  action-link-email:
-    primary-background: '{colors.brand-primary}'
-    primary-foreground: '{colors.brand-foreground}'
-    min-tap-target: '44px'
-  nl-escape-hatch:
-    link: '{colors.brand-primary}'
-    note: 'plain FluentTextField; visually subordinate to the action buttons'
-  capture-bar:
-    accent: '{colors.brand-primary}'
-updated: 2026-06-14
+  burn-down-meter:
+    implementation-base: 'FluentProgressBar + FluentText'
+    visual-rule: 'Effort shows labeled Estimated, Done, Remaining, and Unit; a progress bar appears only where its determinate value is truthful.'
+  roll-up-summary:
+    implementation-base: 'FluentStack + FluentText + FrontComposer projection-health components'
+    visual-rule: 'Own Remaining, rolled Remaining by Unit, unestimated-descendant count, and freshness are visually separate.'
+  work-status:
+    implementation-base: 'FcStatusIcon using an existing BadgeSlot + adjacent FluentText label'
+    visual-rule: 'Every Work Status maps to one of the six supported BadgeSlot semantics and keeps its visible localized label; no custom glyph, pill, or palette.'
+  party-reference:
+    implementation-base: 'FluentAvatar + FluentText + FluentStack + FcFluentIcons'
+    visual-rule: 'One neutral Party treatment shows resolved name and Channel without styling by executor kind.'
+  work-tree:
+    implementation-base: 'FluentTreeView + FluentTreeItem'
+    visual-rule: 'Tree hierarchy contains work-status, party-reference, and compact burn-down-meter content without replacing native disclosure visuals; on the future Work page it is the sole always-visible primary visualization.'
+  queue-row:
+    implementation-base: 'Generated Fluent data grid + FcExpandInRowDetail + FcExpandedRowHiddenBanner'
+    visual-rule: 'Dense row anatomy follows the generated grid; Works adds obligation, schedule, executor, Work Status, Burn-Down, and legal actions.'
+  capture-command:
+    implementation-base: 'Generated command form + FcFieldPlaceholder + FcAuthorizedCommandRegion + FcLifecycleWrapper'
+    visual-rule: 'A short obligation-first form uses inherited Fluent inputs, keeps verified/server-derived context visually read-only, and shows the 4,000-character Obligation and 1,000-character act-note limits beside their fields.'
+  work-history:
+    implementation-base: 'FluentStack + FluentText + FcFluentIcons in a FrontComposer projection template'
+    visual-rule: 'Authorized Raw Acts form a quiet chronological list; inferred interpretation and Conversation content are visually separate.'
+  conversation-panel:
+    implementation-base: 'Separately owned Hexalith.Conversations FrontComposer view inside FluentAccordionItem'
+    visual-rule: 'Conversation content has its own labeled region and independent loading, posting, and error presentation.'
+  natural-language-response:
+    implementation-base: 'FluentTextArea + FluentButton + FcLifecycleWrapper'
+    visual-rule: 'Theme 3 free text is subordinate to constrained actions and retains the original response through review or recovery.'
+  email-action-set:
+    implementation-base: 'Email-safe presentation tables and semantic anchor links'
+    visual-rule: 'Theme 3 constrained-action hierarchy follows the email implementation gate in EXPERIENCE.md; Theme 6 adds bound-link, expiry, and step-up treatments.'
+  pause-live-updates:
+    implementation-base: 'FluentButton + FluentBadge + FcProjectionConnectionStatus'
+    visual-rule: 'A persistent text control shows paused/running state and queued count without depending on color or motion.'
+  cost-meter:
+    implementation-base: 'FluentProgressBar + FluentText'
+    visual-rule: 'Theme 5 cost is a separately labeled meter and per-currency/Unit Roll-Up resolved through inherited semantic roles, never an effort color variant or converted total.'
 ---
+
+# Works Design
+
+This file owns how Works looks. `EXPERIENCE.md` owns behavior, states, accessibility, and journeys.
 
 ## Brand & Style
 
-Works is a **work-item coordination kernel** wearing a console. Its premise is contrarian for a
-task tool: *work is an obligation that burns down to zero*, and *every doer is the same kind of
-thing*. A bot, a colleague, and a stranger reached only by email are all a **Party**, coordinated
-through one identical surface. The visual language has exactly two jobs — make **progress feel like
-a fact, not a flag**, and make **handoff feel symmetric, never branched**.
+Works is a work-item coordination kernel with a calm operational posture. It makes Remaining and responsibility legible under load without looking like a celebratory task app. The interface is precise, quiet, and evidence-led: no streaks, gamification, decorative dashboards, or visual branching between human, system, and external Parties.
 
-Works inherits **Fluent UI v5** wholesale through Hexalith.FrontComposer. This DESIGN.md specifies
-only the brand-layer delta: a single brand color, the burn-down/roll-up visual language, a status
-vocabulary, and a tabular-figure typographic role. The 80% of the surface that is Fluent
-(neutrals, surfaces, elevation, inputs, the DataGrid, dialogs, the focus ring) inherits Fluent's
-specs as-is. Restyling Fluent components is *against* the discipline — Fluent's defaults are the
-contract, and FrontComposer generates most components from Works' domain types, not by hand.
-
-The register is **AI-native, operational, calm-under-load**. This is a console an "agent boss"
-runs a "frontier firm" from — confident and quiet, never playful. No celebration, no streaks, no
-chrome that competes with the numbers.
+Works inherits FrontComposer and Blazor Fluent UI V5 wholesale. Fluent owns component anatomy, type, spacing, radii, elevation, focus, semantic color, hover, selection, light/dark behavior, reduced-motion treatment, and forced-colors treatment. FrontComposer owns the active accent, shell composition, and shared projection/command visuals. This spine defines only the domain-specific compositions below.
 
 ## Colors
 
-Two ideas carry the palette: one brand color, and a disciplined semantic vocabulary for *progress*
-and *lifecycle*. Everything else is Fluent.
+Works inherits the active FrontComposer accent and every Fluent semantic role; it defines no color token or accent placement. Canvas, foreground, border, focus, hover, selected, progress, success, warning, error, disabled, status, and Cost therefore resolve through the inherited system in every supported mode.
 
-- **Brand Blurple (`#5B5FC7` light / `#9299F7` dark)** is the Works identity. Used on the primary
-  action, the active nav item, the in-progress status, and the email "one tap" button — the places
-  that say *act* or *live*. It is Fluent-native (the Teams brand family) yet distinct from Fluent's
-  default communication blue, which Works reserves for the **assigned** status. `[TASTE]` — the
-  shipped register is **Momentum** (this blurple); three alternatives (Communication blue, Flow
-  teal, Frontier indigo) sit beside it in
-  [`.working/color-themes-1.html`](.working/color-themes-1.html). The brand color is swappable in
-  this one token.
-- **Burn-down Green (`#107C10` light / `#54B054` dark)** fills the *Done* portion of every
-  burn-down bar over a neutral **track (`#EDEBE9` / `#3B3A39`)**. Green here means "this is getting
-  done," not "success badge." When the bar fills completely, **Remaining is 0** and the item is
-  Completed.
-- **Cost Gold (`#C19C00` / `#DCC149`)** is the *second* burn-down (Theme 5, deferred). A warm gold
-  so money never reads as effort. Never used for anything but the cost meter.
-- **Status vocabulary** maps the nine lifecycle states by phase, so the color tells you *where in
-  life* an item is — never *how much is done* (that is the burn-down's job):
-  | Phase | Status | Token | Light |
-  |---|---|---|---|
-  | Pre-work | Created | `status-created` | `#616161` grey |
-  | Owned (push) | Assigned | `status-assigned` | `#0F6CBD` blue |
-  | Pool (pull) | Queued | `status-queued` | `#008272` teal |
-  | Live | InProgress | `status-inprogress` | `#5B5FC7` blurple |
-  | Parked | Suspended | `status-suspended` | `#C19C00` amber |
-  | Done | Completed | `status-completed` | `#107C10` green |
-  | Closed | Cancelled | `status-cancelled` | `#8A8886` muted grey |
-  | Refused | Rejected | `status-rejected` | `#C50F1F` red |
-  | Timed out | Expired | `status-expired` | `#A4373A` desat. red |
+Work Status is always slot icon plus visible label; Burn-Down and Cost always carry text and value semantics. No Works-specific hover, dark-mode, status, Burn-Down, track, Cost, or email palette is permitted. Every load-bearing inherited foreground/background, focus indicator, and meter boundary needs WCAG 2.2 AA evidence in supported themes and forced colors.
 
-  (The phase column is editorial framing for comprehension — the nine **Status** values are the PRD
-  glossary terms; the phase names are not.)
-
-Avoid: color-coding the **executor kind** (bot vs human vs external — they are one Party, one
-treatment); using a status color to imply progress; gradients or chromatic flourish; any second
-brand color.
-
-**Load-bearing contrast** (keep at WCAG AA; verified by the ecosystem a11y specimen gate): brand
-blurple as fill + text on white and on dark surface; each `status-*` token as pill text on its own
-~12% tint; burn-down green and suspended amber against the neutral track. Fluent's inherited
-neutrals are AA by default.
+The historical [color-theme exploration](.working/color-themes-1.html) is visual-only, superseded, and non-contractual.
 
 ## Typography
 
-Inherit Fluent v5's **Segoe UI Variable** ramp (title / body / caption / label) wholesale. The only
-Works delta is a **metric** role for numbers that update live: `metric` (inline burn-down Remaining)
-and `metric-hero` (the roll-up "one number"). Both set `font-variant-numeric: tabular-nums` so digits
-hold their box as SignalR pushes updates — numbers must never reflow or jitter mid-glance. No display
-sizes, no all-caps labels beyond Fluent's own.
+Use `{typography.inherited}` for every title, body, label, helper, status, and error. Page titles remain real route-level headings through FrontComposer. Use `{typography.numeric}` for live Remaining, Estimated, Done, rolled totals, counts, and Theme 5 Cost where tabular numerals prevent jitter. Works does not set font family, size, weight, line height, letter spacing, or foreground.
 
 ## Layout & Spacing
 
-Inherit Fluent v5's 4px-based spacing scale. Works adds **no** spacing tokens. Density is not a
-Works decision — it is **spec-locked by FrontComposer**: a command form with ≤1 non-derivable field
-renders `Inline`, 2–4 `CompactInline`, ≥5 `FullPage`; derivable fields (`TenantId`, `MessageId`,
-`CorrelationId`, `UserId`, timestamps, `[DerivedFrom]`) never appear in forms. The shell is
-`<FrontComposerShell>` with a left rail; the console is desktop-first inside Fluent's grid.
+Use FrontComposer and Fluent layout/spacing defaults, including page, toolbar, tab, grid, and command layouts; Works defines no spacing scale. A future Works web surface is one Module workspace with route-backed tabs, not a family of primary rail entries. Dense queue and tree content may use a bounded labeled two-dimensional region where necessary; the surrounding page retains one logical reading order.
+
+Every page, dialog, or detail panel with two or more sibling titled content regions uses one `FluentAccordion`, with one `FluentAccordionItem` per region and the primary/first item expanded. Page titles, breadcrumbs, toolbars, navigation chrome, and a single primary grid, form, detail, or visualization may stay outside; never hide the sole primary region.
+
+On the future Work page, the Attached Work Tree is that sole always-visible primary visualization. One supporting accordion places Roll-Up first and expanded, with Unavailable as the alternate state inside that item; child-coordination evidence is the next item.
 
 ## Elevation & Depth
 
-Inherit Fluent v5 elevation. Works uses depth sparingly and never as hierarchy: the **roll-up
-panel** and the **focused queue/detail card** may sit one Fluent elevation step above the surface;
-everything else is flat. Hierarchy comes from layout, type weight, and the burn-down — not shadow.
+Use inherited Fluent surface layering and component elevation. Hierarchy comes from headings, spacing, disclosure, Work Status, and numeric relationships. Do not add bespoke shadows, nested card stacks, gradients, tinted dashboard bands, or elevation to signal progress.
 
 ## Shapes
 
-Inherit Fluent v5 corner radii (4px controls, 6–8px cards/dialogs). Status pills are the only fully
-rounded shape. Email action buttons use 6px (the one place outside Fluent's renderer). No other
-shape delta.
+Use the active Fluent component radii; Works defines no radius override. Work Status is not a pill family: use `FcStatusIcon`, visible label, and tooltip. Counts use `FluentBadge`. Email action shapes follow tested email-client constraints and do not establish a Blazor radius system.
 
 ## Components
 
-Fluent components used as-is (do not customize): `FluentButton`, `FluentDataGrid` (the FC-TBL
-surface), `FluentDialog`, `FluentCard`, `FluentBadge`, `FluentTextField`, `FluentTab`,
-`FluentPersona`, `FluentMenu`, `FluentMessageBar`, skeletons, the focus ring. Icons come from the
-custom inline-SVG **`FcFluentIcons`** factory, never a Fluent icons NuGet.
+### Visual references
 
-Works brand-layer / bespoke components:
+The promoted HTML artifacts give every named IA/horizon group a visual reference, but remain **visual-only**:
 
-- **Burn-Down meter** — the signature. A horizontal bar: `{colors.burndown-done}` fill over
-  `{colors.burndown-track}`, with the **Remaining** figure in `{typography.metric}`. Heterogeneous
-  Units are **never summed** — render one bar + subtotal per Unit, each labeled. Live-updates in
-  place. Never shows negative. Ref: [`mockups/key-work-item.html`](mockups/key-work-item.html).
-- **Roll-Up "one number"** — `{typography.metric-hero}` for the subtree-rolled Remaining, shown
-  beside own Remaining. Heterogeneous Units appear as **separate** hero subtotals (e.g. "14
-  interactions" / "6 hours"), never a single fabricated total. Cost roll-up (deferred) uses
-  `{colors.cost-meter}`. Ref: [`mockups/key-work-tree.html`](mockups/key-work-tree.html).
-- **Status pill** — text + `FcFluentIcons` glyph + the matching `status-*` color (text at full
-  token, background at a ~12% tint). The **Suspended** pill carries its await-condition inline
-  ("Waiting on: reply (email)"). Never the only progress signal.
-- **Party chip** — built on `FluentPersona`. **Identical for every executor kind**; a tiny
-  monochrome glyph pair encodes *kind* (bot / person / external) + *channel* (MCP / CLI / chatbot /
-  email). An **Authority** badge ({Read · Contribute · Coordinate · Administer}) is monochrome with
-  escalating weight (carried, not enforced in v1). No color-coding by kind, ever.
-- **Work-tree node** — obligation + mini Burn-Down meter + Status pill + Party chip, indented with
-  Fluent disclosure. Cascade (cancel/reject/expire from a parent) renders children muted/struck
-  with a "cascaded from parent" note.
-- **Action-link set** — the email-as-UI action buttons; fully bespoke, lives outside the shell. Each
-  button = one valid, single-use, expiring, signed domain act; `{colors.brand-primary}` primary fill,
-  `{components.action-link-email.min-tap-target}` minimum tap target; a quieter **"None of these —
-  answer in my words"** link beneath. Table layout, inline styles, system fonts, plain-text
-  fallback. Ref: [`mockups/key-email-as-ui.html`](mockups/key-email-as-ui.html).
-- **NL escape hatch** — the "None of these — answer in my words" affordance beneath the action-link
-  set (email) and present in chatbot/MCP. Visually **subordinate** to the constrained-safe buttons:
-  a quiet `{colors.brand-primary}` text link that opens a plain `FluentTextField`, never a button.
-  The taps stay primary; free text is the fallback. Ref:
-  [`mockups/key-email-as-ui.html`](mockups/key-email-as-ui.html) (State B).
-- **Capture bar** — "capture in seconds": a single obligation line with `{colors.brand-primary}`
-  submit; priority/due optional, everything else defaulted. Mirrors the email one-liner and the
-  single chatbot sentence.
-- **History timeline entry** — actor + timestamp + verbatim Raw Act, past-tense verb; one stream
-  merging Domain Events and comments.
-- **Cost meter** *(Theme 5, deferred)* — a second Burn-Down meter in `{colors.cost-meter}`, parallel
-  to effort. Specified now so the seam is shaped; not built in v1.
+| IA/horizon group | Visual-only reference | Contract boundary |
+|---|---|---|
+| v1 headless harness | [Harness evidence](mockups/key-v1-harness.html) | Structured builder evidence, never production navigation. |
+| Theme 2 remainder | [MCP/CLI](mockups/key-mcp-cli.html) | Command-shaped adapter anatomy; exact tools, resources, syntax, and protocol remain source-open. |
+| Uncommitted FrontComposer web | [What's next](mockups/key-whats-next.html), [Work Item detail](mockups/key-work-item.html), [Work Tree/Roll-Up](mockups/key-work-tree.html), [Capture](mockups/key-capture.html) | Proposed Module composition only; no shipping commitment. |
+| Theme 3 | [Chatbot](mockups/key-chatbot.html), [email action](mockups/key-email-as-ui.html) | Natural-language recovery and email hierarchy, subject to the [email implementation gate](EXPERIENCE.md#theme-3-email-implementation-gate). |
+| Themes 4–6 roadmap | [Operational reference states](mockups/key-roadmap-operations.html) | A reference-state board, not a page: Theme 5 Cost is the only defined seam; Theme 4 routing/escalation and Theme 6 Admin/Audit/participant capabilities remain source-open. |
+
+Open these artifacts only for the named information grouping and density. Sample values and every implementation detail—including raw HTML/CSS, palettes, navigation, controls, comments, and lifecycle copy—are illustrative and must not be copied into Blazor. Use the stated FrontComposer/Fluent bases; these spines win on conflict.
+
+### Component contracts
+
+These 13 IDs and names are the canonical Works-specific component vocabulary shared with `EXPERIENCE.md`.
+
+| Component ID | Visual contract |
+|---|---|
+| **burn-down-meter** | Build on `FluentProgressBar` and inherited Fluent text. Always show Estimated, Done, Remaining, and Unit as text; tabular numerals are the only Works type delta. Render the bar only where the accessibility matrix in `EXPERIENCE.md` defines truthful determinate semantics. Work Status, not the meter, owns completion. |
+| **roll-up-summary** | Build from `FluentStack`, `FluentText`, and FrontComposer projection-health treatments. Keep own Remaining, rolled Remaining, per-Unit totals, unestimated-descendant count, and freshness labels distinct. On the Work page it occupies the first expanded supporting accordion item; Unavailable replaces its result within that item and is never the number zero. |
+| **work-status** | Build on `FcStatusIcon` with the existing `BadgeSlot` mapping below, plus visible localized text and a keyboard-accessible tooltip. Do not supply a glyph or invent status artwork. Never create tinted status pills; the label distinguishes statuses that share a slot. |
+| **party-reference** | Compose `FluentAvatar`, `FluentText`, `FluentStack`, and `FcFluentIcons`. Resolve the Party name and display Channel text; use a neutral fallback when unresolved. Do not infer or color-code bot/person/external kind from an Executor Binding. |
+| **work-tree** | Use `FluentTreeView`/`FluentTreeItem` disclosure and hierarchy, with nested `work-status`, `party-reference`, and compact `burn-down-meter` content. It is the future Work page's sole always-visible primary visualization. Only Attached edges render as tree nodes; Reserved and Creating stay in the supporting child-coordination accordion item. Eventual cascade is described in text, not strike-through or color alone. |
+| **queue-row** | Start with the generated Fluent data grid and FrontComposer row-detail components. The Works delta is compact obligation, exact schedule order, resolved executor, `work-status`, `burn-down-meter`, and legal row actions. Hover, focus, selection, resizing, virtualization, and separators remain inherited. |
+| **capture-command** | Use the generated command form, authorization region, placeholders, and lifecycle wrapper. Fluent inputs own labels and validation. Obligation is visually primary with visible 4,000-character help; any act-note field carries visible 1,000-character help. Verified tenant/actor context and server-controlled or derived fields are read-only evidence, not inputs. Optional estimate, Unit, schedule, parent, binding, Conversation, and Expectation references follow generated density. |
+| **work-history** | Present authorized Raw Acts through an L2 projection template using `FluentStack`, `FluentText`, and `FcFluentIcons`; a minimal semantic chronological list is allowed because Fluent has no timeline component. Preserve verbatim user wording while keeping actor, time, act, and optional note scannable. Do not render raw EventStore payloads. |
+| **conversation-panel** | Compose the separately owned Hexalith.Conversations projection/command view in its own labeled `FluentAccordionItem`. Its loading, posting, and error visuals are independent of `work-history`; no Works-owned comment composer or merged stream. |
+| **natural-language-response** | Theme 3 only. Use `FluentTextArea`, `FluentButton`, and lifecycle feedback. It remains visibly subordinate to constrained actions, retains submitted words, and distinguishes applied, needs-confirmation, and recovery states without a bespoke AI palette. |
+| **email-action-set** | Outside the Blazor shell. Follow the normative [Theme 3 email implementation gate](EXPERIENCE.md#theme-3-email-implementation-gate). When allowed, visually prioritize descriptive constrained actions over reply-in-own-words in the email-safe presentation; mock colors remain illustrative. Theme 6 adds production binding, single-use, absolute-expiry, idempotency, and step-up treatments. |
+| **pause-live-updates** | Use a labeled `FluentButton`, `FluentBadge` queued count, and the shared connection-status treatment. Paused/running and queued state remain visible in reduced motion and forced colors; no pulse is required. |
+| **cost-meter** | Theme 5 only. Reuse `FluentProgressBar` and inherited text as a separately labeled Cost meter, with locale-formatted currency/Unit and its own Roll-Up. Keep each currency/Unit group separate with freshness or Unavailable; never merge through silent conversion. Distinguish Cost from Effort by words and placement, not a fixed gold palette. |
+
+### Work Status variants
+
+`FcStatusIcon` resolves its fixed icon from one of six existing slots. The adjacent localized label is required because several Work Status values intentionally share a slot.
+
+| Contract value | Display label | `BadgeSlot` | Semantic meaning |
+|---|---|---|---|
+| `Created` | Created | `Neutral` | Recorded, not assigned or queued; an initial binding may already be present. |
+| `Assigned` | Assigned | `Info` | A responsible Party is bound; its matching actor must Claim to start. |
+| `Queued` | Queued | `Info` | Available in the tenant pull pool; the admitted Claim winner becomes bound. |
+| `InProgress` | In progress | `Accent` | Claimed and active; responsibility-bound actions require actor/binding match. |
+| `Suspended` | Suspended | `Warning` | Parked on one or more Await-Conditions; Handoff preserves this status and its conditions. |
+| `Completed` | Completed | `Success` | Reached through progress or explicit Complete; only progress completion may reopen after correction. |
+| `Cancelled` | Cancelled | `Neutral` | Terminal cancellation, including a completed eventual parent cascade. |
+| `Rejected` | Rejected | `Danger` | Terminal only for a non-requeue Reject from Assigned; default Reject rests as Queued. |
+| `Expired` | Expired | `Warning` | Terminal expiry after the accepted expiry act. |
+
+Work Status never reuses FrontComposer command-lifecycle visuals as if they were the same state. Submitting, Acknowledged, Syncing, Confirmed, Rejected, IdempotentConfirmed, NeedsReview, Warning, and Degraded describe command evidence, not a Work Item's resting Status.
 
 ## Do's and Don'ts
 
 | Do | Don't |
 |---|---|
-| Show progress as a shrinking Remaining (burn-down) | Convey progress with a status pill alone |
-| One identical Party chip for bot / human / external | Color-code or restyle the UI by executor kind |
-| Brand blurple only for *act* / *live* (primary action, active, in-progress) | Introduce a second brand color or use blurple decoratively |
-| Tabular figures for every burn-down / roll-up number | Proportional figures that jitter as numbers update live |
-| Keep heterogeneous Units as separate subtotals | Sum across Units into one fabricated number |
-| Inherit Fluent v5 for everything outside the brand layer | Restyle `FluentDataGrid`, dialogs, inputs, or the focus ring |
-| Email: table layout, inline styles, system fonts, ≥44px taps, plain-text fallback | Web fonts, JS, external CSS, or <44px targets in email |
+| Inherit the active FrontComposer accent and Fluent semantic roles wholesale | Add a Works accent token, manual mode alias, status palette, or second brand color |
+| Use inherited semantic roles plus labels, icons, values, and boundaries | Encode progress, Cost, Work Status, freshness, or availability by color alone |
+| Use the exact canonical component IDs and implementation bases above | Copy raw HTML/CSS or stale navigation/lifecycle semantics from the visual-only mocks |
+| Keep own Remaining, rolled Remaining, unestimated count, and freshness separate | Present eventual or unavailable Roll-Up as synchronous, fresh, or zero |
+| Keep one neutral `party-reference` treatment | Infer executor kind or branch styling from the Executor Binding |
+| Keep Work Status and command lifecycle visually and semantically distinct | Call Acknowledged “completed,” or use command Rejected as Work Status Rejected |
+| Inherit typography, spacing, radii, elevation, focus, hover, and mode behavior | Recreate Fluent component styling or a hand-authored type ramp |
+| Reserve email HTML conventions for the email channel | Treat the email exception as permission for raw interactive Blazor controls |

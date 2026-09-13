@@ -1,189 +1,177 @@
 # Validation Report — Hexalith.Works
 
-- **PRD:** `_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md` (+ `addendum.md`)
-- **Rubric:** `.agents/skills/bmad-prd/assets/prd-validation-checklist.md`
-- **Run at:** 2026-09-08T12:25:00+02:00
-- **Grade:** Fair
+- **PRD:** `/home/administrator/projects/hexalith/works/_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md`
+- **Rubric:** `/home/administrator/projects/hexalith/works/.agents/skills/bmad-prd/assets/prd-validation-checklist.md`
+- **Run at:** 2026-09-12T10:33:47+02:00
+- **Grade:** Poor
+- **Gate:** Coordinated implementation blocked; isolated pure-domain work may proceed where the PRD is internally consistent.
 
 ## Overall verdict
 
-This is a genuinely good capability-spec PRD: the thesis is sharp and product-specific ("everything is a Party"; raw act canonical, interpretation a projection), scope is tightened honestly against its own brief, every inferred decision is tagged and indexed, and the two September amendments (FR-20 tie-break, FR-21 `LinkConversation`) are exemplary in precision. What is at risk is Done-ness at the seams between FRs: the lifecycle has no transition or event for an `Assigned` item starting work, FR-15 and §10 disagree on whether a non-matching resume is a rejection or a no-op, the actor of non-executor acts (assign, cancel, re-estimate) is not captured despite being the second bet, and an undefined "type" concept backs two configuration knobs. With Epics 1–4 built, these gaps have almost certainly been resolved in code without the PRD recording the answer — the practical risk is the PRD ceasing to be the system of record for the contract it claims to own.
+This is a strategically coherent, unusually substantive technical PRD with explicit scope cuts, product bets, testable consequences, and useful counter-metrics. It is not yet safe as an unqualified implementation contract: normative sections disagree on core lifecycle, tree, authorization, and Roll-Up behavior, and the addendum contradicts the PRD's security-critical actor-provenance rule.
 
-The two extra reviewers sharpen that risk into a verdict. The adversarial pass argues that the purity rules (a clock-free, single-aggregate `Handle`) are incompatible with three behaviours the PRD also mandates — spawn-with-parent-link, child-completion resume, cascade-cancel — and that the single Executor Binding cannot hold the approver/observer roles the roadmap depends on; it rates both critical. The downstream-drift pass confirms the first of those was in fact answered on 2026-09-06 by the architecture (AD-21 Work-Tree Registry, a second aggregate that takes edge ownership and the public spawn entry away from `WorkItem`) with no PRD amendment and no decision-log entry, and that all six §13 Open Questions are already resolved by AD decisions the PRD does not cite. Grade is **Fair** on the rubric (all dimensions strong/adequate, two high findings). If the two adversarial criticals are accepted as written during triage, the grading rule yields **Poor**; if the AD-21 correct-course pass is run, the second critical collapses into the drift finding. Overall drift verdict: **material drift** — not superseded, but the PRD lags the architecture on one structural decision and its audit trail stops in June.
+The independent adversarial, downstream-drift, and implementation-readiness reviews materially strengthen that caution. The PRD was amended after its prior validation, while `architecture.md` and `epics.md` still encode the earlier 25-FR design. Registry/Reactor work, distributed acceptance, platform migration, and production admission are blocked until the critical contract contradictions are resolved and downstream plans are rebaselined to FR-26 and the §9 security baseline. Under the workflow's grading rule, any critical finding makes the grade **Poor**.
+
+Across the four source reviews there are 52 finding occurrences (8 critical, 23 high, 15 medium, 6 low). The list below consolidates overlapping findings into 5 critical, 13 high, 6 medium, and 3 low issues; reviewer-specific detail remains in the source files.
 
 ## Dimension verdicts
 
 - Decision-readiness — adequate
 - Substance over theater — strong
 - Strategic coherence — strong
-- Done-ness clarity — adequate
-- Scope honesty — strong
-- Downstream usability — strong
+- Done-ness clarity — thin
+- Scope honesty — adequate
+- Downstream usability — thin
 - Shape fit — strong
 
 ## Findings by severity
 
-Counts after merging duplicates across reviewers: critical 2 · high 8 · medium 13 · low 15 (38).
+### Critical (5)
 
-### Critical (2)
+**[Done-ness clarity / Adversarial] — Registry-first child creation is bypassable and can attach a nonexistent child (§4.1 FR-1; §4.3 FR-13; §4.4 FR-16)**
 
-**[Adversarial]** — The keystone binding cannot hold the roles the roadmap needs, and SM-3 cannot fail in v1 (§4.5 FR-17/FR-19, §11 SM-3, §12)
-FR-17 gives a Work Item "its single Executor Binding"; FR-19's proposed set includes `Read = await/observe` and `Administer = approve spend, set caps, cancel`. A single slot cannot carry a Contributor doing the work and an Administer approving its spend, an observer, or an escalation ladder's next rung — exactly the Theme 4/6 shapes §12 claims this seam enables. "No domain code branches on executor kind" is trivially true of a kernel that stores three fields and never reads them.
-Fix: Make the binding a set (one primary Executor plus role bindings) now, or state explicitly that approvers/observers are not bindings and name where Theme 6 will put them. Rewrite SM-3 to something that can fail (e.g. "adding a fourth Channel value requires zero changes in `Server`/`Projections`").
+FR-1 permits ordinary Create with a parent reference, while FR-16 makes registry reserve the only public attachment entry. The prescribed write order can also mark an edge `Attached` before child creation succeeds, leaving a permanent authoritative edge to no Work Item.
 
-**[Adversarial]** — Three cross-aggregate behaviours are required but have no owner under the purity rules (§4.4 FR-15/FR-16, §4.2 FR-10 cascade, §4.3 FR-13, §9 Domain purity, §4.7 FR-24)
-`Handle` "never reads a clock or an outside system," yet FR-16 creates a child and emits on the parent; FR-15 has a child's `WorkItemCompleted` raise a resume command to a parent; FR-10 cascades cancel to descendants; FR-13 rejects cycles and cross-tenant links, which requires reading the other aggregate. UJ-3 attributes this to "the engine," the addendum to "internally," and FR-24 forbids Works from owning "subscription plumbing." Two teams will build this differently and both claim compliance. Synthesis note: the architecture answered this on 2026-09-06 with AD-21 without amending the PRD.
-Fix: Add an FR naming the process-manager/saga component, its owning package, and its consistency guarantees (write order on spawn; synchronous vs eventual cascade; child behaviour after parent is terminal but before cascade lands). In practice: run the AD-21 correct-course into the PRD.
+Fix: Reject parent references on ordinary Create; allow only an origin-restricted Reactor child-create command carrying reservation evidence. Make `Attached` mean both parent and child accepted the relationship, with deterministic compensation and crash-boundary acceptance tests.
 
-### High (8)
+**[Decision-readiness] — Resume has incompatible normative outcomes (§4.2 FR-6 table; §4.4 FR-15; architecture AD-13)**
 
-**[Done-ness · Adversarial]** — No transition or event for `Assigned → InProgress`; Reject semantics under-specified (FR-6, FR-7, FR-10 Reject, FR-18)
-The catalog has `WorkItemClaimed` for `Queued → InProgress` but nothing for a pushed item starting; whether `ProgressReported` is legal in `Created`/`Assigned`/`Queued` is unstated. `Rejected` is listed as terminal yet the default `WorkItemRejected` outcome is Status `Queued`; legal from-states and whether requeue-by-reject also emits `WorkItemQueued` are unstated.
-Fix: Publish the full legal-transition table (from-state × command → to-state/event) in FR-6; add `WorkItemStarted` or state that the first `ProgressReported` on an `Assigned` item is the start act; split Reject into a requeue outcome and a terminal outcome.
+The explicitly normative lifecycle table rejects Resume from `InProgress`, but FR-15 requires replay of the consumed Await-Condition to be a no-op after the successful Resume has returned the item to `InProgress`. AD-13 additionally retains the obsolete rule that every non-match is a no-op.
 
-**[Done-ness · Adversarial]** — FR-15 and §10 contradict on non-matching resume (FR-15, §10 Idempotency)
-FR-15: "matches no current Await-Condition is a domain rejection"; §10: "no longer matches an Await-Condition is a no-op". The "duplicate … idempotent no-op" branch is undecidable without retained history, and §10's reliance on substrate stream-offset dedup covers event replay, not an at-least-once timer adapter issuing two distinct commands.
-Fix: Pick one rule; if the no-op branch is kept, require retained consumed Await-Conditions (or "any resume on a non-`Suspended` item is a no-op"); align §10; state that duplicate-command idempotency is the aggregate's job.
+Fix: Make FR-15 the single rule; encode current match = accepted, consumed match after resume = no-op, and every other non-match = rejection in the PRD table, AD-13, epics NFR-9, and tests.
 
-**[Adversarial]** — "Done = Remaining is 0" is three completion paths, and the auto path is irreversible (§3, FR-8/FR-9)
-FR-8 auto-completes at Remaining 0; unestimated items complete "only by an explicit complete act"; `ReEstimated` below Done silently completes. An executor who reports the full estimate early is auto-completed into a terminal state and can never re-estimate, contradicting "over-run … native, not errors". Every client will implement "Complete" as a synthetic re-estimate-to-done.
-Fix: Decide whether Remaining=0 is a precondition for an explicit `Complete` (recommended) or an auto-trigger; if auto, add `Reopen` or drop "over-run is native"; forbid `ReEstimated` below Done or specify that it completes.
+**[Adversarial] — Executor-only acts conflict with tenant-membership-as-the-only-gate (§4.2 FR-6/FR-8/FR-10; §4.5 FR-19; §9)**
 
-**[Adversarial]** — Roll-Up requirements are mutually underdetermined; the "single number" promise is withdrawn by FR-12 (§1, FR-11/FR-12, SM-2)
-FR-12's per-Unit subtotals mean the single number exists only when every descendant shares a Unit, and nothing constrains Unit at spawn. FR-11 demands both "incrementally" and "idempotent under at-least-once, out-of-order delivery"; delta-accumulation fails the second. SM-2 has no quiescence condition, so any failing read is "stale but converging."
-Fix: Require per-child last-known Remaining (state-based) storage; name SM-2's quiescence condition; constrain Unit inheritance at spawn or downgrade the Vision claim.
+Several requirements say the bound Executor claims, rejects, reports, or completes its own work, while FR-19 and §9 say any authenticated tenant member may perform any v1 act. Either behavior can appear compliant, with materially different authorization and audit consequences.
 
-**[Adversarial · Done-ness · Scope honesty · Downstream usability]** — Expire smuggles a scheduler, an undefined "type" concept, and actor-less raw acts into a kernel that ships no adapters (FR-10, FR-15, §4.7, §6.1, §13 OQ-4/OQ-6, §10 Audit)
-Who fires Expire? The timer/scheduler adapter is deferred by OQ-4 and excluded by §4.7, yet SM-1 requires date-triggered resume end-to-end and §6.1 lists "date/timer native" in scope. "Per-type TTL" and FR-13's "per tenant/type" reference a Work Item type that exists nowhere in §3/§4.1/FR-1. A timer-fired `WorkItemExpired` or cascaded `WorkItemCancelled` has no acting Party — a hole in the Raw Act model for every system-originated event. A `Suspended` item with a passed Due Date both resumes (FR-5) and expires (FR-10). (Architecture has since bound the adapter as AD-11; the PRD does not say so.)
-Fix: Add the timer/scheduler adapter to §6.1 explicitly with an owner; add an `ExpireWorkItem` command and precedence rule; define "type" or replace with "per tenant"; specify how configuration enters `Handle`; define the actor for system-originated events; state whether Expire is legal from `Suspended`.
+Fix: Add a v1 action-authorization matrix naming the actor predicate for every command and how verified actor identity reaches pre-dispatch or aggregate authorization. If membership alone is intentional, remove all executor-only wording and explicitly accept the blast radius.
 
-**[Adversarial · Strategic coherence]** — v1's own scope statement contradicts itself and strands work (§0, §5, §12)
-§0: "v1 (the foundation: Themes 1 & 2)." §5: MCP/CLI were filed under Theme 2 and "v1 deliberately defers even these." So v1 ≠ Themes 1 & 2, the deferred Theme-2 items appear in no §12 roadmap row, and Themes 1 & 2 are never defined in the PRD itself.
-Fix: Restate scope as "Theme 1 + the kernel subset of Theme 2", define both themes in one clause, and add a roadmap row for the non-LLM command surfaces.
+**[Downstream drift] — Registry and FR-26 have no implementable epic decomposition (architecture Requirements Overview; epics inventory, coverage map, Stories 3.1–3.2)**
 
-**[Drift]** — Work-Tree Registry (AD-21) relocates tree-edge ownership and the spawn entry point without a PRD amendment (PRD §3, §4.1, FR-5, FR-13, FR-16 ↔ architecture.md AD-21, epics.md Epic 3 / Story 3.2)
-PRD §3 defines the Work Item as "the aggregate root" that "owns … optional parent/children"; FR-16 says `ChildSpawned` "emits on the parent." AD-21 binds a tenant-scoped Work-Tree Registry aggregate owning every edge, with "the registry's reserve command" as the public entry and `SpawnChild` restricted to the reactor's workload identity. Stories 3.1/3.2 ACs still make `SpawnChild` caller-facing; architecture line 463 still says "a single aggregate root". A builder can no longer issue `SpawnChild`; a new command/event family enters the v1 contract; SM-C1 is engaged.
-Fix: Run a correct-course pass for AD-21 amending §3, §4.1/FR-5, FR-13, FR-16, FR-7, §14; correct architecture.md line 463; update or supersede Stories 3.1/3.2.
+Architecture and epics still advertise 25 FRs and the older caller-facing, Work-Item-owned spawn design. FR-26, Registry state transitions, Reactor-only commands, reservation recovery, and current Roll-Up ancestry are absent from accepted stories.
 
-**[Drift]** — Decision log has no record of either September amendment (`.decision-log.md` ↔ sprint-change-proposal-2026-09-05 §7, -2026-09-06 §4.1)
-The log's last entry is the 2026-06-14 finalize. Git confirms both amendments landed (`7e7ef4e` 2026-09-05; `33a27e2` 2026-09-06), so the PRD changed twice after "final" with zero audit-trail entries; the 09-06 edit travelled in a commit titled "feat: Implement mTLS for Dapr Sentry …".
-Fix: Append two dated entries (sections touched, approving proposal, commit hash); adopt the rule that any post-final PRD edit adds a log entry in the same change.
+Fix: Bind VAL-H10, then correct-course architecture and epics to 26 FRs. Replace Stories 3.1–3.2 with ordered Registry/Reactor slices and map FR-26 across the affected saga, cascade, reminder, and recovery stories.
 
-### Medium (13)
+**[Downstream drift / Readiness] — The mandatory identity and trusted-origin gate has no executable delivery story (§9; AD-23/AD-24; Story 4.9)**
 
-**[Decision-readiness]** — v1 authority blast radius unsurfaced (FR-9, FR-10 Cancel/Cascade, FR-18 assumption, FR-19)
-"authorized Executor" (FR-9) has no v1 meaning; with cascade-cancel and open claiming, any tenant Party can terminate any subtree. No `[NOTE FOR PM]` marks this.
-Fix: State in §10 or FR-19 that all acts are ungated in v1 and cascade is unguarded, with a `[NOTE FOR PM]`; replace "authorized Executor" with "any bound Executor (authority carried-not-enforced)".
+The PRD forbids production ingress until verified claim derivation, membership denial, workload delegation, internal-command origin restrictions, mutually authenticated transport, broker ACLs, and forged-sequence protections exist. Story 4.9 can currently pass without any of them.
 
-**[Decision-readiness · Drift]** — Product semantics filed as architecture mechanism (§13 OQ6 ↔ epics AR-6 vs architecture AD-17)
-Negative progress deltas and Unit immutability govern what an Executor may do, not how it is stored. Downstream now contradicts itself (AR-6 "delta ≥ 0" vs AD-17 "delta > 0") and the PRD has no text to arbitrate.
-Fix: Decide both in FR-8/FR-3 consequences; leave only the configuration source in §13; fix AR-6.
+Fix: Add an owned platform-security story or explicit Story 4.9 slice with the complete positive/negative matrix, and keep production ingress and production-data admission closed until it passes.
 
-**[Strategic coherence · Adversarial]** — Bet 2 and rebuildability have no success metric; SMs are a test plan (§1, FR-7, §9, §11)
-FR-7's raw-act rule, §9 rebuildability, FR-10 cascade, FR-18 race and FR-20 ordering are unvalidated. SM-4 and SM-C1 have no measure, threshold or reviewer; nothing measures the JTBD (a builder other than the author wiring Works in).
-Fix: Add SM-6 "Rebuild from zero reproduces identical read models; no event payload carries a derived value"; cover FR-18/FR-10 in SM-1 or a new SM; add one adoption signal and one shape budget so SM-C1 can fire.
+### High (13)
 
-**[Done-ness]** — Acting Party not captured for non-executor acts (FR-7, FR-9, FR-10, FR-17)
-"capturing the acting Party … via the binding and the EventStore envelope" fails for Assign, Reassign, Cancel, ReEstimate, Reschedule; "Works does not populate envelope metadata". Bet 2 is not met.
-Fix: Require every command to carry `ActorPartyId` and every Raw-Act event to record it; add a negative test.
+**[Done-ness clarity] — Completed and terminal Roll-Up contribution has two definitions (§3 Remaining; FR-8; FR-11; SM-2)**
 
-**[Done-ness]** — Unestimated item's Roll-Up contribution undefined (FR-1, FR-11, FR-12)
-Fix: "an unestimated item contributes 0 to rolled Remaining and increments an `UnestimatedDescendants` count exposed alongside the subtotals".
+Explicit Complete may retain `Estimated − Done > 0`, while terminal items must contribute zero; FR-11 and SM-2 still sum “own Remaining.” Fix: distinguish retained meter Remaining from an effective `RollUpContribution`, define terminal and unestimated behavior, and use only the contribution in formulas and schemas.
 
-**[Done-ness]** — Creation with an Executor Binding: `Created` or `Assigned`? (FR-1 consequence 2, FR-6 consequence 2)
-Fix: "if an Executor Binding is supplied, creation emits `WorkItemCreated` followed by `WorkItemAssigned` and Status is `Assigned`" (or the alternative).
+**[Done-ness clarity / Adversarial] — Eventual coordination and cascade closure are not measurably bounded (FR-16; FR-26; SM-1)**
 
-**[Done-ness]** — Performance NFR is an adjective (§9 Performance)
-"remain responsive for realistically deep/wide trees" is unfalsifiable; SM-2 needs a fixture size.
-Fix: Pin a v1 test-tree shape (e.g. depth 32 × fan-out 50) and a Roll-Up convergence bound, tagged `[ASSUMPTION]`.
+Reservation settlement, child creation, resume, cascade, and reminder recovery are “bounded” or “eventual” without a maximum, acknowledgement predicate, fixed-point rule, or failure state. Concurrent spawning can escape a cascade traversal. Fix: define observable quiescence, configured acceptance bounds, timeout/retry outcomes, and a subtree-closure rule; test every crash and concurrency boundary.
 
-**[Downstream usability]** — Undefined "type" backs two configuration knobs (FR-10 Expire, FR-13 depth, §12 Theme 4)
-Fix: Add `Type`/`Kind` to the Glossary and FR-1 as an optional discriminator, or change both knobs to "per tenant".
+**[Adversarial] — Domain rejection is incorrectly treated as idempotent success (FR-26; §10; VAL-H10)**
 
-**[Downstream usability · Adversarial · Drift]** — 2026-09-05 amendments unmarked; frontmatter inconsistent; June "all resolved" claims now false (frontmatter, FR-7, FR-20, FR-21, FR-24, §4.7, §13, §14)
-Only FR-20 carries an "Amended" note (2026-09-06) while `updated: 2026-09-05`; the larger 09-05 amendment has no inline markers; §14 still says "All confirmed by the user on 2026-06-14". FR-21's first-link-immutable rule is unjustified when binding, schedule and estimate are all mutable.
-Fix: Set `updated: 2026-09-06`; add an "Amendment history" block; add inline notes to FR-7, FR-21, FR-24, §4.7; update §14; justify FR-21 immutability or allow relink with `ConversationUnlinked`.
+A rejection is observably different from replaying the original success and cannot safely prove that a prior Reactor command completed. Fix: require the same idempotency/causation key to replay the original outcome for the redelivery horizon; classify only named equivalent states as successful translation outcomes.
 
-**[Drift]** — §13 Open Questions are all answered by architecture decisions but still listed as open (§13 items 1–6 ↔ AD-02, AD-03, AD-08, AD-11/AD-25, AD-16, AD-17/AD-04)
-Fix: Convert §13 into a "Resolved by architecture" table, keeping residual openness only where the register says so (VAL-H07, VAL-H08).
+**[Adversarial] — `ReEstimate` cannot correct over-reported Done (FR-8; FR-9)**
 
-**[Drift]** — Baseline security enforcement (AD-23/AD-24) is v1 scope the PRD says v1 does not build (§5, §6.2, §9 ↔ AD-23, AD-24, AD-20 R10)
-PRD §5: "no security-hardening enforcement". Architecture binds OIDC ingress, deny-before-dispatch, Dapr mTLS and authenticated provenance as Story 4.9 acceptance. No PRD NFR covers identity provenance.
-Fix: Add a §9 NFR "Identity provenance & trusted origin (platform-owned baseline)" citing AD-23/AD-24; narrow §5 to "no Theme 6 hardening".
+The PRD tells callers to correct erroneous progress through `ReEstimate`, but that command changes Estimated, not Done, and cannot repair a progress event that already completed the item. Fix: either add an auditable additive correction act with terminal rules, or declare Done immutable and remove the false correction guidance.
 
-**[Drift]** — §14 Assumptions Index holds assumptions the architecture has since invalidated (§14 bullets 5 and 14 ↔ AD-21, AD-02, VAL-H10)
-"enforced at spawn time" vs registry-side enforcement; "per-act idempotency tokens deferred" vs VAL-H10 making transport idempotency v1 work.
-Fix: Mark both "superseded by AD-21" / "narrowed by VAL-H10"; re-check the FR-7 "closes the event list" bullet.
+**[Adversarial / Readiness] — Mid-work handoff and Channel change are promised but forbidden (§1; Glossary; FR-6; FR-17; SM-5)**
 
-**[Adversarial]** — The "what's next" query has no defined consumer; the September tiebreak is arbitrary and called a decision (FR-20, FR-4, §13 OQ-2)
-One list mixes everyone's `Assigned` items with the shared `Queued` pool; the filter predicate is unnamed; Priority's direction is deferred so FR-4's "sorts last" is untestable.
-Fix: Split into per-executor and per-tenant-pool queries (or add an executor parameter); name the filter predicate; commit to Priority ordering direction; record the id-ordinal tiebreak as a product decision.
+The Vision, Channel definition, and SM-5 promise state-preserving mid-work reassignment, but the lifecycle rejects Assign/Queue from `InProgress` and `Suspended`. Fix: narrow the claim and SM-5 to `Assigned`, or define a distinct active-state relinquish/handoff transition.
 
-**[Adversarial]** — The thin core leaks at four visible seams (FR-7, FR-21/FR-22, §3 Obligation, SM-C2)
-A note-per-event is a comment store; Obligation's description is unbounded; `IExecutorRouter` and `IExpectationResolver` are dead abstractions in v1 that SM-C2 would call "a negative" elsewhere.
-Fix: Bound the description; forbid notes on events or reconcile with FR-21; drop `IExecutorRouter` from v1 and defer `IExpectationResolver` until it has a caller.
+**[Adversarial] — “What's next” requires authorization filtering without an entitlement model (FR-20; §9)**
 
-### Low (15)
+FR-20 simultaneously specifies an exact tenant/status/Party filter and requires further authorization/result filtering, but v1 contains no coordinator grant, visibility policy, or enforced AuthorityLevel. Fix: define caller entitlement for executor and coordinator views, PartyId binding to authenticated identity, shared-queue visibility, and positive/negative tests.
 
-**[Decision-readiness]** — No `[NOTE FOR PM]` callouts anywhere (whole document)
-Fix: Promote the §12 "Designed-for tensions" paragraph to `[NOTE FOR PM]` callouts with an owner.
+**[Decision-readiness] — Release dependencies are scattered rather than expressed as one gate (§9; §13; addendum handoff)**
 
-**[Substance]** — SM-5 duplicates SM-3 (§11)
-Fix: Fold SM-5 into SM-3, or repoint it at "a Party may change Channel mid-work".
+Open R4/R6/R7/R11 and VAL-H09–H12 obligations block different phases, but the `final` PRD has no actionable dependency/exit-gate table. Fix: name every dependency, owner, evidence, and whether it blocks kernel implementation, integration acceptance, catalog shipment, production ingress, or production data.
 
-**[Done-ness]** — Channel change mid-work has no FR (§3 Channel, FR-17)
-Fix: "changing Channel on the same Party is a reassign that emits `WorkItemAssigned` with the new binding".
+**[Downstream drift] — Lifecycle and completion stories retain pre-amendment semantics (architecture overview; epics Stories 2.1, 2.5, 4.2)**
 
-**[Done-ness]** — Fate of remaining Await-Conditions after first match unstated (FR-5, FR-15)
-Fix: "resume clears all Await-Conditions; later triggers follow the FR-15 non-matching rule".
+Downstream artifacts omit Claim-only entry, Reject's exact states/outcomes, active reassignment rejection, Complete-at-positive-Remaining, and `ReEstimated` never completing. Fix: mirror the normative transition matrix and add explicit acceptance cases before resuming lifecycle implementation.
 
-**[Done-ness]** — `ChildSpawned` vs the child's own `WorkItemCreated` (FR-16)
-Fix: State both streams' events and the command shape — fold into the AD-21 correct-course.
+**[Downstream drift] — Roll-Up stories retain the retired recursive/per-child model (AD-22 summary; Stories 3.3–3.4)**
 
-**[Done-ness]** — "Reference to an Expectation" is unlocated (FR-1, FR-2, addendum)
-Fix: Name the stored field or say "resolved on demand from state".
+Stories omit flattened per-descendant LWW slots, `Attached` ancestry, Registry freshness, unavailable state, unestimated count, Unit inheritance, and quiescence. Fix: rewrite the stories around the current projection contract and acceptance evidence.
 
-**[Downstream usability]** — "Done" collides (§3, §4.2, FR-8)
-Fix: Rename the invariant to "Completed ⇔ Remaining = 0"; reserve "Done" for the quantity.
+**[Downstream drift] — Current query views and product success signals are not covered (FR-20; SM-1–SM-6; Stories 4.1, 4.2, 4.4, 4.9)**
 
-**[Shape fit]** — UJ-3 has no protagonist and UJ-4 sits among v1 journeys (§2.3)
-Fix: Give UJ-3 a builder or Party actor; move UJ-4 under §12 with a back-reference.
+The executor/coordinator query split, SM-3 golden stream diff, SM-5 channel-only change, and SM-6 rebuild identity are absent or weakened; one story even reintroduces “executor kind.” Fix: add exact view ACs and a success-metric coverage map with named test lanes.
 
-**[Adversarial]** — Why Now argues for the synthesis and v1 ships none of it (§7)
-Fix: State the v1-specific timing pressure or move §7 to the brief.
+**[Readiness] — Rebuild fencing and the tenant control-plane exception remain placeholders (§9; §13 VAL-H08/H09; AD-16/AD-22)**
 
-**[Drift]** — Three approved 2026-09-05 sentences did not land verbatim (FR-7, FR-21, §8 ↔ proposal §4.1)
-"never stores conversation content", "preserves every existing payload", and "optional domain-focused supporting libraries" were approved but landed looser or not at all.
-Fix: Apply the three approved phrases verbatim.
+Reader-safe rebuild and universal tenant scoping cannot be accepted while capture-through-Commit fencing and the only governed cross-tenant namespace are unbound. Fix: publish the namespace/owner/authorizer table and rebuild fence state machine, then test cross-tenant mutation and reader/writer races.
 
-**[Drift]** — Claim-race loser outcome narrowed downstream but PRD §9/FR-18 not amended (↔ epics NFR-3, AR-10; AD-08)
-Fix: "the loser receives a domain rejection; if the substrate's bounded conflict retry is exhausted the outcome is an infrastructure failure, never a silent loss."
+**[Readiness] — Serialized-contract rollout lacks a compatibility matrix (§8; VAL-H11; Story 1.5/NFR-12)**
 
-**[Drift]** — FR-11 recursive phrasing "retired" by AD-06; AD-22 adds an "Unavailable" roll-up state the PRD lacks
-Fix: Add an FR-11 consequence allowing "unavailable" during repair windows/rebuild staging, never partial or stale-as-fresh.
+Unknown enum/type behavior, defaulting, rollout order, downgrade stance, and reader/writer N↔N+1 cases are not decided for the new Registry/event/read-model contracts. Fix: bind the compatibility matrix and golden-corpus cases before any catalog change ships.
 
-**[Drift]** — Unspecified scope: read-model change notifications (no FR ↔ epics UX-DR1, Story 4.4)
-Fix: Add a consequence to FR-20/FR-11 or tag UX-DR1 as Theme 3 with no v1 AC.
+**[Downstream usability / Readiness] — Actor provenance and immutable-data handling are unsafe at handoff (addendum event sketch; FR-7; §9; VAL-H12)**
 
-**[Drift]** — Open governed exception to "tenant isolation at every layer" negotiated without the PRD (§9 ↔ AD-15, VAL-H09)
-Fix: Amend §9 when VAL-H09 closes; add a pointer now.
+The addendum says actor identity comes from “the binding + EventStore envelope,” contradicting FR-7's trusted-envelope-only rule. Raw Acts also lack an owned production privacy lifecycle. Fix: correct the addendum; add a negative actor≠bound-Party audit test; define data classification, retention/erasure behavior, and production-admission ownership.
 
-**[Drift]** — FR-7 "names final for v1" will be outgrown by AD-21 contracts
-Fix: Fold into the AD-21 correct-course pass.
+### Medium (6)
+
+**[Adversarial] — Unit inheritance is undefined for unestimated parents and estimate-less children (FR-3; FR-12; FR-16)**
+
+Fix: add a truth table for parent Unit, child Estimated, and child Unit, including when inheritance materializes and whether a later Unit can override an inherited default.
+
+**[Adversarial] — Out-of-order guarantees omit Registry-edge versus Work-Item event ordering (FR-11; SM-6)**
+
+Per-stream LWW does not define what happens when item events arrive before `Attached`. Fix: require convergence under all permitted cross-stream interleavings and test reordered edge/create/progress/completion delivery.
+
+**[Adversarial] — Tenant-wide single-writer Registry lacks a scale envelope (Glossary; FR-13; addendum Registry sketch)**
+
+Fix: add target edge cardinality, attach throughput, rehydration, and recovery objectives, or move the one-aggregate-per-tenant partition choice back to architecture.
+
+**[Scope honesty] — Performance thresholds are simultaneously provisional and acceptance-shaped (§9; SM-2; §14)**
+
+Fix: either make the 1,600-item, `<200 ms`, and `5 s` figures binding with environment/percentile definitions, or label them non-gating benchmarks with an owner and decision date.
+
+**[Downstream usability] — Resume's external seam is inconsistently called a port (§4.4; §6.1; addendum Await-Condition)**
+
+Fix: call it a “Resume command contract plus deferred external adapter” and reserve Port for FR-22 abstractions.
+
+**[Readiness / Downstream drift] — Cross-repository sequencing and validation limits are not executable (§6.1; §8; AD-20; epics AR-6/Story 4.9)**
+
+Provider/consumer seams lack a versioned dependency ledger, while downstream text permits `delta ≥ 0`, omits 4,000/1,000 character bounds, and retains per-work-type policy. Fix: create the dependency ledger and align all boundary/configuration ACs to the current PRD.
+
+### Low (3)
+
+**[Mechanical] — UJ-1 and UJ-2 lack named protagonists (§2.3)**
+
+Name them or relabel them as capability scenarios; this is minor for a headless technical product.
+
+**[Mechanical] — Stable FR-26 appears between FR-16 and FR-17 (§4.4)**
+
+Keep the stable ID, but add an explicit feature-to-FR inventory and avoid range shorthand that can omit FR-26.
+
+**[Mechanical] — Source links and Rejected-state prose are stale (§0; addendum intro; FR-6 prose)**
+
+Correct the brief/brainstorm relative paths, and state that Cancelled/Expired are reachable from any non-terminal state while terminal Rejected is reachable only from `Assigned` with `Requeue=false`.
 
 ## Mechanical notes
 
-- Assumptions Index roundtrip: 19 inline `[ASSUMPTION]` tags, all indexed in §14. One §14 entry has no inline tag (FR-5 multiple Await-Conditions) — tag it or remove it.
-- ID continuity: FR-1–FR-25, UJ-1–UJ-4, SM-1–SM-5, SM-C1–SM-C2 contiguous and unique. §6.2 "(Resolves draft OQ-8.)" is a dangling reference — OQ-8 no longer exists.
-- Cross-references: all §/FR/SM references resolve; the only semantic mismatch is FR-15 ↔ §10.
-- Glossary drift: 21 lowercase occurrences (`burn-down`, `roll-up`, `await-condition`, `executor binding`) against §3's verbatim rule; "meter" used but not defined; "engine" (UJ-3, FR-15) undefined and misleading; "type" undefined; "Done" collision; "Themes 1 & 2" undefined.
-- UJ protagonists: UJ-1 builder; UJ-2 service Party; UJ-3 none; UJ-4 Mary (deferred).
-- Required sections present; missing an amendment log. "*Working title — confirm.*" still under the H1 of a `status: final` document.
-- Frontmatter: `updated: 2026-09-05` vs FR-20 "Amended 2026-09-06"; `status: final` through two amendments.
-- Addendum: package layout includes `Client (…)` which PRD §8 omits; port sketches and `LinkConversation` semantics otherwise match.
+- FR, UJ, and SM identifiers are unique. FR-1 through FR-26 all exist, but FR-26 is presented out of sequence.
+- UJ-1 through UJ-4 and SM-1 through SM-6 plus SM-C1/SM-C2 are contiguous in their own schemes.
+- FR/UJ/SM cross-references resolve; range shorthand remains risky around FR-26.
+- The Assumptions Index roundtrips the inline assumption tags, including grouped, superseded, and narrowed entries.
+- Glossary drift remains around singular “Await-Condition” versus the normative set of multiple Await-Conditions.
+- The prior validation artifacts predated final September edits; this report and all four reviewer files were regenerated on 2026-09-12.
+
+## Required unblocking sequence
+
+1. Freeze product semantics for ordinary Create versus registry-backed child Create, Resume duplicate/non-match behavior, executor action authorization, and completed-item Roll-Up contribution.
+2. Bind VAL-H10 first, then turn R4/R6/R7/R11 and VAL-H09/H11/H12 into owned, testable gates.
+3. Correct-course architecture and epics to the 2026-09-08 PRD, including FR-26 and §9 NFR coverage.
+4. Reslice Registry/Reactor/platform work along provider-consumer boundaries and add deterministic acknowledgement, recovery, security, compatibility, and privacy tests.
+5. Re-run PRD validation and implementation readiness after every critical/high issue has an owner and no story depends on stale prose.
 
 ## Reviewer files
 
-- `review-rubric.md`
-- `review-adversarial-general.md`
-- `review-downstream-drift.md`
+- `review-rubric.md` — primary seven-dimension rubric
+- `review-adversarial-general.md` — adversarial product-contract review
+- `review-downstream-drift.md` — architecture/epics drift review
+- `review-readiness.md` — implementation-readiness review
