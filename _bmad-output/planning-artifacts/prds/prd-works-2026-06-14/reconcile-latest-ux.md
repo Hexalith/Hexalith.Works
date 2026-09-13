@@ -74,3 +74,28 @@ If architecture needs any of these constraints to select a platform seam, captur
 4. Carry UX-R4 as a PM-owned open roadmap decision, not an assumption.
 5. Add a downstream handoff entry requiring `DESIGN.md` and `EXPERIENCE.md` to be updated against the 2026-09-08 PRD before either is used for implementation.
 
+## Post-update reconciliation — 2026-09-13
+
+### Covered requirement-level findings
+
+- The update preserves the headless-v1 boundary and labels UJ-1/UJ-2 as capability scenarios rather than widening v1 into a production UI or MCP release.
+- UX-R1 is covered by §12's future human-surface quality floor: WCAG 2.2 AA, equivalent keyboard/assistive operation, non-color meaning, zoom/reflow, preference modes, recovery states, stable focus/context, and user control of non-essential live updating are now roadmap requirements outside v1 acceptance.
+- UX-R2 is covered in both UJ-4 and the Theme 3 roadmap row: production no-login actions depend on Theme 6 link safeguards and must provide a no-login used/expired-link recovery path.
+- UX-R3 is covered at product altitude by the normative §9 actor/relationship/query matrix and by FR-19's explicit distinction between relationship enforcement and carried-not-read `AuthorityLevel` values.
+- UX-R4 is preserved as a PM-owned roadmap decision that must close before Theme 3 external-email acceptance; no localization choice was invented.
+- Addendum handoff H16 correctly blocks implementation from the June UX pair until it is rebased on the 2026-09-13 contract, including the newly approved Handoff and progress-correction semantics.
+
+### Remaining gaps and conflicts
+
+1. **§9 duplicates the identity/trusted-origin NFR with contradictory authorization.** The retained 2026-09-08 bullet still says the minimum for all commands is authenticated tenant membership and calls `AuthorityLevel` “carried-not-enforced”; the immediately following 2026-09-13 replacement requires the relationship/origin matrix and says “carried-not-read.” Remove or explicitly supersede the old bullet so future UX cannot choose the weaker rule.
+2. **FR-18 retains an over-broad claim assumption.** Its final consequence still says v1 allows “any Executor of the tenant to claim,” while the amended consequence above it, §9, and §14 distinguish self-claim of `Queued` work from bound-Executor-only claim of `Assigned` work. Rewrite the inline assumption to the exact current relationship rule.
+3. **The no-login/step-up boundary is linked but not decided.** UJ-4 now requires both one-tap/no-login and Theme 6 step-up policy, but does not state which action classes remain eligible for the no-login promise and which risks force additional authentication. Keep this as an explicit Theme 3/6 product decision so downstream UX does not either weaken security or silently break the journey.
+4. **The June UX pair remains materially conflicting until H16 is executed.** It still contains the wrong horizon and UJ-3 scenario, unconditional completion, stale Roll-Up states, rejection cascade, Works-owned comments, and pre-update handoff/authorization behavior. The updated PRD is authoritative; neither UX document is implementation-ready.
+
+### Qualitative intent check
+
+No material product-level qualitative intent was lost. The update retains the central feel of the source: progress is a fact rather than a status flag, every doer uses one binding model, Handoff is symmetric across executor kinds, and the external journey remains one-tap/no-login with recovery. The calm, factual voice; exact empty/error copy; visual hierarchy; and “quiet under load” character remain appropriately owned by `DESIGN.md`/`EXPERIENCE.md` and should be preserved when H16 rebases them.
+
+### Downstream-only items correctly left out
+
+The update correctly did not pull Fluent/FrontComposer component names, package pins, token/color values, accordion composition, contrast pairs, focus/announcement matrices, breakpoints, email markup, or mock-to-component mappings into the PRD. These remain UX specification work, with architecture/addendum involvement only where a platform seam must be selected.

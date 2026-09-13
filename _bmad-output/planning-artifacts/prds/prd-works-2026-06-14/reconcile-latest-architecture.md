@@ -83,3 +83,30 @@ Subject to resolving A1 and the visible outcomes in A2/A3 with the user, the req
 - §13/§14: replace stale validation identifiers and record any newly accepted assumptions/open numeric budgets.
 
 All DTOs, event/witness fields, key formats, transport identities, TTLs, actor/app names, projection merge algorithms, fencing/CAS protocols, and deployment/version choices remain in the addendum or architecture.
+
+## Post-update reconciliation — 2026-09-13
+
+This section supersedes the pre-edit assessment above for the current artifact state. The PRD and addendum are now updated through 2026-09-13, and `architecture.md` has since been condensed to a 663-line spine marked updated 2026-09-12. The published 2026-09-12 validation report still identifies its target as the earlier 1,197-line architecture with SHA-256 `2eff9c10…`; it is source evidence for the amendments, not validation evidence for the replacement spine.
+
+### Covered product-level findings
+
+- FR-1/FR-5/FR-16 now require durable child-creation evidence before `Attached`, prohibit ordinary parent-bearing Create, and reject late legs after release or supersession. SM-1 carries the acceptance cases (VAL3-C03/C04, H01).
+- FR-10, G2, and SM-1 make a stale expiry firing an audited no-op against the currently effective schedule (VAL3-H07).
+- FR-11/SM-2/SM-6 and the addendum now define terminal-aware absolute contribution, cross-order convergence, and no derived totals in Raw-Act events (VAL3-C01/C02/M05 at product altitude).
+- FR-26, §9, §10, G1/G3/G8, SM-1, and SM-6 now cover original-outcome replay, page/checkpoint boundaries, persistent recovery, degraded readiness, concurrent rebuild/restore safety, and pending-work rediscovery (VAL3-C05, H03/H04/H11).
+- §5, §9, G5–G7, and §13 now turn schema compatibility, identity/origin enforcement, data lifecycle, backup, and DR into explicit exit gates rather than scattered notes (VAL3-H06/H12, M06–M09).
+
+### Remaining gaps and conflicts
+
+1. **Child-saga ordering is still split across product and architecture.** PRD FR-16 and the addendum order parent `ChildSpawned` before child Create and attachment, with only `Reserved | Attached | Released`. Architecture AD-21 introduces `Creating`, creates and attaches the child first, then drives parent bookkeeping, forbids timeout release once Creating, and permits that bookkeeping after a terminal parent. Product must either own this observable sequence/state behavior or stop prescribing the sequence; the current texts cannot both govern implementation.
+2. **Progress-correction/reopen contract is not aligned.** PRD FR-7/addendum define a 17-event success catalog containing `ProgressCorrected` but no `WorkItemReopened`; architecture AD-07 requires both events. Architecture AD-17 also restricts corrected Done to `0..Estimated` and says ReEstimate clamps Done, while PRD FR-8 rejects only corrected Done below zero and deliberately preserves visible `Done > Estimated` after ReEstimate. The product-visible events and numeric rules need one answer before contracts or the lifecycle matrix change.
+3. **Numeric budgets have no common authority.** PRD G8 and the memlog keep recovery/performance budgets open and the 5-second/200-ms figures non-gating. Architecture AD-22 treats five seconds as a bound, while AD-28 assumes RPO ≤15 minutes, RTO ≤4 hours, and quarterly drills. Those numbers require explicit Product approval or must remain non-binding architecture assumptions.
+4. **The replacement artifacts have not passed a matching gate.** The existing architecture validation targets the removed 1,197-line document, while the current PRD/addendum remain draft. In addition, addendum handoffs H1/H2/H8/H12/H13/H15 still describe architecture work that the replacement spine appears to have completed. Revalidate the current sources and retire or mark completed handoff rows from that evidence.
+
+### Qualitative intent check
+
+No material qualitative product intent appears lost. The update retains the small durable spine, “everything is a Party,” AI-never-in-the-system-of-record, headless v1 boundary, no-login future journey, coherence-over-primitive moat, and thin-core counter-metrics. It also preserves UX-originated human intent at roadmap altitude through the accessibility/recovery floor and secure no-login recovery, without pulling UI into v1.
+
+### Technical-only items correctly left downstream
+
+The PRD correctly avoids binding persisted roll-up keys/DTOs and CAS merge, registry witness and fencing fields, reminder actor IDs and token codecs, EffectId encoding and inbox receipts, cursor arithmetic, rebuild epochs/journals, topology migrations, quarantine storage, mTLS/ACL deployment, exact package upgrades, and Platform R1–R11 producer APIs. Those remain architecture/implementation/operations work. The addendum gives only the useful technical handoff context; product behavior stays in FRs, NFRs, gates, and success metrics.

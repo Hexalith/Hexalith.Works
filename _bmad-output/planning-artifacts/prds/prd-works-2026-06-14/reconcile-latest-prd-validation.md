@@ -130,3 +130,19 @@ The PRD needs a product load envelope, while the addendum hardens “one tenant-
 ## Downstream-only validation findings excluded from this PRD extract
 
 The report also requires architecture and epics to be rebaselined from 25 to 26 FRs; Registry/Reactor slices to replace stale Stories 3.1–3.2; lifecycle, Roll-Up, query, boundary, and success-metric ACs to be rewritten; and Story 4.9 to carry the §9 security baseline. Those are real blockers, but they do not require additional PRD text beyond the explicit exit-gate and feature-inventory changes above.
+
+## Post-update reconciliation — 2026-09-13
+
+### Covered findings
+
+The updated PRD/addendum now cover the validation report's substantive contract findings: ordinary Create rejects parent references; attachment waits for durable child creation; Resume outcomes are aligned; action/query authorization is explicit; active Handoff and auditable progress correction are defined; Roll-Up uses terminal-aware absolute contribution and handles cross-stream reordering; stale expiry is harmless; Reactor redelivery replays the original outcome; cascade closure and stranded-work readiness are observable; Unit inheritance has a truth table; compatibility, security, recovery, privacy/DR, and performance dependencies are consolidated as gates G1–G8; benchmarks are non-gating; actor provenance comes only from the trusted envelope; source paths, FR-26 inventory, journeys, and Rejected-state prose are corrected. The addendum records downstream correction handoffs H13–H18.
+
+### Remaining gaps or conflicts
+
+1. **Stale Resume terminology:** §4.4 still calls external resume a “generic resume-by-correlation-ID port,” while the addendum correctly says Resume is a command contract with a deferred external adapter. Replace the remaining PRD use of *port*; FR-22 owns the actual Ports.
+2. **Registry scale envelope remains implicit:** G8 requires a dataset, deadlines, and recovery objectives, but it does not explicitly require edge cardinality, reserve/attach throughput, or Registry rehydration/recovery measures for the addendum's tenant-wide single-writer design. Name those measures in G8 or keep that partition choice expressly conditional on architecture validation.
+3. **Gate verdict is not yet refreshed:** the source validation report predates these edits and still grades the PRD Poor. G1–G8 evidence and downstream H13–H18 remain open by design; rerun PRD validation and readiness after the textual cleanup and confirm downstream rebaselining before changing the gate verdict or finalizing.
+
+### Qualitative intent check
+
+No qualitative product intent from the validation input was lost. The headless kernel scope, “everything is a Party” without executor-kind branching, raw-act audit model, eventual pure cross-aggregate coordination, channel-ready/deferred-adapter boundary, and non-gating performance posture remain visible. The new Handoff and CorrectProgress acts refine lifecycle truth without widening v1 into routing or UI, and the UX additions stay explicitly outside v1 acceptance.

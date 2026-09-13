@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-09-08 # Story 4.8 Group 1 host-edge patches landed; status in-progress -> review
+last_updated: 09-13-2026 12:57 # Story 4.8 Group 1 host-edge patches landed; status in-progress -> review
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
@@ -51,14 +51,14 @@ development_status:
   1-3-reference-sibling-modules-without-copying-data: done
   1-4-expose-boundary-ports-and-decision-record: done
   1-5-link-a-conversation-after-creation: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
   epic-2: in-progress
   2-1-define-the-lifecycle-state-machine: done
   2-2-record-raw-act-events-and-replay-state: done
   2-3-report-progress-with-unit-tagged-burn-down: done
   2-4-re-estimate-and-reschedule-work: done
   2-5-complete-cancel-reject-and-expire-work: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
   epic-3: in-progress
   3-1-guard-tenant-safe-work-tree-shape: done
   3-2-spawn-child-work-from-a-parent: done
@@ -78,3 +78,150 @@ development_status:
   4-8-register-and-reconcile-date-reminders-durably: review
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   epic-4-retrospective: done
+action_items:
+  - id: "epic-1-retro-item-1-restore-the-kernel-source-not-package-gu"
+    epic: 1
+    action: "Restore the kernel source-not-package guarantee: Hexalith.Commons.UniqueIds
+      resolves as a NuGet package in all three kernel projects while references/Hexalith.Commons
+      is checked out. Set HexalithCommonsFromSource and rewrite P0_HexalithDependenciesUseProjectReferencesNotPackageReferences
+      to assert over the restored project.assets.json closure."
+    owner: "Charlie (Senior Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-2-turn-the-architecture-fitness-gate-green"
+    epic: 1
+    action: "Turn the architecture-fitness gate green: BuildConfigurationTests.P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk
+      expects SDK 10.0.400 but global.json says 10.0.401 since commit 0572f79."
+    owner: "Amelia (Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-3-decide-one-malformed-payload-policy-and"
+    epic: 1
+    action: "Decide one malformed-payload policy and make it uniform across aggregate,
+      projection descriptors and decoder; Apply(ConversationLinked) throws where Apply(ReEstimated)
+      tolerates. Add JsonRequired to ConversationLinked.ConversationCorrelationId
+      and a fitness test that no Apply overload throws on a null value-object member."
+    owner: "Winston (Architect)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-4-extend-the-envelope-payload-identity-che"
+    epic: 1
+    action: "Extend the envelope/payload identity check to all 15 command wrappers
+      in WorkItemEventStoreAggregate (only LinkConversation has it), decide whether
+      a routing mismatch is a rejection or an infrastructure fault, and fix the Status==Unknown
+      early-return in EnsureEstablishedIdentityMatches."
+    owner: "Charlie (Senior Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-5-re-open-dw-6-conversationcorrelationid-w"
+    epic: 1
+    action: "Re-open DW-6: ConversationCorrelationId was closed as opaque on the condition
+      that key or topic adoption would define validation; Story 1.5 made it an exact-equality
+      conflict key. Normalize and cap it, and test that a padded retry links idempotently."
+    owner: "Winston (Architect)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-6-reconcile-epics-md-with-the-as-built-epi"
+    epic: 1
+    action: "Reconcile epics.md with the as-built Epic 1 (committed copy is an unfilled
+      template; the uncommitted rewrite describes a four-story epic never built) and
+      story or defer the 4000-character Obligation bound that exists in no code."
+    owner: "John (PM)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-7-fix-three-artifact-provenance-defects-re"
+    epic: 1
+    action: "Fix three artifact-provenance defects: re-attribute Story 1.5 deferred-work
+      entries to Story 4.8, delete or supersede the stale bmad-build-auto-result-1-5
+      artifact that still reads status blocked, and correct spec-1-5 check-offs that
+      landed in commit 785e32a."
+    owner: "Amelia (Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-8-repair-the-action-item-channel-sprint-st"
+    epic: 1
+    action: "Repair the action-item channel: sprint-status.yaml had no action_items
+      key, so Epic 3 and Epic 4 retro commitments are invisible to tooling. Backfill
+      them, then transition epic-1, epic-2 and epic-3 from in-progress to done."
+    owner: "Administrator"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-9-close-three-guards-that-assert-less-than"
+    epic: 1
+    action: "Close three guards that assert less than they promise: make the .slnx
+      check set-equality against the filesystem glob, extend the warnings-as-errors
+      assertion to every Hexalith.Works csproj, and add TimeProvider to the kernel
+      banned-symbol list."
+    owner: "Dana (QA)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-10-replace-the-sibling-data-denylist-with-a"
+    epic: 1
+    action: "Replace the sibling-data denylist with a structural check: ShouldNotContain(displayName)
+      is ordinal so partyDisplayName defeats it, and the NFR-11 guard matches only
+      typeof(Expectation) exactly."
+    owner: "Dana (QA)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-11-fix-build-configuration-debts-epic-1-cre"
+    epic: 1
+    action: "Fix build-configuration debts Epic 1 created and never revisited: re-enable
+      or scope NuGetAudit with a recorded reason, set GenerateDocumentationFile so
+      the XML-doc rule has a gate, and add .gitattributes to settle line endings (editorconfig
+      says CRLF; 34 of 276 cs files have CR)."
+    owner: "Winston (Architect)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-12-align-the-two-boundary-seams-iexecutorro"
+    epic: 1
+    action: "Align the two boundary seams: IExecutorRouter is declared abstraction-only
+      and fitness-guarded while IExpectationResolver is described as delivered but
+      is reachable from no command and registered nowhere. Also record or drop the
+      existing-correlation disclosure in WorkItemConversationLinkRejected."
+    owner: "Paige (Tech Writer)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-1-retro-item-13-escalate-a-skipped-retrospective-instead"
+    epic: 1
+    action: "Escalate a skipped retrospective instead of logging it (Epic 1 and Epic
+      2 retros were skipped by an orchestrator stall on 2026-06-16 and stayed invisible
+      for three months), and carry the remaining unverified lens findings into deferred-work.md
+      for triage."
+    owner: "Administrator"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-13.md"
+  - id: "epic-2-retro-item-14-make-progress-and-payload-sequencing-ove"
+    epic: 2
+    action: "Make progress and payload sequencing overflow-safe: compare progress
+      delta with Remaining before addition, define explicit sequence-exhaustion behavior
+      for one- and two-event results, and add decimal.MaxValue, long.MaxValue, and
+      long.MaxValue - 1 tests."
+    owner: "Amelia (Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-2-retro-2026-09-13.md"
+  - id: "epic-2-retro-item-15-make-the-lifecycle-authority-executable"
+    epic: 2
+    action: "Make the lifecycle authority executable and singular: route progress
+      and planning status decisions through the shared policy, consume or verify LifecycleOutcome.Target,
+      mechanically bind the Markdown matrix, and cover every live ReEstimate status
+      and rejection act label."
+    owner: "Charlie (Senior Dev)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-2-retro-2026-09-13.md"
+  - id: "epic-2-retro-item-16-reconcile-the-epic-2-planning-contract-p"
+    epic: 2
+    action: "Reconcile the Epic 2 planning contract: preserve an as-built five-story
+      mapping, label the seven-story rewrite as future or replacement scope, decide
+      downward re-estimation semantics, and story note bounds plus any new correction
+      and handoff contracts."
+    owner: "John (PM) with Winston (Architect)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-2-retro-2026-09-13.md"
+  - id: "epic-2-retro-item-17-derive-durable-catalog-completeness-from"
+    epic: 2
+    action: "Derive durable-catalog completeness from the Contracts assembly and fail
+      when a decorated command, success event, or rejection lacks a catalog sample,
+      stable discriminator, or required golden representations."
+    owner: "Dana (QA)"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-2-retro-2026-09-13.md"
