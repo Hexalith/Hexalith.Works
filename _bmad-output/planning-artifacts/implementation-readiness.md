@@ -1,155 +1,146 @@
 # Implementation Readiness
 
 **Project:** works
-**Assessment date:** 2026-09-14
+**Assessment date:** 2026-09-15
 **Intent:** Sprint planning
 **Verdict:** **FAIL**
 
-The recorded plan is not currently implementable without inventing decisions or
-silently reassigning delivered story identities. The approved 2026-09-14 sprint
-change proposal defines the required correction, but its ordered remediation has
-not yet been applied to the authoritative planning artifacts. Sprint tracking
-must not be regenerated until the conflicts below are resolved.
+The planning set has materially improved since the 2026-09-14 assessment, but
+it is not yet safe to regenerate sprint tracking. Historical Epic 1-4 identity
+collisions are resolved, the PRD now records the approved product semantics,
+and Epic 5 is defined. However, Architecture still contradicts the governing
+re-estimation rule, the required validated Epic 5 story artifacts do not exist,
+and two downstream reconciliation decisions remain incomplete.
 
 ## Evidence Reviewed
 
 - `_bmad-output/planning-artifacts/briefs/brief-works-2026-06-14/brief.md`
 - `_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md`
+- `_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/addendum.md`
+- `_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/validation-report.md`
 - `_bmad-output/planning-artifacts/architecture.md`
 - `_bmad-output/planning-artifacts/epics.md`
 - `_bmad-output/planning-artifacts/ux-designs/ux-works-2026-06-14/DESIGN.md`
 - `_bmad-output/planning-artifacts/ux-designs/ux-works-2026-06-14/EXPERIENCE.md`
-- `_bmad-output/planning-artifacts/sprint-change-proposal-2026-09-13.md`
 - `_bmad-output/planning-artifacts/sprint-change-proposal-2026-09-14.md`
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
-- Existing story artifacts, Epic 1 through Epic 4 contexts and retrospectives,
-  and the deferred-work ledger
-- Repository knowledge under `docs/`
+- Existing story artifacts, epic contexts, retrospectives, action items, and
+  repository knowledge under `docs/`
+
+## Progress Since the Previous Assessment
+
+- The PRD is final and carries the approved delivered-versus-target provenance
+  boundary, overrun-preserving re-estimation rule, and Story 5.5 trace.
+- `epics.md` restores the historical Story 1.1-4.9 mappings and preserves the
+  rewritten target bodies under non-executable `F1-*` through `F4-*` labels.
+- Epic 5 and Stories 5.1-5.5 now have explicit scopes and acceptance criteria in
+  `epics.md`.
+- The forward FR coverage map distinguishes historical capability from the
+  undelivered Epic 5 deltas.
+
+These corrections close the former historical/forward identity-collision
+finding. They do not yet satisfy the approved prerequisites for sprint-status
+generation.
 
 ## Findings
 
-### IR-01 — Historical and forward story identities conflict across Epics 1–4
+### IR-01 - Architecture still contradicts the approved re-estimation rule
 
 **Severity:** Blocker
 
-`epics.md` still assigns rewritten scopes, titles, and acceptance criteria to
-historical `1.x`, `2.x`, `3.x`, and `4.x` identities. `sprint-status.yaml` and
-durable implementation artifacts use those same identities for different
-delivered or active stories:
+The final PRD and Epic 5.3 require `ReEstimate` to preserve cumulative `Done`,
+derive `Remaining = max(Estimated - Done, 0)`, permit visible overrun, and leave
+Status and Unit unchanged. Only `CorrectProgress` may replace cumulative
+`Done`, and it accepts values at or above zero.
 
-- Epic 1 has five historical stories, while `epics.md` defines four different
-  stories in the `1.1`–`1.4` range.
-- Epic 2 has five historical stories, while `epics.md` defines eight different
-  stories in the `2.1`–`2.8` range.
-- Epic 3 has six historical stories, while `epics.md` defines ten different
-  stories in the `3.1`–`3.10` range.
-- Epic 4 tracks nine historical stories, while `epics.md` defines ten different
-  stories in the `4.1`–`4.10` range.
+Architecture AD-17 still says that `CorrectProgress` is bounded to
+`0..Estimated` and that `ReEstimate` clamps `Done`. Forward Candidate F2-F in
+`epics.md` also retains the obsolete clamp-Done acceptance criterion. The same
+`epics.md` explicitly records that AD-17 and candidate text must be amended
+before implementation.
 
-The approved 2026-09-14 proposal requires the historical mappings to be
-restored and the rewritten material to be quarantined under non-executable
-`F1-*` through `F4-*` labels. That change is not present. A deterministic status
-refresh would therefore transfer historical status to unrelated forward work.
+A developer cannot implement Story 5.3, its replay migration, projections,
+queries, catalogs, and golden evidence against two contradictory authorities.
 
-**Required correction:** Apply the approved `bmad-correct-course` handoff with
-`bmad-create-epics-and-stories`: restore the historical mappings, retain the
-rewritten material under provisional labels, and prevent provisional labels
-from becoming sprint keys.
+**Required correction:** Use `bmad-architecture` to amend AD-17 and the
+lifecycle migration gate to the PRD's preserve-Done rule. Then use
+`bmad-create-epics-and-stories` to reconcile the affected candidate acceptance
+criteria without altering delivered Story 2.4 evidence.
 
-### IR-02 — Re-estimation semantics remain contradictory
+### IR-02 - Required validated Epic 5 story artifacts do not exist
 
 **Severity:** Blocker
 
-- PRD FR-8 and FR-9 preserve cumulative `Done`, clamp only `Remaining`, and
-  expose `Done > Estimated` as valid overrun.
-- Architecture AD-17 says `ReEstimate` clamps `Done` and bounds corrected
-  `Done` to `0..Estimated`.
-- Rewritten Epic 2 acceptance criteria inherit the conflicting clamp behavior.
-- The approved 2026-09-14 proposal selects the PRD rule and requires a replay,
-  projection, query, snapshot, and rebuild migration gate.
+`epics.md` defines Stories 5.1-5.5, but
+`_bmad-output/implementation-artifacts` contains no corresponding `5-1-*`
+through `5-5-*` story artifacts. The approved 2026-09-14 change proposal makes
+their existence and validation a prerequisite to the atomic tracker update.
 
-A developer cannot implement aggregate replay and read-side behavior
-consistently while these authorities disagree.
+The missing artifacts must preserve the recorded dependency order:
 
-**Required correction:** Use `bmad-prd` and `bmad-architecture` to apply and
-validate the approved overrun-preserving rule and migration requirements. Then
-use `bmad-create-epics-and-stories` to derive aligned acceptance criteria.
+- Stories 5.1 and 5.4 may proceed independently.
+- Story 5.2 precedes final Story 5.3 integration.
+- Story 5.3 depends on Story 5.4 for changed durable evidence.
+- Story 5.5 depends on Story 5.4 before enabling a new rejection producer.
 
-### IR-03 — Approved Epic 5 remediation has no executable stories
-
-**Severity:** Blocker
-
-The approved proposal defines five remediation stories:
-
-1. Make progress and event ordinals overflow-safe.
-2. Make the lifecycle authority executable and singular.
-3. Preserve re-estimate overrun and enforce bounded act notes.
-4. Derive durable catalog completeness from contracts.
-5. Enforce the Obligation bound without rewriting history.
-
-`epics.md` contains no Epic 5, no validated Story 5.1–5.5 artifacts exist, and
-`sprint-status.yaml` contains no Epic 5 keys. The dependencies and proof
-requirements therefore exist only in change-proposal prose, not in an
-executable backlog.
+Generating tracking now would violate the approved handoff and the explicit
+guard recorded in `epics.md`.
 
 **Required correction:** Use `bmad-create-epics-and-stories` to create and
-validate Epic 5 and Stories 5.1–5.5 before adding any Epic 5 tracker key.
+validate the five Epic 5 artifacts from the reconciled PRD, Architecture, and
+Epic 5 definitions after IR-01 is closed.
 
-### IR-04 — The Obligation bound has no stable implementation owner
-
-**Severity:** High
-
-PRD FR-2, UX, and the rewritten epic inventory require a trimmed, non-empty
-Obligation of at most 4,000 characters. The current rewritten Story 1.2 appears
-to own that behavior, but historical Story 1.2 already identifies the delivered
-tenant-scoped creation story. The requirement cannot trace to a unique
-executable story without reusing delivered identity.
-
-The approved correction assigns this work to Story 5.5 and requires command
-admission enforcement without breaking replay of previously accepted longer
-payloads. Story 5.5 has not been created.
-
-**Required correction:** Create and validate Story 5.5 through
-`bmad-create-epics-and-stories`, trace PRD FR-2 to it, and retain the historical
-Story 1.2 acceptance record unchanged.
-
-### IR-05 — Approved artifact reconciliation remains incomplete
+### IR-03 - Multiple Await-Condition admission remains underspecified
 
 **Severity:** High
 
-The 2026-09-14 proposal is approved for implementation, but approval explicitly
-does not authorize premature tracking generation. Its required source changes
-remain absent:
+The latest PRD validation records one remaining Product decision gate. FR-5,
+FR-14, UJ-3, UX, and the epic material allow multiple simultaneous
+Await-Conditions, but the normative admission schema does not completely bind
+the non-empty set shape, duplicate normalization, or simultaneous-match
+ordering. `WorkItemSuspended` is not consistently described as carrying the
+complete set across the governing product material.
 
-- PRD provenance and normative re-estimation text are not updated.
-- Architecture AD-17 and the migration gate are not updated.
-- `epics.md` does not separate delivered history from forward candidates.
-- UX source/provenance notes have not been refreshed from aligned authorities.
-- Stories 5.1–5.5 have not been created and validated.
+This gap is specifically gated before the next lifecycle-contract
+implementation or candidate promotion. Story 5.2 changes the executable
+lifecycle authority, so leaving the gap unresolved risks encoding an assumed
+policy into the shared matrix and tests.
 
-The proposal is an implementation handoff, not a substitute for applying its
-changes to the authoritative artifacts.
+**Required correction:** Use `bmad-prd` to record the Product decision, then
+reconcile Architecture and the affected Epic 3/lifecycle acceptance criteria.
+If this decision is intentionally excluded from Epic 5, record that boundary
+explicitly so Story 5.2 preserves the current durable contract without
+inventing the future set schema.
 
-**Required correction:** Complete the approved sequence with `bmad-prd`,
-`bmad-architecture`, `bmad-create-epics-and-stories`, and `bmad-ux` before
-rerunning this gate.
+### IR-04 - UX source provenance has not been refreshed
+
+**Severity:** Medium
+
+`DESIGN.md` and `EXPERIENCE.md` remain dated 2026-09-12 and their source
+precedence predates the approved 2026-09-14 product amendment. Their visible
+overrun, non-terminal-zero, correction/reopen, freshness, and accessible
+Burn-Down behavior is already aligned, so no UX redesign is required. The
+remaining gap is provenance and authority ordering.
+
+**Required correction:** After IR-01 and IR-03 are resolved, use `bmad-ux` to
+refresh source/provenance notes while preserving the current behavior and the
+headless-v1 boundary.
 
 ## Required Sequence
 
-1. Apply and validate the approved PRD and architecture corrections.
-2. Restore the historical Epic 1–4 mappings and quarantine rewritten forward
-   candidates under provisional labels.
-3. Create and validate Epic 5 Stories 5.1–5.5 with their recorded dependencies
-   and proof requirements.
-4. Refresh UX source/provenance notes from the aligned authorities.
-5. Update sprint status atomically from the reconciled epic and story sources;
-   preserve every historical story status and add no provisional key.
-6. Resolve the prerequisite retrospective action gates recorded by the approved
-   proposal.
-7. Rerun implementation readiness and run sprint planning only after a PASS.
+1. Resolve IR-03's Product decision or record its explicit exclusion from Epic
+   5 lifecycle hardening.
+2. Amend and validate Architecture AD-17 and reconcile the obsolete candidate
+   text identified by IR-01.
+3. Refresh UX provenance after the governing authorities agree.
+4. Create and validate Stories 5.1-5.5 as standalone implementation artifacts.
+5. Rerun implementation readiness.
+6. On PASS, regenerate `sprint-status.yaml` once, preserving every historical
+   story status, marking Epics 1-3 done, retaining Epic 4 in progress, and
+   adding only Epic 5 and Story 5.1-5.5 backlog keys.
 
 ## Gate Disposition
 
-`sprint-status.yaml` was preserved unchanged. The deterministic tracking
-generator was not run because generation is permitted only after a readiness
-PASS.
+`_bmad-output/implementation-artifacts/sprint-status.yaml` was preserved
+unchanged. The deterministic tracking generator was not run because generation
+is permitted only after an implementation-readiness PASS.
