@@ -598,6 +598,65 @@ public sealed class WorkItemProjectionQueryAdapterTests
     }
 
     [Fact]
+    public async Task Terminal_notification_failure_is_retried_on_identical_redelivery_after_the_index_commit()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        _ = await NewDispatcher(store)
+            .DispatchAsync(CreateThenAssign(), TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        IProjectionChangeNotifier notifier = Substitute.For<IProjectionChangeNotifier>();
+        int notificationAttempts = 0;
+        notifier
+            .NotifyProjectionChangedAsync(
+                WorksReadModelKeys.WhatsNextProjectionType,
+                Tenant,
+                null,
+                Arg.Any<CancellationToken>())
+            .Returns(_ => ++notificationAttempts == 1
+                ? Task.FromException(new InvalidOperationException("Injected notifier failure after commit."))
+                : Task.CompletedTask);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store, notifier);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(WorkId);
+        var terminalReplay = new ProjectionRequest(Tenant, "work", WorkId,
+        [
+            Dto(new WorkItemCreated(WorkId, 1, tenant, item, new Obligation("Do the thing")), 1),
+            Dto(new WorkItemAssigned(WorkId, 2, tenant, item, Binding), 2),
+            Dto(new WorkItemCompleted(WorkId, 3, tenant, item), 3),
+        ]);
+
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            terminalReplay,
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        thrown.Message.ShouldContain("after commit");
+
+        // The first notification failed after both durable documents committed. Equal-watermark acceptance on
+        // identical redelivery is the retry mechanism: it may notify idempotently again and must not suppress
+        // the invalidation just because the persisted bytes already match.
+        WorksWhatsNextTenantIndex committed = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        committed.Items.ShouldNotContainKey(WorkId);
+        committed.LastSequences[WorkId].ShouldBe(3);
+        (await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true)).Status.ShouldBe(WorkItemStatus.Completed);
+
+        _ = await dispatcher.DispatchAsync(terminalReplay, TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        notificationAttempts.ShouldBe(2);
+        await notifier
+            .Received(2)
+            .NotifyProjectionChangedAsync(
+                WorksReadModelKeys.WhatsNextProjectionType,
+                Tenant,
+                null,
+                Arg.Any<CancellationToken>())
+            .ConfigureAwait(true);
+        WorksWhatsNextTenantIndex stable = await ReadWhatsNextIndexAsync(store, Tenant).ConfigureAwait(true);
+        stable.Items.ShouldNotContainKey(WorkId);
+        stable.LastSequences[WorkId].ShouldBe(3);
+        (await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true)).Status.ShouldBe(WorkItemStatus.Completed);
+    }
+
+    [Fact]
     public async Task Concurrent_distinct_items_merge_after_a_tenant_index_etag_conflict()
     {
         var store = new Story47InMemoryReadModelStore();

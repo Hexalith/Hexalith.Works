@@ -2905,3 +2905,46 @@ Consequence for the evidence above: the **Tier-3 4/4 live pass (957.974 s) was p
 are unchanged — Release build 0 warnings / 0 errors, UnitTests 568/568, ArchitectureTests 237/237,
 PropertyTests 3/3, deterministic IntegrationTests 317/317 — but the live lane has **not** been re-run against
 `d45206f7`. Close-out 2026-09-08: that recorded 4/4 remains evidence from `8745b14b`; the live reminder/mTLS lane was not re-run on HEAD `c6efdbba` (after intermediate pin `57c0ad56`).
+
+## Story 4.8 projection replay/invalidation hardening — 2026-09-15
+
+This projection-only patch derives cleared date-await tombstones from authoritative full replay history, rejects
+non-positive projection source sequences before any write, corrects parking diagnostics and retry-race
+classification, shares runtime/projection handled-decode classification, and gives foreign identity bounded,
+identity-specific live telemetry while preserving logger-free incomplete shared-rebuild degradation. It also
+pins the EC-03 policy: notification follows an accepted durable index write, notifier failure propagates, and
+identical equal-watermark redelivery retries invalidation at least once without an outbox or marker.
+
+```text
+dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false --no-restore
+# Build succeeded: 0 warnings, 0 errors
+
+PendingDateAwaitIndexDispatcherTests
+# 22/22 passed, 0 skipped
+
+WorkItemProjectionQueryAdapterTests
+# 31/31 passed, 0 skipped
+
+WorkItemSharedProjectionRebuildHandlerTests
+# 19/19 passed, 0 skipped
+
+Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped
+
+Hexalith.Works.IntegrationTests -class- '*SmokeTests'
+# 332/332 passed, 0 skipped
+
+Hexalith.Works.ArchitectureTests
+# 236/237 passed; sole failure: P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk expects 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+Hexalith.Works.ArchitectureTests -method- '*P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk'
+# 236/236 passed, 0 skipped
+```
+
+The green architecture set includes the durable catalog guard at **40**; Story 4.8's catalog delta remains zero.
+Per the approved scope, the reminder/mTLS live lane was not rerun. The historical **4/4** evidence above remains
+older evidence and gives this patch no live-verification credit.

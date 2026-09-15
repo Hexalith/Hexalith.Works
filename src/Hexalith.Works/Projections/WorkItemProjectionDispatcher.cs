@@ -49,8 +49,8 @@ public sealed class WorkItemProjectionDispatcher
             "Work item {WorkItemId} for tenant {TenantId} could not decode a state-affecting event at sequence "
             + "{SequenceNumber} ({FailureCount} of {MaxFailures} consecutive attempts); the dispatch fails closed and is retried.");
 
-    private static readonly Action<ILogger, string, string, long, int, Exception?> s_projectionAggregateParked =
-        LoggerMessage.Define<string, string, long, int>(
+    private static readonly Action<ILogger, string, string, int, long, Exception?> s_projectionAggregateParked =
+        LoggerMessage.Define<string, string, int, long>(
             LogLevel.Error,
             new EventId(4502, "ProjectionAggregateParked"),
             "Work item {WorkItemId} for tenant {TenantId} is parked after {FailureCount} consecutive failures to "
@@ -115,6 +115,11 @@ public sealed class WorkItemProjectionDispatcher
 
         var tenant = new TenantId(request.TenantId);
         var workItemId = new WorkItemId(request.AggregateId);
+        if ((request.Events ?? []).Any(static dto => dto is { SequenceNumber: <= 0 }))
+        {
+            throw new InvalidOperationException("Projection source sequence numbers must be positive.");
+        }
+
         string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(request.Events);
 
         var whatsNext = new WhatsNextQueueProjection();
@@ -512,6 +517,9 @@ public sealed class WorkItemProjectionDispatcher
         // since resumed clears the entry. Reuse the same pure fold the recovery source uses — never a second one.
         IReadOnlyList<IEventPayload> ordered = [.. decodedEvents.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];
         IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(ordered);
+        bool hasDateAwaitHistory = ordered
+            .OfType<WorkItemSuspended>()
+            .Any(static suspended => suspended.AwaitConditions.Any(static condition => condition.Kind == AwaitConditionKind.DateReached));
 
         if (pending.Count > 0)
         {
@@ -527,14 +535,13 @@ public sealed class WorkItemProjectionDispatcher
             return;
         }
 
-        if (pending.Count == 0 && !await HasPendingDateAwaitHistoryAsync(tenant, aggregateId, cancellationToken).ConfigureAwait(false))
+        if (pending.Count == 0 && !hasDateAwaitHistory)
         {
-            // This aggregate has never held a date await, so there is nothing to record or tombstone. Writing
-            // anyway would make every /project dispatch in the tenant — not only date-await items — contend on
-            // the one singleton index key, where ReadModelWritePolicy's bounded retry can exhaust and turn an
-            // ordinary projection dispatch into a 500 plus a poller retry. It would also grow the document by
-            // one permanent LastSequences entry per work item ever dispatched. Items that ever held an await
-            // keep their tombstone: the guard below only skips aggregates the index has never heard of.
+            // The authoritative full replay proves this aggregate never held a date await, so there is nothing
+            // to record or tombstone. Do not consult persisted index state to make this decision: that read is
+            // not atomic with a concurrent older replay's later update and can let the older replay resurrect a
+            // cleared await. A cleared full replay that contains historical date-await evidence must enter the
+            // monotonic update below even when the index document is initially absent.
             return;
         }
 
@@ -583,9 +590,9 @@ public sealed class WorkItemProjectionDispatcher
     /// returns whether this aggregate is now parked (and the dispatch must be acknowledged instead of retried).
     /// </summary>
     /// <remarks>
-    /// The counter is keyed by the failing sequence, so it counts <em>consecutive failures on the same poisoned
-    /// event</em>: a failure at a different sequence restarts the count, and a healthy aggregate never
-    /// accumulates one. Nothing is read or written on the healthy dispatch path.
+    /// Before the aggregate is parked, the counter is keyed by the failing sequence so a different failure
+    /// sequence restarts the count. Parking is terminal: later deliveries are acknowledged without changing the
+    /// stored sequence or count. Nothing is read or written on the healthy dispatch path.
     /// </remarks>
     private async Task<bool> ParkOrRetryAsync(
         TenantId tenant,
@@ -619,10 +626,10 @@ public sealed class WorkItemProjectionDispatcher
             parkingKey,
             current =>
             {
-                if (current is { Parked: true })
+                racedWithExistingPark = current is { Parked: true };
+                if (racedWithExistingPark)
                 {
-                    racedWithExistingPark = true;
-                    return current;
+                    return current!;
                 }
 
                 int failureCount = current is not null && current.FailedSequence == sequenceNumber
@@ -651,21 +658,8 @@ public sealed class WorkItemProjectionDispatcher
             return true;
         }
 
-        s_projectionAggregateParked(_logger, aggregateId, tenant.Value, sequenceNumber, parking.FailureCount, null);
+        s_projectionAggregateParked(_logger, aggregateId, tenant.Value, parking.FailureCount, sequenceNumber, null);
         return true;
-    }
-
-    /// <summary>Returns whether the tenant index already carries an entry or tombstone for this aggregate.</summary>
-    private async Task<bool> HasPendingDateAwaitHistoryAsync(TenantId tenant, string aggregateId, CancellationToken cancellationToken)
-    {
-        ReadModelEntry<PendingDateAwaitTenantIndex> entry = await _store
-            .GetAsync<PendingDateAwaitTenantIndex>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.PendingDateAwaitIndexKey(tenant.Value),
-                cancellationToken)
-            .ConfigureAwait(false);
-        return entry.Value is { } index
-            && (index.Entries.ContainsKey(aggregateId) || index.LastSequences.ContainsKey(aggregateId));
     }
 
     private async Task EnsureTenantRegisteredAsync(

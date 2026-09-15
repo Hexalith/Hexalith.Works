@@ -147,7 +147,12 @@ Live notification is the **deferred runtime wiring** (Stories 4.5/4.6): the adap
 only when `Changed` is set **and** the tenant-index ordering guard accepted this replay's write. A refused
 stale replay changed no persisted state, so it announces nothing: subscribers are never woken for a document
 that did not move. A dispatch whose roll-up guard refused first never reaches the index write and likewise
-never notifies. That flows `DaprProjectionChangeNotifier → IProjectionChangedBroadcaster →
+never notifies. Notification occurs after the accepted durable index write, and notifier failures propagate so
+delivery can be retried. Equal-watermark replay remains accepted for non-atomic repair; consequently, an
+identical redelivery after a post-commit notifier failure attempts invalidation again even when the durable
+documents already match. Projection invalidation is therefore at least once and consumers must tolerate an
+idempotent duplicate; Works adds no notification outbox or marker. That flows
+`DaprProjectionChangeNotifier → IProjectionChangedBroadcaster →
 SignalRProjectionChangedBroadcaster` (group `{projectionType}:{tenantId}`, fail-open). The Works kernel
 cannot reference Client (dependency direction), so v1 ships the seam, not the surface. **No web shell,
 DataGrid, MCP, chatbot, or email surface ships in v1** (UX-DR1).

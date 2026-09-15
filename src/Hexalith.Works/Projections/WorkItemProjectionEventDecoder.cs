@@ -13,6 +13,8 @@ namespace Hexalith.Works.Projections;
 /// <summary>Decodes Works projection events and enforces their requested stream identity.</summary>
 internal static partial class WorkItemProjectionEventDecoder
 {
+    private const int MaximumLoggedCorrelationIdLength = 128;
+
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
     private static readonly IReadOnlyDictionary<string, Type> s_eventTypesByName = typeof(WorkItemCreated).Assembly
@@ -66,27 +68,20 @@ internal static partial class WorkItemProjectionEventDecoder
             {
                 // A foreign identity is malformed evidence, not an unknown type: return Malformed so
                 // /project can park after the bounded budget instead of throwing before ParkOrRetryAsync
-                // and 500ing the poller forever.
+                // and 500ing the poller forever. Log the catalog-resolved simple name rather than the raw
+                // caller-supplied type name, whose namespace prefix is not length-bounded.
+                LogIdentityMismatch(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
             return new WorkItemProjectionEventDecodeResult(payload, true, false);
         }
-        catch (Exception exception) when (IsHandledDecodeFailure(exception))
+        catch (Exception exception) when (WorksEventDecoder.IsHandledDecodeFailure(exception))
         {
             LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
             return new WorkItemProjectionEventDecodeResult(null, true, true);
         }
     }
-
-    /// <summary>
-    /// Returns whether a serializer failure is malformed evidence rather than an unclassified escape.
-    /// Mirrors <see cref="WorksEventDecoder"/> so <see cref="NotSupportedException"/> parks instead of
-    /// 500ing <c>/project</c> forever.
-    /// </summary>
-    /// <param name="exception">The exception thrown while decoding a known Works event.</param>
-    internal static bool IsHandledDecodeFailure(Exception exception)
-        => exception is JsonException or ArgumentException or NotSupportedException;
 
     /// <summary>Returns the first non-blank correlation id in a projection history.</summary>
     public static string CorrelationIdOf(IReadOnlyList<ProjectionEventDto>? events)
@@ -117,11 +112,42 @@ internal static partial class WorkItemProjectionEventDecoder
         }
     }
 
+    private static void LogIdentityMismatch(
+        ILogger? logger,
+        string eventType,
+        string workItemId,
+        string tenantId,
+        string correlationId)
+    {
+        if (logger is not null)
+        {
+            ProjectionEventIdentityMismatch(
+                logger,
+                eventType,
+                workItemId,
+                tenantId,
+                correlationId.Length <= MaximumLoggedCorrelationIdLength
+                    ? correlationId
+                    : correlationId[..MaximumLoggedCorrelationIdLength]);
+        }
+    }
+
     [LoggerMessage(
         EventId = 4504,
         Level = LogLevel.Warning,
         Message = "Skipped undecodable projection event {EventType} for work item {WorkItemId} (tenant {TenantId}, correlation {CorrelationId}).")]
     private static partial void SkippedEvent(
+        ILogger logger,
+        string eventType,
+        string workItemId,
+        string tenantId,
+        string correlationId);
+
+    [LoggerMessage(
+        EventId = 4505,
+        Level = LogLevel.Warning,
+        Message = "Skipped projection event {EventType} for work item {WorkItemId} (tenant {TenantId}, correlation {CorrelationId}) because its payload identity did not match the requested aggregate.")]
+    private static partial void ProjectionEventIdentityMismatch(
         ILogger logger,
         string eventType,
         string workItemId,

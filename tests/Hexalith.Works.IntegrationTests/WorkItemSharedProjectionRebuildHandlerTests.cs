@@ -222,6 +222,45 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     }
 
     [Fact]
+    public async Task Foreign_payload_identity_marks_the_affected_shared_rebuild_roll_up_incomplete()
+    {
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(ChildId);
+        var store = new InMemoryReadModelStore();
+        await RebuildAsync(
+            store,
+            Tenant,
+            "rebuild-foreign-payload-identity",
+            [(ChildId,
+            [
+                Dto(new WorkItemCreated(
+                    ChildId,
+                    1,
+                    tenant,
+                    item,
+                    new Obligation("Child"),
+                    new WorkItemEffort(4m, Hour)), 1),
+                Dto(new WorkItemAssigned(ChildId, 2, tenant, item, Binding), 2),
+                Dto(new ProgressReported(
+                    "foreign-work",
+                    3,
+                    new TenantId("tenant-foreign"),
+                    new WorkItemId("foreign-work"),
+                    1m,
+                    Hour), 3),
+            ])]).ConfigureAwait(true);
+
+        // The logger-free shared builder degrades only this aggregate: reliable local fields survive, while
+        // the rolled shapes are unavailable because the foreign event cannot be trusted as complete evidence.
+        WorkItemRollUp result = await ReadCurrentRollUpAsync(store, Tenant, ChildId).ConfigureAwait(true);
+        result.Status.ShouldBe(WorkItemStatus.Assigned);
+        result.OwnEffort.ShouldBe(new WorkItemEffort(4m, Hour));
+        result.OwnRemaining.ShouldBe(new OwnRemaining(4m, Hour));
+        result.RolledRemaining.ShouldBeNull();
+        result.RolledRemainingByUnit.ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task Foreign_parent_relationship_preserves_child_local_fields_but_refuses_rolled_shapes()
     {
         var tenant = new TenantId(Tenant);

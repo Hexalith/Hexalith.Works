@@ -168,17 +168,14 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     }
 
     [Fact]
-    public async Task Older_replay_cannot_resurrect_an_await_cleared_by_a_newer_replay()
+    public async Task Initially_absent_cleared_replay_tombstone_prevents_older_await_resurrection()
     {
         var store = new Story47InMemoryReadModelStore();
         WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
 
-        // The item genuinely held a date await, so the index carries an entry for it...
-        _ = await dispatcher.DispatchAsync(
-            Request(TenantA, WorkId, Created(TenantA, WorkId, 1), SuspendedOnDate(TenantA, WorkId, 2, s_future)),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-
-        // ...a newer replay clears it and leaves the tombstone watermark...
+        // The first replay the index ever sees is already cleared, but its authoritative full history proves
+        // that the item once held a date await. It must therefore create a sequence-3 tombstone even though no
+        // index document existed before this dispatch.
         _ = await dispatcher.DispatchAsync(
             Request(
                 TenantA,
@@ -187,8 +184,11 @@ public sealed class PendingDateAwaitIndexDispatcherTests
                 SuspendedOnDate(TenantA, WorkId, 2, s_future),
                 new WorkItemResumed(WorkId, 3, new TenantId(TenantA), new WorkItemId(WorkId), AwaitCondition.DateReached(s_future))),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
+        PendingDateAwaitTenantIndex cleared = await ReadIndexAsync(store, TenantA).ConfigureAwait(true);
+        cleared.Entries.ShouldNotContainKey(WorkId);
+        cleared.LastSequences[WorkId].ShouldBe(3);
 
-        // ...and an older replay redelivered afterwards cannot resurrect the cleared await.
+        // An older suspended replay arriving afterward cannot resurrect the cleared await.
         _ = await dispatcher.DispatchAsync(
             Request(TenantA, WorkId, Created(TenantA, WorkId, 1), SuspendedOnDate(TenantA, WorkId, 2, s_future)),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -258,6 +258,26 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         thrown.Message.ShouldContain("registry");
     }
 
+    [Theory]
+    [InlineData(0L)]
+    [InlineData(-1L)]
+    public async Task Non_positive_source_sequence_is_refused_before_any_projection_write(long sequenceNumber)
+    {
+        var store = new Story47InMemoryReadModelStore();
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => dispatcher.DispatchAsync(
+            new ProjectionRequest(
+                TenantA,
+                "work",
+                WorkId,
+                [Dto(Created(TenantA, WorkId, 1), sequenceNumber)]),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        thrown.Message.ShouldContain("positive");
+        store.SuccessfulWriteKeys.ShouldBeEmpty();
+    }
+
     [Fact]
     public async Task Malformed_state_affecting_event_fails_before_the_pending_index_is_updated()
     {
@@ -283,7 +303,8 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     {
         var store = new Story47InMemoryReadModelStore();
         var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 3 };
-        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+        var logger = new CapturingLogger();
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger, options);
         var request = new ProjectionRequest(
             TenantA,
             "work",
@@ -311,6 +332,9 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
         parking.Value.FailedSequence.ShouldBe(7);
         parking.Value.FailureCount.ShouldBe(options.MaxUndecodableEventDispatchesBeforeParking);
+        logger.Entries.ShouldContain(entry => entry.Id == 4502
+            && entry.Message.Contains("after 3 consecutive failures", StringComparison.Ordinal)
+            && entry.Message.Contains("sequence 7", StringComparison.Ordinal));
 
         // Nothing about the poisoned aggregate was ever projected.
         (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
@@ -382,11 +406,17 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     {
         var store = new Story47InMemoryReadModelStore();
         var options = new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 1 };
-        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, NullLogger<WorkItemProjectionDispatcher>.Instance, options);
+        var logger = new CapturingLogger();
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger, options);
         WorkItemSuspended foreign = SuspendedOnDate(TenantB, "work-other", 1, s_future);
+        ProjectionEventDto foreignDto = Dto(foreign, 1) with
+        {
+            EventTypeName = $"{new string('x', 2_000)}.{nameof(WorkItemSuspended)}",
+            CorrelationId = new string('c', 2_000),
+        };
 
         _ = await dispatcher.DispatchAsync(
-            new ProjectionRequest(TenantA, "work", WorkId, [Dto(foreign, 1)]),
+            new ProjectionRequest(TenantA, "work", WorkId, [foreignDto]),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         ReadModelEntry<WorkItemProjectionParking> parking = await store
@@ -398,17 +428,25 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
         parking.Value.FailureCount.ShouldBe(1);
         (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+        (int Id, LogLevel Level, string Message) identityLog = logger.Entries
+            .Where(static entry => entry.Id == 4505)
+            .ShouldHaveSingleItem();
+        identityLog.Level.ShouldBe(LogLevel.Warning);
+        identityLog.Message.ShouldContain(nameof(WorkItemSuspended));
+        identityLog.Message.ShouldContain("payload identity did not match", Case.Insensitive);
+        identityLog.Message.Length.ShouldBeLessThan(512);
+        logger.Entries.ShouldNotContain(entry => entry.Id == 4504);
     }
 
     [Fact]
-    public async Task A_not_supported_decode_failure_is_malformed_and_parks()
+    public async Task A_malformed_state_event_uses_the_shared_handled_failure_classification_and_parks()
     {
         // Web STJ turns WorkItemSuspended poison bytes into JsonException/ArgumentException, not
         // NotSupportedException. The filter is what keeps an STJ-unsupported payload on the park path
         // instead of escaping Decode; deleting NotSupportedException from it fails this fact.
-        WorkItemProjectionEventDecoder.IsHandledDecodeFailure(new NotSupportedException("stj-unsupported"))
+        WorksEventDecoder.IsHandledDecodeFailure(new NotSupportedException("stj-unsupported"))
             .ShouldBeTrue();
-        WorkItemProjectionEventDecoder.IsHandledDecodeFailure(new InvalidOperationException("unclassified"))
+        WorksEventDecoder.IsHandledDecodeFailure(new InvalidOperationException("unclassified"))
             .ShouldBeFalse();
 
         var store = new Story47InMemoryReadModelStore();
@@ -539,7 +577,7 @@ public sealed class PendingDateAwaitIndexDispatcherTests
 
     private sealed class CapturingLogger : ILogger<WorkItemProjectionDispatcher>
     {
-        public List<(int Id, LogLevel Level)> Entries { get; } = [];
+        public List<(int Id, LogLevel Level, string Message)> Entries { get; } = [];
 
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
@@ -553,7 +591,7 @@ public sealed class PendingDateAwaitIndexDispatcherTests
             TState state,
             Exception? exception,
             Func<TState, Exception?, string> formatter)
-            => Entries.Add((eventId.Id, logLevel));
+            => Entries.Add((eventId.Id, logLevel, formatter(state, exception)));
     }
 
     private static WorkItemCreated Created(string tenant, string workId, long sequence)

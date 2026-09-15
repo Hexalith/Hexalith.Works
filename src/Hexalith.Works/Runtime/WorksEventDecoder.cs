@@ -38,7 +38,7 @@ internal static class WorksEventDecoder
         {
             return JsonSerializer.Deserialize(payload, eventType, s_web) as IEventPayload;
         }
-        catch (Exception ex) when (ex is JsonException or ArgumentException or NotSupportedException)
+        catch (Exception ex) when (IsHandledDecodeFailure(ex))
         {
             // A persisted payload whose value-object or [JsonConstructor] guard rejects it (an empty required
             // id, a null value object) throws ArgumentException/ArgumentNullException out of the constructor
@@ -48,6 +48,12 @@ internal static class WorksEventDecoder
             return null;
         }
     }
+
+    /// <summary>Returns whether a serializer failure represents handled malformed event evidence.</summary>
+    /// <param name="exception">The exception thrown while decoding a known Works event.</param>
+    /// <returns><see langword="true"/> when callers must take their malformed-evidence path.</returns>
+    internal static bool IsHandledDecodeFailure(Exception exception)
+        => exception is JsonException or ArgumentException or NotSupportedException;
 
     private static string SimpleTypeName(string eventTypeName)
     {
