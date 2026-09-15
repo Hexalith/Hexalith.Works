@@ -271,7 +271,10 @@ public sealed class PendingDateAwaitIndexDispatcherTests
                 TenantA,
                 "work",
                 WorkId,
-                [Dto(Created(TenantA, WorkId, 1), sequenceNumber)]),
+                [
+                    Dto(Created(TenantA, WorkId, 1), 1),
+                    Dto(SuspendedOnDate(TenantA, WorkId, 2, s_future), sequenceNumber),
+                ]),
             TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
         thrown.Message.ShouldContain("positive");
@@ -409,10 +412,11 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         var logger = new CapturingLogger();
         var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger, options);
         WorkItemSuspended foreign = SuspendedOnDate(TenantB, "work-other", 1, s_future);
+        string correlationPrefix = new('c', 128);
         ProjectionEventDto foreignDto = Dto(foreign, 1) with
         {
             EventTypeName = $"{new string('x', 2_000)}.{nameof(WorkItemSuspended)}",
-            CorrelationId = new string('c', 2_000),
+            CorrelationId = correlationPrefix + new string('z', 2_000),
         };
 
         _ = await dispatcher.DispatchAsync(
@@ -433,6 +437,50 @@ public sealed class PendingDateAwaitIndexDispatcherTests
             .ShouldHaveSingleItem();
         identityLog.Level.ShouldBe(LogLevel.Warning);
         identityLog.Message.ShouldContain(nameof(WorkItemSuspended));
+        identityLog.Message.ShouldContain($"for work item {WorkId}");
+        identityLog.Message.ShouldContain($"tenant {TenantA}");
+        identityLog.Message.ShouldContain($"correlation {correlationPrefix})");
+        identityLog.Message.ShouldNotContain('z');
+        identityLog.Message.ShouldContain("payload identity did not match", Case.Insensitive);
+        identityLog.Message.Length.ShouldBeLessThan(512);
+        logger.Entries.ShouldNotContain(entry => entry.Id == 4504);
+    }
+
+    [Fact]
+    public void A_foreign_null_conversation_link_logs_identity_mismatch_before_value_validation()
+    {
+        var logger = new CapturingLogger();
+        string correlationPrefix = new('p', 128);
+        ConversationLinked foreign = new(
+            "foreign-work",
+            1,
+            new TenantId(TenantB),
+            new WorkItemId("foreign-work"),
+            null!);
+        ProjectionEventDto foreignDto = Dto(foreign, 1) with
+        {
+            EventTypeName = $"{new string('x', 2_000)}.{nameof(ConversationLinked)}",
+        };
+
+        WorkItemProjectionEventDecodeResult result = WorkItemProjectionEventDecoder.Decode(
+            foreignDto,
+            new TenantId(TenantA),
+            new WorkItemId(WorkId),
+            correlationPrefix + new string('z', 2_000),
+            logger);
+
+        result.Payload.ShouldBeNull();
+        result.KnownEventType.ShouldBeTrue();
+        result.Malformed.ShouldBeTrue();
+        (int Id, LogLevel Level, string Message) identityLog = logger.Entries
+            .Where(static entry => entry.Id == 4505)
+            .ShouldHaveSingleItem();
+        identityLog.Level.ShouldBe(LogLevel.Warning);
+        identityLog.Message.ShouldContain(nameof(ConversationLinked));
+        identityLog.Message.ShouldContain($"for work item {WorkId}");
+        identityLog.Message.ShouldContain($"tenant {TenantA}");
+        identityLog.Message.ShouldContain($"correlation {correlationPrefix})");
+        identityLog.Message.ShouldNotContain('z');
         identityLog.Message.ShouldContain("payload identity did not match", Case.Insensitive);
         identityLog.Message.Length.ShouldBeLessThan(512);
         logger.Entries.ShouldNotContain(entry => entry.Id == 4504);

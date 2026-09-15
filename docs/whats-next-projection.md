@@ -145,9 +145,10 @@ flip it while binding- or remaining-only updates do not. The pure kernel ships t
 Live notification is the **deferred runtime wiring** (Stories 4.5/4.6): the adapter calls
 `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore.Client)
 only when `Changed` is set **and** the tenant-index ordering guard accepted this replay's write. A refused
-stale replay changed no persisted state, so it announces nothing: subscribers are never woken for a document
-that did not move. A dispatch whose roll-up guard refused first never reaches the index write and likewise
-never notifies. Notification occurs after the accepted durable index write, and notifier failures propagate so
+stale replay did not move the tenant index, so it announces nothing even if the independently guarded roll-up
+was repaired earlier in the dispatch. Subscribers are never woken for a tenant index that did not move. A
+dispatch whose roll-up guard refused first never reaches the index write and likewise never notifies.
+Notification occurs after the accepted durable index write, and notifier failures propagate so
 delivery can be retried. Equal-watermark replay remains accepted for non-atomic repair; consequently, an
 identical redelivery after a post-commit notifier failure attempts invalidation again even when the durable
 documents already match. Projection invalidation is therefore at least once and consumers must tolerate an

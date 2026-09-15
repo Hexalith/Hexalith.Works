@@ -2,7 +2,7 @@
 title: 'Harden Story 4.8 projection replay and invalidation'
 type: 'bugfix'
 created: '2026-09-15'
-status: 'in-progress'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 1
 baseline_commit: 'bbfacbbf65ca2747258d7118c99fdee0fd7be0d2'
@@ -123,6 +123,32 @@ Grouped survivors: EC-03 is the controlling `intent_gap`. BH-08 is `bad_spec`; B
 
 Loopback resolution (2026-09-15): the human selected retry-safe at-least-once invalidation, resolving EC-03; BH-08 was reconciled as live-path logging plus logger-free shared-rebuild degradation. The later token-risk split moved command-envelope and reminder recovery/scheduling patch groups to `deferred-work.md`; only the projection/decoder groups control this pass.
 
+### Review pass 2 (2026-09-15)
+
+| ID | Layer | Verdict | Route | Evidence |
+|---|---|---|---|---|
+| R2-BH-01 | blind-hunter | medium | defer | `AddEventStoreDomainService` uses the Client registration path, which supplies no notifier implementation, and `WorksHost` resolves `IProjectionChangeNotifier` optionally; production therefore has no invalidation unless an external customization registers one. This seam-only behavior predates the patch. |
+| R2-BH-02 | blind-hunter | false | reject | `DaprProjectionChangeNotifier` propagates PubSub publication and actor ETag regeneration failures. Only the later SignalR broadcast is deliberately fail-open after primary invalidation, which the documentation explicitly states. |
+| R2-BH-03 | blind-hunter | false | reject | carried: prior BH-03 established that EventStore production delivery validates a contiguous one-based history through `ProjectionDeliveryFingerprint.ComputeHistory`; the bespoke handler's direct-request boundary remains outside that production path. |
+| R2-BH-04 | blind-hunter | medium | defer | Unknown event types are skipped without setting live roll-up incomplete, unlike shared rebuild. This forward-version completeness defect is real but predates the patch. |
+| R2-BH-05 | blind-hunter | medium | defer | The pending-date watermark uses the maximum raw sequence while state uses decoded events, so an unknown higher event can advance the watermark beyond understood evidence. This shares the pre-existing unknown-event handling defect with R2-BH-04. |
+| R2-BH-06 | blind-hunter | false | reject | Equal-watermark repair in the approved intent applies to the what's-next index notification path. The deterministic pending-date index deliberately rejects equality, while strict older refusal and initially absent cleared tombstones satisfy its matrix behavior. |
+| R2-BH-07 | blind-hunter | medium | defer | Generic unknown/malformed EventId 4504 logging still accepts raw event type and correlation text. That pre-existing bounded-logging defect is outside the new identity-specific branch. |
+| R2-BH-08 | blind-hunter | false | reject | EventId 4505 identifies the requested tenant/work item, catalog-resolved type, bounded correlation, and identity-mismatch reason. “Identity-specific” describes the reason; the intent does not require logging attacker-controlled foreign identity or sequence. |
+| R2-BH-09 | blind-hunter | low | reject | The shared predicate is directly used by both decoders and its failure catalog is tested. A structural test forbidding a future private predicate would add brittle implementation policing for an unlikely deliberate regression. |
+| R2-BH-10 | blind-hunter | false | reject | The proposed distinguishing test requires a retry to observe `Parked=true` and then an unparked value. Parking is monotonic and there is no unpark/delete path, so that transition is unreachable; existing tests cover both reachable first-park and already-parked outcomes. |
+| R2-BH-11 | blind-hunter | low | reject | `WorksEventIdentityTests` separately pins aggregate-id disagreement and the new integration tests prove the foreign branch. Component-by-component integration theories would duplicate the matcher contract for negligible added protection. |
+| R2-BH-12 | blind-hunter | false | reject | The builder calls `MarkIncomplete(history.AggregateId)`, which scopes degradation to the current history. The single-aggregate comment does not claim a separately tested cross-aggregate invariant. |
+| R2-BH-13 | blind-hunter | false | reject | The two split records use the exact three-field format mandated by the build workflow; adding DW identifiers/status or rewriting them would violate that instruction. |
+| R2-BH-14 | blind-hunter | low | patch | The ledger wording implies this patch introduced shared-rebuild incomplete degradation, although that behavior existed at baseline. Clarify that the patch verifies the behavior and closes a stale defect record while adding live telemetry. |
+| R2-BH-15 | blind-hunter | low | patch | The changed notification paragraph says an index-refused stale replay changed no persisted state, but its roll-up may already have been repaired. State precisely that the tenant index did not move. |
+| R2-EC-01 | edge-case-hunter | false | reject | carried: duplicate of R2-BH-03/prior BH-03; production replay histories are validated upstream before `/project`, while this patch's direct-boundary rule is specifically non-positive no-write refusal. |
+| R2-EC-02 | edge-case-hunter | medium | patch | `ConversationLinked` with null correlation is classified before identity, so a foreign payload misses bounded EventId 4505 and reaches generic EventId 4504. Identity must be checked first. |
+| R2-EC-03 | edge-case-hunter | false | reject | Duplicate of R2-BH-10: the requested `Parked=true` then unparked retry transition cannot occur under the terminal monotonic parking model. |
+| R2-VG-01 | verification-gap | low | patch | The no-write sequence theory covers zero/negative values only as the sole event; a valid leading event plus later invalid event directly protects the whole-list scan. |
+| R2-VG-02 | verification-gap | false | reject | The filed demonstration relies on persisted parking moving from terminal `Parked=true` back to unparked between retries, which no production writer or operator path can do. Reachable parking classifications already have passing tests. |
+| R2-VG-03 | verification-gap | low | patch | EventId 4505 coverage does not assert the requested tenant, work item, or exact retained 128-character correlation prefix; direct assertions protect those diagnostic arguments. |
+
 ## Design Notes
 
 The full replay, not the current index document, determines whether an aggregate ever held a date await. This permits an initially absent cleared replay to write a higher tombstone watermark while aggregates with no date-await history still create no index document. Equal-watermark repair remains allowed. Notification follows the replay's logical what's-next change plus accepted index write, not a durable byte-delta gate: if notification throws after commit, identical redelivery attempts it again, so delivery is at-least-once and consumers must tolerate duplicates.
@@ -136,12 +162,13 @@ The full replay, not the current index document, determines whether an aggregate
 - `tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests` -- expected: no new failures; record the exact pre-existing `10.0.400` versus `10.0.401` SDK assertion separately, and require every other architecture test to pass.
 
 **Current-run results (2026-09-15):**
-- Focused direct xUnit runs: `PendingDateAwaitIndexDispatcherTests` **22/22**,
+- Post-review IntegrationTests project build: 0 warnings, 0 errors.
+- Focused direct xUnit runs: `PendingDateAwaitIndexDispatcherTests` **23/23**,
   `WorkItemProjectionQueryAdapterTests` **31/31**, and `WorkItemSharedProjectionRebuildHandlerTests`
-  **19/19** passed, 0 skipped.
+  **19/19** passed, 0 skipped (**73/73** combined).
 - `dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false --no-restore`: 0 warnings, 0 errors.
-- UnitTests **568/568**, PropertyTests **3/3**, and deterministic IntegrationTests excluding `*SmokeTests`
-  **332/332** passed, 0 skipped.
+- Pre-follow-up broad runs: UnitTests **568/568**, PropertyTests **3/3**, and deterministic IntegrationTests
+  excluding `*SmokeTests` **332/332** passed, 0 skipped.
 - Full ArchitectureTests: **236/237**. The sole failure remains the pre-existing, explicitly deferred SDK
   assertion expecting `10.0.400` while `global.json` pins `10.0.401`; excluding only that method passes
   **236/236**. The green set includes the durable catalog guard at **40**, preserving Story 4.8 delta zero.

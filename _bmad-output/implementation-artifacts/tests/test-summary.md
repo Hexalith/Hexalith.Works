@@ -2916,11 +2916,14 @@ pins the EC-03 policy: notification follows an accepted durable index write, not
 identical equal-watermark redelivery retries invalidation at least once without an outbox or marker.
 
 ```text
+dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Release -m:1 -p:NuGetAudit=false --no-restore
+# Post-review build succeeded: 0 warnings, 0 errors
+
 dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false --no-restore
 # Build succeeded: 0 warnings, 0 errors
 
 PendingDateAwaitIndexDispatcherTests
-# 22/22 passed, 0 skipped
+# 23/23 passed, 0 skipped (focused follow-up after the foreign ConversationLinked regression fact)
 
 WorkItemProjectionQueryAdapterTests
 # 31/31 passed, 0 skipped
@@ -2928,14 +2931,16 @@ WorkItemProjectionQueryAdapterTests
 WorkItemSharedProjectionRebuildHandlerTests
 # 19/19 passed, 0 skipped
 
+# Combined focused post-review result: 73/73 passed, 0 skipped
+
 Hexalith.Works.UnitTests
-# 568/568 passed, 0 skipped
+# 568/568 passed, 0 skipped (pre-follow-up broad run)
 
 Hexalith.Works.PropertyTests
-# 3/3 passed, 0 skipped
+# 3/3 passed, 0 skipped (pre-follow-up broad run)
 
 Hexalith.Works.IntegrationTests -class- '*SmokeTests'
-# 332/332 passed, 0 skipped
+# 332/332 passed, 0 skipped (pre-follow-up full deterministic run)
 
 Hexalith.Works.ArchitectureTests
 # 236/237 passed; sole failure: P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk expects 10.0.400,

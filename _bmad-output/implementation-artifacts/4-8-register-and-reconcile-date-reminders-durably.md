@@ -416,8 +416,8 @@ claude-opus-4-8 (Claude Code dev-story workflow).
   identity-specific live telemetry while the logger-free shared builder degrades the affected roll-up to
   incomplete. Post-write `changed && indexAccepted` invalidation remains deliberately at least once: a notifier
   failure propagates and identical equal-watermark redelivery retries notification. Release build passed with
-  0 warnings/errors; focused classes passed 22/22, 31/31, and 19/19; Unit 568/568, Property 3/3, and deterministic
-  non-smoke Integration 332/332 passed. Architecture passed 236/237; only the pre-existing SDK assertion
+  0 warnings/errors; focused classes passed 23/23, 31/31, and 19/19; Unit 568/568, Property 3/3, and the
+  pre-follow-up deterministic non-smoke Integration run passed 332/332. Architecture passed 236/237; only the pre-existing SDK assertion
   (`10.0.400` expected versus checked-in `10.0.401`) failed, and excluding exactly it passed 236/236 including
   catalog guard 40. The live lane was not rerun; historical 4/4 remains older evidence only.
 

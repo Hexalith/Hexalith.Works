@@ -58,12 +58,6 @@ internal static partial class WorkItemProjectionEventDecoder
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
-            if (payload is ConversationLinked { ConversationCorrelationId: null })
-            {
-                LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
-                return new WorkItemProjectionEventDecodeResult(null, true, true);
-            }
-
             if (!WorksEventIdentity.Matches(payload, tenantId.Value, workItemId.Value))
             {
                 // A foreign identity is malformed evidence, not an unknown type: return Malformed so
@@ -71,6 +65,12 @@ internal static partial class WorkItemProjectionEventDecoder
                 // and 500ing the poller forever. Log the catalog-resolved simple name rather than the raw
                 // caller-supplied type name, whose namespace prefix is not length-bounded.
                 LogIdentityMismatch(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
+                return new WorkItemProjectionEventDecodeResult(null, true, true);
+            }
+
+            if (payload is ConversationLinked { ConversationCorrelationId: null })
+            {
+                LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
