@@ -5,27 +5,61 @@
 <title>PRD Validation: Hexalith.Works</title>
 <style>
   :root {
-    --bg: #fafaf9; --surface: #ffffff; --border: #e7e5e4;
-    --text: #1c1917; --muted: #78716c;
-    --verdict-strong: #16a34a; --verdict-adequate: #65a30d;
-    --verdict-thin: #d97706; --verdict-broken: #dc2626;
-    --sev-low: #64748b; --sev-medium: #ca8a04;
-    --sev-high: #ea580c; --sev-critical: #dc2626;
-    --grade-exc: #16a34a; --grade-good: #65a30d;
-    --grade-fair: #d97706; --grade-poor: #dc2626;
+    --bg: #fafaf9;
+    --surface: #ffffff;
+    --border: #e7e5e4;
+    --text: #1c1917;
+    --muted: #78716c;
+    --verdict-strong: #16a34a;
+    --verdict-adequate: #65a30d;
+    --verdict-thin: #d97706;
+    --verdict-broken: #dc2626;
+    --sev-low: #64748b;
+    --sev-medium: #ca8a04;
+    --sev-high: #ea580c;
+    --sev-critical: #dc2626;
+    --grade-exc: #16a34a;
+    --grade-good: #65a30d;
+    --grade-fair: #d97706;
+    --grade-poor: #dc2626;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; font-size: 15px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 15px;
+  }
   .container { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
-  header.report-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  header.report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
   .title h1 { margin: 0; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
-  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; overflow-wrap: anywhere; }
+  .title .subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
   .grade { padding: 10px 18px; border-radius: 8px; font-weight: 600; color: white; font-size: 15px; white-space: nowrap; }
-  .grade-excellent { background: var(--grade-exc); } .grade-good { background: var(--grade-good); }
-  .grade-fair { background: var(--grade-fair); } .grade-poor { background: var(--grade-poor); }
-  .synthesis { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--muted); border-radius: 8px; padding: 18px 22px; margin-bottom: 24px; font-size: 15.5px; }
-  .synthesis p { margin: 0 0 10px; } .synthesis p:last-child { margin-bottom: 0; }
+  .grade-excellent { background: var(--grade-exc); }
+  .grade-good { background: var(--grade-good); }
+  .grade-fair { background: var(--grade-fair); }
+  .grade-poor { background: var(--grade-poor); }
+  .synthesis {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--muted);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    font-size: 15.5px;
+  }
+  .synthesis p { margin: 0 0 10px; }
+  .synthesis p:last-child { margin-bottom: 0; }
   .dimension-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 24px; }
   .dim-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
   .dim-card .dim-name { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
@@ -38,19 +72,22 @@
   section details[open] summary::before { transform: rotate(90deg); }
   section summary h2 { display: inline; margin: 0; font-size: 16px; font-weight: 600; letter-spacing: -0.005em; flex: 1; }
   .verdict-pill { font-size: 11px; padding: 3px 10px; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: white; }
-  .verdict-strong { background: var(--verdict-strong); } .verdict-adequate { background: var(--verdict-adequate); }
-  .verdict-thin { background: var(--verdict-thin); } .verdict-broken { background: var(--verdict-broken); }
+  .verdict-strong { background: var(--verdict-strong); }
+  .verdict-adequate { background: var(--verdict-adequate); }
+  .verdict-thin { background: var(--verdict-thin); }
+  .verdict-broken { background: var(--verdict-broken); }
   .dim-body { padding: 4px 20px 18px; }
-  .dim-judgment { color: var(--text); font-size: 14.5px; } .dim-judgment p { margin: 0 0 10px; }
+  .dim-judgment { color: var(--text); font-size: 14.5px; }
+  .dim-judgment p { margin: 0 0 10px; }
   .findings-list { padding: 0 20px 4px; }
   article.finding { padding: 14px 0; border-top: 1px solid var(--border); }
   article.finding:first-child { border-top: none; }
   article.finding header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
   .badge { font-size: 10.5px; padding: 3px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; line-height: 1.4; }
-  .badge-sev-low { background: rgba(100,116,139,.12); color: var(--sev-low); }
-  .badge-sev-medium { background: rgba(202,138,4,.14); color: var(--sev-medium); }
-  .badge-sev-high { background: rgba(234,88,12,.14); color: var(--sev-high); }
-  .badge-sev-critical { background: rgba(220,38,38,.14); color: var(--sev-critical); }
+  .badge-sev-low { background: rgba(100, 116, 139, 0.12); color: var(--sev-low); }
+  .badge-sev-medium { background: rgba(202, 138, 4, 0.14); color: var(--sev-medium); }
+  .badge-sev-high { background: rgba(234, 88, 12, 0.14); color: var(--sev-high); }
+  .badge-sev-critical { background: rgba(220, 38, 38, 0.14); color: var(--sev-critical); }
   .finding-title { margin: 0; font-size: 15px; font-weight: 500; flex: 1; min-width: 200px; }
   .finding-location { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.5px; color: var(--muted); }
   .finding-note, .finding-fix { margin-top: 6px; font-size: 14px; }
@@ -58,139 +95,71 @@
   .reviewer-source { font-size: 12px; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
   .mechanical { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-top: 24px; font-size: 14px; }
   .mechanical h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
-  .mechanical ul { margin: 0; padding-left: 20px; } .mechanical li { margin-bottom: 4px; color: var(--text); }
+  .mechanical ul { margin: 0; padding-left: 20px; }
+  .mechanical li { margin-bottom: 4px; color: var(--text); }
   footer.report-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
   footer .meta { display: flex; gap: 24px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
-<div class="container">
-  <header class="report-header">
-    <div class="title">
-      <h1>Hexalith.Works — Validation Report</h1>
-      <div class="subtitle">/home/administrator/projects/hexalith/works/_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md</div>
-    </div>
-    <div class="grade grade-poor">Poor</div>
-  </header>
+  <div class="container">
+    <header class="report-header">
+      <div class="title">
+        <h1>Hexalith.Works — Validation Report</h1>
+        <div class="subtitle">_bmad-output/planning-artifacts/prds/prd-works-2026-06-14/prd.md</div>
+      </div>
+      <div class="grade grade-excellent">Excellent</div>
+    </header>
 
-  <div class="synthesis">
-    <p>This is a strategically coherent, unusually substantive technical PRD with explicit scope cuts, product bets, testable consequences, and useful counter-metrics. It is not yet safe as an unqualified implementation contract: normative sections disagree on core lifecycle, tree, authorization, and Roll-Up behavior, and the addendum contradicts the security-critical actor-provenance rule.</p>
-    <p>The adversarial, downstream-drift, and readiness passes confirm that coordinated implementation is blocked. The PRD was amended after the prior validation, but architecture and epics still encode the earlier 25-FR design. Isolated pure-domain work may proceed only where the PRD is internally consistent. Across four reviews, 52 finding occurrences consolidate to 5 critical, 13 high, 6 medium, and 3 low issues.</p>
+    <div class="synthesis">
+      <p>This is a strong, decision-ready technical PRD whose 2026-09-14 amendment is internally coherent on Burn-Down semantics, delivered-versus-target provenance, and the Story 5.5 Obligation-bound trace. The former FR-6 wording defect and Registry/Reactor sequence contradiction are resolved; one explicitly deferred Product decision about admitting multiple Await-Conditions remains before the next lifecycle-contract implementation or promotion.</p>
+      <p>The focused amendment-consistency reviewer passed every approved 2026-09-14 outcome with no findings. The remaining rubric findings are outside that amendment: one controlled Product decision gate and one low-impact journey-labeling issue.</p>
+    </div>
+
+    <div class="dimension-summary">
+      <div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
+      <div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+      <div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color: var(--verdict-adequate)">adequate</div></div>
+      <div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color: var(--verdict-strong)">strong</div></div>
+    </div>
+
+    <section class="dimension"><details><summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>The PRD states consequential scope, authority, eventual-consistency, re-estimation, and exit-gate choices explicitly. Final status accurately identifies the approved product contract without claiming that operational evidence already exists.</p></div></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>The two product bets are falsifiable, and requirements carry specific state, event, rejection, recovery, and negative-test consequences rather than generic template language.</p></div></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>The capabilities and success metrics follow one thin-kernel thesis. The amended re-estimation rule reinforces the distinction between target planning and historical progress.</p></div></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-adequate">adequate</span></summary><div class="dim-body"><div class="dim-judgment"><p>Most FRs define observable inputs, invariants, events, state outcomes, authorization, and concurrency behavior. Burn-Down and Registry/Reactor contracts are now internally consistent.</p></div></div><div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Multiple Await-Conditions lack an admission schema</h3><span class="finding-location">§4.1 FR-5; §4.4 FR-14–FR-15</span></header><div class="finding-note">FR-5 permits one or more conditions and UJ-3 requires first-match behavior, but FR-14 describes only one condition and a second Suspend cannot add another after the item is already Suspended. The memlog records this as a controlled Product decision gate.</div><div class="finding-fix"><strong>Fix:</strong> Define the non-empty-set shape, duplicate normalization, and simultaneous-match ordering—or remove simultaneous first-match behavior—before the next lifecycle-contract implementation or promotion.</div></article></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Scope honesty</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>The PRD distinguishes v1, deferred product themes, platform admission gates, assumptions, and historical versus target acceptance evidence without hiding unresolved decisions.</p></div></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Downstream usability</h2><span class="verdict-pill verdict-adequate">adequate</span></summary><div class="dim-body"><div class="dim-judgment"><p>Terms and IDs are stable, FR-26 is discoverable, architecture depth is clearly non-binding, and FR-2 traces the target Obligation rule to Story 5.5 with historical replay compatibility. The Await-Condition decision gate remains the only material extraction risk.</p></div></div></details></section>
+
+    <section class="dimension"><details><summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary><div class="dim-body"><div class="dim-judgment"><p>The capability-spec shape fits a headless chain-top developer product, with proportionate depth for compatibility, security provenance, recovery, and exit gates.</p></div></div></details></section>
+
+    <section class="reviewer-section"><details><summary><h2>Amendment consistency review</h2><span class="reviewer-source">review-amendment-consistency.md</span></summary><div class="dim-body"><div class="dim-judgment"><p><strong>PASS.</strong> All approved 2026-09-14 re-estimation, progress-authority, delivered-versus-target provenance, FR-2/Story 5.5, and document-history outcomes are present and internally consistent. Critical: 0; high: 0; medium: 0; low: 0.</p></div></div></details></section>
+
+    <div class="mechanical">
+      <h3>Mechanical notes</h3>
+      <ul>
+        <li>Low: UJ-1 and UJ-2 use floating roles rather than named protagonists; Product/UX owns the revisit before journey-led UX or story generation.</li>
+        <li>FR IDs are unique and cover FR-1–FR-26; FR-26 remains discoverable through the feature inventory.</li>
+        <li>UJ and SM identifiers are unique and contiguous within their schemes.</li>
+        <li>The Assumptions Index roundtrips current inline assumptions.</li>
+        <li>All cited relative source paths checked in the PRD and addendum resolve.</li>
+        <li>Legacy reviewer files dated before this run were preserved but excluded from the current synthesis.</li>
+      </ul>
+    </div>
+
+    <footer class="report-footer">
+      <div class="meta">
+        <span>Rubric: .agents/skills/bmad-prd/assets/prd-validation-checklist.md</span>
+        <span>Generated: 2026-09-14T21:25:30+02:00</span>
+      </div>
+    </footer>
   </div>
-
-  <div class="dimension-summary">
-    <div class="dim-card"><div class="dim-name">Decision-readiness</div><div class="dim-verdict" style="color:var(--verdict-adequate)">adequate</div></div>
-    <div class="dim-card"><div class="dim-name">Substance over theater</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
-    <div class="dim-card"><div class="dim-name">Strategic coherence</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
-    <div class="dim-card"><div class="dim-name">Done-ness clarity</div><div class="dim-verdict" style="color:var(--verdict-thin)">thin</div></div>
-    <div class="dim-card"><div class="dim-name">Scope honesty</div><div class="dim-verdict" style="color:var(--verdict-adequate)">adequate</div></div>
-    <div class="dim-card"><div class="dim-name">Downstream usability</div><div class="dim-verdict" style="color:var(--verdict-thin)">thin</div></div>
-    <div class="dim-card"><div class="dim-name">Shape fit</div><div class="dim-verdict" style="color:var(--verdict-strong)">strong</div></div>
-  </div>
-
-  <section class="dimension"><details>
-    <summary><h2>Decision-readiness</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The PRD exposes real decisions: the kernel-only cut, carried-but-unenforced authority, eventual cross-aggregate effects, and no active-work reassignment. It remains unsafe as a clean build/release authorization while normative rules conflict and required platform gates are scattered.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Normative Resume behavior has two answers</h3><span class="finding-location">§4.2 FR-6; §4.4 FR-15</span></header><div class="finding-note">The table rejects Resume from InProgress, while FR-15 requires a consumed-condition replay to be a no-op after the item returns to InProgress.</div><div class="finding-fix"><strong>Fix:</strong> Make FR-15 the single rule and mirror its three outcomes in the table, architecture, epics, and tests.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Release-dependency gates are not actionable</h3><span class="finding-location">§9; §13; addendum handoff</span></header><div class="finding-note">Production ingress and several integration paths are blocked by open platform obligations, but no table says what blocks which phase.</div><div class="finding-fix"><strong>Fix:</strong> Add owner, evidence, and phase impact for every open R/VAL dependency.</div></article>
-    </div>
-  </details></section>
-
-  <section class="dimension"><details>
-    <summary><h2>Substance over theater</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The Vision is specific and falsifiable: “everything is a Party,” Raw Acts instead of AI interpretations in the system of record, and a thin event-sourced coordination kernel. Journeys are appropriately lean, NFRs are product-specific, and the roadmap does not pretend deferred capabilities already exist.</p></div></div>
-  </details></section>
-
-  <section class="dimension"><details>
-    <summary><h2>Strategic coherence</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The scope follows a clear thesis. Aggregate/lifecycle, Roll-Up, saga coordination, executor unification, and thin-core boundaries support one coherent spine; SM-1 through SM-6 and the two counter-metrics test the intended product bets.</p></div></div>
-  </details></section>
-
-  <section class="dimension"><details open>
-    <summary><h2>Done-ness clarity</h2><span class="verdict-pill verdict-thin">thin</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>Most FRs contain useful legal-state, event, rejection, and concurrency consequences. The dimension is thin because ambiguity remains on the exact child-creation, Resume, terminal Roll-Up, and eventual-coordination paths that SM-1 and SM-2 must certify.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Public Create can bypass the Work-Tree Registry</h3><span class="finding-location">FR-1; FR-13; FR-16</span></header><div class="finding-note">Ordinary Create may supply a parent reference even though registry reserve is the sole public attachment act; the specified ordering can also attach an edge before child creation succeeds.</div><div class="finding-fix"><strong>Fix:</strong> Restrict parent-bearing Create to the Reactor with reservation evidence and make Attached require both parent and child acceptance.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Explicit completion leaves Roll-Up contribution ambiguous</h3><span class="finding-location">§3; FR-8; FR-11; SM-2</span></header><div class="finding-note">Reported Remaining may stay positive after Complete, while terminal contribution must be zero and formulas still sum own Remaining.</div><div class="finding-fix"><strong>Fix:</strong> Name retained meter Remaining and effective RollUpContribution separately.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Eventual coordination has no measurable bound</h3><span class="finding-location">FR-16; FR-26; SM-1</span></header><div class="finding-note">Reservation, child creation, resume, cascade, and reminder recovery lack acknowledgement and failure predicates.</div><div class="finding-fix"><strong>Fix:</strong> Define configured bounds, observable quiescence, timeout outcomes, and cascade closure.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">SM-5 authorizes an impossible active-state change</h3><span class="finding-location">FR-6; FR-17; SM-5</span></header><div class="finding-note">“Mid-work” Channel change conflicts with rejection of Assign/Queue in InProgress and Suspended.</div><div class="finding-fix"><strong>Fix:</strong> Scope SM-5 to Assigned or add a distinct active-state handoff.</div></article>
-    </div>
-  </details></section>
-
-  <section class="dimension"><details>
-    <summary><h2>Scope honesty</h2><span class="verdict-pill verdict-adequate">adequate</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The PRD is candid about v1 exclusions, distinguishes the platform identity baseline from Theme 6 hardening, indexes assumptions, and names deferred tensions. The `final` label nevertheless obscures the difference between a final product contract and readiness for integration or production.</p></div></div>
-    <div class="findings-list"><article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Provisional performance criteria look release-gating</h3><span class="finding-location">§9; SM-2; §14</span></header><div class="finding-note">The PRD says no numeric target is pinned, then gives a 1,600-item fixture, &lt;200 ms read, and 5 s convergence.</div><div class="finding-fix"><strong>Fix:</strong> Either bind them with test conditions or label them non-gating and assign an owner/date.</div></article></div>
-  </details></section>
-
-  <section class="dimension"><details open>
-    <summary><h2>Downstream usability</h2><span class="verdict-pill verdict-thin">thin</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The Glossary, stable IDs, cross-references, and assumptions roundtrip are strong. Extraction remains unsafe while the addendum contradicts actor provenance, the Resume seam has inconsistent terminology, and downstream architecture/epics encode the pre-amendment product.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">The addendum reintroduces spoofable actor provenance</h3><span class="finding-location">addendum event sketch; FR-7; §9</span></header><div class="finding-note">The handoff sketch says actor identity comes from “the binding + EventStore envelope,” while the PRD says Executor Binding never supplies actor identity.</div><div class="finding-fix"><strong>Fix:</strong> State that actor and timestamp come exclusively from trusted envelope metadata and test actor ≠ bound Party.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Resume's external seam is named inconsistently</h3><span class="finding-location">§4.4; §6.1; addendum</span></header><div class="finding-note">It is called both a port and a command issued by Reactor/adapters.</div><div class="finding-fix"><strong>Fix:</strong> Use “Resume command contract plus deferred external adapter”; reserve Port for FR-22 abstractions.</div></article>
-    </div>
-  </details></section>
-
-  <section class="dimension"><details>
-    <summary><h2>Shape fit</h2><span class="verdict-pill verdict-strong">strong</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p>The capability-led shape fits a headless, chain-top developer product. Journeys orient without inflating personas, FRs dominate the document, and implementation depth mostly lives in the addendum.</p></div></div>
-  </details></section>
-
-  <section class="reviewer-section"><details>
-    <summary><h2>Adversarial general review</h2><span class="reviewer-source">review-adversarial-general.md</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p><strong>FAIL — 2 critical, 6 high, 5 medium, 1 low.</strong> This lens stress-tested internal consistency, data integrity, authorization, idempotency, and hidden operational consequences.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Spawn can bypass registry or leave a ghost Attached edge</h3><span class="finding-location">ADV-C01</span></header><div class="finding-note">Direct parent-bearing Create and attach-before-child-success create two integrity failures.</div><div class="finding-fix"><strong>Fix:</strong> Use origin-restricted child Create, evidence-backed state transitions, compensation, and crash-point tests.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Executor-only language conflicts with membership-only authorization</h3><span class="finding-location">ADV-C02</span></header><div class="finding-note">Implementers cannot tell whether actor Party must equal the current binding.</div><div class="finding-fix"><strong>Fix:</strong> Publish the command authorization matrix and actor propagation rule.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Roll-Up formula conflicts with terminal contribution</h3><span class="finding-location">ADV-H01</span></header><div class="finding-note">Explicitly completed items can retain positive Remaining but must contribute zero.</div><div class="finding-fix"><strong>Fix:</strong> Introduce a distinct active contribution value and use it consistently.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Progress correction guidance is false</h3><span class="finding-location">ADV-H02</span></header><div class="finding-note">ReEstimate changes Estimated, not erroneous Done.</div><div class="finding-fix"><strong>Fix:</strong> Add an auditable correction act or declare progress immutable.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Handoff, cascade, query visibility, and idempotency remain contradictory</h3><span class="finding-location">ADV-H03–H06</span></header><div class="finding-note">The PRD promises forbidden active handoff, cannot prove cascade closure, lacks query entitlements, and treats rejection as idempotent replay.</div><div class="finding-fix"><strong>Fix:</strong> Bind observable product semantics for each before story generation.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Unit, ordering, scale, actor, and privacy edge cases remain</h3><span class="finding-location">ADV-M01–M05</span></header><div class="finding-note">The full review covers inheritance truth tables, cross-stream ordering, Registry scale, addendum provenance, and immutable-data handling.</div><div class="finding-fix"><strong>Fix:</strong> Resolve product-visible outcomes and convert mechanism work into owned gates.</div></article>
-    </div>
-  </details></section>
-
-  <section class="reviewer-section"><details>
-    <summary><h2>Downstream drift review</h2><span class="reviewer-source">review-downstream-drift.md</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p><strong>BLOCKED — 2 critical, 6 high, 4 medium, 2 low.</strong> Architecture is dated two days before the current PRD; epics remain largely pre-update. A team can pass current stories while violating the normative PRD.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Registry and FR-26 lack executable story coverage</h3><span class="finding-location">DD-C01</span></header><div class="finding-note">Inventories and stories stop at FR-25 and retain caller-facing spawn.</div><div class="finding-fix"><strong>Fix:</strong> Bind VAL-H10, then reslice Registry/Reactor work and update all inventories.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Story 4.9 omits the production trust gate</h3><span class="finding-location">DD-C02</span></header><div class="finding-note">OIDC, workload delegation, mTLS, broker ACL, and forged-origin tests are absent.</div><div class="finding-fix"><strong>Fix:</strong> Add the complete §9 and AD-23/24 matrix to owned acceptance.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">AD-13 contradicts current Resume semantics</h3><span class="finding-location">DD-H01</span></header><div class="finding-note">Architecture preserves no-current-match = no-op while PRD FR-15 requires rejection.</div><div class="finding-fix"><strong>Fix:</strong> Amend the decision register and epics NFR-9.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Lifecycle, Roll-Up, transport, query, and Party signals are stale</h3><span class="finding-location">DD-H02–H06</span></header><div class="finding-note">Current stories omit the September lifecycle matrix, flattened Roll-Up, v1 transport key, FR-20 views, and SM-3/SM-5 evidence.</div><div class="finding-fix"><strong>Fix:</strong> Correct-course architecture and epics against the 26-FR contract.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Success metrics, limits, and gates have not propagated</h3><span class="finding-location">DD-M01–M04</span></header><div class="finding-note">Downstream artifacts omit SM-6, field bounds, delta &gt; 0, per-tenant policy, and current platform gates; the addendum retains bad actor wording.</div><div class="finding-fix"><strong>Fix:</strong> Add coverage maps, boundary tests, and an explicit entry/acceptance/production gate table.</div></article>
-    </div>
-  </details></section>
-
-  <section class="reviewer-section"><details>
-    <summary><h2>Implementation readiness review</h2><span class="reviewer-source">review-readiness.md</span></summary>
-    <div class="dim-body"><div class="dim-judgment"><p><strong>BLOCKED — 2 critical, 7 high, 3 medium, 1 low.</strong> Isolated pure-domain work may proceed. Epic 3, distributed integration, platform migration, and production/security acceptance may not proceed safely from current artifacts.</p></div></div>
-    <div class="findings-list">
-      <article class="finding"><header><span class="badge badge-sev-critical">critical</span><h3 class="finding-title">Freeze Resume and registry-backed Create semantics first</h3><span class="finding-location">Readiness criticals</span></header><div class="finding-note">Both issues force incompatible command outcomes and story shapes.</div><div class="finding-fix"><strong>Fix:</strong> Resolve them in the PRD before architecture or Epic 3 continues.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Platform/security contracts are not executable</h3><span class="finding-location">Readiness high findings</span></header><div class="finding-note">Trusted origin, eventual recovery, rebuild fencing, compatibility, and privacy have no complete acceptance path.</div><div class="finding-fix"><strong>Fix:</strong> Turn R4/R6/R7/R11 and VAL-H09/H11/H12 into owned stories and gates.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-high">high</span><h3 class="finding-title">Plans are not baselined to the 26-FR contract</h3><span class="finding-location">Architecture and epics</span></header><div class="finding-note">Current coverage claims are stale and permit non-conforming implementation.</div><div class="finding-fix"><strong>Fix:</strong> Run a formal correct-course and sprint-planning pass.</div></article>
-      <article class="finding"><header><span class="badge badge-sev-medium">medium</span><h3 class="finding-title">Performance and cross-repository sequencing remain ambiguous</h3><span class="finding-location">Readiness medium findings</span></header><div class="finding-note">Teams lack binding performance gates and a versioned provider/consumer dependency ledger.</div><div class="finding-fix"><strong>Fix:</strong> Bind test conditions and repository delivery order.</div></article>
-    </div>
-  </details></section>
-
-  <div class="mechanical">
-    <h3>Mechanical notes</h3>
-    <ul>
-      <li>FR, UJ, and SM identifiers are unique. FR-1 through FR-26 exist; FR-26 is presented between FR-16 and FR-17.</li>
-      <li>FR/UJ/SM cross-references resolve, but numeric range shorthand can omit FR-26.</li>
-      <li>The Assumptions Index roundtrips inline assumptions, including superseded and narrowed entries.</li>
-      <li>Glossary drift remains around singular Await-Condition versus the normative set of multiple Await-Conditions.</li>
-      <li>UJ-1 and UJ-2 have no named protagonists; minor for this headless developer product.</li>
-      <li>Brief and brainstorming relative links are off by one directory from the PRD workspace.</li>
-      <li>All four reviewer files and both consolidated reports were regenerated against the September PRD on 2026-09-12.</li>
-    </ul>
-  </div>
-
-  <footer class="report-footer"><div class="meta">
-    <span>Rubric: /home/administrator/projects/hexalith/works/.agents/skills/bmad-prd/assets/prd-validation-checklist.md</span>
-    <span>Generated: 2026-09-12T10:33:47+02:00</span>
-  </div></footer>
-</div>
 </body>
 </html>
