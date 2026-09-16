@@ -50,4 +50,73 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
         Assert.Contains("EventStoreOperations__MaxListItems", text, StringComparison.Ordinal);
         Assert.Contains("commanddeadletter.work.events", text, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// Verifies parked-aggregate recovery limits and each recovery warning retain an actionable operator response.
+    /// </summary>
+    [Fact]
+    public void RunbookDocumentsParkedRecoveryLimitsAndWarningResponses()
+    {
+        string root = RepositoryRoot.Locate();
+        string path = Path.Combine(root, "docs", "operations", "subscriber-dead-letter-operator.md");
+
+        Assert.True(File.Exists(path), $"Required subscriber DLQ runbook is missing: {path}");
+        string document = File.ReadAllText(path);
+        int sectionStart = document.IndexOf("## Works date-reminder recovery warnings", StringComparison.Ordinal);
+        int sectionEnd = document.IndexOf("## Payload redaction rules", StringComparison.Ordinal);
+        Assert.True(sectionStart >= 0, "The Works date-reminder recovery warning section is required.");
+        Assert.True(sectionEnd > sectionStart, "The Works recovery warning section must precede payload redaction rules.");
+        string section = document[sectionStart..sectionEnd];
+
+        Assert.Contains("Operator response", section, StringComparison.Ordinal);
+
+        string tenantScan = WarningRow(section, "4604");
+        AssertContainsAll(tenantScan, "PendingDateAwaitTenantScanFailed", "pending-date index", "state-store", "restore", "confirm");
+
+        string incompleteScan = WarningRow(section, "4605");
+        AssertContainsAll(incompleteScan, "PendingDateAwaitScanIncomplete", "attempted", "remainder", "retry", "restore", "confirm");
+
+        string candidateScan = WarningRow(section, "4606");
+        AssertContainsAll(candidateScan, "PendingDateAwaitCandidateScanFailed", "EventStore", "stream", "restore", "confirm");
+
+        string parkedCandidate = WarningRow(section, "4607");
+        AssertContainsAll(
+            parkedCandidate,
+            "PendingDateAwaitParkedCandidateSkipped",
+            "recovery",
+            "missing",
+            "cannot",
+            "already durable",
+            "may still fire",
+            "separate",
+            "remediation",
+            "escalate");
+
+        string parkingLookup = WarningRow(section, "4608");
+        AssertContainsAll(parkingLookup, "PendingDateAwaitParkingLookupFailed", "state-store", "restore", "reconciliation");
+
+        string schedulingFailure = WarningRow(section, "4609");
+        AssertContainsAll(
+            schedulingFailure,
+            "DateReminderSchedulingFailed",
+            "actor",
+            "placement",
+            "Scheduler",
+            "state-store",
+            "repair",
+            "verify");
+    }
+
+    private static void AssertContainsAll(string actual, params string[] requiredTerms)
+    {
+        foreach (string requiredTerm in requiredTerms)
+        {
+            Assert.Contains(requiredTerm, actual, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    private static string WarningRow(string section, string eventId)
+        => section
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Single(line => line.StartsWith($"| {eventId} ", StringComparison.Ordinal));
 }

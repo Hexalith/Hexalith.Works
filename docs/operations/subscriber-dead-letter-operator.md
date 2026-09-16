@@ -119,6 +119,27 @@ Entries whose envelope carries no complete safe identity are filed under the res
 rather than a real tenant. Query that scope to review them. Treat `unidentified` as reserved: do not provision a
 real tenant with that id, or its operators would share a scope with unidentified envelopes.
 
+## Works date-reminder recovery warnings
+
+Works reminder recovery logs bounded identity/count fields and attaches the original cause through the structured
+exception slot. Do not copy exception details into tickets or metrics; use them only in the protected log system.
+The following warnings require distinct responses:
+
+| EventId | Meaning | Operator response |
+|---------|---------|-------------------|
+| 4604 `PendingDateAwaitTenantScanFailed` | The named tenant's pending-date index could not be read, so that tenant contributed no candidates to this pass. | Restore state-store availability and authorization for the tenant index, then confirm a later startup attempt scans the named tenant. If startup retries were exhausted, restart Works after remediation. |
+| 4605 `PendingDateAwaitScanIncomplete` | One or more tenant/index, parking, or candidate-stream reads failed. Partial results are attempted after this warning; a later submit or schedule failure can stop processing, leaving the remainder for retry. The warning includes failed-tenant, failed-candidate, and parked-skip counts. | Check the attached cause and the applicable 4604/4606/4608 row, restore the failing state-store or EventStore dependency, and confirm a later startup attempt completes. If the bounded startup retry budget is exhausted, restart Works after remediation. |
+| 4606 `PendingDateAwaitCandidateScanFailed` | The named candidate's EventStore stream could not be read or folded, so that candidate was omitted and the scan remains incomplete. | Restore EventStore gateway and stream availability, resolve malformed lifecycle evidence if reported, and confirm a later reconciliation includes the named work item. Restart Works after remediation if startup retries were exhausted. |
+| 4607 `PendingDateAwaitParkedCandidateSkipped` | Startup recovery deliberately skipped the terminally parked aggregate without a stream read, so it cannot recreate a missing reminder registration or issue an overdue resume. Parking does not cancel an already durable reminder, which may still fire. | Escalate the named tenant/work item to the Works service owner. If its registration is missing, do not expect restart or repeated reconciliation to repair it: no supported unpark/replay path exists. Track the item until a separate remediation capability is delivered or an approved manual incident procedure resolves the underlying projection evidence. |
+| 4608 `PendingDateAwaitParkingLookupFailed` | The parking document could not be read, so the candidate stream was not touched and the scan remains incomplete. | Restore state-store availability/authorization for the named parking key, then confirm reconciliation succeeds; restart Works after remediation if startup retries were exhausted. |
+| 4609 `DateReminderSchedulingFailed` | Dapr reminder scheduling failed in steady-state delivery or startup recovery. The warning carries tenant, work item, deterministic reminder name, bounded exception type, and the attached exception. | Check Works actor, placement, Scheduler, and state-store health; repair the failing dependency and verify at-least-once redelivery or startup retry schedules the same deterministic reminder. If startup retries were exhausted, restart Works after remediation. Exact caller cancellation intentionally emits no 4609. |
+
+A 4607 is a terminal recovery exclusion, not proof that no reminder can fire: an already durable reminder may
+still fire, but recovery cannot repair a missing registration while the aggregate remains parked. A 4604, 4605,
+4606, 4608, or 4609 is dependency/failure evidence and remains retryable. Never delete parking or reminder state
+directly as routine remediation; any privileged state-store intervention requires an incident record and
+service-owner approval.
+
 ## Payload redaction rules
 
 Never place raw bodies, event payloads, body hashes, or full command/event objects in logs, traces, metrics, list

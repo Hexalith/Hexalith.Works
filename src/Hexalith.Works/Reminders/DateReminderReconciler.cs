@@ -70,7 +70,11 @@ public sealed class DateReminderReconciler(
         {
             (reissued, rescheduled) = await ProcessAsync(scanResult.Pending, now, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (incompleteScan is not null && ex is not OperationCanceledException)
+        catch (Exception ex) when (
+            incompleteScan is not null
+            && !(ex is OperationCanceledException cancellation
+                && cancellationToken.IsCancellationRequested
+                && cancellation.CancellationToken == cancellationToken))
         {
             // A submit/schedule failure while acting on partial results must not discard the typed
             // incomplete-scan signal the caller retries on. Rethrow the same typed signal, carrying both causes.
@@ -124,15 +128,38 @@ public sealed class DateReminderReconciler(
                 }
                 else
                 {
-                    await _scheduler
-                        .ScheduleResumeReminderAsync(pendingAwait, pendingAwait.Instant - now, cancellationToken)
-                        .ConfigureAwait(false);
+                    string reminderName = DateReminderName.For(
+                        pendingAwait.TenantId,
+                        pendingAwait.WorkItemId,
+                        pendingAwait.CorrelationKey);
+                    try
+                    {
+                        await _scheduler
+                            .ScheduleResumeReminderAsync(pendingAwait, pendingAwait.Instant - now, cancellationToken)
+                            .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException ex) when (
+                        cancellationToken.IsCancellationRequested
+                        && ex.CancellationToken == cancellationToken)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        WorksRecoveryLog.DateReminderSchedulingFailed(
+                            _logger,
+                            pendingAwait.TenantId,
+                            pendingAwait.WorkItemId,
+                            reminderName,
+                            ex);
+                        throw;
+                    }
 
                     WorksRecoveryLog.DateReminderScheduled(
                         _logger,
                         pendingAwait.TenantId,
                         pendingAwait.WorkItemId,
-                        DateReminderName.For(pendingAwait.TenantId, pendingAwait.WorkItemId, pendingAwait.CorrelationKey));
+                        reminderName);
                     tenantRescheduled++;
                 }
             }

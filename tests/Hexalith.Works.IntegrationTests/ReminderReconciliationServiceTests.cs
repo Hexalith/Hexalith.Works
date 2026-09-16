@@ -90,4 +90,50 @@ public sealed class ReminderReconciliationServiceTests
         failureLogs.ShouldAllBe(entry => entry.Exception is InvalidOperationException);
         failureLogs.ShouldAllBe(entry => entry.Exception!.Message == "persistent failure");
     }
+
+    [Fact]
+    public async Task Foreign_cancellation_is_logged_when_the_stopping_token_is_also_canceled()
+    {
+        using var dependencyCancellation = new CancellationTokenSource();
+        dependencyCancellation.Cancel();
+        var expected = new OperationCanceledException(dependencyCancellation.Token);
+        var sourceEntered = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var dependencyFailure = new TaskCompletionSource<PendingDateAwaitScanResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken observedStoppingToken = default;
+        IPendingDateAwaitSource source = Substitute.For<IPendingDateAwaitSource>();
+        source.GetPendingDateAwaitsAsync(Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            observedStoppingToken = call.ArgAt<CancellationToken>(0);
+            sourceEntered.TrySetResult(true);
+            return dependencyFailure.Task;
+        });
+        var reconciler = new DateReminderReconciler(
+            source,
+            Substitute.For<IDateReminderScheduler>(),
+            Substitute.For<IWorkCommandSubmitter>(),
+            TimeProvider.System,
+            NullLogger<DateReminderReconciler>.Instance);
+        var logger = new Story48RecordingLogger<ReminderReconciliationService>();
+        using var service = new ReminderReconciliationService(
+            reconciler,
+            Options.Create(new WorksRecoveryOptions
+            {
+                ReminderReconciliationMaxAttempts = 1,
+                ReminderReconciliationRetryDelayMilliseconds = 0,
+            }),
+            logger,
+            TimeProvider.System);
+
+        await service.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await sourceEntered.Task.WaitAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        Task stopTask = service.StopAsync(TestContext.Current.CancellationToken);
+        observedStoppingToken.IsCancellationRequested.ShouldBeTrue();
+        dependencyFailure.TrySetException(expected).ShouldBeTrue();
+        await stopTask.ConfigureAwait(true);
+
+        await source.Received(1).GetPendingDateAwaitsAsync(observedStoppingToken);
+        var failure = logger.Entries.Where(entry => entry.EventId.Id == 4603).ShouldHaveSingleItem();
+        OperationCanceledException logged = failure.Exception.ShouldNotBeNull().ShouldBeAssignableTo<OperationCanceledException>();
+        logged.CancellationToken.ShouldBe(dependencyCancellation.Token);
+    }
 }

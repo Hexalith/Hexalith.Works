@@ -24,9 +24,12 @@ namespace Hexalith.Works.Reminders;
 /// the rest of the cross-tenant scan: a persistently-unreadable candidate must not silently starve reminder
 /// discovery/recovery for everything else. Parking-document failures are classified separately and never fall
 /// through to a stream read. The scan still marks itself incomplete by throwing
-/// <see cref="PendingDateAwaitScanIncompleteException"/> after every tenant has been attempted, carrying the
+/// <see cref="PendingDateAwaitScanIncompleteException"/> after every eligible tenant has been attempted, carrying the
 /// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
 /// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
+/// If a dependency reports foreign cancellation while the caller is concurrently canceled, that failure is
+/// recorded and the scan stops at that boundary so a later exact caller cancellation cannot mask the typed
+/// incomplete result.
 /// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a countable clean skip: its
 /// stream cannot be rebuilt, so counting it incomplete would burn startup reconciliation's retry budget on a
 /// terminal projection failure, while hiding the skip would make the pass appear complete.
@@ -71,8 +74,14 @@ internal sealed class IndexedPendingDateAwaitSource(
                 failedCandidateCount += tenantScan.FailedCandidateCount;
                 skippedParkedCount += tenantScan.SkippedParkedCount;
                 lastFailure = tenantScan.LastFailure ?? lastFailure;
+                if (tenantScan.LastFailure is OperationCanceledException && cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (
+                cancellationToken.IsCancellationRequested
+                && ex.CancellationToken == cancellationToken)
             {
                 throw;
             }
@@ -81,6 +90,10 @@ internal sealed class IndexedPendingDateAwaitSource(
                 failedTenantCount++;
                 lastFailure = ex;
                 WorksRecoveryLog.PendingDateAwaitTenantScanFailed(_logger, tenant, ex);
+                if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 
@@ -123,7 +136,9 @@ internal sealed class IndexedPendingDateAwaitSource(
                         cancellationToken)
                     .ConfigureAwait(false);
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (
+                cancellationToken.IsCancellationRequested
+                && ex.CancellationToken == cancellationToken)
             {
                 throw;
             }
@@ -132,6 +147,11 @@ internal sealed class IndexedPendingDateAwaitSource(
                 failedCandidateCount++;
                 lastFailure = ex;
                 WorksRecoveryLog.PendingDateAwaitParkingLookupFailed(_logger, tenant, workItemId, ex);
+                if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
                 continue;
             }
 
@@ -146,17 +166,21 @@ internal sealed class IndexedPendingDateAwaitSource(
 
             // The index only tells us which aggregates to inspect; the stream is authoritative. One unreadable
             // candidate stream is isolated to that candidate: the awaits already collected for this tenant are
-            // kept, the remaining candidates are still scanned, and the failure is rolled into the pass-level
-            // PendingDateAwaitScanIncompleteException so the retry still happens. Recovery must degrade to the
-            // items it can read, never collapse for the whole tenant (and, in a single-tenant topology, for the
-            // whole system) because of one wedged work item.
+            // kept, the remaining candidates are normally still scanned, and the failure is rolled into the
+            // pass-level PendingDateAwaitScanIncompleteException so the retry still happens. A foreign
+            // cancellation observed alongside caller cancellation stops at this boundary so an exact caller
+            // cancellation from the next candidate cannot mask that typed evidence. Recovery must degrade to
+            // the items it can read, never collapse for the whole tenant (and, in a single-tenant topology, for
+            // the whole system) because of one wedged work item.
             try
             {
                 pending.AddRange(await PendingDateAwaitStreamReader
                     .RebuildAsync(_gateway, tenant, workItemId, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
                     .ConfigureAwait(false));
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (
+                cancellationToken.IsCancellationRequested
+                && ex.CancellationToken == cancellationToken)
             {
                 throw;
             }
@@ -165,6 +189,10 @@ internal sealed class IndexedPendingDateAwaitSource(
                 failedCandidateCount++;
                 lastFailure = ex;
                 WorksRecoveryLog.PendingDateAwaitCandidateScanFailed(_logger, tenant, workItemId, ex);
+                if (ex is OperationCanceledException && cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
             }
         }
 

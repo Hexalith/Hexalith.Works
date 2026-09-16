@@ -77,10 +77,11 @@ verified EventStore domain-service surface is:
   `EventStoreProjection<TReadModel>`). The pure static `WorkItemAggregate` is **not** discovered. The host
   therefore provides `WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemState>` decorated
   `[EventStoreDomain("work")]` (the convention would otherwise derive `work-item-event-store`), declaring one
-  `public static DomainResult Handle(TCommand, WorkItemState?)` wrapper per Works command that delegates to the
-  pure kernel. `LinkConversation` is the envelope-aware exception:
-  `Handle(LinkConversation, WorkItemState?, CommandEnvelope)` fail-closes when envelope domain, tenant, or
-  aggregate id disagrees with the payload. No EventStore runtime inheritance leaks into `Server` — the
+  `public static DomainResult Handle(TCommand, WorkItemState?, CommandEnvelope)` wrapper per Works command that
+  delegates to the pure kernel. All fifteen wrappers inspect only the normalized envelope tenant for the shared
+  reserved-id guard, so malformed unrelated domain/aggregate fields do not change ordinary kernel delegation.
+  `LinkConversation` additionally fail-closes when envelope domain, tenant, or aggregate id disagrees with the
+  payload. No EventStore runtime inheritance leaks into `Server` — the
   `Server -> Contracts` direction
   is preserved (fitness-asserted).
 - **Canonical host shape.** A domain module is two lines — `builder.AddEventStoreDomainService(assembly)` then
@@ -266,9 +267,16 @@ recovery-discovery model while keeping every read per-aggregate.
   also maintains, alongside the what's-next and roll-up read models, a per-tenant pending-date-await index document
   (`projection:works:pending-date-await:{tenantId}`) plus one well-known tenant-registry document
   (`projection:works:pending-date-await:tenants`), both plain host-edge `System.Text.Json` read models upserted via
-  `ReadModelWritePolicy.UpdateAsync` (registry written before index so a crash strands only an empty read, never a
-  hidden entry). The registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration
-  and the gateway exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
+  `ReadModelWritePolicy.UpdateAsync`. For a live pending entry, the registry is written before the index so a crash
+  strands only an empty read, never actionable reminder state under an undiscoverable tenant. An initially absent
+  cleared-history tombstone may write only its non-actionable monotonic watermark without registering the tenant:
+  there is no pending await for recovery to discover, and any later live entry registers the tenant first. The
+  registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration and the gateway
+  exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
+- **Index writes are gated by authoritative full-replay history.** A replay writes the index when its current fold
+  has pending date awaits or when its own history contains a `DateReached` suspension that now needs a monotonic
+  cleared tombstone. An aggregate that never held a date await writes nothing. The gate does not consult the
+  persisted index first: that read would race an older dispatch and allow stale await resurrection.
 - **Index is discovery, stream is truth.** The recovery source enumerates the registry, reads each tenant's index,
   and re-folds every candidate's per-aggregate stream (`AggregateId` always set) before acting — a stale index
   entry whose stream has resumed contributes nothing. The `StreamsController` null-`AggregateId` 400 rejection
@@ -297,7 +305,17 @@ recovery-discovery model while keeping every read per-aggregate.
   `Works:Projection:MaxUndecodableEventDispatchesBeforeParking` (default 5) consecutive failures on the *same*
   sequence, the `/project` dispatch is acknowledged with a distinct error log and the aggregate is recorded as
   parked (`projection:works:parked:{tenantId}:{workItemId}`), so `ProjectionPollerService` stops redispatching it
-  forever. The blast radius is one visible aggregate rather than a permanent poller loop.
+  forever. The blast radius is one visible aggregate rather than a permanent poller loop. Reminder recovery also
+  skips that aggregate without reading its stream, so it cannot recreate a missing reminder registration or issue
+  an overdue resume. Parking does not cancel an already durable steady-state reminder, which may still fire. If
+  registration is absent or lost, restart reconciliation cannot repair it until separate operator remediation is
+  delivered. Warning 4607 identifies each affected item.
+- **Recovery warnings retain bounded identity and the structured cause.** EventId 4605 reports incomplete scan
+  counts, 4607 reports terminal parked skips, 4608 distinguishes parking-document read failures from stream
+  failures, and 4609 reports steady-state or recovery scheduling failures with tenant, work item, deterministic
+  reminder name, and exception type. The exception is attached through the logging exception slot, never copied
+  into the message template; exact caller cancellation emits no 4609, while foreign cancellation remains a
+  retryable failure.
 - **Catalog unchanged by Story 4.8.** The index, registry, and parking records are host-edge STJ, not
-  `[PolymorphicSerialization]` types. The count was **37** at Story 4.8 completion; Story 1.5 later
-  raised the current catalog to **40**, with all pre-existing golden bytes still compatible.
+  `[PolymorphicSerialization]` types. The current catalog is **40** and Story 4.8's delta is zero, with all
+  pre-existing golden bytes still compatible.

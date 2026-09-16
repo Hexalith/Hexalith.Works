@@ -50,6 +50,30 @@ public sealed class LinkConversationRuntimeAdapterTests
         }
     }
 
+    /// <summary>
+    /// The fourteen ordinary adapters paired with malformed envelope fields that only
+    /// <see cref="LinkConversation"/> is responsible for validating.
+    /// </summary>
+    public static TheoryData<string, Polymorphic, string, string> OrdinaryMalformedEnvelopeFixtures
+    {
+        get
+        {
+            var data = new TheoryData<string, Polymorphic, string, string>();
+            Polymorphic[] commands = WorkItemV1Catalog.All
+                .Where(value => value.GetType().Namespace == typeof(CreateWorkItem).Namespace
+                    && value is not LinkConversation)
+                .ToArray();
+            commands.Length.ShouldBe(14);
+            foreach (Polymorphic command in commands)
+            {
+                data.Add($"{command.GetType().Name}-domain", command, "not valid!", Item.Value);
+                data.Add($"{command.GetType().Name}-aggregate", command, Domain, "not valid!");
+            }
+
+            return data;
+        }
+    }
+
     [Fact]
     public async Task ProcessAsync_reflection_dispatch_links_rehydrated_unlinked_work()
     {
@@ -219,6 +243,36 @@ public sealed class LinkConversationRuntimeAdapterTests
         DomainResult actual = await aggregate.ProcessAsync(
             CommandFor(command, Tenant.Value),
             currentState: null);
+
+        actual.IsSuccess.ShouldBe(expected.IsSuccess);
+        actual.IsRejection.ShouldBe(expected.IsRejection);
+        actual.IsNoOp.ShouldBe(expected.IsNoOp);
+        actual.Events.ShouldBe(expected.Events);
+    }
+
+    /// <summary>
+    /// The reserved-tenant guard reads only the envelope tenant; malformed unrelated identity fields remain the
+    /// responsibility of the one adapter that explicitly requires full identity equality.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(OrdinaryMalformedEnvelopeFixtures))]
+    public async Task ProcessAsync_preserves_ordinary_kernel_results_with_malformed_unrelated_envelope_fields(
+        string caseName,
+        Polymorphic command,
+        string envelopeDomain,
+        string envelopeAggregateId)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        caseName.ShouldNotBeNullOrWhiteSpace();
+        var aggregate = new WorkItemEventStoreAggregate();
+        DomainResult expected = InvokeKernel(command);
+        CommandEnvelope malformed = CommandFor(command, Tenant.Value) with
+        {
+            Domain = envelopeDomain,
+            AggregateId = envelopeAggregateId,
+        };
+
+        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null);
 
         actual.IsSuccess.ShouldBe(expected.IsSuccess);
         actual.IsRejection.ShouldBe(expected.IsRejection);

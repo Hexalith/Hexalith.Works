@@ -291,7 +291,7 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   is the steady-state trigger, mirroring Story 4.7's other live translators. Recovery no longer needs per-tenant
   hand configuration: the `/project` dispatcher maintains a durable **pending-date-await index** (a per-tenant
   index document plus one well-known tenant-registry document, both plain host-edge `System.Text.Json` read models,
-  so the catalog stayed **37** at Story 4.8 completion), and the startup reconciler discovers tenants from that registry, reads each
+  so Story 4.8 added no durable catalog type and the current catalog remains **40**), and the startup reconciler discovers tenants from that registry, reads each
   tenant's index, and re-folds each candidate's per-aggregate stream for truth before acting — the index is
   discovery, the stream is authoritative, so a stale entry can never cause a wrong reissue. The removed
   `Works:Recovery:Tenants` gate (and its AppHost forwarding) means reconciliation runs on by default
@@ -299,9 +299,9 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   the gateway 400-rejects is retired. Idempotency is unchanged: deterministic `DateReminderName`/correlation ids
   make suspend-time registration and recovery reissue converge to a single accepted `WorkItemResumed`. The
   `WorkItemAggregate.Handle`/reactor kernel stays clock-free (AC #4, fitness-asserted).
-  **Accepted limitation — unbounded index/registry growth (documented 2026-09-05, not fixed):**
-  `PendingDateAwaitTenantIndex.LastSequences` gets one permanent watermark entry per work item ever dispatched
-  through `/project` in a tenant — not only items that ever held a `DateReached` await — with no pruning, and
+  **Accepted limitation — append-only date-history index/registry growth (documented 2026-09-05, not fixed):**
+  `PendingDateAwaitTenantIndex.LastSequences` gets one permanent watermark entry per work item whose authoritative
+  full replay ever contained a `DateReached` await, even after that await is cleared, with no pruning, and
   `PendingDateAwaitTenantRegistry.Tenants` is append-only forever (a tenant is never removed once it has had a
   pending date await). This is the mirror-image gap of the cascade-checkpoint index, which got a
   `CascadeCheckpointIndexStaleAfterHours` retention knob (`WorksRecoveryOptions`, consumed and clamped by
@@ -313,8 +313,10 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   either document's read/write cost material; a stale-after retention knob mirroring
   `CascadeCheckpointIndexStaleAfterHours` is the natural fix.
   **2026-09-08 review remediation (bounds the growth above, and four related decisions).**
-  (1) The index write is now **guarded**: `/project` touches the pending-date-await index only when the dispatch
-  holds pending date awaits or the index already carries an entry or watermark for that aggregate. This bounds
+  (1) The index write is now **guarded by authoritative full-replay history**: `/project` touches the pending-date-
+  await index only when the current fold holds pending date awaits or the replay itself contains a historical
+  `DateReached` suspension. It deliberately does not consult persisted index state to decide whether a tombstone
+  is needed, because that read is not atomic with an older dispatch's later update. This bounds
   the growth documented above to items that ever held an await, and removes the singleton-key write contention
   that could exhaust `ReadModelWritePolicy`'s bounded retry and turn an ordinary dispatch into a 500. Tombstone
   semantics are unchanged for items that ever held an await; an item that never held one simply has no entry,
@@ -334,6 +336,12 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   sequence: the dispatch is acknowledged with a distinct error log and recorded at
   `projection:works:parked:{tenantId}:{workItemId}`, so the projection poller stops redispatching it forever.
   Decoding stays fail-closed for every attempt inside the budget, so transient causes still retry.
+  (6) Parking is a **terminal recovery disposition** today. Recovery skips a parked pending-date-await candidate
+  without reading its stream, so it cannot recreate a missing reminder registration or issue an overdue resume.
+  Parking does not cancel an already durable steady-state reminder, which may still fire. If registration is
+  absent or lost, restart reconciliation cannot repair it until a separately delivered operator remediation/
+  unpark capability exists. Warning 4607 makes each skipped item visible; the operator guide documents the
+  corresponding response together with scan and scheduling warnings 4604/4605/4606/4608/4609.
 - Hexalith libraries are consumed as `ProjectReference` to the checked-out sibling source, never as
   NuGet `PackageReference` (see `CLAUDE.md`). Story 1.4 introduced no new sibling reference.
 - EventStore API-surface constraints from Story 1.1 (ETag-based concurrency and

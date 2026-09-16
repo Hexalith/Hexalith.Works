@@ -3080,3 +3080,72 @@ These numbers were re-run again after the review's 4603/4605/4608/4609 telemetry
 **Live lane unchanged.** The only live evidence remains 4/4 in 957.974 s from the 2026-09-08 close-out against
 EventStore `8745b14b`. It gives this bundle no live-verification credit, and AC #1's steady-state reminder fire
 stays unprovable in the WSL2 `dapr init` sandbox, where Dapr actor reminders do not deliver.
+
+## Story 4.8 six-finding close-out — 2026-09-16
+
+This run closed the six review gaps without adding reminder replay/unpark, periodic reconciliation, an exhaustion
+policy, durable-contract changes, topology changes, or submodule updates. The focused tests cover additive
+cross-tenant parked counts on clean and incomplete scans; exact-token classification for tenant-index, parking,
+stream, scheduler, and hosted-service cancellations; recovery-path Warning 4609 fields/cause/rethrow behavior;
+partial-scan cause preservation; and 28 malformed unrelated-envelope rows across the fourteen ordinary aggregate
+adapters. The operator and architecture records were reconciled to the implemented full-replay, envelope-aware,
+catalog-40 behavior and now distinguish missing-reminder recovery from an already-durable reminder that may fire.
+
+```text
+aspire start --non-interactive -- --EnableKeycloak=false
+# AppHost started successfully
+
+aspire wait works --non-interactive
+# Did not reach Works readiness during the observation window
+
+aspire describe --non-interactive
+# dapr-sentry Exited; works, eventstore, and dependent control-plane resources remained Waiting
+
+aspire stop --non-interactive
+# AppHost stopped successfully
+
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+# Restore succeeded
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -v minimal
+# Build succeeded: 0 warnings, 0 errors
+
+IndexedPendingDateAwaitSourceTests
+# 23/23 passed, 0 skipped
+
+DateReminderRecoveryRuntimeTests
+# 13/13 passed, 0 skipped
+
+LinkConversationRuntimeAdapterTests
+# 66/66 passed, 0 skipped
+
+# Combined spec-focused result: 102/102 passed, 0 skipped
+
+ReminderReconciliationServiceTests
+# 3/3 passed, 0 skipped; exact-token shutdown attribution and foreign-cancellation telemetry remain pinned
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class "*SubscriberDeadLetterOperatorDocumentationTests"
+# 3/3 passed, 0 skipped; includes the parked-reminder distinction and actionable 4604–4609 responses
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 416/416 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 237/238 passed; sole failure is the pre-existing SDK-pin assertion: expected 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- "*P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk"
+# 237/237 passed, 0 skipped, including catalog count 40 and the operator-documentation contract
+```
+
+The Aspire commands were the required pre-change topology baseline. Because Works never became ready, this
+session claims no live reminder evidence. The architecture failure is unchanged, isolated, and outside this
+spec's scope; all remaining architecture facts passed.

@@ -196,6 +196,79 @@ public sealed class DateReminderRecoveryRuntimeTests
     }
 
     [Fact]
+    public async Task Incomplete_scan_exact_caller_scheduling_cancellation_escapes_unwrapped_and_warning_free()
+    {
+        using var callerCancellation = new CancellationTokenSource();
+        callerCancellation.Cancel();
+        var expected = new OperationCanceledException(callerCancellation.Token);
+        var source = new IncompleteScanPendingDateAwaitSource(
+            [new PendingDateAwait("tenant-alpha", "future-work", FutureInstant, AwaitCondition.DateReached(FutureInstant).CorrelationKey)],
+            failedTenantCount: 2,
+            skippedParkedCount: 4,
+            failedCandidateCount: 3);
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
+        var reconciler = new DateReminderReconciler(
+            source,
+            new ThrowingReminderScheduler(expected),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            logger);
+
+        OperationCanceledException thrown = await Should
+            .ThrowAsync<OperationCanceledException>(() => reconciler.ReconcileAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.CancellationToken.ShouldBe(callerCancellation.Token);
+        thrown.ShouldNotBeOfType<PendingDateAwaitScanIncompleteException>();
+        logger.Entries.Where(entry => entry.EventId.Id == 4605).ShouldHaveSingleItem();
+        logger.Entries.ShouldNotContain(entry => entry.EventId.Id == 4609);
+    }
+
+    [Fact]
+    public async Task Incomplete_scan_foreign_scheduling_cancellation_is_rewrapped_with_counts_and_both_causes()
+    {
+        using var callerCancellation = new CancellationTokenSource();
+        using var schedulerCancellation = new CancellationTokenSource();
+        callerCancellation.Cancel();
+        schedulerCancellation.Cancel();
+        var scanCause = new InvalidOperationException("simulated candidate scan failure");
+        var source = new IncompleteScanPendingDateAwaitSource(
+            [new PendingDateAwait("tenant-alpha", "future-work", FutureInstant, AwaitCondition.DateReached(FutureInstant).CorrelationKey)],
+            failedTenantCount: 2,
+            skippedParkedCount: 4,
+            failedCandidateCount: 3,
+            innerException: scanCause);
+        var schedulingCause = new OperationCanceledException(schedulerCancellation.Token);
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
+        var reconciler = new DateReminderReconciler(
+            source,
+            new ThrowingReminderScheduler(schedulingCause),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            logger);
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => reconciler.ReconcileAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(2);
+        thrown.FailedCandidateCount.ShouldBe(3);
+        thrown.SkippedParkedCount.ShouldBe(4);
+        thrown.PartialResults.ShouldBeSameAs(source.ScanException.PartialResults);
+        AggregateException aggregate = thrown.InnerException.ShouldBeOfType<AggregateException>();
+        aggregate.InnerExceptions.Count.ShouldBe(2);
+        aggregate.InnerExceptions[0].ShouldBeSameAs(source.ScanException);
+        source.ScanException.InnerException.ShouldBeSameAs(scanCause);
+        OperationCanceledException processingCause = aggregate.InnerExceptions[1].ShouldBeAssignableTo<OperationCanceledException>();
+        processingCause.CancellationToken.ShouldBe(schedulerCancellation.Token);
+        OperationCanceledException logged = logger.Entries
+            .Where(entry => entry.EventId.Id == 4609)
+            .ShouldHaveSingleItem()
+            .Exception.ShouldBeOfType<OperationCanceledException>();
+        logged.ShouldBeSameAs(schedulingCause);
+    }
+
+    [Fact]
     public async Task Reconciler_exposes_parked_skips_from_a_clean_scan_without_making_them_retryable()
     {
         var reconciler = new DateReminderReconciler(
@@ -210,6 +283,113 @@ public sealed class DateReminderRecoveryRuntimeTests
             .ConfigureAwait(true);
 
         outcome.ShouldBe(new ReminderReconciliationOutcome(Reissued: 0, Rescheduled: 0, SkippedParkedCount: 1));
+    }
+
+    [Fact]
+    public async Task Recovery_scheduler_failure_emits_bounded_warning_and_rethrows_the_original_exception()
+    {
+        var pending = new PendingDateAwait(
+            "tenant-alpha",
+            "future-work",
+            FutureInstant,
+            AwaitCondition.DateReached(FutureInstant).CorrelationKey);
+        var expected = new InvalidOperationException("sensitive scheduler detail");
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
+        var reconciler = new DateReminderReconciler(
+            new FakePendingDateAwaitSource([pending]),
+            new ThrowingReminderScheduler(expected),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            logger);
+
+        InvalidOperationException thrown = await Should
+            .ThrowAsync<InvalidOperationException>(() => reconciler.ReconcileAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.ShouldBeSameAs(expected);
+        var failureLog = logger.Entries
+            .Where(entry => entry.EventId.Id == 4609)
+            .ShouldHaveSingleItem();
+        failureLog.Level.ShouldBe(LogLevel.Warning);
+        failureLog.Message.ShouldContain(nameof(InvalidOperationException));
+        failureLog.Message.ShouldContain(DateReminderName.For(
+            pending.TenantId,
+            pending.WorkItemId,
+            pending.CorrelationKey));
+        failureLog.Message.ShouldNotContain(expected.Message);
+        failureLog.Exception.ShouldBeSameAs(expected);
+        failureLog.Properties["TenantId"].ShouldBe(pending.TenantId);
+        failureLog.Properties["WorkItemId"].ShouldBe(pending.WorkItemId);
+        failureLog.Properties["ReminderName"].ShouldBe(DateReminderName.For(
+            pending.TenantId,
+            pending.WorkItemId,
+            pending.CorrelationKey));
+        failureLog.Properties["Reason"].ShouldBe(nameof(InvalidOperationException));
+    }
+
+    [Fact]
+    public async Task Recovery_caller_cancellation_rethrows_without_a_scheduling_failure_warning()
+    {
+        using var callerCancellation = new CancellationTokenSource();
+        callerCancellation.Cancel();
+        var expected = new OperationCanceledException(callerCancellation.Token);
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
+        var reconciler = new DateReminderReconciler(
+            new FakePendingDateAwaitSource(
+            [
+                new PendingDateAwait(
+                    "tenant-alpha",
+                    "future-work",
+                    FutureInstant,
+                    AwaitCondition.DateReached(FutureInstant).CorrelationKey),
+            ]),
+            new ThrowingReminderScheduler(expected),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            logger);
+
+        OperationCanceledException thrown = await Should
+            .ThrowAsync<OperationCanceledException>(() => reconciler.ReconcileAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.CancellationToken.ShouldBe(callerCancellation.Token);
+        logger.Entries.ShouldNotContain(entry => entry.EventId.Id == 4609);
+    }
+
+    [Fact]
+    public async Task Recovery_foreign_cancellation_warns_when_the_caller_token_is_also_canceled()
+    {
+        using var callerCancellation = new CancellationTokenSource();
+        using var schedulerCancellation = new CancellationTokenSource();
+        callerCancellation.Cancel();
+        schedulerCancellation.Cancel();
+        var expected = new OperationCanceledException(schedulerCancellation.Token);
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
+        var reconciler = new DateReminderReconciler(
+            new FakePendingDateAwaitSource(
+            [
+                new PendingDateAwait(
+                    "tenant-alpha",
+                    "future-work",
+                    FutureInstant,
+                    AwaitCondition.DateReached(FutureInstant).CorrelationKey),
+            ]),
+            new ThrowingReminderScheduler(expected),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            logger);
+
+        OperationCanceledException thrown = await Should
+            .ThrowAsync<OperationCanceledException>(() => reconciler.ReconcileAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.CancellationToken.ShouldBe(schedulerCancellation.Token);
+        OperationCanceledException logged = logger.Entries
+            .Where(entry => entry.EventId.Id == 4609)
+            .ShouldHaveSingleItem()
+            .Exception.ShouldBeOfType<OperationCanceledException>();
+        logged.ShouldBeSameAs(expected);
+        logged.CancellationToken.ShouldBe(schedulerCancellation.Token);
     }
 
     private sealed class FakePendingDateAwaitSource(
@@ -253,6 +433,15 @@ public sealed class DateReminderRecoveryRuntimeTests
             Registrations[name] = dueTime;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class ThrowingReminderScheduler(Exception exception) : IDateReminderScheduler
+    {
+        public Task ScheduleResumeReminderAsync(
+            PendingDateAwait @await,
+            TimeSpan dueTime,
+            CancellationToken cancellationToken = default)
+            => Task.FromException(exception);
     }
 
     private sealed class RecordingWorkCommandSubmitter : IWorkCommandSubmitter

@@ -41,7 +41,9 @@ public sealed class ReminderReconciliationService(
                 _ = await _reconciler.ReconcileAsync(stoppingToken).ConfigureAwait(false);
                 return;
             }
-            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (
+                stoppingToken.IsCancellationRequested
+                && ex.CancellationToken == stoppingToken)
             {
                 return;
             }

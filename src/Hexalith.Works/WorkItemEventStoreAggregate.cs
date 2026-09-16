@@ -154,6 +154,6 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(envelope);
         WorksReadModelKeys.ThrowIfReservedTenantId(tenantId(command)?.Value);
-        WorksReadModelKeys.ThrowIfReservedTenantId(envelope.AggregateIdentity.TenantId);
+        WorksReadModelKeys.ThrowIfReservedTenantId(envelope.TenantId?.ToLowerInvariant());
     }
 }
