@@ -129,7 +129,8 @@ public sealed class WorksRecoveryOptionsTests
 
         OptionsValidationException thrown = await Should.ThrowAsync<OptionsValidationException>(
             () => app.StartAsync(TestContext.Current.CancellationToken));
-        thrown.Failures.ShouldNotBeEmpty();
+        thrown.Failures.ShouldHaveSingleItem().ShouldBe(
+            "MaxUndecodableEventDispatchesBeforeParking must be greater than zero.");
     }
 
     [Fact]
@@ -179,6 +180,43 @@ public sealed class WorksRecoveryOptionsTests
         await app.StopAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
     }
 
+    [Fact]
+    public void Failed_host_build_removes_the_temporary_key_directory()
+    {
+        string? keyDirectory = null;
+        var expected = new InvalidOperationException("simulated host build failure");
+
+        InvalidOperationException thrown = Should.Throw<InvalidOperationException>(() => BuildHost(
+            () => keyDirectory = Directory.CreateTempSubdirectory("works-recovery-options-build-failure").FullName,
+            _ => throw expected,
+            static _ => { },
+            out _));
+
+        thrown.ShouldBeSameAs(expected);
+        Directory.Exists(keyDirectory.ShouldNotBeNull()).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Failed_host_disposal_still_removes_the_temporary_key_directory()
+    {
+        string? keyDirectory = null;
+        var expected = new InvalidOperationException("simulated host disposal failure");
+        IDisposable host = BuildHost(
+            () => keyDirectory = Directory.CreateTempSubdirectory("works-recovery-options-dispose-failure").FullName,
+            _ => WebApplication.CreateBuilder(Array.Empty<string>()).Build(),
+            application =>
+            {
+                application.DisposeAsync().AsTask().GetAwaiter().GetResult();
+                throw expected;
+            },
+            out _);
+
+        InvalidOperationException thrown = Should.Throw<InvalidOperationException>(host.Dispose);
+
+        thrown.ShouldBeSameAs(expected);
+        Directory.Exists(keyDirectory.ShouldNotBeNull()).ShouldBeFalse();
+    }
+
     private static IOptions<WorksRecoveryOptions> BuildOptions(Dictionary<string, string?> configurationValues)
     {
         IConfiguration configuration = new ConfigurationBuilder()
@@ -192,41 +230,74 @@ public sealed class WorksRecoveryOptionsTests
     }
 
     private static IDisposable BuildHost(string[] args, Story47InMemoryReadModelStore? store, out WebApplication app)
+        => BuildHost(
+            static () => Directory.CreateTempSubdirectory("works-recovery-options-keys").FullName,
+            keyDirectory => WorksHost.Build(
+                args,
+                static webHost => webHost.UseUrls("http://127.0.0.1:0"),
+                services =>
+                {
+                    if (store is not null)
+                    {
+                        services.RemoveAll<IReadModelStore>();
+                        _ = services.AddSingleton<IReadModelStore>(store);
+                    }
+
+                    foreach (ServiceDescriptor hosted in services
+                        .Where(static descriptor => descriptor.ServiceType == typeof(IHostedService)
+                            && (descriptor.ImplementationType == typeof(ReminderReconciliationService)
+                                || descriptor.ImplementationType == typeof(CascadeRecoveryService)))
+                        .ToArray())
+                    {
+                        _ = services.Remove(hosted);
+                    }
+
+                    _ = services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(keyDirectory));
+                }),
+            static application => application.DisposeAsync().AsTask().GetAwaiter().GetResult(),
+            out app);
+
+    private static IDisposable BuildHost(
+        Func<string> createKeyDirectory,
+        Func<string, WebApplication> buildApplication,
+        Action<WebApplication> disposeApplication,
+        out WebApplication app)
     {
-        string keyDirectory = Directory.CreateTempSubdirectory("works-recovery-options-keys").FullName;
-        app = WorksHost.Build(
-            args,
-            static webHost => webHost.UseUrls("http://127.0.0.1:0"),
-            services =>
-            {
-                if (store is not null)
-                {
-                    services.RemoveAll<IReadModelStore>();
-                    _ = services.AddSingleton<IReadModelStore>(store);
-                }
-
-                foreach (ServiceDescriptor hosted in services
-                    .Where(static descriptor => descriptor.ServiceType == typeof(IHostedService)
-                        && (descriptor.ImplementationType == typeof(ReminderReconciliationService)
-                            || descriptor.ImplementationType == typeof(CascadeRecoveryService)))
-                    .ToArray())
-                {
-                    _ = services.Remove(hosted);
-                }
-
-                _ = services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(keyDirectory));
-            });
-        return new HostKeyDirectory(app, keyDirectory);
+        string keyDirectory = createKeyDirectory();
+        try
+        {
+            app = buildApplication(keyDirectory);
+            return new HostKeyDirectory(app, keyDirectory, disposeApplication);
+        }
+        catch
+        {
+            DeleteKeyDirectory(keyDirectory);
+            throw;
+        }
     }
 
-    private sealed class HostKeyDirectory(WebApplication app, string keyDirectory) : IDisposable
+    private static void DeleteKeyDirectory(string keyDirectory)
+    {
+        if (Directory.Exists(keyDirectory))
+        {
+            Directory.Delete(keyDirectory, recursive: true);
+        }
+    }
+
+    private sealed class HostKeyDirectory(
+        WebApplication app,
+        string keyDirectory,
+        Action<WebApplication> disposeApplication) : IDisposable
     {
         public void Dispose()
         {
-            app.DisposeAsync().AsTask().GetAwaiter().GetResult();
-            if (Directory.Exists(keyDirectory))
+            try
             {
-                Directory.Delete(keyDirectory, recursive: true);
+                disposeApplication(app);
+            }
+            finally
+            {
+                DeleteKeyDirectory(keyDirectory);
             }
         }
     }

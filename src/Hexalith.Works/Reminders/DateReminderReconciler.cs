@@ -39,21 +39,25 @@ public sealed class DateReminderReconciler(
     /// </remarks>
     public async Task<ReminderReconciliationOutcome> ReconcileAsync(CancellationToken cancellationToken = default)
     {
-        IReadOnlyList<PendingDateAwait> pending;
+        PendingDateAwaitScanResult scanResult;
         PendingDateAwaitScanIncompleteException? incompleteScan = null;
         try
         {
-            pending = await _source.GetPendingDateAwaitsAsync(cancellationToken).ConfigureAwait(false);
+            scanResult = await _source.GetPendingDateAwaitsAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (PendingDateAwaitScanIncompleteException ex)
         {
             incompleteScan = ex;
-            pending = ex.PartialResults;
+            scanResult = new PendingDateAwaitScanResult(ex.PartialResults, ex.SkippedParkedCount);
 
             // Log the incomplete-scan detail now, before acting on the partial results below: if a later
             // submit/schedule call also throws, that new exception must not silently discard this one's
             // failed-tenant count and cause.
-            WorksRecoveryLog.PendingDateAwaitScanIncomplete(_logger, ex.FailedTenantCount, ex.FailedCandidateCount, ex);
+            WorksRecoveryLog.PendingDateAwaitScanIncomplete(
+                _logger,
+                ex.FailedTenantCount,
+                ex.FailedCandidateCount,
+                ex.SkippedParkedCount);
         }
 
         DateTimeOffset now = _timeProvider.GetUtcNow();
@@ -63,7 +67,7 @@ public sealed class DateReminderReconciler(
 
         try
         {
-            (reissued, rescheduled) = await ProcessAsync(pending, now, cancellationToken).ConfigureAwait(false);
+            (reissued, rescheduled) = await ProcessAsync(scanResult.Pending, now, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (incompleteScan is not null && ex is not OperationCanceledException)
         {
@@ -73,6 +77,7 @@ public sealed class DateReminderReconciler(
                 incompleteScan.PartialResults,
                 incompleteScan.FailedTenantCount,
                 incompleteScan.FailedCandidateCount,
+                incompleteScan.SkippedParkedCount,
                 new AggregateException(incompleteScan, ex));
         }
 
@@ -82,7 +87,7 @@ public sealed class DateReminderReconciler(
             ExceptionDispatchInfo.Capture(incompleteScan).Throw();
         }
 
-        return new ReminderReconciliationOutcome(reissued, rescheduled);
+        return new ReminderReconciliationOutcome(reissued, rescheduled, scanResult.SkippedParkedCount);
     }
 
     private async Task<(int Reissued, int Rescheduled)> ProcessAsync(
@@ -139,7 +144,3 @@ public sealed class DateReminderReconciler(
         return (reissued, rescheduled);
     }
 }
-
-/// <summary>The result of a reconciliation pass: how many due awaits were reissued and how many future
-/// awaits were rescheduled as reminders.</summary>
-public sealed record ReminderReconciliationOutcome(int Reissued, int Rescheduled);

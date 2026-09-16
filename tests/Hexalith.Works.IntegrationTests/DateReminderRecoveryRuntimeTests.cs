@@ -7,6 +7,7 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Shouldly;
@@ -130,37 +131,116 @@ public sealed class DateReminderRecoveryRuntimeTests
         {
             new("tenant-alpha", "due-work", DueInstant, AwaitCondition.DateReached(DueInstant).CorrelationKey),
         };
-        var source = new IncompleteScanPendingDateAwaitSource(partialResults, failedTenantCount: 1);
+        var source = new IncompleteScanPendingDateAwaitSource(
+            partialResults,
+            failedTenantCount: 1,
+            skippedParkedCount: 2);
         var scheduler = new RecordingReminderScheduler();
         var submitter = new RecordingWorkCommandSubmitter();
         var timeProvider = new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero));
+        var logger = new Story48RecordingLogger<DateReminderReconciler>();
         var reconciler = new DateReminderReconciler(
             source,
             scheduler,
             submitter,
             timeProvider,
-            NullLogger<DateReminderReconciler>.Instance);
+            logger);
 
         PendingDateAwaitScanIncompleteException thrown = await Should
             .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => reconciler.ReconcileAsync(TestContext.Current.CancellationToken))
             .ConfigureAwait(true);
 
         thrown.FailedTenantCount.ShouldBe(1);
+        thrown.SkippedParkedCount.ShouldBe(2);
         submitter.Submissions.ShouldHaveSingleItem(
             "The tenant that scanned cleanly must still be acted upon even though the overall pass is incomplete.");
+        var incompleteLog = logger.Entries
+            .Where(entry => entry.EventId.Id == 4605)
+            .ShouldHaveSingleItem();
+        incompleteLog.Level.ShouldBe(LogLevel.Warning);
+        incompleteLog.Message.ShouldContain("2 parked");
+        incompleteLog.Exception.ShouldBeNull();
     }
 
-    private sealed class FakePendingDateAwaitSource(IReadOnlyList<PendingDateAwait> awaits) : IPendingDateAwaitSource
+    [Fact]
+    public async Task Reconciler_rewrap_retains_scan_counts_and_both_causes_when_partial_submission_fails()
     {
-        public Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult(awaits);
+        var scanCause = new InvalidOperationException("simulated candidate scan failure");
+        var source = new IncompleteScanPendingDateAwaitSource(
+            [new PendingDateAwait("tenant-alpha", "due-work", DueInstant, AwaitCondition.DateReached(DueInstant).CorrelationKey)],
+            failedTenantCount: 2,
+            skippedParkedCount: 4,
+            failedCandidateCount: 3,
+            innerException: scanCause);
+        var processingCause = new InvalidOperationException("simulated resume submission failure");
+        var reconciler = new DateReminderReconciler(
+            source,
+            new RecordingReminderScheduler(),
+            new ThrowingWorkCommandSubmitter(processingCause),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            NullLogger<DateReminderReconciler>.Instance);
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => reconciler.ReconcileAsync(TestContext.Current.CancellationToken))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(2);
+        thrown.FailedCandidateCount.ShouldBe(3);
+        thrown.SkippedParkedCount.ShouldBe(4);
+        thrown.PartialResults.ShouldBeSameAs(source.ScanException.PartialResults);
+        AggregateException aggregate = thrown.InnerException.ShouldBeOfType<AggregateException>();
+        aggregate.InnerExceptions.Count.ShouldBe(2);
+        aggregate.InnerExceptions[0].ShouldBeSameAs(source.ScanException);
+        source.ScanException.InnerException.ShouldBeSameAs(scanCause);
+        aggregate.InnerExceptions[1].ShouldBeSameAs(processingCause);
     }
 
-    private sealed class IncompleteScanPendingDateAwaitSource(IReadOnlyList<PendingDateAwait> partialResults, int failedTenantCount)
-        : IPendingDateAwaitSource
+    [Fact]
+    public async Task Reconciler_exposes_parked_skips_from_a_clean_scan_without_making_them_retryable()
     {
-        public Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
-            => throw new PendingDateAwaitScanIncompleteException(partialResults, failedTenantCount, failedCandidateCount: 0, new InvalidOperationException("simulated tenant scan failure"));
+        var reconciler = new DateReminderReconciler(
+            new FakePendingDateAwaitSource([], skippedParkedCount: 1),
+            new RecordingReminderScheduler(),
+            new RecordingWorkCommandSubmitter(),
+            new FixedTimeProvider(new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero)),
+            NullLogger<DateReminderReconciler>.Instance);
+
+        ReminderReconciliationOutcome outcome = await reconciler
+            .ReconcileAsync(TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+
+        outcome.ShouldBe(new ReminderReconciliationOutcome(Reissued: 0, Rescheduled: 0, SkippedParkedCount: 1));
+    }
+
+    private sealed class FakePendingDateAwaitSource(
+        IReadOnlyList<PendingDateAwait> awaits,
+        int skippedParkedCount = 0) : IPendingDateAwaitSource
+    {
+        public Task<PendingDateAwaitScanResult> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(new PendingDateAwaitScanResult(awaits, skippedParkedCount));
+    }
+
+    private sealed class IncompleteScanPendingDateAwaitSource : IPendingDateAwaitSource
+    {
+        public IncompleteScanPendingDateAwaitSource(
+            IReadOnlyList<PendingDateAwait> partialResults,
+            int failedTenantCount,
+            int skippedParkedCount,
+            int failedCandidateCount = 0,
+            Exception? innerException = null)
+        {
+            ScanException = new PendingDateAwaitScanIncompleteException(
+                partialResults,
+                failedTenantCount,
+                failedCandidateCount,
+                skippedParkedCount,
+                innerException ?? new InvalidOperationException("simulated tenant scan failure"));
+        }
+
+        public PendingDateAwaitScanIncompleteException ScanException { get; }
+
+        public Task<PendingDateAwaitScanResult> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
+            => throw ScanException;
     }
 
     private sealed class RecordingReminderScheduler : IDateReminderScheduler
@@ -184,6 +264,12 @@ public sealed class DateReminderRecoveryRuntimeTests
             Submissions.Add(submission);
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class ThrowingWorkCommandSubmitter(Exception exception) : IWorkCommandSubmitter
+    {
+        public Task SubmitAsync(WorkCommandSubmission submission, CancellationToken cancellationToken = default)
+            => Task.FromException(exception);
     }
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider

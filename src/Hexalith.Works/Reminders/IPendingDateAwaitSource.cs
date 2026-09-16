@@ -9,6 +9,6 @@ namespace Hexalith.Works.Reminders;
 /// </summary>
 public interface IPendingDateAwaitSource
 {
-    /// <summary>Returns the currently-pending date awaits to reconcile.</summary>
-    Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default);
+    /// <summary>Returns the result of scanning for currently-pending date awaits to reconcile.</summary>
+    Task<PendingDateAwaitScanResult> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default);
 }

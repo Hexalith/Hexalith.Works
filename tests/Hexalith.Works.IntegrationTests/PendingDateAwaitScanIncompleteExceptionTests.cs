@@ -14,7 +14,7 @@ public sealed class PendingDateAwaitScanIncompleteExceptionTests
 {
     [Fact]
     public void Constructor_throws_argument_null_for_a_null_partial_results_list()
-        => Should.Throw<ArgumentNullException>(() => new PendingDateAwaitScanIncompleteException(null!, 1, 0, null));
+        => Should.Throw<ArgumentNullException>(() => new PendingDateAwaitScanIncompleteException(null!, 1, 0, 0, null));
 
     [Fact]
     public void Constructor_exposes_the_partial_results_and_failed_tenant_and_candidate_counts()
@@ -25,14 +25,16 @@ public sealed class PendingDateAwaitScanIncompleteExceptionTests
         };
         var inner = new InvalidOperationException("simulated tenant scan failure");
 
-        var exception = new PendingDateAwaitScanIncompleteException(partialResults, 2, 3, inner);
+        var exception = new PendingDateAwaitScanIncompleteException(partialResults, 2, 3, 4, inner);
 
         exception.PartialResults.ShouldBeSameAs(partialResults);
         exception.FailedTenantCount.ShouldBe(2);
         exception.FailedCandidateCount.ShouldBe(3);
+        exception.SkippedParkedCount.ShouldBe(4);
         exception.InnerException.ShouldBeSameAs(inner);
         exception.Message.ShouldContain("2 tenant");
         exception.Message.ShouldContain("3 candidate");
         exception.Message.ShouldContain("1 awaits");
+        exception.Message.ShouldContain("4 parked");
     }
 }

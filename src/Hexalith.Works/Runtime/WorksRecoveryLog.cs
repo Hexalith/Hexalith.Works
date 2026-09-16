@@ -41,11 +41,11 @@ internal static class WorksRecoveryLog
             new EventId(4604, "PendingDateAwaitTenantScanFailed"),
             "Pending date-await scan failed for tenant {TenantId}; other tenants are still scanned and the overall pass is signalled incomplete for retry.");
 
-    private static readonly Action<ILogger, int, int, Exception?> s_pendingDateAwaitScanIncomplete =
-        LoggerMessage.Define<int, int>(
+    private static readonly Action<ILogger, int, int, int, Exception?> s_pendingDateAwaitScanIncomplete =
+        LoggerMessage.Define<int, int, int>(
             LogLevel.Warning,
             new EventId(4605, "PendingDateAwaitScanIncomplete"),
-            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s) and {FailedCandidateCount} candidate aggregate(s); reconciliation still acts on the partial results and will retry.");
+            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s) and {FailedCandidateCount} candidate aggregate(s), with {SkippedParkedCount} parked candidate(s) skipped; reconciliation still acts on the partial results and will retry.");
 
     private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitCandidateScanFailed =
         LoggerMessage.Define<string, string>(
@@ -55,9 +55,21 @@ internal static class WorksRecoveryLog
 
     private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitParkedCandidateSkipped =
         LoggerMessage.Define<string, string>(
-            LogLevel.Information,
+            LogLevel.Warning,
             new EventId(4607, "PendingDateAwaitParkedCandidateSkipped"),
             "Pending date-await candidate {WorkItemId} in tenant {TenantId} is parked; it is skipped without a stream read and does not mark the scan incomplete.");
+
+    private static readonly Action<ILogger, string, string, string, Exception?> s_pendingDateAwaitParkingLookupFailed =
+        LoggerMessage.Define<string, string, string>(
+            LogLevel.Warning,
+            new EventId(4608, "PendingDateAwaitParkingLookupFailed"),
+            "Pending date-await parking lookup failed for candidate {WorkItemId} in tenant {TenantId}; reason {Reason}. The stream is not read and the overall pass is signalled incomplete for retry.");
+
+    private static readonly Action<ILogger, string, string, string, string, Exception?> s_dateReminderSchedulingFailed =
+        LoggerMessage.Define<string, string, string, string>(
+            LogLevel.Warning,
+            new EventId(4609, "DateReminderSchedulingFailed"),
+            "Date-resume reminder {ReminderName} could not be scheduled for work item {WorkItemId} in tenant {TenantId}; reason {Reason}. The delivery remains retryable.");
 
     private static readonly Action<ILogger, string, string, int, Exception?> s_cascadeCheckpointed =
         LoggerMessage.Define<string, string, int>(
@@ -110,8 +122,12 @@ internal static class WorksRecoveryLog
     public static void PendingDateAwaitTenantScanFailed(ILogger logger, string tenantId, Exception exception)
         => s_pendingDateAwaitTenantScanFailed(logger, tenantId, exception);
 
-    public static void PendingDateAwaitScanIncomplete(ILogger logger, int failedTenantCount, int failedCandidateCount, Exception? exception)
-        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, failedCandidateCount, exception);
+    public static void PendingDateAwaitScanIncomplete(
+        ILogger logger,
+        int failedTenantCount,
+        int failedCandidateCount,
+        int skippedParkedCount)
+        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, failedCandidateCount, skippedParkedCount, null);
 
     public static void PendingDateAwaitCandidateScanFailed(ILogger logger, string tenantId, string workItemId, Exception exception)
         => s_pendingDateAwaitCandidateScanFailed(logger, workItemId, tenantId, exception);
@@ -122,6 +138,25 @@ internal static class WorksRecoveryLog
     /// <param name="workItemId">The parked work item.</param>
     public static void PendingDateAwaitParkedCandidateSkipped(ILogger logger, string tenantId, string workItemId)
         => s_pendingDateAwaitParkedCandidateSkipped(logger, workItemId, tenantId, null);
+
+    /// <summary>Logs that the parking document could not be read, without exposing the caught exception.</summary>
+    /// <param name="logger">The recovery logger.</param>
+    /// <param name="tenantId">The candidate tenant.</param>
+    /// <param name="workItemId">The candidate work item.</param>
+    public static void PendingDateAwaitParkingLookupFailed(ILogger logger, string tenantId, string workItemId)
+        => s_pendingDateAwaitParkingLookupFailed(logger, workItemId, tenantId, "parking-read-failed", null);
+
+    /// <summary>Logs a retryable reminder-scheduling failure without exposing the caught exception.</summary>
+    /// <param name="logger">The recovery logger.</param>
+    /// <param name="tenantId">The reminder tenant.</param>
+    /// <param name="workItemId">The reminder work item.</param>
+    /// <param name="reminderName">The deterministic reminder name.</param>
+    public static void DateReminderSchedulingFailed(
+        ILogger logger,
+        string tenantId,
+        string workItemId,
+        string reminderName)
+        => s_dateReminderSchedulingFailed(logger, reminderName, workItemId, tenantId, "scheduler-failure", null);
 
     public static void CascadeCheckpointed(ILogger logger, string tenantId, string parentWorkItemId, int targetCount)
         => s_cascadeCheckpointed(logger, parentWorkItemId, tenantId, targetCount, null);

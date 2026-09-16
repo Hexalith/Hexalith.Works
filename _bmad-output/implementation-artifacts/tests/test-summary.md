@@ -3003,3 +3003,45 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 The Aspire run was a required pre-change baseline and did not reach Works health; no reminder/mTLS live evidence
 is claimed. Story 4.8 and the sprint entry remain `in-progress` for the separate reminder recovery/scheduling
 bundle.
+
+## Story 4.8 reminder recovery/scheduling hardening — 2026-09-16
+
+Reminder discovery now exposes a parked-skip count on clean and incomplete passes while leaving parked
+candidates non-retryable and unread. Parking-store failures are separated from stream-read failures through
+bounded Warning 4608, and steady-state scheduler failures emit bounded Warning 4609 before the original
+exception is rethrown for redelivery. Deterministic coverage also pins multi-date scheduling, caller-cancellation
+classification, exact startup retry exhaustion, exact projection-option validation, and exception-safe temporary
+key-directory cleanup.
+
+```text
+dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+for test_class in IndexedPendingDateAwaitSourceTests DateReminderRecoveryRuntimeTests PendingDateAwaitScanIncompleteExceptionTests WorkItemSuspendedReminderHandlerTests ReminderReconciliationServiceTests WorksRecoveryOptionsTests; do
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class "*${test_class}" || exit
+done
+# 56/56 passed, 0 skipped (18 + 8 + 2 + 12 + 2 + 14)
+
+dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false --no-restore
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 377/377 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 236/237 passed; sole failure is the pre-existing SDK-pin assertion: expected 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- Hexalith.Works.ArchitectureTests.FitnessTests.BuildConfigurationTests.P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk
+# 236/236 passed, 0 skipped, including catalog count 40
+```
+
+Per the approved scope, the reminder/mTLS live lane was not rerun. Historical live evidence remains unchanged
+and gives this bundle no new live-verification credit.

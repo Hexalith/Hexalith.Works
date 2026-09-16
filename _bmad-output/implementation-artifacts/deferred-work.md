@@ -924,3 +924,15 @@ status: open
 - source_spec: none
   summary: Complete reminder recovery and scheduling telemetry plus retry-verification hardening.
   evidence: Split from the current Story 4.8 build so the independently shippable reserved-tenant command-envelope hardening can be implemented and reviewed first.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
+  summary: Preserve typed incomplete-scan context when partial reminder processing ends in a non-caller cancellation.
+  evidence: `DateReminderReconciler` has excluded every `OperationCanceledException` from its typed rewrap since before this story baseline, so a scheduler-owned cancellation can discard failed-tenant, failed-candidate, and parked-skip context.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
+  summary: Distinguish final recovery exhaustion from retryable EventId 4603 failures.
+  evidence: The shared pre-existing EventId 4603 template says the recovery step will be retried even when `ReminderReconciliationService` has reached its final configured attempt; a separate exhausted-policy decision is needed.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
+  summary: Bound pre-existing pending-date tenant and stream failure telemetry.
+  evidence: EventIds 4604 and 4606 still attach raw provider or gateway exceptions, so their messages and stack traces can exceed the bounded reason-code/identity telemetry used by the new 4608 and 4609 paths.

@@ -19,16 +19,17 @@ namespace Hexalith.Works.Reminders;
 /// the tenant registry is durable data, not <c>Works:Recovery:Tenants</c>.
 /// </summary>
 /// <remarks>
-/// A stream-read failure is isolated (logged + skipped) at both levels — one unreadable candidate aggregate
-/// never aborts the rest of its own tenant's candidates, and one unreadable tenant never aborts the rest of the
-/// cross-tenant scan: a persistently-unreadable stream must not silently starve reminder discovery/recovery for
-/// everything else. The scan still marks itself incomplete by throwing
+/// A candidate-read failure is isolated (logged + skipped) at both levels — one unreadable parking document or
+/// aggregate stream never aborts the rest of its own tenant's candidates, and one unreadable tenant never aborts
+/// the rest of the cross-tenant scan: a persistently-unreadable candidate must not silently starve reminder
+/// discovery/recovery for everything else. Parking-document failures are classified separately and never fall
+/// through to a stream read. The scan still marks itself incomplete by throwing
 /// <see cref="PendingDateAwaitScanIncompleteException"/> after every tenant has been attempted, carrying the
 /// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
 /// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
-/// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a clean skip: its stream
-/// cannot be rebuilt, so counting it incomplete would burn startup reconciliation's retry budget on a
-/// terminal projection failure.
+/// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a countable clean skip: its
+/// stream cannot be rebuilt, so counting it incomplete would burn startup reconciliation's retry budget on a
+/// terminal projection failure, while hiding the skip would make the pass appear complete.
 /// </remarks>
 internal sealed class IndexedPendingDateAwaitSource(
     IReadModelStore store,
@@ -42,7 +43,7 @@ internal sealed class IndexedPendingDateAwaitSource(
     private readonly IReadModelStore _store = store ?? throw new ArgumentNullException(nameof(store));
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<PendingDateAwait>> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
+    public async Task<PendingDateAwaitScanResult> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
     {
         ReadModelEntry<PendingDateAwaitTenantRegistry> entry = await _store
             .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
@@ -51,12 +52,13 @@ internal sealed class IndexedPendingDateAwaitSource(
 
         if (registry is null || registry.Tenants.Count == 0)
         {
-            return [];
+            return new PendingDateAwaitScanResult([]);
         }
 
         var pending = new List<PendingDateAwait>();
         int failedTenantCount = 0;
         int failedCandidateCount = 0;
+        int skippedParkedCount = 0;
         Exception? lastFailure = null;
 
         foreach (string tenant in registry.Tenants)
@@ -67,6 +69,7 @@ internal sealed class IndexedPendingDateAwaitSource(
                 TenantScanResult tenantScan = await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false);
                 pending.AddRange(tenantScan.Pending);
                 failedCandidateCount += tenantScan.FailedCandidateCount;
+                skippedParkedCount += tenantScan.SkippedParkedCount;
                 lastFailure = tenantScan.LastFailure ?? lastFailure;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -83,10 +86,15 @@ internal sealed class IndexedPendingDateAwaitSource(
 
         if (failedTenantCount > 0 || failedCandidateCount > 0)
         {
-            throw new PendingDateAwaitScanIncompleteException(pending, failedTenantCount, failedCandidateCount, lastFailure);
+            throw new PendingDateAwaitScanIncompleteException(
+                pending,
+                failedTenantCount,
+                failedCandidateCount,
+                skippedParkedCount,
+                lastFailure);
         }
 
-        return pending;
+        return new PendingDateAwaitScanResult(pending, skippedParkedCount);
     }
 
     private async Task<TenantScanResult> ScanTenantAsync(string tenant, CancellationToken cancellationToken)
@@ -96,14 +104,46 @@ internal sealed class IndexedPendingDateAwaitSource(
             .ConfigureAwait(false);
         if (entry.Value is null || entry.Value.Entries.Count == 0)
         {
-            return new TenantScanResult([], 0, null);
+            return new TenantScanResult([], 0, 0, null);
         }
 
         var pending = new List<PendingDateAwait>();
         int failedCandidateCount = 0;
+        int skippedParkedCount = 0;
         Exception? lastFailure = null;
         foreach (string workItemId in entry.Value.Entries.Keys)
         {
+            ReadModelEntry<WorkItemProjectionParking> parking;
+            try
+            {
+                parking = await _store
+                    .GetAsync<WorkItemProjectionParking>(
+                        WorksReadModelKeys.StateStoreName,
+                        WorksReadModelKeys.ProjectionParkingKey(tenant, workItemId),
+                        cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                failedCandidateCount++;
+                lastFailure = ex;
+                WorksRecoveryLog.PendingDateAwaitParkingLookupFailed(_logger, tenant, workItemId);
+                continue;
+            }
+
+            if (parking.Value is { Parked: true })
+            {
+                // Terminal /project disposition: the stream cannot be folded. Keep the skip observable without
+                // making it retryable, and never read the known-unfoldable authoritative stream.
+                skippedParkedCount++;
+                WorksRecoveryLog.PendingDateAwaitParkedCandidateSkipped(_logger, tenant, workItemId);
+                continue;
+            }
+
             // The index only tells us which aggregates to inspect; the stream is authoritative. One unreadable
             // candidate stream is isolated to that candidate: the awaits already collected for this tenant are
             // kept, the remaining candidates are still scanned, and the failure is rolled into the pass-level
@@ -112,20 +152,6 @@ internal sealed class IndexedPendingDateAwaitSource(
             // whole system) because of one wedged work item.
             try
             {
-                ReadModelEntry<WorkItemProjectionParking> parking = await _store
-                    .GetAsync<WorkItemProjectionParking>(
-                        WorksReadModelKeys.StateStoreName,
-                        WorksReadModelKeys.ProjectionParkingKey(tenant, workItemId),
-                        cancellationToken)
-                    .ConfigureAwait(false);
-                if (parking.Value is { Parked: true })
-                {
-                    // Terminal /project disposition: the stream cannot be folded. Do not read it and do not
-                    // count the candidate as a scan failure — that would mark a healthy pass incomplete.
-                    WorksRecoveryLog.PendingDateAwaitParkedCandidateSkipped(_logger, tenant, workItemId);
-                    continue;
-                }
-
                 pending.AddRange(await PendingDateAwaitStreamReader
                     .RebuildAsync(_gateway, tenant, workItemId, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
                     .ConfigureAwait(false));
@@ -142,12 +168,13 @@ internal sealed class IndexedPendingDateAwaitSource(
             }
         }
 
-        return new TenantScanResult(pending, failedCandidateCount, lastFailure);
+        return new TenantScanResult(pending, failedCandidateCount, skippedParkedCount, lastFailure);
     }
 
     /// <summary>One tenant's scan outcome: what was discovered, and how much of it could not be read.</summary>
     private sealed record TenantScanResult(
         IReadOnlyList<PendingDateAwait> Pending,
         int FailedCandidateCount,
+        int SkippedParkedCount,
         Exception? LastFailure);
 }

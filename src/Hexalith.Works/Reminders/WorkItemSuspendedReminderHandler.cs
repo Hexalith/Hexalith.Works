@@ -56,12 +56,35 @@ internal sealed class WorkItemSuspendedReminderHandler(
         foreach (PendingDateAwait pendingAwait in pending)
         {
             TimeSpan dueTime = pendingAwait.Instant > now ? pendingAwait.Instant - now : TimeSpan.Zero;
-            await _scheduler.ScheduleResumeReminderAsync(pendingAwait, dueTime, cancellationToken).ConfigureAwait(false);
+            string reminderName = DateReminderName.For(
+                pendingAwait.TenantId,
+                pendingAwait.WorkItemId,
+                pendingAwait.CorrelationKey);
+            try
+            {
+                await _scheduler.ScheduleResumeReminderAsync(pendingAwait, dueTime, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) when (
+                cancellationToken.IsCancellationRequested
+                && ex.CancellationToken == cancellationToken)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                WorksRecoveryLog.DateReminderSchedulingFailed(
+                    _logger,
+                    pendingAwait.TenantId,
+                    pendingAwait.WorkItemId,
+                    reminderName);
+                throw;
+            }
+
             WorksRecoveryLog.DateReminderScheduled(
                 _logger,
                 pendingAwait.TenantId,
                 pendingAwait.WorkItemId,
-                DateReminderName.For(pendingAwait.TenantId, pendingAwait.WorkItemId, pendingAwait.CorrelationKey));
+                reminderName);
         }
     }
 }

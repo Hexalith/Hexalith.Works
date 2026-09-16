@@ -7,6 +7,7 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -66,6 +67,38 @@ public sealed class WorkItemSuspendedReminderHandlerTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         scheduler.Calls.ShouldHaveSingleItem().DueTime.ShouldBe(TimeSpan.Zero);
+    }
+
+    [Fact]
+    public async Task Registers_every_distinct_date_await_from_one_suspension()
+    {
+        DateTimeOffset later = s_future.AddMinutes(5);
+        WorkItemSuspended suspended = new(
+            s_workItem.Value,
+            2,
+            s_tenant,
+            s_workItem,
+            [AwaitCondition.DateReached(s_future), AwaitCondition.DateReached(later)]);
+        var scheduler = new Story48RecordingScheduler();
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            suspended));
+
+        await NewHandler(gateway, scheduler).HandleAsync(
+            suspended,
+            Context(),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        scheduler.Calls.Count.ShouldBe(2);
+        scheduler.Calls.Select(call => call.Await.Instant).ShouldBe([s_future, later], ignoreOrder: true);
+        scheduler.Calls.Select(call => call.DueTime).ShouldBe([s_future - s_now, later - s_now], ignoreOrder: true);
+        scheduler.Calls
+            .Select(call => DateReminderName.For(call.Await.TenantId, call.Await.WorkItemId, call.Await.CorrelationKey))
+            .Distinct(StringComparer.Ordinal)
+            .Count()
+            .ShouldBe(2);
     }
 
     [Fact]
@@ -172,13 +205,138 @@ public sealed class WorkItemSuspendedReminderHandlerTests
         scheduler.Calls.ShouldBeEmpty();
     }
 
-    private static WorkItemSuspendedReminderHandler NewHandler(IEventStoreGatewayClient gateway, IDateReminderScheduler scheduler)
+    [Fact]
+    public async Task Scheduler_failure_emits_bounded_warning_and_rethrows_the_original_exception()
+    {
+        var expected = new InvalidOperationException("sensitive scheduler detail");
+        IDateReminderScheduler scheduler = Substitute.For<IDateReminderScheduler>();
+        scheduler
+            .ScheduleResumeReminderAsync(Arg.Any<PendingDateAwait>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(expected));
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        var logger = new Story48RecordingLogger<WorkItemSuspendedReminderHandler>();
+
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(() => NewHandler(
+            gateway,
+            scheduler,
+            logger).HandleAsync(
+                SuspendedOnDate(s_future),
+                Context(),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        thrown.ShouldBeSameAs(expected);
+        var failureLog = logger.Entries
+            .Where(entry => entry.EventId.Id == 4609)
+            .ShouldHaveSingleItem();
+        failureLog.Level.ShouldBe(LogLevel.Warning);
+        failureLog.Message.ShouldContain("scheduler-failure");
+        failureLog.Message.ShouldContain(DateReminderName.For(
+            s_tenant.Value,
+            s_workItem.Value,
+            AwaitCondition.DateReached(s_future).CorrelationKey));
+        failureLog.Message.ShouldNotContain(expected.Message);
+        failureLog.Exception.ShouldBeNull();
+        failureLog.Properties["TenantId"].ShouldBe(s_tenant.Value);
+        failureLog.Properties["WorkItemId"].ShouldBe(s_workItem.Value);
+        failureLog.Properties["ReminderName"].ShouldBe(DateReminderName.For(
+            s_tenant.Value,
+            s_workItem.Value,
+            AwaitCondition.DateReached(s_future).CorrelationKey));
+        failureLog.Properties["Reason"].ShouldBe("scheduler-failure");
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_rethrows_without_a_scheduling_failure_warning()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        IDateReminderScheduler scheduler = Substitute.For<IDateReminderScheduler>();
+        scheduler
+            .ScheduleResumeReminderAsync(Arg.Any<PendingDateAwait>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromCanceled(call.ArgAt<CancellationToken>(2)));
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        var logger = new Story48RecordingLogger<WorkItemSuspendedReminderHandler>();
+
+        _ = await Should.ThrowAsync<OperationCanceledException>(() => NewHandler(gateway, scheduler, logger).HandleAsync(
+            SuspendedOnDate(s_future),
+            Context(),
+            cancellation.Token)).ConfigureAwait(true);
+
+        logger.Entries.ShouldNotContain(entry => entry.EventId.Id == 4609);
+    }
+
+    [Fact]
+    public async Task Scheduler_cancellation_not_attributable_to_the_caller_still_emits_the_failure_warning()
+    {
+        using var schedulerCancellation = new CancellationTokenSource();
+        schedulerCancellation.Cancel();
+        IDateReminderScheduler scheduler = Substitute.For<IDateReminderScheduler>();
+        scheduler
+            .ScheduleResumeReminderAsync(Arg.Any<PendingDateAwait>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromCanceled(schedulerCancellation.Token));
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        var logger = new Story48RecordingLogger<WorkItemSuspendedReminderHandler>();
+
+        _ = await Should.ThrowAsync<OperationCanceledException>(() => NewHandler(gateway, scheduler, logger).HandleAsync(
+            SuspendedOnDate(s_future),
+            Context(),
+            TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        logger.Entries.Where(entry => entry.EventId.Id == 4609).ShouldHaveSingleItem().Level.ShouldBe(LogLevel.Warning);
+    }
+
+    [Fact]
+    public async Task Unrelated_scheduler_cancellation_still_warns_when_the_caller_token_is_also_canceled()
+    {
+        using var callerCancellation = new CancellationTokenSource();
+        using var schedulerCancellation = new CancellationTokenSource();
+        callerCancellation.Cancel();
+        schedulerCancellation.Cancel();
+        IDateReminderScheduler scheduler = Substitute.For<IDateReminderScheduler>();
+        scheduler
+            .ScheduleResumeReminderAsync(Arg.Any<PendingDateAwait>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromCanceled(schedulerCancellation.Token));
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        var logger = new Story48RecordingLogger<WorkItemSuspendedReminderHandler>();
+
+        OperationCanceledException thrown = await Should.ThrowAsync<OperationCanceledException>(() => NewHandler(
+            gateway,
+            scheduler,
+            logger).HandleAsync(
+                SuspendedOnDate(s_future),
+                Context(),
+                callerCancellation.Token)).ConfigureAwait(true);
+
+        thrown.CancellationToken.ShouldBe(schedulerCancellation.Token);
+        logger.Entries.Where(entry => entry.EventId.Id == 4609).ShouldHaveSingleItem().Level.ShouldBe(LogLevel.Warning);
+    }
+
+    private static WorkItemSuspendedReminderHandler NewHandler(
+        IEventStoreGatewayClient gateway,
+        IDateReminderScheduler scheduler,
+        ILogger<WorkItemSuspendedReminderHandler>? logger = null)
         => new(
             gateway,
             scheduler,
             new Story48FixedTimeProvider(s_now),
             Options.Create(new WorksRecoveryOptions()),
-            NullLogger<WorkItemSuspendedReminderHandler>.Instance);
+            logger ?? NullLogger<WorkItemSuspendedReminderHandler>.Instance);
 
     private static IEventStoreGatewayClient GatewayReturning(StreamReadPage page)
     {
