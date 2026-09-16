@@ -57,7 +57,8 @@ public sealed class DateReminderReconciler(
                 _logger,
                 ex.FailedTenantCount,
                 ex.FailedCandidateCount,
-                ex.SkippedParkedCount);
+                ex.SkippedParkedCount,
+                ex);
         }
 
         DateTimeOffset now = _timeProvider.GetUtcNow();

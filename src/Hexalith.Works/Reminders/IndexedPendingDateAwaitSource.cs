@@ -131,7 +131,7 @@ internal sealed class IndexedPendingDateAwaitSource(
             {
                 failedCandidateCount++;
                 lastFailure = ex;
-                WorksRecoveryLog.PendingDateAwaitParkingLookupFailed(_logger, tenant, workItemId);
+                WorksRecoveryLog.PendingDateAwaitParkingLookupFailed(_logger, tenant, workItemId, ex);
                 continue;
             }
 

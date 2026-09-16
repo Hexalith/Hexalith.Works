@@ -70,13 +70,14 @@ internal sealed class WorkItemSuspendedReminderHandler(
             {
                 throw;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 WorksRecoveryLog.DateReminderSchedulingFailed(
                     _logger,
                     pendingAwait.TenantId,
                     pendingAwait.WorkItemId,
-                    reminderName);
+                    reminderName,
+                    ex);
                 throw;
             }
 

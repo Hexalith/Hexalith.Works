@@ -3045,3 +3045,38 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 
 Per the approved scope, the reminder/mTLS live lane was not rerun. Historical live evidence remains unchanged
 and gives this bundle no new live-verification credit.
+
+## 2026-09-16 — code-review re-verification on HEAD `e54c6a1` (submodule-pin boundary)
+
+The 2026-09-16 bundles recorded their gates before commits `6fe8899` and `e54c6a1` advanced three submodule
+pointers (EventStore `2c524541` → `64c24239`, FrontComposer → `33c8c513`, Conversations → `0044441e`). Because these are
+ProjectReference-compiled dependencies, the recorded numbers described a tree that no longer existed. The
+bmad-code-review run re-executed every deterministic gate on HEAD and they are unchanged:
+
+```text
+dotnet build -c Release
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 377/377 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 236/237 passed; sole failure remains the pre-existing SDK-pin assertion (expects 10.0.400, global.json pins 10.0.401)
+```
+
+The only Works-facing EventStore change across that boundary is `IEventStoreGatewayClient.GetCommandStatusAsync`
+gaining a default interface implementation that fails closed by reporting no recorded status — additive and not
+source-breaking. The remaining files in the submodule delta are that repository's own planning artifacts and a
+trusted-command-extension policy Works does not call.
+
+These numbers were re-run again after the review's 4603/4605/4608/4609 telemetry change and are unchanged.
+
+**Live lane unchanged.** The only live evidence remains 4/4 in 957.974 s from the 2026-09-08 close-out against
+EventStore `8745b14b`. It gives this bundle no live-verification credit, and AC #1's steady-state reminder fire
+stays unprovable in the WSL2 `dapr init` sandbox, where Dapr actor reminders do not deliver.

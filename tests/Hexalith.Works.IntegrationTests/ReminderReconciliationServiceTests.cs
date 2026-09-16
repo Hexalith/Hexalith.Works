@@ -87,6 +87,7 @@ public sealed class ReminderReconciliationServiceTests
         failureLogs.ShouldAllBe(entry => entry.Level == LogLevel.Warning);
         failureLogs.ShouldAllBe(entry => entry.Message.Contains("startup-reminder-reconciliation", StringComparison.Ordinal));
         failureLogs.ShouldAllBe(entry => !entry.Message.Contains("persistent failure", StringComparison.Ordinal));
-        failureLogs.ShouldAllBe(entry => entry.Exception == null);
+        failureLogs.ShouldAllBe(entry => entry.Exception is InvalidOperationException);
+        failureLogs.ShouldAllBe(entry => entry.Exception!.Message == "persistent failure");
     }
 }

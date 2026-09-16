@@ -233,20 +233,20 @@ public sealed class WorkItemSuspendedReminderHandlerTests
             .Where(entry => entry.EventId.Id == 4609)
             .ShouldHaveSingleItem();
         failureLog.Level.ShouldBe(LogLevel.Warning);
-        failureLog.Message.ShouldContain("scheduler-failure");
+        failureLog.Message.ShouldContain(nameof(InvalidOperationException));
         failureLog.Message.ShouldContain(DateReminderName.For(
             s_tenant.Value,
             s_workItem.Value,
             AwaitCondition.DateReached(s_future).CorrelationKey));
         failureLog.Message.ShouldNotContain(expected.Message);
-        failureLog.Exception.ShouldBeNull();
+        failureLog.Exception.ShouldBeSameAs(expected);
         failureLog.Properties["TenantId"].ShouldBe(s_tenant.Value);
         failureLog.Properties["WorkItemId"].ShouldBe(s_workItem.Value);
         failureLog.Properties["ReminderName"].ShouldBe(DateReminderName.For(
             s_tenant.Value,
             s_workItem.Value,
             AwaitCondition.DateReached(s_future).CorrelationKey));
-        failureLog.Properties["Reason"].ShouldBe("scheduler-failure");
+        failureLog.Properties["Reason"].ShouldBe(nameof(InvalidOperationException));
     }
 
     [Fact]

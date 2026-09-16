@@ -159,7 +159,7 @@ public sealed class DateReminderRecoveryRuntimeTests
             .ShouldHaveSingleItem();
         incompleteLog.Level.ShouldBe(LogLevel.Warning);
         incompleteLog.Message.ShouldContain("2 parked");
-        incompleteLog.Exception.ShouldBeNull();
+        incompleteLog.Exception.ShouldBeSameAs(thrown);
     }
 
     [Fact]

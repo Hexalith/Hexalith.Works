@@ -45,11 +45,13 @@ public sealed class ReminderReconciliationService(
             {
                 return;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // The retry reason is bounded operator telemetry; the exception still controls retry flow but
-                // is not attached to the log because gateway/store exception text can contain unbounded details.
-                WorksRecoveryLog.RecoveryStepFailed(_logger, "startup-reminder-reconciliation");
+                // The reason is bounded operator telemetry and the cause rides in the structured exception slot,
+                // never in the message template — the same shape every other RecoveryStepFailed caller uses. A
+                // permanently failing startup reconciliation must not be undiagnosable; the count is bounded by
+                // ReminderReconciliationMaxAttempts.
+                WorksRecoveryLog.RecoveryStepFailed(_logger, "startup-reminder-reconciliation", ex);
                 if (attempt == _options.ReminderReconciliationMaxAttempts)
                 {
                     return;

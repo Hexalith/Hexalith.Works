@@ -461,11 +461,12 @@ public sealed class IndexedPendingDateAwaitSourceTests
             .Where(entry => entry.EventId.Id == 4608)
             .ShouldHaveSingleItem();
         parkingLog.Level.ShouldBe(LogLevel.Warning);
-        parkingLog.Message.ShouldContain("parking-read-failed");
-        parkingLog.Exception.ShouldBeNull();
+        parkingLog.Message.ShouldContain(nameof(InvalidOperationException));
+        parkingLog.Message.ShouldNotContain("Injected read failure");
+        parkingLog.Exception.ShouldBeOfType<InvalidOperationException>();
         parkingLog.Properties["TenantId"].ShouldBe(TenantA);
         parkingLog.Properties["WorkItemId"].ShouldBe(WorkDue);
-        parkingLog.Properties["Reason"].ShouldBe("parking-read-failed");
+        parkingLog.Properties["Reason"].ShouldBe(nameof(InvalidOperationException));
         logger.Entries.ShouldNotContain(entry => entry.EventId.Id == 4606);
     }
 

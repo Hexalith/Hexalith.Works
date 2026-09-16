@@ -126,8 +126,9 @@ internal static class WorksRecoveryLog
         ILogger logger,
         int failedTenantCount,
         int failedCandidateCount,
-        int skippedParkedCount)
-        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, failedCandidateCount, skippedParkedCount, null);
+        int skippedParkedCount,
+        Exception? exception)
+        => s_pendingDateAwaitScanIncomplete(logger, failedTenantCount, failedCandidateCount, skippedParkedCount, exception);
 
     public static void PendingDateAwaitCandidateScanFailed(ILogger logger, string tenantId, string workItemId, Exception exception)
         => s_pendingDateAwaitCandidateScanFailed(logger, workItemId, tenantId, exception);
@@ -139,24 +140,35 @@ internal static class WorksRecoveryLog
     public static void PendingDateAwaitParkedCandidateSkipped(ILogger logger, string tenantId, string workItemId)
         => s_pendingDateAwaitParkedCandidateSkipped(logger, workItemId, tenantId, null);
 
-    /// <summary>Logs that the parking document could not be read, without exposing the caught exception.</summary>
+    /// <summary>Logs that the parking document could not be read.</summary>
+    /// <remarks>
+    /// The <c>Reason</c> placeholder carries the exception type name only — a bounded discriminator that never
+    /// contains payload. The exception itself rides in the structured exception slot, never in the template.
+    /// </remarks>
     /// <param name="logger">The recovery logger.</param>
     /// <param name="tenantId">The candidate tenant.</param>
     /// <param name="workItemId">The candidate work item.</param>
-    public static void PendingDateAwaitParkingLookupFailed(ILogger logger, string tenantId, string workItemId)
-        => s_pendingDateAwaitParkingLookupFailed(logger, workItemId, tenantId, "parking-read-failed", null);
+    /// <param name="exception">The caught parking-store failure.</param>
+    public static void PendingDateAwaitParkingLookupFailed(ILogger logger, string tenantId, string workItemId, Exception exception)
+        => s_pendingDateAwaitParkingLookupFailed(logger, workItemId, tenantId, exception.GetType().Name, exception);
 
-    /// <summary>Logs a retryable reminder-scheduling failure without exposing the caught exception.</summary>
+    /// <summary>Logs a retryable reminder-scheduling failure.</summary>
+    /// <remarks>
+    /// The <c>Reason</c> placeholder carries the exception type name only — a bounded discriminator that never
+    /// contains payload. The exception itself rides in the structured exception slot, never in the template.
+    /// </remarks>
     /// <param name="logger">The recovery logger.</param>
     /// <param name="tenantId">The reminder tenant.</param>
     /// <param name="workItemId">The reminder work item.</param>
     /// <param name="reminderName">The deterministic reminder name.</param>
+    /// <param name="exception">The caught scheduler failure.</param>
     public static void DateReminderSchedulingFailed(
         ILogger logger,
         string tenantId,
         string workItemId,
-        string reminderName)
-        => s_dateReminderSchedulingFailed(logger, reminderName, workItemId, tenantId, "scheduler-failure", null);
+        string reminderName,
+        Exception exception)
+        => s_dateReminderSchedulingFailed(logger, reminderName, workItemId, tenantId, exception.GetType().Name, exception);
 
     public static void CascadeCheckpointed(ILogger logger, string tenantId, string parentWorkItemId, int targetCount)
         => s_cascadeCheckpointed(logger, parentWorkItemId, tenantId, targetCount, null);
