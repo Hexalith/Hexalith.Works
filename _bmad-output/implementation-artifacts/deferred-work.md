@@ -920,3 +920,7 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Bound generic projection decoder skip telemetry consistently with identity-mismatch telemetry.
   evidence: EventId 4504 still accepts raw namespace-qualified event type and correlation text for unknown or malformed payloads, permitting oversized diagnostic records outside the newly bounded EventId 4505 branch.
+
+- source_spec: none
+  summary: Complete reminder recovery and scheduling telemetry plus retry-verification hardening.
+  evidence: Split from the current Story 4.8 build so the independently shippable reserved-tenant command-envelope hardening can be implemented and reviewed first.
