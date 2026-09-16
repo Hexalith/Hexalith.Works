@@ -3,6 +3,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Runtime;
 using Hexalith.Works.Runtime.Events;
@@ -552,7 +553,10 @@ public class WorksDomainEventProcessorTests
     public async Task Works_processor_rejects_reserved_tenant_before_marker_acquisition()
     {
         IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
-        IEventStoreDomainEventHandler<WorkItemSuspended> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemSuspended>>();
+        markerStore
+            .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
         var registrations = new ServiceCollection();
         registrations.AddScoped(_ => handler);
         using ServiceProvider services = registrations.BuildServiceProvider();
@@ -560,11 +564,11 @@ public class WorksDomainEventProcessorTests
             services.GetRequiredService<IServiceScopeFactory>(),
             markerStore,
             NullLogger<WorksDomainEventProcessor>.Instance);
-        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
-        EventStoreDomainEventEnvelope reserved = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBE") with
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single() with
         {
-            TenantId = WorksReadModelKeys.ReservedTenantId,
+            TenantId = new TenantId(WorksReadModelKeys.ReservedTenantId),
         };
+        EventStoreDomainEventEnvelope reserved = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBE");
 
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
             reserved,

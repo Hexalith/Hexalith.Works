@@ -2953,3 +2953,53 @@ Hexalith.Works.ArchitectureTests -method- '*P0_GlobalJsonPinsSdkTestRunnerAndAsp
 The green architecture set includes the durable catalog guard at **40**; Story 4.8's catalog delta remains zero.
 Per the approved scope, the reminder/mTLS live lane was not rerun. The historical **4/4** evidence above remains
 older evidence and gives this patch no live-verification credit.
+
+## Story 4.8 reserved-tenant command-envelope hardening — 2026-09-16
+
+All fifteen EventStore aggregate wrappers now accept the original `CommandEnvelope` and refuse reserved tenant
+`tenants` when it appears in either the normalized payload or canonicalized envelope, before delegating to the pure kernel.
+`LinkConversation` keeps its existing domain/tenant/aggregate identity checks; no general identity policy was
+added to the other fourteen commands. `WorkItemV1Catalog` remains unchanged at **40** entries.
+
+The canonical fifteen commands drive two reflection-dispatch theories: ordinary payload plus reserved envelope
+refuses with the registry-collision exception, and ordinary matching payload/envelope returns the same result as
+the pure kernel. The reserved-payload Create proof now uses an ordinary envelope, and a separate mixed-case
+envelope fact pins EventStore identity canonicalization. The event-processor fact now uses matching reserved
+payload/envelope identities, a matching `WorkItemCancelled` handler, and a marker substitute explicitly capable
+of acquisition, proving both marker and handler are untouched by the early guard.
+
+```text
+aspire start --non-interactive -- --EnableKeycloak=false
+# AppHost started successfully
+
+aspire wait works --non-interactive
+# Timed out after 120s: dapr-sentry exited and dependent resources remained waiting
+
+aspire describe --non-interactive
+# dapr-sentry Exited; works/eventstore/control-plane dependents Waiting
+
+aspire stop --non-interactive
+# AppHost stopped successfully; build locks released
+
+dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class Hexalith.Works.IntegrationTests.LinkConversationRuntimeAdapterTests \
+  -class Hexalith.Works.IntegrationTests.WorksDomainEventProcessorTests
+# 61/61 passed, 0 skipped
+
+dotnet build Hexalith.Works.slnx -c Release --no-restore -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 236/237 passed; sole failure is the pre-existing 10.0.400-vs-10.0.401 SDK-pin assertion
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- Hexalith.Works.ArchitectureTests.FitnessTests.BuildConfigurationTests.P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk
+# 236/236 passed, 0 skipped, including catalog count 40
+```
+
+The Aspire run was a required pre-change baseline and did not reach Works health; no reminder/mTLS live evidence
+is claimed. Story 4.8 and the sprint entry remain `in-progress` for the separate reminder recovery/scheduling
+bundle.

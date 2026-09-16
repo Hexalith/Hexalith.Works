@@ -5,6 +5,7 @@ using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.EventStore.Contracts.Serialization;
+using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
@@ -13,9 +14,14 @@ using Hexalith.Works.Projections;
 
 using Shouldly;
 
+using KernelAggregate = Hexalith.Works.Server.Aggregates.WorkItemAggregate;
+
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Exercises LinkConversation through EventStore's reflection dispatch and state rehydration.</summary>
+/// <summary>
+/// Exercises the WorkItem aggregate's EventStore reflection adapters, including their aggregate-wide
+/// reserved-tenant guard and LinkConversation identity validation and state rehydration.
+/// </summary>
 public sealed class LinkConversationRuntimeAdapterTests
 {
     private const string Domain = "work";
@@ -24,6 +30,25 @@ public sealed class LinkConversationRuntimeAdapterTests
     private static readonly WorkItemId Item = new("work-001");
     private static readonly ConversationCorrelationId Conversation = new("conversation-456");
     private static readonly ConversationCorrelationId ConflictingConversation = new("conversation-789");
+
+    /// <summary>The canonical fifteen-command catalog, labelled for individual theory diagnostics.</summary>
+    public static TheoryData<string, Polymorphic> CommandFixtures
+    {
+        get
+        {
+            var data = new TheoryData<string, Polymorphic>();
+            Polymorphic[] commands = WorkItemV1Catalog.All
+                .Where(value => value.GetType().Namespace == typeof(CreateWorkItem).Namespace)
+                .ToArray();
+            commands.Length.ShouldBe(15);
+            foreach (Polymorphic command in commands)
+            {
+                data.Add(command.GetType().Name, command);
+            }
+
+            return data;
+        }
+    }
 
     [Fact]
     public async Task ProcessAsync_reflection_dispatch_links_rehydrated_unlinked_work()
@@ -134,13 +159,71 @@ public sealed class LinkConversationRuntimeAdapterTests
     {
         var aggregate = new WorkItemEventStoreAggregate();
         var command = new CreateWorkItem(new TenantId(WorksReadModelKeys.ReservedTenantId), Item, "Must not persist");
+        CommandEnvelope ordinaryEnvelope = CommandForCreate(command) with { TenantId = Tenant.Value };
 
         TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
-            () => aggregate.ProcessAsync(CommandForCreate(command), currentState: null));
+            () => aggregate.ProcessAsync(ordinaryEnvelope, currentState: null));
 
         exception.InnerException.ShouldBeOfType<InvalidOperationException>()
             .Message.ShouldContain(WorksReadModelKeys.ReservedTenantId, Case.Sensitive);
         exception.InnerException.Message.ShouldContain("registry", Case.Sensitive);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_refuses_canonical_reserved_tenant_from_mixed_case_envelope()
+    {
+        var aggregate = new WorkItemEventStoreAggregate();
+        var command = new CreateWorkItem(Tenant, Item, "Must not persist");
+        CommandEnvelope mixedCaseReserved = CommandForCreate(command) with { TenantId = "TENANTS" };
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(mixedCaseReserved, currentState: null));
+
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain(WorksReadModelKeys.ReservedTenantId, Case.Sensitive);
+        exception.InnerException.Message.ShouldContain("registry", Case.Sensitive);
+    }
+
+    /// <summary>Every reflection-dispatched wrapper refuses a reserved envelope before kernel delegation.</summary>
+    [Theory]
+    [MemberData(nameof(CommandFixtures))]
+    public async Task ProcessAsync_refuses_reserved_envelope_tenant_for_every_command(
+        string commandName,
+        Polymorphic command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        _ = commandName;
+        var aggregate = new WorkItemEventStoreAggregate();
+        CommandEnvelope reserved = CommandFor(command, WorksReadModelKeys.ReservedTenantId);
+
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(reserved, currentState: null));
+
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain(WorksReadModelKeys.ReservedTenantId, Case.Sensitive);
+        exception.InnerException.Message.ShouldContain("registry", Case.Sensitive);
+    }
+
+    /// <summary>Envelope-aware reflection dispatch preserves each pure-kernel result for an ordinary tenant.</summary>
+    [Theory]
+    [MemberData(nameof(CommandFixtures))]
+    public async Task ProcessAsync_preserves_kernel_results_for_every_ordinary_command(
+        string commandName,
+        Polymorphic command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        commandName.ShouldBe(command.GetType().Name);
+        var aggregate = new WorkItemEventStoreAggregate();
+        DomainResult expected = InvokeKernel(command);
+
+        DomainResult actual = await aggregate.ProcessAsync(
+            CommandFor(command, Tenant.Value),
+            currentState: null);
+
+        actual.IsSuccess.ShouldBe(expected.IsSuccess);
+        actual.IsRejection.ShouldBe(expected.IsRejection);
+        actual.IsNoOp.ShouldBe(expected.IsNoOp);
+        actual.Events.ShouldBe(expected.Events);
     }
 
     private static CommandEnvelope CommandForCreate(CreateWorkItem command)
@@ -168,6 +251,32 @@ public sealed class LinkConversationRuntimeAdapterTests
             CausationId: null,
             UserId: "test-user",
             Extensions: null);
+
+    private static CommandEnvelope CommandFor(Polymorphic command, string envelopeTenantId)
+    {
+        Type commandType = command.GetType();
+        return new CommandEnvelope(
+            MessageId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            TenantId: envelopeTenantId,
+            Domain: Domain,
+            AggregateId: Item.Value,
+            CommandType: commandType.FullName!,
+            Payload: JsonSerializer.SerializeToUtf8Bytes(command, commandType),
+            CorrelationId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            CausationId: null,
+            UserId: "test-user",
+            Extensions: null);
+    }
+
+    private static DomainResult InvokeKernel(Polymorphic command)
+    {
+        MethodInfo handler = typeof(KernelAggregate)
+            .GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Single(method => method.Name == "Handle"
+                && method.GetParameters() is [ParameterInfo commandParameter, _]
+                && commandParameter.ParameterType == command.GetType());
+        return handler.Invoke(null, [command, null]).ShouldBeOfType<DomainResult>();
+    }
 
     private static DomainServiceCurrentState CurrentState(params IEventPayload[] events)
         => new(
