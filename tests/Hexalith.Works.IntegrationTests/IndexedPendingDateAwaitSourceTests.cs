@@ -579,6 +579,216 @@ public sealed class IndexedPendingDateAwaitSourceTests
     }
 
     [Fact]
+    public async Task Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation()
+    {
+        const string tenantB = "tenant-beta";
+        using var callerCancellation = new CancellationTokenSource();
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, tenantB } };
+        string scannedTenant = registry.Tenants.First();
+        string unreachedTenant = registry.Tenants.Single(tenant => tenant != scannedTenant);
+        store.GetAsync<PendingDateAwaitTenantRegistry>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitRegistryKey,
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantRegistry>(registry, "1")));
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(scannedTenant),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                callerCancellation.Cancel();
+                return Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantIndex>(null, null));
+            });
+
+        OperationCanceledException thrown = await Should
+            .ThrowAsync<OperationCanceledException>(() => NewSource(
+                store,
+                Substitute.For<IEventStoreGatewayClient>()).GetPendingDateAwaitsAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.CancellationToken.ShouldBe(callerCancellation.Token);
+        await store.DidNotReceive().GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(unreachedTenant),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Shutdown_after_a_recorded_tenant_failure_preserves_typed_evidence_and_stops_before_the_next_tenant()
+    {
+        const string tenantB = "tenant-beta";
+        const string tenantC = "tenant-charlie";
+        using var callerCancellation = new CancellationTokenSource();
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, tenantB, tenantC } };
+        string[] orderedTenants = [.. registry.Tenants];
+        string successfulTenant = orderedTenants[0];
+        string failingTenant = orderedTenants[1];
+        string unreachedTenant = orderedTenants[2];
+        var successfulIndex = new PendingDateAwaitTenantIndex();
+        successfulIndex.Entries[WorkDue] =
+        [
+            new PendingDateAwait(successfulTenant, WorkDue, s_past, AwaitCondition.DateReached(s_past).CorrelationKey),
+        ];
+        store.GetAsync<PendingDateAwaitTenantRegistry>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitRegistryKey,
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantRegistry>(registry, "1")));
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(successfulTenant),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantIndex>(successfulIndex, "1")));
+        store.GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(successfulTenant, WorkDue),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<WorkItemProjectionParking>(null, null)));
+        var expected = new InvalidOperationException("simulated tenant-index failure");
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(failingTenant),
+                Arg.Any<CancellationToken>())
+            .Returns(_ =>
+            {
+                callerCancellation.Cancel();
+                return Task.FromException<ReadModelEntry<PendingDateAwaitTenantIndex>>(expected);
+            });
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(unreachedTenant),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<ReadModelEntry<PendingDateAwaitTenantIndex>>(
+                new InvalidOperationException("later tenant must not be read")));
+        IEventStoreGatewayClient gateway = GatewayFor(new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [WorkDue] = Story48Streams.Page(
+                successfulTenant,
+                WorkDue,
+                new WorkItemCreated(
+                    WorkDue,
+                    1,
+                    new TenantId(successfulTenant),
+                    new WorkItemId(WorkDue),
+                    new Obligation("Preserve this partial result")),
+                new WorkItemSuspended(
+                    WorkDue,
+                    2,
+                    new TenantId(successfulTenant),
+                    new WorkItemId(WorkDue),
+                    [AwaitCondition.DateReached(s_past)])),
+        });
+        var logger = new Story48RecordingLogger<IndexedPendingDateAwaitSource>();
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(
+                store,
+                gateway,
+                logger).GetPendingDateAwaitsAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(1);
+        thrown.FailedCandidateCount.ShouldBe(0);
+        PendingDateAwait partial = thrown.PartialResults.ShouldHaveSingleItem();
+        partial.TenantId.ShouldBe(successfulTenant);
+        partial.WorkItemId.ShouldBe(WorkDue);
+        thrown.InnerException.ShouldBeSameAs(expected);
+        var tenantLog = logger.Entries.Where(entry => entry.EventId.Id == 4604).ShouldHaveSingleItem();
+        tenantLog.Exception.ShouldBeSameAs(expected);
+        tenantLog.Message.ShouldContain("unless shutdown stops the scan");
+        await store.DidNotReceive().GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(unreachedTenant),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Shutdown_after_a_candidate_failure_preserves_partial_results_and_stops_before_the_next_tenant()
+    {
+        const string tenantB = "tenant-beta";
+        using var callerCancellation = new CancellationTokenSource();
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, tenantB } };
+        string scannedTenant = registry.Tenants.First();
+        string unreachedTenant = registry.Tenants.Single(tenant => tenant != scannedTenant);
+        var index = new PendingDateAwaitTenantIndex();
+        index.Entries[WorkDue] =
+        [
+            new PendingDateAwait(scannedTenant, WorkDue, s_past, AwaitCondition.DateReached(s_past).CorrelationKey),
+        ];
+        index.Entries[WorkFuture] =
+        [
+            new PendingDateAwait(scannedTenant, WorkFuture, s_future, AwaitCondition.DateReached(s_future).CorrelationKey),
+        ];
+        store.GetAsync<PendingDateAwaitTenantRegistry>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitRegistryKey,
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantRegistry>(registry, "1")));
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(scannedTenant),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantIndex>(index, "1")));
+        store.GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new ReadModelEntry<WorkItemProjectionParking>(null, null)));
+        var expected = new InvalidOperationException("simulated candidate-stream failure");
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+                if (string.Equals(request.AggregateId, WorkFuture, StringComparison.Ordinal))
+                {
+                    callerCancellation.Cancel();
+                    return Task.FromException<StreamReadPage>(expected);
+                }
+
+                return Task.FromResult(Story48Streams.Page(
+                    scannedTenant,
+                    WorkDue,
+                    new WorkItemCreated(
+                        WorkDue,
+                        1,
+                        new TenantId(scannedTenant),
+                        new WorkItemId(WorkDue),
+                        new Obligation("Preserve this candidate")),
+                    new WorkItemSuspended(
+                        WorkDue,
+                        2,
+                        new TenantId(scannedTenant),
+                        new WorkItemId(WorkDue),
+                        [AwaitCondition.DateReached(s_past)])));
+            });
+        var logger = new Story48RecordingLogger<IndexedPendingDateAwaitSource>();
+
+        PendingDateAwaitScanIncompleteException thrown = await Should
+            .ThrowAsync<PendingDateAwaitScanIncompleteException>(() => NewSource(store, gateway, logger)
+                .GetPendingDateAwaitsAsync(callerCancellation.Token))
+            .ConfigureAwait(true);
+
+        thrown.FailedTenantCount.ShouldBe(0);
+        thrown.FailedCandidateCount.ShouldBe(1);
+        PendingDateAwait partial = thrown.PartialResults.ShouldHaveSingleItem();
+        partial.TenantId.ShouldBe(scannedTenant);
+        partial.WorkItemId.ShouldBe(WorkDue);
+        thrown.InnerException.ShouldBeSameAs(expected);
+        var candidateLog = logger.Entries.Where(entry => entry.EventId.Id == 4606).ShouldHaveSingleItem();
+        candidateLog.Exception.ShouldBeSameAs(expected);
+        candidateLog.Message.ShouldContain("unless shutdown stops the scan");
+        await store.DidNotReceive().GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(unreachedTenant),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Foreign_tenant_index_cancellation_is_classified_when_the_caller_becomes_canceled()
     {
         const string tenantB = "tenant-beta";

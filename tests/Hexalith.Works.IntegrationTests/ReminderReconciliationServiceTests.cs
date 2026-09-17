@@ -92,6 +92,43 @@ public sealed class ReminderReconciliationServiceTests
     }
 
     [Fact]
+    public async Task Shutdown_during_the_retry_delay_finishes_cleanly_without_another_attempt()
+    {
+        var firstAttempt = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IPendingDateAwaitSource source = Substitute.For<IPendingDateAwaitSource>();
+        source.GetPendingDateAwaitsAsync(Arg.Any<CancellationToken>()).Returns(_ =>
+        {
+            firstAttempt.TrySetResult(true);
+            return Task.FromException<PendingDateAwaitScanResult>(new InvalidOperationException("retryable failure"));
+        });
+        var reconciler = new DateReminderReconciler(
+            source,
+            Substitute.For<IDateReminderScheduler>(),
+            Substitute.For<IWorkCommandSubmitter>(),
+            TimeProvider.System,
+            NullLogger<DateReminderReconciler>.Instance);
+        var logger = new Story48RecordingLogger<ReminderReconciliationService>();
+        using var service = new ReminderReconciliationService(
+            reconciler,
+            Options.Create(new WorksRecoveryOptions
+            {
+                ReminderReconciliationMaxAttempts = 3,
+                ReminderReconciliationRetryDelayMilliseconds = 60_000,
+            }),
+            logger,
+            TimeProvider.System);
+
+        await service.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await firstAttempt.Task.WaitAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await service.StopAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await service.ExecuteTask!.ConfigureAwait(true);
+
+        await source.Received(1).GetPendingDateAwaitsAsync(Arg.Any<CancellationToken>());
+        logger.Entries.Where(entry => entry.EventId.Id == 4603).ShouldHaveSingleItem();
+        service.ExecuteTask.Status.ShouldBe(TaskStatus.RanToCompletion);
+    }
+
+    [Fact]
     public async Task Foreign_cancellation_is_logged_when_the_stopping_token_is_also_canceled()
     {
         using var dependencyCancellation = new CancellationTokenSource();

@@ -1,5 +1,8 @@
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Text.Json;
+using System.Xml.Linq;
 
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Events;
@@ -68,6 +71,40 @@ public sealed class LinkConversationRuntimeAdapterTests
             {
                 data.Add($"{command.GetType().Name}-domain", command, "not valid!", Item.Value);
                 data.Add($"{command.GetType().Name}-aggregate", command, Domain, "not valid!");
+            }
+
+            return data;
+        }
+    }
+
+    /// <summary>
+    /// The fourteen ordinary adapters paired with tenant values that the data-contract path can deserialize
+    /// without running <see cref="CommandEnvelope"/>'s constructor validation.
+    /// </summary>
+    public static TheoryData<string, Polymorphic, string?> OrdinaryMalformedEnvelopeTenantFixtures
+    {
+        get
+        {
+            var data = new TheoryData<string, Polymorphic, string?>();
+            Polymorphic[] commands = WorkItemV1Catalog.All
+                .Where(value => value.GetType().Namespace == typeof(CreateWorkItem).Namespace
+                    && value is not LinkConversation)
+                .ToArray();
+            commands.Length.ShouldBe(14);
+            (string Name, string? Value)[] malformedTenants =
+            [
+                ("null", null),
+                ("empty", string.Empty),
+                ("over-length", new string('a', 65)),
+                ("non-ascii", "ténant"),
+                ("invalid-shape", "not valid!"),
+            ];
+            foreach (Polymorphic command in commands)
+            {
+                foreach ((string name, string? value) in malformedTenants)
+                {
+                    data.Add($"{command.GetType().Name}-{name}", command, value);
+                }
             }
 
             return data;
@@ -280,6 +317,35 @@ public sealed class LinkConversationRuntimeAdapterTests
         actual.Events.ShouldBe(expected.Events);
     }
 
+    /// <summary>
+    /// Data-contract deserialization can bypass envelope identity validation; ordinary adapters deliberately
+    /// preserve kernel results for those malformed tenant values while <see cref="LinkConversation"/> remains
+    /// the sole full-identity adapter.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(OrdinaryMalformedEnvelopeTenantFixtures))]
+    public async Task ProcessAsync_preserves_ordinary_kernel_results_with_data_contract_malformed_envelope_tenants(
+        string caseName,
+        Polymorphic command,
+        string? envelopeTenantId)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        caseName.ShouldNotBeNullOrWhiteSpace();
+        var aggregate = new WorkItemEventStoreAggregate();
+        DomainResult expected = InvokeKernel(command);
+        CommandEnvelope malformed = DataContractRoundTripWithTenant(
+            CommandFor(command, Tenant.Value),
+            envelopeTenantId);
+        malformed.TenantId.ShouldBe(envelopeTenantId);
+
+        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null);
+
+        actual.IsSuccess.ShouldBe(expected.IsSuccess);
+        actual.IsRejection.ShouldBe(expected.IsRejection);
+        actual.IsNoOp.ShouldBe(expected.IsNoOp);
+        actual.Events.ShouldBe(expected.Events);
+    }
+
     private static CommandEnvelope CommandForCreate(CreateWorkItem command)
         => new(
             MessageId: "01ARZ3NDEKTSV4RRFFQ69G5FAV",
@@ -320,6 +386,38 @@ public sealed class LinkConversationRuntimeAdapterTests
             CausationId: null,
             UserId: "test-user",
             Extensions: null);
+    }
+
+    private static CommandEnvelope DataContractRoundTripWithTenant(CommandEnvelope envelope, string? tenantId)
+    {
+        var serializer = new DataContractSerializer(typeof(CommandEnvelope));
+        var serialized = new MemoryStream();
+        serializer.WriteObject(serialized, envelope);
+        serialized.Position = 0;
+        XDocument document = XDocument.Load(serialized);
+        XElement tenantElement = document
+            .Descendants()
+            .Single(element => string.Equals(element.Name.LocalName, nameof(CommandEnvelope.TenantId), StringComparison.Ordinal));
+        XNamespace instanceNamespace = "http://www.w3.org/2001/XMLSchema-instance";
+        if (tenantId is null)
+        {
+            tenantElement.RemoveNodes();
+            tenantElement.SetAttributeValue(instanceNamespace + "nil", true);
+        }
+        else
+        {
+            tenantElement.SetAttributeValue(instanceNamespace + "nil", null);
+            tenantElement.Value = tenantId;
+        }
+
+        using var mutated = new MemoryStream();
+        using (var writer = new StreamWriter(mutated, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), leaveOpen: true))
+        {
+            document.Save(writer, SaveOptions.DisableFormatting);
+        }
+
+        mutated.Position = 0;
+        return serializer.ReadObject(mutated).ShouldBeOfType<CommandEnvelope>();
     }
 
     private static DomainResult InvokeKernel(Polymorphic command)

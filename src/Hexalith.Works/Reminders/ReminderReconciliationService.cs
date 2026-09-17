@@ -59,10 +59,19 @@ public sealed class ReminderReconciliationService(
                     return;
                 }
 
-                await Task.Delay(
-                    TimeSpan.FromMilliseconds(_options.ReminderReconciliationRetryDelayMilliseconds),
-                    _timeProvider,
-                    stoppingToken).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(
+                        TimeSpan.FromMilliseconds(_options.ReminderReconciliationRetryDelayMilliseconds),
+                        _timeProvider,
+                        stoppingToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException cancellation) when (
+                    stoppingToken.IsCancellationRequested
+                    && cancellation.CancellationToken == stoppingToken)
+                {
+                    return;
+                }
             }
         }
     }

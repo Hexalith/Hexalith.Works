@@ -27,9 +27,10 @@ namespace Hexalith.Works.Reminders;
 /// <see cref="PendingDateAwaitScanIncompleteException"/> after every eligible tenant has been attempted, carrying the
 /// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
 /// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
-/// If a dependency reports foreign cancellation while the caller is concurrently canceled, that failure is
-/// recorded and the scan stops at that boundary so a later exact caller cancellation cannot mask the typed
-/// incomplete result.
+/// Between tenants, caller cancellation preserves any failure evidence already collected by returning through
+/// the typed incomplete-result path; a clean scan still propagates the caller cancellation unchanged. Within a
+/// tenant, the exact-token filters remain authoritative by design: an exact caller cancellation after a prior
+/// candidate failure can still leave that tenant's local partial evidence unreported until the next startup pass.
 /// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a countable clean skip: its
 /// stream cannot be rebuilt, so counting it incomplete would burn startup reconciliation's retry budget on a
 /// terminal projection failure, while hiding the skip would make the pass appear complete.
@@ -66,7 +67,16 @@ internal sealed class IndexedPendingDateAwaitSource(
 
         foreach (string tenant in registry.Tenants)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+            {
+                if (failedTenantCount > 0 || failedCandidateCount > 0)
+                {
+                    break;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
             try
             {
                 TenantScanResult tenantScan = await ScanTenantAsync(tenant, cancellationToken).ConfigureAwait(false);
@@ -74,10 +84,6 @@ internal sealed class IndexedPendingDateAwaitSource(
                 failedCandidateCount += tenantScan.FailedCandidateCount;
                 skippedParkedCount += tenantScan.SkippedParkedCount;
                 lastFailure = tenantScan.LastFailure ?? lastFailure;
-                if (tenantScan.LastFailure is OperationCanceledException && cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
             }
             catch (OperationCanceledException ex) when (
                 cancellationToken.IsCancellationRequested

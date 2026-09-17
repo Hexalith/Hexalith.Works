@@ -70,11 +70,40 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
 
         Assert.Contains("Operator response", section, StringComparison.Ordinal);
 
+        string recoveryFailure = WarningRow(section, "4603");
+        AssertContainsAll(
+            recoveryFailure,
+            "RecoveryStepFailed",
+            "Reason",
+            "startup-reminder-reconciliation",
+            "startup-cascade-recovery",
+            "one startup pass",
+            "narrower",
+            "cause",
+            "dependency",
+            "same-`Reason`",
+            "success",
+            "shutdown",
+            "exhaustion",
+            "no in-process repeat",
+            "no universal recovery-success event");
+
         string tenantScan = WarningRow(section, "4604");
         AssertContainsAll(tenantScan, "PendingDateAwaitTenantScanFailed", "pending-date index", "state-store", "restore", "confirm");
 
         string incompleteScan = WarningRow(section, "4605");
-        AssertContainsAll(incompleteScan, "PendingDateAwaitScanIncomplete", "attempted", "remainder", "retry", "restore", "confirm");
+        AssertContainsAll(
+            incompleteScan,
+            "PendingDateAwaitScanIncomplete",
+            "attempted",
+            "non-cancellation",
+            "Exact caller cancellation",
+            "without 4603",
+            "structured `Reason`",
+            "repeated warnings",
+            "successful progress",
+            "shutdown",
+            "retry-budget exhaustion");
 
         string candidateScan = WarningRow(section, "4606");
         AssertContainsAll(candidateScan, "PendingDateAwaitCandidateScanFailed", "EventStore", "stream", "restore", "confirm");

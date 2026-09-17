@@ -3149,3 +3149,52 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 The Aspire commands were the required pre-change topology baseline. Because Works never became ready, this
 session claims no live reminder evidence. The architecture failure is unchanged, isolated, and outside this
 spec's scope; all remaining architecture facts passed.
+
+## Story 4.8 nine-action close-out — 2026-09-17
+
+The final review bundle preserves typed cross-tenant partial evidence when shutdown follows an ordinary failure,
+keeps clean boundary cancellation bare and exact, and contains exact stopping-token cancellation during the
+hosted service's retry delay. It also pins DataContractSerializer-bypassed malformed envelope tenants for all
+fourteen ordinary adapters, reconciles 4603–4606 operator guidance, and corrects the append-only tracking ledger.
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*IndexedPendingDateAwaitSourceTests"
+# 26/26 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*ReminderReconciliationServiceTests"
+# 4/4 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*LinkConversationRuntimeAdapterTests"
+# 136/136 passed, 0 skipped (70 data-contract malformed-tenant rows)
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class "*SubscriberDeadLetterOperatorDocumentationTests"
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 489/489 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 237/238 passed; sole failure is the pre-existing SDK-pin assertion: expected 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- "*P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk"
+# 237/237 passed, 0 skipped, including catalog count 40 and the operator-documentation contract
+```
+
+No Tier-3 smoke lane was run, as required by the close-out spec. Historical live evidence remains unchanged and
+gives this bundle no new live-verification credit. The ArchitectureTests blocker is isolated to the already-open
+SDK-pin mismatch; no dependency, submodule, or SDK pin was changed.

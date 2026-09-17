@@ -2,9 +2,10 @@
 title: 'Resolve Story 4.8 remaining review action items'
 type: 'bugfix'
 created: '2026-09-17'
-status: 'ready-for-dev'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
+baseline_commit: '3c042f94c1c7cc01cae18a4d015271e5318e609a'
 context:
   - '{project-root}/_bmad-output/implementation-artifacts/epic-4-context.md'
   - '{project-root}/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md'
@@ -48,11 +49,11 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `IndexedPendingDateAwaitSource.cs` + its test -- patch between-tenant cancellation; keep three in-tenant filters unchanged.
-- [ ] `ReminderReconciliationService.cs` + its test -- complete cleanly when retry delay receives the exact stop token.
-- [ ] `WorksRecoveryLog.cs`, operator runbook, and its fitness test -- reconcile log docs and 4603/4605 guidance.
-- [ ] `LinkConversationRuntimeAdapterTests.cs` -- data-contract round-trip malformed tenants for fourteen ordinary adapters.
-- [ ] Story, `deferred-work.md`, `sprint-status.yaml`, and `tests/test-summary.md` -- reconcile ledger, File List, evidence, nine checkboxes, and status.
+- [x] `IndexedPendingDateAwaitSource.cs` + its test -- patch between-tenant cancellation; keep three in-tenant filters unchanged.
+- [x] `ReminderReconciliationService.cs` + its test -- complete cleanly when retry delay receives the exact stop token.
+- [x] `WorksRecoveryLog.cs`, operator runbook, and its fitness test -- reconcile log docs and 4603/4605 guidance.
+- [x] `LinkConversationRuntimeAdapterTests.cs` -- data-contract round-trip malformed tenants for fourteen ordinary adapters.
+- [x] Story, `deferred-work.md`, `sprint-status.yaml`, and `tests/test-summary.md` -- reconcile ledger, File List, evidence, nine checkboxes, and status.
 
 **Acceptance Criteria:**
 - Given a prior failure, when shutdown occurs between tenants, then typed evidence survives and no later tenant is read.
@@ -62,9 +63,37 @@ context:
 
 ## Implementation Notes
 
+- Preserved partial scan evidence by routing between-tenant shutdown after any recorded failure into `PendingDateAwaitScanIncompleteException`; clean shutdown still throws the exact caller cancellation, and the three in-tenant exact-token filters are unchanged.
+- Contained only exact stopping-token cancellation from the startup retry delay, so shutdown after a failed attempt completes the background service without another attempt or fault.
+- Reconciled recovery telemetry documentation, operator guidance, stale ledger claims, the Story 4.8 review record, sprint status, and executed evidence without adding a new event or changing durable contracts.
+- Added the five-value malformed data-contract tenant matrix for all fourteen ordinary runtime adapters while retaining the existing strict `LinkConversation` coverage.
+- Verified Release build with 0 warnings/errors; focused suites passed 26, 4, 136, and 3 tests after review fixes; direct Unit, Property, and non-smoke Integration binaries passed 568, 3, and 489 tests. Architecture passed 237/238, with only the pre-existing SDK-pin mismatch (`10.0.400` expected versus `10.0.401` configured); excluding that exact blocker passed 237/237. Tier-3 smoke lanes were not run.
+
 ## Spec Change Log
 
+- 2026-09-17: Implemented all five execution tasks, closed the nine Story 4.8 review actions, recorded executed evidence, and advanced the story and sprint entry to `review`.
+
 ## Review Triage Log
+
+| Finding | Verdict / route | Evidence |
+|---|---|---|
+| BH-01 | medium / defer | A cancellation can arrive after the outer boundary check and make the next tenant-index read throw the exact caller token, which rethrows bare and drops earlier evidence. At that point the next tenant scan has begun, so fixing it requires changing the exact-token in-tenant filter that the frozen intent explicitly leaves unchanged. |
+| BH-02 | medium / patch | The newly reachable shutdown-after-incomplete path emits 4605 and then exits from the canceled retry delay, so the runtime phrase `will retry` is not always true; it should describe later retry eligibility instead. |
+| BH-03 | low / patch | Existing tests preserve partial results during ordinary failures, but the new boundary-shutdown fact carries an empty result. Clearing accumulated results only in the boundary branch would therefore escape the focused coverage. |
+| BH-04 | low / patch | The new outer guard has independent failed-tenant and failed-candidate branches, while the added multi-tenant shutdown fact exercises only the failed-tenant branch. |
+| BH-05 | false / reject | `BackgroundService.StartAsync` invokes `ExecuteAsync` synchronously until its first incomplete await; all source/reconciler failure tasks in this test are already completed, so `StartAsync` returns only after the 60-second `Task.Delay` has been entered. Stopping afterward does cancel an active delay. |
+| BH-06 | false / reject | The changed delay is `Task.Delay(..., stoppingToken)`, whose cancellation completion carries the token supplied to it. A foreign dependency cancellation cannot originate from that delay path, so the proposed production scenario is not reachable. |
+| BH-07 | low / patch | The 70-row theory proves adapter parity but never proves that the data-contract round trip retained each requested null, empty, over-length, non-ASCII, or invalid-shape tenant value. |
+| BH-08 | medium / patch | EventId 4603 is shared by seven reminder, cascade, child-completion, and actor paths, but the new row describes every occurrence as a bounded startup retry. Guidance must branch on the structured `Reason`. |
+| BH-09 | medium / patch | No later startup attempt can mean host shutdown during the retry delay as well as exhausted budget, so the new 4603 operator conclusion is not sound as written. |
+| BH-10 | medium / patch | Exact caller cancellation while partial results are processed intentionally emits no 4603; the new 4605 row needs to limit its 4603 promise to non-cancellation failures. |
+| BH-11 | low / patch | The only 4605 caller passes `PendingDateAwaitScanIncompleteException`, whose exception chain contains the final dependency cause; the new XML text incorrectly calls the structured slot itself the dependency failure. |
+| BH-12 | medium / patch | The new architecture assertion requires generic 4603 prose to contain startup and retry-budget language, reinforcing the shared-EventId error instead of requiring reason-scoped guidance. |
+| BH-13 | low / patch | A successful retry with no pending awaits emits no 4602 completion record, so the new instruction to confirm completion has no generally observable signal. The runbook should ask operators to verify dependency health and watch for repeated 4603 rather than claim a completion event. |
+| EC-01 | medium / defer | Independent tracing confirms BH-01: exact cancellation after the loop check can bypass the typed result. It is the same in-tenant exact-token limitation explicitly excluded by the frozen intent. |
+| EC-02 | medium / patch | Independent tracing confirms BH-08: 4603 has non-startup callers and therefore needs reason-scoped operator advice. |
+| VG-01 | low / patch | The verification-gap review found no test combining a first-tenant candidate failure, caller cancellation, and a following tenant; changing the guard to tenant failures only leaves all current tests green. |
+| VG-02 | low / patch | No test asserts the rendered 4604/4606 shutdown qualification, so restoring the old unconditional `still scanned` wording leaves the current suite green. |
 
 ## Design Notes
 

@@ -39,19 +39,19 @@ internal static class WorksRecoveryLog
         LoggerMessage.Define<string>(
             LogLevel.Warning,
             new EventId(4604, "PendingDateAwaitTenantScanFailed"),
-            "Pending date-await scan failed for tenant {TenantId}; other tenants are still scanned and the overall pass is signalled incomplete for retry.");
+            "Pending date-await scan failed for tenant {TenantId}; the overall pass is signalled incomplete for retry, and later tenants remain eligible unless shutdown stops the scan.");
 
     private static readonly Action<ILogger, int, int, int, Exception?> s_pendingDateAwaitScanIncomplete =
         LoggerMessage.Define<int, int, int>(
             LogLevel.Warning,
             new EventId(4605, "PendingDateAwaitScanIncomplete"),
-            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s) and {FailedCandidateCount} candidate aggregate(s), with {SkippedParkedCount} parked candidate(s) skipped; reconciliation still acts on the partial results and will retry.");
+            "Pending date-await scan was incomplete for {FailedTenantCount} tenant(s) and {FailedCandidateCount} candidate aggregate(s), with {SkippedParkedCount} parked candidate(s) skipped; reconciliation still acts on the partial results, and the incomplete scan remains eligible for retry under the configured recovery policy.");
 
     private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitCandidateScanFailed =
         LoggerMessage.Define<string, string>(
             LogLevel.Warning,
             new EventId(4606, "PendingDateAwaitCandidateScanFailed"),
-            "Pending date-await candidate stream {WorkItemId} in tenant {TenantId} could not be read; the remaining candidates are still scanned and the overall pass is signalled incomplete for retry.");
+            "Pending date-await candidate stream {WorkItemId} in tenant {TenantId} could not be read; the overall pass is signalled incomplete for retry, and later candidates remain eligible unless shutdown stops the scan.");
 
     private static readonly Action<ILogger, string, string, Exception?> s_pendingDateAwaitParkedCandidateSkipped =
         LoggerMessage.Define<string, string>(
@@ -122,6 +122,17 @@ internal static class WorksRecoveryLog
     public static void PendingDateAwaitTenantScanFailed(ILogger logger, string tenantId, Exception exception)
         => s_pendingDateAwaitTenantScanFailed(logger, tenantId, exception);
 
+    /// <summary>Logs an incomplete pending-date scan that carries partial evidence and remains retry-eligible.</summary>
+    /// <remarks>
+    /// Counts and identity fields remain bounded. The structured exception slot carries the incomplete-scan
+    /// wrapper, whose exception chain retains the final recorded dependency cause; neither is interpolated into
+    /// the message template.
+    /// </remarks>
+    /// <param name="logger">The recovery logger.</param>
+    /// <param name="failedTenantCount">The number of tenant-index reads that failed.</param>
+    /// <param name="failedCandidateCount">The number of parking or candidate-stream reads that failed.</param>
+    /// <param name="skippedParkedCount">The number of terminally parked candidates skipped cleanly.</param>
+    /// <param name="exception">The incomplete-scan wrapper whose exception chain carries the final recorded dependency cause.</param>
     public static void PendingDateAwaitScanIncomplete(
         ILogger logger,
         int failedTenantCount,
