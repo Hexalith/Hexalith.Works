@@ -959,3 +959,9 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-7.md`
   summary: Decide whether exact caller cancellation after the next tenant scan starts may discard evidence collected from earlier tenants.
   evidence: A cancellation arriving after the outer boundary check but before or during the next tenant-index read can rethrow the exact caller token and bypass the typed incomplete result. Preserving earlier evidence in that case requires changing an exact-token in-tenant filter that this spec explicitly leaves unchanged.
+
+## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-7.md (2026-09-17)
+
+- EventId 4603's runtime template still says the step "will be retried at-least-once" even though this close-out can log 4603 and then complete from a canceled retry delay with no further attempt. Pre-existing shared template; already recorded under spec-5 as "Distinguish final recovery exhaustion from retryable EventId 4603 failures". Changing it is operator surface for all seven `Reason` values and is outside spec-7's Code Map. [src/Hexalith.Works/Runtime/WorksRecoveryLog.cs:36]
+- Exact caller cancellation after a prior in-tenant candidate failure still discards that tenant's locals. spec-7 Never list freezes in-tenant cancellation changes; already recorded in the 2026-09-16 six-finding close-out section. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:145-191]
+- `DateReminderReconciler` remarks still say an incomplete scan is rethrown so the hosted service retries it, but `ReminderReconciliationService` now logs 4603 and can return from the canceled retry delay without another attempt. spec-7 Never list leaves `DateReminderReconciler` unchanged. [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:33-38]

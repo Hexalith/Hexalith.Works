@@ -105,3 +105,16 @@ At the next-tenant boundary, cancellation with prior failures exits into the typ
 - `dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false` -- 0 warnings/errors.
 - Run the three changed IntegrationTests classes and `SubscriberDeadLetterOperatorDocumentationTests` from their Release binaries -- all focused cases pass without skips.
 - Run all four direct test binaries; separate the known SDK-pin architecture failure from focused evidence. Do not run Tier-3 smoke lanes.
+
+### Review Findings
+
+- [ ] [Review][Patch] Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list — **Decided 2026-09-17 (human): keep, re-record gates, document the Never-list deviation.** [references/Hexalith.EventStore]
+- [ ] [Review][Patch] The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site — **Decided 2026-09-17 (human): `break` at `:88-92` when counts are already non-zero; correct the ledger.** [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92]
+- [ ] [Review][Patch] Class remarks still say every eligible tenant is attempted and that between-tenant cancellation always preserves collected failure evidence [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:26-33]
+- [ ] [Review][Patch] The 4603 table row is reason-scoped, then the following paragraph treats 4603–4609 as startup-recovery evidence handled by the bounded retry policy; the fitness test only reads table rows [docs/operations/subscriber-dead-letter-operator.md:139]
+- [ ] [Review][Patch] Operator 4604 and 4606 rows still tell operators to confirm a later startup/reconciliation attempt, without the shutdown caveat this bundle added to those log templates [docs/operations/subscriber-dead-letter-operator.md:131]
+- [ ] [Review][Patch] Nested backticks in the 4603/4605 cells (`same-`Reason``) break the rendered field name; the architecture test matches the raw source [docs/operations/subscriber-dead-letter-operator.md:130]
+- [ ] [Review][Patch] Restoring the old 4605 template ending `will retry` still keeps `DateReminderRecoveryRuntimeTests` green because it only asserts EventId, `"2 parked"`, and the structured exception [tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs:157]
+- [x] [Review][Defer] EventId 4603's runtime template still says the step "will be retried at-least-once" [src/Hexalith.Works/Runtime/WorksRecoveryLog.cs:36] — deferred: pre-existing shared template already recorded under spec-5; this close-out newly fires it on shutdown-after-incomplete.
+- [x] [Review][Defer] Exact caller cancellation after a prior in-tenant candidate failure still discards that tenant's locals [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:145-191] — deferred: spec-7 Never list; already recorded at `deferred-work.md:957`.
+- [x] [Review][Defer] `DateReminderReconciler` remarks still say an incomplete scan is rethrown so the hosted service retries it [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:33-38] — deferred: spec-7 Never list leaves that type unchanged.
