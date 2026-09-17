@@ -81,15 +81,24 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "narrower",
             "cause",
             "dependency",
-            "same-`Reason`",
+            "same `Reason`",
             "success",
             "shutdown",
             "exhaustion",
             "no in-process repeat",
             "no universal recovery-success event");
+        Assert.DoesNotContain("same-`Reason`", recoveryFailure, StringComparison.OrdinalIgnoreCase);
 
         string tenantScan = WarningRow(section, "4604");
-        AssertContainsAll(tenantScan, "PendingDateAwaitTenantScanFailed", "pending-date index", "state-store", "restore", "confirm");
+        AssertContainsAll(
+            tenantScan,
+            "PendingDateAwaitTenantScanFailed",
+            "pending-date index",
+            "state-store",
+            "restore",
+            "host remains running",
+            "shutdown",
+            "restart");
 
         string incompleteScan = WarningRow(section, "4605");
         AssertContainsAll(
@@ -98,15 +107,30 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "attempted",
             "non-cancellation",
             "Exact caller cancellation",
+            "propagates directly",
             "without 4603",
+            "later tenant boundary",
+            "earlier scan evidence",
+            "typed incomplete-result path",
+            "unless a partial operation propagates the cancellation",
             "structured `Reason`",
+            "same structured `Reason`",
             "repeated warnings",
             "successful progress",
             "shutdown",
             "retry-budget exhaustion");
+        Assert.DoesNotContain("same-`Reason`", incompleteScan, StringComparison.OrdinalIgnoreCase);
 
         string candidateScan = WarningRow(section, "4606");
-        AssertContainsAll(candidateScan, "PendingDateAwaitCandidateScanFailed", "EventStore", "stream", "restore", "confirm");
+        AssertContainsAll(
+            candidateScan,
+            "PendingDateAwaitCandidateScanFailed",
+            "EventStore",
+            "stream",
+            "restore",
+            "host remains running",
+            "shutdown",
+            "restart");
 
         string parkedCandidate = WarningRow(section, "4607");
         AssertContainsAll(
@@ -134,6 +158,15 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "state-store",
             "repair",
             "verify");
+
+        AssertContainsAll(
+            section.ReplaceLineEndings(" "),
+            "4603 or 4609 can originate outside startup recovery",
+            "does not alone prove a startup retry will occur",
+            "structured `Reason`",
+            "only `startup-reminder-reconciliation`",
+            "Warnings 4604, 4605, 4606, and 4608",
+            "unless shutdown stops the pass");
     }
 
     private static void AssertContainsAll(string actual, params string[] requiredTerms)

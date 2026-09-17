@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -409,6 +409,26 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-17 seven-patch spec-8 close-out.** The outer exact-caller cancellation catch now preserves
+  previously accumulated cross-tenant partials, tenant/candidate counts, and the earlier cause when the next
+  tenant-index read is canceled, without counting or logging cancellation or changing any in-tenant filter.
+  Operator guidance renders `Reason` correctly, makes later 4604/4606 attempts conditional on host lifecycle,
+  and distinguishes reason-scoped 4603 plus steady-state 4609 from bounded startup-scan evidence. The 4605
+  runtime fact rejects the old `will retry` promise. The reviewed-range gitlinks are retained at Chatbot
+  `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations
+  `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore
+  `629168e3983e5a9cd1639013f39d758fb0068cac`, explicitly recording the spec-7 Never-list deviation. The
+  pre-existing EventStore checkout drift to `b5541259058320a0a7f1db19038709cbd02dad85` changes only EventStore
+  planning artifacts/status, was not modified or staged here, and is disclosed because the deterministic gates
+  executed with that checkout. Release build passed with 0 warnings/errors; focused Integration classes passed
+  **28/28**, **13/13**, **4/4**, and **136/136**; focused documentation passed **3/3**; Unit, Property, and
+  non-smoke Integration passed **568/568**, **3/3**, and **492/492**. Architecture passed **237/238** with only
+  the pre-existing SDK-pin mismatch and **237/237** excluding that exact fact. The pre-edit Aspire baseline
+  stopped at EventStore exit 134 with Works waiting; the post-review rerun stopped earlier when Dapr Sentry
+  reported `no space left on device` while mounting its credentials and left dependent resources waiting. Both
+  AppHosts stopped cleanly and no live credit is claimed. Independent review added the candidate-failure side of
+  the exact-cancellation regression and qualified when 4605 can still be followed by 4603.
+
 - **2026-09-17 nine-action close-out.** Between-tenant shutdown now preserves typed incomplete-scan evidence
   after any recorded tenant/candidate failure and does not read the next tenant; clean boundary shutdown still
   propagates the exact caller cancellation. The three in-tenant exact-token filters remain unchanged and their
@@ -550,6 +570,25 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-17 seven-patch spec-8 close-out**
+- `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs`
+- `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs`
+- `tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs`
+- `docs/operations/subscriber-dead-letter-operator.md`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-7.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
+
+**Retained reviewed-range gitlinks (evidence only; spec-8 did not edit them)**
+- `references/Hexalith.Chatbot` — `3c787993213ccf33f8912e6ad5caac605586fa15`
+- `references/Hexalith.Conversations` — `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`
+- `references/Hexalith.EventStore` — committed gitlink `629168e3983e5a9cd1639013f39d758fb0068cac`;
+  pre-existing checkout drift `b5541259058320a0a7f1db19038709cbd02dad85`
 
 **2026-09-17 nine-action close-out**
 - `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs`
@@ -776,6 +815,12 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-17 — Closed the seven spec-8 review patches: retained typed cross-tenant evidence when the next
+  tenant-index read throws exact caller cancellation, corrected the source remarks and 4603–4606 operator
+  semantics, pinned 4605's retry-eligibility wording, corrected the append-only ledger, recorded exact retained
+  gitlinks plus the pre-existing EventStore checkout drift, and refreshed every deterministic gate. Story and
+  sprint status returned to `review`; the blocked pre-edit Aspire baseline adds no live credit.
 
 - 2026-09-17 — Closed the final nine Story 4.8 review actions: preserved cross-tenant partial evidence on
   shutdown, contained exact-token retry-delay cancellation, pinned clean/incomplete boundary cancellation,
@@ -1108,15 +1153,15 @@ _Scope: `e54c6a1..HEAD` (HEAD `5387ff6`) — the two commits that closed the 202
 
 _Scope: `3c042f9...HEAD` (HEAD `e5c173e`) — spec-7 nine-action close-out plus the following submodule gitlinks. 16 files, +566/−40, 900 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 22 raw findings triaged to 2 decision, 5 patch, 3 defer, 8 rejected; both decisions resolved 2026-09-17 to patch (7 patch remaining). The story's frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] **Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list** — spec-7 says **Never** "dependency/submodule updates", the 2026-09-17 File List omits `references/`, and `tests/test-summary.md` says no submodule pin changed, yet `3c042f9...HEAD` moves `references/Hexalith.Chatbot` `206bdd4`→`3c78799`, `references/Hexalith.Conversations` `8bdf026`→`c0abd5c`, and `references/Hexalith.EventStore` `27cc17f`→`fc43b4e` (`e5c173e`, after `0daddee`). EventStore advanced 3 commits / 20 files (+779/−197), including payload-protection work; Chatbot and Conversations are unrelated to this reminder close-out. The recorded gates describe `3c042f9`, not this tree. [references/Hexalith.EventStore] — _blind-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers, re-record the gates, state the deviation.** Option 2: leave `e5c173e` in place; re-run the deterministic gates on HEAD and rewrite the close-out evidence so it names the three gitlinks and the spec-7 Never-list deviation. EventStore's delta is payload-protection tests/docs, not a Works reminder API change.
+- [x] [Review][Patch] **Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list** — spec-7 says **Never** "dependency/submodule updates", the 2026-09-17 File List omits `references/`, and `tests/test-summary.md` says no submodule pin changed, yet `3c042f9...HEAD` moves `references/Hexalith.Chatbot` `206bdd4`→`3c78799`, `references/Hexalith.Conversations` `8bdf026`→`c0abd5c`, and `references/Hexalith.EventStore` `27cc17f`→`fc43b4e` (`e5c173e`, after `0daddee`). EventStore advanced 3 commits / 20 files (+779/−197), including payload-protection work; Chatbot and Conversations are unrelated to this reminder close-out. The recorded gates describe `3c042f9`, not this tree. [references/Hexalith.EventStore] — _blind-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers, re-record the gates, state the deviation.** Resolved in spec-8: the retained final gitlinks are recorded at full length, every deterministic gate was refreshed, the spec-7 deviation is explicit, and the pre-existing EventStore checkout-only drift used by the gates is separately disclosed.
 
-- [ ] [Review][Patch] **The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site** — after a recorded failure, `IndexedPendingDateAwaitSource` preserves typed evidence only at the loop-head check (`:70-78`). `ScanTenantAsync` then issues the next tenant-index `GetAsync` with no local catch (`:121-123`); an exact-caller `OperationCanceledException` from that read is rethrown at `:88-92`, discarding earlier `pending`, counts, and `lastFailure`. That outer catch is the between-tenant exception path, not one of the three in-tenant filters (`:145-149`, `:187-191`, and the same outer `throw` for in-tenant rethrows). spec-7 AC requires typed evidence and no later tenant read; its BH-01/EC-01 deferral and `deferred-work.md:959` say preserving it "requires changing an exact-token in-tenant filter". It does not. The new tests cancel and then throw `InvalidOperationException`, so they never hit `:88-92`. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92] — _blind-hunter+edge-case-hunter_ — **Decided 2026-09-17 (human): close the exception path with the same rule as the loop head.** Option 4: on exact-caller OCE at `:88-92`, `break` when `failedTenantCount > 0 || failedCandidateCount > 0`, leave the three in-tenant filters unchanged, add a fact that throws exact-caller OCE from the next tenant-index read, and rewrite `deferred-work.md:959` so it no longer claims an in-tenant-filter change.
+- [x] [Review][Patch] **The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site** — after a recorded failure, `IndexedPendingDateAwaitSource` preserves typed evidence only at the loop-head check (`:70-78`). `ScanTenantAsync` then issues the next tenant-index `GetAsync` with no local catch (`:121-123`); an exact-caller `OperationCanceledException` from that read is rethrown at `:88-92`, discarding earlier `pending`, counts, and `lastFailure`. That outer catch is the between-tenant exception path, not one of the three in-tenant filters (`:145-149`, `:187-191`, and the same outer `throw` for in-tenant rethrows). spec-7 AC requires typed evidence and no later tenant read; its BH-01/EC-01 deferral and `deferred-work.md:959` say preserving it "requires changing an exact-token in-tenant filter". It does not. The new tests cancel and then throw `InvalidOperationException`, so they never hit `:88-92`. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92] — _blind-hunter+edge-case-hunter_ — **Decided 2026-09-17 (human): close the exception path with the same rule as the loop head.** Resolved in spec-8: the outer exact-token catch breaks to the typed throw when either count is non-zero; the regression proves prior partials/counts/cause survive, the cancellation is not counted or logged, and the following tenant is not read. All three in-tenant filters remain unchanged.
 
-- [ ] [Review][Patch] Class remarks still say every eligible tenant is attempted and that between-tenant caller cancellation always preserves collected failure evidence [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:26-33]
-- [ ] [Review][Patch] The 4603 table row is reason-scoped, then the following paragraph treats 4603–4609 as startup-recovery evidence handled by the bounded retry policy; the fitness test only reads table rows [docs/operations/subscriber-dead-letter-operator.md:139]
-- [ ] [Review][Patch] Operator 4604 and 4606 rows still tell operators to confirm a later startup/reconciliation attempt, without the shutdown caveat this bundle added to those log templates [docs/operations/subscriber-dead-letter-operator.md:131]
-- [ ] [Review][Patch] Nested backticks in the 4603/4605 cells (`same-`Reason``) break the rendered field name; the architecture test matches the raw source [docs/operations/subscriber-dead-letter-operator.md:130]
-- [ ] [Review][Patch] Restoring the old 4605 template ending `will retry` still keeps `DateReminderRecoveryRuntimeTests` green because it only asserts EventId, `"2 parked"`, and the structured exception [tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs:157]
+- [x] [Review][Patch] Class remarks still say every eligible tenant is attempted and that between-tenant caller cancellation always preserves collected failure evidence [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:26-33] — resolved in spec-8: remarks now qualify shutdown at a tenant boundary and limit preservation to evidence already incorporated into cross-tenant results/counts.
+- [x] [Review][Patch] The 4603 table row is reason-scoped, then the following paragraph treats 4603–4609 as startup-recovery evidence handled by the bounded retry policy; the fitness test only reads table rows [docs/operations/subscriber-dead-letter-operator.md:139] — resolved in spec-8: prose now distinguishes 4603/4609 non-startup origins from 4604/4605/4606/4608 startup-scan evidence, and the architecture test reads the normalized post-table guidance.
+- [x] [Review][Patch] Operator 4604 and 4606 rows still tell operators to confirm a later startup/reconciliation attempt, without the shutdown caveat this bundle added to those log templates [docs/operations/subscriber-dead-letter-operator.md:131] — resolved in spec-8: later-attempt guidance is conditional on the host and retry budget, with explicit restart advice after shutdown or exhaustion; the row assertions pin both caveats.
+- [x] [Review][Patch] Nested backticks in the 4603/4605 cells (`same-`Reason``) break the rendered field name; the architecture test matches the raw source [docs/operations/subscriber-dead-letter-operator.md:130] — resolved in spec-8: both cells use rendered `Reason` phrasing, and the architecture test rejects the broken nested form.
+- [x] [Review][Patch] Restoring the old 4605 template ending `will retry` still keeps `DateReminderRecoveryRuntimeTests` green because it only asserts EventId, `"2 parked"`, and the structured exception [tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs:157] — resolved in spec-8: the runtime fact requires `remains eligible for retry under the configured recovery policy` and rejects `will retry`.
 
 - [x] [Review][Defer] EventId 4603's runtime template still says the step "will be retried at-least-once" [src/Hexalith.Works/Runtime/WorksRecoveryLog.cs:36] — deferred: pre-existing shared template already recorded at `deferred-work.md` spec-5 "Distinguish final recovery exhaustion from retryable EventId 4603 failures"; this close-out newly fires it on shutdown-after-incomplete as well as final-attempt exhaustion. Changing the template is operator surface for all seven `Reason` values and is outside spec-7's Code Map.
 - [x] [Review][Defer] Exact caller cancellation after a prior in-tenant candidate failure still discards that tenant's locals [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:145-191] — deferred: spec-7 Never list freezes in-tenant cancellation changes; already recorded at `deferred-work.md:957`.

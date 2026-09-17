@@ -159,6 +159,8 @@ public sealed class DateReminderRecoveryRuntimeTests
             .ShouldHaveSingleItem();
         incompleteLog.Level.ShouldBe(LogLevel.Warning);
         incompleteLog.Message.ShouldContain("2 parked");
+        incompleteLog.Message.ShouldContain("remains eligible for retry under the configured recovery policy");
+        incompleteLog.Message.ShouldNotContain("will retry");
         incompleteLog.Exception.ShouldBeSameAs(thrown);
     }
 

@@ -3198,3 +3198,83 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 No Tier-3 smoke lane was run, as required by the close-out spec. Historical live evidence remains unchanged and
 gives this bundle no new live-verification credit. The ArchitectureTests blocker is isolated to the already-open
 SDK-pin mismatch; no dependency, submodule, or SDK pin was changed.
+
+## Story 4.8 spec-8 seven-patch close-out — 2026-09-17
+
+The outer exact-caller cancellation path now retains earlier cross-tenant partial results, failure counts, and
+cause when the next tenant-index read is canceled; cancellation itself is neither counted nor logged, and no
+following tenant is read. Clean boundary cancellation remains bare. The operator runbook and its architecture
+guard now render `Reason` correctly, qualify later 4604/4606 attempts for shutdown, separate 4603/4609
+non-startup origins from bounded startup-scan evidence, and pin 4605 as retry-eligible without promising a retry.
+
+The reviewed-range gitlinks retained by superproject HEAD `ea0590a1d75787e9440b9afdccdd5656df1a6af4` are:
+
+- `references/Hexalith.Chatbot`: `3c787993213ccf33f8912e6ad5caac605586fa15`
+- `references/Hexalith.Conversations`: `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`
+- `references/Hexalith.EventStore`: `629168e3983e5a9cd1639013f39d758fb0068cac`
+
+Keeping those advances is the human-approved deviation from spec-7's frozen Never list; spec-8 did not move or
+stage any gitlink. Before this run, the shared worktree already had EventStore checked out at
+`b5541259058320a0a7f1db19038709cbd02dad85`, so the deterministic commands below executed against that actual
+checkout. Its delta from the committed gitlink contains only two EventStore planning/status files and no source
+or build input. The checkout drift remains untouched and is recorded separately from the committed gitlink.
+
+```text
+aspire run --non-interactive -- --EnableKeycloak=false
+# AppHost started; the dashboard was exposed
+
+aspire describe --non-interactive --format Json
+# Post-review rerun: dapr-sentry exited 1 with "failed to add target
+# /var/run/dapr/credentials: no space left on device"
+# placement, Scheduler, EventStore, and Works remained Waiting on Sentry
+
+aspire stop --non-interactive
+# AppHost stopped successfully; no live credit claimed
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*IndexedPendingDateAwaitSourceTests"
+# 28/28 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*DateReminderRecoveryRuntimeTests"
+# 13/13 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*ReminderReconciliationServiceTests"
+# 4/4 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*LinkConversationRuntimeAdapterTests"
+# 136/136 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class "*SubscriberDeadLetterOperatorDocumentationTests"
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 492/492 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 237/238 passed; sole failure is the pre-existing SDK-pin assertion: expected 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- "*P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk"
+# 237/237 passed, 0 skipped, including catalog count 40 and the operator-documentation contract
+```
+
+No Tier-3 smoke lane was run. The pre-edit Aspire topology baseline stopped at EventStore exit 134; the
+post-review baseline stopped earlier on Dapr Sentry's environment-level `no space left on device` failure. Neither
+run reached Works health, so this close-out adds no live reminder evidence. An initial concurrent launch of Unit,
+Property, and non-smoke Integration produced two transient catalog-registration failures in the Integration
+process; the isolated class then passed **2/2** and the required standalone serial non-smoke run passed **492/492**.
+The sole ArchitectureTests failure remains the already-open SDK-pin mismatch.

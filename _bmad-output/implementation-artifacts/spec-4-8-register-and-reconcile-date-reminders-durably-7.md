@@ -63,6 +63,10 @@ context:
 
 ## Implementation Notes
 
+- Superseded review close-out (spec-8): closed the seven follow-up patches without changing frozen spec-7
+  intent, in-tenant filters, retry policy, durable contracts, or runtime EventIds. Exact retained gitlinks and
+  refreshed deterministic evidence are recorded in the parent story and test summary.
+
 - Preserved partial scan evidence by routing between-tenant shutdown after any recorded failure into `PendingDateAwaitScanIncompleteException`; clean shutdown still throws the exact caller cancellation, and the three in-tenant exact-token filters are unchanged.
 - Contained only exact stopping-token cancellation from the startup retry delay, so shutdown after a failed attempt completes the background service without another attempt or fault.
 - Reconciled recovery telemetry documentation, operator guidance, stale ledger claims, the Story 4.8 review record, sprint status, and executed evidence without adding a new event or changing durable contracts.
@@ -72,6 +76,7 @@ context:
 ## Spec Change Log
 
 - 2026-09-17: Implemented all five execution tasks, closed the nine Story 4.8 review actions, recorded executed evidence, and advanced the story and sprint entry to `review`.
+- 2026-09-17: Spec-8 closed all seven follow-up review patches, corrected the incorrectly sited outer-cancellation deferral, and refreshed gitlink/gate evidence.
 
 ## Review Triage Log
 
@@ -108,13 +113,13 @@ At the next-tenant boundary, cancellation with prior failures exits into the typ
 
 ### Review Findings
 
-- [ ] [Review][Patch] Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list — **Decided 2026-09-17 (human): keep, re-record gates, document the Never-list deviation.** [references/Hexalith.EventStore]
-- [ ] [Review][Patch] The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site — **Decided 2026-09-17 (human): `break` at `:88-92` when counts are already non-zero; correct the ledger.** [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92]
-- [ ] [Review][Patch] Class remarks still say every eligible tenant is attempted and that between-tenant cancellation always preserves collected failure evidence [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:26-33]
-- [ ] [Review][Patch] The 4603 table row is reason-scoped, then the following paragraph treats 4603–4609 as startup-recovery evidence handled by the bounded retry policy; the fitness test only reads table rows [docs/operations/subscriber-dead-letter-operator.md:139]
-- [ ] [Review][Patch] Operator 4604 and 4606 rows still tell operators to confirm a later startup/reconciliation attempt, without the shutdown caveat this bundle added to those log templates [docs/operations/subscriber-dead-letter-operator.md:131]
-- [ ] [Review][Patch] Nested backticks in the 4603/4605 cells (`same-`Reason``) break the rendered field name; the architecture test matches the raw source [docs/operations/subscriber-dead-letter-operator.md:130]
-- [ ] [Review][Patch] Restoring the old 4605 template ending `will retry` still keeps `DateReminderRecoveryRuntimeTests` green because it only asserts EventId, `"2 parked"`, and the structured exception [tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs:157]
+- [x] [Review][Patch] Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list — **Decided 2026-09-17 (human): keep, re-record gates, document the Never-list deviation.** Resolved by spec-8 with full retained revisions, refreshed gates, and explicit committed-gitlink versus checkout evidence. [references/Hexalith.EventStore]
+- [x] [Review][Patch] The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site — **Decided 2026-09-17 (human): `break` at `:88-92` when counts are already non-zero; correct the ledger.** Resolved by spec-8 with the outer catch only, a targeted exact-token regression, and an append-only ledger correction. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92]
+- [x] [Review][Patch] Class remarks still say every eligible tenant is attempted and that between-tenant cancellation always preserves collected failure evidence — resolved by spec-8 with boundary-qualified and scope-accurate remarks. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:26-33]
+- [x] [Review][Patch] The 4603 table row is reason-scoped, then the following paragraph treats 4603–4609 as startup-recovery evidence handled by the bounded retry policy; the fitness test only reads table rows — resolved by spec-8 with origin-scoped prose and a post-table architecture assertion. [docs/operations/subscriber-dead-letter-operator.md:139]
+- [x] [Review][Patch] Operator 4604 and 4606 rows still tell operators to confirm a later startup/reconciliation attempt, without the shutdown caveat this bundle added to those log templates — resolved by spec-8 with conditional-attempt and restart guidance pinned by the architecture test. [docs/operations/subscriber-dead-letter-operator.md:131]
+- [x] [Review][Patch] Nested backticks in the 4603/4605 cells (`same-`Reason``) break the rendered field name; the architecture test matches the raw source — resolved by spec-8 with valid rendered `Reason` text and negative assertions for the broken form. [docs/operations/subscriber-dead-letter-operator.md:130]
+- [x] [Review][Patch] Restoring the old 4605 template ending `will retry` still keeps `DateReminderRecoveryRuntimeTests` green because it only asserts EventId, `"2 parked"`, and the structured exception — resolved by spec-8 with exact retry-eligibility and negative `will retry` assertions. [tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs:157]
 - [x] [Review][Defer] EventId 4603's runtime template still says the step "will be retried at-least-once" [src/Hexalith.Works/Runtime/WorksRecoveryLog.cs:36] — deferred: pre-existing shared template already recorded under spec-5; this close-out newly fires it on shutdown-after-incomplete.
 - [x] [Review][Defer] Exact caller cancellation after a prior in-tenant candidate failure still discards that tenant's locals [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:145-191] — deferred: spec-7 Never list; already recorded at `deferred-work.md:957`.
 - [x] [Review][Defer] `DateReminderReconciler` remarks still say an incomplete scan is rethrown so the hosted service retries it [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:33-38] — deferred: spec-7 Never list leaves that type unchanged.

@@ -24,11 +24,11 @@ namespace Hexalith.Works.Reminders;
 /// the rest of the cross-tenant scan: a persistently-unreadable candidate must not silently starve reminder
 /// discovery/recovery for everything else. Parking-document failures are classified separately and never fall
 /// through to a stream read. The scan still marks itself incomplete by throwing
-/// <see cref="PendingDateAwaitScanIncompleteException"/> after every eligible tenant has been attempted, carrying the
-/// partial results collected from the tenants that scanned cleanly so a caller (<see cref="DateReminderReconciler"/>)
-/// can act on that partial evidence immediately and let only the failed tenant(s) be retried.
-/// Between tenants, caller cancellation preserves any failure evidence already collected by returning through
-/// the typed incomplete-result path; a clean scan still propagates the caller cancellation unchanged. Within a
+/// <see cref="PendingDateAwaitScanIncompleteException"/> after all eligible tenants are attempted, or after cancellation
+/// stops it at a tenant boundary where outer failure evidence already exists. The exception carries the partial results
+/// and counts collected so far so a caller (<see cref="DateReminderReconciler"/>) can act on that evidence immediately.
+/// Between tenants, caller cancellation preserves failure evidence already incorporated into those cross-tenant counts
+/// without counting or logging the cancellation; a clean scan still propagates the caller cancellation unchanged. Within a
 /// tenant, the exact-token filters remain authoritative by design: an exact caller cancellation after a prior
 /// candidate failure can still leave that tenant's local partial evidence unreported until the next startup pass.
 /// A candidate already parked by <see cref="WorkItemProjectionDispatcher"/> is a countable clean skip: its
@@ -89,6 +89,11 @@ internal sealed class IndexedPendingDateAwaitSource(
                 cancellationToken.IsCancellationRequested
                 && ex.CancellationToken == cancellationToken)
             {
+                if (failedTenantCount > 0 || failedCandidateCount > 0)
+                {
+                    break;
+                }
+
                 throw;
             }
             catch (Exception ex)
