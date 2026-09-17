@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1176,3 +1176,21 @@ _Scope: `3c042f9...HEAD` (HEAD `e5c173e`) — spec-7 nine-action close-out plus 
 - `low`, not worth fixing — the five non-startup 4603 `Reason` literals are only paraphrased in the new table cell: operators already have the `Reason` on the event they are triaging; listing cascade/actor strings in the reminder runbook is completeness, not an everyday miss.
 - `low`, not worth fixing — no hosted-service fact drives `PendingDateAwaitScanIncompleteException` then cancels the retry delay: `Shutdown_during_the_retry_delay_finishes_cleanly_without_another_attempt` already pins 4603-then-stop for `Exception`, and incomplete scans take that same `catch (Exception)` path after the reconciler rethrows.
 - Fix edits the spec under review — spec-7's frontmatter still has `review_loop_iteration: 0` while the file holds a 17-row triage log and a `done` status.
+
+### Review Findings (2026-09-17, bmad-code-review, spec-8 close-out)
+
+_Scope: `e5c173e...HEAD` (HEAD `28724f2`) — unreviewed since the last completed 4.8 review. 14 files, +574/−19, 788 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch (4 patch remaining). spec-8 is the review spec; the story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — spec-8 **Never** forbids submodule-pointer updates and treats Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` as read-only evidence; AC4 requires exact gitlinks. `ea0590a` moved Conversations `c0abd5c`→`d956c9b` and EventStore `fc43b4e`→`629168e`. `28724f2` then moved Chatbot `3c78799`→`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore `629168e`→`b5541259058320a0a7f1db19038709cbd02dad85`. HEAD/`git ls-files -s` now records Chatbot `1047ef3`, Conversations `d956c9b`, EventStore `b554125`. File List, spec-8 Implementation Notes/BH-01/EC-02/VG-02, and `tests/test-summary.md` still say spec-8 did not edit gitlinks, EventStore remains `629168e`, and `b554125` is unstaged checkout-only drift. EventStore `629168e..b554125` is planning artifacts only; Chatbot `3c78799..1047ef3` is planning plus nested submodule pointers. [references/Hexalith.EventStore] — _blind-hunter+edge-case-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers and re-record the actual SHAs.** Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, EventStore `b5541259058320a0a7f1db19038709cbd02dad85` (committed; planning-artifacts only versus `629168e`).
+
+- [ ] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97]
+- [ ] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135]
+- [ ] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967]
+
+**Rejected:**
+- `false` — the outer exact-token catch converting later-tenant parking/stream rethrows after prior failure "changes in-tenant semantics": the three in-tenant filters still `throw`; the outer catch is the specified `ScanTenantAsync` boundary, and preserving already-recorded cross-tenant evidence is the Always rule. spec-8 BH-05 already declined extra pins for that interleaving.
+- `false` — spec-8 left the DateReminderReconciler remarks deferral without a ledger item: it is already recorded at `deferred-work.md:968`; spec-8's YAML `source_spec` entries are only for spec-8's own new defers.
+- `low`, not worth fixing — no hosted-service fact covers 4605's new "typed incomplete can still be followed by 4603 unless a partial operation propagates cancellation" sentence: source tests pin classification, reconciler tests pin exact-token escape vs typed rethrow (`DateReminderReconciler.cs:73-87`), and a new composition test for this shutdown interleaving is more than a direct correction. spec-8 BH-08 already rejected that pin.
+- Fix edits the spec under review — spec-8 frontmatter still has `review_loop_iteration: 0` and `status: 'done'` while the file holds a 14-row triage log and a second Spec Change Log line.
+- Fix edits the spec under review — spec-8 Implementation Notes record a pre-edit Aspire EventStore exit 134, while Executed results for the same command record Dapr Sentry `no space left on device`.
+- Fix edits the spec under review — spec-8 Code Map/Implementation Notes still describe only ordinary tenant-index failure → next-read cancellation and never name the candidate-failure arrangement added by the independent review.

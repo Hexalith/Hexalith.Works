@@ -126,3 +126,21 @@ context:
 - `SubscriberDeadLetterOperatorDocumentationTests` passed **3/3** with 0 skips.
 - Direct suites passed Unit **568/568**, Property **3/3**, and standalone serial non-smoke Integration **492/492**, all with 0 skips. An initial concurrent launch produced two transient catalog-registration failures; the isolated class immediately passed **2/2** before the full serial pass.
 - Full Architecture passed **237/238**; the sole failure remains `P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk` (`10.0.400` expected versus `10.0.401` configured). Excluding exactly that fact passed **237/237** with 0 skips.
+
+### Review Findings
+
+_Scope: `e5c173e...HEAD` (HEAD `28724f2`). 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch (4 patch remaining)._
+
+- [ ] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — spec-8 **Never** forbids submodule-pointer updates and treats Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` as read-only evidence; AC4 requires exact gitlinks. `ea0590a` moved Conversations `c0abd5c`→`d956c9b` and EventStore `fc43b4e`→`629168e`. `28724f2` then moved Chatbot `3c78799`→`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore `629168e`→`b5541259058320a0a7f1db19038709cbd02dad85`. HEAD now records Chatbot `1047ef3`, Conversations `d956c9b`, EventStore `b554125`. File List and test-summary still call EventStore `b554125` unstaged checkout-only drift. EventStore `629168e..b554125` is planning artifacts only. [references/Hexalith.EventStore] — _blind-hunter+edge-case-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers and re-record the actual SHAs.** Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, EventStore `b5541259058320a0a7f1db19038709cbd02dad85` (committed; planning-artifacts only versus `629168e`).
+
+- [ ] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97]
+- [ ] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135]
+- [ ] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967]
+
+**Rejected:**
+- `false` — the outer exact-token catch converting later-tenant parking/stream rethrows after prior failure "changes in-tenant semantics": the three in-tenant filters still `throw`; the outer catch is the specified `ScanTenantAsync` boundary.
+- `false` — spec-8 left the DateReminderReconciler remarks deferral without a ledger item: it is already recorded at `deferred-work.md:968`.
+- `low`, not worth fixing — no hosted-service fact covers 4605's new typed-incomplete/4603 sentence: piecewise source and reconciler tests already pin the two arms, and a composition test is more than a direct correction.
+- Fix edits the spec under review — spec-8 frontmatter still has `review_loop_iteration: 0` and `status: 'done'` while the file holds a triage log and a second Spec Change Log line.
+- Fix edits the spec under review — spec-8 Implementation Notes record a pre-edit Aspire EventStore exit 134, while Executed results for the same command record Dapr Sentry `no space left on device`.
+- Fix edits the spec under review — spec-8 Code Map still describes only ordinary tenant-index failure → next-read cancellation and never names the candidate-failure arrangement.
