@@ -62,6 +62,9 @@ public sealed class CiCdConfigurationTests
             Case.Sensitive);
         workflow.ShouldContain($"builds-execution-sha: {ApprovedBuildsSha}", Case.Sensitive);
         workflow.ShouldContain("NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}", Case.Sensitive);
+        workflow.ShouldContain("governed-release: false", Case.Sensitive);
+        workflow.ShouldNotContain("attestations: write", Case.Sensitive);
+        workflow.ShouldNotContain("id-token: write", Case.Sensitive);
     }
 
     [Fact]
