@@ -3207,17 +3207,13 @@ following tenant is read. Clean boundary cancellation remains bare. The operator
 guard now render `Reason` correctly, qualify later 4604/4606 attempts for shutdown, separate 4603/4609
 non-startup origins from bounded startup-scan evidence, and pin 4605 as retry-eligible without promising a retry.
 
-The reviewed-range gitlinks retained by superproject HEAD `ea0590a1d75787e9440b9afdccdd5656df1a6af4` are:
-
-- `references/Hexalith.Chatbot`: `3c787993213ccf33f8912e6ad5caac605586fa15`
-- `references/Hexalith.Conversations`: `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`
-- `references/Hexalith.EventStore`: `629168e3983e5a9cd1639013f39d758fb0068cac`
-
-Keeping those advances is the human-approved deviation from spec-7's frozen Never list; spec-8 did not move or
-stage any gitlink. Before this run, the shared worktree already had EventStore checked out at
-`b5541259058320a0a7f1db19038709cbd02dad85`, so the deterministic commands below executed against that actual
-checkout. Its delta from the committed gitlink contains only two EventStore planning/status files and no source
-or build input. The checkout drift remains untouched and is recorded separately from the committed gitlink.
+At the time of this run, superproject HEAD `ea0590a1d75787e9440b9afdccdd5656df1a6af4` recorded Chatbot
+`3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations
+`d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore
+`629168e3983e5a9cd1639013f39d758fb0068cac`. Subsequent adopted superproject commit `28724f2` advanced Chatbot to
+`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore to
+`b5541259058320a0a7f1db19038709cbd02dad85`; Conversations remained unchanged. Spec-9 verified that the root
+index and all three checkouts match those current endpoints. These earlier SHAs are transition history.
 
 ```text
 aspire run --non-interactive -- --EnableKeycloak=false
@@ -3278,3 +3274,72 @@ run reached Works health, so this close-out adds no live reminder evidence. An i
 Property, and non-smoke Integration produced two transient catalog-registration failures in the Integration
 process; the isolated class then passed **2/2** and the required standalone serial non-smoke run passed **492/492**.
 The sole ArchitectureTests failure remains the already-open SDK-pin mismatch.
+
+## Story 4.8 spec-9 final four-patch close-out — 2026-09-18
+
+The direct clean-cancellation regression uses exactly two tenants: the first index is empty and the final index
+throws an `OperationCanceledException` carrying the exact caller token. It proves the exception propagates, the
+final index is read once, and no warning is logged, so removing the clean outer `throw` would return success and
+fail the test. The 4608 runbook row and architecture test now condition a later reconciliation on the host still
+running and retry budget remaining, and direct operators to restart after shutdown or exhaustion. The append-only
+ledger citation covers all three in-tenant exact-token filters through source line 197.
+
+The current root index and checked-out revisions agree exactly; spec-9 changed no submodule pointer:
+
+- `references/Hexalith.Chatbot`: `3c787993213ccf33f8912e6ad5caac605586fa15` →
+  `1047ef38d3845406227891639aaeb853e5d4f116`
+- `references/Hexalith.Conversations`: `c0abd5cb73d420bb2f4b5d04827461ad82c4528c` →
+  `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`
+- `references/Hexalith.EventStore`: `fc43b4ebcc61aa111a402f1c44aee3c18c893940` →
+  `629168e3983e5a9cd1639013f39d758fb0068cac` → `b5541259058320a0a7f1db19038709cbd02dad85`
+
+```text
+git ls-files -s references/Hexalith.Chatbot references/Hexalith.Conversations references/Hexalith.EventStore
+git -C references/Hexalith.Chatbot rev-parse HEAD
+git -C references/Hexalith.Conversations rev-parse HEAD
+git -C references/Hexalith.EventStore rev-parse HEAD
+# Index and checkout match the three current full SHAs above
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*IndexedPendingDateAwaitSourceTests"
+# 29/29 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*DateReminderRecoveryRuntimeTests"
+# 13/13 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*ReminderReconciliationServiceTests"
+# 4/4 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*LinkConversationRuntimeAdapterTests"
+# 136/136 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class "*SubscriberDeadLetterOperatorDocumentationTests"
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 493/493 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 237/238 passed; sole failure is the pre-existing SDK-pin assertion: expected 10.0.400,
+# while checked-in global.json pins 10.0.401
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -method- "*P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk"
+# 237/237 passed, 0 skipped, including catalog count 40 and the updated operator-documentation contract
+```
+
+No Tier-3 smoke lane was run, so this patch adds no live-verification credit. The only broad-gate failure is the
+already-open SDK-pin mismatch; every non-blocked deterministic gate passed serially on the adopted gitlinks.

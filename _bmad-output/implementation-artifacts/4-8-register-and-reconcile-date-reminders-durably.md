@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -409,18 +409,34 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-18 four-patch spec-9 close-out.** Added the direct two-tenant clean next-index cancellation
+  regression: the first index is empty, the final index throws the exact caller token, the exact exception
+  propagates, the final index is read once, and no warning is logged. EventId 4608 guidance and its architecture
+  guard now condition a later attempt on the host still running and retry budget remaining, and require restart
+  after shutdown or exhaustion. The append-only in-tenant cancellation citation now covers the stream-read
+  exact-token filter through line 197. The root index and all three checkouts agree on the adopted gitlinks:
+  Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations
+  `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore
+  `b5541259058320a0a7f1db19038709cbd02dad85`; the earlier revisions remain recorded below as transition
+  history, not current-state claims. Release build passed with 0 warnings/errors; focused Integration classes
+  passed **29/29**, **13/13**, **4/4**, and **136/136**; focused documentation passed **3/3**; Unit, Property,
+  and serial non-smoke Integration passed **568/568**, **3/3**, and **493/493**. Architecture passed
+  **237/238** with only the pre-existing SDK-pin mismatch and **237/237** excluding that exact fact. No Tier-3
+  smoke lane ran and no new live credit is claimed.
+
 - **2026-09-17 seven-patch spec-8 close-out.** The outer exact-caller cancellation catch now preserves
   previously accumulated cross-tenant partials, tenant/candidate counts, and the earlier cause when the next
   tenant-index read is canceled, without counting or logging cancellation or changing any in-tenant filter.
   Operator guidance renders `Reason` correctly, makes later 4604/4606 attempts conditional on host lifecycle,
   and distinguishes reason-scoped 4603 plus steady-state 4609 from bounded startup-scan evidence. The 4605
-  runtime fact rejects the old `will retry` promise. The reviewed-range gitlinks are retained at Chatbot
+  runtime fact rejects the old `will retry` promise. At that close-out, the reviewed range recorded Chatbot
   `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations
   `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore
-  `629168e3983e5a9cd1639013f39d758fb0068cac`, explicitly recording the spec-7 Never-list deviation. The
-  pre-existing EventStore checkout drift to `b5541259058320a0a7f1db19038709cbd02dad85` changes only EventStore
-  planning artifacts/status, was not modified or staged here, and is disclosed because the deterministic gates
-  executed with that checkout. Release build passed with 0 warnings/errors; focused Integration classes passed
+  `629168e3983e5a9cd1639013f39d758fb0068cac`. Later adopted superproject commits advanced Chatbot to
+  `1047ef38d3845406227891639aaeb853e5d4f116` and EventStore to
+  `b5541259058320a0a7f1db19038709cbd02dad85`; Conversations remained unchanged. Those old-to-new revisions are
+  historical transition evidence, and the current root index plus checkouts agree on the adopted endpoints.
+  Release build passed with 0 warnings/errors; focused Integration classes passed
   **28/28**, **13/13**, **4/4**, and **136/136**; focused documentation passed **3/3**; Unit, Property, and
   non-smoke Integration passed **568/568**, **3/3**, and **492/492**. Architecture passed **237/238** with only
   the pre-existing SDK-pin mismatch and **237/237** excluding that exact fact. The pre-edit Aspire baseline
@@ -571,6 +587,24 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### File List
 
+**2026-09-18 four-patch spec-9 close-out**
+- `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
+- `docs/operations/subscriber-dead-letter-operator.md`
+- `tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
+
+**Current adopted gitlinks (read-only evidence; spec-9 changed no pointer)**
+- `references/Hexalith.Chatbot` — `3c787993213ccf33f8912e6ad5caac605586fa15` →
+  `1047ef38d3845406227891639aaeb853e5d4f116`
+- `references/Hexalith.Conversations` — `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49` (unchanged)
+- `references/Hexalith.EventStore` — `629168e3983e5a9cd1639013f39d758fb0068cac` →
+  `b5541259058320a0a7f1db19038709cbd02dad85`
+
 **2026-09-17 seven-patch spec-8 close-out**
 - `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs`
 - `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
@@ -584,11 +618,10 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
 - `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
-**Retained reviewed-range gitlinks (evidence only; spec-8 did not edit them)**
+**Gitlinks recorded by the spec-8 run (historical transition start)**
 - `references/Hexalith.Chatbot` — `3c787993213ccf33f8912e6ad5caac605586fa15`
 - `references/Hexalith.Conversations` — `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`
-- `references/Hexalith.EventStore` — committed gitlink `629168e3983e5a9cd1639013f39d758fb0068cac`;
-  pre-existing checkout drift `b5541259058320a0a7f1db19038709cbd02dad85`
+- `references/Hexalith.EventStore` — `629168e3983e5a9cd1639013f39d758fb0068cac`
 
 **2026-09-17 nine-action close-out**
 - `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs`
@@ -816,10 +849,16 @@ _Docs_
 
 ## Change Log
 
+- 2026-09-18 — Closed the four remaining spec-8 review patches: added the clean final-index exact-cancellation
+  regression, qualified and pinned EventId 4608 host-lifecycle guidance, extended the append-only citation through
+  the stream cancellation filter, and reconciled current adopted gitlinks while preserving revision transitions.
+  Every deterministic gate was refreshed; Story and sprint status returned to `review` without new live credit.
+
 - 2026-09-17 — Closed the seven spec-8 review patches: retained typed cross-tenant evidence when the next
   tenant-index read throws exact caller cancellation, corrected the source remarks and 4603–4606 operator
   semantics, pinned 4605's retry-eligibility wording, corrected the append-only ledger, recorded exact retained
-  gitlinks plus the pre-existing EventStore checkout drift, and refreshed every deterministic gate. Story and
+  gitlinks for that run, and refreshed every deterministic gate. Later adopted pointer transitions are recorded
+  by the 2026-09-18 close-out. Story and
   sprint status returned to `review`; the blocked pre-edit Aspire baseline adds no live credit.
 
 - 2026-09-17 — Closed the final nine Story 4.8 review actions: preserved cross-tenant partial evidence on
@@ -1153,7 +1192,7 @@ _Scope: `e54c6a1..HEAD` (HEAD `5387ff6`) — the two commits that closed the 202
 
 _Scope: `3c042f9...HEAD` (HEAD `e5c173e`) — spec-7 nine-action close-out plus the following submodule gitlinks. 16 files, +566/−40, 900 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 22 raw findings triaged to 2 decision, 5 patch, 3 defer, 8 rejected; both decisions resolved 2026-09-17 to patch (7 patch remaining). The story's frontmatter `baseline_commit: 9526c31` was not used._
 
-- [x] [Review][Patch] **Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list** — spec-7 says **Never** "dependency/submodule updates", the 2026-09-17 File List omits `references/`, and `tests/test-summary.md` says no submodule pin changed, yet `3c042f9...HEAD` moves `references/Hexalith.Chatbot` `206bdd4`→`3c78799`, `references/Hexalith.Conversations` `8bdf026`→`c0abd5c`, and `references/Hexalith.EventStore` `27cc17f`→`fc43b4e` (`e5c173e`, after `0daddee`). EventStore advanced 3 commits / 20 files (+779/−197), including payload-protection work; Chatbot and Conversations are unrelated to this reminder close-out. The recorded gates describe `3c042f9`, not this tree. [references/Hexalith.EventStore] — _blind-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers, re-record the gates, state the deviation.** Resolved in spec-8: the retained final gitlinks are recorded at full length, every deterministic gate was refreshed, the spec-7 deviation is explicit, and the pre-existing EventStore checkout-only drift used by the gates is separately disclosed.
+- [x] [Review][Patch] **Three submodule pointers moved in the reviewed range, against spec-7's frozen Never list** — spec-7 says **Never** "dependency/submodule updates", the 2026-09-17 File List omits `references/`, and `tests/test-summary.md` says no submodule pin changed, yet `3c042f9...HEAD` moves `references/Hexalith.Chatbot` `206bdd4`→`3c78799`, `references/Hexalith.Conversations` `8bdf026`→`c0abd5c`, and `references/Hexalith.EventStore` `27cc17f`→`fc43b4e` (`e5c173e`, after `0daddee`). EventStore advanced 3 commits / 20 files (+779/−197), including payload-protection work; Chatbot and Conversations are unrelated to this reminder close-out. The recorded gates describe `3c042f9`, not this tree. [references/Hexalith.EventStore] — _blind-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers, re-record the gates, state the deviation.** Spec-8 recorded the then-observed checkout separately. Superseded by spec-9: later commits adopted the current pointers, index and checkout now match, and the earlier revisions remain as transition history.
 
 - [x] [Review][Patch] **The remaining between-tenant shutdown window is real, and spec-7 deferred it on the wrong site** — after a recorded failure, `IndexedPendingDateAwaitSource` preserves typed evidence only at the loop-head check (`:70-78`). `ScanTenantAsync` then issues the next tenant-index `GetAsync` with no local catch (`:121-123`); an exact-caller `OperationCanceledException` from that read is rethrown at `:88-92`, discarding earlier `pending`, counts, and `lastFailure`. That outer catch is the between-tenant exception path, not one of the three in-tenant filters (`:145-149`, `:187-191`, and the same outer `throw` for in-tenant rethrows). spec-7 AC requires typed evidence and no later tenant read; its BH-01/EC-01 deferral and `deferred-work.md:959` say preserving it "requires changing an exact-token in-tenant filter". It does not. The new tests cancel and then throw `InvalidOperationException`, so they never hit `:88-92`. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:88-92] — _blind-hunter+edge-case-hunter_ — **Decided 2026-09-17 (human): close the exception path with the same rule as the loop head.** Resolved in spec-8: the outer exact-token catch breaks to the typed throw when either count is non-zero; the regression proves prior partials/counts/cause survive, the cancellation is not counted or logged, and the following tenant is not read. All three in-tenant filters remain unchanged.
 
@@ -1179,13 +1218,13 @@ _Scope: `3c042f9...HEAD` (HEAD `e5c173e`) — spec-7 nine-action close-out plus 
 
 ### Review Findings (2026-09-17, bmad-code-review, spec-8 close-out)
 
-_Scope: `e5c173e...HEAD` (HEAD `28724f2`) — unreviewed since the last completed 4.8 review. 14 files, +574/−19, 788 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch (4 patch remaining). spec-8 is the review spec; the story frontmatter `baseline_commit: 9526c31` was not used._
+_Scope: `e5c173e...HEAD` (HEAD `28724f2`) — unreviewed since the last completed 4.8 review. 14 files, +574/−19, 788 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch. All four patches were closed by spec-9 on 2026-09-18. spec-8 is the review spec; the story frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — spec-8 **Never** forbids submodule-pointer updates and treats Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` as read-only evidence; AC4 requires exact gitlinks. `ea0590a` moved Conversations `c0abd5c`→`d956c9b` and EventStore `fc43b4e`→`629168e`. `28724f2` then moved Chatbot `3c78799`→`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore `629168e`→`b5541259058320a0a7f1db19038709cbd02dad85`. HEAD/`git ls-files -s` now records Chatbot `1047ef3`, Conversations `d956c9b`, EventStore `b554125`. File List, spec-8 Implementation Notes/BH-01/EC-02/VG-02, and `tests/test-summary.md` still say spec-8 did not edit gitlinks, EventStore remains `629168e`, and `b554125` is unstaged checkout-only drift. EventStore `629168e..b554125` is planning artifacts only; Chatbot `3c78799..1047ef3` is planning plus nested submodule pointers. [references/Hexalith.EventStore] — _blind-hunter+edge-case-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers and re-record the actual SHAs.** Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, EventStore `b5541259058320a0a7f1db19038709cbd02dad85` (committed; planning-artifacts only versus `629168e`).
+- [x] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — spec-8 **Never** forbids submodule-pointer updates and treats Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` as read-only evidence; AC4 requires exact gitlinks. `ea0590a` moved Conversations `c0abd5c`→`d956c9b` and EventStore `fc43b4e`→`629168e`. `28724f2` then moved Chatbot `3c78799`→`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore `629168e`→`b5541259058320a0a7f1db19038709cbd02dad85`. **Resolved 2026-09-18:** the root index and all three checkouts match the adopted full SHAs; current-state artifacts use those values, while the old-to-new revisions remain as historical transition evidence. No submodule pointer changed in spec-9.
 
-- [ ] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97]
-- [ ] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135]
-- [ ] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967]
+- [x] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97] — resolved 2026-09-18 by an exact two-tenant final-index regression; focused class passed 29/29.
+- [x] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135] — resolved 2026-09-18; the row and architecture guard pin host-running, retry-budget, shutdown, exhaustion, and restart guidance.
+- [x] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967] — resolved 2026-09-18 by extending the append-only citation through line 197 without changing its decision.
 
 **Rejected:**
 - `false` — the outer exact-token catch converting later-tenant parking/stream rethrows after prior failure "changes in-tenant semantics": the three in-tenant filters still `throw`; the outer catch is the specified `ScanTenantAsync` boundary, and preserving already-recorded cross-tenant evidence is the Always rule. spec-8 BH-05 already declined extra pins for that interleaving.

@@ -146,7 +146,17 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "escalate");
 
         string parkingLookup = WarningRow(section, "4608");
-        AssertContainsAll(parkingLookup, "PendingDateAwaitParkingLookupFailed", "state-store", "restore", "reconciliation");
+        AssertContainsAll(
+            parkingLookup,
+            "PendingDateAwaitParkingLookupFailed",
+            "state-store",
+            "restore",
+            "host remains running",
+            "retry budget remains",
+            "later reconciliation reads the candidate",
+            "shutdown",
+            "restart",
+            "startup retries were exhausted");
 
         string schedulingFailure = WarningRow(section, "4609");
         AssertContainsAll(

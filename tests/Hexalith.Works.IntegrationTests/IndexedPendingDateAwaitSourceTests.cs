@@ -616,6 +616,62 @@ public sealed class IndexedPendingDateAwaitSourceTests
     }
 
     [Fact]
+    public async Task Clean_exact_caller_cancellation_from_the_final_tenant_index_propagates_without_warning()
+    {
+        const string tenantB = "tenant-beta";
+        using var callerCancellation = new CancellationTokenSource();
+        CancellationToken callerToken = callerCancellation.Token;
+        var expected = new OperationCanceledException(callerToken);
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var registry = new PendingDateAwaitTenantRegistry { Tenants = { TenantA, tenantB } };
+        string[] orderedTenants = [.. registry.Tenants];
+        string emptyTenant = orderedTenants[0];
+        string cancellationTenant = orderedTenants[1];
+        store.GetAsync<PendingDateAwaitTenantRegistry>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitRegistryKey,
+                Arg.Is<CancellationToken>(token => token == callerToken))
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantRegistry>(registry, "1")));
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(emptyTenant),
+                Arg.Is<CancellationToken>(token => token == callerToken))
+            .Returns(Task.FromResult(new ReadModelEntry<PendingDateAwaitTenantIndex>(null, null)));
+        store.GetAsync<PendingDateAwaitTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.PendingDateAwaitIndexKey(cancellationTenant),
+                Arg.Is<CancellationToken>(token => token == callerToken))
+            .Returns(_ =>
+            {
+                callerCancellation.Cancel();
+                return Task.FromException<ReadModelEntry<PendingDateAwaitTenantIndex>>(expected);
+            });
+        var logger = new Story48RecordingLogger<IndexedPendingDateAwaitSource>();
+
+        OperationCanceledException? caught = null;
+        try
+        {
+            _ = await NewSource(
+                store,
+                Substitute.For<IEventStoreGatewayClient>(),
+                logger).GetPendingDateAwaitsAsync(callerToken).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException ex)
+        {
+            caught = ex;
+        }
+
+        OperationCanceledException thrown = caught.ShouldNotBeNull();
+        thrown.ShouldBeSameAs(expected);
+        thrown.CancellationToken.ShouldBe(callerToken);
+        await store.Received(1).GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(cancellationTenant),
+            Arg.Is<CancellationToken>(token => token == callerToken));
+        logger.Entries.ShouldNotContain(entry => entry.Level >= LogLevel.Warning);
+    }
+
+    [Fact]
     public async Task Shutdown_after_a_recorded_tenant_failure_preserves_typed_evidence_and_stops_before_the_next_tenant()
     {
         const string tenantB = "tenant-beta";

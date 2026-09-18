@@ -76,11 +76,13 @@ context:
   explicitly rejected `will retry`; no runtime template, EventId, or retry policy changed.
 - Appended the deferred-ledger correction, closed all seven follow-up patches in the parent story and spec-7,
   and returned story/sprint tracking to `review` without modifying either frozen intent block.
-- Retained reviewed-range gitlinks: Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations
+- The spec-8 run recorded Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations
   `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore
-  `629168e3983e5a9cd1639013f39d758fb0068cac`. A pre-existing EventStore checkout-only drift to
-  `b5541259058320a0a7f1db19038709cbd02dad85` changes only that repository's planning artifacts/status; it was
-  neither changed nor staged here, but is disclosed because the deterministic commands used that checkout.
+  `629168e3983e5a9cd1639013f39d758fb0068cac`. Later adopted superproject commits advanced Chatbot to
+  `1047ef38d3845406227891639aaeb853e5d4f116` and EventStore to
+  `b5541259058320a0a7f1db19038709cbd02dad85`; Conversations remained unchanged. As corrected by spec-9 on
+  2026-09-18, the root index and all three checkouts match those current full SHAs. The prior revisions are
+  retained only as transition history; the root index and checkouts agree.
 - The required pre-edit Aspire run started its control plane, then `eventstore` finished with exit code 134 and
   an unhealthy canceled `/alive` probe while `works` remained waiting. Aspire stopped cleanly; no live credit is
   claimed.
@@ -91,14 +93,17 @@ context:
   gitlink and verification evidence, and returned Story 4.8 plus sprint tracking to `review`.
 - 2026-09-17: Independent review added the candidate-failure side of the next-index exact-cancellation regression,
   qualified 4605 cancellation guidance, recorded two pre-existing deferrals, and refreshed every verification gate.
+- 2026-09-18: Spec-9 closed the four remaining review patches: current adopted gitlinks were reconciled while
+  preserving their transition history, clean final-index cancellation gained a direct regression, EventId 4608
+  gained pinned host-lifecycle guidance, and the cancellation citation was extended through line 197.
 
 ## Review Triage Log
 
 | Finding | Verdict | Route | Evidence |
 |---|---|---|---|
-| BH-01 — EventStore gitlink violates the frozen pointer constraint | false | reject | The root index still records `629168e3983e5a9cd1639013f39d758fb0068cac` and has no staged gitlink change. The diff hunk reflects an unrelated shared-worktree checkout at `b5541259058320a0a7f1db19038709cbd02dad85`, which this build did not create or adopt. |
-| BH-02 — File List and completion record omit the EventStore change | false | reject | The checkout-only drift is not an implementation file, and both this spec and `tests/test-summary.md` explicitly disclose its actual revision, unstaged status, and separation from the retained root gitlink. |
-| BH-03 — Gates did not run against the retained EventStore pointer | false | reject | The only files between the retained and checked-out EventStore revisions are that submodule's spec and sprint-status artifacts; `git diff --quiet` confirms no source, test, project, package, or SDK build input differs. The exact checkout used by the gates is disclosed rather than misrepresented. |
+| BH-01 — EventStore gitlink violates the frozen pointer constraint | superseded | patch | Corrected by spec-9: later superproject commit `28724f2` adopted EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` → `b5541259058320a0a7f1db19038709cbd02dad85`; current index and checkout agree, and the transition remains historical evidence. |
+| BH-02 — File List and completion record omit the EventStore change | superseded | patch | Corrected by spec-9: current audit artifacts name the adopted Chatbot, Conversations, and EventStore SHAs and state that spec-9 changed no pointer. |
+| BH-03 — Gates did not run against the retained EventStore pointer | superseded | patch | Corrected by spec-9: every deterministic gate was rerun with index and checkout both at the adopted `b5541259058320a0a7f1db19038709cbd02dad85`. |
 | BH-04 — The outer catch improperly changes in-tenant exact-cancellation semantics | false | reject | The three in-tenant exact-token filters still propagate unchanged. With prior global failure evidence the cancellation is not a clean scan, so the outer boundary correctly preserves that earlier evidence without counting or logging the cancellation; only clean cancellation is required to remain bare. |
 | BH-05 — No test combines prior global failure with later in-tenant exact cancellation | low | reject | The combination is not an acceptance-matrix branch, the unchanged in-tenant filters and changed outer decision are independently exercised, and adding three dependency-specific arrangements for a rare shutdown interleaving would exceed the value of this extra pin. |
 | BH-06 — The changed `failedCandidateCount` side lacks a next-index cancellation regression | medium | patch | The new fact proves only `failedTenantCount`; replacing the outer condition with `failedTenantCount > 0` would leave the checked suite green and could discard candidate-failure evidence. Add the parallel candidate-failure → next-index exact-cancellation fact. |
@@ -107,9 +112,9 @@ context:
 | BH-09 — EventId 4603 still promises a retry | medium | defer | `WorksRecoveryLog` still says `will be retried` even on a final attempt or non-repeating call site. This is pre-existing and the approved frozen constraint explicitly forbids changing EventId 4603's template in this build. |
 | BH-10 — The 4608 row omits shutdown qualification | false | reject | The paragraph immediately following the table explicitly includes 4608 among startup-scan warnings whose next attempt can be prevented by shutdown, so the documented operator procedure already contains the claimed caveat. |
 | EC-01 — Current-tenant partial evidence is lost when an in-tenant exact cancellation unwinds the scan | medium | defer | The cited `PartialTenantScanCanceledException` guard does not exist, but the underlying loss is real because an exact cancellation unwinds `ScanTenantAsync` before its local result is returned. That behavior predates this change and the frozen scope explicitly leaves all three in-tenant filters unchanged. |
-| EC-02 — The EventStore checkout drift changes the retained dependency contract | false | reject | `git ls-files -s` proves the retained superproject contract remains `629168e3983e5a9cd1639013f39d758fb0068cac`; the unstaged checkout-only drift is external state, not an adopted gitlink. |
+| EC-02 — The EventStore index/checkout mismatch changes the retained dependency contract | superseded | patch | Corrected by spec-9: the superproject adopted `b5541259058320a0a7f1db19038709cbd02dad85` and the checkout matches it. |
 | VG-01 — Candidate-failure evidence is unverified on next-index cancellation | medium | patch | Pre-verified by the verification-gap layer: existing candidate coverage stops at the loop-head check, so no test enters the changed outer catch with `FailedCandidateCount == 1`. |
-| VG-02 — The reviewed diff silently advances EventStore despite the evidence record | false | reject | The root index and staging area do not advance EventStore, while the evidence record expressly identifies the actual checkout used. A raw worktree diff showing external submodule state does not make that state part of this implementation. |
+| VG-02 — The reviewed diff silently advances EventStore despite the evidence record | superseded | patch | Corrected by spec-9: the later adopted pointer transition is explicit in the evidence record, and no pointer changed in the spec-9 patch. |
 
 ## Verification
 
@@ -129,13 +134,13 @@ context:
 
 ### Review Findings
 
-_Scope: `e5c173e...HEAD` (HEAD `28724f2`). 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch (4 patch remaining)._
+_Scope: `e5c173e...HEAD` (HEAD `28724f2`). 15 raw findings triaged to 1 decision, 3 patch, 0 defer, 7 rejected (6 appendix bullets; the two Aspire-result findings share one line); the gitlink decision resolved 2026-09-17 to patch. Spec-9 closed all four patches on 2026-09-18._
 
-- [ ] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — spec-8 **Never** forbids submodule-pointer updates and treats Chatbot `3c787993213ccf33f8912e6ad5caac605586fa15`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `629168e3983e5a9cd1639013f39d758fb0068cac` as read-only evidence; AC4 requires exact gitlinks. `ea0590a` moved Conversations `c0abd5c`→`d956c9b` and EventStore `fc43b4e`→`629168e`. `28724f2` then moved Chatbot `3c78799`→`1047ef38d3845406227891639aaeb853e5d4f116` and EventStore `629168e`→`b5541259058320a0a7f1db19038709cbd02dad85`. HEAD now records Chatbot `1047ef3`, Conversations `d956c9b`, EventStore `b554125`. File List and test-summary still call EventStore `b554125` unstaged checkout-only drift. EventStore `629168e..b554125` is planning artifacts only. [references/Hexalith.EventStore] — _blind-hunter+edge-case-hunter+acceptance-auditor_ — **Decided 2026-09-17 (human): keep the pointers and re-record the actual SHAs.** Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, EventStore `b5541259058320a0a7f1db19038709cbd02dad85` (committed; planning-artifacts only versus `629168e`).
+- [x] [Review][Patch] **MEDIUM** — recorded gitlinks do not match HEAD, and the reviewed range moves submodule pointers against spec-8's frozen Never list — resolved 2026-09-18: current root index and checkouts match Chatbot `1047ef38d3845406227891639aaeb853e5d4f116`, Conversations `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and EventStore `b5541259058320a0a7f1db19038709cbd02dad85`; artifacts preserve the earlier transitions and no pointer changed in spec-9.
 
-- [ ] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97]
-- [ ] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135]
-- [ ] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967]
+- [x] [Review][Patch] Clean next-index cancellation at the edited outer catch is untested: dropping the `throw` arm returns a successful scan [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:97] — resolved 2026-09-18 by the exact two-tenant final-index regression; focused class passed 29/29.
+- [x] [Review][Patch] Operator 4608 still tells operators to confirm reconciliation succeeds with no host-lifecycle caveat, while this bundle added that caveat to 4604/4606 [docs/operations/subscriber-dead-letter-operator.md:135] — resolved 2026-09-18 by the host-running, retry-budget, shutdown, exhaustion, and restart wording plus architecture assertions.
+- [x] [Review][Patch] The in-tenant cancellation ledger citation ends at `:145-191` and misses the stream-read exact-token filter now at `:192-197` [_bmad-output/implementation-artifacts/deferred-work.md:967] — resolved 2026-09-18 by extending the citation to `:145-197` without changing the deferred decision.
 
 **Rejected:**
 - `false` — the outer exact-token catch converting later-tenant parking/stream rethrows after prior failure "changes in-tenant semantics": the three in-tenant filters still `throw`; the outer catch is the specified `ScanTenantAsync` boundary.
