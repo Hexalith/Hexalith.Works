@@ -889,3 +889,10 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Reconcile duplicate and ambiguously dated decision fields in the deferred-work archive.
   evidence: Several pre-existing archived entries repeat identical decision fields, while DW-56 records the same decision with two dates and no amendment marker; no runtime parser is affected, but the historical record lacks a clear canonical interpretation.
+
+## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-9.md (2026-09-18)
+
+- Compacted ledger stubs and `deferred-work-archive.md` have no title, policy, backlink, or archive path. Reconfirmed on `a292e3b...HEAD`; already recorded at the spec-9 `source_spec` navigation bullet above. [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1]
+- `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()`. Pre-existing sibling fact; spec-9 only hardened the new final-index regression. [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582]
+- Story 4.8 still treats DW-56 as an open marker-store patch after the ledger archived it as `done 2026-09-05`. Pre-existing tracking contradiction already recorded at `deferred-work.md:792`. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:125]
+- 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts. Pre-existing; spec-9 required mirroring 4604/4606 wording into 4608, not tightening those older pins. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92]

@@ -2,7 +2,7 @@
 title: 'Close remaining Story 4.8 spec-8 review patches'
 type: 'bugfix'
 created: '2026-09-17'
-status: 'done'
+status: 'in-progress'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: 'a292e3b2ad3ee57a8ee180adf360972297e57bb1'
@@ -140,3 +140,29 @@ under-specifies the accepted operator action. Both route to minimal test-only pa
   `P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk` (`10.0.400` expected versus `10.0.401` configured). Excluding
   exactly that fact passed **237/237** with 0 skips.
 - No Tier-3 smoke lane ran; this patch claims no new live evidence.
+
+### Review Findings
+
+_Scope: `a292e3b...HEAD` (HEAD `3a29f59`). 10 files, +1,197/−328, 2,036 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — verification-gap returned empty (`failed_layers`: Verification Gap Reviewer). 18 raw findings triaged to 0 decision, 3 patch, 4 defer, 11 rejected._
+
+- [ ] [Review][Patch] EventId 4608 restart-after-shutdown is not uniquely pinned: deleting `shutdown ended the pass or` from the restart sentence still leaves `shutdown`, `restart`, and `startup retries were exhausted` in the row [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:148]
+- [ ] [Review][Patch] spec-9 close-out evidence says the `:145-197` citation covers all three in-tenant exact-token filters, but that range is the parking and stream filters only; the outer catch is at `:88-97` [_bmad-output/implementation-artifacts/tests/test-summary.md:3285]
+- [ ] [Review][Patch] The new clean final-index cancellation fact does not `Received()` the empty first-tenant index read, allows Information/Debug logs, and omits the sibling `DidNotReceive().ReadStreamAsync` pin [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:619]
+
+- [x] [Review][Defer] Compacted ledger stubs and `deferred-work-archive.md` have no title, policy, backlink, or archive path [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1] — deferred: already recorded at the spec-9 `source_spec` bullets in `deferred-work.md`; this review of `a292e3b...HEAD` reconfirmed the same discovery gap.
+- [x] [Review][Defer] `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()` [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582] — deferred: pre-existing sibling fact; spec-9 only hardened the new final-index regression.
+- [x] [Review][Defer] Story 4.8 still treats DW-56 as an open marker-store patch after the ledger archived it as `done 2026-09-05` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:125] — deferred: pre-existing tracking contradiction already recorded at `deferred-work.md:792`.
+- [x] [Review][Defer] 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92] — deferred: pre-existing; spec-9 required mirroring 4604/4606 wording into 4608, not tightening those older pins.
+
+**Rejected:**
+- `false` — File List omits `deferred-work-archive.md`: the dated four-patch File List is the close-out implementation inventory; the archive is not one of those four patches.
+- `false` — ledger archive rewrite exceeds the citation-only task: the in-tenant cancellation decision is unchanged at `:145-197`; spec-9 already triaged the `5856fab` compaction as outside the four patches.
+- `false` — archive headings for DW-20/53/54/55 are uniquely truncated: the live ledger uses the same truncated H3 titles.
+- `false` — archive is an incomplete copy because it omits later DWs: open DW-58+ remain full on the live ledger; the archive holds the compacted done set.
+- `false` — leftover `:82`/`:139`/`:181` and parent-story `:69`/`:70` citations are spec-9 defects: they are historical 2026-09-16 records; the required citation was updated to `:145-197`.
+- `false` — 4608 “reads the candidate” is too vague: spec-9 AC/I/O/BH-14 require that exact phrase.
+- `false` — gitlink transition histories disagree: current index/checkout SHAs agree; File List and test-summary use different accurate historical windows.
+- Fix edits the spec under review — spec-9 Code Map still cites `deferred-work.md:967`.
+- Fix edits the spec under review — spec-9 Implementation Notes say “all three” filters; the surviving patch is the test-summary claim only.
+- Fix edits the spec under review — spec-8 BH-10 remaining `false | reject`.
+- Fix edits the spec under review — I/O matrix has no fourth gitlink AC row.
