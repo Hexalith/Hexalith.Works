@@ -2,7 +2,7 @@
 title: 'Implement Works CI/CD and NuGet release verification'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'ready-for-dev'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
