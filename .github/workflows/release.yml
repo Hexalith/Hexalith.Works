@@ -1,0 +1,201 @@
+name: Release
+
+# Publication is an explicit operator action. The unprotected source proof runs before
+# the reusable workflow can enter the protected production environment or access secrets.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: release-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-source:
+    name: Verify exact green main source
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Require current main with successful exact-source push CI
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          DISPATCH_REF: ${{ github.ref }}
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$DISPATCH_REF" != "refs/heads/main" ]; then
+            echo "Release must be dispatched from refs/heads/main." >&2
+            exit 1
+          fi
+          if [[ ! "$DISPATCH_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "The dispatch source must be an exact lowercase commit SHA." >&2
+            exit 1
+          fi
+
+          live_main_sha="$(gh api "repos/${REPOSITORY}/git/ref/heads/main" --jq '.object.sha')"
+          if [[ ! "$live_main_sha" =~ ^[0-9a-f]{40}$ ]] || [ "$DISPATCH_SHA" != "$live_main_sha" ]; then
+            echo "The dispatched source is not the current main tip." >&2
+            exit 1
+          fi
+
+          ci_runs="$(gh api --method GET \
+            "repos/${REPOSITORY}/actions/workflows/ci.yml/runs" \
+            -f branch=main \
+            -f event=push \
+            -f head_sha="$DISPATCH_SHA" \
+            -f status=success \
+            -f per_page=100)"
+          if ! printf '%s\n' "$ci_runs" | jq -e --arg sha "$DISPATCH_SHA" '
+            [.workflow_runs[] | select(
+              .head_sha == $sha and
+              .head_branch == "main" and
+              .event == "push" and
+              .status == "completed" and
+              .conclusion == "success"
+            )] | length > 0
+          ' >/dev/null; then
+            echo "No successful push CI run exists for the exact current main SHA." >&2
+            exit 1
+          fi
+
+  release:
+    needs: verify-source
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+      issues: write
+      pull-requests: write
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-release.yml@04d961759994396132bb2b113ee465b64740a543
+    with:
+      solution: Hexalith.Works.slnx
+      test-platform: microsoft-testing-platform
+      test-projects: ''
+      timeout-minutes: 60
+      environment-name: production
+      governed-release: false
+      publish-containers: false
+      container-projects: ''
+      builds-execution-sha: 04d961759994396132bb2b113ee465b64740a543
+      source-branch: main
+      source-ci-workflow: ci.yml
+      package-manifest: tools/release-packages.json
+      expected-package-count: 5
+      require-publication-authority: false
+    secrets:
+      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+  verify-publication:
+    name: Verify exact five-package publication
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Resolve post-publication verification gate
+        id: publication-gate
+        shell: bash
+        env:
+          HEXALITH_RELEASE_PUBLISH_ENABLED: ${{ vars.HEXALITH_RELEASE_PUBLISH_ENABLED }}
+        run: |
+          set -euo pipefail
+          if [ "${HEXALITH_RELEASE_PUBLISH_ENABLED-}" = "true" ]; then
+            echo "publish-enabled=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "publish-enabled=false" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Publication verification skipped::Release publication is frozen for this repository."
+
+      - name: Checkout exact dispatched source
+        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+
+      - name: Resolve the exact release version for the dispatched source
+        id: release-version
+        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          releases="$(gh api --paginate "repos/${REPOSITORY}/releases?per_page=100" | jq -s '[.[][]]')"
+          matching_versions=''
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+            encoded_tag="$(jq -rn --arg tag "$tag" '$tag | @uri')"
+            commit_sha="$(gh api "repos/${REPOSITORY}/commits/${encoded_tag}" --jq '.sha')"
+            if [ "$commit_sha" = "$DISPATCH_SHA" ]; then
+              matching_versions="${matching_versions}${tag#v}"$'\n'
+            fi
+          done < <(printf '%s\n' "$releases" | jq -r '.[] | select(.draft == false) | .tag_name')
+
+          match_count="$(printf '%s' "$matching_versions" | sed '/^$/d' | wc -l | tr -d ' ')"
+          if [ "$match_count" != "1" ]; then
+            echo "Expected exactly one non-draft semantic release for source ${DISPATCH_SHA}; found ${match_count}." >&2
+            exit 1
+          fi
+          version="$(printf '%s' "$matching_versions" | sed '/^$/d')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Require all five exact NuGet versions
+        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
+        shell: bash
+        env:
+          VERSION: ${{ steps.release-version.outputs.version }}
+        run: |
+          set -euo pipefail
+          package_ids_text="$(jq -er '
+            .packages
+            | if type == "array" and length == 5 then . else error("expected five packages") end
+            | map(.id | if type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._-]*$") then . else error("invalid package id") end)
+            | if (unique | length) == 5 then .[] else error("duplicate package ids") end
+          ' tools/release-packages.json)" || {
+            echo "The release package manifest is invalid." >&2
+            exit 1
+          }
+          mapfile -t package_ids <<< "$package_ids_text"
+          if [ "${#package_ids[@]}" -ne 5 ]; then
+            echo "The release package manifest must contain exactly five unique package IDs." >&2
+            exit 1
+          fi
+
+          missing=()
+          for attempt in {1..20}; do
+            missing=()
+            for package_id in "${package_ids[@]}"; do
+              normalized_id="$(printf '%s' "$package_id" | tr '[:upper:]' '[:lower:]')"
+              normalized_version="$(printf '%s' "$VERSION" | tr '[:upper:]' '[:lower:]')"
+              package_url="https://api.nuget.org/v3-flatcontainer/${normalized_id}/${normalized_version}/${normalized_id}.${normalized_version}.nupkg"
+              status="$(curl --silent --show-error --location --max-time 30 \
+                --retry 3 --retry-connrefused --retry-all-errors \
+                --output /dev/null --write-out '%{http_code}' "$package_url")"
+              if [ "$status" != "200" ]; then
+                missing+=("${package_id} ${VERSION} (HTTP ${status})")
+              fi
+            done
+            [ "${#missing[@]}" -eq 0 ] && break
+            [ "$attempt" -eq 20 ] || sleep 15
+          done
+
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "Release publication is incomplete; missing exact NuGet packages:" >&2
+            printf '  - %s\n' "${missing[@]}" >&2
+            exit 1
+          fi
+          printf 'Verified %s %s\n' "${package_ids[@]}" "$VERSION"

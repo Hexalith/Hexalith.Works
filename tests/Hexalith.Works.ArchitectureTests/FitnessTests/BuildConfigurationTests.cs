@@ -13,7 +13,7 @@ public sealed class BuildConfigurationTests
         string root = RepositoryRoot.Locate();
         JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
 
-        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.400");
+        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.401");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
         // Aspire reconciled to 13.5.3 to match the checked-out Hexalith.EventStore submodule and hosting packages.
@@ -59,6 +59,25 @@ public sealed class BuildConfigurationTests
 
         PropertyValue(packageProps, "ManagePackageVersionsCentrally").ShouldBe("true");
         PropertyValue(packageProps, "CentralPackageTransitivePinningEnabled").ShouldBe("true");
+    }
+
+    [Fact]
+    public void P0_NuGetAuditRemainsVisibleInProjectAndSolutionRestoreModes()
+    {
+        string root = RepositoryRoot.Locate();
+        XDocument buildProps = XDocument.Load(Path.Combine(root, "Directory.Build.props"));
+        XDocument solutionProps = XDocument.Load(Path.Combine(root, "Directory.Solution.props"));
+
+        foreach (XDocument policy in new[] { buildProps, solutionProps })
+        {
+            PropertyValue(policy, "NuGetAudit").ShouldBe("true");
+            PropertyValue(policy, "NuGetAuditMode").ShouldBe("all");
+            foreach (string advisory in new[] { "NU1901", "NU1902", "NU1903", "NU1904" })
+            {
+                PropertyContainsWarning(policy, "WarningsNotAsErrors", advisory).ShouldBeTrue(
+                    $"{advisory} must remain visible without becoming a warnings-as-errors build break.");
+            }
+        }
     }
 
     [Fact]

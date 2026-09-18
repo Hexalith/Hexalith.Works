@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@04d961759994396132bb2b113ee465b64740a543
+    with:
+      solution: Hexalith.Works.slnx
+      test-platform: microsoft-testing-platform
+      run-consumer-validation: true
+      unit-test-projects: |
+        tests/Hexalith.Works.UnitTests
+        tests/Hexalith.Works.ArchitectureTests
+        tests/Hexalith.Works.PropertyTests
+      integration-test-projects: |
+        tests/Hexalith.Works.IntegrationTests

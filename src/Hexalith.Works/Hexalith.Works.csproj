@@ -28,7 +28,8 @@
          service defaults are supplied by AddEventStoreDomainService(); per the EventStore domain-module
          contract (Hexalith.EventStore/CLAUDE.md) a domain module must NOT fork its own ServiceDefaults,
          so the host does not reference Hexalith.Works.ServiceDefaults. -->
-    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" />
+    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
+    <PackageReference Include="Hexalith.EventStore.DomainService" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>

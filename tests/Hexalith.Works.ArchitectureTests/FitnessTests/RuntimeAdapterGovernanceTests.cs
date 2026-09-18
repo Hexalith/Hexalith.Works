@@ -23,11 +23,11 @@ public sealed class RuntimeAdapterGovernanceTests
         string root = RepositoryRoot.Locate();
 
         string[] hostReferences = ProjectReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
-        hostReferences.ShouldContain(
-            "Hexalith.EventStore.DomainService",
+        string[] hostPackages = PackageReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
+        hostReferences.Concat(hostPackages).ShouldContain(
+            reference => reference.Contains("Hexalith.EventStore.DomainService", StringComparison.Ordinal),
             "The runnable Works host is the adapter edge and must consume the EventStore domain-service SDK.");
 
-        string[] hostPackages = PackageReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
         hostPackages.ShouldContain("Dapr.AspNetCore", "The runnable Works host owns the Dapr dependency for the proof.");
         hostPackages.ShouldContain("Dapr.Actors", "Story 4.6 date-resume reminders are Dapr actor reminders owned by the runnable Works host.");
         hostPackages.ShouldContain("Dapr.Actors.AspNetCore", "Story 4.6 maps actor reminder callbacks only in the runnable Works host.");
@@ -40,23 +40,35 @@ public sealed class RuntimeAdapterGovernanceTests
         foreach (string project in KernelDependencyPolicy.GovernedProjects)
         {
             string csproj = Path.Combine("src", project, project + ".csproj");
-            string[] projectReferences = ProjectReferenceNames(root, csproj);
-            string[] packageReferences = PackageReferenceNames(root, csproj);
+            foreach (string configuration in new[] { "Debug", "Release" })
+            {
+                var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["BuildingInsideVisualStudio"] = "false",
+                    ["Configuration"] = configuration,
+                    ["DesignTimeBuild"] = "false",
+                    ["Platform"] = "AnyCPU",
+                };
+                bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
+                    Path.Combine(root, csproj),
+                    globalProperties,
+                    out MsBuildProjectSnapshot? snapshot,
+                    out string diagnostic);
+                evaluated.ShouldBeTrue(diagnostic);
+                snapshot.ShouldNotBeNull();
 
-            // Fail closed: a conditional, opaque, or unreadable declaration yields a sentinel that the
-            // family filters below cannot see, so it must be rejected before they run.
-            projectReferences.Concat(packageReferences)
-                .Where(reference => reference.StartsWith('<'))
-                .ShouldBeEmpty($"{project} must declare every reference in a form this gate can classify.");
+                string[] dependencyNames = [.. snapshot.ItemsOfType("ProjectReference")
+                    .Select(reference => Path.GetFileNameWithoutExtension(reference.CanonicalPath!))
+                    .Concat(snapshot.ItemsOfType("PackageReference").Select(reference => reference.Identity))];
+                string[] eventStoreRuntimeReferences = [.. dependencyNames
+                    .Where(reference => reference.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal)
+                        && !string.Equals(reference, "Hexalith.EventStore.Contracts", StringComparison.Ordinal))];
+                eventStoreRuntimeReferences.ShouldBeEmpty($"{project} must reference only EventStore.Contracts, never EventStore runtime/domain-service projects in {configuration}.");
 
-            string[] eventStoreRuntimeReferences = [.. projectReferences
-                .Where(reference => reference.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal)
-                    && !string.Equals(reference, "Hexalith.EventStore.Contracts", StringComparison.Ordinal))];
-            eventStoreRuntimeReferences.ShouldBeEmpty($"{project} must reference only EventStore.Contracts, never EventStore runtime/domain-service projects.");
-
-            string[] daprPackages = [.. packageReferences
-                .Where(name => name.StartsWith("Dapr", StringComparison.Ordinal))];
-            daprPackages.ShouldBeEmpty($"{project} must not take a Dapr dependency; the runtime adapter lives in {RunnableHost}.");
+                string[] daprPackages = [.. dependencyNames
+                    .Where(name => name.StartsWith("Dapr", StringComparison.Ordinal))];
+                daprPackages.ShouldBeEmpty($"{project} must not take a Dapr dependency in {configuration}; the runtime adapter lives in {RunnableHost}.");
+            }
         }
     }
 

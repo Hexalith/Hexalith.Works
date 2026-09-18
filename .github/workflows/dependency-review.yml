@@ -1,0 +1,19 @@
+name: Dependency Review
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: dependency-review-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-review:
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: Hexalith/Hexalith.Builds/.github/workflows/dependency-review.yml@main

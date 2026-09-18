@@ -1,5 +1,9 @@
 <Project>
   <PropertyGroup>
-    <NuGetAudit>false</NuGetAudit>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <RestoreBuildInParallel>false</RestoreBuildInParallel>
   </PropertyGroup>
 </Project>

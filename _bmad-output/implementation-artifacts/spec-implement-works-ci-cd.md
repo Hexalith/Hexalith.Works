@@ -2,9 +2,10 @@
 title: 'Implement Works CI/CD and NuGet release verification'
 type: 'feature'
 created: '2026-09-18'
-status: 'ready-for-dev'
+status: 'in-progress'
 route: 'dispatch'
 review_loop_iteration: 0
+baseline_commit: 'a9f4d0a3e9a29ef0b419a9b5b10f6f2c2aff2528'
 context:
   - '{project-root}/references/Hexalith.AI.Tools/hexalith-llm-instructions.md'
   - '{project-root}/references/Hexalith.Builds/.github/workflows/ci-cd-standards.md'
@@ -80,3 +81,10 @@ Works has no container package contract, so release uses the FrontComposer-style
 - `python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test && python3 scripts/validate-nuget-packages.py ./nupkgs && python3 scripts/validate-consumer-package-references.py ./nupkgs` -- exact five-package contract passes.
 - `for project in tests/Hexalith.Works.UnitTests tests/Hexalith.Works.ArchitectureTests tests/Hexalith.Works.PropertyTests tests/Hexalith.Works.IntegrationTests; do dotnet test "$project" --configuration Release --no-build; done` -- every project passes separately; use direct xUnit `-method` for the restart regression if broad execution is environment-blocked.
 - `curl` NuGet flat-container indexes for every manifest ID -- current status is explicitly captured; after a future authorized release, every exact version must return HTTP 200.
+
+**Observed results (2026-09-18):**
+- `actionlint`, shell/Python/JSON validation, `npm ci --ignore-scripts`, `npm audit signatures`, and `git diff --check` passed. NPM installed 505 packages with zero vulnerabilities and verified 504 registry signatures plus 127 attestations.
+- Release restore/build passed with zero warnings and errors. Exactly five `0.0.0-ci-test` packages passed metadata/dependency validation, and all five isolated PackageReference-only consumers built successfully.
+- Unit passed 568/568, Architecture passed 246/246, and Property passed 3/3. NuGet.org returned HTTP 404 for each of the five manifest package IDs.
+- Integration completed 510/516. All six live AppHost failures occurred after Dapr Sentry exited with `failed to add target /var/run/dapr/credentials: no space left on device`; the focused `WorksReminderRecoveryPipelineSmokeTests.Recovery_re_registers_a_still_future_await_that_later_fires` run failed for the same reason before the application became healthy.
+- At the failure boundary, `/tmp` had zero free inodes and host inotify use was 1,048,538 of 1,048,576 watches. No unrelated processes or temporary data were modified. The full integration and focused restart acceptance gates remain environment-blocked and must pass before this spec can move to review.

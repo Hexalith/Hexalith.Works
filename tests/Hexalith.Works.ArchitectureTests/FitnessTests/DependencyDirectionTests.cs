@@ -8,12 +8,8 @@ public sealed class DependencyDirectionTests
         new Dictionary<string, (string[] Allowed, string Rationale)>(StringComparer.Ordinal)
         {
             ["Hexalith.Works.Contracts"] = (
-                [
-                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj",
-                    "references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations/Hexalith.PolymorphicSerializations.csproj",
-                    "references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations.CodeGenerators/Hexalith.PolymorphicSerializations.CodeGenerators.csproj",
-                ],
-                "Contracts may reference EventStore.Contracts plus the PolymorphicSerializations library and its non-output analyzer project."),
+                [],
+                "Release Contracts consumes external libraries only through centrally pinned packages."),
             ["Hexalith.Works.Server"] = (
                 ["src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"],
                 "Server owns the pure decision core and must reference inward to Contracts only."),
@@ -382,12 +378,6 @@ public sealed class DependencyDirectionTests
         string appHostPath = Path.Combine(root, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj");
         MsBuildProjectSnapshot snapshot = EvaluateProject(appHostPath);
 
-        // The Release-lane evaluation below resolves conditions away, so a conditional, opaque, or malformed
-        // declaration would leave the exact topology silently short. Reject those declarations first.
-        KernelDependencyPolicy.DeclaredReferenceNames(appHostPath, "ProjectReference")
-            .Where(reference => reference.StartsWith('<'))
-            .ShouldBeEmpty("AppHost must declare every project reference in a form the exact topology gate can evaluate.");
-
         AssertExactProjectReferences(
             snapshot,
             [
@@ -396,10 +386,9 @@ public sealed class DependencyDirectionTests
                 Path.Combine(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"),
                 Path.Combine(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"),
                 Path.Combine(root, "src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj"),
-                Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj"),
                 Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj"),
             ],
-            "AppHost should wire only the Works topology plus EventStore Aspire and operations workloads.");
+            "Release AppHost should use the EventStore Aspire package while retaining Operations as its source-only executable resource.");
     }
 
     [Fact]
@@ -430,14 +419,15 @@ public sealed class DependencyDirectionTests
     }
 
     [Fact]
-    public void P0_ContractsAnalyzerProjectReferenceRemainsInTheEvaluatedSet()
+    public void P0_ContractsAnalyzerProjectReferenceRemainsInTheDebugEvaluatedSet()
     {
         string root = RepositoryRoot.Locate();
         string analyzerPath = Path.GetFullPath(Path.Combine(
             root,
             "references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations.CodeGenerators/Hexalith.PolymorphicSerializations.CodeGenerators.csproj"));
         MsBuildProjectSnapshot snapshot = EvaluateProject(
-            Path.Combine(root, "src", "Hexalith.Works.Contracts", "Hexalith.Works.Contracts.csproj"));
+            Path.Combine(root, "src", "Hexalith.Works.Contracts", "Hexalith.Works.Contracts.csproj"),
+            "Debug");
 
         MsBuildEvaluatedItem analyzer = snapshot.ItemsOfType("ProjectReference")
             .Where(reference => MsBuildProjectEvaluation.PathComparer.Equals(reference.CanonicalPath, analyzerPath))
@@ -447,29 +437,87 @@ public sealed class DependencyDirectionTests
     }
 
     [Fact]
-    public void P0_HexalithDependenciesUseProjectReferencesNotPackageReferences()
+    public void P0_ExternalHexalithDependenciesUseDebugSourceAndReleasePackages()
     {
         string root = RepositoryRoot.Locate();
-        string approvedCatalog = Path.Combine(
-            root,
-            "references",
-            "Hexalith.Builds",
-            "Props",
-            "Directory.Packages.props");
-        string[] projectFiles = [.. Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !KernelDependencyPolicy.IsBuildOutput(path))];
+        var expectations = new[]
+        {
+            (
+                Project: "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj",
+                DebugProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj",
+                    "references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations/Hexalith.PolymorphicSerializations.csproj",
+                    "references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations.CodeGenerators/Hexalith.PolymorphicSerializations.CodeGenerators.csproj",
+                },
+                ReleaseProjects: Array.Empty<string>(),
+                ReleasePackages: new[]
+                {
+                    "Hexalith.EventStore.Contracts",
+                    "Hexalith.PolymorphicSerializations",
+                    "Hexalith.PolymorphicSerializations.CodeGenerators",
+                }),
+            (
+                Project: "src/Hexalith.Works/Hexalith.Works.csproj",
+                DebugProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/Hexalith.EventStore.DomainService.csproj",
+                },
+                ReleaseProjects: Array.Empty<string>(),
+                ReleasePackages: new[] { "Hexalith.EventStore.DomainService" }),
+            (
+                Project: "src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
+                DebugProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj",
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
+                },
+                ReleaseProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
+                },
+                ReleasePackages: new[] { "Hexalith.EventStore.Aspire" }),
+            (
+                Project: "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+                DebugProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Testing/Hexalith.EventStore.Testing.csproj",
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
+                },
+                ReleaseProjects: new[]
+                {
+                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
+                },
+                ReleasePackages: new[] { "Hexalith.EventStore.Testing" }),
+        };
 
-        projectFiles.ShouldNotBeEmpty("Expected to discover Hexalith.Works project files to govern.");
-        projectFiles.ShouldContain(
-            path => Path.GetFileName(path) == "Hexalith.Works.Contracts.csproj",
-            "Hexalith.Works.Contracts.csproj must be discovered for this fitness guard to be meaningful.");
+        foreach ((string project, string[] debugProjects, string[] releaseProjects, string[] releasePackages) in expectations)
+        {
+            string projectPath = Path.Combine(root, project);
+            MsBuildProjectSnapshot debug = EvaluateProject(projectPath, "Debug");
+            MsBuildProjectSnapshot release = EvaluateProject(projectPath, "Release");
 
-        string[] violations = [.. projectFiles.SelectMany(project =>
-            KernelDependencyPolicy.EvaluateHexalithSourceConsumption(project, approvedCatalog))];
+            ExternalProjectReferences(debug).ShouldBe(
+                debugProjects.Select(path => Path.GetFullPath(Path.Combine(root, path))),
+                ignoreOrder: true,
+                customMessage: $"{project} must consume external Hexalith dependencies from sibling source in Debug.");
+            debug.ItemsOfType("PackageReference")
+                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
+                .Select(item => item.Identity)
+                .ShouldBeEmpty($"{project} must not mix external Hexalith packages into Debug source mode.");
 
-        violations.ShouldBeEmpty(
-            "Hexalith libraries must be consumed from checked-out sibling source; only the externally owned shared Builds catalog may define their versions.");
+            ExternalProjectReferences(release).ShouldBe(
+                releaseProjects.Select(path => Path.GetFullPath(Path.Combine(root, path))),
+                ignoreOrder: true,
+                customMessage: $"{project} has an unexpected external source edge in Release package mode.");
+            release.ItemsOfType("PackageReference")
+                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
+                .Select(item => item.Identity)
+                .ShouldBe(
+                    releasePackages,
+                    ignoreOrder: true,
+                    customMessage: $"{project} must consume the exact centrally pinned external packages in Release.");
+        }
     }
 
     [Fact]
@@ -614,10 +662,24 @@ public sealed class DependencyDirectionTests
         }
     }
 
-    private static MsBuildProjectSnapshot EvaluateProject(string projectPath)
+    private static IEnumerable<string> ExternalProjectReferences(MsBuildProjectSnapshot snapshot)
+        => snapshot.ItemsOfType("ProjectReference")
+            .Select(reference => reference.CanonicalPath!)
+            .Where(path => path.Contains(
+                $"{Path.DirectorySeparatorChar}references{Path.DirectorySeparatorChar}Hexalith.",
+                StringComparison.Ordinal));
+
+    private static MsBuildProjectSnapshot EvaluateProject(string projectPath, string configuration = "Release")
     {
         bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
             projectPath,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["BuildingInsideVisualStudio"] = "false",
+                ["Configuration"] = configuration,
+                ["DesignTimeBuild"] = "false",
+                ["Platform"] = "AnyCPU",
+            },
             out MsBuildProjectSnapshot? snapshot,
             out string diagnostic);
 

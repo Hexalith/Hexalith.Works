@@ -35,15 +35,10 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
 
-    /// <summary>
-    /// The fixed local ports the AppHost-owned mTLS control plane binds. Every live fact runs with
-    /// <c>--DcpPublisher:RandomizePorts=false</c>, so a foreign listener on any of them makes the AppHost hang
-    /// in <c>StartAsync</c> until the startup budget expires instead of failing usefully — the gate skips
-    /// instead, naming the port.
-    /// </summary>
     /// <summary>How long a control-plane port may still be held by a previous fact's teardown before it counts as foreign.</summary>
     private static readonly TimeSpan ControlPlanePortWait = TimeSpan.FromSeconds(60);
 
+    /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
     private static readonly (int Port, string Name)[] ControlPlanePorts =
     [
         (50001, "dapr-sentry"),
@@ -61,16 +56,13 @@ internal static class WorksAppHostSmokeHarness
             return $"the dapr-init Redis on :{DaprInitRedisPort} is not reachable. Start Docker and run `dapr init`";
         }
 
-        foreach ((int port, string name) in ControlPlanePorts)
+        try
         {
-            // Give an ordinary teardown lag time to release the port before deciding it is foreign-held: the
-            // previous fact's session containers and DCP proxies can outlive the app's dispose by a few seconds.
-            if (!await WaitForPortToFreeAsync(port, cancellationToken).ConfigureAwait(false))
-            {
-                return $"local port {port} is still in use after {ControlPlanePortWait.TotalSeconds:0} seconds, so the "
-                    + $"AppHost-owned '{name}' resource cannot bind it. Stop the process holding it (a leaked DCP "
-                    + "controller or container from a previous AppHost run, or a `dapr init` control plane) before running this lane";
-            }
+            await WaitForControlPlanePortsFreeAsync("prerequisite", cancellationToken).ConfigureAwait(false);
+        }
+        catch (TimeoutException exception)
+        {
+            return exception.Message;
         }
 
         return null;
@@ -87,6 +79,10 @@ internal static class WorksAppHostSmokeHarness
         Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body)
     {
         ArgumentNullException.ThrowIfNull(body);
+
+        // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
+        // every start so teardown lag from the first run cannot race the second scheduler/placement bind.
+        await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
@@ -161,8 +157,18 @@ internal static class WorksAppHostSmokeHarness
         }
         finally
         {
-            await app.DisposeAsync().ConfigureAwait(true);
-            await builder.DisposeAsync().ConfigureAwait(true);
+            try
+            {
+                await app.DisposeAsync().ConfigureAwait(true);
+            }
+            finally
+            {
+                await builder.DisposeAsync().ConfigureAwait(true);
+                // Dispose returning does not guarantee DCP proxies have released their fixed sockets. Do not
+                // let the next restart begin until all three AppHost-owned control-plane ports are observable
+                // as free, and name every holdover if the bounded wait expires.
+                await WaitForControlPlanePortsFreeAsync("teardown boundary", cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 
@@ -400,20 +406,34 @@ internal static class WorksAppHostSmokeHarness
         return lastDot >= 0 ? typeName[(lastDot + 1)..] : typeName;
     }
 
-    /// <summary>Polls one port until nothing is listening on it, or the bounded wait is spent.</summary>
-    private static async Task<bool> WaitForPortToFreeAsync(int port, CancellationToken cancellationToken)
+    /// <summary>Waits until every fixed control-plane port is free at a start or teardown boundary.</summary>
+    private static async Task WaitForControlPlanePortsFreeAsync(
+        string boundary,
+        CancellationToken cancellationToken)
     {
         DateTimeOffset deadline = DateTimeOffset.UtcNow + ControlPlanePortWait;
         while (true)
         {
-            if (!await IsPortReachableAsync(port, cancellationToken).ConfigureAwait(false))
+            var occupied = new List<string>();
+            foreach ((int port, string name) in ControlPlanePorts)
             {
-                return true;
+                if (await IsPortReachableAsync(port, cancellationToken).ConfigureAwait(false))
+                {
+                    occupied.Add($"{name} on localhost:{port}");
+                }
+            }
+
+            if (occupied.Count == 0)
+            {
+                return;
             }
 
             if (DateTimeOffset.UtcNow >= deadline)
             {
-                return false;
+                throw new TimeoutException(
+                    $"[{boundary}] Fixed AppHost control-plane ports were still occupied after "
+                    + $"{ControlPlanePortWait.TotalSeconds:0} seconds: {string.Join(", ", occupied)}. "
+                    + "Stop leaked DCP controllers/containers or a conflicting `dapr init` control plane before retrying.");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
@@ -434,7 +454,7 @@ internal static class WorksAppHostSmokeHarness
         {
             return false;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             return false;
         }

@@ -1,0 +1,24 @@
+{
+  "packages": [
+    {
+      "id": "Hexalith.Works.Contracts",
+      "project": "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"
+    },
+    {
+      "id": "Hexalith.Works.Server",
+      "project": "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"
+    },
+    {
+      "id": "Hexalith.Works.Projections",
+      "project": "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj"
+    },
+    {
+      "id": "Hexalith.Works.Reactor",
+      "project": "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"
+    },
+    {
+      "id": "Hexalith.Works.Testing",
+      "project": "tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj"
+    }
+  ]
+}

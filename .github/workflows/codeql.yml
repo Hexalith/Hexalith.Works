@@ -1,0 +1,25 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '27 3 * * 1'
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  codeql:
+    uses: Hexalith/Hexalith.Builds/.github/workflows/codeql.yml@main
+    permissions:
+      contents: read
+      security-events: write
+    with:
+      languages: csharp

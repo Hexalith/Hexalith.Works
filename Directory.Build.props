@@ -8,11 +8,27 @@
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.Tenants</HexalithTenantsRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
+    <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
+    <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
+
+    <!-- Local Debug builds use root-declared sibling sources. Release and configuration-free
+         restores use the centrally pinned NuGet packages so CI restores the same graph it builds. -->
+    <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(UseNuGetDeps)' == 'true'">false</UseHexalithProjectReferences>
+    <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(UseNuGetDeps)' == 'false'">true</UseHexalithProjectReferences>
+    <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(Configuration)' == 'Debug'">true</UseHexalithProjectReferences>
+    <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == ''">false</UseHexalithProjectReferences>
+    <UseNuGetDeps Condition="'$(UseNuGetDeps)' == '' and '$(UseHexalithProjectReferences)' == 'true'">false</UseNuGetDeps>
+    <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
+    <HexalithEventStoreFromSource Condition="'$(UseHexalithProjectReferences)' == 'true'">true</HexalithEventStoreFromSource>
+    <HexalithPolymorphicSerializationsFromSource Condition="'$(UseHexalithProjectReferences)' == 'true'">true</HexalithPolymorphicSerializationsFromSource>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NuGetAudit>false</NuGetAudit>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <NoWarn>$(NoWarn);NU5118;NU5128</NoWarn>
 
     <IsPackable>true</IsPackable>
