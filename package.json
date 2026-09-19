@@ -6,6 +6,13 @@
   "engines": {
     "node": ">=24.10.0"
   },
+  "packageManager": "npm@11.18.0",
+  "scripts": {
+    "commitlint": "commitlint --config commitlint.config.mjs",
+    "commitlint:last": "commitlint --config commitlint.config.mjs --from HEAD~1 --to HEAD",
+    "lint:scripts": "bash scripts/lint-scripts.sh",
+    "release:dry-run": "semantic-release --dry-run --no-ci"
+  },
   "devDependencies": {
     "@commitlint/cli": "21.2.2",
     "@commitlint/config-conventional": "21.2.2",

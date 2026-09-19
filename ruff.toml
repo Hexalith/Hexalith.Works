@@ -1,0 +1,6 @@
+# Lint configuration for the release/validation tooling under scripts/.
+line-length = 120
+target-version = "py312"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RET", "PTH"]

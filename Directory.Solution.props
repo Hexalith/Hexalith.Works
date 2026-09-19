@@ -3,6 +3,7 @@
     <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Mirror Directory.Build.props: report every severity, tolerate only low and moderate as warnings. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <RestoreBuildInParallel>false</RestoreBuildInParallel>
   </PropertyGroup>

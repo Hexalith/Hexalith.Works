@@ -16,4 +16,11 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: Hexalith/Hexalith.Builds/.github/workflows/dependency-review.yml@main
+    uses: Hexalith/Hexalith.Builds/.github/workflows/dependency-review.yml@04d961759994396132bb2b113ee465b64740a543
+    with:
+      # Stricter than the shared 'high' default: this module publishes libraries, so a moderate advisory
+      # introduced by a pull request should be reviewed before it reaches consumers.
+      # The shared workflow at this pinned commit exposes only fail-on-severity, so a license allow/deny
+      # list matching the repository's MIT PackageLicenseExpression cannot be passed here yet. Raise it in
+      # Hexalith.Builds and re-pin before declaring license policy in this caller.
+      fail-on-severity: moderate

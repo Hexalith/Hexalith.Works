@@ -66,11 +66,11 @@ jobs:
 
   release:
     needs: verify-source
+    # .releaserc.json disables success comments, labels and released-labels, so @semantic-release/github
+    # never writes to issues or pull requests. Only the scopes it actually uses are granted.
     permissions:
       actions: read
       contents: write
-      issues: write
-      pull-requests: write
     uses: Hexalith/Hexalith.Builds/.github/workflows/domain-release.yml@04d961759994396132bb2b113ee465b64740a543
     with:
       solution: Hexalith.Works.slnx
@@ -95,6 +95,10 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # The publication freeze variable must be read in the same scope the publishing job used. Without this
+    # environment an environment-scoped HEXALITH_RELEASE_PUBLISH_ENABLED would publish through the release
+    # job while verification silently skipped and reported success.
+    environment: production
     permissions:
       contents: read
     steps:
@@ -135,24 +139,39 @@ jobs:
           matching_versions=''
           while IFS= read -r tag; do
             [ -n "$tag" ] || continue
-            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || continue
+            # Accept the same optional prerelease suffix that pack-release-packages.py and
+            # validate-publication-preflight.sh accept, so all three agree on what a release version is.
+            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || continue
             encoded_tag="$(jq -rn --arg tag "$tag" '$tag | @uri')"
-            commit_sha="$(gh api "repos/${REPOSITORY}/commits/${encoded_tag}" --jq '.sha')"
+            # A tag deleted or rewritten between listing and lookup must not abort verification after the
+            # packages are already live: skip the unresolvable tag and keep checking the rest.
+            if ! commit_sha="$(gh api "repos/${REPOSITORY}/commits/${encoded_tag}" --jq '.sha' 2>/dev/null)"; then
+              echo "::warning title=Unresolvable release tag::Skipping '${tag}', which could not be resolved to a commit."
+              continue
+            fi
             if [ "$commit_sha" = "$DISPATCH_SHA" ]; then
               matching_versions="${matching_versions}${tag#v}"$'\n'
             fi
           done < <(printf '%s\n' "$releases" | jq -r '.[] | select(.draft == false) | .tag_name')
 
           match_count="$(printf '%s' "$matching_versions" | sed '/^$/d' | wc -l | tr -d ' ')"
+          if [ "$match_count" = "0" ]; then
+            # Semantic Release correctly publishes nothing when no commit since the last release warrants a
+            # version bump. That is a successful no-op, not a failed release, so there is nothing to verify.
+            echo "release-warranted=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=No release warranted::No semantic release was produced for ${DISPATCH_SHA}; skipping package verification."
+            exit 0
+          fi
           if [ "$match_count" != "1" ]; then
-            echo "Expected exactly one non-draft semantic release for source ${DISPATCH_SHA}; found ${match_count}." >&2
+            echo "Expected at most one non-draft semantic release for source ${DISPATCH_SHA}; found ${match_count}." >&2
             exit 1
           fi
           version="$(printf '%s' "$matching_versions" | sed '/^$/d')"
+          echo "release-warranted=true" >> "$GITHUB_OUTPUT"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Require all five exact NuGet versions
-        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
+        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' && steps.release-version.outputs.release-warranted == 'true' }}
         shell: bash
         env:
           VERSION: ${{ steps.release-version.outputs.version }}
@@ -173,22 +192,27 @@ jobs:
             exit 1
           fi
 
+          # Bound the whole poll by wall clock, well inside the job's timeout-minutes, so a genuinely
+          # missing package always reaches the report below instead of being killed mid-retry by a
+          # generic job timeout that says nothing about which package was absent.
+          poll_deadline=$((SECONDS + 420))
           missing=()
-          for attempt in {1..20}; do
+          while true; do
             missing=()
             for package_id in "${package_ids[@]}"; do
               normalized_id="$(printf '%s' "$package_id" | tr '[:upper:]' '[:lower:]')"
               normalized_version="$(printf '%s' "$VERSION" | tr '[:upper:]' '[:lower:]')"
               package_url="https://api.nuget.org/v3-flatcontainer/${normalized_id}/${normalized_version}/${normalized_id}.${normalized_version}.nupkg"
-              status="$(curl --silent --show-error --location --max-time 30 \
-                --retry 3 --retry-connrefused --retry-all-errors \
+              status="$(curl --silent --show-error --location --max-time 15 \
+                --retry 2 --retry-connrefused --retry-all-errors \
                 --output /dev/null --write-out '%{http_code}' "$package_url")"
               if [ "$status" != "200" ]; then
                 missing+=("${package_id} ${VERSION} (HTTP ${status})")
               fi
             done
             [ "${#missing[@]}" -eq 0 ] && break
-            [ "$attempt" -eq 20 ] || sleep 15
+            [ "$SECONDS" -lt "$poll_deadline" ] || break
+            sleep 15
           done
 
           if [ "${#missing[@]}" -ne 0 ]; then
@@ -196,4 +220,6 @@ jobs:
             printf '  - %s\n' "${missing[@]}" >&2
             exit 1
           fi
-          printf 'Verified %s %s\n' "${package_ids[@]}" "$VERSION"
+          for package_id in "${package_ids[@]}"; do
+            printf 'Verified %s %s\n' "$package_id" "$VERSION"
+          done

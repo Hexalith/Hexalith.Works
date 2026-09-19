@@ -11,7 +11,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from xml.etree import ElementTree
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "tools" / "release-packages.json"
 EXPECTED_PACKAGE_COUNT = 5
@@ -35,6 +34,42 @@ class PackageMetadata:
     dependencies: frozenset[str]
     readme: str | None
     has_license: bool
+
+
+def assert_release_restore_graph(package_id: str, restore: dict) -> None:
+    """Fail closed unless obj/project.assets.json holds the Release (package-mode) dependency graph.
+
+    project.assets.json is configuration-dependent and is overwritten in place by any later Debug
+    restore. Comparing Release nuspecs against a Debug graph would silently accept the wrong
+    dependency boundary, so the distinguishing property is checked explicitly: in package mode no
+    external Hexalith module is consumed as a ProjectReference.
+    """
+
+    source_edges: set[str] = set()
+    frameworks = restore.get("frameworks")
+    if not isinstance(frameworks, dict) or not frameworks:
+        raise ValueError(f"Restore evidence has no framework section for {package_id}")
+
+    for framework in frameworks.values():
+        if not isinstance(framework, dict):
+            raise ValueError(f"Restore framework evidence is malformed for {package_id}")
+        references = framework.get("projectReferences")
+        if references is None:
+            continue
+        if not isinstance(references, dict):
+            raise ValueError(f"Restore project-reference evidence is malformed for {package_id}")
+        for reference in references:
+            name = Path(str(reference)).stem
+            if name.startswith("Hexalith.") and not name.startswith("Hexalith.Works."):
+                source_edges.add(name)
+
+    if source_edges:
+        raise ValueError(
+            f"{package_id}: obj/project.assets.json is a Debug (source-mode) graph, not the Release "
+            f"package-mode graph — it consumes {sorted(source_edges)} as project references. "
+            "Re-run `dotnet restore Hexalith.Works.slnx` (Release is the default configuration) before "
+            "validating packages; a Debug restore overwrites this evidence in place."
+        )
 
 
 def expected_package_boundaries() -> dict[str, frozenset[str]]:
@@ -73,6 +108,7 @@ def expected_package_boundaries() -> dict[str, frozenset[str]]:
             raise ValueError(f"Restore evidence does not belong to {project_value}")
         if str(restore.get("projectName", "")).casefold() != package_id.casefold():
             raise ValueError(f"Restore evidence identifies the wrong package for {package_id}")
+        assert_release_restore_graph(package_id, restore)
 
         direct_groups = assets.get("projectFileDependencyGroups")
         central_groups = assets.get("centralTransitiveDependencyGroups")
@@ -83,7 +119,11 @@ def expected_package_boundaries() -> dict[str, frozenset[str]]:
             or not isinstance(project_frameworks, dict)
         ):
             raise ValueError(f"Restore evidence has no usable dependency groups for {package_id}")
-        if set(direct_groups) != set(central_groups) or set(direct_groups) != set(project_frameworks) or not direct_groups:
+        if (
+            not direct_groups
+            or set(direct_groups) != set(central_groups)
+            or set(direct_groups) != set(project_frameworks)
+        ):
             raise ValueError(f"Restore dependency groups are inconsistent for {package_id}")
 
         dependencies: set[str] = set()
@@ -122,7 +162,11 @@ def package_metadata(package_path: Path) -> PackageMetadata:
             return element.text.strip() if element is not None and element.text else None
 
         dependency_path = ".//n:metadata/n:dependencies//n:dependency"
-        dependency_elements = root.findall(dependency_path, namespace) if namespace else root.findall(dependency_path.replace("n:", ""))
+        dependency_elements = (
+            root.findall(dependency_path, namespace)
+            if namespace
+            else root.findall(dependency_path.replace("n:", ""))
+        )
         dependencies = frozenset(
             element.attrib["id"].strip()
             for element in dependency_elements
@@ -199,4 +243,4 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except Exception as error:  # noqa: BLE001 - the CI entry point must report concise failures.
         print(f"Package validation failed: {error}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from error

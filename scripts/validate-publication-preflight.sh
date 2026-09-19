@@ -5,6 +5,7 @@ version="${1:-}"
 phase="${2:-}"
 expected_builds_sha="04d961759994396132bb2b113ee465b64740a543"
 expected_package_count=5
+expected_repository="${HEXALITH_RELEASE_EXPECTED_REPOSITORY:-Hexalith/Hexalith.Works}"
 package_manifest="${HEXALITH_RELEASE_PACKAGE_MANIFEST:-}"
 source_branch="${HEXALITH_RELEASE_SOURCE_BRANCH:-}"
 source_ci_workflow="${HEXALITH_RELEASE_SOURCE_CI_WORKFLOW:-}"
@@ -31,7 +32,11 @@ fail() {
 [[ "$release_environment" = "production" ]] || fail "The release environment must be production."
 [[ "${HEXALITH_RELEASE_EXPECTED_PACKAGE_COUNT-}" = "$expected_package_count" ]] ||
   fail "The caller-declared package count must be exactly $expected_package_count."
-[[ "$repository" = "Hexalith/Hexalith.Works" ]] || fail "Unexpected release repository '$repository'."
+[[ "$repository" = "$expected_repository" ]] || fail \
+  "Refusing to publish from '$repository'; this preflight is bound to '$expected_repository'. This check is
+  deliberate: it stops a fork or a transferred repository from publishing to the upstream package IDs under
+  credentials it should not be using. If you genuinely own a different publication target, set
+  HEXALITH_RELEASE_EXPECTED_REPOSITORY to that owner/name and publish your own package IDs."
 [ -n "$github_token" ] || fail "A repository-scoped GitHub token is required for exact-source proof."
 [ -f "$package_manifest" ] || fail "The authoritative package manifest is missing."
 

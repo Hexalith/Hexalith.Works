@@ -11,7 +11,6 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "tools" / "release-packages.json"
 EXPECTED_PACKAGE_COUNT = 5
@@ -115,6 +114,17 @@ def main() -> int:
         raise ValueError(
             f"Packing produced {len(archives)} package archives; expected {EXPECTED_PACKAGE_COUNT}."
         )
+
+    # Directory.Build.props sets IncludeSymbols with SymbolPackageFormat=snupkg, so every published
+    # package must be accompanied by exactly one symbol package. A missing .snupkg means symbols were
+    # silently disabled and consumers would get an undebuggable release.
+    symbols = sorted(output.glob("*.snupkg"))
+    expected_symbols = {path.with_suffix("").name + ".snupkg" for path in archives}
+    if {path.name for path in symbols} != expected_symbols:
+        raise ValueError(
+            f"Packing produced symbol packages {sorted(path.name for path in symbols)}; "
+            f"expected exactly {sorted(expected_symbols)}."
+        )
     return 0
 
 
@@ -123,7 +133,7 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except subprocess.CalledProcessError as error:
         print(f"Package packing failed with exit code {error.returncode}.", file=sys.stderr)
-        raise SystemExit(error.returncode)
+        raise SystemExit(error.returncode) from error
     except Exception as error:  # noqa: BLE001 - the CI entry point must report concise failures.
         print(f"Package packing failed: {error}", file=sys.stderr)
-        raise SystemExit(1)
+        raise SystemExit(1) from error

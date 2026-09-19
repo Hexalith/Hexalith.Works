@@ -14,17 +14,23 @@ internal sealed class MsBuildProjectSnapshot
     /// <param name="globalProperties">The effective global properties used for this snapshot.</param>
     /// <param name="items">The final evaluated dependency items.</param>
     /// <param name="importPaths">The resolved custom import closure, excluding installed-SDK and generated build-output imports.</param>
+    /// <param name="properties">The evaluated values of the governed dependency-mode properties.</param>
     internal MsBuildProjectSnapshot(
         string projectPath,
         IReadOnlyDictionary<string, string> globalProperties,
         IEnumerable<MsBuildEvaluatedItem> items,
-        IEnumerable<string> importPaths)
+        IEnumerable<string> importPaths,
+        IReadOnlyDictionary<string, string>? properties = null)
     {
         ProjectPath = projectPath;
         GlobalProperties = new ReadOnlyDictionary<string, string>(
             new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase));
         Items = new ReadOnlyCollection<MsBuildEvaluatedItem>([.. items]);
         ImportPaths = new ReadOnlyCollection<string>([.. importPaths]);
+        Properties = new ReadOnlyDictionary<string, string>(
+            new Dictionary<string, string>(
+                properties ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+                StringComparer.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -47,6 +53,24 @@ internal sealed class MsBuildProjectSnapshot
     /// generated under the evaluated project's build output are excluded because they are not governed inputs.
     /// </summary>
     internal IReadOnlyList<string> ImportPaths { get; }
+
+    /// <summary>
+    /// Gets the evaluated values of the governed dependency-mode properties, such as the external
+    /// Hexalith module roots. Absent or empty properties are simply missing from the dictionary.
+    /// </summary>
+    internal IReadOnlyDictionary<string, string> Properties { get; }
+
+    /// <summary>
+    /// Gets one evaluated governed property value, or an empty string when it was not set.
+    /// </summary>
+    /// <param name="name">The property name to read.</param>
+    /// <returns>The evaluated value, or an empty string.</returns>
+    internal string PropertyValue(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        return Properties.TryGetValue(name, out string? value) ? value : string.Empty;
+    }
 
     /// <summary>
     /// Gets final evaluated items of one MSBuild item type.

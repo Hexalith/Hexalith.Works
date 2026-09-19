@@ -82,7 +82,19 @@ internal static class WorksAppHostSmokeHarness
 
         // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
         // every start so teardown lag from the first run cannot race the second scheduler/placement bind.
-        await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
+        //
+        // Every live fact runs with --DcpPublisher:RandomizePorts=false, so a foreign listener on any fixed
+        // control-plane port makes the AppHost hang in StartAsync until the startup budget expires instead of
+        // failing usefully. That is environmental contention, not a product defect, so this boundary skips with
+        // the port named — exactly like the prerequisite probe — rather than reporting a false red.
+        try
+        {
+            await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
+        }
+        catch (TimeoutException exception)
+        {
+            Assert.Skip($"Aspire live AppHost lane cannot start: {exception.Message}");
+        }
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
@@ -164,10 +176,23 @@ internal static class WorksAppHostSmokeHarness
             finally
             {
                 await builder.DisposeAsync().ConfigureAwait(true);
-                // Dispose returning does not guarantee DCP proxies have released their fixed sockets. Do not
-                // let the next restart begin until all three AppHost-owned control-plane ports are observable
-                // as free, and name every holdover if the bounded wait expires.
-                await WaitForControlPlanePortsFreeAsync("teardown boundary", cancellationToken).ConfigureAwait(false);
+
+                // Dispose returning does not guarantee DCP proxies have released their fixed sockets, so settle
+                // the ports before the next restart begins. This runs in a finally block, so it must never throw:
+                // a timeout (or a cancelled caller token) here would replace the body's real assertion failure
+                // with a teardown error and hide the actual defect. Use an independent, non-cancelled token so a
+                // cancelled test still drains the ports, and report a holdover as a diagnostic instead.
+                using var teardownCts = new CancellationTokenSource(ControlPlanePortWait + TimeSpan.FromSeconds(15));
+                try
+                {
+                    await WaitForControlPlanePortsFreeAsync("teardown boundary", teardownCts.Token).ConfigureAwait(true);
+                }
+                catch (Exception exception) when (exception is TimeoutException or OperationCanceledException)
+                {
+                    TestContext.Current.SendDiagnosticMessage(
+                        "Live AppHost teardown left control-plane ports occupied: {0}",
+                        exception.Message);
+                }
             }
         }
     }

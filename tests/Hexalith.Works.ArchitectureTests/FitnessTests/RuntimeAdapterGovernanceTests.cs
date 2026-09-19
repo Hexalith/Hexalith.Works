@@ -22,11 +22,26 @@ public sealed class RuntimeAdapterGovernanceTests
     {
         string root = RepositoryRoot.Locate();
 
-        string[] hostReferences = ProjectReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
-        string[] hostPackages = PackageReferenceNames(root, Path.Combine("src", RunnableHost, RunnableHost + ".csproj"));
-        hostReferences.Concat(hostPackages).ShouldContain(
-            reference => reference.Contains("Hexalith.EventStore.DomainService", StringComparison.Ordinal),
-            "The runnable Works host is the adapter edge and must consume the EventStore domain-service SDK.");
+        string hostProject = Path.Combine("src", RunnableHost, RunnableHost + ".csproj");
+        string[] hostPackages = PackageReferenceNames(root, hostProject);
+
+        // Evaluate per configuration rather than text-matching the raw declaration: the raw form is a
+        // conditional-ProjectReference sentinel that a substring match satisfies even when the condition
+        // resolves to no reference at all. Both modes must yield a real resolved domain-service edge.
+        foreach (string configuration in new[] { "Debug", "Release" })
+        {
+            MsBuildProjectSnapshot hostSnapshot = EvaluateHostProject(root, hostProject, configuration);
+            string[] resolvedDomainServiceEdges =
+            [
+                .. hostSnapshot.ItemsOfType("ProjectReference")
+                    .Select(reference => Path.GetFileNameWithoutExtension(reference.CanonicalPath!))
+                    .Concat(hostSnapshot.ItemsOfType("PackageReference").Select(reference => reference.Identity))
+                    .Where(name => string.Equals(name, "Hexalith.EventStore.DomainService", StringComparison.Ordinal)),
+            ];
+
+            resolvedDomainServiceEdges.ShouldHaveSingleItem(
+                $"The runnable Works host must resolve exactly one EventStore domain-service edge in {configuration}.");
+        }
 
         hostPackages.ShouldContain("Dapr.AspNetCore", "The runnable Works host owns the Dapr dependency for the proof.");
         hostPackages.ShouldContain("Dapr.Actors", "Story 4.6 date-resume reminders are Dapr actor reminders owned by the runnable Works host.");
@@ -42,20 +57,7 @@ public sealed class RuntimeAdapterGovernanceTests
             string csproj = Path.Combine("src", project, project + ".csproj");
             foreach (string configuration in new[] { "Debug", "Release" })
             {
-                var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["BuildingInsideVisualStudio"] = "false",
-                    ["Configuration"] = configuration,
-                    ["DesignTimeBuild"] = "false",
-                    ["Platform"] = "AnyCPU",
-                };
-                bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
-                    Path.Combine(root, csproj),
-                    globalProperties,
-                    out MsBuildProjectSnapshot? snapshot,
-                    out string diagnostic);
-                evaluated.ShouldBeTrue(diagnostic);
-                snapshot.ShouldNotBeNull();
+                MsBuildProjectSnapshot snapshot = EvaluateHostProject(root, csproj, configuration);
 
                 string[] dependencyNames = [.. snapshot.ItemsOfType("ProjectReference")
                     .Select(reference => Path.GetFileNameWithoutExtension(reference.CanonicalPath!))
@@ -288,6 +290,25 @@ public sealed class RuntimeAdapterGovernanceTests
 
     // Both reference scans share the centralized fail-closed discovery so this gate cannot drift away
     // from the exact dependency-direction and direct-family gates that read the same project files.
+    /// <summary>Evaluates one project for a single configuration so conditional references resolve for real.</summary>
+    private static MsBuildProjectSnapshot EvaluateHostProject(string root, string relativeProjectPath, string configuration)
+    {
+        bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
+            Path.Combine(root, relativeProjectPath),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["BuildingInsideVisualStudio"] = "false",
+                ["Configuration"] = configuration,
+                ["DesignTimeBuild"] = "false",
+                ["Platform"] = "AnyCPU",
+            },
+            out MsBuildProjectSnapshot? snapshot,
+            out string diagnostic);
+
+        evaluated.ShouldBeTrue(diagnostic);
+        return snapshot.ShouldNotBeNull();
+    }
+
     private static string[] ProjectReferenceNames(string root, string relativeProjectPath)
         => KernelDependencyPolicy.DeclaredReferenceNames(
             Path.Combine(root, relativeProjectPath),

@@ -17,6 +17,10 @@
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(UseNuGetDeps)' == 'true'">false</UseHexalithProjectReferences>
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(UseNuGetDeps)' == 'false'">true</UseHexalithProjectReferences>
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(Configuration)' == 'Debug'">true</UseHexalithProjectReferences>
+    <!-- A configuration-free evaluation (a bare `dotnet build`, or design-time evaluation) would otherwise
+         resolve package references while emitting Debug output. Record that the mode was defaulted, pick the
+         Release-consistent package mode explicitly, and warn below so the mismatch is never silent. -->
+    <HexalithDependencyModeDefaulted Condition="'$(UseHexalithProjectReferences)' == '' and '$(Configuration)' == ''">true</HexalithDependencyModeDefaulted>
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == ''">false</UseHexalithProjectReferences>
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == '' and '$(UseHexalithProjectReferences)' == 'true'">false</UseNuGetDeps>
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
@@ -28,8 +32,17 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
+    <!-- Hexalith.Builds ci-cd-standards.md (Dependency Auditing) requires NU1901-NU1904 to stay out of
+         warnings-as-errors so a transitive advisory that cannot be upgraded immediately does not block CI,
+         while still surfacing in build logs. Waive an individual advisory with NuGetAuditSuppress. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <NoWarn>$(NoWarn);NU5118;NU5128</NoWarn>
+
+    <!-- Published packages declare RepositoryUrl, so ship debugging symbols and deterministic source links. -->
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
 
     <IsPackable>true</IsPackable>
     <IsPublishable>false</IsPublishable>
@@ -57,6 +70,21 @@
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <!--
+    The two dependency-mode switches are resolved by evaluation order, so a caller that sets both to true
+    would silently get whichever one happened to be read first. Reject the contradiction outright.
+  -->
+  <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error
+      Condition="'$(UseHexalithProjectReferences)' == 'true' and '$(UseNuGetDeps)' == 'true'"
+      Code="HXW0001"
+      Text="UseHexalithProjectReferences and UseNuGetDeps are both 'true', which is contradictory. Set exactly one: UseHexalithProjectReferences=true for sibling-source Debug builds, or UseNuGetDeps=true for package-mode Release builds." />
+    <Warning
+      Condition="'$(HexalithDependencyModeDefaulted)' == 'true'"
+      Code="HXW0002"
+      Text="No Configuration was specified, so the Hexalith dependency mode defaulted to package references (Release-consistent) while the build emits Debug output. Pass --configuration Debug or Release, or set UseHexalithProjectReferences explicitly." />
+  </Target>
 
   <Target Name="RemoveDuplicateLoggingSourceGenerator" BeforeTargets="CoreCompile">
     <ItemGroup>

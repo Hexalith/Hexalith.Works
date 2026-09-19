@@ -72,6 +72,13 @@ public sealed class BuildConfigurationTests
         {
             PropertyValue(policy, "NuGetAudit").ShouldBe("true");
             PropertyValue(policy, "NuGetAuditMode").ShouldBe("all");
+
+            // An explicit audit level is required: without it, exempting every advisory code from
+            // warnings-as-errors makes the audit unable to fail a build at any severity, which is
+            // indistinguishable from having it switched off.
+            // ci-cd-standards.md (Dependency Auditing) requires the audit to stay enabled while
+            // NU1901-NU1904 remain exempt from warnings-as-errors, so an advisory surfaces in the build
+            // log without blocking CI. An individual advisory is waived with NuGetAuditSuppress.
             foreach (string advisory in new[] { "NU1901", "NU1902", "NU1903", "NU1904" })
             {
                 PropertyContainsWarning(policy, "WarningsNotAsErrors", advisory).ShouldBeTrue(

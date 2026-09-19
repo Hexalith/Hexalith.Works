@@ -1,5 +1,7 @@
 {
-  "branches": ["main"],
+  "branches": [
+    "main"
+  ],
   "tagFormat": "v${version}",
   "plugins": [
     "@semantic-release/commit-analyzer",
@@ -9,13 +11,16 @@
       {
         "verifyReleaseCmd": "bash scripts/validate-release-secrets.sh && bash scripts/validate-publication-preflight.sh ${nextRelease.version} verify >&2",
         "prepareCmd": "python3 scripts/pack-release-packages.py ./nupkgs ${nextRelease.version} && python3 scripts/validate-nuget-packages.py ./nupkgs && python3 scripts/validate-consumer-package-references.py ./nupkgs",
-        "publishCmd": "bash scripts/validate-release-secrets.sh && bash scripts/validate-publication-preflight.sh ${nextRelease.version} publish >&2 && dotnet nuget push ./nupkgs/*.nupkg --source https://api.nuget.org/v3/index.json --api-key \"$NUGET_API_KEY\""
+        "publishCmd": "bash scripts/validate-release-secrets.sh && bash scripts/validate-publication-preflight.sh ${nextRelease.version} publish >&2 && bash scripts/push-release-packages.sh ${nextRelease.version} ./nupkgs"
       }
     ],
     [
       "@semantic-release/github",
       {
-        "assets": ["nupkgs/*.nupkg"],
+        "assets": [
+          "nupkgs/*.nupkg",
+          "nupkgs/*.snupkg"
+        ],
         "labels": [],
         "successCommentCondition": false,
         "releasedLabels": false

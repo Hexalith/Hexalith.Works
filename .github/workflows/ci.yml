@@ -8,7 +8,9 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Release gating requires a successful push CI run for the exact main SHA, so a push run must never be
+  # cancelled by a later push. Only pull-request runs are safe to supersede.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -26,3 +28,19 @@ jobs:
         tests/Hexalith.Works.PropertyTests
       integration-test-projects: |
         tests/Hexalith.Works.IntegrationTests
+
+  scripts-lint:
+    name: Lint release tooling
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Install ruff
+        run: pipx install ruff
+      - name: Lint release and validation scripts
+        run: bash scripts/lint-scripts.sh

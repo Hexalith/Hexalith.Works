@@ -13,7 +13,11 @@
     <ProjectReference Include="$(HexalithPolymorphicSerializationsRoot)\src\libraries\Hexalith.PolymorphicSerializations\Hexalith.PolymorphicSerializations.csproj" Condition="'$(HexalithPolymorphicSerializationsFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.PolymorphicSerializations" Condition="'$(HexalithPolymorphicSerializationsFromSource)' != 'true'" />
     <ProjectReference Include="$(HexalithPolymorphicSerializationsRoot)\src\libraries\Hexalith.PolymorphicSerializations.CodeGenerators\Hexalith.PolymorphicSerializations.CodeGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" Condition="'$(HexalithPolymorphicSerializationsFromSource)' == 'true'" />
-    <PackageReference Include="Hexalith.PolymorphicSerializations.CodeGenerators" OutputItemType="Analyzer" ReferenceOutputAssembly="false" PrivateAssets="all" Condition="'$(HexalithPolymorphicSerializationsFromSource)' != 'true'" />
+    <!-- OutputItemType/ReferenceOutputAssembly are ProjectReference metadata and are ignored on a
+         PackageReference. Express the analyzer-only intent with asset scoping instead: admit the analyzer
+         and build assets, exclude every runtime/compile asset, and keep the whole reference private so it
+         never becomes a dependency of the published package. -->
+    <PackageReference Include="Hexalith.PolymorphicSerializations.CodeGenerators" IncludeAssets="analyzers;build;buildTransitive" ExcludeAssets="compile;runtime;contentFiles;native" PrivateAssets="all" Condition="'$(HexalithPolymorphicSerializationsFromSource)' != 'true'" />
   </ItemGroup>
 
 </Project>

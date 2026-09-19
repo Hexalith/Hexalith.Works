@@ -15,6 +15,18 @@ internal static class MsBuildProjectEvaluation
     private static readonly string[] _dependencyItemTypes =
         ["ProjectReference", "PackageReference", "GlobalPackageReference", "PackageVersion", "FrameworkReference", "Reference"];
 
+    private static readonly string[] _governedPropertyNames =
+    [
+        "Configuration",
+        "HexalithEventStoreRoot",
+        "HexalithPolymorphicSerializationsRoot",
+        "HexalithTenantsRoot",
+        "IsPackable",
+        "PackageId",
+        "UseHexalithProjectReferences",
+        "UseNuGetDeps",
+    ];
+
     private static readonly IReadOnlyDictionary<string, string> _emptyGlobalProperties =
         new ReadOnlyDictionary<string, string>(
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
@@ -137,7 +149,27 @@ internal static class MsBuildProjectEvaluation
             canonicalProjectPath,
             initialGlobalProperties,
             items.DistinctBy(EvaluatedItemKey, StringComparer.Ordinal),
-            imports.Distinct(PathComparer));
+            imports.Distinct(PathComparer),
+            GovernedProperties(projects[0]));
+    }
+
+    /// <summary>
+    /// Captures the evaluated dependency-mode properties the governance tests reason about, so a
+    /// sibling-checkout workspace is classified by its real evaluated roots rather than a fixed path shape.
+    /// </summary>
+    private static IReadOnlyDictionary<string, string> GovernedProperties(Project project)
+    {
+        var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string name in _governedPropertyNames)
+        {
+            string value = project.GetPropertyValue(name);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                properties[name] = value;
+            }
+        }
+
+        return properties;
     }
 
     private static Project LoadProject(

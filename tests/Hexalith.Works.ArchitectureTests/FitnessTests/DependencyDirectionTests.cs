@@ -376,19 +376,30 @@ public sealed class DependencyDirectionTests
     {
         string root = RepositoryRoot.Locate();
         string appHostPath = Path.Combine(root, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj");
-        MsBuildProjectSnapshot snapshot = EvaluateProject(appHostPath);
+        string[] worksTopology =
+        [
+            Path.Combine(root, "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"),
+            Path.Combine(root, "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj"),
+            Path.Combine(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"),
+            Path.Combine(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"),
+            Path.Combine(root, "src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj"),
+            Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj"),
+        ];
+
+        // Assert both modes: a Debug-only conditional ProjectReference would otherwise satisfy a
+        // single Release evaluation while silently changing the topology developers actually run.
+        AssertExactProjectReferences(
+            EvaluateProject(appHostPath, "Release"),
+            worksTopology,
+            "Release AppHost should use the EventStore Aspire package while retaining Operations as its source-only executable resource.");
 
         AssertExactProjectReferences(
-            snapshot,
+            EvaluateProject(appHostPath, "Debug"),
             [
-                Path.Combine(root, "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"),
-                Path.Combine(root, "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj"),
-                Path.Combine(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"),
-                Path.Combine(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"),
-                Path.Combine(root, "src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj"),
-                Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj"),
+                .. worksTopology,
+                Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj"),
             ],
-            "Release AppHost should use the EventStore Aspire package while retaining Operations as its source-only executable resource.");
+            "Debug AppHost should wire the Works topology plus the source-backed EventStore Aspire and Operations workloads.");
     }
 
     [Fact]
@@ -518,6 +529,53 @@ public sealed class DependencyDirectionTests
                     ignoreOrder: true,
                     customMessage: $"{project} must consume the exact centrally pinned external packages in Release.");
         }
+
+        AssertNoUndeclaredExternalHexalithPackageReferences(root, expectations.Select(expectation => expectation.Project));
+    }
+
+    /// <summary>
+    /// Sweeps every discovered Works project so an external Hexalith <c>PackageReference</c> added to a
+    /// project that has no explicit expectation above is still gated. The four explicit expectations
+    /// pin the exact dependency mode; this sweep keeps the governance repository-wide.
+    /// </summary>
+    private static void AssertNoUndeclaredExternalHexalithPackageReferences(
+        string root,
+        IEnumerable<string> explicitlyExpectedProjects)
+    {
+        HashSet<string> expected = [.. explicitlyExpectedProjects
+            .Select(project => Path.GetFullPath(Path.Combine(root, project)))
+            .Distinct(MsBuildProjectEvaluation.PathComparer)];
+
+        string[] projectFiles = [.. Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}references{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !KernelDependencyPolicy.IsBuildOutput(path))];
+
+        projectFiles.ShouldNotBeEmpty("Expected to discover Hexalith.Works project files to sweep.");
+        projectFiles.ShouldContain(
+            path => Path.GetFileName(path) == "Hexalith.Works.Contracts.csproj",
+            "Hexalith.Works.Contracts.csproj must be discovered for this sweep to be meaningful.");
+
+        var violations = new List<string>();
+        foreach (string projectFile in projectFiles.Where(path => !expected.Contains(Path.GetFullPath(path))))
+        {
+            foreach (string configuration in new[] { "Debug", "Release" })
+            {
+                string[] externalPackages = [.. EvaluateProject(projectFile, configuration)
+                    .ItemsOfType("PackageReference")
+                    .Select(item => item.Identity)
+                    .Where(identity => identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase)
+                        && !identity.StartsWith("Hexalith.Works.", StringComparison.OrdinalIgnoreCase))];
+                if (externalPackages.Length > 0)
+                {
+                    violations.Add(
+                        $"{Path.GetRelativePath(root, projectFile)} ({configuration}): {string.Join(", ", externalPackages.Order(StringComparer.Ordinal))}");
+                }
+            }
+        }
+
+        violations.ShouldBeEmpty(
+            "Only the explicitly governed projects may consume external Hexalith packages; add an expectation before introducing a new one.");
     }
 
     [Fact]
@@ -662,12 +720,37 @@ public sealed class DependencyDirectionTests
         }
     }
 
+    /// <summary>
+    /// Selects the external Hexalith module references using the project's own evaluated module roots.
+    /// A sibling-checkout workspace resolves those roots outside <c>references/</c>, so matching on a
+    /// fixed path fragment would silently select nothing and make both mode assertions vacuous.
+    /// </summary>
     private static IEnumerable<string> ExternalProjectReferences(MsBuildProjectSnapshot snapshot)
-        => snapshot.ItemsOfType("ProjectReference")
+    {
+        string[] externalRoots = [.. ExternalModuleRoots(snapshot)];
+        externalRoots.ShouldNotBeEmpty(
+            $"No external Hexalith module root evaluated for '{snapshot.ProjectPath}', so this gate would be vacuous.");
+
+        return snapshot.ItemsOfType("ProjectReference")
             .Select(reference => reference.CanonicalPath!)
-            .Where(path => path.Contains(
-                $"{Path.DirectorySeparatorChar}references{Path.DirectorySeparatorChar}Hexalith.",
-                StringComparison.Ordinal));
+            .Where(path => externalRoots.Any(root => IsUnderRoot(path, root)));
+    }
+
+    /// <summary>Gets the evaluated external Hexalith module roots, normalized to canonical full paths.</summary>
+    private static IEnumerable<string> ExternalModuleRoots(MsBuildProjectSnapshot snapshot)
+        => new[] { "HexalithEventStoreRoot", "HexalithPolymorphicSerializationsRoot", "HexalithTenantsRoot" }
+            .Select(snapshot.PropertyValue)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Select(value => Path.GetFullPath(value.Replace('\\', Path.DirectorySeparatorChar)))
+            .Distinct(MsBuildProjectEvaluation.PathComparer);
+
+    private static bool IsUnderRoot(string path, string root)
+    {
+        string normalizedRoot = root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        return path.StartsWith(normalizedRoot, MsBuildProjectEvaluation.PathComparer == StringComparer.OrdinalIgnoreCase
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal);
+    }
 
     private static MsBuildProjectSnapshot EvaluateProject(string projectPath, string configuration = "Release")
     {
