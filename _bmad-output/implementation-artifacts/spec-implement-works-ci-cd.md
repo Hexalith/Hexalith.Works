@@ -65,6 +65,8 @@ context:
 
 ## Implementation Notes
 
+- Normalized `global.json` to the repository's CRLF convention with a final newline so the baseline-to-current diff passes the repository formatting gate.
+
 ## Spec Change Log
 
 ## Review Triage Log
@@ -83,7 +85,7 @@ Works has no container package contract, so release uses the FrontComposer-style
 - `curl` NuGet flat-container indexes for every manifest ID -- current status is explicitly captured; after a future authorized release, every exact version must return HTTP 200.
 
 **Observed results (2026-09-18):**
-- `actionlint`, shell/Python/JSON validation, `npm ci --ignore-scripts`, `npm audit signatures`, and `git diff --check` passed. NPM installed 505 packages with zero vulnerabilities and verified 504 registry signatures plus 127 attestations.
+- `actionlint`, shell/Python/JSON validation, `npm ci --ignore-scripts`, `npm audit signatures`, and the CRLF-aware `git -c core.whitespace=cr-at-eol diff --check` gate passed. NPM installed 505 packages with zero vulnerabilities and verified 504 registry signatures plus 127 attestations.
 - Release restore/build passed with zero warnings and errors. Exactly five `0.0.0-ci-test` packages passed metadata/dependency validation, and all five isolated PackageReference-only consumers built successfully.
 - Unit passed 568/568, Architecture passed 246/246, and Property passed 3/3. NuGet.org returned HTTP 404 for each of the five manifest package IDs.
 - Integration completed 510/516. All six live AppHost failures occurred after Dapr Sentry exited with `failed to add target /var/run/dapr/credentials: no space left on device`; the focused `WorksReminderRecoveryPipelineSmokeTests.Recovery_re_registers_a_still_future_await_that_later_fires` run failed for the same reason before the application became healthy.
@@ -95,3 +97,9 @@ Works has no container package contract, so release uses the FrontComposer-style
 - Static checks, Release restore/build, the exact five-package validation, and five isolated package-only consumer builds passed. Unit passed 568/568, Architecture passed 246/246, Property passed 3/3, and all five manifest package IDs still returned HTTP 404 from NuGet.org.
 - Integration completed 514/516 with no skips. The two live-topology failures were a Works Dapr actor-host metadata timeout while waiting for scheduler/placement connectivity and EventStore reporting `FailedToStart`.
 - Host inotify allocation was 1,048,164 of 1,048,576 watches (99.96%), predominantly held by unrelated VS Code and MCP processes. Test-owned DCP resources were cleaned up and the fixed control-plane ports were released; no unrelated process was terminated. The broad Integration acceptance gate remains environment-blocked, so status remains `in-progress`.
+
+**Latest reverification (2026-09-19):**
+- `actionlint`, Python/shell/JSON validation, `npm ci --ignore-scripts`, `npm audit signatures`, Release restore/build, exact five-package validation, and all five isolated package-only consumer builds passed. Unit passed 568/568, Architecture passed 246/246, and Property passed 3/3, all without skips. The five manifest package indexes still returned HTTP 404 from NuGet.org.
+- After the CRLF-preserving `global.json` final-newline normalization, serialized Release restore with build-server reuse disabled passed and the Architecture assembly passed again at 246/246 with no skips.
+- Integration completed 510/516 with no skips. All six live-topology facts reached the same pre-application boundary: the AppHost `eventstore` resource reported `FailedToStart`. The focused restart regression ran directly as 1/1 and failed at that same boundary.
+- Aspire resource/log inspection identified the upstream failure: `dapr-sentry` exited with `failed to add target /var/run/dapr/credentials: no space left on device`. The host had 1,048,534 of 1,048,576 inotify watches allocated (42 free), while `/tmp` still had 77,817 filesystem inodes free. No unrelated watcher-owning process was terminated; the diagnostic AppHost was stopped cleanly, fixed control-plane ports were released, and the pre-existing Dapr placement/scheduler containers were restored to their original running state. The broad Integration acceptance gate remains environment-blocked, so status remains `in-progress`.
