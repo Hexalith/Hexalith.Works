@@ -93,7 +93,9 @@ jobs:
   verify-publication:
     name: Verify exact five-package publication
     needs: release
-    if: ${{ always() }}
+    # A rejected source proof skips the reusable release job and must not enter the protected environment.
+    # Once release actually starts, run this job even after a failure so partial publication is still reported.
+    if: ${{ always() && needs.release.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The publication freeze variable must be read in the same scope the publishing job used. Without this

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -35,8 +36,11 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
 
-    /// <summary>How long a control-plane port may still be held by a previous fact's teardown before it counts as foreign.</summary>
-    private static readonly TimeSpan ControlPlanePortWait = TimeSpan.FromSeconds(60);
+    /// <summary>How long a control-plane resource may still be held by a previous fact's teardown before it counts as foreign.</summary>
+    private static readonly TimeSpan ControlPlaneReleaseWait = TimeSpan.FromSeconds(60);
+
+    /// <summary>The persistent Scheduler volume that must have exactly one owner at a time.</summary>
+    private const string SchedulerVolumeName = "hexalith-works-dapr-scheduler";
 
     /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
     private static readonly (int Port, string Name)[] ControlPlanePorts =
@@ -58,9 +62,9 @@ internal static class WorksAppHostSmokeHarness
 
         try
         {
-            await WaitForControlPlanePortsFreeAsync("prerequisite", cancellationToken).ConfigureAwait(false);
+            await WaitForControlPlaneResourcesReleasedAsync("prerequisite", cancellationToken).ConfigureAwait(false);
         }
-        catch (TimeoutException exception)
+        catch (Exception exception) when (exception is TimeoutException or InvalidOperationException)
         {
             return exception.Message;
         }
@@ -82,9 +86,9 @@ internal static class WorksAppHostSmokeHarness
 
         // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
         // every start so teardown lag from the first run cannot race the second scheduler/placement bind. Once
-        // the explicit prerequisite probe has passed, a later occupied port is a restart-boundary failure: it
+        // the explicit prerequisite probe has passed, a later occupied resource is a restart-boundary failure: it
         // must never turn the acceptance fact into a successful skip.
-        await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
+        await WaitForControlPlaneResourcesReleasedAsync("startup boundary", cancellationToken).ConfigureAwait(false);
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         // A clean checkout now builds the runtime-only EventStore Operations project during the first live start.
@@ -183,20 +187,23 @@ internal static class WorksAppHostSmokeHarness
             {
                 await builder.DisposeAsync().ConfigureAwait(true);
 
-                // Dispose returning does not guarantee DCP proxies have released their fixed sockets, so settle
-                // the ports before the next restart begins. This runs in a finally block, so it must never throw:
+                // Dispose returning does not guarantee DCP has released its fixed sockets or removed the Scheduler
+                // container that owns the persistent volume, so settle both before the next restart begins. This
+                // runs in a finally block, so it must never throw:
                 // a timeout (or a cancelled caller token) here would replace the body's real assertion failure
                 // with a teardown error and hide the actual defect. Use an independent, non-cancelled token so a
-                // cancelled test still drains the ports, and report a holdover as a diagnostic instead.
-                using var teardownCts = new CancellationTokenSource(ControlPlanePortWait + TimeSpan.FromSeconds(15));
+                // cancelled test still drains the resources, and report a holdover as a diagnostic instead.
+                using var teardownCts = new CancellationTokenSource(ControlPlaneReleaseWait + TimeSpan.FromSeconds(15));
                 try
                 {
-                    await WaitForControlPlanePortsFreeAsync("teardown boundary", teardownCts.Token).ConfigureAwait(true);
+                    await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token).ConfigureAwait(true);
                 }
-                catch (Exception exception) when (exception is TimeoutException or OperationCanceledException)
+                catch (Exception exception) when (exception is TimeoutException
+                    or OperationCanceledException
+                    or InvalidOperationException)
                 {
                     TestContext.Current.SendDiagnosticMessage(
-                        "Live AppHost teardown left control-plane ports occupied: {0}",
+                        "Live AppHost teardown left control-plane resources occupied: {0}",
                         exception.Message);
                 }
             }
@@ -437,12 +444,15 @@ internal static class WorksAppHostSmokeHarness
         return lastDot >= 0 ? typeName[(lastDot + 1)..] : typeName;
     }
 
-    /// <summary>Waits until every fixed control-plane port is free at a start or teardown boundary.</summary>
-    private static async Task WaitForControlPlanePortsFreeAsync(
+    /// <summary>
+    /// Waits until every fixed control-plane port is free and no container still owns the persistent Scheduler
+    /// volume at a start or teardown boundary.
+    /// </summary>
+    private static async Task WaitForControlPlaneResourcesReleasedAsync(
         string boundary,
         CancellationToken cancellationToken)
     {
-        DateTimeOffset deadline = DateTimeOffset.UtcNow + ControlPlanePortWait;
+        DateTimeOffset deadline = DateTimeOffset.UtcNow + ControlPlaneReleaseWait;
         while (true)
         {
             var occupied = new List<string>();
@@ -454,6 +464,11 @@ internal static class WorksAppHostSmokeHarness
                 }
             }
 
+            IReadOnlyList<string> schedulerVolumeOwners = await SchedulerVolumeOwnersAsync(cancellationToken)
+                .ConfigureAwait(false);
+            occupied.AddRange(schedulerVolumeOwners.Select(
+                static owner => $"scheduler volume owner {owner}"));
+
             if (occupied.Count == 0)
             {
                 return;
@@ -462,13 +477,46 @@ internal static class WorksAppHostSmokeHarness
             if (DateTimeOffset.UtcNow >= deadline)
             {
                 throw new TimeoutException(
-                    $"[{boundary}] Fixed AppHost control-plane ports were still occupied after "
-                    + $"{ControlPlanePortWait.TotalSeconds:0} seconds: {string.Join(", ", occupied)}. "
-                    + "Stop leaked DCP controllers/containers or a conflicting `dapr init` control plane before retrying.");
+                    $"[{boundary}] Fixed AppHost control-plane resources were still occupied after "
+                    + $"{ControlPlaneReleaseWait.TotalSeconds:0} seconds: {string.Join(", ", occupied)}. "
+                    + "Stop leaked DCP controllers/containers or another AppHost using this Works control plane before retrying.");
             }
 
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
         }
+    }
+
+    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(
+        CancellationToken cancellationToken)
+    {
+        var startInfo = new ProcessStartInfo("docker")
+        {
+            CreateNoWindow = true,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+            UseShellExecute = false,
+        };
+        startInfo.ArgumentList.Add("ps");
+        startInfo.ArgumentList.Add("--filter");
+        startInfo.ArgumentList.Add($"volume={SchedulerVolumeName}");
+        startInfo.ArgumentList.Add("--format");
+        startInfo.ArgumentList.Add("{{.ID}} {{.Names}}");
+
+        using Process process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Could not start Docker to inspect the Scheduler volume owner.");
+        Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+        string output = await outputTask.ConfigureAwait(false);
+        string error = await errorTask.ConfigureAwait(false);
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException(
+                $"Docker could not inspect the Scheduler volume owner (exit {process.ExitCode}): {error.Trim()}");
+        }
+
+        return output
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)

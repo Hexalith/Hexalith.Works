@@ -120,6 +120,7 @@ public sealed class CiCdConfigurationTests
         workflow.ShouldContain($"builds-execution-sha: {ApprovedBuildsSha}", Case.Sensitive);
         workflow.ShouldContain("NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}", Case.Sensitive);
         workflow.ShouldContain("governed-release: false", Case.Sensitive);
+        workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
         workflow.ShouldNotContain("attestations: write", Case.Sensitive);
         workflow.ShouldNotContain("id-token: write", Case.Sensitive);
     }
@@ -165,7 +166,7 @@ public sealed class CiCdConfigurationTests
         string workflow = Read(root, ".github/workflows/release.yml");
 
         workflow.ShouldContain("needs: release", Case.Sensitive);
-        workflow.ShouldContain("if: ${{ always() }}", Case.Sensitive);
+        workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
         workflow.ShouldContain("git/matching-refs/tags/v", Case.Sensitive);
         workflow.ShouldNotContain("/releases?per_page=100", Case.Sensitive);
         workflow.ShouldContain("length == 5", Case.Sensitive);
