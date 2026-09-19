@@ -194,6 +194,8 @@ public sealed class WorksAppHostTopologyTests
         Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
         StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
+        StringValue(operationsEnvironment, "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER").ShouldBe("1");
+        StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
         StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");
         StringValue(operationsEnvironment, "EventStoreOperations__CaptureRoute").ShouldBe("/dead-letters/work/events");
