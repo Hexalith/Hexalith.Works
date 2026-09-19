@@ -40,7 +40,11 @@ jobs:
         with:
           submodules: false
           persist-credentials: false
+      - name: Validate workflow syntax and expressions
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml
       - name: Install ruff
-        run: pipx install ruff
+        run: pipx install ruff==0.13.2
       - name: Lint release and validation scripts
         run: bash scripts/lint-scripts.sh
+      - name: Run release tooling regression tests
+        run: python3 -m unittest discover -s scripts/tests

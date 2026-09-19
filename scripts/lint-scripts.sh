@@ -11,7 +11,7 @@ cd "$root"
 
 status=0
 shell_scripts=(scripts/*.sh)
-python_scripts=(scripts/*.py)
+python_scripts=(scripts/*.py scripts/tests/*.py)
 
 echo "== shell =="
 for script in "${shell_scripts[@]}"; do

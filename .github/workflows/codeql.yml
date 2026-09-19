@@ -22,4 +22,4 @@ jobs:
       contents: read
       security-events: write
     with:
-      languages: csharp
+      languages: csharp,python

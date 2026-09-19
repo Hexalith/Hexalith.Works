@@ -81,23 +81,15 @@ internal static class WorksAppHostSmokeHarness
         ArgumentNullException.ThrowIfNull(body);
 
         // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
-        // every start so teardown lag from the first run cannot race the second scheduler/placement bind.
-        //
-        // Every live fact runs with --DcpPublisher:RandomizePorts=false, so a foreign listener on any fixed
-        // control-plane port makes the AppHost hang in StartAsync until the startup budget expires instead of
-        // failing usefully. That is environmental contention, not a product defect, so this boundary skips with
-        // the port named — exactly like the prerequisite probe — rather than reporting a false red.
-        try
-        {
-            await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
-        }
-        catch (TimeoutException exception)
-        {
-            Assert.Skip($"Aspire live AppHost lane cannot start: {exception.Message}");
-        }
+        // every start so teardown lag from the first run cannot race the second scheduler/placement bind. Once
+        // the explicit prerequisite probe has passed, a later occupied port is a restart-boundary failure: it
+        // must never turn the acceptance fact into a successful skip.
+        await WaitForControlPlanePortsFreeAsync("startup boundary", cancellationToken).ConfigureAwait(false);
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        startupCts.CancelAfter(TimeSpan.FromMinutes(5));
+        // A clean checkout now builds the runtime-only EventStore Operations project during the first live start.
+        // Keep that cold-build path inside the readiness gate without borrowing from the acceptance-body budget.
+        startupCts.CancelAfter(TimeSpan.FromMinutes(10));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
@@ -139,6 +131,15 @@ internal static class WorksAppHostSmokeHarness
             }
 
             _ = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "dapr-sentry", startupCts.Token, cancellationToken)
+                .ConfigureAwait(true);
+            _ = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "dapr-placement-mtls", startupCts.Token, cancellationToken)
+                .ConfigureAwait(true);
+            _ = await WorksAppHostTestReadiness
+                .WaitForResourceHealthyAsync(app, "dapr-scheduler-mtls", startupCts.Token, cancellationToken)
+                .ConfigureAwait(true);
+            _ = await WorksAppHostTestReadiness
                 .WaitForResourceHealthyAsync(app, "eventstore", startupCts.Token, cancellationToken)
                 .ConfigureAwait(true);
             ResourceEvent worksResource = await WorksAppHostTestReadiness
@@ -156,7 +157,12 @@ internal static class WorksAppHostSmokeHarness
                 .ConfigureAwait(true);
             try
             {
-                await body(app, client, sidecarClient, startupCts.Token).ConfigureAwait(true);
+                // The bounded token is a startup/readiness budget, not a lifetime budget for the acceptance
+                // body. Operations is now built as a runtime-only project resource, so consuming build/start time
+                // from reminder deadlines can cancel an otherwise healthy future-reminder fact before it fires.
+                // Body helpers carry their own bounded polling deadlines and remain linked to the test runner's
+                // cancellation token.
+                await body(app, client, sidecarClient, cancellationToken).ConfigureAwait(true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {

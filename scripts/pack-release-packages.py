@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -95,7 +96,6 @@ def main() -> int:
                 str(package.project),
                 "--configuration",
                 "Release",
-                "--no-build",
                 "--no-restore",
                 "--output",
                 str(output),
@@ -125,6 +125,15 @@ def main() -> int:
             f"Packing produced symbol packages {sorted(path.name for path in symbols)}; "
             f"expected exactly {sorted(expected_symbols)}."
         )
+
+    # Freeze the exact candidate bytes before the first publication side effect. Recovery is permitted only
+    # from this unchanged directory; push-release-packages.sh verifies this ledger before handling exact 409s.
+    artifacts = sorted([*archives, *symbols], key=lambda path: path.name)
+    ledger = output / "release-artifacts.sha256"
+    ledger.write_text(
+        "".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n" for path in artifacts),
+        encoding="utf-8",
+    )
     return 0
 
 

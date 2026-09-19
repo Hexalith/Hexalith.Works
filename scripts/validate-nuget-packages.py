@@ -31,7 +31,7 @@ class PackageMetadata:
 
     package_id: str
     version: str
-    dependencies: frozenset[str]
+    dependencies: frozenset[tuple[str, str]]
     readme: str | None
     has_license: bool
 
@@ -72,7 +72,7 @@ def assert_release_restore_graph(package_id: str, restore: dict) -> None:
         )
 
 
-def expected_package_boundaries() -> dict[str, frozenset[str]]:
+def expected_package_boundaries() -> dict[str, frozenset[tuple[str, str | None]]]:
     """Derive the packed dependency boundary from Release restore evidence."""
 
     with MANIFEST.open("r", encoding="utf-8") as handle:
@@ -81,7 +81,7 @@ def expected_package_boundaries() -> dict[str, frozenset[str]]:
     if not isinstance(rows, list) or len(rows) != EXPECTED_PACKAGE_COUNT:
         raise ValueError("Release manifest must contain exactly five packages.")
 
-    boundaries: dict[str, frozenset[str]] = {}
+    boundaries: dict[str, frozenset[tuple[str, str | None]]] = {}
     projects: set[Path] = set()
     for row in rows:
         if not isinstance(row, dict) or set(row) != {"id", "project"}:
@@ -126,12 +126,19 @@ def expected_package_boundaries() -> dict[str, frozenset[str]]:
         ):
             raise ValueError(f"Restore dependency groups are inconsistent for {package_id}")
 
-        dependencies: set[str] = set()
+        dependencies: set[tuple[str, str | None]] = set()
         for framework in direct_groups:
             direct = direct_groups[framework]
             central = central_groups[framework]
-            declared = project_frameworks[framework].get("dependencies")
-            if not isinstance(direct, list) or not isinstance(central, dict) or not isinstance(declared, dict):
+            framework_evidence = project_frameworks[framework]
+            declared = framework_evidence.get("dependencies")
+            central_versions = framework_evidence.get("centralPackageVersions")
+            if (
+                not isinstance(direct, list)
+                or not isinstance(central, dict)
+                or not isinstance(declared, dict)
+                or not isinstance(central_versions, dict)
+            ):
                 raise ValueError(f"Restore dependency group is malformed for {package_id}/{framework}")
             for dependency in direct:
                 if not isinstance(dependency, str) or len(dependency.split(maxsplit=1)) != 2:
@@ -140,8 +147,20 @@ def expected_package_boundaries() -> dict[str, frozenset[str]]:
                 details = declared.get(dependency_id)
                 if isinstance(details, dict) and str(details.get("suppressParent", "")).casefold() == "all":
                     continue
-                dependencies.add(dependency_id)
-            dependencies.update(central)
+                is_works_dependency = dependency_id.startswith("Hexalith.Works.")
+                dependency_version = None if is_works_dependency else central_versions.get(dependency_id)
+                if not is_works_dependency and not isinstance(dependency_version, str):
+                    raise ValueError(
+                        f"Restore evidence has no exact central version for {package_id}/{dependency_id}"
+                    )
+                dependencies.add((dependency_id, dependency_version))
+            for dependency_id in central:
+                dependency_version = central_versions.get(dependency_id)
+                if not isinstance(dependency_version, str):
+                    raise ValueError(
+                        f"Restore evidence has no exact central version for {package_id}/{dependency_id}"
+                    )
+                dependencies.add((dependency_id, dependency_version))
 
         boundaries[package_id] = frozenset(dependencies)
         projects.add(project)
@@ -168,9 +187,9 @@ def package_metadata(package_path: Path) -> PackageMetadata:
             else root.findall(dependency_path.replace("n:", ""))
         )
         dependencies = frozenset(
-            element.attrib["id"].strip()
+            (element.attrib["id"].strip(), element.attrib.get("version", "").strip())
             for element in dependency_elements
-            if element.attrib.get("id", "").strip()
+            if element.attrib.get("id", "").strip() and element.attrib.get("version", "").strip()
         )
         package_id = find_text("id")
         version = find_text("version")
@@ -188,53 +207,98 @@ def package_metadata(package_path: Path) -> PackageMetadata:
         )
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("package_directory", type=Path)
-    args = parser.parse_args()
+def assert_assembly_versions(package_path: Path, package: PackageMetadata) -> None:
+    """Require every packaged library assembly to carry the resolved informational version."""
 
-    expected_boundaries = expected_package_boundaries()
+    version_bytes = package.version.encode("utf-8")
+    with zipfile.ZipFile(package_path) as archive:
+        assembly_names = sorted(
+            name for name in archive.namelist() if name.startswith("lib/") and name.endswith(".dll")
+        )
+        if not assembly_names:
+            raise ValueError(f"{package_path.name}: package contains no library assembly")
+        for assembly_name in assembly_names:
+            assembly = archive.read(assembly_name)
+            if version_bytes not in assembly:
+                raise ValueError(
+                    f"{package.package_id}: {assembly_name} does not carry package version {package.version}; "
+                    "compile with the resolved semantic version before packing"
+                )
+
+
+def validate_packages(
+    package_directory: Path,
+    expected_boundaries: dict[str, frozenset[tuple[str, str | None]]],
+) -> list[PackageMetadata]:
+    """Validate package inventory, metadata, assemblies, and exact dependency versions."""
+
     expected_ids = set(expected_boundaries)
     archives = sorted(
         path
-        for path in args.package_directory.glob("*.nupkg")
+        for path in package_directory.glob("*.nupkg")
         if ".symbols." not in path.name and not path.name.endswith(".snupkg")
     )
     if len(archives) != len(expected_ids):
-        raise ValueError(f"Expected exactly five NuGet packages, found {len(archives)}.")
+        raise ValueError(f"Expected exactly {len(expected_ids)} NuGet packages, found {len(archives)}.")
 
-    metadata = [package_metadata(path) for path in archives]
-    actual_ids = {package.package_id for package in metadata}
+    metadata_by_id: dict[str, tuple[Path, PackageMetadata]] = {}
+    for archive in archives:
+        package = package_metadata(archive)
+        if package.package_id in metadata_by_id:
+            raise ValueError(f"Duplicate package id in release archives: {package.package_id}")
+        metadata_by_id[package.package_id] = (archive, package)
+
+    actual_ids = set(metadata_by_id)
     if actual_ids != expected_ids:
         raise ValueError(
             f"Package inventory mismatch. Missing: {sorted(expected_ids - actual_ids)}; "
             f"unexpected: {sorted(actual_ids - expected_ids)}"
         )
+    metadata = [package for _, package in metadata_by_id.values()]
     versions = {package.version for package in metadata}
     if len(versions) != 1:
         raise ValueError(f"All Works packages must share one version; found {sorted(versions)}")
 
-    for package in metadata:
+    release_version = next(iter(versions))
+    for package_id, (archive, package) in metadata_by_id.items():
         if not package.has_license:
             raise ValueError(f"{package.package_id}: license metadata is missing")
-        expected = expected_boundaries[package.package_id]
-        if set(package.dependencies) != expected:
+        expected = frozenset(
+            (dependency_id, dependency_version or release_version)
+            for dependency_id, dependency_version in expected_boundaries[package_id]
+        )
+        if package.dependencies != expected:
             raise ValueError(
-                f"{package.package_id}: dependency mismatch. Expected {sorted(expected)}; "
+                f"{package.package_id}: dependency id/version mismatch. Expected {sorted(expected)}; "
                 f"found {sorted(package.dependencies)}"
             )
         forbidden = sorted(
-            dependency
-            for dependency in package.dependencies
-            if any(fragment.casefold() in dependency.casefold() for fragment in FORBIDDEN_DEPENDENCY_FRAGMENTS)
+            dependency_id
+            for dependency_id, _ in package.dependencies
+            if any(fragment.casefold() in dependency_id.casefold() for fragment in FORBIDDEN_DEPENDENCY_FRAGMENTS)
         )
         if forbidden:
             raise ValueError(f"{package.package_id}: forbidden host/sample/test dependencies: {forbidden}")
+        assert_assembly_versions(archive, package)
 
-    version = next(iter(versions))
+    return metadata
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("package_directory", type=Path)
+    args = parser.parse_args()
+
+    metadata = validate_packages(args.package_directory, expected_package_boundaries())
+
+    version = metadata[0].version
     print(f"Validated exactly five Works NuGet packages at version {version}:")
     for package in sorted(metadata, key=lambda item: item.package_id):
-        print(f"- {package.package_id}: {', '.join(sorted(package.dependencies))}")
+        dependencies = ", ".join(
+            f"{dependency_id} {dependency_version}"
+            for dependency_id, dependency_version in sorted(package.dependencies)
+        )
+        print(f"- {package.package_id}: {dependencies}")
     return 0
 
 

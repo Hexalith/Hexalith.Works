@@ -29,6 +29,9 @@ public sealed class CiCdConfigurationTests
             Case.Sensitive);
         workflow.ShouldContain("run-consumer-validation: true", Case.Sensitive);
         workflow.ShouldContain("test-platform: microsoft-testing-platform", Case.Sensitive);
+        workflow.ShouldContain("actionlint/cmd/actionlint@v1.7.12", Case.Sensitive);
+        workflow.ShouldContain("pipx install ruff==0.13.2", Case.Sensitive);
+        workflow.ShouldContain("python3 -m unittest discover -s scripts/tests", Case.Sensitive);
 
         // Count under the blocking input keys specifically. A bare repository-wide occurrence count cannot
         // tell a blocking tier from a comment, a non-blocking input, or an unrelated mention.
@@ -143,6 +146,11 @@ public sealed class CiCdConfigurationTests
         publisherCode.ShouldNotContain("*.nupkg", Case.Sensitive);
         publisherCode.ShouldContain("${package_id}.${version}.nupkg", Case.Sensitive);
         publisherCode.ShouldContain("${package_id}.${version}.snupkg", Case.Sensitive);
+        publisherCode.ShouldContain("release-artifacts.sha256", Case.Sensitive);
+        publisherCode.ShouldContain("sha256sum --check --strict", Case.Sensitive);
+        publisherCode.ShouldContain("--no-symbols", Case.Sensitive);
+        publisherCode.ShouldContain("*\"409\"*", Case.Sensitive);
+        publisherCode.ShouldContain("*\"Conflict\"*", Case.Sensitive);
         preflight.ShouldContain("collisions=()", Case.Sensitive);
         preflight.ShouldContain("for package_id in \"${package_ids[@]}\"", Case.Sensitive);
         preflight.ShouldContain("200) collisions+=", Case.Sensitive);
@@ -157,8 +165,12 @@ public sealed class CiCdConfigurationTests
         string workflow = Read(root, ".github/workflows/release.yml");
 
         workflow.ShouldContain("needs: release", Case.Sensitive);
+        workflow.ShouldContain("if: ${{ always() }}", Case.Sensitive);
+        workflow.ShouldContain("git/matching-refs/tags/v", Case.Sensitive);
+        workflow.ShouldNotContain("/releases?per_page=100", Case.Sensitive);
         workflow.ShouldContain("length == 5", Case.Sensitive);
         workflow.ShouldContain("missing+=(\"${package_id} ${VERSION} (HTTP ${status})\")", Case.Sensitive);
+        workflow.ShouldContain("missing+=(\"${package_id} ${VERSION} (transport error)\")", Case.Sensitive);
         workflow.ShouldContain("Release publication is incomplete; missing exact NuGet packages", Case.Sensitive);
         workflow.ShouldContain("if [ \"${#missing[@]}\" -ne 0 ]", Case.Sensitive);
     }
@@ -204,6 +216,32 @@ public sealed class CiCdConfigurationTests
         package.RootElement.GetProperty("devDependencies").TryGetProperty("@semantic-release/git", out _).ShouldBeFalse();
         File.Exists(Path.Combine(root, "package-lock.json")).ShouldBeTrue("The Node release toolchain must be lockfile-pinned.");
         commitlint.ShouldNotContain("'chore'", Case.Sensitive);
+    }
+
+    [Fact]
+    public void P0_CodeQlCoversCSharpAndPythonReleaseTooling()
+    {
+        string root = RepositoryRoot.Locate();
+        string workflow = Read(root, ".github/workflows/codeql.yml");
+
+        workflow.ShouldContain(
+            $"Hexalith/Hexalith.Builds/.github/workflows/codeql.yml@{ApprovedBuildsSha}",
+            Case.Sensitive);
+        workflow.ShouldContain("languages: csharp,python", Case.Sensitive);
+    }
+
+    [Fact]
+    public void P0_PackageValidationCompilesAndInspectsTheResolvedVersionAndDependencyRanges()
+    {
+        string root = RepositoryRoot.Locate();
+        string packer = Read(root, "scripts/pack-release-packages.py");
+        string validator = Read(root, "scripts/validate-nuget-packages.py");
+
+        packer.ShouldNotContain("\"--no-build\"", Case.Sensitive);
+        packer.ShouldContain("f\"-p:Version={args.version}\"", Case.Sensitive);
+        packer.ShouldContain("release-artifacts.sha256", Case.Sensitive);
+        validator.ShouldContain("dependency id/version mismatch", Case.Sensitive);
+        validator.ShouldContain("does not carry package version", Case.Sensitive);
     }
 
     [Fact]

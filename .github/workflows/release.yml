@@ -93,6 +93,7 @@ jobs:
   verify-publication:
     name: Verify exact five-package publication
     needs: release
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The publication freeze variable must be read in the same scope the publishing job used. Without this
@@ -135,7 +136,12 @@ jobs:
           DISPATCH_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          releases="$(gh api --paginate "repos/${REPOSITORY}/releases?per_page=100" | jq -s '[.[][]]')"
+          # semantic-release creates and pushes its Git tag before invoking publish plugins. The NuGet
+          # publisher runs before the GitHub release plugin, so a partial NuGet failure can leave a tag but
+          # no GitHub Release. Resolve tags directly so this job still verifies and names every missing
+          # package after that failure boundary.
+          tags="$(gh api --paginate "repos/${REPOSITORY}/git/matching-refs/tags/v?per_page=100" \
+            | jq -s '[.[][] | .ref | sub("^refs/tags/"; "")]')"
           matching_versions=''
           while IFS= read -r tag; do
             [ -n "$tag" ] || continue
@@ -152,7 +158,7 @@ jobs:
             if [ "$commit_sha" = "$DISPATCH_SHA" ]; then
               matching_versions="${matching_versions}${tag#v}"$'\n'
             fi
-          done < <(printf '%s\n' "$releases" | jq -r '.[] | select(.draft == false) | .tag_name')
+          done < <(printf '%s\n' "$tags" | jq -r '.[]')
 
           match_count="$(printf '%s' "$matching_versions" | sed '/^$/d' | wc -l | tr -d ' ')"
           if [ "$match_count" = "0" ]; then
@@ -203,9 +209,12 @@ jobs:
               normalized_id="$(printf '%s' "$package_id" | tr '[:upper:]' '[:lower:]')"
               normalized_version="$(printf '%s' "$VERSION" | tr '[:upper:]' '[:lower:]')"
               package_url="https://api.nuget.org/v3-flatcontainer/${normalized_id}/${normalized_version}/${normalized_id}.${normalized_version}.nupkg"
-              status="$(curl --silent --show-error --location --max-time 15 \
+              if ! status="$(curl --silent --show-error --location --max-time 15 \
                 --retry 2 --retry-connrefused --retry-all-errors \
-                --output /dev/null --write-out '%{http_code}' "$package_url")"
+                --output /dev/null --write-out '%{http_code}' "$package_url")"; then
+                missing+=("${package_id} ${VERSION} (transport error)")
+                continue
+              fi
               if [ "$status" != "200" ]; then
                 missing+=("${package_id} ${VERSION} (HTTP ${status})")
               fi

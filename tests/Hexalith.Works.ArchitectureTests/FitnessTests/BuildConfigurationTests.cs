@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Xml.Linq;
 
@@ -85,6 +86,57 @@ public sealed class BuildConfigurationTests
                     $"{advisory} must remain visible without becoming a warnings-as-errors build break.");
             }
         }
+    }
+
+    [Theory]
+    [InlineData("maybe", "true", "", "")]
+    [InlineData("true", "true", "", "")]
+    [InlineData("false", "false", "", "")]
+    [InlineData("false", "true", "true", "")]
+    [InlineData("true", "false", "", "false")]
+    public void P0_InvalidDependencyModesFailTheExecutableMsBuildGuard(
+        string useProjectReferences,
+        string useNuGetDependencies,
+        string eventStoreFromSource,
+        string polymorphicFromSource)
+    {
+        ArgumentNullException.ThrowIfNull(useProjectReferences);
+        ArgumentNullException.ThrowIfNull(useNuGetDependencies);
+        ArgumentNullException.ThrowIfNull(eventStoreFromSource);
+        ArgumentNullException.ThrowIfNull(polymorphicFromSource);
+
+        string root = RepositoryRoot.Locate();
+        string project = Path.Combine(root, "src", "Hexalith.Works.Contracts", "Hexalith.Works.Contracts.csproj");
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = root,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+        };
+        start.ArgumentList.Add("msbuild");
+        start.ArgumentList.Add(project);
+        start.ArgumentList.Add("-nologo");
+        start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
+        start.ArgumentList.Add("-p:Configuration=Release");
+        start.ArgumentList.Add($"-p:UseHexalithProjectReferences={useProjectReferences}");
+        start.ArgumentList.Add($"-p:UseNuGetDeps={useNuGetDependencies}");
+        if (eventStoreFromSource.Length > 0)
+        {
+            start.ArgumentList.Add($"-p:HexalithEventStoreFromSource={eventStoreFromSource}");
+        }
+
+        if (polymorphicFromSource.Length > 0)
+        {
+            start.ArgumentList.Add($"-p:HexalithPolymorphicSerializationsFromSource={polymorphicFromSource}");
+        }
+
+        using Process process = Process.Start(start).ShouldNotBeNull();
+        string standardOutput = process.StandardOutput.ReadToEnd();
+        string standardError = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        process.ExitCode.ShouldNotBe(0, "Every invalid or contradictory dependency mode must fail closed.");
+        (standardOutput + standardError).ShouldContain("HXW0001", Case.Sensitive);
     }
 
     [Fact]

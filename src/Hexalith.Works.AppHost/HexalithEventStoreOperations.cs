@@ -16,5 +16,5 @@ public sealed class HexalithEventStoreOperations : IProjectMetadata
         "Hexalith.EventStore.Operations.csproj");
 
     /// <inheritdoc/>
-    public bool SuppressBuild => true;
+    public bool SuppressBuild => false;
 }

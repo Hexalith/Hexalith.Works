@@ -12,6 +12,13 @@
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
 
+    <!-- Preserve caller intent before defaults are applied so the validation target can reject every
+         contradictory or non-boolean mode instead of silently normalizing it. -->
+    <RequestedUseHexalithProjectReferences>$(UseHexalithProjectReferences)</RequestedUseHexalithProjectReferences>
+    <RequestedUseNuGetDeps>$(UseNuGetDeps)</RequestedUseNuGetDeps>
+    <RequestedHexalithEventStoreFromSource>$(HexalithEventStoreFromSource)</RequestedHexalithEventStoreFromSource>
+    <RequestedHexalithPolymorphicSerializationsFromSource>$(HexalithPolymorphicSerializationsFromSource)</RequestedHexalithPolymorphicSerializationsFromSource>
+
     <!-- Local Debug builds use root-declared sibling sources. Release and configuration-free
          restores use the centrally pinned NuGet packages so CI restores the same graph it builds. -->
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == '' and '$(UseNuGetDeps)' == 'true'">false</UseHexalithProjectReferences>
@@ -20,12 +27,12 @@
     <!-- A configuration-free evaluation (a bare `dotnet build`, or design-time evaluation) would otherwise
          resolve package references while emitting Debug output. Record that the mode was defaulted, pick the
          Release-consistent package mode explicitly, and warn below so the mismatch is never silent. -->
-    <HexalithDependencyModeDefaulted Condition="'$(UseHexalithProjectReferences)' == '' and '$(Configuration)' == ''">true</HexalithDependencyModeDefaulted>
+    <HexalithDependencyModeDefaulted Condition="'$(UseHexalithProjectReferences)' == '' and '$(Configuration)' == '' and $(MSBuildProjectName.StartsWith('Hexalith.Works'))">true</HexalithDependencyModeDefaulted>
     <UseHexalithProjectReferences Condition="'$(UseHexalithProjectReferences)' == ''">false</UseHexalithProjectReferences>
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == '' and '$(UseHexalithProjectReferences)' == 'true'">false</UseNuGetDeps>
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
-    <HexalithEventStoreFromSource Condition="'$(UseHexalithProjectReferences)' == 'true'">true</HexalithEventStoreFromSource>
-    <HexalithPolymorphicSerializationsFromSource Condition="'$(UseHexalithProjectReferences)' == 'true'">true</HexalithPolymorphicSerializationsFromSource>
+    <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
+    <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -71,15 +78,37 @@
     <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
-  <!--
-    The two dependency-mode switches are resolved by evaluation order, so a caller that sets both to true
-    would silently get whichever one happened to be read first. Reject the contradiction outright.
-  -->
+  <!-- Reject invalid caller values, equal mode switches (true/true or false/false), and source flags that
+       disagree with the selected mode. These checks run for restore/package collection as well as compile. -->
   <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile">
     <Error
-      Condition="'$(UseHexalithProjectReferences)' == 'true' and '$(UseNuGetDeps)' == 'true'"
+      Condition="'$(RequestedUseHexalithProjectReferences)' != '' and '$(RequestedUseHexalithProjectReferences)' != 'true' and '$(RequestedUseHexalithProjectReferences)' != 'false'"
       Code="HXW0001"
-      Text="UseHexalithProjectReferences and UseNuGetDeps are both 'true', which is contradictory. Set exactly one: UseHexalithProjectReferences=true for sibling-source Debug builds, or UseNuGetDeps=true for package-mode Release builds." />
+      Text="UseHexalithProjectReferences must be exactly true or false when supplied; received '$(RequestedUseHexalithProjectReferences)'." />
+    <Error
+      Condition="'$(RequestedUseNuGetDeps)' != '' and '$(RequestedUseNuGetDeps)' != 'true' and '$(RequestedUseNuGetDeps)' != 'false'"
+      Code="HXW0001"
+      Text="UseNuGetDeps must be exactly true or false when supplied; received '$(RequestedUseNuGetDeps)'." />
+    <Error
+      Condition="'$(RequestedHexalithEventStoreFromSource)' != '' and '$(RequestedHexalithEventStoreFromSource)' != 'true' and '$(RequestedHexalithEventStoreFromSource)' != 'false'"
+      Code="HXW0001"
+      Text="HexalithEventStoreFromSource must be exactly true or false when supplied; received '$(RequestedHexalithEventStoreFromSource)'." />
+    <Error
+      Condition="'$(RequestedHexalithPolymorphicSerializationsFromSource)' != '' and '$(RequestedHexalithPolymorphicSerializationsFromSource)' != 'true' and '$(RequestedHexalithPolymorphicSerializationsFromSource)' != 'false'"
+      Code="HXW0001"
+      Text="HexalithPolymorphicSerializationsFromSource must be exactly true or false when supplied; received '$(RequestedHexalithPolymorphicSerializationsFromSource)'." />
+    <Error
+      Condition="'$(UseHexalithProjectReferences)' == '$(UseNuGetDeps)'"
+      Code="HXW0001"
+      Text="UseHexalithProjectReferences and UseNuGetDeps must select exactly one dependency mode. Set UseHexalithProjectReferences=true and UseNuGetDeps=false for sibling-source Debug builds, or the inverse for package-mode Release builds." />
+    <Error
+      Condition="'$(HexalithEventStoreFromSource)' != '$(UseHexalithProjectReferences)'"
+      Code="HXW0001"
+      Text="HexalithEventStoreFromSource must agree with UseHexalithProjectReferences." />
+    <Error
+      Condition="'$(HexalithPolymorphicSerializationsFromSource)' != '$(UseHexalithProjectReferences)'"
+      Code="HXW0001"
+      Text="HexalithPolymorphicSerializationsFromSource must agree with UseHexalithProjectReferences." />
     <Warning
       Condition="'$(HexalithDependencyModeDefaulted)' == 'true'"
       Code="HXW0002"

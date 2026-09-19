@@ -16,10 +16,11 @@ Do not use recursive submodule initialization.
 
 ## CI Release validation
 
-CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds isolated package-only consumers, and runs each blocking Microsoft.Testing.Platform project separately:
+CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds isolated package-only consumers, executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately.
 
-The Release lane still builds `Hexalith.EventStore.Operations` from source, because the AppHost launches it as an
-executable topology resource rather than consuming it as a package. That submodule is therefore required in Release too:
+`Hexalith.EventStore.Operations` is an unpackageable executable topology resource. The AppHost locates it through
+project metadata and builds it only when the live topology starts; it is not a compile-time ProjectReference in the
+Release graph. The EventStore submodule is therefore still required by the Integration lane:
 
 ```bash
 git submodule update --init references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants
@@ -28,6 +29,7 @@ dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserr
 python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test
 python3 scripts/validate-nuget-packages.py ./nupkgs
 python3 scripts/validate-consumer-package-references.py ./nupkgs
+python3 -m unittest discover -s scripts/tests
 
 for project in \
   tests/Hexalith.Works.UnitTests \
@@ -72,10 +74,14 @@ The workflow rejects a non-`main` or stale dispatch before requesting environmen
 
 Publication pushes exactly the manifest packages and their `.snupkg` symbol packages through
 `scripts/push-release-packages.sh`, never a `*.nupkg` glob, so an unvalidated archive left in the output directory
-can never be published. `--skip-duplicate` is deliberately absent: a version collision must fail loudly.
+can never be published. Packing first freezes the SHA-256 of all ten candidate archives in
+`nupkgs/release-artifacts.sha256`; publication refuses any changed or extra candidate. `--skip-duplicate` is
+deliberately absent: an ordinary version collision must fail loudly.
 
 **Partial-publication recovery.** NuGet has no transaction, so a failure part-way leaves some packages live and
 immutable. Do not delete the published ones and do not re-push different content at the same version. Re-run the
-same script unchanged to push the remainder; an already-published file returns a 409 conflict, which is the signal
-to move on. If the remainder cannot be published at all, release a new patch version containing all five packages
-and leave the incomplete version unlisted, so consumers never resolve a partially published version.
+same script against the unchanged prepared directory. The script verifies every candidate against the frozen
+SHA-256 ledger, handles only an exact 409 Conflict as an already-published artifact, and continues to the remaining
+package/symbol pairs. Any other response or any byte change fails closed. If the remainder cannot be published at
+all, release a new patch version containing all five packages and leave the incomplete version unlisted, so
+consumers never resolve a partially published version.

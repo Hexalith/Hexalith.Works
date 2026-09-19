@@ -383,7 +383,6 @@ public sealed class DependencyDirectionTests
             Path.Combine(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"),
             Path.Combine(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"),
             Path.Combine(root, "src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj"),
-            Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj"),
         ];
 
         // Assert both modes: a Debug-only conditional ProjectReference would otherwise satisfy a
@@ -391,7 +390,7 @@ public sealed class DependencyDirectionTests
         AssertExactProjectReferences(
             EvaluateProject(appHostPath, "Release"),
             worksTopology,
-            "Release AppHost should use the EventStore Aspire package while retaining Operations as its source-only executable resource.");
+            "Release AppHost should use the EventStore Aspire package and represent Operations only through runtime project metadata.");
 
         AssertExactProjectReferences(
             EvaluateProject(appHostPath, "Debug"),
@@ -399,7 +398,36 @@ public sealed class DependencyDirectionTests
                 .. worksTopology,
                 Path.Combine(root, "references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj"),
             ],
-            "Debug AppHost should wire the Works topology plus the source-backed EventStore Aspire and Operations workloads.");
+            "Debug AppHost should wire the Works topology plus the source-backed EventStore Aspire library; Operations remains a runtime-only metadata path.");
+    }
+
+    [Fact]
+    public void P0_EventStoreOperationsIsRuntimeMetadataNotACompileGraphProject()
+    {
+        string root = RepositoryRoot.Locate();
+        string operationsProject = "Hexalith.EventStore.Operations.csproj";
+        string solution = File.ReadAllText(Path.Combine(root, "Hexalith.Works.slnx"));
+        string appHost = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Hexalith.Works.AppHost",
+            "Hexalith.Works.AppHost.csproj"));
+        string integration = File.ReadAllText(Path.Combine(
+            root,
+            "tests",
+            "Hexalith.Works.IntegrationTests",
+            "Hexalith.Works.IntegrationTests.csproj"));
+        string metadata = File.ReadAllText(Path.Combine(
+            root,
+            "src",
+            "Hexalith.Works.AppHost",
+            "HexalithEventStoreOperations.cs"));
+
+        solution.ShouldNotContain(operationsProject, Case.Sensitive);
+        appHost.ShouldNotContain(operationsProject, Case.Sensitive);
+        integration.ShouldNotContain(operationsProject, Case.Sensitive);
+        metadata.ShouldContain(operationsProject, Case.Sensitive);
+        metadata.ShouldContain("SuppressBuild => false", Case.Sensitive);
     }
 
     [Fact]
@@ -481,24 +509,16 @@ public sealed class DependencyDirectionTests
                 DebugProjects: new[]
                 {
                     "references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj",
-                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
                 },
-                ReleaseProjects: new[]
-                {
-                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
-                },
+                ReleaseProjects: Array.Empty<string>(),
                 ReleasePackages: new[] { "Hexalith.EventStore.Aspire" }),
             (
                 Project: "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
                 DebugProjects: new[]
                 {
                     "references/Hexalith.EventStore/src/Hexalith.EventStore.Testing/Hexalith.EventStore.Testing.csproj",
-                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
                 },
-                ReleaseProjects: new[]
-                {
-                    "references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj",
-                },
+                ReleaseProjects: Array.Empty<string>(),
                 ReleasePackages: new[] { "Hexalith.EventStore.Testing" }),
         };
 
@@ -531,6 +551,33 @@ public sealed class DependencyDirectionTests
         }
 
         AssertNoUndeclaredExternalHexalithPackageReferences(root, expectations.Select(expectation => expectation.Project));
+        AssertSharedCatalogOwnsRepositoryHexalithVersions(root);
+    }
+
+    /// <summary>
+    /// Verifies every evaluated Hexalith package version in the actual Works project set originates from the
+    /// shared Builds catalog. Fixture-only checks would not catch a local <c>PackageVersion</c> override in this
+    /// repository.
+    /// </summary>
+    private static void AssertSharedCatalogOwnsRepositoryHexalithVersions(string root)
+    {
+        string approvedCatalog = Path.GetFullPath(Path.Combine(
+            root,
+            "references/Hexalith.Builds/Props/Directory.Packages.props"));
+        string[] projectFiles = [.. Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}references{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
+            .Where(path => !KernelDependencyPolicy.IsBuildOutput(path))];
+
+        string[] violations = [.. projectFiles
+            .SelectMany(project => new[] { EvaluateProject(project, "Debug"), EvaluateProject(project, "Release") })
+            .SelectMany(snapshot => snapshot.ItemsOfType("PackageVersion")
+                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
+                .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog))
+                .Select(item => $"{Path.GetRelativePath(root, snapshot.ProjectPath)} receives {item.Identity} from {item.DefiningProjectPath}."))];
+
+        violations.ShouldBeEmpty(
+            "Every external Hexalith package version used by a Works project must originate in the shared Builds catalog.");
     }
 
     /// <summary>

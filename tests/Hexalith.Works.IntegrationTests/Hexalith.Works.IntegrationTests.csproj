@@ -26,8 +26,6 @@
     <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Testing\Hexalith.EventStore.Testing.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.Testing" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
-    <!-- Operations stays source-only because the AppHost launches it as an executable resource. -->
-    <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Operations\Hexalith.EventStore.Operations.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
   </ItemGroup>
 
