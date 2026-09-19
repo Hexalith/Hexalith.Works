@@ -16,5 +16,5 @@ public sealed class HexalithEventStoreAdminServerHost : IProjectMetadata
         "Hexalith.EventStore.Admin.Server.Host.csproj");
 
     /// <inheritdoc/>
-    public bool SuppressBuild => true;
+    public bool SuppressBuild => false;
 }

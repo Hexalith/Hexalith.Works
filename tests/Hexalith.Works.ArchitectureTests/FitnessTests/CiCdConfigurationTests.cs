@@ -273,10 +273,7 @@ public sealed class CiCdConfigurationTests
             .Select(entry => Path.GetFullPath(Path.Combine(root, entry.Project)))];
 
         string[] projectFiles = [.. Directory.GetFiles(root, "Hexalith.Works*.csproj", SearchOption.AllDirectories)
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}_bmad-output{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}references{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal))
-            .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal))];
+            .Where(path => IsRepositoryOwnedProject(root, path))];
 
         projectFiles.ShouldNotBeEmpty("Expected to discover Works project files to classify.");
 
@@ -366,6 +363,15 @@ public sealed class CiCdConfigurationTests
 
         evaluated.ShouldBeTrue(diagnostic);
         return string.Equals(snapshot!.PropertyValue("IsPackable"), "true", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsRepositoryOwnedProject(string root, string projectPath)
+    {
+        string[] segments = Path.GetRelativePath(root, projectPath).Split(
+            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
+            StringSplitOptions.RemoveEmptyEntries);
+
+        return !segments.Any(static segment => segment is "_bmad-output" or "references" or "bin" or "obj");
     }
 
     private static (string Id, string Project)[] ManifestEntries(string root)

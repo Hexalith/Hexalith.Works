@@ -154,6 +154,7 @@ public sealed class WorksAppHostTopologyTests
         allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 1);
 
         Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
+        StringValue(eventStoreEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId").ShouldBe(WorksName);
         StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName").ShouldBe("process");
         StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId").ShouldBe("*");
@@ -185,11 +186,13 @@ public sealed class WorksAppHostTopologyTests
         gateway.EndpointName.ShouldBe("http");
 
         Dictionary<string, object> adminEnvironment = await EvaluateEnvironmentAsync(adminServer, builder.ExecutionContext);
+        StringValue(adminEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(adminEnvironment, "AdminServer__ResiliencyConfigPath")
             .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
         StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
 
         Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
+        StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
         StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
         StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");

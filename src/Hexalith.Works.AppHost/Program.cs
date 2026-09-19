@@ -90,7 +90,8 @@ HexalithEventStoreSecurityResources? security = builder.AddHexalithEventStoreSec
 // domain-service mapping routes "work" commands for any tenant at v1 to the "works" app's /process endpoint via
 // the Kubernetes-safe sanitized wildcard registration key (wildcard_<domain>_<version>).
 IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventStore>("eventstore")
-    .WithHttpHealthCheck("/alive");
+    .WithHttpHealthCheck("/alive")
+    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1");
 _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__AppId", "works")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName", "process")
@@ -107,7 +108,8 @@ _ = eventStore
     .WithEnvironment("EventStore__Publisher__DeadLetterTopicPrefix", "commanddeadletter")
     .WithEnvironment("Authentication__DaprInternal__AllowedCallers__0", "works");
 
-IResourceBuilder<ProjectResource> adminServer = builder.AddProject<HexalithEventStoreAdminServerHost>("eventstore-admin");
+IResourceBuilder<ProjectResource> adminServer = builder.AddProject<HexalithEventStoreAdminServerHost>("eventstore-admin")
+    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1");
 
 // Shared Dapr topology (Redis-backed actor state store + pub/sub + sidecars + resiliency) via the EventStore
 // Aspire helper. Redis is provided by `dapr init` at localhost; the helper owns the sidecar wiring.
@@ -151,6 +153,10 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
 IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventStoreOperations>("eventstore-operations")
     .WithHttpEndpoint()
     .WithHttpHealthCheck("/alive")
+    // Operations is intentionally outside the Works compile graph and is built by Aspire when the runtime
+    // resource starts. Disable persistent MSBuild workers for that nested `dotnet run`: on this host, stale
+    // reusable nodes can leave the restore parked indefinitely while every dependency is already healthy.
+    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1")
     // Project resources do not implicitly inherit the AppHost environment under Aspire.Hosting.Testing. Keep
     // the operations host on the same environment so its Development-only token fallback matches the rest of
     // this composed topology; outside Development its existing fail-closed token validation is preserved.
