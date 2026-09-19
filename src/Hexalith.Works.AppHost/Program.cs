@@ -155,6 +155,11 @@ IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventS
     // the operations host on the same environment so its Development-only token fallback matches the rest of
     // this composed topology; outside Development its existing fail-closed token validation is preserved.
     .WithEnvironment("DOTNET_ENVIRONMENT", builder.Environment.EnvironmentName)
+    // Operations is intentionally a runtime-only source project in Release. DCP therefore invokes `dotnet run`
+    // for it after the solution build; prevent that nested build from attaching to stale reusable MSBuild nodes,
+    // which can leave the resource Running but permanently Unhealthy at the AppHost startup boundary.
+    .WithEnvironment("DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER", "1")
+    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1")
     .WithEnvironment("EventStoreOperations__PubSubName", "pubsub")
     .WithEnvironment("EventStoreOperations__TopicName", "deadletter.work.events")
     .WithEnvironment("EventStoreOperations__CaptureRoute", "/dead-letters/work/events")
