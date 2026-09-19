@@ -153,10 +153,6 @@ IResourceBuilder<ProjectResource> works = builder.AddProject<HexalithWorks>("wor
 IResourceBuilder<ProjectResource> operations = builder.AddProject<HexalithEventStoreOperations>("eventstore-operations")
     .WithHttpEndpoint()
     .WithHttpHealthCheck("/alive")
-    // Operations is intentionally outside the Works compile graph and is built by Aspire when the runtime
-    // resource starts. Disable persistent MSBuild workers for that nested `dotnet run`: on this host, stale
-    // reusable nodes can leave the restore parked indefinitely while every dependency is already healthy.
-    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1")
     // Project resources do not implicitly inherit the AppHost environment under Aspire.Hosting.Testing. Keep
     // the operations host on the same environment so its Development-only token fallback matches the rest of
     // this composed topology; outside Development its existing fail-closed token validation is preserved.

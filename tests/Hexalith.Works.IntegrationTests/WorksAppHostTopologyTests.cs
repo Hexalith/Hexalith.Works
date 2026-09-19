@@ -192,7 +192,6 @@ public sealed class WorksAppHostTopologyTests
         StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
 
         Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
-        StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
         StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
         StringValue(operationsEnvironment, "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER").ShouldBe("1");
         StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
