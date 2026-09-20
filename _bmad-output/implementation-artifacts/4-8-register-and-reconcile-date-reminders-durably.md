@@ -5,7 +5,7 @@ status: done
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1545,3 +1545,26 @@ _Scope: `origin/main...HEAD` (HEAD `1a3edcc`) — spec-10 AppHost probe close-ou
 - `false` — wrapper cancel fact injects `InvalidOperationException` rather than `SchedulerVolumeProbeCleanupException`: spec-10 requires exact caller cancellation to win after cleanup; production checks the token first.
 - `false` — termination-wait timeout-as-exit extra `Kill` classifies a dead child as cleanup failure: `TryTerminateProbe` swallows `InvalidOperationException` when `HasExited`, and `TerminateAndObserveProbeAsync` rechecks `HasExited` before failing.
 - `false` — fail-safe `Kill` throwing `Win32Exception`/`NotSupportedException`/`AggregateException` masks the assertion: those shapes were not shown on the cooperative `sleep`/`ping` child; `InvalidOperationException` is already caught.
+
+### Review Findings (2026-09-20, bmad-code-review, spec-10 close-out `c4c925b...HEAD`)
+
+_Scope: `c4c925b...HEAD` (HEAD `900f99c`) — spec-10 five-patch close-out plus probe-cleanup hardening. 10 files, +2,032/−152, 2,614 diff lines. Spec: `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 22 raw findings triaged to 0 decision, 6 patch, 0 defer, 10 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] Parent-story YAML frontmatter is still `status: done` after this increment marked the lifecycle mismatch resolved; body and sprint tracking say `review`, and spec-10 task 3 requires `in-review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
+- [ ] [Review][Patch] `RunAndDisposeSchedulerVolumeProbeAsync` never rethrows a probe failure when Dispose succeeds, so a non-zero Docker inspect whose child has already exited returns a null owner list and the control-plane wait NREs instead of the classified retryable inspect diagnostic [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:671]
+- [ ] [Review][Patch] The IPv6 exclusive-bind fallback constructs `new TcpListener(IPAddress.IPv6Loopback, 0)` outside the unavailable-address predicate, so a kernel-disabled IPv6 loopback that already classified production bind as inapplicable can still fail the fact [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:77]
+- [ ] [Review][Patch] The real-child disposal fact waits on `Process.Exited` after adapter `Dispose` closed that `Process`, so a queued exit notification can be dropped and the fact times out even though the child was killed [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:1017]
+- [ ] [Review][Patch] Five new `deferred-work.md` rows use machine-absolute `source_spec` paths instead of the repository-relative locators and `#story-4-8-canonical-*` anchors this increment added for portability [_bmad-output/implementation-artifacts/deferred-work.md:1012]
+- [ ] [Review][Patch] The dated **2026-09-20 spec-10 five-patch close-out** File List omits `ProcessSchedulerVolumeProbe.cs` and `SchedulerVolumeProbeCleanupException.cs`, the files that gained two-attempt disposal and the non-retryable cleanup type [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711]
+
+**Rejected:**
+- `false` — adapter `Dispose` orphans a stubborn Docker CLI by calling `Process.Dispose` after two failed kills: those kills already left the child unkillable, and `WaitForControlPlaneResourcesReleasedAsync` rethrows `SchedulerVolumeProbeCleanupException` without starting another probe.
+- `low`, not worth fixing — `HangingSchedulerVolumeProbe` ignore-cancellation reads use uncancellable `Task.Delay` and `Dispose` does not complete them: only one deterministic fact hits that fake, and adding a completion CTS is extra test machinery rather than a direct production correction.
+- `false` — harness `ProbeHasExited` omitting `AggregateException` lets cleanup abort before redirected-read observation: production `Process.HasExited` was not shown to throw `AggregateException`; `Kill` aggregates are already classified in `TryTerminateProbe`, and an already-exited `InvalidOperationException` is swallowed when `HasExited` is true.
+- `false` — `WaitForProbeExitAsync` returning false on termination-CTS timeout without an inner `HasExited` recheck misclassifies a just-exited child: `TryTerminateProbe` swallows `InvalidOperationException` when `HasExited` is true, and `TerminateAndObserveProbeAsync` rechecks `HasExited` before failing cleanup.
+- `false` — adapter `WaitForExit` catch returns false without a trailing `TryGetHasExited`, causing a false unconfirmed-termination: `Process.WaitForExit` on an already-exited child returns true rather than throwing; a throwing wait is a real lifecycle failure that correctly continues to a second attempt.
+- Fix edits the spec under review — spec-10 Observed still lists harness 33/33, Integration 526/526, and live 4/4, and Commands still show `DOTNET_CLI_HOME=/tmp` / `aspire describe --format json`, while this diff's story and `test-summary.md` record 40/40, 533/533, and live 0/4 with `/var/tmp` and `--format Json --non-interactive`.
+- `false` — empty/whitespace stderr fallback and `StartProbeRead` null-task diagnostic have no facts: deleting the fallback still throws on non-zero exit, and current `ISchedulerVolumeProbe` implementations are not shown to return a null read task.
+- `false` — real-child fail-safe only asserts `SafeHandle.IsClosed` and does not prove two-attempt false-wait: the retained-handle Dispose call is observable, and the two-attempt false-wait path is already required by `Process_scheduler_volume_probe_disposal_retries_when_the_first_wait_is_false_with_bounded_waits`.
+- `false` — returning Story 4.8 to `review` after an honest 0/4 live run claims live credit: spec-10 AC3 requires recording actual totals and returning to review; the latest story Change Log and `test-summary.md` explicitly withhold live acceptance credit.
+- `low`, not worth fixing — `GetProcessById` after `Process.Start` can throw and leak the 30-second child: that window is not everyday, and wrapping Start in a new try/finally is an extra isolation guard rather than a direct assertion fix.
