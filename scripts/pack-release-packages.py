@@ -68,6 +68,47 @@ def load_manifest() -> list[ReleasePackage]:
     return packages
 
 
+def write_checksum_ledger(output: Path, artifacts: list[Path]) -> Path:
+    """Freeze the exact release-candidate names and bytes for the publisher."""
+
+    ledger = output / "release-artifacts.sha256"
+    ledger.write_text(
+        "".join(
+            f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"
+            for path in sorted(artifacts, key=lambda path: path.name)
+        ),
+        encoding="utf-8",
+    )
+    return ledger
+
+
+def validate_output_inventory(
+    output: Path,
+    packages: list[ReleasePackage],
+    version: str,
+) -> tuple[list[Path], list[Path]]:
+    """Require the exact primary and symbol archive names owned by the manifest."""
+
+    expected_archives = {f"{package.package_id}.{version}.nupkg" for package in packages}
+    expected_symbols = {f"{package.package_id}.{version}.snupkg" for package in packages}
+    expected_names = expected_archives | expected_symbols
+    actual_names = {
+        path.name
+        for path in output.iterdir()
+        if path.is_file() and path.name.endswith((".nupkg", ".snupkg"))
+    }
+    if actual_names != expected_names:
+        raise ValueError(
+            f"Packing produced archive inventory {sorted(actual_names)}; "
+            f"expected exactly {sorted(expected_names)}."
+        )
+
+    return (
+        [output / name for name in sorted(expected_archives)],
+        [output / name for name in sorted(expected_symbols)],
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output_directory", type=Path)
@@ -109,31 +150,13 @@ def main() -> int:
             check=True,
         )
 
-    archives = [path for path in output.glob("*.nupkg") if not path.name.endswith(".symbols.nupkg")]
-    if len(archives) != EXPECTED_PACKAGE_COUNT:
-        raise ValueError(
-            f"Packing produced {len(archives)} package archives; expected {EXPECTED_PACKAGE_COUNT}."
-        )
+    # Directory.Build.props sets IncludeSymbols with SymbolPackageFormat=snupkg. Validate names, not only
+    # counts, so a legacy .symbols.nupkg or any other extra archive cannot evade the release inventory.
+    archives, symbols = validate_output_inventory(output, packages, args.version)
 
-    # Directory.Build.props sets IncludeSymbols with SymbolPackageFormat=snupkg, so every published
-    # package must be accompanied by exactly one symbol package. A missing .snupkg means symbols were
-    # silently disabled and consumers would get an undebuggable release.
-    symbols = sorted(output.glob("*.snupkg"))
-    expected_symbols = {path.with_suffix("").name + ".snupkg" for path in archives}
-    if {path.name for path in symbols} != expected_symbols:
-        raise ValueError(
-            f"Packing produced symbol packages {sorted(path.name for path in symbols)}; "
-            f"expected exactly {sorted(expected_symbols)}."
-        )
-
-    # Freeze the exact candidate bytes before the first publication side effect. Recovery is permitted only
-    # from this unchanged directory; push-release-packages.sh verifies this ledger before handling exact 409s.
-    artifacts = sorted([*archives, *symbols], key=lambda path: path.name)
-    ledger = output / "release-artifacts.sha256"
-    ledger.write_text(
-        "".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n" for path in artifacts),
-        encoding="utf-8",
-    )
+    # Freeze the exact candidate bytes before the first publication side effect. Same-invocation retries are
+    # permitted only from this unchanged directory; every HTTP 409 remains a fatal collision.
+    write_checksum_ledger(output, [*archives, *symbols])
     return 0
 
 

@@ -928,3 +928,11 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Add a dependency-review license allow/deny policy once the shared Builds workflow accepts one.
   evidence: The review called for `allow-licenses`/`deny-licenses` on `.github/workflows/dependency-review.yml` given the repo declares `PackageLicenseExpression=MIT`, but the shared `dependency-review.yml` at pinned Builds SHA `04d961759994396132bb2b113ee465b64740a543` exposes only `fail-on-severity`; passing an undeclared input fails workflow validation. `fail-on-severity: moderate` was set instead. Lifting this requires adding the license inputs upstream in Hexalith.Builds and then re-pinning this caller.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
+  summary: Repair EventStore Operations actor-request serialization so its public dead-letter capture and list endpoints execute successfully.
+  evidence: A focused live Works AppHost run on 2026-09-20 reached a healthy Dapr control plane and published the raw dead-letter CloudEvent successfully, but pinned EventStore 3.106.0 logged `System.Runtime.Serialization.InvalidDataContractException` because `Hexalith.EventStore.Operations.Models.DeadLetterCaptureRequest` and `DeadLetterListRequest` cannot be serialized for Dapr actor remoting. Capture returns HTTP 500 and the public Admin adapter converts repeated list failures to HTTP 503, so the wire endpoint cannot currently provide acceptance evidence. The defect belongs to the root-declared `references/Hexalith.EventStore` dependency and cannot be repaired under this spec's frozen no-submodule-modification boundary.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
+  summary: Make the shared commitlint workflow validate every commit introduced by a force-push whose previous SHA is unreachable.
+  evidence: At pinned Builds commit `04d961759994396132bb2b113ee465b64740a543`, `.github/workflows/commitlint.yml` falls back to `npx commitlint --last` when `github.event.before` is unreachable. A multi-commit force-push can therefore introduce malformed earlier commit messages without detection; repair requires an upstream Hexalith.Builds change followed by a Works caller re-pin.

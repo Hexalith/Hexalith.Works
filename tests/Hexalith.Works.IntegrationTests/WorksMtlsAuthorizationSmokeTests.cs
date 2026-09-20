@@ -45,8 +45,10 @@ public sealed class WorksMtlsAuthorizationSmokeTests
                 new CreateWorkItem(new TenantId(tenant), new WorkItemId(authorizedItem), "mTLS authorization proof"),
                 token).ConfigureAwait(false);
 
+            using var adminReadinessCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            adminReadinessCts.CancelAfter(TimeSpan.FromMinutes(2));
             ResourceEvent adminResource = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "eventstore-admin", token, ct)
+                .WaitForResourceHealthyAsync(app, "eventstore-admin", adminReadinessCts.Token, token)
                 .ConfigureAwait(false);
             using HttpClient unauthorizedSidecar = WorksAppHostTestReadiness.CreateDaprClient(
                 adminResource,
@@ -55,8 +57,10 @@ public sealed class WorksMtlsAuthorizationSmokeTests
             {
                 Content = JsonContent.Create(new { }),
             };
+            using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            requestCts.CancelAfter(TimeSpan.FromSeconds(30));
             using HttpResponseMessage response = await unauthorizedSidecar
-                .SendAsync(request, token)
+                .SendAsync(request, requestCts.Token)
                 .ConfigureAwait(false);
             response.StatusCode.ShouldBe(
                 HttpStatusCode.Forbidden,

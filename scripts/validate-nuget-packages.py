@@ -34,6 +34,7 @@ class PackageMetadata:
     dependencies: frozenset[tuple[str, str]]
     readme: str | None
     license_expression: str | None
+    license_type: str | None
 
 
 def assert_release_restore_graph(package_id: str, restore: dict) -> None:
@@ -205,12 +206,18 @@ def package_metadata(package_path: Path) -> PackageMetadata:
         readme = find_text("readme")
         if not readme or readme not in package.namelist():
             raise ValueError(f"{package_path.name}: declared README is missing from the archive")
+        license_element = (
+            root.find(".//n:metadata/n:license", namespace)
+            if namespace
+            else root.find(".//metadata/license")
+        )
         return PackageMetadata(
             package_id,
             version,
             frozenset(dependencies),
             readme,
             find_text("license"),
+            license_element.attrib.get("type") if license_element is not None else None,
         )
 
 
@@ -249,10 +256,10 @@ def validate_packages(
 
     release_version = next(iter(versions))
     for package_id, (_, package) in metadata_by_id.items():
-        if package.license_expression != "MIT":
+        if package.license_expression != "MIT" or package.license_type != "expression":
             raise ValueError(
-                f"{package.package_id}: license expression must be exactly MIT; "
-                f"found {package.license_expression!r}"
+                f"{package.package_id}: license must be the exact expression MIT; "
+                f"found type={package.license_type!r}, value={package.license_expression!r}"
             )
         expected = frozenset(
             (dependency_id, dependency_version or release_version)

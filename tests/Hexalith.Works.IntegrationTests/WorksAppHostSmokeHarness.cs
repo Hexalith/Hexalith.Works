@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
@@ -40,6 +41,12 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>How long a control-plane resource may still be held by a previous fact's teardown before it counts as foreign.</summary>
     private static readonly TimeSpan ControlPlaneReleaseWait = TimeSpan.FromSeconds(60);
 
+    /// <summary>How long one non-cancelable asynchronous disposer may delay teardown diagnostics.</summary>
+    private static readonly TimeSpan DisposalWait = TimeSpan.FromSeconds(30);
+
+    /// <summary>How long one Docker ownership probe may run before it is terminated and classified.</summary>
+    private static readonly TimeSpan DockerProbeWait = TimeSpan.FromSeconds(10);
+
     /// <summary>The persistent Scheduler volume that must have exactly one owner at a time.</summary>
     private const string SchedulerVolumeName = "hexalith-works-dapr-scheduler";
 
@@ -50,6 +57,9 @@ internal static class WorksAppHostSmokeHarness
         (51005, "dapr-placement-mtls"),
         (51006, "dapr-scheduler-mtls"),
     ];
+
+    /// <summary>Both loopback address families that must be free before a fixed-port topology starts.</summary>
+    private static readonly IPAddress[] ControlPlaneLoopbacks = [IPAddress.Loopback, IPAddress.IPv6Loopback];
 
     /// <summary>
     /// Returns why this lane cannot run, or <see langword="null"/> when every prerequisite is satisfied.
@@ -190,7 +200,7 @@ internal static class WorksAppHostSmokeHarness
         {
             try
             {
-                await app.DisposeAsync().ConfigureAwait(true);
+                await app.DisposeAsync().AsTask().WaitAsync(DisposalWait).ConfigureAwait(true);
             }
             catch (Exception exception)
             {
@@ -200,7 +210,7 @@ internal static class WorksAppHostSmokeHarness
 
         try
         {
-            await builder.DisposeAsync().ConfigureAwait(true);
+            await builder.DisposeAsync().AsTask().WaitAsync(DisposalWait).ConfigureAwait(true);
         }
         catch (Exception exception)
         {
@@ -494,9 +504,12 @@ internal static class WorksAppHostSmokeHarness
             var occupied = new List<string>();
             foreach ((int port, string name) in ControlPlanePorts)
             {
-                if (!IsPortAvailableForExclusiveBind(port))
+                foreach (IPAddress address in ControlPlaneLoopbacks)
                 {
-                    occupied.Add($"{name} on localhost:{port}");
+                    if (!IsPortAvailableForExclusiveBind(address, port))
+                    {
+                        occupied.Add($"{name} on {address}:{port}");
+                    }
                 }
             }
 
@@ -538,29 +551,70 @@ internal static class WorksAppHostSmokeHarness
         startInfo.ArgumentList.Add("--format");
         startInfo.ArgumentList.Add("{{.ID}} {{.Names}}");
 
-        using Process process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Could not start Docker to inspect the Scheduler volume owner.");
-        Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
-        string output = await outputTask.ConfigureAwait(false);
-        string error = await errorTask.ConfigureAwait(false);
-        if (process.ExitCode != 0)
+        Process process;
+        try
+        {
+            process = Process.Start(startInfo)
+                ?? throw new InvalidOperationException("Could not start Docker to inspect the Scheduler volume owner.");
+        }
+        catch (Win32Exception exception)
         {
             throw new InvalidOperationException(
-                $"Docker could not inspect the Scheduler volume owner (exit {process.ExitCode}): {error.Trim()}");
+                "Could not start Docker to inspect the Scheduler volume owner.",
+                exception);
         }
 
-        return output
-            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        using (process)
+        {
+            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            probeCts.CancelAfter(DockerProbeWait);
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync(probeCts.Token);
+            Task<string> errorTask = process.StandardError.ReadToEndAsync(probeCts.Token);
+            try
+            {
+                await process.WaitForExitAsync(probeCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException exception)
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+
+                throw new TimeoutException(
+                    $"Docker did not inspect the Scheduler volume owner within {DockerProbeWait.TotalSeconds:0} seconds.",
+                    exception);
+            }
+
+            string output = await outputTask.ConfigureAwait(false);
+            string error = await errorTask.ConfigureAwait(false);
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"Docker could not inspect the Scheduler volume owner (exit {process.ExitCode}): {error.Trim()}");
+            }
+
+            return output
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
     }
 
-    private static bool IsPortAvailableForExclusiveBind(int port)
+    private static bool IsPortAvailableForExclusiveBind(IPAddress address, int port)
     {
         TcpListener? listener = null;
         try
         {
-            listener = new TcpListener(IPAddress.Loopback, port);
+            listener = new TcpListener(address, port);
+            if (address.AddressFamily == AddressFamily.InterNetworkV6)
+            {
+                listener.Server.DualMode = false;
+            }
+
             listener.Server.ExclusiveAddressUse = true;
             listener.Start();
             return true;

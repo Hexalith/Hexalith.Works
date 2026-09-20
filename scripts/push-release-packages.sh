@@ -5,10 +5,10 @@
 # manifest packages, so any stray archive left in the directory would be published unvalidated. This script
 # resolves each file from the manifest instead, and fails closed when one is missing.
 #
-# --skip-duplicate is deliberately absent. A first-attempt 409 is always a collision. A later exact 409 is
-# accepted only when this invocation already attempted the unchanged artifact and received an ambiguous
-# transport/server result, because only that sequence can mean the prior request may have committed. Primary
-# packages use --no-symbols so each matching .snupkg is pushed exactly once by the explicit symbol step.
+# --skip-duplicate is deliberately absent. Every HTTP 409 is a collision because local runner state cannot prove
+# which bytes reached NuGet. Only explicitly classified transport/server failures are retried, using the same
+# checksum-locked bytes in this invocation. Primary packages use --no-symbols so each matching .snupkg is pushed
+# exactly once by the explicit symbol step.
 set -euo pipefail
 
 version="${1:-}"
@@ -53,6 +53,15 @@ for package_id in "${package_ids[@]}"; do
   payload_names+=("$(basename "$symbols")")
 done
 
+mapfile -t actual_archive_names < <(
+  find "$package_directory" -maxdepth 1 -type f -name '*nupkg' -printf '%f\n' | sort
+)
+if ! diff -u \
+  <(printf '%s\n' "${payload_names[@]}" | sort) \
+  <(printf '%s\n' "${actual_archive_names[@]}" | sort) >/dev/null; then
+  fail "The package directory contains release archives outside the exact manifest inventory."
+fi
+
 ledger_names="$(awk '{print $2}' "${package_directory}/release-artifacts.sha256")" ||
   fail "The candidate-byte ledger is unreadable."
 mapfile -t frozen_names <<< "$ledger_names"
@@ -68,10 +77,43 @@ fi
   sha256sum --check --strict release-artifacts.sha256
 ) || fail "A release artifact changed after the candidate bytes were frozen."
 
+is_http_collision() {
+  local value="${1,,}"
+  [[ "$value" =~ (http|status[[:space:]]+code|response[[:space:]]+status)[^0-9]*409([^0-9]|$) \
+    || "$value" =~ (^|[^0-9])409[[:space:]]*\(conflict\) ]]
+}
+
+is_retryable_failure() {
+  local value="${1,,}"
+  local phrase
+  local retryable_phrases=(
+    "timed out"
+    "operation timeout"
+    "connection reset"
+    "connection refused"
+    "broken pipe"
+    "unexpected end"
+    "unexpected eof"
+    "temporary failure in name resolution"
+    "could not resolve host"
+    "no such host is known"
+    "tls handshake timeout"
+    "ssl connection could not be established"
+  )
+
+  for phrase in "${retryable_phrases[@]}"; do
+    if [[ "$value" == *"$phrase"* ]]; then
+      return 0
+    fi
+  done
+
+  [[ "$value" =~ (http|status[[:space:]]+code|response[[:space:]]+status)[^0-9]*(408|429|5[0-9][0-9])([^0-9]|$) \
+    || "$value" =~ (^|[^0-9])(408[[:space:]]+request[[:space:]]+timeout|429[[:space:]]+too[[:space:]]+many[[:space:]]+requests|500[[:space:]]+internal[[:space:]]+server[[:space:]]+error|502[[:space:]]+bad[[:space:]]+gateway|503[[:space:]]+service[[:space:]]+unavailable|504[[:space:]]+gateway[[:space:]]+timeout) ]]
+}
+
 push_artifact() {
   local artifact="$1"
   shift
-  local ambiguous_attempt=false
   local artifact_name
   local expected_hash
   local actual_hash
@@ -103,31 +145,14 @@ push_artifact() {
 
     printf '%s\n' "$output" >&2
     lower_output="${output,,}"
-    if [[ "$lower_output" == *"409"* && "$lower_output" == *"conflict"* ]]; then
-      if [ "$ambiguous_attempt" = true ]; then
-        echo "[push-release-packages] Exact 409 for ${artifact_name} followed an ambiguous attempt in this invocation; treating the unchanged artifact as accepted." >&2
-        return 0
-      fi
-      echo "[push-release-packages] First-attempt 409 for ${artifact_name} is a publication collision." >&2
+    if is_http_collision "$lower_output"; then
+      echo "[push-release-packages] HTTP 409 for ${artifact_name} is a publication collision; remote bytes cannot be authenticated from local runner state." >&2
       return "$status"
     fi
 
-    if [[ "$lower_output" == *"timed out"* \
-      || "$lower_output" == *"timeout"* \
-      || "$lower_output" == *"connection reset"* \
-      || "$lower_output" == *"connection refused"* \
-      || "$lower_output" == *"unexpected end"* \
-      || "$lower_output" == *"500"* \
-      || "$lower_output" == *"502"* \
-      || "$lower_output" == *"503"* \
-      || "$lower_output" == *"504"* \
-      || "$lower_output" == *"internal server error"* \
-      || "$lower_output" == *"bad gateway"* \
-      || "$lower_output" == *"service unavailable"* \
-      || "$lower_output" == *"gateway timeout"* ]]; then
-      ambiguous_attempt=true
+    if is_retryable_failure "$lower_output"; then
       if [ "$attempt" -lt "$max_attempts" ]; then
-        echo "[push-release-packages] Ambiguous attempt ${attempt}/${max_attempts} for ${artifact_name}; retrying unchanged bytes." >&2
+        echo "[push-release-packages] Retryable attempt ${attempt}/${max_attempts} for ${artifact_name}; retrying unchanged bytes." >&2
         if [ "$retry_delay_seconds" -gt 0 ]; then
           sleep "$retry_delay_seconds"
         fi
@@ -147,4 +172,4 @@ for package_id in "${package_ids[@]}"; do
   push_artifact "$archive" --no-symbols || fail "NuGet package push failed for $archive."
   push_artifact "$symbols" || fail "NuGet symbol push failed for $symbols."
 done
-echo "[push-release-packages] Published ${#payload_names[@]} artifacts at ${version}; any accepted 409 followed an ambiguous attempt for the same unchanged artifact in this invocation."
+echo "[push-release-packages] Published ${#payload_names[@]} checksum-locked artifacts at ${version}."

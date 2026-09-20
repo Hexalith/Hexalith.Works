@@ -95,7 +95,7 @@ public sealed class BuildConfigurationTests
     [InlineData("false", "false", "", "")]
     [InlineData("false", "true", "true", "")]
     [InlineData("true", "false", "", "false")]
-    public void P0_InvalidDependencyModesFailTheExecutableMsBuildGuard(
+    public async Task P0_InvalidDependencyModesFailTheExecutableMsBuildGuardAsync(
         string useProjectReferences,
         string useNuGetDependencies,
         string eventStoreFromSource,
@@ -132,9 +132,12 @@ public sealed class BuildConfigurationTests
         }
 
         using Process process = Process.Start(start).ShouldNotBeNull();
-        string standardOutput = process.StandardOutput.ReadToEnd();
-        string standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        Task<string> standardOutputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await WaitForExitOrKillAsync(process, cancellationToken).ConfigureAwait(true);
+        string standardOutput = await standardOutputTask.ConfigureAwait(true);
+        string standardError = await standardErrorTask.ConfigureAwait(true);
 
         process.ExitCode.ShouldNotBe(0, "Every invalid or contradictory dependency mode must fail closed.");
         (standardOutput + standardError).ShouldContain("HXW0001", Case.Sensitive);
@@ -145,7 +148,7 @@ public sealed class BuildConfigurationTests
     [InlineData("UseNuGetDeps")]
     [InlineData("HexalithEventStoreFromSource")]
     [InlineData("HexalithPolymorphicSerializationsFromSource")]
-    public void P0_NonBooleanFinalDependencyModesFailAfterProjectEvaluation(string propertyName)
+    public async Task P0_NonBooleanFinalDependencyModesFailAfterProjectEvaluationAsync(string propertyName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
 
@@ -163,10 +166,10 @@ public sealed class BuildConfigurationTests
                     new XElement("PropertyGroup", new XElement(propertyName, "maybe"))))
                 .Save(project);
 
-            (int exitCode, string output) = RunMsBuildTarget(
+            (int exitCode, string output) = await RunMsBuildTargetAsync(
                 root,
                 project,
-                "-p:Configuration=Release");
+                "-p:Configuration=Release").ConfigureAwait(true);
 
             exitCode.ShouldNotBe(0, $"A project-assigned non-boolean final {propertyName} must fail closed.");
             output.ShouldContain("HXW0001", Case.Sensitive);
@@ -179,11 +182,11 @@ public sealed class BuildConfigurationTests
     }
 
     [Fact]
-    public void P0_ConfigurationFreeDependencyModeDefaultsToPackagesAndWarns()
+    public async Task P0_ConfigurationFreeDependencyModeDefaultsToPackagesAndWarnsAsync()
     {
         string root = RepositoryRoot.Locate();
         string project = Path.Combine(root, "src", "Hexalith.Works.Contracts", "Hexalith.Works.Contracts.csproj");
-        (int exitCode, string output) = RunMsBuildTarget(root, project);
+        (int exitCode, string output) = await RunMsBuildTargetAsync(root, project).ConfigureAwait(true);
 
         exitCode.ShouldBe(0, output);
         output.ShouldContain("HXW0002", Case.Sensitive);
@@ -277,7 +280,7 @@ public sealed class BuildConfigurationTests
             .SingleOrDefault(element => element.Name.LocalName == name)
             ?.Value;
 
-    private static (int ExitCode, string Output) RunMsBuildTarget(
+    private static async Task<(int ExitCode, string Output)> RunMsBuildTargetAsync(
         string root,
         string project,
         params string[] arguments)
@@ -298,10 +301,38 @@ public sealed class BuildConfigurationTests
         }
 
         using Process process = Process.Start(start).ShouldNotBeNull();
-        string standardOutput = process.StandardOutput.ReadToEnd();
-        string standardError = process.StandardError.ReadToEnd();
-        process.WaitForExit();
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        Task<string> standardOutputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> standardErrorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await WaitForExitOrKillAsync(process, cancellationToken).ConfigureAwait(true);
+        string standardOutput = await standardOutputTask.ConfigureAwait(true);
+        string standardError = await standardErrorTask.ConfigureAwait(true);
         return (process.ExitCode, standardOutput + standardError);
+    }
+
+    private static async Task WaitForExitOrKillAsync(Process process, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+                // The child exited between the state check and the kill request; it still must be reaped below.
+            }
+
+            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(true);
+            throw;
+        }
     }
 
     private static string[] RootCSharpAnalyzerSeverities(string editorConfig, string analyzerId)

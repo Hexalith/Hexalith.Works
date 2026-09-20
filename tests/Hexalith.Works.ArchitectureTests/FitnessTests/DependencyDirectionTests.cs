@@ -444,6 +444,20 @@ public sealed class DependencyDirectionTests
             metadata.ShouldContain(runtimeProject, Case.Sensitive);
             metadata.ShouldContain("SuppressBuild => false", Case.Sensitive);
         }
+
+        string metadataProbe = File.ReadAllText(Path.Combine(
+            root,
+            "tests",
+            "Hexalith.Works.IntegrationTests",
+            "EventStoreOperationsTests.cs"));
+        metadataProbe.ShouldContain("System.Reflection.Metadata", Case.Sensitive);
+        metadataProbe.ShouldContain("Hexalith.EventStore.Operations.csproj", Case.Sensitive);
+        metadataProbe.ShouldContain("Dapr.Actors:Dapr.Actors.Runtime.IRemindable", Case.Sensitive);
+        metadataProbe.ShouldContain(
+            "Hexalith.EventStore.Operations:Hexalith.EventStore.Operations.Actors.IDeadLetterDrainActor",
+            Case.Sensitive);
+        metadataProbe.ShouldContain("recordProperties.ShouldContain(\"Body\")", Case.Sensitive);
+        metadataProbe.ShouldNotContain("using Hexalith.EventStore.Operations", Case.Sensitive);
     }
 
     [Fact]
@@ -538,10 +552,15 @@ public sealed class DependencyDirectionTests
                 Project: "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
                 DebugProjects: new[]
                 {
+                    Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Admin.Abstractions", "Hexalith.EventStore.Admin.Abstractions.csproj"),
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Testing", "Hexalith.EventStore.Testing.csproj"),
                 },
                 ReleaseProjects: Array.Empty<string>(),
-                ReleasePackages: new[] { "Hexalith.EventStore.Testing" }),
+                ReleasePackages: new[]
+                {
+                    "Hexalith.EventStore.Admin.Abstractions",
+                    "Hexalith.EventStore.Testing",
+                }),
         };
 
         foreach ((string project, string[] debugProjects, string[] releaseProjects, string[] releasePackages) in expectations)

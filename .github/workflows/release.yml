@@ -16,10 +16,19 @@ jobs:
   verify-source:
     name: Verify exact green main source
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       actions: read
       contents: read
     steps:
+      - name: Checkout exact dispatched source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+          submodules: false
+
       - name: Require current main with successful exact-source push CI
         shell: bash
         env:
@@ -27,42 +36,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           DISPATCH_REF: ${{ github.ref }}
           DISPATCH_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          if [ "$DISPATCH_REF" != "refs/heads/main" ]; then
-            echo "Release must be dispatched from refs/heads/main." >&2
-            exit 1
-          fi
-          if [[ ! "$DISPATCH_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "The dispatch source must be an exact lowercase commit SHA." >&2
-            exit 1
-          fi
-
-          live_main_sha="$(gh api "repos/${REPOSITORY}/git/ref/heads/main" --jq '.object.sha')"
-          if [[ ! "$live_main_sha" =~ ^[0-9a-f]{40}$ ]] || [ "$DISPATCH_SHA" != "$live_main_sha" ]; then
-            echo "The dispatched source is not the current main tip." >&2
-            exit 1
-          fi
-
-          ci_runs="$(gh api --method GET \
-            "repos/${REPOSITORY}/actions/workflows/ci.yml/runs" \
-            -f branch=main \
-            -f event=push \
-            -f head_sha="$DISPATCH_SHA" \
-            -f status=success \
-            -f per_page=100)"
-          if ! printf '%s\n' "$ci_runs" | jq -e --arg sha "$DISPATCH_SHA" '
-            [.workflow_runs[] | select(
-              .head_sha == $sha and
-              .head_branch == "main" and
-              .event == "push" and
-              .status == "completed" and
-              .conclusion == "success"
-            )] | length > 0
-          ' >/dev/null; then
-            echo "No successful push CI run exists for the exact current main SHA." >&2
-            exit 1
-          fi
+        run: bash scripts/validate-release-source.sh
 
   release:
     needs: verify-source

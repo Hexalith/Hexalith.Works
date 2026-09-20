@@ -21,6 +21,8 @@
           "nupkgs/*.nupkg",
           "nupkgs/*.snupkg"
         ],
+        "failTitle": false,
+        "failComment": false,
         "labels": [],
         "successCommentCondition": false,
         "releasedLabels": false

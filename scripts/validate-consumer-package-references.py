@@ -293,6 +293,12 @@ if __name__ == "__main__":
         raise SystemExit(main())
     except subprocess.CalledProcessError as error:
         print(f"Consumer validation failed with exit code {error.returncode}.", file=sys.stderr)
+        if error.stdout:
+            print("Captured consumer stdout:", file=sys.stderr)
+            print(error.stdout, file=sys.stderr, end="" if error.stdout.endswith("\n") else "\n")
+        if error.stderr:
+            print("Captured consumer stderr:", file=sys.stderr)
+            print(error.stderr, file=sys.stderr, end="" if error.stderr.endswith("\n") else "\n")
         raise SystemExit(error.returncode) from error
     except Exception as error:  # noqa: BLE001 - the CI entry point must report concise failures.
         print(f"Consumer validation failed: {error}", file=sys.stderr)

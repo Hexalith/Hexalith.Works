@@ -309,11 +309,6 @@ public sealed class RuntimeAdapterGovernanceTests
         return snapshot.ShouldNotBeNull();
     }
 
-    private static string[] ProjectReferenceNames(string root, string relativeProjectPath)
-        => KernelDependencyPolicy.DeclaredReferenceNames(
-            Path.Combine(root, relativeProjectPath),
-            "ProjectReference");
-
     private static string[] PackageReferenceNames(string root, string relativeProjectPath)
         => KernelDependencyPolicy.DeclaredReferenceNames(
             Path.Combine(root, relativeProjectPath),

@@ -22,6 +22,9 @@ fail() {
 [[ "$retry_delay_seconds" =~ ^[0-9]+$ ]] || fail "The retry delay must be a whole number of seconds."
 [[ "$request_timeout_seconds" =~ ^[1-9][0-9]*$ ]] || fail "The request timeout must be a positive whole number of seconds."
 [[ "$attempt_limit" =~ ^[0-9]+$ ]] || fail "The attempt limit must be a non-negative whole number."
+if [ "$retry_delay_seconds" -eq 0 ] && [ "$attempt_limit" -eq 0 ]; then
+  fail "A zero retry delay requires a finite attempt limit."
+fi
 [ -n "${GH_TOKEN:-}" ] || fail "GH_TOKEN is required to resolve release tags."
 [ -f "$manifest" ] || fail "The authoritative package manifest is missing."
 
@@ -113,6 +116,15 @@ if [ "${#missing[@]}" -ne 0 ]; then
   printf '  - %s\n' "${missing[@]}" >&2
   exit 1
 fi
+
+selected_tag="v${version}"
+encoded_selected_tag="$(jq -rn --arg tag "$selected_tag" '$tag | @uri')"
+final_commit_sha="$(gh api "repos/${repository}/commits/${encoded_selected_tag}" --jq '.sha')" ||
+  fail "Release tag '${selected_tag}' could not be re-resolved after package visibility succeeded."
+[[ "$final_commit_sha" =~ ^[0-9a-f]{40}$ ]] ||
+  fail "Release tag '${selected_tag}' re-resolved to an invalid commit SHA."
+[ "$final_commit_sha" = "$dispatch_sha" ] ||
+  fail "Release tag '${selected_tag}' moved away from the dispatched commit during publication verification."
 
 for package_id in "${package_ids[@]}"; do
   printf '[publication-verification] Verified %s %s\n' "$package_id" "$version"

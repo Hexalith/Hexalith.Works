@@ -81,9 +81,9 @@ deliberately absent: an ordinary version collision must fail loudly.
 
 **Partial-publication recovery.** NuGet has no transaction, so a failure part-way can leave some packages live and
 immutable. The publisher retries an unchanged ledger-verified artifact up to three times in the same invocation
-after ambiguous transport or server failures. A first-attempt 409 Conflict is always a collision and fails; a 409
-is accepted only when that same invocation already sent the same unchanged artifact and received an ambiguous
-result, because only then might the prior request have committed. The hosted runner and its candidate ledger are
-ephemeral, so retry exhaustion is not recoverable by rerunning the workflow or by reusing a local ledger. Do not
-delete published packages or push different content at the incomplete version. Publish a new patch version that
-contains all five packages, and leave the incomplete version unlisted so consumers never resolve it.
+only after a fail-closed classifier recognizes a bounded transport failure, HTTP 408/429, or HTTP 5xx response.
+Every 409 Conflict is a collision and fails, including one after an ambiguous attempt: local runner history cannot
+authenticate the bytes stored remotely. The hosted runner and its candidate ledger are ephemeral, so retry
+exhaustion or any 409 is not recoverable by rerunning the workflow or by reusing a local ledger. Do not delete
+published packages or push different content at the incomplete version. Publish a new patch version that contains
+all five packages, and leave the incomplete version unlisted so consumers never resolve it.
