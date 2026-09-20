@@ -7,6 +7,7 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
     private readonly Exception? _disposeException;
     private readonly int _exitAfterCanceledWaitCallCount;
     private readonly int _exitAfterKillCallCount;
+    private readonly IReadOnlyDictionary<int, Exception> _hasExitedExceptions;
     private readonly bool _ignoreReadCancellation;
     private readonly Queue<Exception> _killExceptions;
     private readonly Exception? _standardErrorException;
@@ -15,11 +16,12 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
     private readonly string _standardOutput;
     private readonly bool _throwReadsSynchronously;
     private readonly Exception? _waitForExitException;
+    private readonly IReadOnlyDictionary<int, Exception> _waitForExitExceptions;
     private volatile bool _hasExited;
     private int _canceledReadCount;
     private int _disposeCallCount;
+    private int _hasExitedCallCount;
     private int _killCallCount;
-    private int _waitForExitExceptionConsumed;
     private int _waitForExitCallCount;
 
     /// <summary>Initializes a configurable probe.</summary>
@@ -37,13 +39,16 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
         bool throwReadsSynchronously = false,
         Exception? waitForExitException = null,
         int exitAfterCanceledWaitCallCount = int.MaxValue,
-        Exception? disposeException = null)
+        Exception? disposeException = null,
+        IReadOnlyDictionary<int, Exception>? waitForExitExceptions = null,
+        IReadOnlyDictionary<int, Exception>? hasExitedExceptions = null)
     {
         _hasExited = startsExited;
         _completeReadsImmediately = completeReadsImmediately;
         _disposeException = disposeException;
         _exitAfterCanceledWaitCallCount = exitAfterCanceledWaitCallCount;
         _exitAfterKillCallCount = exitAfterKillCallCount;
+        _hasExitedExceptions = hasExitedExceptions ?? new Dictionary<int, Exception>();
         ExitCode = exitCode;
         _standardOutput = standardOutput;
         _standardError = standardError;
@@ -53,10 +58,23 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
         _ignoreReadCancellation = ignoreReadCancellation;
         _throwReadsSynchronously = throwReadsSynchronously;
         _waitForExitException = waitForExitException;
+        _waitForExitExceptions = waitForExitExceptions ?? new Dictionary<int, Exception>();
     }
 
     /// <inheritdoc />
-    public bool HasExited => _hasExited;
+    public bool HasExited
+    {
+        get
+        {
+            int callCount = Interlocked.Increment(ref _hasExitedCallCount);
+            if (_hasExitedExceptions.TryGetValue(callCount, out Exception? exception))
+            {
+                throw exception;
+            }
+
+            return _hasExited;
+        }
+    }
 
     /// <inheritdoc />
     public int ExitCode { get; }
@@ -69,6 +87,9 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
 
     /// <summary>Gets how many disposal attempts were made.</summary>
     public int DisposeCallCount => _disposeCallCount;
+
+    /// <summary>Gets how many process-state observations were made.</summary>
+    public int HasExitedCallCount => _hasExitedCallCount;
 
     /// <summary>Gets how many exit waits were started.</summary>
     public int WaitForExitCallCount => _waitForExitCallCount;
@@ -84,9 +105,13 @@ internal sealed class HangingSchedulerVolumeProbe : ISchedulerVolumeProbe
     /// <inheritdoc />
     public async Task WaitForExitAsync(CancellationToken cancellationToken)
     {
-        Interlocked.Increment(ref _waitForExitCallCount);
-        if (_waitForExitException is not null
-            && Interlocked.Exchange(ref _waitForExitExceptionConsumed, 1) == 0)
+        int callCount = Interlocked.Increment(ref _waitForExitCallCount);
+        if (_waitForExitExceptions.TryGetValue(callCount, out Exception? indexedException))
+        {
+            throw indexedException;
+        }
+
+        if (_waitForExitException is not null && callCount == 1)
         {
             throw _waitForExitException;
         }

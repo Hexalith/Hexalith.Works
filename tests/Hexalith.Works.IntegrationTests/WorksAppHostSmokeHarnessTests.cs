@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 
 using Shouldly;
 
@@ -50,49 +51,53 @@ public sealed class WorksAppHostSmokeHarnessTests
     [Fact]
     public void Exclusive_bind_uses_production_listener_configuration_and_detects_an_occupied_port()
     {
-        var configuredIpv4Listener = new TcpListener(IPAddress.Loopback, 0);
-        try
-        {
-            configuredIpv4Listener.Server.ExclusiveAddressUse = false;
+        (bool exclusiveAddressUse, bool? dualMode) ipv4Settings
+            = WorksAppHostSmokeHarness.BindPortExclusively(IPAddress.Loopback, 0);
 
-            WorksAppHostSmokeHarness.BindPortExclusively(
-                configuredIpv4Listener,
-                IPAddress.Loopback);
-
-            configuredIpv4Listener.Server.ExclusiveAddressUse.ShouldBeTrue();
-        }
-        finally
-        {
-            configuredIpv4Listener.Stop();
-        }
+        ipv4Settings.exclusiveAddressUse.ShouldBeTrue();
+        ipv4Settings.dualMode.ShouldBeNull();
 
         if (Socket.OSSupportsIPv6)
         {
-            var configuredIpv6Listener = new TcpListener(IPAddress.IPv6Loopback, 0);
             try
             {
-                configuredIpv6Listener.Server.DualMode = true;
+                (bool exclusiveAddressUse, bool? dualMode) ipv6Settings
+                    = WorksAppHostSmokeHarness.BindPortExclusively(IPAddress.IPv6Loopback, 0);
 
+                ipv6Settings.exclusiveAddressUse.ShouldBeTrue();
+                ipv6Settings.dualMode.ShouldBe(false);
+            }
+            catch (SocketException exception) when (
+                WorksAppHostSmokeHarness.IsUnavailableLoopbackAddress(
+                    IPAddress.IPv6Loopback,
+                    exception.SocketErrorCode))
+            {
+                // A kernel-disabled IPv6 loopback is production's inapplicable-address branch. The production
+                // overload was exercised through Start; configuration itself remains covered by the listener seam.
+                var configuredIpv6Listener = new TcpListener(IPAddress.IPv6Loopback, 0);
                 try
                 {
-                    WorksAppHostSmokeHarness.BindPortExclusively(
-                        configuredIpv6Listener,
-                        IPAddress.IPv6Loopback);
-                }
-                catch (SocketException exception) when (
-                    WorksAppHostSmokeHarness.IsUnavailableLoopbackAddress(
-                        IPAddress.IPv6Loopback,
-                        exception.SocketErrorCode))
-                {
-                    // A kernel-disabled IPv6 loopback is production's inapplicable-address branch. The listener
-                    // still passed through the production configuration operation before Start reported it.
-                }
+                    configuredIpv6Listener.Server.DualMode = true;
+                    try
+                    {
+                        WorksAppHostSmokeHarness.BindPortExclusively(
+                            configuredIpv6Listener,
+                            IPAddress.IPv6Loopback);
+                    }
+                    catch (SocketException bindException) when (
+                        WorksAppHostSmokeHarness.IsUnavailableLoopbackAddress(
+                            IPAddress.IPv6Loopback,
+                            bindException.SocketErrorCode))
+                    {
+                    }
 
-                configuredIpv6Listener.Server.DualMode.ShouldBeFalse();
-            }
-            finally
-            {
-                configuredIpv6Listener.Stop();
+                    configuredIpv6Listener.Server.ExclusiveAddressUse.ShouldBeTrue();
+                    configuredIpv6Listener.Server.DualMode.ShouldBeFalse();
+                }
+                finally
+                {
+                    configuredIpv6Listener.Stop();
+                }
             }
         }
 
@@ -306,8 +311,10 @@ public sealed class WorksAppHostSmokeHarnessTests
                 TimeSpan.FromMilliseconds(100),
                 TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
-        exception.Message.ShouldContain("exit 19");
-        exception.Message.ShouldContain("daemon unavailable");
+        exception.Message.ShouldBe(
+            "Docker could not inspect the Scheduler volume owner (exit 19): daemon unavailable.");
+        exception.Message.ShouldNotContain("process observation failed");
+        exception.InnerException.ShouldBeNull();
     }
 
     [Fact]
@@ -580,6 +587,69 @@ public sealed class WorksAppHostSmokeHarnessTests
     }
 
     [Fact]
+    public async Task Scheduler_volume_probe_classifies_indexed_termination_wait_and_state_failures()
+    {
+        foreach (bool failTerminationWait in new[] { true, false })
+        {
+            Exception cleanupFailure = failTerminationWait
+                ? new Win32Exception(5, "termination wait failed")
+                : new NotSupportedException("termination state failed");
+            using var probe = new HangingSchedulerVolumeProbe(
+                waitForExitExceptions: failTerminationWait
+                    ? new Dictionary<int, Exception> { [2] = cleanupFailure }
+                    : null,
+                hasExitedExceptions: failTerminationWait
+                    ? null
+                    : new Dictionary<int, Exception> { [1] = cleanupFailure });
+
+            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
+                () => WorksAppHostSmokeHarness.RunSchedulerVolumeProbeAsync(
+                    probe,
+                    TimeSpan.FromMilliseconds(10),
+                    TimeSpan.FromMilliseconds(40),
+                    TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            probe.KillCallCount.ShouldBe(1);
+            probe.WaitForExitCallCount.ShouldBe(2);
+            probe.HasExitedCallCount.ShouldBe(failTerminationWait ? 2 : 1);
+            exception.Message.ShouldContain("cleanup failed");
+            exception.InnerException.ShouldBeSameAs(cleanupFailure);
+        }
+    }
+
+    [Fact]
+    public async Task Scheduler_volume_probe_preserves_exact_caller_cancellation_over_indexed_cleanup_failures()
+    {
+        foreach (bool failTerminationWait in new[] { true, false })
+        {
+            Exception cleanupFailure = failTerminationWait
+                ? new Win32Exception(5, "termination wait failed")
+                : new NotSupportedException("termination state failed");
+            using var probe = new HangingSchedulerVolumeProbe(
+                waitForExitExceptions: failTerminationWait
+                    ? new Dictionary<int, Exception> { [2] = cleanupFailure }
+                    : null,
+                hasExitedExceptions: failTerminationWait
+                    ? null
+                    : new Dictionary<int, Exception> { [1] = cleanupFailure });
+            using var callerCts = new CancellationTokenSource();
+            callerCts.Cancel();
+
+            OperationCanceledException exception = await Should.ThrowAsync<OperationCanceledException>(
+                () => WorksAppHostSmokeHarness.RunSchedulerVolumeProbeAsync(
+                    probe,
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromMilliseconds(40),
+                    callerCts.Token)).ConfigureAwait(true);
+
+            probe.KillCallCount.ShouldBe(1);
+            probe.WaitForExitCallCount.ShouldBe(2);
+            probe.HasExitedCallCount.ShouldBe(failTerminationWait ? 2 : 1);
+            exception.CancellationToken.ShouldBe(callerCts.Token);
+        }
+    }
+
+    [Fact]
     public async Task Scheduler_volume_probe_preserves_exact_caller_cancellation_when_a_redirected_read_fails()
     {
         using var callerCts = new CancellationTokenSource();
@@ -645,18 +715,87 @@ public sealed class WorksAppHostSmokeHarnessTests
     }
 
     [Fact]
-    public void Process_scheduler_volume_probe_disposal_retries_after_the_first_attempt()
+    public async Task Scheduler_volume_probe_wrapper_classifies_an_ordinary_disposal_failure()
+    {
+        var disposalFailure = new ObjectDisposedException("probe", "probe disposal failed");
+        var probe = new HangingSchedulerVolumeProbe(
+            startsExited: true,
+            completeReadsImmediately: true,
+            disposeException: disposalFailure);
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
+            () => WorksAppHostSmokeHarness.RunAndDisposeSchedulerVolumeProbeAsync(
+                probe,
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromMilliseconds(100),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        probe.DisposeCallCount.ShouldBe(1);
+        exception.Message.ShouldContain("classified cleanup failure");
+        exception.InnerException.ShouldBeSameAs(disposalFailure);
+    }
+
+    [Fact]
+    public async Task Scheduler_volume_probe_wrapper_preserves_probe_and_ordinary_disposal_failures()
+    {
+        var observationFailure = new IOException("standard output failed");
+        var disposalFailure = new ObjectDisposedException("probe", "probe disposal failed");
+        var probe = new HangingSchedulerVolumeProbe(
+            startsExited: true,
+            completeReadsImmediately: true,
+            standardOutputException: observationFailure,
+            throwReadsSynchronously: true,
+            disposeException: disposalFailure);
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
+            () => WorksAppHostSmokeHarness.RunAndDisposeSchedulerVolumeProbeAsync(
+                probe,
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromMilliseconds(100),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        probe.DisposeCallCount.ShouldBe(1);
+        AggregateException aggregate = exception.InnerException.ShouldBeOfType<AggregateException>();
+        aggregate.InnerExceptions.Count.ShouldBe(2);
+        InvalidOperationException classifiedProbeFailure
+            = aggregate.InnerExceptions[0].ShouldBeOfType<InvalidOperationException>();
+        classifiedProbeFailure.InnerException.ShouldBeSameAs(observationFailure);
+        aggregate.InnerExceptions[1].ShouldBeSameAs(disposalFailure);
+    }
+
+    [Fact]
+    public async Task Scheduler_volume_probe_wrapper_returns_the_successful_owner_list_and_disposes_the_probe()
+    {
+        var probe = new HangingSchedulerVolumeProbe(
+            startsExited: true,
+            completeReadsImmediately: true,
+            standardOutput: "abc scheduler-one\ndef scheduler-two");
+
+        IReadOnlyList<string> owners = await WorksAppHostSmokeHarness.RunAndDisposeSchedulerVolumeProbeAsync(
+            probe,
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromMilliseconds(100),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        owners.ShouldBe(["abc scheduler-one", "def scheduler-two"]);
+        probe.DisposeCallCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public void Process_scheduler_volume_probe_disposal_retries_when_the_first_wait_is_false_with_bounded_waits()
     {
         using var process = new Process();
         int killCount = 0;
         int waitCount = 0;
         bool exited = false;
+        var waitDurations = new List<int>();
         var probe = new ProcessSchedulerVolumeProbe(
             process,
             () => exited,
             () => killCount++,
-            _ =>
+            milliseconds =>
             {
+                waitDurations.Add(milliseconds);
                 waitCount++;
                 exited = waitCount >= 2;
                 return exited;
@@ -667,7 +806,82 @@ public sealed class WorksAppHostSmokeHarnessTests
 
         killCount.ShouldBe(2);
         waitCount.ShouldBe(2);
+        waitDurations.ShouldBe([5_000, 5_000]);
         exited.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Process_scheduler_volume_probe_classifies_supported_kill_delegate_failures_and_still_disposes()
+    {
+        foreach (Func<string, Exception> exceptionFactory in new Func<string, Exception>[]
+        {
+            static message => new AggregateException(new InvalidOperationException(message)),
+            static message => new InvalidOperationException(message),
+            static message => new Win32Exception(5, message),
+            static message => new NotSupportedException(message),
+        })
+        {
+            using var process = new Process();
+            int disposeCallCount = 0;
+            int killCallCount = 0;
+            var waitDurations = new List<int>();
+            var probe = new ProcessSchedulerVolumeProbe(
+                process,
+                static () => false,
+                () => throw exceptionFactory($"kill {++killCallCount} failed"),
+                milliseconds =>
+                {
+                    waitDurations.Add(milliseconds);
+                    return false;
+                },
+                () => disposeCallCount++);
+
+            SchedulerVolumeProbeCleanupException exception
+                = Should.Throw<SchedulerVolumeProbeCleanupException>(probe.Dispose);
+
+            killCallCount.ShouldBe(2);
+            waitDurations.ShouldBe([5_000, 5_000]);
+            disposeCallCount.ShouldBe(1);
+            exception.ToString().ShouldContain("kill 1 failed");
+            exception.ToString().ShouldContain("kill 2 failed");
+        }
+    }
+
+    [Fact]
+    public void Process_scheduler_volume_probe_classifies_supported_wait_delegate_failures_and_still_disposes()
+    {
+        foreach (Func<string, Exception> exceptionFactory in new Func<string, Exception>[]
+        {
+            static message => new AggregateException(new InvalidOperationException(message)),
+            static message => new InvalidOperationException(message),
+            static message => new Win32Exception(5, message),
+            static message => new NotSupportedException(message),
+        })
+        {
+            using var process = new Process();
+            int disposeCallCount = 0;
+            int killCallCount = 0;
+            var waitDurations = new List<int>();
+            var probe = new ProcessSchedulerVolumeProbe(
+                process,
+                static () => false,
+                () => killCallCount++,
+                milliseconds =>
+                {
+                    waitDurations.Add(milliseconds);
+                    throw exceptionFactory($"wait {waitDurations.Count} failed");
+                },
+                () => disposeCallCount++);
+
+            SchedulerVolumeProbeCleanupException exception
+                = Should.Throw<SchedulerVolumeProbeCleanupException>(probe.Dispose);
+
+            killCallCount.ShouldBe(2);
+            waitDurations.ShouldBe([5_000, 5_000]);
+            disposeCallCount.ShouldBe(1);
+            exception.ToString().ShouldContain("wait 1 failed");
+            exception.ToString().ShouldContain("wait 2 failed");
+        }
     }
 
     [Fact]
@@ -787,7 +1001,9 @@ public sealed class WorksAppHostSmokeHarnessTests
 
         Process process = Process.Start(startInfo).ShouldNotBeNull();
         using Process cleanupProcess = Process.GetProcessById(process.Id);
-        _ = cleanupProcess.SafeHandle;
+        var cleanupHandle = cleanupProcess.SafeHandle;
+        Exception? primaryFailure = null;
+        Exception? cleanupFailure = null;
         try
         {
             var exited = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -802,21 +1018,44 @@ public sealed class WorksAppHostSmokeHarnessTests
                 .WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken)
                 .ConfigureAwait(true);
         }
+        catch (Exception exception)
+        {
+            primaryFailure = exception;
+        }
         finally
         {
             process.Dispose();
             try
             {
-                if (!cleanupProcess.HasExited)
-                {
-                    cleanupProcess.Kill(entireProcessTree: true);
-                    cleanupProcess.WaitForExit(2_000);
-                }
+                // Always route the retained handle through the same injectable, two-attempt adapter whose
+                // false-first-wait, bounded duration, exception classification, and exhaustion paths are pinned
+                // above. The closed-handle assertion makes this real-child fact exercise the fail-safe call even
+                // when the child already exited after the primary adapter disposed it.
+                var cleanupProbe = new ProcessSchedulerVolumeProbe(cleanupProcess);
+                cleanupProbe.Dispose();
+                cleanupHandle.IsClosed.ShouldBeTrue();
             }
-            catch (InvalidOperationException)
+            catch (Exception exception)
             {
-                // The retained process exited between the state check and the fail-safe termination request.
+                cleanupFailure = exception;
             }
+        }
+
+        if (primaryFailure is not null)
+        {
+            if (cleanupFailure is not null)
+            {
+                TestContext.Current.SendDiagnosticMessage(
+                    "Real-child fail-safe cleanup also failed after the primary test failure: {0}",
+                    cleanupFailure);
+            }
+
+            ExceptionDispatchInfo.Capture(primaryFailure).Throw();
+        }
+
+        if (cleanupFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(cleanupFailure).Throw();
         }
     }
 }

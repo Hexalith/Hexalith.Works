@@ -3444,3 +3444,91 @@ the authoritative reviewed tree passed overdue recovery, future-reminder recover
 and mTLS authorization together at **4/4** in 1020.742 seconds. `aspire describe --format Json --non-interactive`
 reported no running AppHost afterward. No submodule pointer or dependency pin changed in this close-out. The shared
 `/tmp` inode ceiling remained exhausted, so final verification used `/var/tmp/story48-root`.
+
+## Story 4.8 spec-10 five-patch close-out — 2026-09-20
+
+The direct Docker non-zero-exit diagnostic is no longer caught and rewrapped as a generic process-observation
+failure. The exact production bind overload exposes the settings observed on the listener it starts, the
+run/dispose wrapper's successful owner list is pinned, both adapter disposal waits are required to be 5000 ms,
+and a false real-child fail-safe wait triggers a second bounded termination attempt whose exit is asserted.
+
+The shared `/tmp` filesystem still had free bytes but no free inodes, so the first focused build stopped inside
+MSBuild before compilation with `System.IO.IOException: No space left on device`. All subsequent commands used
+the fresh `/var/tmp/story48.u0Y0zC` directory for `TMPDIR` and `DOTNET_CLI_HOME`; no unrelated `/tmp` content was
+deleted.
+
+```text
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal
+# Build succeeded: 0 warnings, 0 errors
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarnessTests"
+# 34/34 passed, 0 skipped
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class- "*SmokeTests"
+# 527/527 passed, 0 skipped
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class 'Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests' \
+  -class 'Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests'
+# 0/4 passed, 4 failed, 0 skipped, 2112.534s
+# Reminder facts: EventStore stayed unhealthy or exited 1 before Works readiness.
+# mTLS fact: readiness passed, but CreateWorkItem returned HTTP 500 instead of 202.
+
+TMPDIR=/var/tmp/story48.u0Y0zC DOTNET_CLI_HOME=/var/tmp/story48.u0Y0zC \
+  aspire describe --format Json --non-interactive
+# No running AppHost found after the Tier-3 runner completed
+```
+
+The Tier-3 attempt reached no reminder acceptance assertion and adds no fresh live credit. The deterministic
+patch coverage and every broad non-live gate are green; the earlier 4/4 live result remains historical evidence
+for the pre-spec-10 checkout only.
+
+### Full-baseline review remediation verification — 2026-09-20
+
+The bmad-build review added six focused AppHost probe facts for adapter kill/wait exception classification,
+cleanup-phase wait/state failures and cancellation precedence, and ordinary wrapper-disposal aggregation. The
+review-side verification used `/var/tmp/story48-review.lAaix4` for `TMPDIR` and `DOTNET_CLI_HOME`.
+
+```text
+dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarnessTests"
+# 40/40 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class- "*SmokeTests"
+# 533/533 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+The Tier-3 live aggregate was not repeated after these test-only review fixes; its immediately preceding
+unchanged-infrastructure result remains **0/4** with the exact startup and HTTP 500 evidence above. No fresh live
+acceptance credit is claimed.

@@ -1008,3 +1008,23 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Validate stream-page cursor metadata or document the EventStore invariant that makes malformed cursor shapes unreachable.
   evidence: `PendingDateAwaitStreamReader` trusts `IsTruncated`, `LatestSequence`, and `LastSequenceReturned`; inconsistent metadata could hide an unread tail or advance beyond returned events, but reachability requires gateway-contract evidence or fault injection.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Give repeated occurrences of the same date await distinct durable resume identities without losing redelivery idempotence.
+  evidence: `DateResume` derives the EventStore message id only from tenant, work item, and instant; a legitimate re-suspension on that same instant within the 24-hour command-status retention can be deduplicated as the earlier occurrence. Fixing this pre-existing Story 4.6 design requires carrying a suspension occurrence or sequence through pending-await, reminder, and command identity.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Recompute date-reminder delay at each scheduling operation during reconciliation.
+  evidence: `DateReminderReconciler` snapshots `now` once before processing every candidate, so a future await scheduled late in a large pass receives its original relative delay and fires late by the time already spent processing earlier candidates; this behavior predates Story 4.8's baseline.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Normalize duplicate identical date awaits at the durable await-set boundary.
+  evidence: `PendingDateAwaitProjection` preserves duplicate `DateReached` conditions, producing repeated schedule or submit attempts and inflated reconciliation counts even though deterministic reminder and message ids prevent duplicate accepted outcomes. The normalization belongs with the pre-existing durable await-set contract.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Harden local EventStore and Admin Dapr invocation policies to deny by default and least privilege.
+  evidence: The local-development EventStore and Admin configurations predate this story with `defaultAction: allow`, and the Works caller receives EventStore `POST /**`; enumerate the command and stream-read routes every Works recovery path needs before narrowing these policies.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Apply fail-closed page and payload identity validation to the child-completion and cascade recovery stream readers.
+  evidence: The pre-existing Story 4.7 readers do not consistently validate stream domain or decoded event identity and silently discard malformed lifecycle or child evidence, allowing false parent-resume decisions or incomplete cascade checkpoints. Their separate paging defect remains owned by DW-86.

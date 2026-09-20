@@ -1,6 +1,6 @@
 ---
 baseline_commit: 9526c31
-status: review
+status: done
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
@@ -188,6 +188,13 @@ _Diff scoped to Story 4.8's own surface (`ff329cc..HEAD` over `src/Hexalith.Work
 
 _bmad-build step-04 review of the 2026-09-05 code-review-remediation session's own working-tree diff (`{diff_file}` scoped to this session's uncommitted changes, not the full since-`baseline_commit` history — the literal full-history diff since story creation spans 590K+ unrelated lines across other stories/epics and was judged unreviewable; this session's incremental delta is the only genuinely new, previously-unreviewed material)._
 
+| Layer | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| verification-gap | The changed real-child fail-safe branch was not exercised by a passing test. | medium | The fact proves the child exited before `finally`; its former one-off second kill/wait ran only after an earlier assertion failure. A regression there could leak the retained child into later integration tests. | patch — route retained-handle cleanup through the already injectable `ProcessSchedulerVolumeProbe`; its false-first-wait fact requires two 5000 ms waits and confirmed exit. |
+| verification-gap | Frontmatter, body, and sprint tracking reported different lifecycle states. | low | Frontmatter was `in-review` while the legacy body and sprint board still read `in-progress`, despite the close-out claiming readiness for review. | patch — retain the workflow frontmatter vocabulary and synchronize the body/sprint vocabulary to `review`. |
+| edge-case | Frontmatter entered review while the body and sprint tracking remained in progress. | low | Same mismatch independently observed by the edge-case layer; tools reading different artifacts would route the story differently. | patch — grouped with the verification-gap lifecycle finding. |
+| edge-case | A non-`InvalidOperationException` from the real-child fail-safe kill/wait could escape the ad-hoc cleanup and leave the child running. | medium | The one-off `finally` caught only `InvalidOperationException`; `AggregateException`, `Win32Exception`, and `NotSupportedException` are supported process-lifecycle failures already handled by the adapter. | patch — remove the one-off lifecycle and reuse the two-attempt adapter with its classified failure policy. |
+
 _2026-09-20 File List increment close-out review: edge-case and verification-gap layers reviewed the current
 working-tree delta; blind-hunter was skipped because the four-agent session cap left only two simultaneous
 reviewer slots._
@@ -245,6 +252,33 @@ classified as pre-existing rather than silently folded into the harness patch._
 - **[edge-case-hunter claim] A test-task bullet says scheduler failure does not fail dispatch, while the selected 4.7 event-handler path rethrows for redelivery.** Verdict: `low`, rejected. Task 2 explicitly requires rethrow on the selected subscription surface and the runtime behavior is correct; only stale alternative-path wording in this spec disagrees.
 - **[edge-case-hunter claim] The stale-reminder note names the actor orphan path, but stored stale registrations submit an idempotent no-op before cleanup.** Verdict: `low`, rejected. Runtime behavior remains safe and intentional; correcting the wording would edit the spec under review.
 - **[edge-case-hunter claim] The task says last out-of-order dispatch wins, while the index uses a monotonic highest-sequence watermark.** Verdict: `low`, rejected. The implementation prevents an older replay from resurrecting cleared state and is correct; the finding asks only to rewrite this spec's obsolete wording.
+
+_2026-09-20 bmad-build full-baseline review after the spec-10 five-patch close-out. All 23 raw findings
+were classified before grouping. Repeated claims retain their prior verdict and route with carried evidence._
+
+- **[blind-hunter] Re-suspending one item on the same date instant within EventStore's 24-hour command-status retention reuses the earlier `DateResume` message id.** Verdict: `medium` → **defer**. Confirmed from `DateResume` and `EventStoreGatewayWorkCommandSubmitter`; the second legitimate occurrence can be substrate-deduplicated. This identity design predates Story 4.8's baseline and requires an occurrence/sequence identity across reminder records, names, and submissions rather than a close-out patch.
+- **[blind-hunter] `DateReminderReconciler` snapshots `now` once, so later future awaits receive a relative delay that includes time already spent on earlier candidates.** Verdict: `medium` → **defer**. Confirmed, but carried code history shows the behavior already existed at baseline; a large pass can delay a reminder by its own scan duration.
+- **[blind-hunter] The reconciler aborts after the first submit or schedule failure and can starve later awaits.** Verdict: `medium` → **defer**. Carried: `ProcessAsync` still exits on the first failure exactly as the earlier triage row records; do not verify or defer it again.
+- **[blind-hunter] The steady-state handler aborts after the first schedule failure and can starve later awaits in the same suspension.** Verdict: `medium` → **defer**. Carried: the earlier fail-fast reminder-processing row already records this behavior and route.
+- **[blind-hunter] Registry-before-index ordering can let startup reconciliation observe an empty index and finish before a later index write appears.** Verdict: `maybe-false` → **defer**. Carried: the prior empty-registry/backfill row records the same reachability question; projection-poller replay semantics are still the evidence needed to settle it.
+- **[blind-hunter] Startup reconciliation permanently stops after its bounded retry budget.** Verdict: `medium` → **defer**. Carried: `ReminderReconciliationService` still returns after the final attempt, matching the existing triage and deferred-work entry.
+- **[blind-hunter] Parked reminder candidates have no supported unpark/replay path.** Verdict: `medium` → **defer**. Carried: the parked branch remains unchanged and the canonical unpark/replay entry already owns this work.
+- **[blind-hunter] Duplicate identical `DateReached` conditions survive projection folding.** Verdict: `low` → **defer**. Confirmed and pre-existing at baseline: duplicates produce repeated schedule/submit attempts and inflated counts, although deterministic names and message ids keep accepted outcomes idempotent. Normalization belongs with the durable await-set contract.
+- **[blind-hunter] Early resume leaves stale actor/reminder state until each future reminder fires.** Verdict: `low`, rejected. The behavior is real but explicitly accepted by the Story 4.8 task and inherited from Story 4.6; proactive unregistration needs new event-consumption/state-cleanup machinery for a low ordinary-use impact.
+- **[blind-hunter] Reserving tenant id `tenants` is avoidable by migrating the registry key.** Verdict: `low`, rejected. The collision is real, but the human explicitly selected host-edge rejection and preservation of the durable registry key; a registry-key migration is not a direct correction.
+- **[blind-hunter] Mixed-case `TENANTS` bypasses the raw ordinal projection guard before canonicalization.** Verdict: `low` → **defer**. Carried: this direct-`/project`-only hole and its lowercasing path remain exactly as the prior triage/deferred rows describe.
+- **[blind-hunter] Local EventStore and Admin Dapr configurations remain allow-by-default.** Verdict: `medium` → **defer**. Confirmed, but both allow policies predate the baseline and are explicitly labeled local-development only; Story 4.8 added mTLS while preserving the existing Works receiver's deny-by-default policy.
+- **[blind-hunter] The Works caller receives a broad EventStore `POST /**` allow policy.** Verdict: `medium` → **defer**. Confirmed and pre-existing; narrowing it requires enumerating the EventStore command/read routes needed by every Works recovery path and belongs with the local EventStore ACL hardening above.
+- **[blind-hunter] Child-completion stream paging forwards the rejected continuation token and advances the exclusive cursor by one too many.** Verdict: `high` → **defer**. Carried: DW-86 already owns this exact Story 4.7 paging defect; the code is unchanged.
+- **[blind-hunter] Child-completion stream reads do not validate domain identity and silently ignore undecodable lifecycle evidence.** Verdict: `medium` → **defer**. Confirmed in the pre-existing Story 4.7 reader; wrong-domain or malformed evidence can produce a false parent-resume decision.
+- **[blind-hunter] Cascade descendant reads do not validate page/payload identity and silently ignore malformed child evidence.** Verdict: `medium` → **defer**. Confirmed in the pre-existing cascade reader; foreign or missing child evidence can make a durable checkpoint incomplete.
+- **[edge-case-hunter] Mixed-case `TENANTS` can poison registry state after partial projection writes.** Verdict: `low` → **defer**. Carried: same location and canonicalization claim as the blind finding and prior direct-`/project` row.
+- **[edge-case-hunter] A stream response older than the index/trigger watermark can be accepted as current truth.** Verdict: `maybe-false` → **defer**. Carried into the existing malformed-metadata inquiry: the reader has no minimum watermark, but reachability requires gateway contract or fault-injection evidence showing an append-only stream can regress.
+- **[edge-case-hunter] A non-truncated page can omit events while metadata advertises a higher latest sequence.** Verdict: `maybe-false` → **defer**. Carried: the prior non-truncated unread-tail row already records the same invariant question and route.
+- **[edge-case-hunter] One reconciler failure starves later tenants' awaits.** Verdict: `medium` → **defer**. Carried: identical root cause and route as the blind reconciler fail-fast finding.
+- **[verification-gap] `ProcessSchedulerVolumeProbe` has no throwing kill/wait delegate coverage for its supported exception classification.** Verdict: `medium` → **patch, resolved**. The adapter facts now inject every supported exception type into kill and wait delegates, require two 5000 ms attempts, verify disposal, and require `SchedulerVolumeProbeCleanupException` when exit remains unconfirmed.
+- **[verification-gap] Termination-phase wait and `HasExited` exception handling are untested.** Verdict: `medium` → **patch, resolved**. The fake now supports call-indexed wait/state failures; focused facts reach both cleanup catches and preserve exact caller-cancellation precedence.
+- **[verification-gap] Uncancelled ordinary wrapper-disposal failures, alone or combined with a probe failure, are untested.** Verdict: `medium` → **patch, resolved**. Focused wrapper facts require ordinary cleanup classification and preserve both probe and disposal causes.
 
 ## Dev Notes
 
@@ -453,6 +487,26 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-20 bmad-build full-baseline review remediation.** Three verification gaps in the AppHost probe
+  harness were patched with six focused facts: adapter kill/wait exception classification, cleanup-phase
+  wait/state failures plus cancellation precedence, and ordinary wrapper-disposal failure aggregation. The
+  independent post-patch run passed Release build 0 warnings/errors, focused harness **40/40**, Unit
+  **568/568**, Property **3/3**, serial non-smoke Integration **533/533**, and Architecture **268/268**, all
+  with zero skips.
+
+- **2026-09-20 spec-10 five-patch close-out.** Docker non-zero exits now preserve their direct inspect
+  diagnostic instead of being rewrapped as generic process-observation failures. The exact production
+  `(IPAddress, int)` bind overload returns the socket settings observed on the listener it started, and the
+  focused regression pins IPv4 `ExclusiveAddressUse`, IPv6 `DualMode`, and real occupied-port behavior. The
+  run/dispose wrapper has a successful owner-list/disposal fact, both adapter disposal waits are pinned to
+  5000 ms, and the real-child fail-safe performs and verifies a second bounded kill/wait when the first wait
+  returns false. Release build passed with 0 warnings/errors; focused harness, Unit, Property, serial non-smoke
+  Integration, and Architecture passed **34/34**, **568/568**, **3/3**, **527/527**, and **268/268** with zero
+  skips. The Tier-3 aggregate was attempted honestly and finished **0/4** in **2112.534s**: three reminder facts
+  stopped before Works readiness because EventStore stayed unhealthy or exited 1, while the mTLS fact reached
+  readiness but received HTTP 500 on its first command. No fresh live credit is claimed; `aspire describe`
+  confirmed no AppHost remained after the run.
+
 - **2026-09-20 File List increment review close-out.** Re-ran the Story 4.8 Tier-3 reminder and mTLS lanes
   against the final reviewed checkout: all **4/4** facts passed with zero skips in **1023.751s**, covering overdue
   recovery, future-reminder recovery, steady-state Scheduler delivery, and deny-by-default mTLS authorization.
@@ -653,6 +707,15 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-20 spec-10 five-patch close-out**
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/HangingSchedulerVolumeProbe.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-20 File List increment review close-out**
 - `tests/Hexalith.Works.IntegrationTests/ISchedulerVolumeProbe.cs`
@@ -948,6 +1011,20 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-20 — Full-baseline bmad-build review triaged 23 findings, carried previously recorded broad-history
+  issues, deferred five pre-existing concern groups, and closed three AppHost probe verification gaps with six
+  focused facts. Final deterministic gates are green at harness 40, Unit 568, Property 3, non-smoke Integration
+  533, and Architecture 268.
+
+- 2026-09-20 — Closed all five spec-10 review patches, refreshed every deterministic gate, and recorded the
+  attempted Tier-3 run's exact EventStore/AppHost blocker without claiming live acceptance credit. Story 4.8
+  is ready for review.
+
+- 2026-09-20 — Spec-10 increment review (`origin/main...HEAD`) left five patch findings as action items
+  (non-zero Docker-exit classification, production exclusive-bind assertions, wrapper success fact,
+  adapter disposal wait budget, real-child fail-safe `WaitForExit`) and returned Story 4.8 plus sprint
+  tracking to `in-progress`.
 
 - 2026-09-20 — Closed the fifteen File List close-out review patches: Docker probe cleanup now makes two bounded
   termination attempts, classifies supported process/pipe failures, and protects adapter disposal; production
@@ -1443,3 +1520,28 @@ _Scope: `776b869...HEAD` (HEAD `059e9a0`) — unreviewed File List increment clo
 - `false` — `ObserveProbeTaskAsync` must swallow faults beyond cancellation/`IOException`/`ObjectDisposedException`: those three are the demonstrated pipe-close and cancel outcomes from `ReadToEndAsync` after `Kill`; no other reachable redirected-read exception was shown, and a loud failure on an undemonstrated fault is not a defect.
 - `false` — the new 2026-09-20 ledger bullets cite drifting `deferred-work.md:904` / `:944` / `:898` / `:940`: those line numbers still land on the intended CI/CD routing, 4608, 4604/4606, and truncated-heading items; this increment appended *after* them and already replaced the DW-56 line citation with a heading.
 - `low`, not worth fixing — treating a successful `WaitForExitAsync` plus cancelled reads as a probe timeout: the race is rare inside a 60s settle budget, the conservative retry is safe, and splitting the wait/read cancellation tokens adds lifecycle complexity rather than a direct correction.
+
+### Review Findings (2026-09-20, bmad-code-review, spec-10 increment `origin/main...HEAD`)
+
+_Scope: `origin/main...HEAD` (HEAD `1a3edcc`) — spec-10 AppHost probe close-out. 10 files, +1605/−145, 2110 diff lines. Spec: `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 24 raw findings triaged to 0 decision, 5 patch, 0 defer, 13 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [x] [Review][Patch] Non-zero Docker exit is rewrapped as `process observation failed`, and the inspect fact still passes on substring match [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:709] — resolved 2026-09-20: the exit-code classification now occurs outside the process-observation catch, and the fact requires the exact direct diagnostic, no generic prefix, and no inner exception.
+- [x] [Review][Patch] Production exclusive-bind `(IPAddress, int)` never observes `ExclusiveAddressUse` / IPv6 `DualMode` on the listener it starts [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:848] — resolved 2026-09-20: the exact production overload returns the settings observed on its started listener; the regression pins IPv4 exclusivity and IPv6 single-stack behavior while retaining occupied-port coverage.
+- [x] [Review][Patch] `RunAndDisposeSchedulerVolumeProbeAsync` has no successful owner-list fact, so dropping the wrapper success return stays green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:676] — resolved 2026-09-20: the wrapper must return both parsed owners and dispose the probe exactly once.
+- [x] [Review][Patch] Adapter disposal waits are never asserted to be 5000 ms [tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs:136] — resolved 2026-09-20: the two-attempt disposal regression records and requires `[5000, 5000]`.
+- [x] [Review][Patch] Real-child fail-safe ignores `WaitForExit` false, so a child that survives `Kill` can outlive the test [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:813] — resolved 2026-09-20: a false first fail-safe wait triggers a second kill/wait, whose result must confirm exit.
+
+**Rejected:**
+- `false` — success-path `Task.WhenAll` hangs past `DockerProbeWait`: redirected reads still use `probeCts` (`CancelAfter(probeWait)`), so a honoring `ReadToEndAsync` is still bounded; cleanup `WaitAsync` is extra defense, not the only bound.
+- `low`, not worth fixing — simultaneous stdout+stderr faults after exit surface as `AggregateException` "process observation failed": one stream fault is already classified, and aggregating the second pipe adds machinery this spec already rejected (R2-BH-13).
+- `false` — `ProcessSchedulerVolumeProbe.Dispose` releasing a still-live handle: spec-10 requires two bounded termination attempts *then* dispose the process handle; fail-fast stops further probes rather than accumulating children.
+- Fix edits the spec under review — Commands still show `DOTNET_CLI_HOME=/tmp` and `aspire describe --format json` while Observed/`test-summary.md` record `/var/tmp/story48-root` and `--format Json --non-interactive`.
+- `low`, not worth fixing — the live `Process` fact does not set redirects or call `RunSchedulerVolumeProbeAsync`: that is adapter-disposal coverage; a real redirected Docker pipeline is more than a direct correction and would re-open the deferred pipe-after-kill item.
+- `false` — injectable constructor vs `_process` split: production ctor wires both to the same `Process`; the delegates exist only for disposal-lifecycle tests.
+- `false` — `ProbeHasExited` omitting `AggregateException`, or recording `Kill` `AggregateException` after exit: `HasExited`/`Kill` on an already-exited process is the demonstrated `InvalidOperationException` path, which is swallowed when `HasExited` is true.
+- `false` — cancel during success-path reads can return owners: production always goes through `RunAndDisposeSchedulerVolumeProbeAsync`, which rechecks the caller token after dispose.
+- `low`, not worth fixing — kill-failure coverage is a `[Fact]` `foreach` while the story says "theory": the fact still fails on the first uncovered exception type; converting to `[Theory]` is cosmetic reporting.
+- `low`, not worth fixing — `HangingSchedulerVolumeProbe` constructor lacks `<param>` tags: the test assembly does not gate XML docs, and this is cosmetic.
+- `false` — wrapper cancel fact injects `InvalidOperationException` rather than `SchedulerVolumeProbeCleanupException`: spec-10 requires exact caller cancellation to win after cleanup; production checks the token first.
+- `false` — termination-wait timeout-as-exit extra `Kill` classifies a dead child as cleanup failure: `TryTerminateProbe` swallows `InvalidOperationException` when `HasExited`, and `TerminateAndObserveProbeAsync` rechecks `HasExited` before failing.
+- `false` — fail-safe `Kill` throwing `Win32Exception`/`NotSupportedException`/`AggregateException` masks the assertion: those shapes were not shown on the cooperative `sleep`/`ping` child; `InvalidOperationException` is already caught.

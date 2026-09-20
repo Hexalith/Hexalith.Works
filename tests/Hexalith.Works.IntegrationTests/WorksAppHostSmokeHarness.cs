@@ -698,23 +698,18 @@ internal static class WorksAppHostSmokeHarness
         Task<string> errorTask = StartProbeRead(
             () => probe.ReadStandardErrorAsync(probeCts.Token));
         bool waitingForExit = true;
+        string error;
+        int exitCode;
+        string output;
         try
         {
             await probe.WaitForExitAsync(probeCts.Token).ConfigureAwait(false);
             waitingForExit = false;
             cancellationToken.ThrowIfCancellationRequested();
             string[] redirectedOutput = await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
-            string output = redirectedOutput[0];
-            string error = redirectedOutput[1];
-            if (probe.ExitCode != 0)
-            {
-                string errorDetail = string.IsNullOrWhiteSpace(error) ? "no standard-error detail" : error.Trim();
-                throw new InvalidOperationException(
-                    $"Docker could not inspect the Scheduler volume owner (exit {probe.ExitCode}): {errorDetail}.");
-            }
-
-            return output
-                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            output = redirectedOutput[0];
+            error = redirectedOutput[1];
+            exitCode = probe.ExitCode;
         }
         catch (OperationCanceledException exception) when (probeCts.IsCancellationRequested)
         {
@@ -787,6 +782,16 @@ internal static class WorksAppHostSmokeHarness
                 $"Docker Scheduler-volume probe process observation failed: {exception.Message}",
                 exception);
         }
+
+        if (exitCode != 0)
+        {
+            string errorDetail = string.IsNullOrWhiteSpace(error) ? "no standard-error detail" : error.Trim();
+            throw new InvalidOperationException(
+                $"Docker could not inspect the Scheduler volume owner (exit {exitCode}): {errorDetail}.");
+        }
+
+        return output
+            .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
     /// <summary>Builds the Docker command that includes running and stopped Scheduler-volume owners.</summary>
@@ -813,7 +818,11 @@ internal static class WorksAppHostSmokeHarness
     /// <param name="port">The fixed control-plane port to probe.</param>
     /// <returns><see langword="true"/> when the address is bindable or inapplicable on this host.</returns>
     internal static bool IsPortAvailableForExclusiveBind(IPAddress address, int port)
-        => IsPortAvailableForExclusiveBind(address, port, BindPortExclusively);
+        => IsPortAvailableForExclusiveBind(
+            address,
+            port,
+            static (candidateAddress, candidatePort) =>
+                _ = BindPortExclusively(candidateAddress, candidatePort));
 
     /// <summary>Classifies whether an exclusive bind succeeds or is inapplicable on this host.</summary>
     /// <param name="address">The loopback address to probe.</param>
@@ -845,12 +854,26 @@ internal static class WorksAppHostSmokeHarness
         }
     }
 
-    private static void BindPortExclusively(IPAddress address, int port)
+    /// <summary>Creates, configures, and starts the listener used by the production exclusive-bind probe.</summary>
+    /// <param name="address">The loopback address to bind.</param>
+    /// <param name="port">The port to bind, or zero to let the operating system select one.</param>
+    /// <returns>The socket settings observed on the listener that was started.</returns>
+    internal static (bool ExclusiveAddressUse, bool? DualMode) BindPortExclusively(
+        IPAddress address,
+        int port)
     {
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentOutOfRangeException.ThrowIfNegative(port);
+
         var listener = new TcpListener(address, port);
         try
         {
             BindPortExclusively(listener, address);
+            return (
+                listener.Server.ExclusiveAddressUse,
+                address.AddressFamily == AddressFamily.InterNetworkV6
+                    ? listener.Server.DualMode
+                    : null);
         }
         finally
         {
