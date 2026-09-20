@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -409,6 +409,16 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-20 spec-9 review-patch close-out.** Closed the final three spec-9 findings: the clean final-index
+  cancellation fact now pins the empty first-index read, zero stream reads, and zero logs; the 4608 architecture
+  guard requires the complete shutdown-or-exhaustion restart sentence; and the test-summary citation now names
+  only the parking and stream filters covered by `:145-197`. Release build passed with 0 warnings/errors;
+  focused Integration and Architecture classes passed **29/29** and **3/3**; Unit, Property, and serial
+  non-smoke Integration passed **568/568**, **3/3**, and **493/493**; full Architecture passed **268/268**.
+  Current root gitlinks and checkouts agree at Chatbot `a782557875a27648a85b063572eb6c62c53459f8`,
+  Conversations `c610fbb8c5491fb0d7987c2f8294199887f4a44c`, and EventStore
+  `4bc61d9a60fae13a65f23963c1cb731065222f2a`. No pointer changed and no Tier-3 credit is claimed.
+
 - **2026-09-18 four-patch spec-9 close-out.** Added the direct two-tenant clean next-index cancellation
   regression: the first index is empty, the final index throws the exact caller token, the exact exception
   propagates, the final index is read once, and no warning is logged. EventId 4608 guidance and its architecture
@@ -587,6 +597,14 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### File List
 
+**2026-09-20 spec-9 review-patch close-out**
+- `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
+- `tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
+
 **2026-09-18 four-patch spec-9 close-out**
 - `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
 - `docs/operations/subscriber-dead-letter-operator.md`
@@ -600,10 +618,11 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 **Current adopted gitlinks (read-only evidence; spec-9 changed no pointer)**
 - `references/Hexalith.Chatbot` — `3c787993213ccf33f8912e6ad5caac605586fa15` →
-  `1047ef38d3845406227891639aaeb853e5d4f116`
-- `references/Hexalith.Conversations` — `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49` (unchanged)
+  `1047ef38d3845406227891639aaeb853e5d4f116` → `a782557875a27648a85b063572eb6c62c53459f8`
+- `references/Hexalith.Conversations` — `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49` →
+  `c610fbb8c5491fb0d7987c2f8294199887f4a44c`
 - `references/Hexalith.EventStore` — `629168e3983e5a9cd1639013f39d758fb0068cac` →
-  `b5541259058320a0a7f1db19038709cbd02dad85`
+  `b5541259058320a0a7f1db19038709cbd02dad85` → `4bc61d9a60fae13a65f23963c1cb731065222f2a`
 
 **2026-09-17 seven-patch spec-8 close-out**
 - `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs`
@@ -848,6 +867,9 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-20 — Closed the final three spec-9 review patches, reran every deterministic gate on the current
+  adopted gitlinks, and returned Story 4.8 plus sprint tracking to `review` without new live credit.
 
 - 2026-09-18 — Closed the four remaining spec-8 review patches: added the clean final-index exact-cancellation
   regression, qualified and pinned EventId 4608 host-lifecycle guidance, extended the append-only citation through
@@ -1238,9 +1260,9 @@ _Scope: `e5c173e...HEAD` (HEAD `28724f2`) — unreviewed since the last complete
 
 _Scope: `a292e3b...HEAD` (HEAD `3a29f59`). 10 files, +1,197/−328, 2,036 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — verification-gap returned empty (`failed_layers`: Verification Gap Reviewer). 18 raw findings triaged to 0 decision, 3 patch, 4 defer, 11 rejected._
 
-- [ ] [Review][Patch] EventId 4608 restart-after-shutdown is not uniquely pinned: deleting `shutdown ended the pass or` from the restart sentence still leaves `shutdown`, `restart`, and `startup retries were exhausted` in the row [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:148]
-- [ ] [Review][Patch] spec-9 close-out evidence says the `:145-197` citation covers all three in-tenant exact-token filters, but that range is the parking and stream filters only; the outer catch is at `:88-97` [_bmad-output/implementation-artifacts/tests/test-summary.md:3285]
-- [ ] [Review][Patch] The new clean final-index cancellation fact does not `Received()` the empty first-tenant index read, allows Information/Debug logs, and omits the sibling `DidNotReceive().ReadStreamAsync` pin [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:619]
+- [x] [Review][Patch] EventId 4608 restart-after-shutdown is not uniquely pinned: deleting `shutdown ended the pass or` from the restart sentence still leaves `shutdown`, `restart`, and `startup retries were exhausted` in the row [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:148] — resolved 2026-09-20: the complete restart sentence is now required verbatim in the 4608 row.
+- [x] [Review][Patch] spec-9 close-out evidence says the `:145-197` citation covers all three in-tenant exact-token filters, but that range is the parking and stream filters only; the outer catch is at `:88-97` [_bmad-output/implementation-artifacts/tests/test-summary.md:3285] — resolved 2026-09-20: the summary now attributes the range only to the parking and stream filters.
+- [x] [Review][Patch] The new clean final-index cancellation fact does not `Received()` the empty first-tenant index read, allows Information/Debug logs, and omits the sibling `DidNotReceive().ReadStreamAsync` pin [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:619] — resolved 2026-09-20: both exact-token index reads, no stream read, and no log entry are pinned.
 
 - [x] [Review][Defer] Compacted ledger stubs and `deferred-work-archive.md` have no title, policy, backlink, or archive path [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1] — deferred: already recorded at the spec-9 `source_spec` bullets in `deferred-work.md`; this review of `a292e3b...HEAD` reconfirmed the same discovery gap.
 - [x] [Review][Defer] `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()` [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582] — deferred: pre-existing sibling fact; spec-9 only hardened the new final-index regression.

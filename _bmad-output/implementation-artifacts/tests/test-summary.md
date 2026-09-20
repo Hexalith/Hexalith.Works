@@ -3282,9 +3282,10 @@ throws an `OperationCanceledException` carrying the exact caller token. It prove
 final index is read once, and no warning is logged, so removing the clean outer `throw` would return success and
 fail the test. The 4608 runbook row and architecture test now condition a later reconciliation on the host still
 running and retry budget remaining, and direct operators to restart after shutdown or exhaustion. The append-only
-ledger citation covers all three in-tenant exact-token filters through source line 197.
+ledger citation covers the in-tenant parking and stream exact-token filters through source line 197.
 
-The current root index and checked-out revisions agree exactly; spec-9 changed no submodule pointer:
+At the 2026-09-18 close-out, the root index and checked-out revisions agreed exactly; spec-9 changed no submodule
+pointer:
 
 - `references/Hexalith.Chatbot`: `3c787993213ccf33f8912e6ad5caac605586fa15` →
   `1047ef38d3845406227891639aaeb853e5d4f116`
@@ -3343,3 +3344,46 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 
 No Tier-3 smoke lane was run, so this patch adds no live-verification credit. The only broad-gate failure is the
 already-open SDK-pin mismatch; every non-blocked deterministic gate passed serially on the adopted gitlinks.
+
+## Story 4.8 spec-9 review-patch close-out — 2026-09-20
+
+The clean final-index cancellation fact now verifies the empty first-tenant index read and final cancellation
+index read exactly once with the caller token, performs no stream read, and emits no log at any level. The 4608
+architecture guard requires the complete shutdown-or-exhaustion restart sentence. The earlier citation claim now
+accurately names only the in-tenant parking and stream filters covered by `:145-197`.
+
+The current root index and checkouts agree; this follow-up changed no submodule pointer:
+
+- `references/Hexalith.Chatbot`: `a782557875a27648a85b063572eb6c62c53459f8`
+- `references/Hexalith.Conversations`: `c610fbb8c5491fb0d7987c2f8294199887f4a44c`
+- `references/Hexalith.EventStore`: `4bc61d9a60fae13a65f23963c1cb731065222f2a`
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*IndexedPendingDateAwaitSourceTests"
+# 29/29 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests \
+  -class "*SubscriberDeadLetterOperatorDocumentationTests"
+# 3/3 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 493/493 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+Focused `DateReminderRecoveryRuntimeTests` (**13/13**), `ReminderReconciliationServiceTests` (**4/4**), and
+`LinkConversationRuntimeAdapterTests` (**136/136**) also passed with zero skips. Excluding the formerly known
+SDK-pin fact passed **267/267**; the full Architecture suite is now green, so that historical blocker no longer
+applies on the current checkout. No Tier-3 smoke lane ran and no new live evidence is claimed.

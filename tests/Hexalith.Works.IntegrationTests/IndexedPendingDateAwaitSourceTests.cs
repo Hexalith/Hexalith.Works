@@ -646,6 +646,7 @@ public sealed class IndexedPendingDateAwaitSourceTests
                 callerCancellation.Cancel();
                 return Task.FromException<ReadModelEntry<PendingDateAwaitTenantIndex>>(expected);
             });
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         var logger = new Story48RecordingLogger<IndexedPendingDateAwaitSource>();
 
         OperationCanceledException? caught = null;
@@ -653,7 +654,7 @@ public sealed class IndexedPendingDateAwaitSourceTests
         {
             _ = await NewSource(
                 store,
-                Substitute.For<IEventStoreGatewayClient>(),
+                gateway,
                 logger).GetPendingDateAwaitsAsync(callerToken).ConfigureAwait(true);
         }
         catch (OperationCanceledException ex)
@@ -666,9 +667,16 @@ public sealed class IndexedPendingDateAwaitSourceTests
         thrown.CancellationToken.ShouldBe(callerToken);
         await store.Received(1).GetAsync<PendingDateAwaitTenantIndex>(
             WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(emptyTenant),
+            Arg.Is<CancellationToken>(token => token == callerToken));
+        await store.Received(1).GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.PendingDateAwaitIndexKey(cancellationTenant),
             Arg.Is<CancellationToken>(token => token == callerToken));
-        logger.Entries.ShouldNotContain(entry => entry.Level >= LogLevel.Warning);
+        await gateway.DidNotReceive().ReadStreamAsync(
+            Arg.Any<StreamReadRequest>(),
+            Arg.Any<CancellationToken>());
+        logger.Entries.ShouldBeEmpty();
     }
 
     [Fact]

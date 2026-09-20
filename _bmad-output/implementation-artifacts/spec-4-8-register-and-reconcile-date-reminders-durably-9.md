@@ -2,7 +2,7 @@
 title: 'Close remaining Story 4.8 spec-8 review patches'
 type: 'bugfix'
 created: '2026-09-17'
-status: 'in-progress'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 baseline_commit: 'a292e3b2ad3ee57a8ee180adf360972297e57bb1'
@@ -80,6 +80,12 @@ context:
 - Review hardened the cancellation fact to assert the same exception instance and exact caller token at every
   index read, and hardened the 4608 architecture fact to pin the later candidate read and exhausted-retry restart
   condition. The post-review deterministic rerun matched the recorded results.
+- The final review follow-up now verifies the empty first-tenant index read, the absence of every log entry, and
+  the absence of stream reads. The 4608 guard pins the complete shutdown-or-exhaustion restart sentence, and the
+  test summary correctly attributes `:145-197` to the parking and stream filters. Current root gitlinks and
+  checkouts agree at Chatbot `a782557875a27648a85b063572eb6c62c53459f8`, Conversations
+  `c610fbb8c5491fb0d7987c2f8294199887f4a44c`, and EventStore
+  `4bc61d9a60fae13a65f23963c1cb731065222f2a`; this follow-up changed no pointer.
 
 ## Spec Change Log
 
@@ -87,6 +93,8 @@ context:
   every deterministic gate, and returned Story 4.8 plus sprint tracking to review.
 - 2026-09-18: Review applied two test-only hardening patches, recorded two pre-existing archive-quality deferrals,
   and reran the complete deterministic verification set with unchanged results.
+- 2026-09-20: Closed the three remaining review patches, reconciled verification with the current adopted
+  gitlinks, and returned Story 4.8 plus sprint tracking to review without new live credit.
 
 ## Review Triage Log
 
@@ -109,6 +117,21 @@ context:
 | EC-01 — Final index can receive a non-caller token undetected | medium | patch | Independent tracing confirms the broad NSubstitute matcher leaves caller-token forwarding unverified. |
 | EC-02 — Later reconciliation confirmation can disappear undetected | medium | patch | Independent tracing confirms the documentation fact does not pin the recovery-verification action. |
 | EC-03 — Retry-exhaustion restart guidance can disappear undetected | medium | patch | Independent tracing confirms the fact asserts `restart` but not the condition that startup retries were exhausted. |
+| R2-BH-01 — Scoped diff omits `deferred-work-archive.md` | false | reject | The human explicitly limited this run to Story File List diffs. The archive is not in either spec-9 File List block and its pre-existing migration was already rejected as part of the spec-9 implementation. |
+| R2-BH-02 — Compacted ledger has no archive navigation | low | defer | carried: the same archive-navigation defect remains as BH-03/BH-04 and is already recorded in `deferred-work.md`; do not defer it again. |
+| R2-BH-03 — Archived decision history is duplicated or date-ambiguous | low | defer | carried: the same archive-quality defect remains as BH-05 through BH-10 and is already recorded in `deferred-work.md`; do not defer it again. |
+| R2-BH-04 — Several compacted ledger titles end mid-word | low | defer | The truncation is real in both the live stubs and archive, but predates this close-out; preserving it during compaction did not create the historical corruption. |
+| R2-BH-05 — Frozen Code Map line citation is stale after compaction | low | reject | The cited line moved, but the only fix edits this build's frozen spec, which review rules reject. The stable file path and referenced cancellation-filter description still identify the target. |
+| R2-BH-06 — DW-56 contradiction entry cites stale line 792 | low | patch | The cited item is now at `deferred-work.md:458`; replacing the line number with the stable `DW-56` heading is a direct documentation correction. |
+| R2-BH-07 — Story still shows the DW-56 marker-store item open | low | defer | carried: this exact pre-existing tracking contradiction is already recorded in the prior Review Findings and `deferred-work.md`; do not defer it again. |
+| R2-BH-08 — Scoped ledger diff contains unrelated CI/CD entries | false | reject | Those entries came from separate committed CI/CD work after the old baseline. They are not attributed to this close-out, and the human-required Story File List filter excludes their implementation from review. |
+| R2-BH-09 — 4608 guidance omits a valid parked-skip outcome | false | reject | “Reads the candidate” does not promise a stream read: the later attempt first reads parking state and can validly emit 4607. The adjacent 4607 row already documents the terminal parked-skip behavior. |
+| R2-BH-10 — 4608 remediation is narrower than its catch and names an unavailable key | low | defer | The row catches all parking-read exceptions, while its response names only availability/authorization and a key not emitted by EventId 4608. This wording predates the final three-patch close-out. |
+| R2-BH-11 — 4608 guard does not uniquely pin a redundant shutdown sentence | false | reject | The test pins the required conditional later-attempt language and the exact restart-after-shutdown-or-exhaustion sentence. Removing a redundant prose sentence does not remove any accepted behavior. |
+| R2-BH-12 — 4604/4606 guards omit retry-budget and exhaustion phrases | low | defer | carried: the same pre-existing test gap is already recorded in the prior Review Findings and `deferred-work.md`; do not defer it again. |
+| R2-BH-13 — Sibling shutdown test accepts any cancellation token | low | defer | carried: the same pre-existing sibling-test gap is already recorded in the prior Review Findings and `deferred-work.md`; do not defer it again. |
+| R2-BH-14 — Verification record lacks immutable root snapshot metadata | low | reject | The proposed correction edits this build's spec, which review rules reject. The executed commands, current full gitlinks, scoped baseline, and worktree diff remain recorded elsewhere in the same artifact. |
+| R2-EC-01 — Compacted ledger has no archive navigation | low | defer | carried: duplicate of R2-BH-02 and the earlier BH-03/BH-04 rows; the existing deferral remains authoritative. |
 
 The two pre-existing archive groups are deferred below. The current-change findings share two root causes: the
 new cancellation regression under-specifies identity/token forwarding, and the 4608 documentation guard
@@ -141,13 +164,24 @@ under-specifies the accepted operator action. Both route to minimal test-only pa
   exactly that fact passed **237/237** with 0 skips.
 - No Tier-3 smoke lane ran; this patch claims no new live evidence.
 
+**2026-09-20 review-patch rerun:**
+- Root index and checkout matched at Chatbot `a782557875a27648a85b063572eb6c62c53459f8`, Conversations
+  `c610fbb8c5491fb0d7987c2f8294199887f4a44c`, and EventStore
+  `4bc61d9a60fae13a65f23963c1cb731065222f2a`; this follow-up changed no pointer.
+- Release solution build passed with 0 warnings and 0 errors. Focused Integration classes passed **29/29**,
+  **13/13**, **4/4**, and **136/136**; focused operator documentation passed **3/3**, all with 0 skips.
+- Direct suites passed Unit **568/568**, Property **3/3**, serial non-smoke Integration **493/493**, and full
+  Architecture **268/268**, all with 0 skips. Excluding the formerly failing SDK-pin fact passed **267/267**;
+  the historical SDK-pin blocker is resolved on the current checkout.
+- No Tier-3 smoke lane ran; this follow-up claims no new live evidence.
+
 ### Review Findings
 
 _Scope: `a292e3b...HEAD` (HEAD `3a29f59`). 10 files, +1,197/−328, 2,036 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — verification-gap returned empty (`failed_layers`: Verification Gap Reviewer). 18 raw findings triaged to 0 decision, 3 patch, 4 defer, 11 rejected._
 
-- [ ] [Review][Patch] EventId 4608 restart-after-shutdown is not uniquely pinned: deleting `shutdown ended the pass or` from the restart sentence still leaves `shutdown`, `restart`, and `startup retries were exhausted` in the row [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:148]
-- [ ] [Review][Patch] spec-9 close-out evidence says the `:145-197` citation covers all three in-tenant exact-token filters, but that range is the parking and stream filters only; the outer catch is at `:88-97` [_bmad-output/implementation-artifacts/tests/test-summary.md:3285]
-- [ ] [Review][Patch] The new clean final-index cancellation fact does not `Received()` the empty first-tenant index read, allows Information/Debug logs, and omits the sibling `DidNotReceive().ReadStreamAsync` pin [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:619]
+- [x] [Review][Patch] EventId 4608 restart-after-shutdown is not uniquely pinned: deleting `shutdown ended the pass or` from the restart sentence still leaves `shutdown`, `restart`, and `startup retries were exhausted` in the row [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:148] — resolved 2026-09-20: the architecture fact requires the complete `Restart Works after remediation if shutdown ended the pass or startup retries were exhausted.` sentence in the 4608 row.
+- [x] [Review][Patch] spec-9 close-out evidence says the `:145-197` citation covers all three in-tenant exact-token filters, but that range is the parking and stream filters only; the outer catch is at `:88-97` [_bmad-output/implementation-artifacts/tests/test-summary.md:3285] — resolved 2026-09-20: the summary now names only the in-tenant parking and stream filters covered by that range.
+- [x] [Review][Patch] The new clean final-index cancellation fact does not `Received()` the empty first-tenant index read, allows Information/Debug logs, and omits the sibling `DidNotReceive().ReadStreamAsync` pin [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:619] — resolved 2026-09-20: the fact verifies one exact-token read for both indexes, no gateway stream read, and an empty log collection.
 
 - [x] [Review][Defer] Compacted ledger stubs and `deferred-work-archive.md` have no title, policy, backlink, or archive path [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1] — deferred: already recorded at the spec-9 `source_spec` bullets in `deferred-work.md`; this review of `a292e3b...HEAD` reconfirmed the same discovery gap.
 - [x] [Review][Defer] `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()` [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582] — deferred: pre-existing sibling fact; spec-9 only hardened the new final-index regression.

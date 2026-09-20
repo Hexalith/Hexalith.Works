@@ -157,6 +157,10 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "shutdown",
             "restart",
             "startup retries were exhausted");
+        Assert.Contains(
+            "Restart Works after remediation if shutdown ended the pass or startup retries were exhausted.",
+            parkingLookup,
+            StringComparison.Ordinal);
 
         string schedulingFailure = WarningRow(section, "4609");
         AssertContainsAll(

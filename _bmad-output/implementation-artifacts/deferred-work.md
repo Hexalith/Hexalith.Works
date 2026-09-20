@@ -894,7 +894,7 @@ status: open
 
 - Compacted ledger stubs and `deferred-work-archive.md` have no title, policy, backlink, or archive path. Reconfirmed on `a292e3b...HEAD`; already recorded at the spec-9 `source_spec` navigation bullet above. [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1]
 - `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()`. Pre-existing sibling fact; spec-9 only hardened the new final-index regression. [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582]
-- Story 4.8 still treats DW-56 as an open marker-store patch after the ledger archived it as `done 2026-09-05`. Pre-existing tracking contradiction already recorded at `deferred-work.md:792`. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:125]
+- Story 4.8 still treats DW-56 as an open marker-store patch after the ledger archived it as `done 2026-09-05`. Pre-existing tracking contradiction already recorded under the `DW-56` heading. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:125]
 - 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts. Pre-existing; spec-9 required mirroring 4604/4606 wording into 4608, not tightening those older pins. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92]
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
@@ -936,3 +936,11 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Make the shared commitlint workflow validate every commit introduced by a force-push whose previous SHA is unreachable.
   evidence: At pinned Builds commit `04d961759994396132bb2b113ee465b64740a543`, `.github/workflows/commitlint.yml` falls back to `npx commitlint --last` when `github.event.before` is unreachable. A multi-commit force-push can therefore introduce malformed earlier commit messages without detection; repair requires an upstream Hexalith.Builds change followed by a Works caller re-pin.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+  summary: Reconstruct the compacted deferred-work entry titles that end mid-word in both the live ledger and archive.
+  evidence: DW-20, DW-53, DW-54, and DW-55 retain visibly truncated headings in both locations; the corruption predates the spec-9 close-out and is historical-data hygiene rather than reminder-runtime behavior.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+  summary: Broaden EventId 4608 operator guidance to cover non-availability parking-read failures and identify the parking record without implying its key is logged.
+  evidence: The parking lookup catches every non-exact-cancellation exception and logs tenant, work item, and reason, while the runbook names only availability/authorization and a “named parking key” that EventId 4608 does not emit; this wording predates the final spec-9 review patches.
