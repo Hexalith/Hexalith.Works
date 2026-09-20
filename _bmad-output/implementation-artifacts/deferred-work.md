@@ -944,3 +944,14 @@ status: open
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Broaden EventId 4608 operator guidance to cover non-availability parking-read failures and identify the parking record without implying its key is logged.
   evidence: The parking lookup catches every non-exact-cancellation exception and logs tenant, work item, and reason, while the runbook names only availability/authorization and a “named parking key” that EventId 4608 does not emit; this wording predates the final spec-9 review patches.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-20)
+
+- Cascade and command-pipeline live starters omit the new occupancy and health waits. Reconfirmed on `28724f2...HEAD`; already recorded at the CI/CD routing item above (`deferred-work.md:904`). [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:543]
+- Compacted ledger stubs and archive still have no title, policy, backlink, or archive path. Reconfirmed; already recorded at the spec-9 navigation `source_spec`. [_bmad-output/implementation-artifacts/deferred-work-archive.md:1]
+- EventId 4608 still tells operators to restore a named parking key that the log does not emit. Reconfirmed; already recorded at `deferred-work.md:944`. [docs/operations/subscriber-dead-letter-operator.md:135]
+- 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts. Reconfirmed; already recorded at `deferred-work.md:898`. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92]
+- DW-20/53/54/55 live-ledger headings remain truncated mid-word. Reconfirmed; already recorded at `deferred-work.md:940`. [_bmad-output/implementation-artifacts/deferred-work.md:144]
+- spec-8 triage rewrote original `false | reject` rows to `superseded | patch`, so the spec-8-era record is no longer recoverable from that table. Fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md:104]
+- Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)`. maybe-false: settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333]
+- EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER`. maybe-false: settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`. [src/Hexalith.Works.AppHost/Program.cs:92]

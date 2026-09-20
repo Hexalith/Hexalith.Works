@@ -4,7 +4,7 @@ baseline_commit: 9526c31
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -868,6 +868,10 @@ _Docs_
 
 ## Change Log
 
+- 2026-09-20 — File List increment review (`28724f2...HEAD`) left eight patch findings as action items
+  (Tier-3 re-run, Aspire 13.5.4 deviation record, harness occupancy probes, ledger citations) and returned
+  Story 4.8 plus sprint tracking to `in-progress`.
+
 - 2026-09-20 — Closed the final three spec-9 review patches, reran every deterministic gate on the current
   adopted gitlinks, and returned Story 4.8 plus sprint tracking to `review` without new live credit.
 
@@ -1281,3 +1285,41 @@ _Scope: `a292e3b...HEAD` (HEAD `3a29f59`). 10 files, +1,197/−328, 2,036 diff l
 - Fix edits the spec under review — spec-9 Implementation Notes say “all three” filters; the surviving patch is the test-summary claim only.
 - Fix edits the spec under review — spec-8 BH-10 remaining `false | reject`.
 - Fix edits the spec under review — I/O matrix has no fourth gitlink AC row.
+
+### Review Findings (2026-09-20, bmad-code-review, File List increment `28724f2...HEAD`)
+
+_Scope: `28724f2...HEAD` (HEAD `776b869`) filtered to Story 4.8 File List — 17 files, +1318/−382, 2435 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 28 raw findings triaged to 2 decision, 6 patch, 8 defer, 12 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] **Live SM-1 harness and AppHost startup path changed without new Tier-3 evidence** — This increment mutates `WorksAppHostSmokeHarness` (IPv6 exclusive bind, Docker scheduler-volume probe, sentry/placement/scheduler health waits, 10-minute startup, bounded dispose) and AppHost `Program.cs` MSBuild environment variables, while `test-summary.md` 2026-09-20 records that no Tier-3 smoke lane ran and no new live evidence is claimed. Story AC #1/#3 and Task 5 are the live proof. **Decided 2026-09-20 (human): re-run Tier-3 on this checkout and record the exact results.** [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:92]
+
+- [ ] [Review][Patch] **Aspire AppHost SDK moved 13.5.3 → 13.5.4 against spec-9 Never** — `global.json` and `Hexalith.Works.AppHost.csproj` bump `Aspire.AppHost.Sdk` to 13.5.4 and `BuildConfigurationTests` is rewritten to match. spec-9 frozen Never lists dependency versions. **Decided 2026-09-20 (human): keep 13.5.4 and record the spec-9 Never deviation.** [global.json:10]
+
+- [ ] [Review][Patch] IPv6-disabled hosts treat loopback bind failure as an occupied control-plane port [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:623]
+- [ ] [Review][Patch] Docker occupancy probe failures, timeouts, and running-only `docker ps` escape the 60-second retry loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:538]
+- [ ] [Review][Patch] CI/CD ledger evidence in this increment is already contradicted by the same diff [\_bmad-output/implementation-artifacts/deferred-work.md:904]
+- [ ] [Review][Patch] Two spec-9 `source_spec` paths are machine-absolute [\_bmad-output/implementation-artifacts/deferred-work.md:940]
+- [ ] [Review][Patch] The DW-56 contradiction bullet still cites compacted line 548 [\_bmad-output/implementation-artifacts/deferred-work.md:792]
+- [ ] [Review][Patch] DW-58 still cites the removed reminder `IsPortReachableAsync` [\_bmad-output/implementation-artifacts/deferred-work.md:476]
+
+- [x] [Review][Defer] Cascade and command-pipeline live starters omit the new occupancy and health waits [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:543] — deferred: already recorded at `deferred-work.md:904` under the CI/CD routing item; this increment did not close it.
+- [x] [Review][Defer] Compacted ledger stubs and archive still have no title, policy, backlink, or archive path [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1] — deferred: already recorded at the spec-9 `source_spec` navigation item.
+- [x] [Review][Defer] EventId 4608 still tells operators to restore a named parking key that the log does not emit [docs/operations/subscriber-dead-letter-operator.md:135] — deferred: already recorded at `deferred-work.md:944`; this increment preserved the pre-existing phrase while adding host-lifecycle text.
+- [x] [Review][Defer] 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92] — deferred: already recorded at `deferred-work.md:898`.
+- [x] [Review][Defer] DW-20/53/54/55 live-ledger headings remain truncated mid-word [\_bmad-output/implementation-artifacts/deferred-work.md:144] — deferred: already recorded at `deferred-work.md:940`.
+- [x] [Review][Defer] spec-8 triage rewrote original `false | reject` rows to `superseded | patch` [\_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md:104] — deferred: fix edits another spec's historical record; the current index/checkout facts remain in spec-9.
+- [x] [Review][Defer] Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)` [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333] — deferred: maybe-false; settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner.
+- [x] [Review][Defer] EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER` [src/Hexalith.Works.AppHost/Program.cs:92] — deferred: maybe-false; settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`.
+
+**Rejected:**
+- `false` — AppHost taking `Hexalith.EventStore.Aspire` as a Release `PackageReference` violates Story 4.8 Architecture Compliance: `DependencyDirectionTests.P0_AppHostReferencesOnlyWorksTopologyProjects` already requires the Release package and Debug project-reference split; this diff implements that pin.
+- `false` — `DisposeAsync().WaitAsync(DisposalWait)` binds ports while DCP still owns them: bind failure is occupied, and the following 60-second occupancy wait is the intended settle path.
+- `false` — harness never waits for `eventstore-operations`/`eventstore-admin`: SM-1 uses eventstore + works; operations `WaitFor(works)` and is not on the reminder acceptance path; the method comment still matches.
+- `false` — harness no longer gives the acceptance body a time budget: `WaitForResumedCountAsync` defaults to a 90-second deadline and `PollToTerminalAsync` to 60 seconds.
+- `false` — `RuntimeAdapterGovernanceTests` Debug/Release loop never evaluates the AppHost source/package split: Configuration already drives the Works host defaults; AppHost dual-mode is asserted in `DependencyDirectionTests`.
+- `false` — `P0_NuGetAuditRemainsVisible` must assert `NuGetAuditLevel`: `Directory.Build.props` does not set one; NU1901–NU1904 stay visible as non-WAE warnings, which is the test's actual contract.
+- `false` — `deferred-work.md:809` still claiming the fitness test expects `10.0.400` is current drift: that bullet is a timestamped prior-review record; this increment updated the assertion to match the already-pinned SDK.
+- Fix edits the spec under review — 2026-09-20 File List names only the six reminder-review files.
+- Fix edits the spec under review — story Review Findings still cite `deferred-work.md:792` after spec-9 R2-BH-06.
+- `low`, not worth fixing — Docker `Kill` TOCTOU after a 10-second probe timeout is folded into the occupancy-probe patch rather than a separate everyday defect.
+- `low`, not worth fixing — unobserved `ReadToEndAsync` after that same probe timeout is the same occupancy-probe failure path.
+- Fix edits the spec under review — Task 7 File List accuracy for concurrent CI/CD files that happen to sit on the story File List.
