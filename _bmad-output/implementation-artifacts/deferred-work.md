@@ -471,12 +471,12 @@ resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
 archived: 2026-09-18
 
-### DW-58: Sibling smoke-test prerequisite probes still collapse caller-requested cancellation into an unavailable result.
+### DW-58: The command-pipeline smoke-test prerequisite probe still collapses caller-requested cancellation into an unavailable result.
 origin: spec-deferred dc9e48616d2d
-location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:179; tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:387
+location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:175
 source_spec: `spec-probe-cancellation-propagation.md`
 severity: medium
-reason: `WorksCommandPipelineSmokeTests.IsPortReachableAsync` and `WorksReminderRecoveryPipelineSmokeTests.IsPortReachableAsync` catch every `OperationCanceledException` and return `false`. Both implementations pre-date this bundle and are outside DW-33's cited cascade-recovery probe.
+reason: `WorksCommandPipelineSmokeTests.IsPortReachableAsync` catches every `OperationCanceledException` and returns `false`. The reminder-recovery lane now uses `WorksAppHostSmokeHarness.IsPortReachableAsync`, whose filtered catch preserves caller-requested cancellation, so it is no longer part of this deferred item.
 status: open
 
 ### DW-59: The deterministic probe cases never run in the repository's habitual deterministic lane, because they live in a class that lane excludes by name.
@@ -789,7 +789,7 @@ status: open
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-15, Group 1 patch round)
 
-- DW-56 is `status: done 2026-09-05` (`deferred-work.md:548`, resolved by sweep bundle `dw-domain-event-processing-hardening`) while Story 4.8 asserts six times that it stays open (`4-8-…md:125`, `:146`, `:412`, `:434`, `:630`, `:686`) and `spec-4-8-…-3.md` Implementation Notes claim "DW-56 left open." It closed before this round's baseline `6e2fb4d`, so this round did not close it — but it re-asserted the claim as verification evidence. Net effect: the one deliberately-unfixed 2026-09-01 `[Review][Patch] [Low]` marker-store item now cross-references a closed ledger entry and has no live tracking anywhere. Needs a human call: either the sweep genuinely resolved the marker-store family and the story's cross-reference should be retired, or DW-56 should be reopened. Fix edits tracking artifacts, not code.
+- DW-56 is `status: done 2026-09-05` (see the stable `DW-56` heading, resolved by sweep bundle `dw-domain-event-processing-hardening`) while Story 4.8 asserts six times that it stays open (`4-8-…md:125`, `:146`, `:412`, `:434`, `:630`, `:686`) and `spec-4-8-…-3.md` Implementation Notes claim "DW-56 left open." It closed before this round's baseline `6e2fb4d`, so this round did not close it — but it re-asserted the claim as verification evidence. Net effect: the one deliberately-unfixed 2026-09-01 `[Review][Patch] [Low]` marker-store item now cross-references a closed ledger entry and has no live tracking anywhere. Needs a human call: either the sweep genuinely resolved the marker-store family and the story's cross-reference should be retired, or DW-56 should be reopened. Fix edits tracking artifacts, not code.
 - Moving the decoder skip from EventId 4501 to 4504 (`src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:121`) is the correct fix for the genuine collision with `ProjectionDecodeFailed`, but it ships as an undeclared telemetry break — any alert keyed on 4501 now matches a different event — and no registry or fitness test asserts the 45xx/46xx EventIds are unique, so the next collision is unguarded. Deferred: the fix is a telemetry-contract note plus a uniqueness guard, not an in-band code correction.
 - Re-observation, already recorded: no unpark, delete, or operator replay path for a parked aggregate (see the 2026-09-08 Group 1 entry above). Recorded again only because this round raised its cost — `IndexedPendingDateAwaitSource` now also skips parked candidates, so a parked aggregate loses date-reminder recovery as well as `/project`, while log 4502 still tells the operator it "needs operator action" they have no tool to take.
 - Re-observation, already recorded: mixed-case reserved tenant `TENANTS` misses the `/project` Ordinal guard (see the `source_spec: spec-4-8-…-3.md` entry above, triage E1). This review narrows it: the `/process` guard does **not** have the hole because `RefuseReservedTenant` reads the already-normalized `command.TenantId.Value` (`TenantId`'s constructor routes through `AggregateIdentity`, which lowercases at `AggregateIdentity.cs:28`), and the EventStore poller sends lowercase stream identity — so only a hand-crafted direct `POST /project` reaches it. The new shared `ThrowIfReservedTenantId` helper was the natural place to normalize once.
@@ -903,7 +903,7 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Route the remaining live AppHost integration files through `WorksAppHostSmokeHarness` so the control-plane port settling repair covers every restart boundary.
-  evidence: The spec repaired start/teardown port settling inside `WorksAppHostSmokeHarness`, but only `WorksMtlsAuthorizationSmokeTests` and `WorksReminderRecoveryPipelineSmokeTests` consume it. `WorksCascadeRecoveryPipelineSmokeTests` declares its own `WithAppHostAsync` whose `finally` disposes and returns without waiting for ports 50001/51005/51006 [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:576-580], and `WorksDomainEventSubscriptionTests`, `WorksCommandPipelineSmokeTests`, and `WorksRecoveryOptionsTests` also start the AppHost directly. Restart-based facts in those files remain exposed to the teardown race the spec set out to close.
+  evidence: The spec repaired start/teardown port settling inside `WorksAppHostSmokeHarness`, but only `WorksMtlsAuthorizationSmokeTests` and `WorksReminderRecoveryPipelineSmokeTests` consume it. `WorksCascadeRecoveryPipelineSmokeTests` declares its own `WithAppHostAsync` whose `finally` disposes and returns without waiting for ports 50001/51005/51006 [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:576-580], while `WorksCommandPipelineSmokeTests` starts the AppHost directly and has the same teardown gap. Restart-based facts in those two live files remain exposed to the race the spec set out to close; `WorksDomainEventSubscriptionTests` and `WorksRecoveryOptionsTests` do not start an AppHost and are not part of this item.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Make published Works assemblies carry the released package version instead of the build-time MinVer height version.
@@ -937,11 +937,11 @@ status: open
   summary: Make the shared commitlint workflow validate every commit introduced by a force-push whose previous SHA is unreachable.
   evidence: At pinned Builds commit `04d961759994396132bb2b113ee465b64740a543`, `.github/workflows/commitlint.yml` falls back to `npx commitlint --last` when `github.event.before` is unreachable. A multi-commit force-push can therefore introduce malformed earlier commit messages without detection; repair requires an upstream Hexalith.Builds change followed by a Works caller re-pin.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Reconstruct the compacted deferred-work entry titles that end mid-word in both the live ledger and archive.
   evidence: DW-20, DW-53, DW-54, and DW-55 retain visibly truncated headings in both locations; the corruption predates the spec-9 close-out and is historical-data hygiene rather than reminder-runtime behavior.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Broaden EventId 4608 operator guidance to cover non-availability parking-read failures and identify the parking record without implying its key is logged.
   evidence: The parking lookup catches every non-exact-cancellation exception and logs tenant, work item, and reason, while the runbook names only availability/authorization and a “named parking key” that EventId 4608 does not emit; this wording predates the final spec-9 review patches.
 
@@ -955,3 +955,47 @@ status: open
 - spec-8 triage rewrote original `false | reject` rows to `superseded | patch`, so the spec-8-era record is no longer recoverable from that table. Fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md:104]
 - Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)`. maybe-false: settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333]
 - EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER`. maybe-false: settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`. [src/Hexalith.Works.AppHost/Program.cs:92]
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Add a post-startup reminder-reconciliation retry or terminal readiness policy after the bounded startup attempts are exhausted.
+  evidence: `ReminderReconciliationService` returns permanently after its configured attempts, so a dependency outage lasting beyond startup can leave durable reminder recovery inactive until another host restart; this predates the final harness increment.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Determine whether an empty pending-await tenant registry can race ahead of projection backfill and strand pre-index reminder recovery.
+  evidence: The source treats an empty registry as a successful scan and reconciliation is single-run; settle this maybe-false finding by proving whether the EventStore projection poller replays pre-index aggregates after that scan exits.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Provide a supported unpark or replay path for parked aggregates that still need date-reminder recovery.
+  evidence: `IndexedPendingDateAwaitSource` cleanly skips a durable parking record without reading the authoritative stream, so a stale or erroneous park can suppress an overdue resume indefinitely; this is pre-existing projection-recovery behavior.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Preserve in-tenant partial reminder-scan evidence when exact caller cancellation follows an earlier candidate failure.
+  evidence: The parking and stream exact-token catches rethrow immediately and discard that tenant's local partials/counts; the source remarks explicitly retain this prior human-decided limitation.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Define per-await failure isolation and exhaustion for steady-state registration and startup reconciliation.
+  evidence: Both `WorkItemSuspendedReminderHandler` and `DateReminderReconciler` fail fast on the first persistent await failure, allowing it to starve later valid awaits across every retry; the behavior predates the final harness increment.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Add bounded identity-bearing telemetry for due-now resume submission failures during reminder reconciliation.
+  evidence: The due-now branch has only the eventual generic 4603 exception, unlike scheduler EventId 4609, so operators cannot identify the tenant, work item, or reminder that stopped the pass.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Retain or retry a fired date reminder until its submitted resume command reaches an acceptable terminal outcome.
+  evidence: The gateway submitter returns an accepted response without polling terminal command status, after which `DateReminderActor` removes its durable registration; a later rejected, publish-failed, or timed-out command has no in-process retry trigger.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Establish and verify a bounded cancellation policy for stalled Dapr actor reminder-registration calls.
+  evidence: The scheduler checks cancellation before actor remoting but cannot pass the token into `ScheduleResumeAsync`; settle this maybe-false finding with the configured Dapr remoting timeout or a stalled-proxy integration proof.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Prove Docker redirected reads always complete after probe cancellation and child termination on supported runners.
+  evidence: The production adapter uses token-aware `ReadToEndAsync` and kills the process first, but the current evidence does not establish that pipe reads cannot ignore cancellation indefinitely; a real child-process test would settle the maybe-false hang risk.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Decide whether the projection ingress must reject duplicate or gapped positive event sequences.
+  evidence: `WorkItemProjectionDispatcher` sorts replay events but does not validate contiguity; settle this maybe-false finding by proving whether the EventStore projection-delivery contract can emit duplicate or gapped sequences.
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Validate stream-page cursor metadata or document the EventStore invariant that makes malformed cursor shapes unreachable.
+  evidence: `PendingDateAwaitStreamReader` trusts `IsTruncated`, `LatestSequence`, and `LastSequenceReturned`; inconsistent metadata could hide an unread tail or advance beyond returned events, but reachability requires gateway-contract evidence or fault injection.

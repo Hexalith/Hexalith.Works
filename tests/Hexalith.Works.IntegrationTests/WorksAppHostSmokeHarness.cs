@@ -47,6 +47,9 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>How long one Docker ownership probe may run before it is terminated and classified.</summary>
     private static readonly TimeSpan DockerProbeWait = TimeSpan.FromSeconds(10);
 
+    /// <summary>How long a terminated Docker probe may take to exit before teardown continues.</summary>
+    private static readonly TimeSpan DockerProbeTerminationWait = TimeSpan.FromSeconds(5);
+
     /// <summary>The persistent Scheduler volume that must have exactly one owner at a time.</summary>
     private const string SchedulerVolumeName = "hexalith-works-dapr-scheduler";
 
@@ -497,8 +500,42 @@ internal static class WorksAppHostSmokeHarness
     private static async Task WaitForControlPlaneResourcesReleasedAsync(
         string boundary,
         CancellationToken cancellationToken)
+        => await WaitForControlPlaneResourcesReleasedAsync(
+            boundary,
+            ControlPlaneReleaseWait,
+            TimeSpan.FromSeconds(1),
+            IsPortAvailableForExclusiveBind,
+            SchedulerVolumeOwnersAsync,
+            static (delay, token) => Task.Delay(delay, token),
+            cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Waits for the fixed control-plane resources using the supplied probes and bounded retry policy.
+    /// </summary>
+    /// <param name="boundary">The diagnostic name for the start or teardown boundary.</param>
+    /// <param name="releaseWait">The total time allowed for resources to settle.</param>
+    /// <param name="retryDelay">The delay between observations.</param>
+    /// <param name="portAvailable">Returns whether one address and port can be bound exclusively.</param>
+    /// <param name="schedulerVolumeOwners">Returns every container owning the persistent Scheduler volume.</param>
+    /// <param name="delayAsync">Applies the retry delay.</param>
+    /// <param name="cancellationToken">Cancels the wait.</param>
+    internal static async Task WaitForControlPlaneResourcesReleasedAsync(
+        string boundary,
+        TimeSpan releaseWait,
+        TimeSpan retryDelay,
+        Func<IPAddress, int, bool> portAvailable,
+        Func<CancellationToken, Task<IReadOnlyList<string>>> schedulerVolumeOwners,
+        Func<TimeSpan, CancellationToken, Task> delayAsync,
+        CancellationToken cancellationToken)
     {
-        DateTimeOffset deadline = DateTimeOffset.UtcNow + ControlPlaneReleaseWait;
+        ArgumentException.ThrowIfNullOrWhiteSpace(boundary);
+        ArgumentOutOfRangeException.ThrowIfLessThan(releaseWait, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThan(retryDelay, TimeSpan.Zero);
+        ArgumentNullException.ThrowIfNull(portAvailable);
+        ArgumentNullException.ThrowIfNull(schedulerVolumeOwners);
+        ArgumentNullException.ThrowIfNull(delayAsync);
+
+        var elapsed = Stopwatch.StartNew();
         while (true)
         {
             var occupied = new List<string>();
@@ -506,37 +543,156 @@ internal static class WorksAppHostSmokeHarness
             {
                 foreach (IPAddress address in ControlPlaneLoopbacks)
                 {
-                    if (!IsPortAvailableForExclusiveBind(address, port))
+                    if (!portAvailable(address, port))
                     {
                         occupied.Add($"{name} on {address}:{port}");
                     }
                 }
             }
 
-            IReadOnlyList<string> schedulerVolumeOwners = await SchedulerVolumeOwnersAsync(cancellationToken)
-                .ConfigureAwait(false);
-            occupied.AddRange(schedulerVolumeOwners.Select(
-                static owner => $"scheduler volume owner {owner}"));
+            try
+            {
+                IReadOnlyList<string> owners = await schedulerVolumeOwners(cancellationToken).ConfigureAwait(false);
+                occupied.AddRange(owners.Select(static owner => $"scheduler volume owner {owner}"));
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception) when (exception is TimeoutException or InvalidOperationException)
+            {
+                occupied.Add($"scheduler volume ownership probe unavailable ({exception.Message})");
+            }
 
             if (occupied.Count == 0)
             {
                 return;
             }
 
-            if (DateTimeOffset.UtcNow >= deadline)
+            if (elapsed.Elapsed >= releaseWait)
             {
                 throw new TimeoutException(
                     $"[{boundary}] Fixed AppHost control-plane resources were still occupied after "
-                    + $"{ControlPlaneReleaseWait.TotalSeconds:0} seconds: {string.Join(", ", occupied)}. "
+                    + $"{releaseWait.TotalSeconds:0} seconds: {string.Join(", ", occupied)}. "
                     + "Stop leaked DCP controllers/containers or another AppHost using this Works control plane before retrying.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
+            await delayAsync(retryDelay, cancellationToken).ConfigureAwait(false);
         }
     }
 
-    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(
+    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken)
+    {
+        ProcessStartInfo startInfo = CreateSchedulerVolumeProbeStartInfo();
+
+        ISchedulerVolumeProbe probe;
+        try
+        {
+            Process process = Process.Start(startInfo)
+                ?? throw new InvalidOperationException("Could not start Docker to inspect the Scheduler volume owner.");
+            probe = new ProcessSchedulerVolumeProbe(process);
+        }
+        catch (Win32Exception exception)
+        {
+            throw new InvalidOperationException(
+                "Could not start Docker to inspect the Scheduler volume owner.",
+                exception);
+        }
+
+        using (probe)
+        {
+            return await RunSchedulerVolumeProbeAsync(
+                probe,
+                DockerProbeWait,
+                DockerProbeTerminationWait,
+                cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>Runs one Scheduler-volume ownership probe with bounded execution and termination.</summary>
+    /// <param name="probe">The process abstraction to execute.</param>
+    /// <param name="probeWait">The maximum probe execution time.</param>
+    /// <param name="terminationWait">The maximum wait after requesting termination.</param>
+    /// <param name="cancellationToken">Cancels the probe.</param>
+    internal static async Task<IReadOnlyList<string>> RunSchedulerVolumeProbeAsync(
+        ISchedulerVolumeProbe probe,
+        TimeSpan probeWait,
+        TimeSpan terminationWait,
         CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(probe);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(probeWait, TimeSpan.Zero);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(terminationWait, TimeSpan.Zero);
+
+        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        probeCts.CancelAfter(probeWait);
+        Task<string> outputTask = probe.ReadStandardOutputAsync(probeCts.Token);
+        Task<string> errorTask = probe.ReadStandardErrorAsync(probeCts.Token);
+        try
+        {
+            await probe.WaitForExitAsync(probeCts.Token).ConfigureAwait(false);
+            string output = await outputTask.ConfigureAwait(false);
+            string error = await errorTask.ConfigureAwait(false);
+            if (probe.ExitCode != 0)
+            {
+                throw new InvalidOperationException(
+                    $"Docker could not inspect the Scheduler volume owner (exit {probe.ExitCode}): {error.Trim()}");
+            }
+
+            return output
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        }
+        catch (OperationCanceledException exception) when (probeCts.IsCancellationRequested)
+        {
+            Exception? terminationFailure = null;
+            if (!probe.HasExited)
+            {
+                try
+                {
+                    probe.Kill();
+                }
+                catch (InvalidOperationException) when (probe.HasExited)
+                {
+                    // The process exited between the HasExited observation and Kill.
+                }
+                catch (Exception killException) when (killException is Win32Exception or NotSupportedException)
+                {
+                    terminationFailure = killException;
+                }
+            }
+
+            await Task.WhenAll(
+                ObserveProbeTaskAsync(outputTask),
+                ObserveProbeTaskAsync(errorTask)).ConfigureAwait(false);
+            using var terminationCts = new CancellationTokenSource(terminationWait);
+            try
+            {
+                await probe.WaitForExitAsync(terminationCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (terminationCts.IsCancellationRequested)
+            {
+                // The outer resource-settling loop classifies and retries the timed-out probe. Never wait
+                // indefinitely for a Docker CLI child after requesting termination.
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+
+            if (terminationFailure is not null)
+            {
+                throw new InvalidOperationException("Docker probe termination failed.", terminationFailure);
+            }
+
+            throw new TimeoutException(
+                $"Docker did not inspect the Scheduler volume owner within {probeWait.TotalSeconds:0} seconds.",
+                exception);
+        }
+    }
+
+    /// <summary>Builds the Docker command that includes running and stopped Scheduler-volume owners.</summary>
+    internal static ProcessStartInfo CreateSchedulerVolumeProbeStartInfo()
     {
         var startInfo = new ProcessStartInfo("docker")
         {
@@ -546,70 +702,52 @@ internal static class WorksAppHostSmokeHarness
             UseShellExecute = false,
         };
         startInfo.ArgumentList.Add("ps");
+        startInfo.ArgumentList.Add("--all");
         startInfo.ArgumentList.Add("--filter");
         startInfo.ArgumentList.Add($"volume={SchedulerVolumeName}");
         startInfo.ArgumentList.Add("--format");
         startInfo.ArgumentList.Add("{{.ID}} {{.Names}}");
-
-        Process process;
-        try
-        {
-            process = Process.Start(startInfo)
-                ?? throw new InvalidOperationException("Could not start Docker to inspect the Scheduler volume owner.");
-        }
-        catch (Win32Exception exception)
-        {
-            throw new InvalidOperationException(
-                "Could not start Docker to inspect the Scheduler volume owner.",
-                exception);
-        }
-
-        using (process)
-        {
-            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            probeCts.CancelAfter(DockerProbeWait);
-            Task<string> outputTask = process.StandardOutput.ReadToEndAsync(probeCts.Token);
-            Task<string> errorTask = process.StandardError.ReadToEndAsync(probeCts.Token);
-            try
-            {
-                await process.WaitForExitAsync(probeCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException exception)
-            {
-                if (!process.HasExited)
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-
-                throw new TimeoutException(
-                    $"Docker did not inspect the Scheduler volume owner within {DockerProbeWait.TotalSeconds:0} seconds.",
-                    exception);
-            }
-
-            string output = await outputTask.ConfigureAwait(false);
-            string error = await errorTask.ConfigureAwait(false);
-            if (process.ExitCode != 0)
-            {
-                throw new InvalidOperationException(
-                    $"Docker could not inspect the Scheduler volume owner (exit {process.ExitCode}): {error.Trim()}");
-            }
-
-            return output
-                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        }
+        return startInfo;
     }
 
     private static bool IsPortAvailableForExclusiveBind(IPAddress address, int port)
+        => IsPortAvailableForExclusiveBind(address, port, BindPortExclusively);
+
+    /// <summary>Classifies whether an exclusive bind succeeds or is inapplicable on this host.</summary>
+    /// <param name="address">The loopback address to probe.</param>
+    /// <param name="port">The fixed control-plane port to probe.</param>
+    /// <param name="bindExclusively">Attempts the exclusive bind.</param>
+    internal static bool IsPortAvailableForExclusiveBind(
+        IPAddress address,
+        int port,
+        Action<IPAddress, int> bindExclusively)
     {
-        TcpListener? listener = null;
+        ArgumentNullException.ThrowIfNull(address);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(port);
+        ArgumentNullException.ThrowIfNull(bindExclusively);
+
         try
         {
-            listener = new TcpListener(address, port);
+            bindExclusively(address, port);
+            return true;
+        }
+        catch (SocketException exception) when (IsUnavailableLoopbackAddress(address, exception.SocketErrorCode))
+        {
+            // IPv6 can be disabled at the host/kernel level. That makes ::1 inapplicable, not occupied; the
+            // IPv4 loopback still proves whether the fixed control-plane port is available on this host.
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+    }
+
+    private static void BindPortExclusively(IPAddress address, int port)
+    {
+        var listener = new TcpListener(address, port);
+        try
+        {
             if (address.AddressFamily == AddressFamily.InterNetworkV6)
             {
                 listener.Server.DualMode = false;
@@ -617,15 +755,34 @@ internal static class WorksAppHostSmokeHarness
 
             listener.Server.ExclusiveAddressUse = true;
             listener.Start();
-            return true;
-        }
-        catch (SocketException)
-        {
-            return false;
         }
         finally
         {
-            listener?.Stop();
+            listener.Stop();
+        }
+    }
+
+    /// <summary>Returns whether a bind failure means the loopback address family is unavailable on this host.</summary>
+    /// <param name="address">The loopback address that was probed.</param>
+    /// <param name="socketError">The bind failure reported by the socket API.</param>
+    internal static bool IsUnavailableLoopbackAddress(IPAddress address, SocketError socketError)
+        => address.AddressFamily == AddressFamily.InterNetworkV6
+            && socketError is SocketError.AddressFamilyNotSupported
+                or SocketError.AddressNotAvailable
+                or SocketError.ProtocolNotSupported
+                or SocketError.ProtocolFamilyNotSupported;
+
+    private static async Task ObserveProbeTaskAsync(Task<string> probeTask)
+    {
+        try
+        {
+            _ = await probeTask.ConfigureAwait(false);
+        }
+        catch (Exception exception) when (
+            exception is OperationCanceledException or IOException or ObjectDisposedException)
+        {
+            // Cancellation and pipe closure are expected after terminating the timed-out child. Observing both
+            // redirected reads prevents either cleanup fault from masking the classified probe timeout.
         }
     }
 

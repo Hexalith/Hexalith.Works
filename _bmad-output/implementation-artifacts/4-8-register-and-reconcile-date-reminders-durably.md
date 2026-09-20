@@ -1,10 +1,11 @@
 ---
 baseline_commit: 9526c31
+status: done
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -187,6 +188,17 @@ _Diff scoped to Story 4.8's own surface (`ff329cc..HEAD` over `src/Hexalith.Work
 
 _bmad-build step-04 review of the 2026-09-05 code-review-remediation session's own working-tree diff (`{diff_file}` scoped to this session's uncommitted changes, not the full since-`baseline_commit` history — the literal full-history diff since story creation spans 590K+ unrelated lines across other stories/epics and was judged unreviewable; this session's incremental delta is the only genuinely new, previously-unreviewed material)._
 
+_2026-09-20 File List increment close-out review: edge-case and verification-gap layers reviewed the current
+working-tree delta; blind-hunter was skipped because the four-agent session cap left only two simultaneous
+reviewer slots._
+
+- **[verification-gap] The IPv6 test called only the error classifier, so deleting the production bind-path catch still left it green.** Verdict: `medium`. Confirmed by the layer's mutation demonstration; on an IPv6-disabled host the live lane would wait through every boundary and reject the topology. → **patch**: the production port probe now delegates the exclusive bind through an injectable action, and the test drives that exact catch path for four unavailable-family errors plus genuine IPv6/IPv4 conflicts.
+- **[verification-gap] The Docker timeout facts injected a completed `TimeoutException` and never exercised cancellation, child termination, redirected-read observation, or the termination bound.** Verdict: `medium`. Confirmed by the layer's mutation demonstration; removing the real process deadline left all four prior facts green and could hang a live boundary. → **patch**: the production process lifecycle now sits behind an injectable probe, and a deliberately non-completing fake proves deadline cancellation, `Kill`, both read observations, the bounded second exit wait, and the final classified timeout.
+- **[edge-case-hunter] A probe deadline could cancel redirected reads just after `WaitForExitAsync` succeeded, letting the local `OperationCanceledException` escape the outer retry.** Verdict: `medium`. Confirmed: only the exit wait was inside the local-timeout catch; both stream awaits were outside it. → **patch**: exit and stream completion now share the same probe-local cancellation boundary.
+- **[edge-case-hunter] `Process.Kill` can throw `Win32Exception` or `NotSupportedException`, which escaped instead of producing a bounded retry diagnostic.** Verdict: `medium`. Confirmed from the actual `Process` wrapper path (the reported `AggregateException` arm was not applicable to the synchronous API). → **patch**: termination failures are retained, both stream tasks are observed, the bounded termination wait still runs, and the outer loop receives `InvalidOperationException` for retry/diagnosis.
+- **[edge-case-hunter] Disabled IPv6 can report `ProtocolFamilyNotSupported` or `OperationNotSupported`, neither of which was classified as inapplicable.** Verdict: `medium` for `ProtocolFamilyNotSupported`; the `OperationNotSupported` half is `false` because it is not uniquely an unavailable address-family signal and treating it as available could hide a real exclusive-bind failure. → **patch**: added only `ProtocolFamilyNotSupported` and pinned it through the production classifier.
+- **[edge-case-hunter] A backward wall-clock adjustment could extend the nominal 60-second resource-release budget.** Verdict: `low`. Confirmed: the loop compared `DateTimeOffset.UtcNow` with a wall-clock deadline. The current change exposes this as a bounded settling contract and the correction is direct. → **patch**: the release budget now uses monotonic `Stopwatch.Elapsed`.
+
 - **[blind-hunter] ArchitectureTests count jumped from the story-spec baseline (44) to 236 with only one ArchitectureTests file touched in this diff.** Verdict: `false`. The growth (44→207→236) happened across this story's earlier, already-committed and already-reviewed rounds (2026-07-23 through 2026-09-01); this session's diff only shows its own incremental delta. Directly ran `Hexalith.Works.ArchitectureTests`: 236/236, matching the claim exactly.
 - **[blind-hunter] UnitTests count jumped from 496 to 529 with zero UnitTests files touched in this diff.** Verdict: `false`. Same cause as above — the growth predates this session. Directly ran `Hexalith.Works.UnitTests`: 529/529, matching the claim exactly.
 - **[blind-hunter + edge-case-hunter, grouped] `DateReminderReconciler.ReconcileAsync`'s incomplete-scan rethrow path discards pass-level context: the reissued/rescheduled outcome counts are never surfaced when the `incompleteScan` rethrow fires, and if `_submitter`/`_scheduler` also throws while acting on the partial results, the original `PendingDateAwaitScanIncompleteException` (tenant count, cause) is discarded entirely in favor of the new exception.** Verdict: `low`. Confirmed by reading `DateReminderReconciler.cs:36-103`: `throw incompleteScan;` is reached only if the tenant loop completes without its own exception, and the method never returns `reissued`/`rescheduled` alongside a rethrow. No functional harm — `ReminderReconciliationService` already retries on any exception and idempotency makes a repeat pass safe; the per-tenant failure reason is also already logged unconditionally inside `IndexedPendingDateAwaitSource` at the point of failure. Purely an aggregate-diagnostic gap at the reconciler layer. → **patch**.
@@ -201,6 +213,38 @@ _bmad-build step-04 review of the 2026-09-05 code-review-remediation session's o
 - **[blind-hunter] `WorksEventIdentity.Matches`'s "every non-rejection event carries `AggregateId`" closed-world assumption lives only in a code comment, with no fitness/architecture test enforcing it against a future violating type.** Verdict: `low`, rejected. Real but unlikely to be hit in ordinary development (would require adding a wholly new non-rejection payload type without an `AggregateId` property), and the smallest fix (a new reflection-based fitness test) is more than a direct correction.
 - **[edge-case-hunter, grouped with the `DateReminderReconciler` entry above] If `_submitter`/`_scheduler` throws while processing partial results, the caught `PendingDateAwaitScanIncompleteException` is discarded in favor of the new exception.** Verdict: `low`. Same root cause and disposition as the grouped `DateReminderReconciler` entry above. → **patch**.
 - **[verification-gap] No findings.** The layer traced every behavioral change in the diff to a passing test and reported nothing to triage.
+
+_2026-09-20 final baseline-diff review after the AppHost harness close-out and one-type-per-file correction.
+All three layers ran against the full `9526c31` baseline diff; findings outside the current increment were
+classified as pre-existing rather than silently folded into the harness patch._
+
+- **[blind-hunter] Frontmatter says `in-review` while the legacy body and sprint vocabulary say `review`.** Verdict: `low`, rejected. The mismatch is real, but `in-review` is the current workflow's required machine-readable frontmatter state and the only correction proposed is an edit to the spec under review, which this review must reject.
+- **[blind-hunter] Startup reminder reconciliation permanently stops after its bounded retry budget.** Verdict: `medium` → **defer**. Confirmed in `ReminderReconciliationService`: after the configured attempts it returns and has no periodic retry or distinct readiness state, so a dependency outage lasting beyond startup can defer recovery until restart; this predates the current harness increment.
+- **[blind-hunter] An empty tenant registry can make startup reconciliation finish before a later index/backfill appears.** Verdict: `maybe-false` → **defer**. The source returns success for an empty registry and the service is single-run, but reachability depends on the EventStore projection poller's backfill/reset semantics; settle by proving whether pre-index aggregates are replayed after the reconciliation service exits.
+- **[blind-hunter] A parked projection candidate is skipped without reading its authoritative stream and has no supported unpark path.** Verdict: `medium` → **defer**. Confirmed by the parked branch in `IndexedPendingDateAwaitSource`; a stale or mistaken durable park suppresses reminder recovery until an operator mechanism exists, and this is pre-existing story behavior.
+- **[blind-hunter] Exact caller cancellation during an in-tenant parking/stream read can discard that tenant's already-collected local evidence.** Verdict: `medium` → **defer**. Confirmed and explicitly documented in the source remarks; only cross-tenant evidence preservation was closed by the prior human decision.
+- **[blind-hunter] The reconciler aborts after the first submit/schedule failure and can starve later awaits.** Verdict: `medium` → **defer**. `ProcessAsync` rethrows from either branch before visiting later entries; an earlier persistent failure can consume every startup retry.
+- **[blind-hunter] The due-now submit branch lacks bounded tenant/work-item/reminder failure telemetry.** Verdict: `medium` → **defer**. Confirmed: it reaches generic EventId 4603 with an attached gateway exception, while only the scheduler branch emits identity-bearing 4609; this asymmetry is pre-existing.
+- **[blind-hunter] The actor removes reminder state after command acceptance rather than terminal command success.** Verdict: `medium` → **defer**. `EventStoreGatewayWorkCommandSubmitter` returns the gateway's accepted response without polling terminal status, after which the actor removes its registration; a later terminal failure has no in-process retry trigger.
+- **[blind-hunter] Actor remoting cannot observe cancellation once `ScheduleResumeAsync` starts.** Verdict: `maybe-false` → **defer**. The token is checked only before the proxy call, but the practical bound depends on Dapr actor-client timeout behavior not established by this diff; settle with the configured remoting timeout or a stalled-proxy integration proof.
+- **[blind-hunter] The tenant registry and historical per-item watermarks grow without compaction.** Verdict: `low`, rejected. The registry is deliberately append-only and index writes are already bounded to items with date-await history; ordinary impact is low and compaction/sharding adds a migration policy rather than a direct correction.
+- **[blind-hunter] A probe plus termination wait and retry delay can exceed the nominal release-wait duration.** Verdict: `low`, rejected. The monotonic loop budget is real but checked between bounded observations, and teardown already supplies an extra bounded allowance; enforcing one aggregate deadline requires more cancellation plumbing for a rare test-harness failure path.
+- **[blind-hunter] Redirected process reads are awaited before the termination wait and might ignore cancellation indefinitely.** Verdict: `maybe-false` → **defer**. The production implementation uses `StreamReader.ReadToEndAsync(token)` and kills the process first, but the diff does not prove every platform completes those tasks; settle with a real child-process test whose pipe survives kill/cancellation.
+- **[blind-hunter] Pipe I/O/disposal faults can mask the intended Docker timeout and prevent observation of the sibling read task.** Verdict: `medium` → **patch, resolved**. Confirmed: `ObserveProbeTaskAsync` caught only cancellation and the calls were sequential. The cleanup now observes both reads concurrently and absorbs only expected cancellation, `IOException`, and `ObjectDisposedException`; a focused pipe-close regression preserves the classified timeout.
+- **[blind-hunter] Timed-out AppHost disposal tasks continue after `WaitAsync` abandons them.** Verdict: `low`, rejected. The rare cleanup-timeout path deliberately continues to bounded resource diagnostics; retaining/canceling non-cancelable disposals adds lifecycle complexity for negligible additional test-only harm.
+- **[blind-hunter] `CountResumedAsync` reads only the first 100 stream events.** Verdict: `false`. Every caller uses a newly created per-run work item and exercises only a small fixed command sequence, so none can reach a 100-event stream in the acceptance lane under review.
+- **[blind-hunter] A three-second settle interval cannot prove no late duplicate resume.** Verdict: `false`. Redeliveries reuse the deterministic command identity and the aggregate no-ops a consumed/non-matching await, so a late retry cannot create a second accepted `WorkItemResumed`; the stream assertion checks accepted events, not callbacks.
+- **[verification-gap] The Docker command-shape fact omits the ordered `--filter`/`--format` pairs.** Verdict: `medium` → **patch, resolved**. The layer demonstrated that deleting `--filter` left the prior fact green while Docker failed and all four live facts became prerequisite skips. The regression now pins the complete ordered `ArgumentList`.
+- **[edge-case-hunter] Projection replay does not reject duplicate or gapped positive sequence numbers.** Verdict: `maybe-false` → **defer**. The endpoint sorts the delivered replay but does not validate contiguity; settle by proving whether the EventStore projection contract can emit a duplicate/gap (otherwise the trigger is unreachable).
+- **[edge-case-hunter] A non-truncated stream page is trusted even when metadata claims an unread tail.** Verdict: `maybe-false` → **defer**. The reader stops on `IsTruncated == false`; settle by establishing the gateway's `LatestSequence`/`LastSequenceReturned` invariant or a malformed-page test showing this cross-service shape is reachable.
+- **[edge-case-hunter] Paging trusts `LastSequenceReturned` even when it exceeds the highest returned event.** Verdict: `maybe-false` → **defer**. Such metadata would skip events on the next exclusive cursor, but the diff does not establish that the EventStore gateway can produce the inconsistent page; settle with contract evidence or a fault-injection test.
+- **[edge-case-hunter] A reconciler failure starves later pending awaits.** Verdict: `medium` → **defer**, grouped with the blind-hunter fail-fast reconciler finding above; both describe the same `ProcessAsync` early-exit behavior.
+- **[edge-case-hunter] A steady-state handler failure on one date await starves later awaits on the same suspension.** Verdict: `medium` → **defer**, grouped with the fail-fast reminder-processing family. The handler rethrows immediately to obtain redelivery, so a permanently failing first await prevents later registrations.
+- **[edge-case-hunter claim] The task text says paging advances by `LastSequenceReturned + 1`, while the implementation correctly uses the exclusive lower bound unchanged.** Verdict: `low`, rejected. The claim mismatch is real, but source/submodule evidence proves the implementation is correct and the proposed correction edits only this spec.
+- **[edge-case-hunter claim] The task text says only the pending-await source changes while the reconciler now acts on partial results and rethrows.** Verdict: `low`, rejected. The behavior is intentional and documented by later review decisions; the remaining inconsistency is solely in the spec under review.
+- **[edge-case-hunter claim] A test-task bullet says scheduler failure does not fail dispatch, while the selected 4.7 event-handler path rethrows for redelivery.** Verdict: `low`, rejected. Task 2 explicitly requires rethrow on the selected subscription surface and the runtime behavior is correct; only stale alternative-path wording in this spec disagrees.
+- **[edge-case-hunter claim] The stale-reminder note names the actor orphan path, but stored stale registrations submit an idempotent no-op before cleanup.** Verdict: `low`, rejected. Runtime behavior remains safe and intentional; correcting the wording would edit the spec under review.
+- **[edge-case-hunter claim] The task says last out-of-order dispatch wins, while the index uses a monotonic highest-sequence watermark.** Verdict: `low`, rejected. The implementation prevents an older replay from resurrecting cleared state and is correct; the finding asks only to rewrite this spec's obsolete wording.
 
 ## Dev Notes
 
@@ -409,6 +453,19 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-20 File List increment review close-out.** Re-ran the Story 4.8 Tier-3 reminder and mTLS lanes
+  against the final reviewed checkout: all **4/4** facts passed with zero skips in **1023.751s**, covering overdue
+  recovery, future-reminder recovery, steady-state Scheduler delivery, and deny-by-default mTLS authorization.
+  Hardened the shared AppHost settling boundary so unavailable IPv6 loopback families are inapplicable rather
+  than occupied, Docker ownership probes include stopped containers, and transient probe failures/timeouts remain
+  inside the bounded retry. Added six deterministic harness regressions, including production-path IPv6,
+  complete Docker argument ordering, pipe-close cleanup,
+  timed-out-process coverage from the independent review. Corrected the CI/CD/deferred-work
+  evidence and stable citations, made spec-9 source paths repository-relative, and recorded the approved
+  Aspire AppHost SDK 13.5.4 deviation from spec-9's dependency-version boundary. Release build passed with
+  0 warnings/errors; Unit, Property, serial non-smoke Integration, and Architecture passed **568/568**,
+  **3/3**, **498/498**, and **268/268** with zero skips. The AppHost stopped cleanly after the live run.
+
 - **2026-09-20 spec-9 review-patch close-out.** Closed the final three spec-9 findings: the clean final-index
   cancellation fact now pins the empty first-index read, zero stream reads, and zero logs; the 4608 architecture
   guard requires the complete shutdown-or-exhaustion restart sentence; and the test-summary citation now names
@@ -596,6 +653,17 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-20 File List increment review close-out**
+- `tests/Hexalith.Works.IntegrationTests/ISchedulerVolumeProbe.cs`
+- `tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-20 spec-9 review-patch close-out**
 - `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs`
@@ -867,6 +935,11 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-20 — Closed all eight File List increment review patches: reran the live Tier-3 reminder/mTLS lane,
+  hardened the shared IPv6 and Docker occupancy probes with deterministic coverage, corrected ledger paths and
+  citations, and recorded the approved Aspire 13.5.4 spec-9 deviation. Every live and deterministic gate passed;
+  Story 4.8 and sprint tracking returned to `review`.
 
 - 2026-09-20 — File List increment review (`28724f2...HEAD`) left eight patch findings as action items
   (Tier-3 re-run, Aspire 13.5.4 deviation record, harness occupancy probes, ledger citations) and returned
@@ -1290,16 +1363,16 @@ _Scope: `a292e3b...HEAD` (HEAD `3a29f59`). 10 files, +1,197/−328, 2,036 diff l
 
 _Scope: `28724f2...HEAD` (HEAD `776b869`) filtered to Story 4.8 File List — 17 files, +1318/−382, 2435 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 28 raw findings triaged to 2 decision, 6 patch, 8 defer, 12 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] **Live SM-1 harness and AppHost startup path changed without new Tier-3 evidence** — This increment mutates `WorksAppHostSmokeHarness` (IPv6 exclusive bind, Docker scheduler-volume probe, sentry/placement/scheduler health waits, 10-minute startup, bounded dispose) and AppHost `Program.cs` MSBuild environment variables, while `test-summary.md` 2026-09-20 records that no Tier-3 smoke lane ran and no new live evidence is claimed. Story AC #1/#3 and Task 5 are the live proof. **Decided 2026-09-20 (human): re-run Tier-3 on this checkout and record the exact results.** [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:92]
+- [x] [Review][Patch] **Live SM-1 harness and AppHost startup path changed without new Tier-3 evidence** — This increment mutates `WorksAppHostSmokeHarness` (IPv6 exclusive bind, Docker scheduler-volume probe, sentry/placement/scheduler health waits, 10-minute startup, bounded dispose) and AppHost `Program.cs` MSBuild environment variables, while `test-summary.md` 2026-09-20 records that no Tier-3 smoke lane ran and no new live evidence is claimed. Story AC #1/#3 and Task 5 are the live proof. **Decided 2026-09-20 (human): re-run Tier-3 on this checkout and record the exact results.** [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:92] — resolved 2026-09-20: after review hardening, the final focused reminder-recovery plus mTLS command passed **4/4**, zero skipped, in **1023.751s**; all live resources reached healthy state and the AppHost stopped cleanly.
 
-- [ ] [Review][Patch] **Aspire AppHost SDK moved 13.5.3 → 13.5.4 against spec-9 Never** — `global.json` and `Hexalith.Works.AppHost.csproj` bump `Aspire.AppHost.Sdk` to 13.5.4 and `BuildConfigurationTests` is rewritten to match. spec-9 frozen Never lists dependency versions. **Decided 2026-09-20 (human): keep 13.5.4 and record the spec-9 Never deviation.** [global.json:10]
+- [x] [Review][Patch] **Aspire AppHost SDK moved 13.5.3 → 13.5.4 against spec-9 Never** — `global.json` and `Hexalith.Works.AppHost.csproj` bump `Aspire.AppHost.Sdk` to 13.5.4 and `BuildConfigurationTests` is rewritten to match. spec-9 frozen Never lists dependency versions. **Decided 2026-09-20 (human): keep 13.5.4 and record the spec-9 Never deviation.** [global.json:10] — resolved 2026-09-20: spec-9 Implementation Notes and Change Log now record the approved parent-story exception explicitly; the 13.5.4 pins remain unchanged.
 
-- [ ] [Review][Patch] IPv6-disabled hosts treat loopback bind failure as an occupied control-plane port [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:623]
-- [ ] [Review][Patch] Docker occupancy probe failures, timeouts, and running-only `docker ps` escape the 60-second retry loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:538]
-- [ ] [Review][Patch] CI/CD ledger evidence in this increment is already contradicted by the same diff [\_bmad-output/implementation-artifacts/deferred-work.md:904]
-- [ ] [Review][Patch] Two spec-9 `source_spec` paths are machine-absolute [\_bmad-output/implementation-artifacts/deferred-work.md:940]
-- [ ] [Review][Patch] The DW-56 contradiction bullet still cites compacted line 548 [\_bmad-output/implementation-artifacts/deferred-work.md:792]
-- [ ] [Review][Patch] DW-58 still cites the removed reminder `IsPortReachableAsync` [\_bmad-output/implementation-artifacts/deferred-work.md:476]
+- [x] [Review][Patch] IPv6-disabled hosts treat loopback bind failure as an occupied control-plane port [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:623] — resolved 2026-09-20: IPv6 address-family/address/protocol unavailability is treated as an inapplicable loopback probe while genuine bind conflicts remain occupied; a deterministic regression pins both sides.
+- [x] [Review][Patch] Docker occupancy probe failures, timeouts, and running-only `docker ps` escape the 60-second retry loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:538] — resolved 2026-09-20: the probe uses `docker ps --all`; timeout and Docker-start/exit failures are classified as occupied diagnostics and retried within the shared monotonic budget; timed-out children and redirected reads are bounded/observed. Four deterministic Docker regressions cover command shape, transient recovery, exhausted diagnostics, and the real timeout/termination lifecycle.
+- [x] [Review][Patch] CI/CD ledger evidence in this increment is already contradicted by the same diff [\_bmad-output/implementation-artifacts/deferred-work.md:904] — resolved 2026-09-20: evidence now names only the cascade and command-pipeline live starters that actually retain separate teardown paths.
+- [x] [Review][Patch] Two spec-9 `source_spec` paths are machine-absolute [\_bmad-output/implementation-artifacts/deferred-work.md:940] — resolved 2026-09-20: both paths are repository-relative.
+- [x] [Review][Patch] The DW-56 contradiction bullet still cites compacted line 548 [\_bmad-output/implementation-artifacts/deferred-work.md:792] — resolved 2026-09-20: the contradiction uses the stable `DW-56` heading rather than a drifting line number.
+- [x] [Review][Patch] DW-58 still cites the removed reminder `IsPortReachableAsync` [\_bmad-output/implementation-artifacts/deferred-work.md:476] — resolved 2026-09-20: DW-58 is narrowed to the surviving command-pipeline probe and records that the shared reminder harness preserves caller cancellation.
 
 - [x] [Review][Defer] Cascade and command-pipeline live starters omit the new occupancy and health waits [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:543] — deferred: already recorded at `deferred-work.md:904` under the CI/CD routing item; this increment did not close it.
 - [x] [Review][Defer] Compacted ledger stubs and archive still have no title, policy, backlink, or archive path [\_bmad-output/implementation-artifacts/deferred-work-archive.md:1] — deferred: already recorded at the spec-9 `source_spec` navigation item.

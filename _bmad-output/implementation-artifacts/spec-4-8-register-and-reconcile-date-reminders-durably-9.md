@@ -86,6 +86,9 @@ context:
   checkouts agree at Chatbot `a782557875a27648a85b063572eb6c62c53459f8`, Conversations
   `c610fbb8c5491fb0d7987c2f8294199887f4a44c`, and EventStore
   `4bc61d9a60fae13a65f23963c1cb731065222f2a`; this follow-up changed no pointer.
+- **Approved parent-story deviation (2026-09-20):** the later Story 4.8 review decision keeps
+  `Aspire.AppHost.Sdk` **13.5.4** in `global.json` and `Hexalith.Works.AppHost.csproj`. That dependency-version
+  change is an explicit exception to this spec's frozen **Never** boundary; it is retained rather than reverted.
 
 ## Spec Change Log
 
@@ -95,6 +98,8 @@ context:
   and reran the complete deterministic verification set with unchanged results.
 - 2026-09-20: Closed the three remaining review patches, reconciled verification with the current adopted
   gitlinks, and returned Story 4.8 plus sprint tracking to review without new live credit.
+- 2026-09-20: Recorded the human-approved parent-story decision to retain Aspire AppHost SDK 13.5.4 as an
+  explicit deviation from this spec's dependency-version boundary.
 
 ## Review Triage Log
 
