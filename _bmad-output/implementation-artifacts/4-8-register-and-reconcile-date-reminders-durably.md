@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: in-review
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -709,6 +709,8 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 ### File List
 
 **2026-09-20 spec-10 five-patch close-out**
+- `tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs`
+- `tests/Hexalith.Works.IntegrationTests/SchedulerVolumeProbeCleanupException.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/HangingSchedulerVolumeProbe.cs`
@@ -1011,6 +1013,12 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-20 — Closed the six remaining spec-10 review actions: corrected the parent lifecycle state, pinned the
+  already-correct probe-failure rethrow, hardened IPv6 and real-child test observations, normalized five ledger
+  locators, and completed the historical File List. Release build and deterministic gates passed at harness 41,
+  Unit 568, Property 3, non-smoke Integration 534, and Architecture 268. The pre-edit AppHost baseline stopped at
+  an exited EventStore resource, so the Tier-3 aggregate was not repeated and no fresh live credit is claimed.
 
 - 2026-09-20 — Full-baseline bmad-build review triaged 23 findings, carried previously recorded broad-history
   issues, deferred five pre-existing concern groups, and closed three AppHost probe verification gaps with six
@@ -1550,12 +1558,12 @@ _Scope: `origin/main...HEAD` (HEAD `1a3edcc`) — spec-10 AppHost probe close-ou
 
 _Scope: `c4c925b...HEAD` (HEAD `900f99c`) — spec-10 five-patch close-out plus probe-cleanup hardening. 10 files, +2,032/−152, 2,614 diff lines. Spec: `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 22 raw findings triaged to 0 decision, 6 patch, 0 defer, 10 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] Parent-story YAML frontmatter is still `status: done` after this increment marked the lifecycle mismatch resolved; body and sprint tracking say `review`, and spec-10 task 3 requires `in-review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
-- [ ] [Review][Patch] `RunAndDisposeSchedulerVolumeProbeAsync` never rethrows a probe failure when Dispose succeeds, so a non-zero Docker inspect whose child has already exited returns a null owner list and the control-plane wait NREs instead of the classified retryable inspect diagnostic [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:671]
-- [ ] [Review][Patch] The IPv6 exclusive-bind fallback constructs `new TcpListener(IPAddress.IPv6Loopback, 0)` outside the unavailable-address predicate, so a kernel-disabled IPv6 loopback that already classified production bind as inapplicable can still fail the fact [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:77]
-- [ ] [Review][Patch] The real-child disposal fact waits on `Process.Exited` after adapter `Dispose` closed that `Process`, so a queued exit notification can be dropped and the fact times out even though the child was killed [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:1017]
-- [ ] [Review][Patch] Five new `deferred-work.md` rows use machine-absolute `source_spec` paths instead of the repository-relative locators and `#story-4-8-canonical-*` anchors this increment added for portability [_bmad-output/implementation-artifacts/deferred-work.md:1012]
-- [ ] [Review][Patch] The dated **2026-09-20 spec-10 five-patch close-out** File List omits `ProcessSchedulerVolumeProbe.cs` and `SchedulerVolumeProbeCleanupException.cs`, the files that gained two-attempt disposal and the non-retryable cleanup type [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711]
+- [x] [Review][Patch] Parent-story YAML frontmatter is still `status: done` after this increment marked the lifecycle mismatch resolved; body and sprint tracking say `review`, and spec-10 task 3 requires `in-review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3] — RESOLVED 2026-09-20: frontmatter now uses build-workflow `in-review`, while the story body and sprint board use their `review` vocabulary.
+- [x] [Review][Patch] `RunAndDisposeSchedulerVolumeProbeAsync` never rethrows a probe failure when Dispose succeeds, so a non-zero Docker inspect whose child has already exited returns a null owner list and the control-plane wait NREs instead of the classified retryable inspect diagnostic [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:671] — RESOLVED 2026-09-20 as a false production finding: the wrapper already rethrows `probeFailure` through `ExceptionDispatchInfo`; a direct wrapper regression now pins the exact non-zero diagnostic and successful disposal.
+- [x] [Review][Patch] The IPv6 exclusive-bind fallback constructs `new TcpListener(IPAddress.IPv6Loopback, 0)` outside the unavailable-address predicate, so a kernel-disabled IPv6 loopback that already classified production bind as inapplicable can still fail the fact [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:77] — RESOLVED 2026-09-20: listener construction and configuration now share the unavailable-loopback classification, with null-safe cleanup.
+- [x] [Review][Patch] The real-child disposal fact waits on `Process.Exited` after adapter `Dispose` closed that `Process`, so a queued exit notification can be dropped and the fact times out even though the child was killed [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:1017] — RESOLVED 2026-09-20: the fact observes bounded exit through the retained independent process handle and still exercises fail-safe disposal.
+- [x] [Review][Patch] Five new `deferred-work.md` rows use machine-absolute `source_spec` paths instead of the repository-relative locators and `#story-4-8-canonical-*` anchors this increment added for portability [_bmad-output/implementation-artifacts/deferred-work.md:1012] — RESOLVED 2026-09-20: all five locators are repository-relative; the distinct rows and existing canonical anchors remain intact.
+- [x] [Review][Patch] The dated **2026-09-20 spec-10 five-patch close-out** File List omits `ProcessSchedulerVolumeProbe.cs` and `SchedulerVolumeProbeCleanupException.cs`, the files that gained two-attempt disposal and the non-retryable cleanup type [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711] — RESOLVED 2026-09-20: both files are recorded in that historical File List block.
 
 **Rejected:**
 - `false` — adapter `Dispose` orphans a stubborn Docker CLI by calling `Process.Dispose` after two failed kills: those kills already left the child unkillable, and `WaitForControlPlaneResourcesReleasedAsync` rethrows `SchedulerVolumeProbeCleanupException` without starting another probe.

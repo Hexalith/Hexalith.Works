@@ -74,9 +74,10 @@ public sealed class WorksAppHostSmokeHarnessTests
             {
                 // A kernel-disabled IPv6 loopback is production's inapplicable-address branch. The production
                 // overload was exercised through Start; configuration itself remains covered by the listener seam.
-                var configuredIpv6Listener = new TcpListener(IPAddress.IPv6Loopback, 0);
+                TcpListener? configuredIpv6Listener = null;
                 try
                 {
+                    configuredIpv6Listener = new TcpListener(IPAddress.IPv6Loopback, 0);
                     configuredIpv6Listener.Server.DualMode = true;
                     try
                     {
@@ -94,9 +95,15 @@ public sealed class WorksAppHostSmokeHarnessTests
                     configuredIpv6Listener.Server.ExclusiveAddressUse.ShouldBeTrue();
                     configuredIpv6Listener.Server.DualMode.ShouldBeFalse();
                 }
+                catch (SocketException configurationException) when (
+                    WorksAppHostSmokeHarness.IsUnavailableLoopbackAddress(
+                        IPAddress.IPv6Loopback,
+                        configurationException.SocketErrorCode))
+                {
+                }
                 finally
                 {
-                    configuredIpv6Listener.Stop();
+                    configuredIpv6Listener?.Stop();
                 }
             }
         }
@@ -764,6 +771,28 @@ public sealed class WorksAppHostSmokeHarnessTests
     }
 
     [Fact]
+    public async Task Scheduler_volume_probe_wrapper_preserves_a_non_zero_probe_failure_when_disposal_succeeds()
+    {
+        var probe = new HangingSchedulerVolumeProbe(
+            startsExited: true,
+            completeReadsImmediately: true,
+            exitCode: 19,
+            standardError: "daemon unavailable");
+
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
+            () => WorksAppHostSmokeHarness.RunAndDisposeSchedulerVolumeProbeAsync(
+                probe,
+                TimeSpan.FromSeconds(1),
+                TimeSpan.FromMilliseconds(100),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+        probe.DisposeCallCount.ShouldBe(1);
+        exception.Message.ShouldBe(
+            "Docker could not inspect the Scheduler volume owner (exit 19): daemon unavailable.");
+        exception.InnerException.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task Scheduler_volume_probe_wrapper_returns_the_successful_owner_list_and_disposes_the_probe()
     {
         var probe = new HangingSchedulerVolumeProbe(
@@ -1006,17 +1035,15 @@ public sealed class WorksAppHostSmokeHarnessTests
         Exception? cleanupFailure = null;
         try
         {
-            var exited = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            process.EnableRaisingEvents = true;
-            process.Exited += (_, _) => exited.TrySetResult();
             process.HasExited.ShouldBeFalse();
 
             var probe = new ProcessSchedulerVolumeProbe(process);
             probe.Dispose();
 
-            await exited.Task
+            await cleanupProcess.WaitForExitAsync(TestContext.Current.CancellationToken)
                 .WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken)
                 .ConfigureAwait(true);
+            cleanupProcess.HasExited.ShouldBeTrue();
         }
         catch (Exception exception)
         {

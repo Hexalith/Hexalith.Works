@@ -3532,3 +3532,37 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 The Tier-3 live aggregate was not repeated after these test-only review fixes; its immediately preceding
 unchanged-infrastructure result remains **0/4** with the exact startup and HTTP 500 evidence above. No fresh live
 acceptance credit is claimed.
+
+## Story 4.8 spec-11 final review-patch close-out — 2026-09-20
+
+The two platform-sensitive harness facts now classify unavailable IPv6 construction and observe real-child exit
+through an independent retained process handle. A new wrapper regression proves that a classified non-zero Docker
+probe failure survives successful disposal unchanged; production exception precedence required no code change.
+
+```text
+dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Restore and build succeeded
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarnessTests
+# 41/41 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 534/534 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+The pre-edit `aspire start` baseline reached healthy Dapr Sentry, Placement, and Scheduler resources, but the
+EventStore project exited and left Works waiting. The AppHost was stopped cleanly before editing. The Tier-3
+aggregate was therefore not repeated, the preceding **0/4** result remains current, and no fresh live acceptance
+credit is claimed.
