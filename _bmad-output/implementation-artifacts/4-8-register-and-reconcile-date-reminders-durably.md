@@ -5,7 +5,7 @@ status: done
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1396,3 +1396,30 @@ _Scope: `28724f2...HEAD` (HEAD `776b869`) filtered to Story 4.8 File List — 17
 - `low`, not worth fixing — Docker `Kill` TOCTOU after a 10-second probe timeout is folded into the occupancy-probe patch rather than a separate everyday defect.
 - `low`, not worth fixing — unobserved `ReadToEndAsync` after that same probe timeout is the same occupancy-probe failure path.
 - Fix edits the spec under review — Task 7 File List accuracy for concurrent CI/CD files that happen to sit on the story File List.
+
+### Review Findings (2026-09-20, bmad-code-review, File List close-out `776b869...HEAD`)
+
+_Scope: `776b869...HEAD` (HEAD `059e9a0`) — unreviewed File List increment close-out. 9 files, +716/−63, 1011 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 23 raw findings triaged to 0 decision, 15 patch, 1 defer, 3 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] Story frontmatter is `status: done` while the body, Change Log, and sprint tracking all return Story 4.8 to `review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
+- [ ] [Review][Patch] Timed-out Docker probe facts do not fire the termination wait: `Kill` sets `HasExited`, so the second `WaitForExitAsync` returns immediately and a child that ignores `Kill` can hang occupancy [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:160]
+- [ ] [Review][Patch] `Win32Exception` / `NotSupportedException` from `Kill` have no throwing fake, so deleting the catch still leaves the timeout facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:658]
+- [ ] [Review][Patch] `Process.Kill(entireProcessTree: true)` can throw `AggregateException`, which escapes the termination catch and aborts resource settling instead of becoming a retryable `InvalidOperationException` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:650]
+- [ ] [Review][Patch] Successful `WaitForExitAsync` plus cancelled redirected reads is untested, so moving those awaits back out of the probe-CTS `try` would leak `OperationCanceledException` into live start/teardown [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:631]
+- [ ] [Review][Patch] After the termination wait expires the code does not `Kill` again, and `ProcessSchedulerVolumeProbe.Dispose` does not terminate a live child, so hung `docker` CLIs can accumulate across the 60s settle loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:672]
+- [ ] [Review][Patch] A successful process exit whose redirected read then throws `IOException` or `ObjectDisposedException` escapes as an unclassified exception and aborts occupancy retry [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:633]
+- [ ] [Review][Patch] The IPv6 facts never call `BindPortExclusively`, so deleting `DualMode = false`, `ExclusiveAddressUse`, or `listener.Start()` still leaves all six harness facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:16]
+- [ ] [Review][Patch] `Scheduler_volume_probe_includes_stopped_containers` pins only `FileName` and `ArgumentList`, not `RedirectStandardOutput` / `RedirectStandardError` / `UseShellExecute = false` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:49]
+- [ ] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no success-path fact (empty owners, parsed `{{.ID}} {{.Names}}` lines, or non-zero Docker exit → `InvalidOperationException`) [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:636]
+- [ ] [Review][Patch] Close-out arithmetic does not add up: spec-9 recorded serial non-smoke Integration **493/493**, this increment adds six harness facts and records **498/498** (493+6=499) [_bmad-output/implementation-artifacts/tests/test-summary.md:3424]
+- [ ] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no caller-cancellation fact, so the cleanup-then-`throw;` path can regress into a classified `TimeoutException` while hanging-probe tests stay green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:678]
+- [ ] [Review][Patch] New `source_spec` rows restate already-open unpark, fail-fast starvation, due-now 4603, and in-tenant cancellation gaps without linking the earlier ledger entries [_bmad-output/implementation-artifacts/deferred-work.md:967]
+- [ ] [Review][Patch] `HangingSchedulerVolumeProbe` is a second type in `WorksAppHostSmokeHarnessTests.cs` after this increment extracted the other probe types to one-file-per-type [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:144]
+- [ ] [Review][Patch] Control-plane wait facts never mark a port occupied, so deleting the port loop from the new injectable wait still leaves both facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:67]
+
+- [x] [Review][Defer] spec-9 Code Map still cites `deferred-work.md:967`, which this increment's ledger append retargeted onto the new unpark `source_spec` [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md:43] — deferred: fix edits another spec.
+
+**Rejected:**
+- `false` — `ObserveProbeTaskAsync` must swallow faults beyond cancellation/`IOException`/`ObjectDisposedException`: those three are the demonstrated pipe-close and cancel outcomes from `ReadToEndAsync` after `Kill`; no other reachable redirected-read exception was shown, and a loud failure on an undemonstrated fault is not a defect.
+- `false` — the new 2026-09-20 ledger bullets cite drifting `deferred-work.md:904` / `:944` / `:898` / `:940`: those line numbers still land on the intended CI/CD routing, 4608, 4604/4606, and truncated-heading items; this increment appended *after* them and already replaced the DW-56 line citation with a heading.
+- `low`, not worth fixing — treating a successful `WaitForExitAsync` plus cancelled reads as a probe timeout: the race is rare inside a 60s settle budget, the conservative retry is safe, and splitting the wait/read cancellation tokens adds lifecycle complexity rather than a direct correction.
