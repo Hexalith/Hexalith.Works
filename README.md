@@ -16,7 +16,7 @@ Do not use recursive submodule initialization.
 
 ## CI Release validation
 
-CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds isolated package-only consumers, executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately.
+CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
 
 `Hexalith.EventStore.Operations` is an unpackageable executable topology resource. The AppHost locates it through
 project metadata and builds it only when the live topology starts; it is not a compile-time ProjectReference in the
@@ -56,16 +56,17 @@ NuGet audit is enabled in all restore modes with `NuGetAuditMode=all`, so adviso
 
 Hosts, AppHost resources, samples, service defaults, and test runners are never published.
 
-As checked against the NuGet.org flat-container indexes on 2026-09-18, all five package IDs are currently unpublished: `Hexalith.Works.Contracts` (HTTP 404), `Hexalith.Works.Server` (HTTP 404), `Hexalith.Works.Projections` (HTTP 404), `Hexalith.Works.Reactor` (HTTP 404), and `Hexalith.Works.Testing` (HTTP 404). Registry absence is status only; it is not publication authority.
+As checked against the NuGet.org flat-container indexes on 2026-09-20, all five package IDs are currently unpublished: `Hexalith.Works.Contracts` (HTTP 404), `Hexalith.Works.Server` (HTTP 404), `Hexalith.Works.Projections` (HTTP 404), `Hexalith.Works.Reactor` (HTTP 404), and `Hexalith.Works.Testing` (HTTP 404). Registry absence is status only; it is not publication authority.
 
 ## Manual release prerequisites
 
 Release is operator-only through the `Release` workflow. Before an authorized dispatch, repository owners must configure all of the following:
 
 - A protected `production` environment with required reviewers and a `main`-only deployment policy. Both the
-  publishing job and the post-publication verification job reference this environment, so that a repository- or
-  environment-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` is read in the same scope by both. With required reviewers
-  configured, expect **two** approval prompts in one release run: one before publication and one before verification.
+  publishing job and the post-publication verification job reference this environment. Verification always runs
+  after the release job starts and does not re-read the mutable publication-freeze variable, so a later variable
+  edit cannot suppress checks for an already-started publication. With required reviewers configured, expect
+  **two** approval prompts in one release run: one before publication and one before verification.
 - An explicit `NUGET_API_KEY` secret.
 - A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
 - A successful push `CI` run for the exact current `main` commit.
@@ -78,10 +79,11 @@ can never be published. Packing first freezes the SHA-256 of all ten candidate a
 `nupkgs/release-artifacts.sha256`; publication refuses any changed or extra candidate. `--skip-duplicate` is
 deliberately absent: an ordinary version collision must fail loudly.
 
-**Partial-publication recovery.** NuGet has no transaction, so a failure part-way leaves some packages live and
-immutable. Do not delete the published ones and do not re-push different content at the same version. Re-run the
-same script against the unchanged prepared directory. The script verifies every candidate against the frozen
-SHA-256 ledger, handles only an exact 409 Conflict as an already-published artifact, and continues to the remaining
-package/symbol pairs. Any other response or any byte change fails closed. If the remainder cannot be published at
-all, release a new patch version containing all five packages and leave the incomplete version unlisted, so
-consumers never resolve a partially published version.
+**Partial-publication recovery.** NuGet has no transaction, so a failure part-way can leave some packages live and
+immutable. The publisher retries an unchanged ledger-verified artifact up to three times in the same invocation
+after ambiguous transport or server failures. A first-attempt 409 Conflict is always a collision and fails; a 409
+is accepted only when that same invocation already sent the same unchanged artifact and received an ambiguous
+result, because only then might the prior request have committed. The hosted runner and its candidate ledger are
+ephemeral, so retry exhaustion is not recoverable by rerunning the workflow or by reusing a local ledger. Do not
+delete published packages or push different content at the incomplete version. Publish a new patch version that
+contains all five packages, and leave the incomplete version unlisted so consumers never resolve it.

@@ -21,6 +21,7 @@ jobs:
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
+      build-timeout-minutes: 60
       run-consumer-validation: true
       unit-test-projects: |
         tests/Hexalith.Works.UnitTests

@@ -33,7 +33,7 @@ class PackageMetadata:
     version: str
     dependencies: frozenset[tuple[str, str]]
     readme: str | None
-    has_license: bool
+    license_expression: str | None
 
 
 def assert_release_restore_graph(package_id: str, restore: dict) -> None:
@@ -186,11 +186,18 @@ def package_metadata(package_path: Path) -> PackageMetadata:
             if namespace
             else root.findall(dependency_path.replace("n:", ""))
         )
-        dependencies = frozenset(
-            (element.attrib["id"].strip(), element.attrib.get("version", "").strip())
-            for element in dependency_elements
-            if element.attrib.get("id", "").strip() and element.attrib.get("version", "").strip()
-        )
+        dependencies: set[tuple[str, str]] = set()
+        for element in dependency_elements:
+            dependency_id = element.attrib.get("id", "").strip()
+            dependency_version = element.attrib.get("version", "").strip()
+            if not dependency_id or not dependency_version:
+                raise ValueError(
+                    f"{package_path.name}: every dependency must declare a non-empty id and version"
+                )
+            dependency = (dependency_id, dependency_version)
+            if dependency in dependencies:
+                raise ValueError(f"{package_path.name}: duplicate dependency element {dependency!r}")
+            dependencies.add(dependency)
         package_id = find_text("id")
         version = find_text("version")
         if not package_id or not version:
@@ -201,29 +208,10 @@ def package_metadata(package_path: Path) -> PackageMetadata:
         return PackageMetadata(
             package_id,
             version,
-            dependencies,
+            frozenset(dependencies),
             readme,
-            bool(find_text("license") or find_text("licenseFile")),
+            find_text("license"),
         )
-
-
-def assert_assembly_versions(package_path: Path, package: PackageMetadata) -> None:
-    """Require every packaged library assembly to carry the resolved informational version."""
-
-    version_bytes = package.version.encode("utf-8")
-    with zipfile.ZipFile(package_path) as archive:
-        assembly_names = sorted(
-            name for name in archive.namelist() if name.startswith("lib/") and name.endswith(".dll")
-        )
-        if not assembly_names:
-            raise ValueError(f"{package_path.name}: package contains no library assembly")
-        for assembly_name in assembly_names:
-            assembly = archive.read(assembly_name)
-            if version_bytes not in assembly:
-                raise ValueError(
-                    f"{package.package_id}: {assembly_name} does not carry package version {package.version}; "
-                    "compile with the resolved semantic version before packing"
-                )
 
 
 def validate_packages(
@@ -260,9 +248,12 @@ def validate_packages(
         raise ValueError(f"All Works packages must share one version; found {sorted(versions)}")
 
     release_version = next(iter(versions))
-    for package_id, (archive, package) in metadata_by_id.items():
-        if not package.has_license:
-            raise ValueError(f"{package.package_id}: license metadata is missing")
+    for package_id, (_, package) in metadata_by_id.items():
+        if package.license_expression != "MIT":
+            raise ValueError(
+                f"{package.package_id}: license expression must be exactly MIT; "
+                f"found {package.license_expression!r}"
+            )
         expected = frozenset(
             (dependency_id, dependency_version or release_version)
             for dependency_id, dependency_version in expected_boundaries[package_id]
@@ -279,7 +270,6 @@ def validate_packages(
         )
         if forbidden:
             raise ValueError(f"{package.package_id}: forbidden host/sample/test dependencies: {forbidden}")
-        assert_assembly_versions(archive, package)
 
     return metadata
 

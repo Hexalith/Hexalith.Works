@@ -149,7 +149,25 @@ def write_consumer(directory: Path, package_id: str, version: str, probe_type: s
         encoding="utf-8",
     )
     (directory / "Program.cs").write_text(
-        f"Console.WriteLine(typeof({probe_type}).Assembly.FullName);\n",
+        textwrap.dedent(f"""\
+        using System.Reflection;
+
+        Assembly assembly = typeof({probe_type}).Assembly;
+        string informationalVersion = assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
+            ?? throw new InvalidOperationException("The package assembly has no informational version.");
+        const string expectedVersion = "{version}";
+        if (!string.Equals(informationalVersion, expectedVersion, StringComparison.Ordinal)
+            && !informationalVersion.StartsWith(expectedVersion + "+", StringComparison.Ordinal))
+        {{
+            throw new InvalidOperationException(
+                $"Assembly {{assembly.GetName().Name}} reports informational version "
+                + $"'{{informationalVersion}}', expected '{{expectedVersion}}'.");
+        }}
+
+        Console.WriteLine($"{{assembly.GetName().Name}}|{{informationalVersion}}");
+        """),
         encoding="utf-8",
     )
     # No textual ProjectReference check here: it would only re-read the literal template written above
@@ -165,6 +183,43 @@ def run(command: list[str], directory: Path, packages_folder: Path) -> None:
         "NUGET_PACKAGES": str(packages_folder),
     }
     subprocess.run(command, cwd=directory, env=environment, check=True)
+
+
+def run_consumer(project: Path, package_id: str, version: str, packages_folder: Path) -> None:
+    """Execute the isolated consumer and require reflected informational-version evidence."""
+
+    environment = {
+        **os.environ,
+        "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER": "1",
+        "MSBUILDDISABLENODEREUSE": "1",
+        "NUGET_PACKAGES": str(packages_folder),
+    }
+    result = subprocess.run(
+        [
+            "dotnet",
+            "run",
+            "--project",
+            str(project),
+            "--configuration",
+            "Release",
+            "--no-build",
+            "--no-restore",
+        ],
+        cwd=project.parent,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+    evidence = result.stdout.strip()
+    if not evidence or "|" not in evidence:
+        raise ValueError(f"{package_id}: consumer produced no assembly informational-version evidence")
+    _, informational_version = evidence.rsplit("|", maxsplit=1)
+    if informational_version != version and not informational_version.startswith(f"{version}+"):
+        raise ValueError(
+            f"{package_id}: isolated consumer reported informational version "
+            f"{informational_version!r}, expected {version!r}"
+        )
 
 
 def assert_package_only(project: Path, package_id: str, version: str) -> None:
@@ -225,6 +280,7 @@ def main() -> int:
                 packages_folder,
             )
             assert_package_only(project, package_id, versions[package_id])
+            run_consumer(project, package_id, versions[package_id], packages_folder)
             shutil.rmtree(consumer / "bin")
 
     version = next(iter(versions.values()))

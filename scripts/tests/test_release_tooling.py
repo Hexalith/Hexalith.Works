@@ -71,17 +71,23 @@ def write_package(
     *,
     package_id: str = "Hexalith.Works.Contracts",
     version: str = VERSION,
-    dependencies: tuple[tuple[str, str], ...] = (),
+    dependencies: tuple[tuple[str, str | None], ...] = (),
     include_license: bool = True,
+    license_expression: str = "MIT",
     include_readme: bool = True,
-    assembly_version: str | None = None,
 ) -> Path:
     """Create the smallest package archive needed by the metadata validator."""
 
-    license_xml = '<license type="expression">MIT</license>' if include_license else ""
+    license_xml = (
+        f'<license type="expression">{license_expression}</license>' if include_license else ""
+    )
     readme_xml = "<readme>README.md</readme>" if include_readme else ""
     dependency_xml = "".join(
-        f'<dependency id="{dependency_id}" version="{dependency_version}" />'
+        (
+            f'<dependency id="{dependency_id}" version="{dependency_version}" />'
+            if dependency_version is not None
+            else f'<dependency id="{dependency_id}" />'
+        )
         for dependency_id, dependency_version in dependencies
     )
     nuspec = f"""<?xml version="1.0" encoding="utf-8"?>
@@ -100,8 +106,7 @@ def write_package(
         archive.writestr(f"{package_id}.nuspec", nuspec)
         if include_readme:
             archive.writestr("README.md", "fixture")
-        carried_version = assembly_version if assembly_version is not None else version
-        archive.writestr(f"lib/net10.0/{package_id}.dll", b"fixture\0" + carried_version.encode() + b"\0")
+        archive.writestr(f"lib/net10.0/{package_id}.dll", b"fixture")
     return package_path
 
 
@@ -131,8 +136,26 @@ class PackageValidationTests(unittest.TestCase):
             directory = Path(temporary)
             write_package(directory, include_license=False)
             boundaries = {"Hexalith.Works.Contracts": frozenset()}
-            with self.assertRaisesRegex(ValueError, "license metadata"):
+            with self.assertRaisesRegex(ValueError, "license expression must be exactly MIT"):
                 VALIDATE.validate_packages(directory, boundaries)
+
+    def test_package_rejects_non_mit_license_expression(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            write_package(directory, license_expression="Apache-2.0")
+            boundaries = {"Hexalith.Works.Contracts": frozenset()}
+            with self.assertRaisesRegex(ValueError, "license expression must be exactly MIT"):
+                VALIDATE.validate_packages(directory, boundaries)
+
+    def test_package_rejects_dependency_without_version(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            package = write_package(
+                directory,
+                dependencies=(("Hexalith.EventStore.Contracts", None),),
+            )
+            with self.assertRaisesRegex(ValueError, "non-empty id and version"):
+                VALIDATE.package_metadata(package)
 
     def test_package_rejects_dependency_version_drift(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -151,14 +174,6 @@ class PackageValidationTests(unittest.TestCase):
             write_package(directory, dependencies=(dependency,))
             boundaries = {"Hexalith.Works.Contracts": frozenset({dependency})}
             with self.assertRaisesRegex(ValueError, "forbidden host/sample/test"):
-                VALIDATE.validate_packages(directory, boundaries)
-
-    def test_package_rejects_an_assembly_built_at_another_version(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            directory = Path(temporary)
-            write_package(directory, assembly_version="0.0.0-preview.0")
-            boundaries = {"Hexalith.Works.Contracts": frozenset()}
-            with self.assertRaisesRegex(ValueError, "does not carry package version"):
                 VALIDATE.validate_packages(directory, boundaries)
 
 
@@ -187,40 +202,78 @@ class ShellReleaseTests(unittest.TestCase):
         self.assertEqual(1, calls)
         self.assertIn("could not be queried", result.stderr)
 
-    def test_publisher_resumes_unchanged_partial_publication_on_exact_409s(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            package_directory = self._write_candidate(root)
-            manifest = root / "release-packages.json"
-            write_manifest(manifest)
-            command_log = root / "dotnet.log"
-            bin_directory = root / "bin"
-            bin_directory.mkdir()
-            write_executable(
-                bin_directory / "dotnet",
-                """#!/usr/bin/env bash
+    def test_publisher_rejects_first_attempt_409_as_collision(self) -> None:
+        result, commands = self._run_publisher_with_stub(
+            """#!/usr/bin/env bash
 set -euo pipefail
 printf '%s\n' "$*" >> "$HEXALITH_TEST_COMMAND_LOG"
-case "$3" in
-  *Hexalith.Works.Contracts*)
-    echo 'Response status code does not indicate success: 409 (Conflict).' >&2
-    exit 1
-    ;;
-esac
+echo 'Response status code does not indicate success: 409 (Conflict).' >&2
+exit 1
+"""
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(1, len(commands))
+        self.assertIn("First-attempt 409", result.stderr)
+
+    def test_publisher_accepts_409_only_after_same_invocation_ambiguous_result(self) -> None:
+        result, commands = self._run_publisher_with_stub(
+            """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$HEXALITH_TEST_COMMAND_LOG"
+count="$(wc -l < "$HEXALITH_TEST_COMMAND_LOG")"
+if [ "$count" -eq 1 ]; then
+  echo '503 Service Unavailable after upload' >&2
+  exit 1
+fi
+if [ "$count" -eq 2 ]; then
+  echo 'Response status code does not indicate success: 409 (Conflict).' >&2
+  exit 1
+fi
 echo 'push accepted'
-""",
-            )
+"""
+        )
 
-            result = self._run_publisher(root, package_directory, manifest, bin_directory, command_log)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(11, len(commands))
+        self.assertIn("followed an ambiguous attempt", result.stderr)
+        self.assertIn("same unchanged artifact in this invocation", result.stdout)
 
-            self.assertEqual(0, result.returncode, result.stderr)
-            commands = command_log.read_text(encoding="utf-8").splitlines()
-            self.assertEqual(10, len(commands))
-            primary = [command for command in commands if ".nupkg" in command and ".snupkg" not in command]
-            symbols = [command for command in commands if ".snupkg" in command]
-            self.assertTrue(all("--no-symbols" in command for command in primary))
-            self.assertTrue(all("--no-symbols" not in command for command in symbols))
-            self.assertIn("byte-identically recovered 10 artifacts", result.stdout)
+    def test_publisher_retries_transient_failure_then_succeeds(self) -> None:
+        result, commands = self._run_publisher_with_stub(
+            """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$HEXALITH_TEST_COMMAND_LOG"
+count="$(wc -l < "$HEXALITH_TEST_COMMAND_LOG")"
+if [ "$count" -eq 1 ]; then
+  echo '504 Gateway Timeout' >&2
+  exit 1
+fi
+echo 'push accepted'
+"""
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(11, len(commands))
+        primary = [command for command in commands if ".nupkg" in command and ".snupkg" not in command]
+        symbols = [command for command in commands if ".snupkg" in command]
+        self.assertTrue(all("--no-symbols" in command for command in primary))
+        self.assertTrue(all("--no-symbols" not in command for command in symbols))
+
+    def test_publisher_reports_retry_exhaustion_and_requires_new_patch(self) -> None:
+        result, commands = self._run_publisher_with_stub(
+            """#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" >> "$HEXALITH_TEST_COMMAND_LOG"
+echo '500 Internal Server Error' >&2
+exit 1
+"""
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(3, len(commands))
+        self.assertIn("Retry budget exhausted", result.stderr)
+        self.assertIn("new patch version", result.stderr)
 
     def test_publisher_rejects_changed_candidate_before_any_push(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -263,6 +316,174 @@ echo 'push accepted'
             self.assertNotEqual(0, result.returncode)
             self.assertIn("manifest is invalid", result.stderr)
             self.assertFalse(command_log.exists())
+
+    def test_post_publication_matching_tag_verifies_all_packages(self) -> None:
+        sha = "a" * 40
+        result, calls = self._run_publication_verifier({"v1.2.3-test.1": sha}, ["200"] * 5, sha)
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(5, calls)
+        for package_id in PACKAGE_IDS:
+            self.assertIn(f"Verified {package_id} {VERSION}", result.stdout)
+
+    def test_post_publication_unrelated_tag_is_a_successful_no_op(self) -> None:
+        result, calls = self._run_publication_verifier(
+            {"v1.2.3-test.1": "b" * 40},
+            [],
+            "a" * 40,
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(0, calls)
+        self.assertIn("no publication was warranted", result.stdout)
+
+    def test_post_publication_zero_tags_is_a_successful_no_op(self) -> None:
+        result, calls = self._run_publication_verifier({}, [], "a" * 40)
+
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(0, calls)
+        self.assertIn("no publication was warranted", result.stdout)
+
+    def test_post_publication_unresolvable_tag_fails_closed(self) -> None:
+        result, calls = self._run_publication_verifier(
+            {"v1.2.3-test.1": "unresolvable"},
+            [],
+            "a" * 40,
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(0, calls)
+        self.assertIn("could not be resolved", result.stderr)
+
+    def test_post_publication_multiple_matching_tags_fail(self) -> None:
+        sha = "a" * 40
+        result, calls = self._run_publication_verifier(
+            {"v1.2.3-test.1": sha, "v1.2.4": sha},
+            [],
+            sha,
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(0, calls)
+        self.assertIn("found 2", result.stderr)
+
+    def test_post_publication_names_missing_package(self) -> None:
+        sha = "a" * 40
+        result, calls = self._run_publication_verifier(
+            {"v1.2.3-test.1": sha},
+            ["200", "404", "200", "200", "200"],
+            sha,
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(5, calls)
+        self.assertIn(f"{PACKAGE_IDS[1]} {VERSION} (HTTP 404)", result.stderr)
+
+    def test_post_publication_reports_transport_error(self) -> None:
+        sha = "a" * 40
+        result, calls = self._run_publication_verifier(
+            {"v1.2.3-test.1": sha},
+            ["transport-error", "200", "200", "200", "200"],
+            sha,
+        )
+
+        self.assertNotEqual(0, result.returncode)
+        self.assertEqual(5, calls)
+        self.assertIn(f"{PACKAGE_IDS[0]} {VERSION} (transport error)", result.stderr)
+
+    def _run_publisher_with_stub(
+        self,
+        dotnet_stub: str,
+    ) -> tuple[subprocess.CompletedProcess[str], list[str]]:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        package_directory = self._write_candidate(root)
+        manifest = root / "release-packages.json"
+        write_manifest(manifest)
+        command_log = root / "dotnet.log"
+        bin_directory = root / "bin"
+        bin_directory.mkdir()
+        write_executable(bin_directory / "dotnet", dotnet_stub)
+
+        result = self._run_publisher(root, package_directory, manifest, bin_directory, command_log)
+        commands = command_log.read_text(encoding="utf-8").splitlines() if command_log.exists() else []
+        return result, commands
+
+    def _run_publication_verifier(
+        self,
+        tags: dict[str, str],
+        statuses: list[str],
+        dispatch_sha: str,
+    ) -> tuple[subprocess.CompletedProcess[str], int]:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        root = Path(temporary.name)
+        manifest = root / "tools" / "release-packages.json"
+        write_manifest(manifest)
+        bin_directory = root / "bin"
+        bin_directory.mkdir()
+        tag_file = root / "tags"
+        tag_file.write_text(
+            "".join(f"{tag} {sha}\n" for tag, sha in tags.items()),
+            encoding="utf-8",
+        )
+        count_file = root / "curl-count"
+        count_file.write_text("0", encoding="utf-8")
+        status_file = root / "curl-statuses"
+        status_file.write_text("\n".join(statuses) + ("\n" if statuses else ""), encoding="utf-8")
+        refs = json.dumps([{"ref": f"refs/tags/{tag}"} for tag in tags], separators=(",", ":"))
+        write_executable(
+            bin_directory / "gh",
+            f"""#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$*" == *matching-refs/tags/v* ]]; then
+  printf '%s\n' '{refs}'
+  exit 0
+fi
+tag="${{2##*/}}"
+sha="$(awk -v tag="$tag" '$1 == tag {{ print $2 }}' "$HEXALITH_TEST_TAGS")"
+if [ "$sha" = 'unresolvable' ] || [ -z "$sha" ]; then
+  exit 1
+fi
+printf '%s\n' "$sha"
+""",
+        )
+        write_executable(
+            bin_directory / "curl",
+            """#!/usr/bin/env bash
+set -euo pipefail
+count="$(cat "$HEXALITH_TEST_CURL_COUNT")"
+count=$((count + 1))
+printf '%s\n' "$count" > "$HEXALITH_TEST_CURL_COUNT"
+status="$(sed -n "${count}p" "$HEXALITH_TEST_CURL_STATUSES")"
+if [ "$status" = 'transport-error' ]; then
+  exit 7
+fi
+printf '%s' "$status"
+""",
+        )
+        environment = {
+            **os.environ,
+            "PATH": f"{bin_directory}{os.pathsep}{os.environ['PATH']}",
+            "DISPATCH_SHA": dispatch_sha,
+            "GH_TOKEN": "fixture-token",
+            "HEXALITH_RELEASE_VERIFY_ATTEMPT_LIMIT": "1",
+            "HEXALITH_RELEASE_VERIFY_RETRY_DELAY_SECONDS": "0",
+            "HEXALITH_TEST_CURL_COUNT": str(count_file),
+            "HEXALITH_TEST_CURL_STATUSES": str(status_file),
+            "HEXALITH_TEST_TAGS": str(tag_file),
+            "REPOSITORY": "Hexalith/Hexalith.Works",
+        }
+        result = subprocess.run(
+            ["bash", str(ROOT / "scripts" / "verify-release-publication.sh")],
+            cwd=root,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        return result, int(count_file.read_text(encoding="utf-8"))
 
     def _run_preflight(
         self,
@@ -379,6 +600,7 @@ printf '%s' "$status"
             **os.environ,
             "PATH": f"{bin_directory}{os.pathsep}{os.environ['PATH']}",
             "HEXALITH_RELEASE_PACKAGE_MANIFEST": str(manifest),
+            "HEXALITH_RELEASE_RETRY_DELAY_SECONDS": "0",
             "HEXALITH_TEST_COMMAND_LOG": str(command_log),
             "NUGET_API_KEY": "fixture-key",
         }

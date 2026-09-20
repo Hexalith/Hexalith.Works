@@ -98,6 +98,22 @@
       Code="HXW0001"
       Text="HexalithPolymorphicSerializationsFromSource must be exactly true or false when supplied; received '$(RequestedHexalithPolymorphicSerializationsFromSource)'." />
     <Error
+      Condition="'$(UseHexalithProjectReferences)' != 'true' and '$(UseHexalithProjectReferences)' != 'false'"
+      Code="HXW0001"
+      Text="The final UseHexalithProjectReferences value must be exactly true or false; received '$(UseHexalithProjectReferences)'." />
+    <Error
+      Condition="'$(UseNuGetDeps)' != 'true' and '$(UseNuGetDeps)' != 'false'"
+      Code="HXW0001"
+      Text="The final UseNuGetDeps value must be exactly true or false; received '$(UseNuGetDeps)'." />
+    <Error
+      Condition="'$(HexalithEventStoreFromSource)' != 'true' and '$(HexalithEventStoreFromSource)' != 'false'"
+      Code="HXW0001"
+      Text="The final HexalithEventStoreFromSource value must be exactly true or false; received '$(HexalithEventStoreFromSource)'." />
+    <Error
+      Condition="'$(HexalithPolymorphicSerializationsFromSource)' != 'true' and '$(HexalithPolymorphicSerializationsFromSource)' != 'false'"
+      Code="HXW0001"
+      Text="The final HexalithPolymorphicSerializationsFromSource value must be exactly true or false; received '$(HexalithPolymorphicSerializationsFromSource)'." />
+    <Error
       Condition="'$(UseHexalithProjectReferences)' == '$(UseNuGetDeps)'"
       Code="HXW0001"
       Text="UseHexalithProjectReferences and UseNuGetDeps must select exactly one dependency mode. Set UseHexalithProjectReferences=true and UseNuGetDeps=false for sibling-source Debug builds, or the inverse for package-mode Release builds." />

@@ -98,29 +98,13 @@ jobs:
     if: ${{ always() && needs.release.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # The publication freeze variable must be read in the same scope the publishing job used. Without this
-    # environment an environment-scoped HEXALITH_RELEASE_PUBLISH_ENABLED would publish through the release
-    # job while verification silently skipped and reported success.
+    # Keep post-publication evidence behind the same protected production boundary as publication. This job
+    # deliberately does not re-read mutable freeze state after the release job has started.
     environment: production
     permissions:
       contents: read
     steps:
-      - name: Resolve post-publication verification gate
-        id: publication-gate
-        shell: bash
-        env:
-          HEXALITH_RELEASE_PUBLISH_ENABLED: ${{ vars.HEXALITH_RELEASE_PUBLISH_ENABLED }}
-        run: |
-          set -euo pipefail
-          if [ "${HEXALITH_RELEASE_PUBLISH_ENABLED-}" = "true" ]; then
-            echo "publish-enabled=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "publish-enabled=false" >> "$GITHUB_OUTPUT"
-          echo "::notice title=Publication verification skipped::Release publication is frozen for this repository."
-
       - name: Checkout exact dispatched source
-        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.sha }}
@@ -128,109 +112,11 @@ jobs:
           persist-credentials: false
           submodules: false
 
-      - name: Resolve the exact release version for the dispatched source
-        id: release-version
-        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' }}
+      - name: Verify release tag and exact package publication
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           DISPATCH_SHA: ${{ github.sha }}
         run: |
-          set -euo pipefail
-          # semantic-release creates and pushes its Git tag before invoking publish plugins. The NuGet
-          # publisher runs before the GitHub release plugin, so a partial NuGet failure can leave a tag but
-          # no GitHub Release. Resolve tags directly so this job still verifies and names every missing
-          # package after that failure boundary.
-          tags="$(gh api --paginate "repos/${REPOSITORY}/git/matching-refs/tags/v?per_page=100" \
-            | jq -s '[.[][] | .ref | sub("^refs/tags/"; "")]')"
-          matching_versions=''
-          while IFS= read -r tag; do
-            [ -n "$tag" ] || continue
-            # Accept the same optional prerelease suffix that pack-release-packages.py and
-            # validate-publication-preflight.sh accept, so all three agree on what a release version is.
-            [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]] || continue
-            encoded_tag="$(jq -rn --arg tag "$tag" '$tag | @uri')"
-            # A tag deleted or rewritten between listing and lookup must not abort verification after the
-            # packages are already live: skip the unresolvable tag and keep checking the rest.
-            if ! commit_sha="$(gh api "repos/${REPOSITORY}/commits/${encoded_tag}" --jq '.sha' 2>/dev/null)"; then
-              echo "::warning title=Unresolvable release tag::Skipping '${tag}', which could not be resolved to a commit."
-              continue
-            fi
-            if [ "$commit_sha" = "$DISPATCH_SHA" ]; then
-              matching_versions="${matching_versions}${tag#v}"$'\n'
-            fi
-          done < <(printf '%s\n' "$tags" | jq -r '.[]')
-
-          match_count="$(printf '%s' "$matching_versions" | sed '/^$/d' | wc -l | tr -d ' ')"
-          if [ "$match_count" = "0" ]; then
-            # Semantic Release correctly publishes nothing when no commit since the last release warrants a
-            # version bump. That is a successful no-op, not a failed release, so there is nothing to verify.
-            echo "release-warranted=false" >> "$GITHUB_OUTPUT"
-            echo "::notice title=No release warranted::No semantic release was produced for ${DISPATCH_SHA}; skipping package verification."
-            exit 0
-          fi
-          if [ "$match_count" != "1" ]; then
-            echo "Expected at most one non-draft semantic release for source ${DISPATCH_SHA}; found ${match_count}." >&2
-            exit 1
-          fi
-          version="$(printf '%s' "$matching_versions" | sed '/^$/d')"
-          echo "release-warranted=true" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-
-      - name: Require all five exact NuGet versions
-        if: ${{ steps.publication-gate.outputs.publish-enabled == 'true' && steps.release-version.outputs.release-warranted == 'true' }}
-        shell: bash
-        env:
-          VERSION: ${{ steps.release-version.outputs.version }}
-        run: |
-          set -euo pipefail
-          package_ids_text="$(jq -er '
-            .packages
-            | if type == "array" and length == 5 then . else error("expected five packages") end
-            | map(.id | if type == "string" and test("^[A-Za-z0-9][A-Za-z0-9._-]*$") then . else error("invalid package id") end)
-            | if (unique | length) == 5 then .[] else error("duplicate package ids") end
-          ' tools/release-packages.json)" || {
-            echo "The release package manifest is invalid." >&2
-            exit 1
-          }
-          mapfile -t package_ids <<< "$package_ids_text"
-          if [ "${#package_ids[@]}" -ne 5 ]; then
-            echo "The release package manifest must contain exactly five unique package IDs." >&2
-            exit 1
-          fi
-
-          # Bound the whole poll by wall clock, well inside the job's timeout-minutes, so a genuinely
-          # missing package always reaches the report below instead of being killed mid-retry by a
-          # generic job timeout that says nothing about which package was absent.
-          poll_deadline=$((SECONDS + 420))
-          missing=()
-          while true; do
-            missing=()
-            for package_id in "${package_ids[@]}"; do
-              normalized_id="$(printf '%s' "$package_id" | tr '[:upper:]' '[:lower:]')"
-              normalized_version="$(printf '%s' "$VERSION" | tr '[:upper:]' '[:lower:]')"
-              package_url="https://api.nuget.org/v3-flatcontainer/${normalized_id}/${normalized_version}/${normalized_id}.${normalized_version}.nupkg"
-              if ! status="$(curl --silent --show-error --location --max-time 15 \
-                --retry 2 --retry-connrefused --retry-all-errors \
-                --output /dev/null --write-out '%{http_code}' "$package_url")"; then
-                missing+=("${package_id} ${VERSION} (transport error)")
-                continue
-              fi
-              if [ "$status" != "200" ]; then
-                missing+=("${package_id} ${VERSION} (HTTP ${status})")
-              fi
-            done
-            [ "${#missing[@]}" -eq 0 ] && break
-            [ "$SECONDS" -lt "$poll_deadline" ] || break
-            sleep 15
-          done
-
-          if [ "${#missing[@]}" -ne 0 ]; then
-            echo "Release publication is incomplete; missing exact NuGet packages:" >&2
-            printf '  - %s\n' "${missing[@]}" >&2
-            exit 1
-          fi
-          for package_id in "${package_ids[@]}"; do
-            printf 'Verified %s %s\n' "$package_id" "$VERSION"
-          done
+          bash scripts/verify-release-publication.sh

@@ -90,6 +90,7 @@ public sealed class BuildConfigurationTests
 
     [Theory]
     [InlineData("maybe", "true", "", "")]
+    [InlineData("false", "maybe", "", "")]
     [InlineData("true", "true", "", "")]
     [InlineData("false", "false", "", "")]
     [InlineData("false", "true", "true", "")]
@@ -137,6 +138,66 @@ public sealed class BuildConfigurationTests
 
         process.ExitCode.ShouldNotBe(0, "Every invalid or contradictory dependency mode must fail closed.");
         (standardOutput + standardError).ShouldContain("HXW0001", Case.Sensitive);
+    }
+
+    [Theory]
+    [InlineData("UseHexalithProjectReferences")]
+    [InlineData("UseNuGetDeps")]
+    [InlineData("HexalithEventStoreFromSource")]
+    [InlineData("HexalithPolymorphicSerializationsFromSource")]
+    public void P0_NonBooleanFinalDependencyModesFailAfterProjectEvaluation(string propertyName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+
+        string root = RepositoryRoot.Locate();
+        DirectoryInfo temporary = Directory.CreateTempSubdirectory("Hexalith.Works.BuildConfigurationTests-");
+        try
+        {
+            string project = Path.Combine(temporary.FullName, "FinalMode.proj");
+            new XDocument(
+                new XElement(
+                    "Project",
+                    new XElement(
+                        "Import",
+                        new XAttribute("Project", Path.Combine(root, "Directory.Build.props"))),
+                    new XElement("PropertyGroup", new XElement(propertyName, "maybe"))))
+                .Save(project);
+
+            (int exitCode, string output) = RunMsBuildTarget(
+                root,
+                project,
+                "-p:Configuration=Release");
+
+            exitCode.ShouldNotBe(0, $"A project-assigned non-boolean final {propertyName} must fail closed.");
+            output.ShouldContain("HXW0001", Case.Sensitive);
+            output.ShouldContain($"final {propertyName}", Case.Insensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporary.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void P0_ConfigurationFreeDependencyModeDefaultsToPackagesAndWarns()
+    {
+        string root = RepositoryRoot.Locate();
+        string project = Path.Combine(root, "src", "Hexalith.Works.Contracts", "Hexalith.Works.Contracts.csproj");
+        (int exitCode, string output) = RunMsBuildTarget(root, project);
+
+        exitCode.ShouldBe(0, output);
+        output.ShouldContain("HXW0002", Case.Sensitive);
+
+        bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
+            project,
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            out MsBuildProjectSnapshot? snapshot,
+            out string diagnostic);
+
+        evaluated.ShouldBeTrue(diagnostic);
+        snapshot.ShouldNotBeNull().PropertyValue("UseHexalithProjectReferences").ShouldBe("false");
+        snapshot.PropertyValue("UseNuGetDeps").ShouldBe("true");
+        snapshot.PropertyValue("HexalithDependencyModeDefaulted").ShouldBe("true");
     }
 
     [Fact]
@@ -215,6 +276,33 @@ public sealed class BuildConfigurationTests
         => document.Descendants()
             .SingleOrDefault(element => element.Name.LocalName == name)
             ?.Value;
+
+    private static (int ExitCode, string Output) RunMsBuildTarget(
+        string root,
+        string project,
+        params string[] arguments)
+    {
+        var start = new ProcessStartInfo("dotnet")
+        {
+            WorkingDirectory = root,
+            RedirectStandardError = true,
+            RedirectStandardOutput = true,
+        };
+        start.ArgumentList.Add("msbuild");
+        start.ArgumentList.Add(project);
+        start.ArgumentList.Add("-nologo");
+        start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
+        foreach (string argument in arguments)
+        {
+            start.ArgumentList.Add(argument);
+        }
+
+        using Process process = Process.Start(start).ShouldNotBeNull();
+        string standardOutput = process.StandardOutput.ReadToEnd();
+        string standardError = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        return (process.ExitCode, standardOutput + standardError);
+    }
 
     private static string[] RootCSharpAnalyzerSeverities(string editorConfig, string analyzerId)
     {

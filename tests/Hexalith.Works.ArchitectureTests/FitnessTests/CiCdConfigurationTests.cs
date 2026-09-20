@@ -29,6 +29,7 @@ public sealed class CiCdConfigurationTests
             Case.Sensitive);
         workflow.ShouldContain("run-consumer-validation: true", Case.Sensitive);
         workflow.ShouldContain("test-platform: microsoft-testing-platform", Case.Sensitive);
+        workflow.ShouldContain("build-timeout-minutes: 60", Case.Sensitive);
         workflow.ShouldContain("actionlint/cmd/actionlint@v1.7.12", Case.Sensitive);
         workflow.ShouldContain("pipx install ruff==0.13.2", Case.Sensitive);
         workflow.ShouldContain("python3 -m unittest discover -s scripts/tests", Case.Sensitive);
@@ -60,6 +61,27 @@ public sealed class CiCdConfigurationTests
         declaredProjects.Distinct(StringComparer.Ordinal).Count().ShouldBe(
             declaredProjects.Count,
             "No test project may appear in more than one blocking tier.");
+    }
+
+    [Fact]
+    public void P0_EveryBlockingProjectCopiesTheFailOnSkipRunnerConfiguration()
+    {
+        string root = RepositoryRoot.Locate();
+        using JsonDocument runnerConfiguration = JsonDocument.Parse(Read(root, "xunit.runner.json"));
+        runnerConfiguration.RootElement.GetProperty("failSkips").GetBoolean().ShouldBeTrue();
+
+        foreach (string project in new[]
+        {
+            "tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj",
+            "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+            "tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj",
+            "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        })
+        {
+            string projectFile = Read(root, project);
+            projectFile.ShouldContain("xunit.runner.json", Case.Sensitive);
+            projectFile.ShouldContain("CopyToOutputDirectory=\"PreserveNewest\"", Case.Sensitive);
+        }
     }
 
     /// <summary>
@@ -150,8 +172,10 @@ public sealed class CiCdConfigurationTests
         publisherCode.ShouldContain("release-artifacts.sha256", Case.Sensitive);
         publisherCode.ShouldContain("sha256sum --check --strict", Case.Sensitive);
         publisherCode.ShouldContain("--no-symbols", Case.Sensitive);
-        publisherCode.ShouldContain("*\"409\"*", Case.Sensitive);
-        publisherCode.ShouldContain("*\"Conflict\"*", Case.Sensitive);
+        publisherCode.ShouldContain("max_attempts=3", Case.Sensitive);
+        publisherCode.ShouldContain("ambiguous_attempt", Case.Sensitive);
+        publisherCode.ShouldContain("First-attempt 409", Case.Sensitive);
+        publisherCode.ShouldNotContain("HEXALITH_RELEASE_NUGET_SOURCE", Case.Sensitive);
         preflight.ShouldContain("collisions=()", Case.Sensitive);
         preflight.ShouldContain("for package_id in \"${package_ids[@]}\"", Case.Sensitive);
         preflight.ShouldContain("200) collisions+=", Case.Sensitive);
@@ -164,16 +188,35 @@ public sealed class CiCdConfigurationTests
     {
         string root = RepositoryRoot.Locate();
         string workflow = Read(root, ".github/workflows/release.yml");
+        string verifier = Read(root, "scripts/verify-release-publication.sh");
+        string regressionTests = Read(root, "scripts/tests/test_release_tooling.py");
 
         workflow.ShouldContain("needs: release", Case.Sensitive);
         workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
-        workflow.ShouldContain("git/matching-refs/tags/v", Case.Sensitive);
-        workflow.ShouldNotContain("/releases?per_page=100", Case.Sensitive);
-        workflow.ShouldContain("length == 5", Case.Sensitive);
-        workflow.ShouldContain("missing+=(\"${package_id} ${VERSION} (HTTP ${status})\")", Case.Sensitive);
-        workflow.ShouldContain("missing+=(\"${package_id} ${VERSION} (transport error)\")", Case.Sensitive);
-        workflow.ShouldContain("Release publication is incomplete; missing exact NuGet packages", Case.Sensitive);
-        workflow.ShouldContain("if [ \"${#missing[@]}\" -ne 0 ]", Case.Sensitive);
+        workflow.ShouldContain("bash scripts/verify-release-publication.sh", Case.Sensitive);
+        workflow.ShouldNotContain("HEXALITH_RELEASE_PUBLISH_ENABLED", Case.Sensitive);
+        verifier.ShouldContain("git/matching-refs/tags/v", Case.Sensitive);
+        verifier.ShouldNotContain("/releases?per_page=100", Case.Sensitive);
+        verifier.ShouldContain("length == $expected", Case.Sensitive);
+        verifier.ShouldContain("missing+=(\"${package_id} ${version} (HTTP ${status})\")", Case.Sensitive);
+        verifier.ShouldContain("missing+=(\"${package_id} ${version} (transport error)\")", Case.Sensitive);
+        verifier.ShouldContain("Release publication is incomplete; missing exact NuGet packages", Case.Sensitive);
+        verifier.ShouldContain("if [ \"${#missing[@]}\" -ne 0 ]", Case.Sensitive);
+        verifier.ShouldContain("could not be resolved; exact publication verification cannot continue", Case.Sensitive);
+
+        foreach (string executableBranch in new[]
+        {
+            "test_post_publication_matching_tag_verifies_all_packages",
+            "test_post_publication_unrelated_tag_is_a_successful_no_op",
+            "test_post_publication_zero_tags_is_a_successful_no_op",
+            "test_post_publication_unresolvable_tag_fails_closed",
+            "test_post_publication_multiple_matching_tags_fail",
+            "test_post_publication_names_missing_package",
+            "test_post_publication_reports_transport_error",
+        })
+        {
+            regressionTests.ShouldContain(executableBranch, Case.Sensitive);
+        }
     }
 
     [Fact]
@@ -237,12 +280,18 @@ public sealed class CiCdConfigurationTests
         string root = RepositoryRoot.Locate();
         string packer = Read(root, "scripts/pack-release-packages.py");
         string validator = Read(root, "scripts/validate-nuget-packages.py");
+        string consumerValidator = Read(root, "scripts/validate-consumer-package-references.py");
 
         packer.ShouldNotContain("\"--no-build\"", Case.Sensitive);
         packer.ShouldContain("f\"-p:Version={args.version}\"", Case.Sensitive);
         packer.ShouldContain("release-artifacts.sha256", Case.Sensitive);
         validator.ShouldContain("dependency id/version mismatch", Case.Sensitive);
-        validator.ShouldContain("does not carry package version", Case.Sensitive);
+        validator.ShouldContain("non-empty id and version", Case.Sensitive);
+        validator.ShouldNotContain("version_bytes", Case.Sensitive);
+        consumerValidator.ShouldContain("AssemblyInformationalVersionAttribute", Case.Sensitive);
+        consumerValidator.ShouldContain("dotnet", Case.Sensitive);
+        consumerValidator.ShouldContain("run", Case.Sensitive);
+        consumerValidator.ShouldContain("--no-build", Case.Sensitive);
     }
 
     [Fact]

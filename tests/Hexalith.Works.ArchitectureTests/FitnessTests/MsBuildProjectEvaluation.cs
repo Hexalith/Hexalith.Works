@@ -18,6 +18,7 @@ internal static class MsBuildProjectEvaluation
     private static readonly string[] _governedPropertyNames =
     [
         "Configuration",
+        "HexalithDependencyModeDefaulted",
         "HexalithEventStoreRoot",
         "HexalithPolymorphicSerializationsRoot",
         "HexalithTenantsRoot",

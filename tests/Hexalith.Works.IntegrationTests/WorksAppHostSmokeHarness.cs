@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -109,9 +110,11 @@ internal static class WorksAppHostSmokeHarness
             .ConfigureAwait(true);
 
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
-        DistributedApplication app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
+        DistributedApplication? app = null;
+        Exception? primaryException = null;
         try
         {
+            app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
             try
             {
                 await app.StartAsync(startupCts.Token).ConfigureAwait(true);
@@ -177,36 +180,69 @@ internal static class WorksAppHostSmokeHarness
                     ex);
             }
         }
-        finally
+        catch (Exception exception)
+        {
+            primaryException = exception;
+        }
+
+        var cleanupFailures = new List<Exception>();
+        if (app is not null)
         {
             try
             {
                 await app.DisposeAsync().ConfigureAwait(true);
             }
-            finally
+            catch (Exception exception)
             {
-                await builder.DisposeAsync().ConfigureAwait(true);
-
-                // Dispose returning does not guarantee DCP has released its fixed sockets or removed the Scheduler
-                // container that owns the persistent volume, so settle both before the next restart begins. This
-                // runs in a finally block, so it must never throw:
-                // a timeout (or a cancelled caller token) here would replace the body's real assertion failure
-                // with a teardown error and hide the actual defect. Use an independent, non-cancelled token so a
-                // cancelled test still drains the resources, and report a holdover as a diagnostic instead.
-                using var teardownCts = new CancellationTokenSource(ControlPlaneReleaseWait + TimeSpan.FromSeconds(15));
-                try
-                {
-                    await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token).ConfigureAwait(true);
-                }
-                catch (Exception exception) when (exception is TimeoutException
-                    or OperationCanceledException
-                    or InvalidOperationException)
-                {
-                    TestContext.Current.SendDiagnosticMessage(
-                        "Live AppHost teardown left control-plane resources occupied: {0}",
-                        exception.Message);
-                }
+                cleanupFailures.Add(new InvalidOperationException("[teardown] Distributed application disposal failed.", exception));
             }
+        }
+
+        try
+        {
+            await builder.DisposeAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            cleanupFailures.Add(new InvalidOperationException("[teardown] AppHost testing builder disposal failed.", exception));
+        }
+
+        // Dispose returning does not guarantee DCP has released its fixed sockets or removed the Scheduler
+        // container that owns the persistent volume. Settle both with an independent token so cancellation of
+        // the test body cannot prevent cleanup. A clean body must fail when cleanup remains occupied; when the
+        // body already failed, retain that primary exception and emit every cleanup failure as diagnostics.
+        using (var teardownCts = new CancellationTokenSource(ControlPlaneReleaseWait + TimeSpan.FromSeconds(15)))
+        {
+            try
+            {
+                await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token)
+                    .ConfigureAwait(true);
+            }
+            catch (Exception exception)
+            {
+                cleanupFailures.Add(new InvalidOperationException(
+                    "[teardown] AppHost control-plane resources did not settle.",
+                    exception));
+            }
+        }
+
+        if (primaryException is not null)
+        {
+            foreach (Exception cleanupFailure in cleanupFailures)
+            {
+                TestContext.Current.SendDiagnosticMessage(
+                    "Live AppHost cleanup also failed after the primary acceptance failure: {0}",
+                    cleanupFailure);
+            }
+
+            ExceptionDispatchInfo.Capture(primaryException).Throw();
+        }
+
+        if (cleanupFailures.Count > 0)
+        {
+            throw new AggregateException(
+                "[teardown] The live AppHost body passed, but cleanup did not settle completely.",
+                cleanupFailures);
         }
     }
 
@@ -458,7 +494,7 @@ internal static class WorksAppHostSmokeHarness
             var occupied = new List<string>();
             foreach ((int port, string name) in ControlPlanePorts)
             {
-                if (await IsPortReachableAsync(port, cancellationToken).ConfigureAwait(false))
+                if (!IsPortAvailableForExclusiveBind(port))
                 {
                     occupied.Add($"{name} on localhost:{port}");
                 }
@@ -517,6 +553,26 @@ internal static class WorksAppHostSmokeHarness
 
         return output
             .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
+    private static bool IsPortAvailableForExclusiveBind(int port)
+    {
+        TcpListener? listener = null;
+        try
+        {
+            listener = new TcpListener(IPAddress.Loopback, port);
+            listener.Server.ExclusiveAddressUse = true;
+            listener.Start();
+            return true;
+        }
+        catch (SocketException)
+        {
+            return false;
+        }
+        finally
+        {
+            listener?.Stop();
+        }
     }
 
     private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)
