@@ -3390,12 +3390,13 @@ applies on the current checkout. No Tier-3 smoke lane ran and no new live eviden
 
 ## Story 4.8 File List increment review close-out — 2026-09-20
 
-The shared AppHost settling boundary now distinguishes an unavailable IPv6 loopback family from an occupied
-port, includes stopped containers when looking for owners of the persistent Scheduler volume, and keeps Docker
-probe start failures and timeouts inside the same monotonic bounded retry as port ownership. Timed-out Docker
-children are terminated with a bounded exit wait and their redirected reads are observed. Six deterministic
-harness facts pin the production IPv6 bind classification, complete ordered Docker command shape, transient
-probe recovery, exhausted diagnostics, the real timeout/termination lifecycle, and expected pipe-close cleanup.
+The shared AppHost settling boundary distinguishes an unavailable IPv6 loopback family from an occupied port,
+includes stopped containers when looking for owners of the persistent Scheduler volume, and keeps Docker probe
+failures inside the same monotonic bounded retry as port ownership. Timed-out Docker children receive two bounded
+termination attempts, redirected reads are observed, and the real process adapter terminates a live child during
+disposal. The focused harness class now has 33 facts (27 added by this close-out) covering production listener
+configuration and real bind occupancy, command redirection, output parsing, non-zero exits, pipe faults, ignored
+and throwing kills, stubborn termination, exact caller cancellation, and adapter disposal.
 
 The CI/CD routing item now names only the cascade and command-pipeline live starters that retain separate teardown
 paths. The two spec-9 ledger links are repository-relative, DW-56 uses a stable heading citation, and DW-58 is
@@ -3403,17 +3404,19 @@ narrowed to the surviving command-pipeline probe. The parent story's approved de
 `Aspire.AppHost.Sdk` 13.5.4 is recorded as an explicit deviation from spec-9's frozen dependency boundary.
 
 ```text
-DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false -v minimal
+TMPDIR=/var/tmp/story48-root/tmp DOTNET_CLI_HOME=/var/tmp/story48-root/dotnet \
+  dotnet build Hexalith.Works.slnx -c Release -m:1 -p:NuGetAudit=false -v minimal
 # Build succeeded: 0 warnings, 0 errors
 
 tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
   -class "*WorksAppHostSmokeHarnessTests"
-# 6/6 passed, 0 skipped
+# 33/33 passed, 0 skipped
 
-tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+TMPDIR=/var/tmp/story48-root/tmp \
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
   -class 'Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests' \
   -class 'Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests'
-# 4/4 passed, 0 skipped, 1023.751s
+# 4/4 passed, 0 skipped, 1020.742s
 
 tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
 # 568/568 passed, 0 skipped
@@ -3421,17 +3424,23 @@ tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
 tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
 # 3/3 passed, 0 skipped; each property completed 100 FsCheck cases
 
-tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
-# 498/498 passed, 0 skipped
+TMPDIR=/var/tmp/story48-root/tmp \
+  tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 526/526 passed, 0 skipped
 
-tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+TMPDIR=/var/tmp/story48-root/tmp \
+  tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
 # 268/268 passed, 0 skipped
 
-aspire describe --format json
+TMPDIR=/var/tmp/story48-root/tmp aspire describe --format Json --non-interactive
 # No running AppHost found after the Tier-3 runner completed
 ```
 
-The Tier-3 facts reached the healthy AppHost-owned Sentry, placement, Scheduler, EventStore, and Works topology
-and passed overdue recovery, future-reminder recovery, steady-state Scheduler delivery, and mTLS authorization.
-This is current live evidence rather than a skip or inferred pass. No submodule pointer or dependency pin changed
-in this close-out.
+The earlier **498** serial total was stale arithmetic: the previous 493-test baseline plus six facts implied 499,
+not 498. This close-out records the final runner-observed **526** total after growing the focused harness class from
+6 to 33 facts. An intermediate pre-final-review aggregate passed all three reminder facts but its mTLS fixture
+reported a transient EventStore exit 1; an immediate unchanged-tree retry passed 1/1. After the final review patches,
+the authoritative reviewed tree passed overdue recovery, future-reminder recovery, steady-state Scheduler delivery,
+and mTLS authorization together at **4/4** in 1020.742 seconds. `aspire describe --format Json --non-interactive`
+reported no running AppHost afterward. No submodule pointer or dependency pin changed in this close-out. The shared
+`/tmp` inode ceiling remained exhausted, so final verification used `/var/tmp/story48-root`.

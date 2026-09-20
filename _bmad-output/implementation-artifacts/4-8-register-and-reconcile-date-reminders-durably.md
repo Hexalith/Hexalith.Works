@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: review
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -926,6 +926,19 @@ _Docs_
 **Sprint tracking**
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` (2026-09-05: normalized line endings, no content change)
 
+**2026-09-20 File List close-out review patches**
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs` (bounded two-attempt termination,
+  redirected-read classification, production exclusive-bind configuration seam)
+- `tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs` (bounded disposal that terminates a live child)
+- `tests/Hexalith.Works.IntegrationTests/SchedulerVolumeProbeCleanupException.cs` (non-retryable unconfirmed-child
+  cleanup diagnostic)
+- `tests/Hexalith.Works.IntegrationTests/HangingSchedulerVolumeProbe.cs` (new standalone configurable lifecycle fake)
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs` (33 focused lifecycle/bind facts)
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md`
+- `_bmad-output/implementation-artifacts/deferred-work.md` (four canonical duplicate cross-links)
+- `_bmad-output/implementation-artifacts/tests/test-summary.md` and
+  `_bmad-output/implementation-artifacts/sprint-status.yaml` (observed totals and review status)
+
 **Out-of-scope pre-existing build break fixed while validating (2026-09-05, not Story 4.8 functionality):**
 - `src/Hexalith.Works.Projections/Strategies/WorkItemRollUpPayloadDescriptor.cs` (fixed CS0177: `TryResolve`'s
   `&&` short-circuit expression body never assigned `out descriptor` on the false branch)
@@ -935,6 +948,13 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-20 — Closed the fifteen File List close-out review patches: Docker probe cleanup now makes two bounded
+  termination attempts, classifies supported process/pipe failures, and protects adapter disposal; production
+  listener settings and every reviewed lifecycle/occupancy branch are exercised by 33 focused facts. Observed
+  gates passed: build 0 warnings/errors; Integration 526, Unit 568, Property 3, Architecture 268. The final reviewed
+  tree passed the live reminder/mTLS aggregate 4/4 in 1020.742s with zero skips, and no AppHost remained afterward.
+  Story 4.8 and sprint tracking returned to `review`.
 
 - 2026-09-20 — Closed all eight File List increment review patches: reran the live Tier-3 reminder/mTLS lane,
   hardened the shared IPv6 and Docker occupancy probes with deterministic coverage, corrected ledger paths and
@@ -1401,21 +1421,21 @@ _Scope: `28724f2...HEAD` (HEAD `776b869`) filtered to Story 4.8 File List — 17
 
 _Scope: `776b869...HEAD` (HEAD `059e9a0`) — unreviewed File List increment close-out. 9 files, +716/−63, 1011 diff lines. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 23 raw findings triaged to 0 decision, 15 patch, 1 defer, 3 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] Story frontmatter is `status: done` while the body, Change Log, and sprint tracking all return Story 4.8 to `review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
-- [ ] [Review][Patch] Timed-out Docker probe facts do not fire the termination wait: `Kill` sets `HasExited`, so the second `WaitForExitAsync` returns immediately and a child that ignores `Kill` can hang occupancy [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:160]
-- [ ] [Review][Patch] `Win32Exception` / `NotSupportedException` from `Kill` have no throwing fake, so deleting the catch still leaves the timeout facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:658]
-- [ ] [Review][Patch] `Process.Kill(entireProcessTree: true)` can throw `AggregateException`, which escapes the termination catch and aborts resource settling instead of becoming a retryable `InvalidOperationException` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:650]
-- [ ] [Review][Patch] Successful `WaitForExitAsync` plus cancelled redirected reads is untested, so moving those awaits back out of the probe-CTS `try` would leak `OperationCanceledException` into live start/teardown [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:631]
-- [ ] [Review][Patch] After the termination wait expires the code does not `Kill` again, and `ProcessSchedulerVolumeProbe.Dispose` does not terminate a live child, so hung `docker` CLIs can accumulate across the 60s settle loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:672]
-- [ ] [Review][Patch] A successful process exit whose redirected read then throws `IOException` or `ObjectDisposedException` escapes as an unclassified exception and aborts occupancy retry [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:633]
-- [ ] [Review][Patch] The IPv6 facts never call `BindPortExclusively`, so deleting `DualMode = false`, `ExclusiveAddressUse`, or `listener.Start()` still leaves all six harness facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:16]
-- [ ] [Review][Patch] `Scheduler_volume_probe_includes_stopped_containers` pins only `FileName` and `ArgumentList`, not `RedirectStandardOutput` / `RedirectStandardError` / `UseShellExecute = false` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:49]
-- [ ] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no success-path fact (empty owners, parsed `{{.ID}} {{.Names}}` lines, or non-zero Docker exit → `InvalidOperationException`) [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:636]
-- [ ] [Review][Patch] Close-out arithmetic does not add up: spec-9 recorded serial non-smoke Integration **493/493**, this increment adds six harness facts and records **498/498** (493+6=499) [_bmad-output/implementation-artifacts/tests/test-summary.md:3424]
-- [ ] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no caller-cancellation fact, so the cleanup-then-`throw;` path can regress into a classified `TimeoutException` while hanging-probe tests stay green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:678]
-- [ ] [Review][Patch] New `source_spec` rows restate already-open unpark, fail-fast starvation, due-now 4603, and in-tenant cancellation gaps without linking the earlier ledger entries [_bmad-output/implementation-artifacts/deferred-work.md:967]
-- [ ] [Review][Patch] `HangingSchedulerVolumeProbe` is a second type in `WorksAppHostSmokeHarnessTests.cs` after this increment extracted the other probe types to one-file-per-type [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:144]
-- [ ] [Review][Patch] Control-plane wait facts never mark a port occupied, so deleting the port loop from the new injectable wait still leaves both facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:67]
+- [x] [Review][Patch] Story frontmatter is `status: done` while the body, Change Log, and sprint tracking all return Story 4.8 to `review` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3] — resolved 2026-09-20: frontmatter, body, Change Log, and sprint tracking now all say `review`.
+- [x] [Review][Patch] Timed-out Docker probe facts do not fire the termination wait: `Kill` sets `HasExited`, so the second `WaitForExitAsync` returns immediately and a child that ignores `Kill` can hang occupancy [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:160] — resolved 2026-09-20: the configurable fake can ignore the first kill; the focused fact proves a second bounded wait and termination attempt.
+- [x] [Review][Patch] `Win32Exception` / `NotSupportedException` from `Kill` have no throwing fake, so deleting the catch still leaves the timeout facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:658] — resolved 2026-09-20: the fake injects both failures and the focused theory verifies classified cleanup failure.
+- [x] [Review][Patch] `Process.Kill(entireProcessTree: true)` can throw `AggregateException`, which escapes the termination catch and aborts resource settling instead of becoming a retryable `InvalidOperationException` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:650] — resolved 2026-09-20: both harness and adapter cleanup classify `AggregateException`; the injected regression passes.
+- [x] [Review][Patch] Successful `WaitForExitAsync` plus cancelled redirected reads is untested, so moving those awaits back out of the probe-CTS `try` would leak `OperationCanceledException` into live start/teardown [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:631] — resolved 2026-09-20: the nominal-exit/cancelled-read fact preserves the bounded probe timeout and observes both reads.
+- [x] [Review][Patch] After the termination wait expires the code does not `Kill` again, and `ProcessSchedulerVolumeProbe.Dispose` does not terminate a live child, so hung `docker` CLIs can accumulate across the 60s settle loop [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:672] — resolved 2026-09-20: cleanup performs a final kill/wait pair, adapter disposal repeats bounded termination, and a real child-process fact proves disposal exits it.
+- [x] [Review][Patch] A successful process exit whose redirected read then throws `IOException` or `ObjectDisposedException` escapes as an unclassified exception and aborts occupancy retry [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:633] — resolved 2026-09-20: stdout and stderr fault regressions both surface retryable `InvalidOperationException` diagnostics.
+- [x] [Review][Patch] The IPv6 facts never call `BindPortExclusively`, so deleting `DualMode = false`, `ExclusiveAddressUse`, or `listener.Start()` still leaves all six harness facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:16] — resolved 2026-09-20: a deliberately misconfigured real listener is passed through the production configuration seam, and a genuinely occupied port exercises `Start()`.
+- [x] [Review][Patch] `Scheduler_volume_probe_includes_stopped_containers` pins only `FileName` and `ArgumentList`, not `RedirectStandardOutput` / `RedirectStandardError` / `UseShellExecute = false` [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:49] — resolved 2026-09-20: command redirection, shell execution, no-window, and ordered arguments are all pinned.
+- [x] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no success-path fact (empty owners, parsed `{{.ID}} {{.Names}}` lines, or non-zero Docker exit → `InvalidOperationException`) [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:636] — resolved 2026-09-20: empty output, trimmed line parsing, and non-zero exit details have direct facts.
+- [x] [Review][Patch] Close-out arithmetic does not add up: spec-9 recorded serial non-smoke Integration **493/493**, this increment adds six harness facts and records **498/498** (493+6=499) [_bmad-output/implementation-artifacts/tests/test-summary.md:3424] — resolved 2026-09-20: the final reviewed binary was observed at **526/526**; the summary records that total rather than deriving it from stale arithmetic.
+- [x] [Review][Patch] `RunSchedulerVolumeProbeAsync` has no caller-cancellation fact, so the cleanup-then-`throw;` path can regress into a classified `TimeoutException` while hanging-probe tests stay green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:678] — resolved 2026-09-20: exact caller-token propagation is asserted after bounded cleanup and child termination.
+- [x] [Review][Patch] New `source_spec` rows restate already-open unpark, fail-fast starvation, due-now 4603, and in-tenant cancellation gaps without linking the earlier ledger entries [_bmad-output/implementation-artifacts/deferred-work.md:967] — resolved 2026-09-20: all four later rows retain append-only history and now link their earlier canonical entries.
+- [x] [Review][Patch] `HangingSchedulerVolumeProbe` is a second type in `WorksAppHostSmokeHarnessTests.cs` after this increment extracted the other probe types to one-file-per-type [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:144] — resolved 2026-09-20: the fake is now the sole type in `HangingSchedulerVolumeProbe.cs`.
+- [x] [Review][Patch] Control-plane wait facts never mark a port occupied, so deleting the port loop from the new injectable wait still leaves both facts green [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs:67] — resolved 2026-09-20: deterministic retry and exhausted-budget facts make `127.0.0.1:50001` unavailable and pin the resource/address/port diagnostic.
 
 - [x] [Review][Defer] spec-9 Code Map still cites `deferred-work.md:967`, which this increment's ledger append retargeted onto the new unpark `source_spec` [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md:43] — deferred: fix edits another spec.
 

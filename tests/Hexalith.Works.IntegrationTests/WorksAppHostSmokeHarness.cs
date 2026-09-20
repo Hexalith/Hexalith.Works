@@ -559,6 +559,12 @@ internal static class WorksAppHostSmokeHarness
             {
                 throw;
             }
+            catch (SchedulerVolumeProbeCleanupException)
+            {
+                // Starting another Docker probe after adapter cleanup could not confirm child termination would
+                // accumulate children. Surface the actionable cleanup diagnostic immediately.
+                throw;
+            }
             catch (Exception exception) when (exception is TimeoutException or InvalidOperationException)
             {
                 occupied.Add($"scheduler volume ownership probe unavailable ({exception.Message})");
@@ -599,14 +605,75 @@ internal static class WorksAppHostSmokeHarness
                 exception);
         }
 
-        using (probe)
+        return await RunAndDisposeSchedulerVolumeProbeAsync(
+            probe,
+            DockerProbeWait,
+            DockerProbeTerminationWait,
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Runs and disposes one Scheduler-volume probe with production exception precedence.</summary>
+    internal static async Task<IReadOnlyList<string>> RunAndDisposeSchedulerVolumeProbeAsync(
+        ISchedulerVolumeProbe probe,
+        TimeSpan probeWait,
+        TimeSpan terminationWait,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(probe);
+
+        IReadOnlyList<string>? owners = null;
+        Exception? probeFailure = null;
+        try
         {
-            return await RunSchedulerVolumeProbeAsync(
+            owners = await RunSchedulerVolumeProbeAsync(
                 probe,
-                DockerProbeWait,
-                DockerProbeTerminationWait,
+                probeWait,
+                terminationWait,
                 cancellationToken).ConfigureAwait(false);
         }
+        catch (Exception exception)
+        {
+            probeFailure = exception;
+        }
+
+        Exception? disposalFailure = null;
+        try
+        {
+            probe.Dispose();
+        }
+        catch (Exception exception)
+        {
+            disposalFailure = exception;
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        if (disposalFailure is not null)
+        {
+            Exception classifiedFailure = probeFailure is null
+                ? disposalFailure
+                : new AggregateException(probeFailure, disposalFailure);
+            if (disposalFailure is SchedulerVolumeProbeCleanupException)
+            {
+                throw new SchedulerVolumeProbeCleanupException(
+                    "Docker Scheduler-volume probe disposal could not confirm child termination.",
+                    classifiedFailure);
+            }
+
+            throw new InvalidOperationException(
+                "Docker Scheduler-volume probe disposal encountered a classified cleanup failure.",
+                classifiedFailure);
+        }
+
+        if (probeFailure is not null)
+        {
+            ExceptionDispatchInfo.Capture(probeFailure).Throw();
+        }
+
+        return owners!;
     }
 
     /// <summary>Runs one Scheduler-volume ownership probe with bounded execution and termination.</summary>
@@ -626,17 +693,24 @@ internal static class WorksAppHostSmokeHarness
 
         using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         probeCts.CancelAfter(probeWait);
-        Task<string> outputTask = probe.ReadStandardOutputAsync(probeCts.Token);
-        Task<string> errorTask = probe.ReadStandardErrorAsync(probeCts.Token);
+        Task<string> outputTask = StartProbeRead(
+            () => probe.ReadStandardOutputAsync(probeCts.Token));
+        Task<string> errorTask = StartProbeRead(
+            () => probe.ReadStandardErrorAsync(probeCts.Token));
+        bool waitingForExit = true;
         try
         {
             await probe.WaitForExitAsync(probeCts.Token).ConfigureAwait(false);
-            string output = await outputTask.ConfigureAwait(false);
-            string error = await errorTask.ConfigureAwait(false);
+            waitingForExit = false;
+            cancellationToken.ThrowIfCancellationRequested();
+            string[] redirectedOutput = await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
+            string output = redirectedOutput[0];
+            string error = redirectedOutput[1];
             if (probe.ExitCode != 0)
             {
+                string errorDetail = string.IsNullOrWhiteSpace(error) ? "no standard-error detail" : error.Trim();
                 throw new InvalidOperationException(
-                    $"Docker could not inspect the Scheduler volume owner (exit {probe.ExitCode}): {error.Trim()}");
+                    $"Docker could not inspect the Scheduler volume owner (exit {probe.ExitCode}): {errorDetail}.");
             }
 
             return output
@@ -644,49 +718,73 @@ internal static class WorksAppHostSmokeHarness
         }
         catch (OperationCanceledException exception) when (probeCts.IsCancellationRequested)
         {
-            Exception? terminationFailure = null;
-            if (!probe.HasExited)
-            {
-                try
-                {
-                    probe.Kill();
-                }
-                catch (InvalidOperationException) when (probe.HasExited)
-                {
-                    // The process exited between the HasExited observation and Kill.
-                }
-                catch (Exception killException) when (killException is Win32Exception or NotSupportedException)
-                {
-                    terminationFailure = killException;
-                }
-            }
-
-            await Task.WhenAll(
-                ObserveProbeTaskAsync(outputTask),
-                ObserveProbeTaskAsync(errorTask)).ConfigureAwait(false);
-            using var terminationCts = new CancellationTokenSource(terminationWait);
-            try
-            {
-                await probe.WaitForExitAsync(terminationCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (terminationCts.IsCancellationRequested)
-            {
-                // The outer resource-settling loop classifies and retries the timed-out probe. Never wait
-                // indefinitely for a Docker CLI child after requesting termination.
-            }
+            probeCts.Cancel();
+            Exception? cleanupFailure = await TerminateAndObserveProbeAsync(
+                probe,
+                outputTask,
+                errorTask,
+                terminationWait).ConfigureAwait(false);
 
             if (cancellationToken.IsCancellationRequested)
             {
-                throw;
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
-            if (terminationFailure is not null)
+            if (cleanupFailure is not null)
             {
-                throw new InvalidOperationException("Docker probe termination failed.", terminationFailure);
+                throw new InvalidOperationException(
+                    "Docker Scheduler-volume probe cleanup failed after the bounded execution window.",
+                    cleanupFailure);
             }
 
             throw new TimeoutException(
                 $"Docker did not inspect the Scheduler volume owner within {probeWait.TotalSeconds:0} seconds.",
+                exception);
+        }
+        catch (Exception exception) when (
+            waitingForExit
+            && exception is AggregateException or InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            probeCts.Cancel();
+            Exception? cleanupFailure = await TerminateAndObserveProbeAsync(
+                probe,
+                outputTask,
+                errorTask,
+                terminationWait).ConfigureAwait(false);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            Exception classifiedFailure = cleanupFailure is null
+                ? exception
+                : new AggregateException(exception, cleanupFailure);
+            throw new InvalidOperationException(
+                $"Docker Scheduler-volume probe process observation failed: {exception.Message}",
+                classifiedFailure);
+        }
+        catch (Exception exception) when (exception is IOException or ObjectDisposedException)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            throw new InvalidOperationException(
+                $"Docker Scheduler-volume probe redirected stream observation failed: {exception.Message}",
+                exception);
+        }
+        catch (Exception exception) when (
+            exception is AggregateException or InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            throw new InvalidOperationException(
+                $"Docker Scheduler-volume probe process observation failed: {exception.Message}",
                 exception);
         }
     }
@@ -710,7 +808,11 @@ internal static class WorksAppHostSmokeHarness
         return startInfo;
     }
 
-    private static bool IsPortAvailableForExclusiveBind(IPAddress address, int port)
+    /// <summary>Classifies whether the production exclusive-bind probe succeeds for one address and port.</summary>
+    /// <param name="address">The loopback address to probe.</param>
+    /// <param name="port">The fixed control-plane port to probe.</param>
+    /// <returns><see langword="true"/> when the address is bindable or inapplicable on this host.</returns>
+    internal static bool IsPortAvailableForExclusiveBind(IPAddress address, int port)
         => IsPortAvailableForExclusiveBind(address, port, BindPortExclusively);
 
     /// <summary>Classifies whether an exclusive bind succeeds or is inapplicable on this host.</summary>
@@ -748,18 +850,37 @@ internal static class WorksAppHostSmokeHarness
         var listener = new TcpListener(address, port);
         try
         {
-            if (address.AddressFamily == AddressFamily.InterNetworkV6)
-            {
-                listener.Server.DualMode = false;
-            }
-
-            listener.Server.ExclusiveAddressUse = true;
-            listener.Start();
+            BindPortExclusively(listener, address);
         }
         finally
         {
             listener.Stop();
         }
+    }
+
+    /// <summary>Configures and starts one listener through the production exclusive-bind operation.</summary>
+    /// <param name="listener">The listener to configure and start.</param>
+    /// <param name="address">The loopback address the listener will probe.</param>
+    internal static void BindPortExclusively(TcpListener listener, IPAddress address)
+    {
+        ConfigureExclusiveBindListener(listener, address);
+        listener.Start();
+    }
+
+    /// <summary>Applies the production exclusive-bind settings to one control-plane listener.</summary>
+    /// <param name="listener">The listener to configure.</param>
+    /// <param name="address">The loopback address the listener will probe.</param>
+    private static void ConfigureExclusiveBindListener(TcpListener listener, IPAddress address)
+    {
+        ArgumentNullException.ThrowIfNull(listener);
+        ArgumentNullException.ThrowIfNull(address);
+
+        if (address.AddressFamily == AddressFamily.InterNetworkV6)
+        {
+            listener.Server.DualMode = false;
+        }
+
+        listener.Server.ExclusiveAddressUse = true;
     }
 
     /// <summary>Returns whether a bind failure means the loopback address family is unavailable on this host.</summary>
@@ -772,17 +893,155 @@ internal static class WorksAppHostSmokeHarness
                 or SocketError.ProtocolNotSupported
                 or SocketError.ProtocolFamilyNotSupported;
 
-    private static async Task ObserveProbeTaskAsync(Task<string> probeTask)
+    private static async Task<Exception?> TerminateAndObserveProbeAsync(
+        ISchedulerVolumeProbe probe,
+        Task<string> outputTask,
+        Task<string> errorTask,
+        TimeSpan terminationWait)
+    {
+        var cleanupFailures = new List<Exception>();
+        TimeSpan redirectedReadWait = terminationWait + terminationWait;
+        Task<Exception?> outputObservation = ObserveProbeTaskAsync(
+            outputTask,
+            "standard output",
+            redirectedReadWait);
+        Task<Exception?> errorObservation = ObserveProbeTaskAsync(
+            errorTask,
+            "standard error",
+            redirectedReadWait);
+
+        bool exited = ProbeHasExited(probe, cleanupFailures);
+        if (!exited)
+        {
+            TryTerminateProbe(probe, cleanupFailures);
+            exited = await WaitForProbeExitAsync(probe, terminationWait, cleanupFailures).ConfigureAwait(false);
+        }
+
+        if (!exited)
+        {
+            TryTerminateProbe(probe, cleanupFailures);
+            exited = await WaitForProbeExitAsync(probe, terminationWait, cleanupFailures).ConfigureAwait(false);
+        }
+
+        if (!exited)
+        {
+            exited = ProbeHasExited(probe, cleanupFailures);
+        }
+
+        Exception?[] redirectedReadFailures = await Task.WhenAll(outputObservation, errorObservation).ConfigureAwait(false);
+        cleanupFailures.AddRange(redirectedReadFailures.OfType<Exception>());
+
+        if (!exited)
+        {
+            cleanupFailures.Add(
+                new TimeoutException(
+                    $"Docker Scheduler-volume probe did not exit after two bounded termination attempts of "
+                    + $"{terminationWait.TotalSeconds:0.###} seconds each."));
+        }
+
+        return cleanupFailures.Count switch
+        {
+            0 => null,
+            1 => cleanupFailures[0],
+            _ => new AggregateException(cleanupFailures),
+        };
+    }
+
+    private static bool ProbeHasExited(ISchedulerVolumeProbe probe, List<Exception> cleanupFailures)
     {
         try
         {
-            _ = await probeTask.ConfigureAwait(false);
+            return probe.HasExited;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            cleanupFailures.Add(exception);
+            return false;
+        }
+    }
+
+    private static void TryTerminateProbe(ISchedulerVolumeProbe probe, List<Exception> cleanupFailures)
+    {
+        try
+        {
+            probe.Kill();
+        }
+        catch (InvalidOperationException) when (ProbeHasExited(probe, cleanupFailures))
+        {
+            // The process exited between the HasExited observation and Kill.
+        }
+        catch (Exception exception) when (
+            exception is AggregateException or InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            cleanupFailures.Add(exception);
+        }
+    }
+
+    private static async Task<bool> WaitForProbeExitAsync(
+        ISchedulerVolumeProbe probe,
+        TimeSpan terminationWait,
+        List<Exception> cleanupFailures)
+    {
+        using var terminationCts = new CancellationTokenSource(terminationWait);
+        try
+        {
+            await probe.WaitForExitAsync(terminationCts.Token).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (terminationCts.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (Exception exception) when (
+            exception is AggregateException or InvalidOperationException or Win32Exception or NotSupportedException)
+        {
+            cleanupFailures.Add(exception);
+            return ProbeHasExited(probe, cleanupFailures);
+        }
+    }
+
+    private static async Task<Exception?> ObserveProbeTaskAsync(
+        Task<string> probeTask,
+        string streamName,
+        TimeSpan observationWait)
+    {
+        try
+        {
+            _ = await probeTask.WaitAsync(observationWait).ConfigureAwait(false);
+            return null;
         }
         catch (Exception exception) when (
             exception is OperationCanceledException or IOException or ObjectDisposedException)
         {
             // Cancellation and pipe closure are expected after terminating the timed-out child. Observing both
             // redirected reads prevents either cleanup fault from masking the classified probe timeout.
+            return null;
+        }
+        catch (TimeoutException exception)
+        {
+            return new TimeoutException(
+                $"Docker Scheduler-volume probe {streamName} did not settle within the bounded cleanup window.",
+                exception);
+        }
+        catch (Exception exception)
+        {
+            return new InvalidOperationException(
+                $"Docker Scheduler-volume probe {streamName} failed during cleanup: {exception.Message}",
+                exception);
+        }
+    }
+
+    private static Task<string> StartProbeRead(Func<Task<string>> startRead)
+    {
+        try
+        {
+            return startRead()
+                ?? Task.FromException<string>(
+                    new InvalidOperationException("Docker Scheduler-volume probe returned a null redirected-read task."));
+        }
+        catch (Exception exception)
+        {
+            return Task.FromException<string>(exception);
         }
     }
 
