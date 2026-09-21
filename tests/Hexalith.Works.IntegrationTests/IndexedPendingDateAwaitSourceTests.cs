@@ -173,9 +173,14 @@ public sealed class IndexedPendingDateAwaitSourceTests
     {
         var store = new Story47InMemoryReadModelStore();
         await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        int callCount = 0;
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(Story48Streams.PageAt(TenantA, WorkFuture, 1, isTruncated: true, Created(WorkFuture)));
+            .Returns(_ =>
+            {
+                callCount++;
+                return Task.FromResult(Story48Streams.PageAt(TenantA, WorkFuture, 1, isTruncated: true, Created(WorkFuture)));
+            });
         var options = new WorksRecoveryOptions { MaxStreamPagesPerTenant = 1 };
         var source = new IndexedPendingDateAwaitSource(
             store,
@@ -190,7 +195,9 @@ public sealed class IndexedPendingDateAwaitSourceTests
             .ConfigureAwait(true);
         thrown.FailedTenantCount.ShouldBe(0);
         thrown.FailedCandidateCount.ShouldBe(1);
-        thrown.InnerException.ShouldBeOfType<InvalidOperationException>();
+        thrown.InnerException.ShouldNotBeNull().ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain(nameof(WorksRecoveryOptions.MaxStreamPagesPerAggregate));
+        callCount.ShouldBe(1, "The reader must spend the configured per-aggregate page budget rather than looping to the default cap.");
     }
 
     [Fact]

@@ -1050,3 +1050,16 @@ status: open
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-21)
 
 - `Recovery_re_registers_a_still_future_await_that_later_fires` still deletes the Host 1 reminder and stops the host without waiting for the `WorkItemSuspended` durable consumer marker (`WorksReminderRecoveryPipelineSmokeTests.cs:174`). Pre-existing sibling of the three-host overdue fact this increment patched; Host 2 can still pass on subscription redelivery rather than startup re-registration.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-21, Group 1 Reminders)
+
+- One reconciler submit/schedule failure still exits `ProcessAsync` and starves later awaits. Pre-existing; Group 1 re-observation only.
+  - Canonical entry: [per-await isolation and exhaustion](#story-4-8-canonical-scheduler-exhaustion)
+- Due-now `SubmitAsync` still has no bounded tenant/work-item/reminder failure log (EventId 4603 only). Pre-existing; Group 1 re-observation only.
+  - Canonical entry: [due-now recovery telemetry](#story-4-8-canonical-due-now-telemetry)
+- Exact caller cancellation after an in-tenant candidate failure still discards that tenant's local pending and counts. Pre-existing; source remarks retain the exact-token filters.
+  - Canonical entry: [in-tenant cancellation](#story-4-8-canonical-in-tenant-cancellation)
+- `ReminderReconciliationService` still returns after `ReminderReconciliationMaxAttempts` with no post-startup retry or readiness degrade. Pre-existing; Group 1 re-observation only.
+  - Canonical entry: the 2026-09-20 post-startup retry/readiness `source_spec` row
+- `PendingDateAwaitStreamReader` still trusts truncated-page cursor metadata and does not apply the dispatcher's AD-27 non-positive/monotonic envelope checks. maybe-false (would be medium): settle with gateway-contract evidence or fault injection that `LastSequenceReturned` can stall at `from`, or that a page can carry non-positive or non-increasing `SequenceNumber`s.
+  - Canonical entry: the 2026-09-20 stream-page cursor metadata `source_spec` row

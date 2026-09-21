@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-review
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1774,3 +1774,24 @@ _Scope: `5cc1956...HEAD` (HEAD `3538ff5`) — unreviewed increment `test(reminde
 - Fix edits the spec under review — appendix arithmetic "15 raw findings triaged to 4 patch + 6 rejected" does not add to 15.
 - Fix edits the spec under review — the new hunter block reuses BH-14, EC-08, and EC-09 for different issues than the preceding list.
 - Fix edits the spec under review — close-out notes still name `SentryCredentialReadFailsClosedWhenTheFileStaysEmpty` while the added fact is `SentryCredentialReadFailsClosedWhenTheFileStaysEmptyOrWhitespace`.
+
+### Review Findings (2026-09-21, bmad-code-review, Group 1 Reminders `9526c31...HEAD`)
+
+_Scope: `9526c31...HEAD` over `src/Hexalith.Works/Reminders` (HEAD `3373ab1`) — 13 files, +685/−158, 1,009 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported; acceptance-auditor found no Group 1 AC violations. 17 raw findings triaged to 0 decision, 1 patch, 5 defer, 8 rejected._
+
+- [x] [Review][Patch] Page-budget fail-closed test does not observe the configured budget [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:172] — resolved 2026-09-21: the fact now counts `ReadStreamAsync` (expect 1) and requires the inner message to name `MaxStreamPagesPerAggregate`. Focused Debug lane 2/2, 0 skips.
+- [x] [Review][Defer] One reconciler submit/schedule failure starves later awaits [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:111] — deferred: pre-existing; canonical per-await isolation/exhaustion ledger
+- [x] [Review][Defer] Due-now resume submission has no bounded identity-bearing failure log [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:119] — deferred: pre-existing; canonical due-now telemetry ledger
+- [x] [Review][Defer] Exact caller cancellation inside a tenant drops that tenant's collected evidence [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:192] — deferred: pre-existing; source remarks and canonical in-tenant cancellation ledger retain the exact-token policy
+- [x] [Review][Defer] Startup reconciliation returns permanently after the attempt budget [src/Hexalith.Works/Reminders/ReminderReconciliationService.cs:57] — deferred: pre-existing; ledger already records post-startup retry/readiness policy
+- [x] [Review][Defer] Stream-page cursor metadata is trusted without an advance or AD-27 envelope check [src/Hexalith.Works/Reminders/PendingDateAwaitStreamReader.cs:82] — deferred: maybe-false (would be medium); settle with gateway-contract evidence or fault injection that `LastSequenceReturned` can stall or envelopes can be non-positive/non-increasing
+
+**Rejected:**
+- `false` — discarding `ReminderReconciliationOutcome` hides parked-skip summaries: spec-5 declined a second aggregate log; EventId 4607 already warns per parked candidate on every path.
+- `false` — the index-driven source never writes back a cleared await: Task 4 allows skip without cleanup; the index is discovery and the stream is truth.
+- `false` — the steady-state handler schedules already-due awaits as `TimeSpan.Zero` instead of submitting `DateResume`: Task 2 requires `dueTime = max(Zero, Instant - now)`; recovery reissue is the reconciler's job.
+- `false` — `IPendingDateAwaitSource` still "reads persisted work streams" and `DateReminderReconciler` throws an internal incomplete-scan type: the production source does read per-aggregate streams after index discovery; the only production caller is the same assembly, and tests already have `InternalsVisibleTo`.
+- `false` — `PendingDateAwaitScanIncompleteException` stores `PartialResults` by reference and accepts negative counts: the throw site passes a local list that is not mutated afterward, and both failure counters only increment.
+- `false` — a registry entry equal to reserved tenant `tenants` burns the startup retry budget: `/project` and `/process` refuse that id before an index key is minted; the mixed-case `TENANTS` hole is already on the ledger.
+- `false` — a folded stream that has not reached `context.SequenceNumber` acks and skips registration: a still-truncated rebuild throws (redelivery); empty pending is the specified already-resumed path; persist-then-publish was not shown to return a complete prefix missing the delivered sequence.
+- `false` — a deserialized registry with a null `Tenants` collection throws before tenant isolation: the dispatcher always writes a `HashSet`; a missing JSON property uses the property initializer; `"Tenants": null` was not shown on a production write.
