@@ -1,6 +1,6 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: in-review
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
@@ -1752,3 +1752,25 @@ only two simultaneous reviewer slots._
 
 - **[edge-case] The persistent-empty credential fact created its temporary file before entering the cleanup `try` block.** Verdict: `low`. Confirmed: a cancelled or failed initial write after directory creation could leave the temporary directory behind. → **patch**: move the write inside the existing `try/finally`, keeping setup failure cleanup deterministic.
 - **[verification-gap] No findings.** The layer traced the increment's claims to the recorded focused and full deterministic runs and reported nothing to triage.
+
+### Review Findings (2026-09-21, bmad-code-review, increment `5cc1956...HEAD`)
+
+_Scope: `5cc1956...HEAD` (HEAD `3538ff5`) — unreviewed increment `test(reminders): harden recovery proof`. 6 files, +375/−4, 535 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported; verification-gap found no gaps. 17 raw findings triaged to 0 decision, 1 patch, 1 defer, 13 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [x] [Review][Patch] Parent YAML is still `status: done` and sprint `last_updated` still says in-progress after this increment claimed a review close-out [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3] — resolved 2026-09-21: frontmatter is `in-review`; body and sprint `development_status` stay `review`; `last_updated` no longer claims in-progress.
+- [x] [Review][Defer] `Recovery_re_registers_a_still_future_await_that_later_fires` still deletes the Host 1 reminder without waiting for the suspension marker [tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs:174] — deferred: pre-existing sibling fact this increment did not change; the three-host overdue fact now waits
+
+**Rejected:**
+- `false` — Host 3 can treat a leftover Host 2 canary registration as its own startup pass: `DeleteReminderAsync` polls until 404, Host 2's one-shot reconciler has already returned, and Host 1's completed markers make Host 2 subscription a Duplicate skip, so nothing on this path re-registers during the 3s settle.
+- `false` — Host 3 can miss a duplicate overdue resume because it counts immediately after the canary appears: same-tenant index insertion is overdue then canary, so `ProcessAsync` submits the due resume before scheduling the canary; a Host 3 resubmit uses the same `DateResume` identity and cannot add a second `WorkItemResumed`.
+- `false` — `WaitForSuspensionMarkerCompletedAsync` aborts the retry loop on a second `WorkItemSuspended` or missing JSON fields: this fact parks each item once, and a malformed page failing closed is correct rather than a reachable false pass.
+- `false` — the appended appendix disagrees with itself about whether all four layers ran: the `5cc1956` triage block and the later "implementation review" hunter notes are two sessions; the second skipped Blind Hunter because of the four-agent cap.
+- `false` — the temp-file write-outside-`try` item is still an open patch: this increment moved `File.WriteAllTextAsync` inside the existing `try/finally`.
+- `false` — whitespace-then-success credential retry has no sibling of `SentryCredentialReadRetriesUntilMaterialIsAvailable`: `IsNullOrWhiteSpace` is the same branch as empty; the exhaustion theory already pins persistent whitespace and the retry-success fact pins empty-to-material.
+- `false` — the Host 3 canary instant can elapse during later startups: the recorded 1/1 run finished in 380.665s against a 10-minute canary, and the actor only removes the reminder after fire, which that run never reached.
+- `low`, not worth fixing — `WaitForSuspensionMarkerCompletedAsync` is a private copy of stream-read helpers instead of a `WorksAppHostTestReadiness` method: extracting it adds test-harness surface, and the sibling fact is the deferred pre-existing hole rather than a new helper defect.
+- `low`, not worth fixing — the recovery fact's class remarks and Host 2 comment still describe a single overdue park/resume: the marker/canary protocol is already recorded in Completion Notes and `test-summary.md`.
+- `low`, not worth fixing — the canonical reconciliation stale-delay ledger row does not link back to the new steady-state sibling: the sibling already points at `#story-4-8-canonical-reconciliation-stale-delay`.
+- Fix edits the spec under review — appendix arithmetic "15 raw findings triaged to 4 patch + 6 rejected" does not add to 15.
+- Fix edits the spec under review — the new hunter block reuses BH-14, EC-08, and EC-09 for different issues than the preceding list.
+- Fix edits the spec under review — close-out notes still name `SentryCredentialReadFailsClosedWhenTheFileStaysEmpty` while the added fact is `SentryCredentialReadFailsClosedWhenTheFileStaysEmptyOrWhitespace`.

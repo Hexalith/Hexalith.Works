@@ -1046,3 +1046,7 @@ status: open
   summary: Recompute date-reminder delay for each steady-state registration.
   evidence: `WorkItemSuspendedReminderHandler` snapshots the clock once before scheduling every pending await, so later registrations can fire late by the latency spent awaiting earlier actor calls; this pre-existing behavior belongs with the reconciliation stale-delay family.
   - Canonical entry: [reconciliation stale-delay family](#story-4-8-canonical-reconciliation-stale-delay); this row records the steady-state sibling without creating a second reconciliation work item.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-21)
+
+- `Recovery_re_registers_a_still_future_await_that_later_fires` still deletes the Host 1 reminder and stops the host without waiting for the `WorkItemSuspended` durable consumer marker (`WorksReminderRecoveryPipelineSmokeTests.cs:174`). Pre-existing sibling of the three-host overdue fact this increment patched; Host 2 can still pass on subscription redelivery rather than startup re-registration.
