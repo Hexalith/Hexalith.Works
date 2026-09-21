@@ -6,6 +6,8 @@ using Aspire.Hosting.Testing;
 
 using CommunityToolkit.Aspire.Hosting.Dapr;
 
+using Hexalith.Works.AppHost;
+
 using Shouldly;
 
 using YamlDotNet.RepresentationModel;
@@ -376,6 +378,78 @@ public sealed class WorksAppHostTopologyTests
             StringValue(environment, "DAPR_CONTROLPLANE_TRUST_DOMAIN").ShouldBe("localhost");
             StringValue(environment, "DAPR_CONTROLPLANE_NAMESPACE").ShouldBe("default");
             StringValue(environment, "NAMESPACE").ShouldBe("default");
+        }
+        finally
+        {
+            Directory.Delete(certificateDirectory, recursive: true);
+        }
+    }
+
+    /// <summary>A credential that becomes non-empty inside the retry budget is returned.</summary>
+    [Fact]
+    public async Task SentryCredentialReadRetriesUntilMaterialIsAvailable()
+    {
+        string certificateDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-credential-retry-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(certificateDirectory);
+        const string fileName = "ca.crt";
+        string path = Path.Combine(certificateDirectory, fileName);
+        await File.WriteAllTextAsync(path, string.Empty, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var observedDelays = new List<TimeSpan>();
+
+        try
+        {
+            string credential = await DaprSelfHostedMtls.ReadCredentialAsync(
+                certificateDirectory,
+                fileName,
+                maxAttempts: 3,
+                retryDelay: TimeSpan.FromMilliseconds(500),
+                async (delay, cancellationToken) =>
+                {
+                    observedDelays.Add(delay);
+                    await File.WriteAllTextAsync(path, "issued-anchor", cancellationToken).ConfigureAwait(false);
+                },
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+            credential.ShouldBe("issued-anchor");
+            observedDelays.ShouldBe([TimeSpan.FromMilliseconds(500)]);
+        }
+        finally
+        {
+            Directory.Delete(certificateDirectory, recursive: true);
+        }
+    }
+
+    /// <summary>An unavailable credential fails closed after exactly the configured attempt budget.</summary>
+    [Fact]
+    public async Task SentryCredentialReadFailsClosedAfterTheBoundedBudget()
+    {
+        string certificateDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-credential-exhaustion-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(certificateDirectory);
+        var observedDelays = new List<TimeSpan>();
+
+        try
+        {
+            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(() =>
+                DaprSelfHostedMtls.ReadCredentialAsync(
+                    certificateDirectory,
+                    "missing.crt",
+                    maxAttempts: 3,
+                    retryDelay: TimeSpan.FromMilliseconds(500),
+                    (delay, cancellationToken) =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        observedDelays.Add(delay);
+                        return Task.CompletedTask;
+                    },
+                    TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            observedDelays.ShouldBe([TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500)]);
+            exception.Message.ShouldContain("retried 3 times over 1 seconds", Case.Sensitive);
+            exception.InnerException.ShouldBeOfType<FileNotFoundException>();
         }
         finally
         {

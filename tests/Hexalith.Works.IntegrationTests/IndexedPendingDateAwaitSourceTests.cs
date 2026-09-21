@@ -54,6 +54,34 @@ public sealed class IndexedPendingDateAwaitSourceTests
     }
 
     [Fact]
+    public async Task Ignores_an_unknown_non_state_event_beside_a_valid_suspension()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        await SeedAsync(store, TenantA, (WorkFuture, s_future)).ConfigureAwait(true);
+        StreamReadPage page = Story48Streams.Page(
+            TenantA,
+            WorkFuture,
+            Created(WorkFuture),
+            SuspendedOnDate(WorkFuture, s_future));
+        StreamReadEvent unknown = page.Events[0] with
+        {
+            EventTypeName = "FutureInformationalEvent",
+            Payload = "{}"u8.ToArray(),
+        };
+        IEventStoreGatewayClient gateway = GatewayFor(new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [WorkFuture] = page with { Events = [unknown, page.Events[1]] },
+        });
+
+        PendingDateAwaitScanResult scan = await NewSource(store, gateway)
+            .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        PendingDateAwait pending = scan.Pending.ShouldHaveSingleItem();
+        pending.WorkItemId.ShouldBe(WorkFuture);
+        pending.Instant.ShouldBe(s_future);
+    }
+
+    [Fact]
     public async Task Skips_a_stale_index_entry_whose_stream_shows_the_await_cleared()
     {
         var store = new Story47InMemoryReadModelStore();

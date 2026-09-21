@@ -194,16 +194,53 @@ internal static class DaprSelfHostedMtls
         string certificateDirectory,
         string fileName,
         CancellationToken cancellationToken)
+        => await ReadCredentialAsync(
+            certificateDirectory,
+            fileName,
+            CredentialReadAttempts,
+            CredentialReadRetryDelay,
+            static (delay, token) => Task.Delay(delay, token),
+            cancellationToken).ConfigureAwait(false);
+
+    /// <summary>
+    /// Reads one Sentry-issued credential with a controllable bounded retry policy.
+    /// </summary>
+    /// <param name="certificateDirectory">The directory containing the credential.</param>
+    /// <param name="fileName">The credential file name.</param>
+    /// <param name="maxAttempts">The maximum number of read attempts.</param>
+    /// <param name="retryDelay">The delay requested between attempts.</param>
+    /// <param name="delayAsync">The delay boundary.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The non-empty credential contents.</returns>
+    internal static async Task<string> ReadCredentialAsync(
+        string certificateDirectory,
+        string fileName,
+        int maxAttempts,
+        TimeSpan retryDelay,
+        Func<TimeSpan, CancellationToken, Task> delayAsync,
+        CancellationToken cancellationToken)
     {
+        if (maxAttempts <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxAttempts), maxAttempts, "The credential read attempt budget must be positive.");
+        }
+
+        if (retryDelay < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(retryDelay), retryDelay, "The credential retry delay must not be negative.");
+        }
+
+        ArgumentNullException.ThrowIfNull(delayAsync);
+
         string path = Path.Combine(certificateDirectory, fileName);
         Exception? lastFailure = null;
         string lastReason = "the credential file never became readable";
 
-        for (int attempt = 0; attempt < CredentialReadAttempts; attempt++)
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             if (attempt > 0)
             {
-                await Task.Delay(CredentialReadRetryDelay, cancellationToken).ConfigureAwait(false);
+                await delayAsync(retryDelay, cancellationToken).ConfigureAwait(false);
             }
 
             try
@@ -226,8 +263,8 @@ internal static class DaprSelfHostedMtls
 
         throw new InvalidOperationException(
             $"Dapr Sentry credential '{path}' was unavailable after Sentry became healthy: {lastReason} "
-            + $"(retried {CredentialReadAttempts} times over "
-            + $"{(CredentialReadAttempts - 1) * CredentialReadRetryDelay.TotalSeconds:0.#} seconds). "
+            + $"(retried {maxAttempts} times over "
+            + $"{(maxAttempts - 1) * retryDelay.TotalSeconds:0.#} seconds). "
             + "Keep the certificate directory outside the repository and ensure the Sentry container user can write it.",
             lastFailure);
     }
