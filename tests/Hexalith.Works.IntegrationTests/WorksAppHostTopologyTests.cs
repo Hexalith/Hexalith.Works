@@ -457,6 +457,51 @@ public sealed class WorksAppHostTopologyTests
         }
     }
 
+    /// <summary>An empty or whitespace credential fails closed after exactly the configured attempt budget.</summary>
+    [Theory]
+    [InlineData("")]
+    [InlineData(" \t\r\n")]
+    public async Task SentryCredentialReadFailsClosedWhenTheFileStaysEmptyOrWhitespace(string credentialContent)
+    {
+        string certificateDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-empty-credential-exhaustion-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(certificateDirectory);
+        const string fileName = "empty.crt";
+        var observedDelays = new List<TimeSpan>();
+
+        try
+        {
+            await File.WriteAllTextAsync(
+                Path.Combine(certificateDirectory, fileName),
+                credentialContent,
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(() =>
+                DaprSelfHostedMtls.ReadCredentialAsync(
+                    certificateDirectory,
+                    fileName,
+                    maxAttempts: 3,
+                    retryDelay: TimeSpan.FromMilliseconds(500),
+                    (delay, cancellationToken) =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        observedDelays.Add(delay);
+                        return Task.CompletedTask;
+                    },
+                    TestContext.Current.CancellationToken)).ConfigureAwait(true);
+
+            observedDelays.ShouldBe([TimeSpan.FromMilliseconds(500), TimeSpan.FromMilliseconds(500)]);
+            exception.Message.ShouldContain("the credential file was still empty", Case.Sensitive);
+            exception.Message.ShouldContain("retried 3 times over 1 seconds", Case.Sensitive);
+            exception.InnerException.ShouldBeNull();
+        }
+        finally
+        {
+            Directory.Delete(certificateDirectory, recursive: true);
+        }
+    }
+
     /// <summary>An external-looking symlink cannot redirect issuer material back into the checkout.</summary>
     [Fact]
     public async Task AppHostRejectsCertificateDirectorySymlinkedIntoTheRepository()

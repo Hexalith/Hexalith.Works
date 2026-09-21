@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-progress
+status: done
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -309,6 +309,39 @@ _2026-09-21 bmad-build review after the spec-11 bookkeeping close-out. All three
 - **[edge-case-hunter EC-08] The append-only tenant registry can eventually exceed one state document.** Verdict: `low`, rejected. Carried with EC-07/BH-14: the scenario is low-impact in ordinary use and the proposed remedy is a durable schema redesign.
 - **[edge-case-hunter EC-09] Configuring the per-aggregate page budget near `int.MaxValue` can make a malformed scan extremely long.** Verdict: `low`, rejected. The outcome requires an extreme operator override plus a gateway that remains truncated indefinitely; imposing an arbitrary upper limit adds policy and compatibility surface for a negligible ordinary-use risk.
 
+_2026-09-21 final full-baseline review after the four-patch close-out. All three layers reviewed the
+`9526c31` baseline diff. Every raw finding is classified below before grouping; repeated findings retain
+their earlier verdict and route with carried evidence._
+
+- **[blind-hunter BH-01] Startup reconciliation stops permanently after its bounded retry budget.** Verdict: `medium` → **defer**. Carried: the same `ReminderReconciliationService` location and give-up behavior remain exactly as the earlier triage and canonical deferred entry record; do not defer it again.
+- **[blind-hunter BH-02] An empty registry/index window can let startup reconciliation finish before backfill appears.** Verdict: `maybe-false` → **defer**. Carried: the existing empty-registry/backfill row owns the same reachability question and still requires projection-poller replay evidence.
+- **[blind-hunter BH-03] Parked candidates are skipped without an unpark/replay path.** Verdict: `medium` → **defer**. Carried: the unchanged parked branch and terminal-disposition behavior are already logged and documented; do not defer them again.
+- **[blind-hunter BH-04] One reconciler submit/schedule failure starves later awaits.** Verdict: `medium` → **defer**. Carried: `ProcessAsync` still exits on the first failure exactly as the earlier fail-fast row records.
+- **[blind-hunter BH-05] One steady-state scheduling failure starves later awaits in the suspension.** Verdict: `medium` → **defer**. Carried: the earlier handler fail-fast row owns this unchanged behavior.
+- **[blind-hunter BH-06] The reconciler's one-time clock snapshot delays later reminders.** Verdict: `medium` → **defer**. Carried: the existing reconciliation stale-delay family entry owns this unchanged behavior.
+- **[blind-hunter BH-07] The actor removes reminder state after gateway acceptance rather than terminal command success.** Verdict: `medium` → **defer**. Carried: the earlier actor-cleanup retry-gap row records this same code and outcome.
+- **[blind-hunter BH-08] Re-suspending at the same instant reuses the earlier resume identity.** Verdict: `medium` → **defer**. Carried: the canonical same-instant occurrence-identity entry already owns the required redesign.
+- **[blind-hunter BH-09] Recovery does not enforce the index's minimum stream watermark.** Verdict: `maybe-false` → **defer**. Carried: the existing lagging-stream/minimum-watermark row records the same missing proof and the gateway evidence needed to settle reachability.
+- **[blind-hunter BH-10] Stream folding does not independently reject duplicate/gapped sequences or an advertised unread tail.** Verdict: `maybe-false` → **defer**. Carried: the earlier sequence/metadata-consistency rows own both claims and still require gateway-contract evidence or fault injection.
+- **[blind-hunter BH-11] Actor remoting cannot observe cancellation after scheduling starts.** Verdict: `maybe-false` → **defer**. Carried: the earlier remoting-timeout row owns the same location and uncertainty.
+- **[blind-hunter BH-12] Mixed-case `TENANTS` bypasses the raw ordinal reserved-id guard.** Verdict: `low` → **defer**. Carried: the direct-`/project` normalization hole is unchanged and already logged.
+- **[blind-hunter BH-13] Duplicate identical date conditions survive folding and cause redundant calls.** Verdict: `low` → **defer**. Carried: deterministic identities bound accepted outcomes, while the existing durable-await normalization entry owns the redundant work.
+- **[blind-hunter BH-14] Host 1 can stop after reminder/index side effects but before the suspension subscription marker completes.** Verdict: `medium` → **patch, resolved**. The live proof now reads the exact `WorkItemSuspended` event message id and waits for its durable consumer marker to reach `Completed` before deleting either recovery reminder or stopping Host 1.
+- **[blind-hunter BH-15] Host 3 counts the pre-existing resume immediately and does not observe completion of its startup reconciliation pass.** Verdict: `medium` → **patch, resolved**. A separate future-await canary is marker-complete on Host 1, re-registered and deleted on Host 2, then required to be re-registered by Host 3 before the no-duplicate assertion; the exact three-host fact passed **1/1**, zero skipped, in **380.665s**.
+- **[blind-hunter BH-16] The task text still says `LastSequenceReturned + 1` although the cursor is exclusive.** Verdict: `low`, rejected. Carried: the implementation correctly uses the unchanged exclusive lower bound, and the proposed correction edits only this build's spec.
+- **[verification-gap VG-01] Whitespace-only Sentry credential content has no fail-closed regression.** Verdict: `medium` → **patch, resolved**. The credential exhaustion fact is now a theory over empty and whitespace-only content and preserves the exact attempt budget, delay sequence, diagnostic, and null inner exception; the topology class passed **18/18**.
+- **[edge-case-hunter EC-01] Mixed-case `TENANTS` can poison registry state after partial projection writes.** Verdict: `low` → **defer**. Carried: this is the same location and canonicalization claim as BH-12 and the earlier direct-`/project` row.
+- **[edge-case-hunter EC-02] The reconciler's one-time clock snapshot can make later awaits late.** Verdict: `medium` → **defer**. Carried: same location and consequence as BH-06 and the canonical reconciliation stale-delay entry.
+- **[edge-case-hunter EC-03] The handler's one-time clock snapshot can make later registrations late.** Verdict: `medium` → **defer**. Carried: the existing steady-state stale-delay sibling entry owns this unchanged behavior.
+- **[edge-case-hunter EC-04] A truncated page can advertise a cursor beyond its highest returned event.** Verdict: `maybe-false` → **defer**. Carried: the earlier cursor-consistency row records the same claim and the gateway/fault-injection evidence needed to settle it.
+- **[edge-case-hunter EC-05] A non-truncated page can advertise a newer sequence than it returns.** Verdict: `maybe-false` → **defer**. Carried: the prior unread-tail row owns the same invariant question.
+- **[edge-case-hunter EC-06] Cascade paging advances an exclusive cursor by one too many.** Verdict: `high` → **defer**. Carried: DW-86 already owns this unchanged Story 4.7 defect; do not defer it again.
+- **[edge-case-hunter EC-07] Child-completion paging advances an exclusive cursor by one too many.** Verdict: `high` → **defer**. Carried: DW-86 already owns this unchanged Story 4.7 defect; do not defer it again.
+- **[edge-case-hunter EC-08] Cascade reads do not validate page/payload identity.** Verdict: `high` → **defer**. Carried: the earlier cascade-reader row owns this pre-existing cross-boundary evidence gap.
+- **[edge-case-hunter EC-09] Cascade reads silently ignore malformed `ChildSpawned` evidence.** Verdict: `high` → **defer**. Carried: the same earlier cascade-reader row owns this pre-existing fail-open behavior.
+- **[edge-case-hunter EC-10] Child-completion reads silently ignore undecodable lifecycle evidence.** Verdict: `high` → **defer**. Carried: the earlier child-completion row owns this unchanged Story 4.7 behavior.
+- **[edge-case-hunter EC-11] Child-completion reads do not reject a foreign stream domain.** Verdict: `high` → **defer**. Carried: the same earlier child-completion row owns this unchanged cross-domain behavior.
+
 ## Dev Notes
 
 ### Scope Boundary
@@ -515,6 +548,20 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - 2026-09-05 session Tier-3 attempt (honest, inconclusive): `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class *SmokeTests` against live Dapr prerequisites confirmed present (`dapr_placement`/`dapr_scheduler`/`dapr_redis`/`dapr_zipkin` containers already up, ports 6050/6060/6379 listening). The process ran **13+ minutes** consuming almost no CPU (12s total) — the same symptom (stuck, not crashing) as the 2026-08-28/2026-09-01 `DistributedApplication.StartAsync` hang finding (open, line 118) — and was terminated (`kill -9`) to stop burning session time on an already-tracked, previously-undiagnosed blocker rather than re-diagnose it from scratch. **This truncated the process's own output before its failure-detail lines flushed**: the captured output shows both `Suspend_time_registration_resumes_the_item_when_the_scheduler_fires` and `Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration` as `[FAIL]`, but with no stack trace or exception detail (lost to the forced kill), so this session cannot add a verified root cause beyond confirming the blocker still reproduces. **This is not a fresh live-pass or live-fail claim** — findings #100 (line 100) and #118 (line 118) remain open exactly as before, now with one more reproduction data point. In hindsight, terminating the process before its normal 5-minute internal `CancelAfter` timeout was premature; a future session should let it run to that natural timeout (or the outer harness timeout) rather than force-kill, so the process's own diagnostic output survives intact.
 
 ### Completion Notes List
+
+- **2026-09-21 final full-baseline review close-out.** The three surviving review patches now distinguish
+  startup reconciliation from subscription redelivery: Host 1 waits for each suspension marker to complete,
+  and Host 3 must re-register a future-await canary before convergence is asserted. Empty and whitespace-only
+  Sentry credentials share the bounded fail-closed theory. Release build passed with zero warnings/errors;
+  topology **18/18**, the exact three-host recovery fact **1/1** with zero skips in **380.665s**, Unit
+  **568/568**, Property **3/3**, non-smoke Integration **539/539**, and Architecture **268/268** all passed.
+
+- **2026-09-21 final four-patch close-out.** Added the persistently-empty Sentry credential regression, moved
+  the two final deferred rows under their own review heading, and linked the steady-state stale-delay item to
+  the canonical reconciliation family. The isolated pre-edit AppHost baseline reached healthy Works and Dapr
+  control-plane resources and stopped cleanly. Release build passed with zero warnings/errors; the affected
+  classes passed **47/47**, Unit **568/568**, Property **3/3**, non-smoke Integration **538/538**, and
+  Architecture **268/268**, all with zero skips. No production behavior changed and no Tier-3 credit is claimed.
 
 - **2026-09-21 final bmad-build review patches.** Added deterministic coverage for bounded Sentry-credential
   retry success and exhausted-budget failure, plus the forward-compatible pending-await refold case that ignores
@@ -749,6 +796,19 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-21 final full-baseline review close-out**
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
+
+**2026-09-21 final four-patch close-out**
+- `tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/deferred-work.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-21 final bmad-build review patches**
 - `src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs`
@@ -1072,6 +1132,15 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-21 — Closed the final full-baseline review with whitespace credential coverage and a marker/canary
+  live proof that distinguishes subscription redelivery from both startup reconciliation passes. Release build
+  and every deterministic suite passed, and the exact three-host recovery fact passed 1/1 with zero skips.
+
+- 2026-09-21 — Closed the final four Story 4.8 review patches: pinned persistent empty-credential exhaustion,
+  recorded the observed **538/538** non-smoke Integration total, repaired deferred-work provenance/cross-links,
+  and reconciled lifecycle state. Release build and every deterministic suite passed with zero skips; the
+  Tier-3 aggregate was not repeated and no fresh live credit is claimed.
 
 - 2026-09-21 — Closed the final bmad-build verification gaps with bounded credential retry/exhaustion tests and
   unknown non-state stream-event tolerance coverage. The affected project built with zero warnings/errors, the
@@ -1664,10 +1733,10 @@ _Scope: `origin/main...HEAD` (HEAD `0639a69`) — spec-11 remaining spec-10 revi
 
 _Scope: `origin/main...HEAD` (HEAD `5cc1956`) — unreviewed increment `test(reminders): close story 4.8 review gaps`. 8 files, +229/−13, 401 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 15 raw findings triaged to 0 decision, 4 patch, 0 defer, 6 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
 
-- [ ] [Review][Patch] Parent YAML is `status: done` while the body, Change Log, and sprint board return Story 4.8 to `review`; spec-10/spec-11 already required frontmatter `in-review` for that pair [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
-- [ ] [Review][Patch] Persistently empty Sentry credential files are never fail-closed in tests: `SentryCredentialReadFailsClosedAfterTheBoundedBudget` uses a missing file and pins `FileNotFoundException`, so a mutation that returns empty PEM when `lastFailure` is null stays green [src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs:248]
-- [ ] [Review][Patch] This increment adds three non-smoke facts but leaves `test-summary.md` and the latest serial Integration total at spec-11's **534/534** [_bmad-output/implementation-artifacts/tests/test-summary.md:3559]
-- [ ] [Review][Patch] The two new deferred-work `source_spec` rows were appended under the spec-11 heading and the steady-state stale-delay row does not cross-link the existing `DateReminderReconciler` family entry [_bmad-output/implementation-artifacts/deferred-work.md:1032]
+- [x] [Review][Patch] Parent YAML is `status: done` while the body, Change Log, and sprint board return Story 4.8 to `review`; spec-10/spec-11 already required frontmatter `in-review` for that pair [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3] — resolved 2026-09-21: the resumed build workflow restored `in-progress` before implementation; the final review close-out returns the frontmatter to `in-review` with the body and sprint board at their `review` vocabulary.
+- [x] [Review][Patch] Persistently empty Sentry credential files are never fail-closed in tests: `SentryCredentialReadFailsClosedAfterTheBoundedBudget` uses a missing file and pins `FileNotFoundException`, so a mutation that returns empty PEM when `lastFailure` is null stays green [src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs:248] — resolved 2026-09-21: `SentryCredentialReadFailsClosedWhenTheFileStaysEmpty` keeps the credential file empty across all three reads, pins both retry delays and the empty-file diagnostic, and requires a null inner exception.
+- [x] [Review][Patch] This increment adds three non-smoke facts but leaves `test-summary.md` and the latest serial Integration total at spec-11's **534/534** [_bmad-output/implementation-artifacts/tests/test-summary.md:3559] — resolved 2026-09-21: the close-out adds the missing empty-file fact and records the observed current non-smoke total at **538/538**, with the two affected classes at **47/47** and zero skips.
+- [x] [Review][Patch] The two new deferred-work `source_spec` rows were appended under the spec-11 heading and the steady-state stale-delay row does not cross-link the existing `DateReminderReconciler` family entry [_bmad-output/implementation-artifacts/deferred-work.md:1032] — resolved 2026-09-21: the rows now have their own final-review heading, and the steady-state item links the canonical reconciliation stale-delay family entry.
 
 **Rejected:**
 - `false` — `maxAttempts <= 0`, negative `retryDelay`, and null `delayAsync` have no facts: `ConfigureSidecar` and the private three-argument wrapper always pass `CredentialReadAttempts` (20), `CredentialReadRetryDelay` (500 ms), and `Task.Delay`, so those guards are unreachable on the live sidecar path.
@@ -1676,3 +1745,10 @@ _Scope: `origin/main...HEAD` (HEAD `5cc1956`) — unreviewed increment `test(rem
 - `false` — empty or whitespace `certificateDirectory`/`fileName` can read a relative CWD credential: `ConfigureSidecar` already `ThrowIfNullOrWhiteSpace`s the directory, and production file names are literals (`ca.crt` / `issuer.crt` / `issuer.key`).
 - `false` — a throwing, null, or never-completing `delayAsync` skips remaining attempts and never wraps fail-closed: production injects `Task.Delay`; a delay failure already escapes, which is fail-closed, and a null/hanging delay is not reachable from the wrapper.
 - `low`, not worth fixing — the new facts call only the six-parameter seam, so changing the private 20×500 ms wrapper budget would stay green: pinning that budget needs either `internal` constants or a ~9.5 s real-delay wrapper test, which is extra surface rather than a direct empty-file assertion.
+
+_2026-09-21 final bmad-build implementation review: edge-case and verification-gap layers reviewed the
+current working-tree increment; the blind-hunter layer was skipped because the four-agent session cap left
+only two simultaneous reviewer slots._
+
+- **[edge-case] The persistent-empty credential fact created its temporary file before entering the cleanup `try` block.** Verdict: `low`. Confirmed: a cancelled or failed initial write after directory creation could leave the temporary directory behind. → **patch**: move the write inside the existing `try/finally`, keeping setup failure cleanup deterministic.
+- **[verification-gap] No findings.** The layer traced the increment's claims to the recorded focused and full deterministic runs and reported nothing to triage.

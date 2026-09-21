@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-07-21 (correct-course: added stories 4-7 and 4-8)
+# last_updated: 2026-09-21 (Story 4.8 final bmad-build close-out returned it to review)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -75,7 +75,7 @@ development_status:
   4-5-prove-the-command-event-pipeline-under-aspire: done
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
-  4-8-register-and-reconcile-date-reminders-durably: in-progress
+  4-8-register-and-reconcile-date-reminders-durably: review
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   epic-4-retrospective: done
 action_items:

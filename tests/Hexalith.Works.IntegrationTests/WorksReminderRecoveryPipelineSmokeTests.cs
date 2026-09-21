@@ -1,3 +1,10 @@
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+using Hexalith.EventStore.Client.Subscriptions;
+using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Reminders;
 
 using Shouldly;
@@ -39,6 +46,8 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksReminderRecoveryPipelineSmokeTests
 {
+    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
+
     [Fact]
     public async Task Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration()
     {
@@ -52,12 +61,14 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
 
         string tenant = NewTenant("overdue");
         string recoveryItem = NewWorkItem("work-overdue");
+        string secondPassProbeItem = NewWorkItem("work-second-pass-probe");
 
         // Host 1 — park a future await, prove its reminder was registered, then deliberately remove only that
         // Scheduler reminder. The durable pending-await index remains and must drive recreation after restart.
         // The await becomes overdue only while the host is genuinely down.
         DateTimeOffset recoveryInstant = default;
         PendingDateAwait? overdueAwait = null;
+        PendingDateAwait? secondPassProbeAwait = null;
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
             recoveryInstant = DateTimeOffset.UtcNow.AddMinutes(1);
@@ -69,8 +80,30 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
             await WorksAppHostTestReadiness
                 .WaitForPendingDateAwaitIndexedAsync(sidecarClient, overdueAwait!, token)
                 .ConfigureAwait(false);
+            await WaitForSuspensionMarkerCompletedAsync(client, sidecarClient, tenant, recoveryItem, token)
+                .ConfigureAwait(false);
             await WorksAppHostTestReadiness
                 .DeleteReminderAsync(sidecarClient, overdueAwait!, token)
+                .ConfigureAwait(false);
+
+            DateTimeOffset secondPassProbeInstant = DateTimeOffset.UtcNow.AddMinutes(10);
+            secondPassProbeAwait = WorksAppHostSmokeHarness.PendingAwait(
+                tenant,
+                secondPassProbeItem,
+                secondPassProbeInstant);
+            await WorksAppHostSmokeHarness
+                .ParkSuspendedOnDateAsync(client, tenant, secondPassProbeItem, secondPassProbeInstant, token)
+                .ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, secondPassProbeAwait, token)
+                .ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .WaitForPendingDateAwaitIndexedAsync(sidecarClient, secondPassProbeAwait, token)
+                .ConfigureAwait(false);
+            await WaitForSuspensionMarkerCompletedAsync(client, sidecarClient, tenant, secondPassProbeItem, token)
+                .ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .DeleteReminderAsync(sidecarClient, secondPassProbeAwait, token)
                 .ConfigureAwait(false);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, recoveryItem, token).ConfigureAwait(false)).ShouldBe(0);
         }).ConfigureAwait(true);
@@ -83,10 +116,16 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         // Host 2 — restart against the same Redis WITHOUT any --Works:Recovery:Tenants argument. Recovery
         // auto-discovers the parked await from the durable registry+index (no hand configuration), re-folds the
         // per-aggregate stream, finds it overdue, and reissues the resume through the reconciler → command gateway.
-        await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (_, client, _, token) =>
+        await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
             (await WorksAppHostSmokeHarness.WaitForResumedCountAsync(client, tenant, recoveryItem, atLeast: 1, token).ConfigureAwait(false))
                 .ShouldBe(1, "Recovery must auto-discover the overdue await from the durable index (no hand config) and resume it exactly once.");
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, secondPassProbeAwait!, token)
+                .ConfigureAwait(false);
+            await WorksAppHostTestReadiness
+                .DeleteReminderAsync(sidecarClient, secondPassProbeAwait!, token)
+                .ConfigureAwait(false);
 
             // The reconciliation pass is idempotent: re-reading after a settle interval shows no duplicate resume.
             await Task.Delay(TimeSpan.FromSeconds(3), token).ConfigureAwait(false);
@@ -95,8 +134,11 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         }).ConfigureAwait(true);
 
         // Host 3 — a second genuine startup reconciliation against the same durable state must remain convergent.
-        await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (_, client, _, token) =>
+        await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (_, client, sidecarClient, token) =>
         {
+            await WorksAppHostTestReadiness
+                .WaitForReminderRegisteredAsync(sidecarClient, secondPassProbeAwait!, token)
+                .ConfigureAwait(false);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, recoveryItem, token).ConfigureAwait(false)).ShouldBe(1);
         }).ConfigureAwait(true);
     }
@@ -208,6 +250,118 @@ public sealed class WorksReminderRecoveryPipelineSmokeTests
         string workItemId,
         CancellationToken cancellationToken)
         => await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, workItemId, cancellationToken).ConfigureAwait(false) > 0;
+
+    private static async Task WaitForSuspensionMarkerCompletedAsync(
+        HttpClient client,
+        HttpClient sidecarClient,
+        string tenant,
+        string workItemId,
+        CancellationToken cancellationToken)
+    {
+        DateTime deadline = DateTime.UtcNow.AddSeconds(60);
+        string? suspensionMessageId = null;
+        string lastDiagnostic = "The suspension event was not yet visible in the aggregate stream.";
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                if (suspensionMessageId is null)
+                {
+                    var body = new
+                    {
+                        tenant,
+                        domain = "work",
+                        aggregateId = workItemId,
+                        fromSequence = 0L,
+                        pageSize = 100,
+                    };
+                    using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/streams/read")
+                    {
+                        Content = JsonContent.Create(body),
+                    };
+                    request.Headers.Authorization = new AuthenticationHeaderValue(
+                        "Bearer",
+                        WorksAppHostSmokeHarness.MintToken(tenant));
+
+                    using HttpResponseMessage response = await client
+                        .SendAsync(request, cancellationToken)
+                        .ConfigureAwait(false);
+                    string responseBody = await response.Content
+                        .ReadAsStringAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                    lastDiagnostic = $"Stream status={(int)response.StatusCode} ({response.StatusCode}); Body={Bound(responseBody)}";
+                    if (response.IsSuccessStatusCode)
+                    {
+                        JsonElement page = JsonSerializer.Deserialize<JsonElement>(responseBody);
+                        suspensionMessageId = page.GetProperty("events")
+                            .EnumerateArray()
+                            .Where(static streamEvent => string.Equals(
+                                SimpleTypeName(streamEvent.GetProperty("eventTypeName").GetString() ?? string.Empty),
+                                nameof(WorkItemSuspended),
+                                StringComparison.Ordinal))
+                            .Select(static streamEvent => streamEvent.GetProperty("messageId").GetString())
+                            .SingleOrDefault();
+                    }
+                }
+
+                if (suspensionMessageId is not null)
+                {
+                    string markerKey = string.Concat(
+                        "eventstore:domain-events:markers:",
+                        Uri.EscapeDataString("work.events"),
+                        ":",
+                        Uri.EscapeDataString("/work/events"),
+                        ":",
+                        suspensionMessageId);
+                    string markerPath = $"/v1.0/state/{WorksReadModelKeys.StateStoreName}/{Uri.EscapeDataString(markerKey)}";
+                    using HttpResponseMessage markerResponse = await sidecarClient
+                        .GetAsync(markerPath, cancellationToken)
+                        .ConfigureAwait(false);
+                    string markerBody = await markerResponse.Content
+                        .ReadAsStringAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                    lastDiagnostic = $"Marker status={(int)markerResponse.StatusCode} ({markerResponse.StatusCode}); Body={Bound(markerBody)}";
+                    if (markerResponse.IsSuccessStatusCode && !string.IsNullOrWhiteSpace(markerBody))
+                    {
+                        EventStoreDomainEventMarkerRecord? marker = JsonSerializer
+                            .Deserialize<EventStoreDomainEventMarkerRecord>(markerBody, s_web);
+                        if (marker?.State == EventStoreDomainEventMarkerState.Completed)
+                        {
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
+            }
+            catch (JsonException ex)
+            {
+                lastDiagnostic = $"{ex.GetType().Name}: {ex.Message}";
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                lastDiagnostic = "The durable marker observation request exceeded the HTTP client timeout.";
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken).ConfigureAwait(false);
+        }
+
+        throw new TimeoutException(
+            $"[subscription-marker] Suspension event for work item '{workItemId}' in tenant '{tenant}' did not "
+            + $"reach its durable Completed marker within 60 seconds. {lastDiagnostic}");
+    }
+
+    private static string SimpleTypeName(string typeName)
+    {
+        int lastDot = typeName.LastIndexOf('.');
+        return lastDot >= 0 ? typeName[(lastDot + 1)..] : typeName;
+    }
+
+    private static string Bound(string value)
+        => value.Length <= 500 ? value : value[..500] + "…";
 
     // Unique per fact (canonical lowercase) so a re-run against a persistent dapr-init Redis never collides with
     // a prior run, and so one fact's auto-discovering reconciliation never re-folds another fact's items.

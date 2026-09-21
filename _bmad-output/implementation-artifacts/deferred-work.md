@@ -1013,6 +1013,8 @@ status: open
   summary: Give repeated occurrences of the same date await distinct durable resume identities without losing redelivery idempotence.
   evidence: `DateResume` derives the EventStore message id only from tenant, work item, and instant; a legitimate re-suspension on that same instant within the 24-hour command-status retention can be deduplicated as the earlier occurrence. Fixing this pre-existing Story 4.6 design requires carrying a suspension occurrence or sequence through pending-await, reminder, and command identity.
 
+<a id="story-4-8-canonical-reconciliation-stale-delay"></a>
+
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Recompute date-reminder delay at each scheduling operation during reconciliation.
   evidence: `DateReminderReconciler` snapshots `now` once before processing every candidate, so a future await scheduled late in a large pass receives its original relative delay and fires late by the time already spent processing earlier candidates; this behavior predates Story 4.8's baseline.
@@ -1034,6 +1036,8 @@ status: open
 - Spec-10 Verification Observed is still titled “final reviewed tree” and lists harness 33/33, Integration 526/526, and live 4/4, which can be read as current against spec-11’s 41/534 and no-new-live-credit evidence. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md:212]
 - The dated 2026-09-20 spec-10 five-patch close-out File List still omits `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`, unlike earlier dated blocks that include their implementing specs. Deferred: pre-existing spec-10 BH-12 inventory gap, not one of spec-11’s six named patches. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711]
 
+## Deferred from: final bmad-build review of Story 4.8 (2026-09-21)
+
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Preserve pending-date-await index repairability when a decoder upgrade recognizes a previously unknown event.
   evidence: `WorkItemProjectionDispatcher` advances the raw maximum-sequence watermark while folding only decoded events, so its `storedLastSequence >= incomingLastSequence` guard can reject the same replay after a later decoder upgrade would make that event state-affecting.
@@ -1041,3 +1045,4 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Recompute date-reminder delay for each steady-state registration.
   evidence: `WorkItemSuspendedReminderHandler` snapshots the clock once before scheduling every pending await, so later registrations can fire late by the latency spent awaiting earlier actor calls; this pre-existing behavior belongs with the reconciliation stale-delay family.
+  - Canonical entry: [reconciliation stale-delay family](#story-4-8-canonical-reconciliation-stale-delay); this row records the steady-state sibling without creating a second reconciliation work item.

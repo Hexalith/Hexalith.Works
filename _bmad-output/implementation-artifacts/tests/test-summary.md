@@ -3566,3 +3566,77 @@ The pre-edit `aspire start` baseline reached healthy Dapr Sentry, Placement, and
 EventStore project exited and left Works waiting. The AppHost was stopped cleanly before editing. The Tier-3
 aggregate was therefore not repeated, the preceding **0/4** result remains current, and no fresh live acceptance
 credit is claimed.
+
+## Story 4.8 final bmad-build review-patch close-out — 2026-09-21
+
+The final four review patches add the missing persistently-empty Sentry credential regression, record the four
+non-smoke facts introduced since spec-11, and repair the final deferred-work provenance and stale-delay family
+cross-link. No production behavior changed. The pre-edit isolated AppHost baseline reached healthy Works, Dapr
+Sentry, Placement, Scheduler, sidecar, and state-store resources and was stopped cleanly before compilation.
+
+```text
+DOTNET_CLI_HOME=/var/tmp/story48-review-root dotnet build Hexalith.Works.slnx \
+  --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.WorksAppHostTopologyTests" \
+  -class "Hexalith.Works.IntegrationTests.IndexedPendingDateAwaitSourceTests"
+# 47/47 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 538/538 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+The Tier-3 aggregate was not repeated because this close-out changes deterministic coverage and bookkeeping only.
+The preceding **0/4** result remains current, and no fresh live acceptance credit is claimed.
+
+## Story 4.8 final full-baseline review close-out — 2026-09-21
+
+The final review hardened the live recovery proof rather than changing production behavior. Host 1 now waits for
+the exact suspension event's durable consumer marker to reach `Completed`, preventing Host 2 subscription
+redelivery from masquerading as startup reconciliation. A separate marker-complete future-await canary is
+re-registered and deleted by Host 2, then must be re-registered by Host 3 before the no-duplicate assertion,
+proving the second startup pass actually ran. Credential exhaustion is a theory over empty and whitespace-only
+content.
+
+```text
+DOTNET_CLI_HOME=/var/tmp/story48-final-root dotnet build Hexalith.Works.slnx \
+  --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.WorksAppHostTopologyTests"
+# 18/18 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -method "Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests.Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration"
+# 1/1 passed, 0 skipped, 380.665s
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 539/539 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+The exact modified Tier-3 recovery fact ran and passed. The other live facts were not repeated in this final
+close-out, so no fresh aggregate **4/4** claim is made. `git diff --check` passed and `aspire ps` was empty after
+the live run.
