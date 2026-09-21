@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-progress
+status: in-review
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
