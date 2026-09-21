@@ -1028,3 +1028,8 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Apply fail-closed page and payload identity validation to the child-completion and cascade recovery stream readers.
   evidence: The pre-existing Story 4.7 readers do not consistently validate stream domain or decoded event identity and silently discard malformed lifecycle or child evidence, allowing false parent-resume decisions or incomplete cascade checkpoints. Their separate paging defect remains owned by DW-86.
+
+## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-11.md (2026-09-21)
+
+- Spec-10 Verification Observed is still titled “final reviewed tree” and lists harness 33/33, Integration 526/526, and live 4/4, which can be read as current against spec-11’s 41/534 and no-new-live-credit evidence. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md:212]
+- The dated 2026-09-20 spec-10 five-patch close-out File List still omits `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`, unlike earlier dated blocks that include their implementing specs. Deferred: pre-existing spec-10 BH-12 inventory gap, not one of spec-11’s six named patches. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711]

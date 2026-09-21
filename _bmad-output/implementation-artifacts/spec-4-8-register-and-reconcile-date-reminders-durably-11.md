@@ -2,7 +2,7 @@
 title: 'Close remaining Story 4.8 spec-10 review patches'
 type: 'bugfix'
 created: '2026-09-20'
-status: 'done'
+status: 'in-progress'
 route: 'oneshot'
 review_loop_iteration: 0
 context: []
@@ -39,3 +39,18 @@ context: []
 - BH-07 — `false`: the fallback executes only after the production IPv6 bind has already classified that address family as unavailable. IPv6-capable hosts take the primary branch and assert both listener settings; unavailable hosts cannot make a meaningful IPv6 assertion.
 - BH-08 — `false`: the new regression targets the reported null-return path by requiring the classified non-zero failure and successful disposal. `ExceptionDispatchInfo.Capture(probeFailure).Throw()` directly establishes identity/stack preservation; brittle stack-trace assertions are outside the defect.
 - BH-09 — `false`: `source_spec` entries conventionally identify a repository-relative artifact, while each row's summary and evidence identify the originating concern. The five rows are distinct from the existing canonical anchored items and require no duplicate cross-link.
+
+### Review Findings (2026-09-21, bmad-code-review, spec-11 close-out `origin/main...HEAD`)
+
+_Scope: `origin/main...HEAD` (HEAD `0639a69`). Layers: blind-hunter, verification-gap, and acceptance-auditor reported; edge-case-hunter returned empty and is recorded as failed. 8 raw findings triaged to 0 decision, 2 patch, 2 defer, 4 rejected._
+
+- [ ] [Review][Patch] The parent File List has no dated spec-11 inventory, so this increment’s tree is unlisted while earlier close-outs added their own dated blocks [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:709]
+- [ ] [Review][Patch] Dev Agent Record Completion Notes were not prepended for spec-11, so the latest bullet still reports focused harness 40/40 and non-smoke Integration 533/533 against this increment’s Change Log and `test-summary.md` totals of 41 and 534 [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:490]
+- [x] [Review][Defer] Spec-10 Verification Observed is still titled “final reviewed tree” with harness 33/33, Integration 526/526, and live 4/4 [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md:212] — deferred: fix edits another spec
+- [x] [Review][Defer] The dated **2026-09-20 spec-10 five-patch close-out** File List still omits `spec-4-8-register-and-reconcile-date-reminders-durably-10.md` [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711] — deferred: pre-existing spec-10 BH-12 inventory gap, not one of spec-11’s six named patches
+
+**Rejected:**
+- `false` — real-child disposal still races because `WaitForExitAsync` starts after adapter `Dispose` and never sets `EnableRaisingEvents`: the independent `GetProcessById` handle is retained before dispose, and `WaitForExitAsync` waits on that process handle rather than the disposed `Exited` event.
+- `false` — IPv6 fallback `DualMode = true` before production configuration lets IPv6-capable CI skip assertions: that block runs only after production bind classified IPv6 as inapplicable; capable hosts take the primary branch.
+- `false` — the five deferred-work rows still need `#story-4-8-canonical-*` fragment ids: they are distinct spec-10 concerns, not re-observations of the existing canonical items.
+- `false` — the wrapper non-zero regression is incomplete without `using var probe` and `ShouldNotContain("process observation failed")`: the wrapper already disposes, `InnerException.ShouldBeNull()` already rejects a typical wrap, and identity/stack pins were left out of spec-11 defect scope.

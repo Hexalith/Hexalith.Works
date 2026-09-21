@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-review
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1576,3 +1576,18 @@ _Scope: `c4c925b...HEAD` (HEAD `900f99c`) — spec-10 five-patch close-out plus 
 - `false` — real-child fail-safe only asserts `SafeHandle.IsClosed` and does not prove two-attempt false-wait: the retained-handle Dispose call is observable, and the two-attempt false-wait path is already required by `Process_scheduler_volume_probe_disposal_retries_when_the_first_wait_is_false_with_bounded_waits`.
 - `false` — returning Story 4.8 to `review` after an honest 0/4 live run claims live credit: spec-10 AC3 requires recording actual totals and returning to review; the latest story Change Log and `test-summary.md` explicitly withhold live acceptance credit.
 - `low`, not worth fixing — `GetProcessById` after `Process.Start` can throw and leak the 30-second child: that window is not everyday, and wrapping Start in a new try/finally is an extra isolation guard rather than a direct assertion fix.
+
+### Review Findings (2026-09-21, bmad-code-review, spec-11 close-out `origin/main...HEAD`)
+
+_Scope: `origin/main...HEAD` (HEAD `0639a69`) — spec-11 remaining spec-10 review-patch close-out. 7 files, +140/−27, 317 diff lines. Spec: `spec-4-8-register-and-reconcile-date-reminders-durably-11.md`. Layers: blind-hunter, verification-gap, and acceptance-auditor reported; edge-case-hunter returned empty and is recorded as failed. 8 raw findings triaged to 0 decision, 2 patch, 2 defer, 4 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] The parent File List has no dated spec-11 inventory, so this increment’s tree (`spec-4-8-register-and-reconcile-date-reminders-durably-11.md`, the edited spec-10 file, `WorksAppHostSmokeHarnessTests.cs`, story/sprint/`test-summary`/`deferred-work`) is unlisted while earlier close-outs added their own dated blocks [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:709]
+- [ ] [Review][Patch] Dev Agent Record Completion Notes were not prepended for spec-11, so the latest bullet still reports focused harness 40/40 and non-smoke Integration 533/533 against this increment’s Change Log and `test-summary.md` totals of 41 and 534 [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:490]
+- [x] [Review][Defer] Spec-10 Verification Observed is still titled “final reviewed tree” with harness 33/33, Integration 526/526, and live 4/4, which can be read as current against spec-11’s 41/534 and no-new-live-credit evidence [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md:212] — deferred: fix edits another spec
+- [x] [Review][Defer] The dated **2026-09-20 spec-10 five-patch close-out** File List still omits `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`, unlike earlier dated blocks that include their implementing specs [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711] — deferred: pre-existing spec-10 BH-12 inventory gap, not one of spec-11’s six named patches
+
+**Rejected:**
+- `false` — real-child disposal still races because `WaitForExitAsync` starts after adapter `Dispose` and never sets `EnableRaisingEvents`: the independent `GetProcessById` handle is retained before dispose, and `WaitForExitAsync` waits on that process handle rather than the disposed `Exited` event the spec-11 patch replaced.
+- `false` — IPv6 fallback `DualMode = true` before production configuration, plus the empty unavailable-loopback catch, lets IPv6-capable CI stay green with no assertions: that block runs only after production bind already classified IPv6 as inapplicable; capable hosts take the primary branch and assert both settings, and `DualMode = true` is the pre-condition that production `DualMode = false` is measured against.
+- `false` — the five deferred-work rows still need `#story-4-8-canonical-*` fragment ids: those rows are distinct spec-10 concerns, not re-observations of the existing canonical unpark/scheduler/telemetry items, and `source_spec` plus summary already identify them.
+- `false` — the wrapper non-zero regression is incomplete without `using var probe` and `ShouldNotContain("process observation failed")`: sibling wrapper facts omit `using` because the wrapper already disposes, `InnerException.ShouldBeNull()` already rejects a typical wrap, and a same-message rewrite would need brittle identity/stack pins that spec-11 BH-08 left out of defect scope.
