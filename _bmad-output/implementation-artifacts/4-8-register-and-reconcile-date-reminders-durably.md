@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1659,3 +1659,20 @@ _Scope: `origin/main...HEAD` (HEAD `0639a69`) — spec-11 remaining spec-10 revi
 - `false` — IPv6 fallback `DualMode = true` before production configuration, plus the empty unavailable-loopback catch, lets IPv6-capable CI stay green with no assertions: that block runs only after production bind already classified IPv6 as inapplicable; capable hosts take the primary branch and assert both settings, and `DualMode = true` is the pre-condition that production `DualMode = false` is measured against.
 - `false` — the five deferred-work rows still need `#story-4-8-canonical-*` fragment ids: those rows are distinct spec-10 concerns, not re-observations of the existing canonical unpark/scheduler/telemetry items, and `source_spec` plus summary already identify them.
 - `false` — the wrapper non-zero regression is incomplete without `using var probe` and `ShouldNotContain("process observation failed")`: sibling wrapper facts omit `using` because the wrapper already disposes, `InnerException.ShouldBeNull()` already rejects a typical wrap, and a same-message rewrite would need brittle identity/stack pins that spec-11 BH-08 left out of defect scope.
+
+### Review Findings (2026-09-21, bmad-code-review, final bmad-build increment `origin/main...HEAD`)
+
+_Scope: `origin/main...HEAD` (HEAD `5cc1956`) — unreviewed increment `test(reminders): close story 4.8 review gaps`. 8 files, +229/−13, 401 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. 15 raw findings triaged to 0 decision, 4 patch, 0 defer, 6 rejected. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [ ] [Review][Patch] Parent YAML is `status: done` while the body, Change Log, and sprint board return Story 4.8 to `review`; spec-10/spec-11 already required frontmatter `in-review` for that pair [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:3]
+- [ ] [Review][Patch] Persistently empty Sentry credential files are never fail-closed in tests: `SentryCredentialReadFailsClosedAfterTheBoundedBudget` uses a missing file and pins `FileNotFoundException`, so a mutation that returns empty PEM when `lastFailure` is null stays green [src/Hexalith.Works.AppHost/DaprSelfHostedMtls.cs:248]
+- [ ] [Review][Patch] This increment adds three non-smoke facts but leaves `test-summary.md` and the latest serial Integration total at spec-11's **534/534** [_bmad-output/implementation-artifacts/tests/test-summary.md:3559]
+- [ ] [Review][Patch] The two new deferred-work `source_spec` rows were appended under the spec-11 heading and the steady-state stale-delay row does not cross-link the existing `DateReminderReconciler` family entry [_bmad-output/implementation-artifacts/deferred-work.md:1032]
+
+**Rejected:**
+- `false` — `maxAttempts <= 0`, negative `retryDelay`, and null `delayAsync` have no facts: `ConfigureSidecar` and the private three-argument wrapper always pass `CredentialReadAttempts` (20), `CredentialReadRetryDelay` (500 ms), and `Task.Delay`, so those guards are unreachable on the live sidecar path.
+- `false` — caller cancellation during `delayAsync` or `File.ReadAllTextAsync` could be rewritten as `InvalidOperationException`: `OperationCanceledException` is outside the `IOException`/`UnauthorizedAccessException` filter and already propagates.
+- `false` — `Ignores_an_unknown_non_state_event_beside_a_valid_suspension` replaces `Created` and omits `SkippedParkedCount`: the stream is still `[unknown, Suspended]`, `WorksEventDecoder` returns null for `FutureInformationalEvent`, the non-state skip continues, and `WorkItemSuspended` alone is enough for the fold; the sibling discovery fact already pins `SkippedParkedCount` on the same seed path.
+- `false` — empty or whitespace `certificateDirectory`/`fileName` can read a relative CWD credential: `ConfigureSidecar` already `ThrowIfNullOrWhiteSpace`s the directory, and production file names are literals (`ca.crt` / `issuer.crt` / `issuer.key`).
+- `false` — a throwing, null, or never-completing `delayAsync` skips remaining attempts and never wraps fail-closed: production injects `Task.Delay`; a delay failure already escapes, which is fail-closed, and a null/hanging delay is not reachable from the wrapper.
+- `low`, not worth fixing — the new facts call only the six-parameter seam, so changing the private 20×500 ms wrapper budget would stay green: pinning that budget needs either `internal` constants or a ~9.5 s real-delay wrapper test, which is extra surface rather than a direct empty-file assertion.
