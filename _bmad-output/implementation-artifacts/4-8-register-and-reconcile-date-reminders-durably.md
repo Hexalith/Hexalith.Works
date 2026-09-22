@@ -1,6 +1,6 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
@@ -1919,3 +1919,18 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Runtime` (HEAD `643d375`) — 
 - `false` — a failed `MarkDispatched` leaves an in-progress lease that redelivery can never complete: the registered Dapr store does not persist `InProgress`; a failed transition leaves no marker, and the next delivery is `Acquired` and runs handlers again.
 - `false` — a non-HTTP gateway URI makes recovery commands target that endpoint: `HttpClient` rejects schemes other than HTTP and HTTPS when the request is sent.
 - `low`, not worth fixing — the gateway URI is checked on first client use, `Uri.TryCreate` accepts userinfo, query, and fragment, and a null `DAPR_API_TOKEN` is forwarded: a bad absolute URI already throws, non-HTTP fails at send, and `DaprServiceInvocationHandler` adds the token header only when the token is non-empty; extra origin checks are more than a direct correction of an everyday miss.
+
+### Review Findings (2026-09-22, bmad-code-review, commit `c2a59b8`)
+
+_Scope: `c2a59b8^..c2a59b8` (`fix(reminders): harden durable reminder recovery`) — 13 files, +384/−26, 810 diff lines. Spec: this story. Layers: blind-hunter, verification-gap (no gaps), acceptance-auditor. Edge Case Hunter returned empty and is excluded. 9 raw findings triaged to 0 decision, 3 patch, 1 defer, 5 rejected._
+
+- [ ] [Review][Patch] A newer foreign roll-up at the aggregate key is kept, so the identity fail-closed read never heals the document [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:465]
+- [ ] [Review][Patch] The new 128-character skip bound slices the raw event-type name, so a long namespace drops the simple name and control characters stay in the line [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:49]
+- [ ] [Review][Patch] The 2026-09-22 zero-warning build line omits the NuGetAudit and MinVer pins the previous close-outs passed on the build [\_bmad-output/implementation-artifacts/tests/test-summary.md:3653]
+- [x] [Review][Defer] Domain-event Skipped, Duplicate, and MarkerFailure still log raw EventTypeName and CorrelationId [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:31] — deferred: pre-existing; this commit only added the caught exception argument on MarkerFailure
+
+**Rejected:**
+- rejected, fix edits the spec — frontmatter `status: done`, body `Status: in-progress`, and sprint `review` disagree (blind-hunter and acceptance-auditor). Aligning them edits this story file.
+- `false` — `CascadeCheckpointIndexStaleAfterHours <= 0` still prunes via `Math.Clamp`: `AddWorksReminderAndCascadeRecovery` now `ValidateOnStart`s `> 0`, and the clamp ceiling is the documented overflow guard (`MaxStaleAfterHours`). A running host cannot construct the reconciler with zero.
+- `false` — the projection truncation fact does not prove a 128-character cut: it requires the 128-character prefix and rejects the following `y`/`z`, so a shorter or longer formatted value fails.
+- `false` — EventId 4806/4807 and the marker-failure facts accept any `MessageId` row: 4806 also requires `ReasonCode=reserved-tenant-id`, 4807 requires EventId 4807 at Warning, and the release and completion facts require EventId 4803 with the caught exception.
