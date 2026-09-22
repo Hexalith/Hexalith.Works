@@ -3678,7 +3678,9 @@ The focused Debug project build remains blocked before these changes compile by 
 `Hexalith.PolymorphicSerializations` assembly conflict (package 1.19.3 versus source assembly 1.0, CS1704).
 The Release solution and all deterministic lanes above are green. No Tier-3 live fact was needed for these
 deterministic review patches, so no fresh live acceptance credit is claimed. The older DW-56 marker-protocol
-finding remains open because it requires a cross-repository EventStore contract change.
+finding remains an accepted deferral on the reopened DW-56 row: the 2026-09-05 sweep had closed that row while
+`MarkCompletedSafelyAsync` and `ReleaseSafelyAsync` still only log, and the durable retry stays an EventStore
+contract change.
 
 ## Story 4.8 final three-finding close-out — 2026-09-22
 

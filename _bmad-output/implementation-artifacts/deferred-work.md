@@ -457,11 +457,13 @@ archived: 2026-09-18
 
 ### DW-56: Completed-marker failure can still be acknowledged as processed
 
-status: done 2026-09-05
+status: open
+reopened: 2026-09-22
+amendment: The 2026-09-05 sweep marked this row done and it was archived on 2026-09-18. MarkCompletedSafelyAsync and ReleaseSafelyAsync still catch marker-store failures and only log. Story 4.8 keeps the accepted deferral on this row. The durable post-dispatch retry stays an EventStore marker-protocol change.
+prior-status: done 2026-09-05
 resolution: resolved by sweep bundle dw-domain-event-processing-hardening
 resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
-archived: 2026-09-18
 
 ### DW-57: Event processor does not reject non-work domains
 
@@ -1080,3 +1082,7 @@ status: open
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22)
 
 - Domain-event `Skipped`, `Duplicate`, and `MarkerFailure` still log raw `EventTypeName` and `CorrelationId`. Pre-existing; commit `c2a59b8` only added the caught exception argument on `MarkerFailure`. [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:31]
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22)
+
+- `ReadModelWriteContext.WithEventDiagnostics` still copies the first raw correlation id and up to eight raw event-type names into read-model conflict and exhaustion logs. Pre-existing platform helper; this close-out sanitized projection EventIds 4500 and 4504 only. [references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelWritePolicy.cs:254]

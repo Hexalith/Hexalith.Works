@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: done
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -2000,3 +2000,23 @@ _Scope: `c2a59b8^..c2a59b8` (`fix(reminders): harden durable reminder recovery`)
 - `false` — `CascadeCheckpointIndexStaleAfterHours <= 0` still prunes via `Math.Clamp`: `AddWorksReminderAndCascadeRecovery` now `ValidateOnStart`s `> 0`, and the clamp ceiling is the documented overflow guard (`MaxStaleAfterHours`). A running host cannot construct the reconciler with zero.
 - `false` — the projection truncation fact does not prove a 128-character cut: it requires the 128-character prefix and rejects the following `y`/`z`, so a shorter or longer formatted value fails.
 - `false` — EventId 4806/4807 and the marker-failure facts accept any `MessageId` row: 4806 also requires `ReasonCode=reserved-tenant-id`, 4807 requires EventId 4807 at Warning, and the release and completion facts require EventId 4803 with the caught exception.
+
+### Review Findings (2026-09-22, bmad-code-review, unpushed close-out `origin/main...HEAD`)
+
+_Scope: `origin/main...HEAD` (HEAD `94c2e34`) — 8 files, +210/−34, 471 diff lines. Spec: this story. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported, none failed. The story frontmatter `baseline_commit: 9526c31` was not used._
+
+- [x] [Review][Decision] **DW-56 is closed while this close-out still treats the marker-store failure as an open deferral** — Decided 2026-09-22 (human): reopen DW-56. The 2026-09-05 sweep had closed the row; `MarkCompletedSafelyAsync` and `ReleaseSafelyAsync` still only log. The story deferral stays on that row, and the Group 2/3 test-summary sentence now names the reopened deferral.
+
+- [ ] [Review][Patch] Unicode line separators still pass the new single-line sanitizers [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:342]
+- [ ] [Review][Patch] Known-type projection skip paths are not pinned to the simple event name [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:58]
+
+- [x] [Review][Defer] Read-model write diagnostics still copy raw correlation ids and event-type names [references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelWritePolicy.cs:254] — deferred: pre-existing; `WithEventDiagnostics` is unchanged by this close-out and still forwards the first raw correlation id plus up to eight raw event-type names into conflict and exhaustion logs
+
+**Rejected:**
+- rejected, fix edits the spec — story YAML `status: done` while the body and sprint board say `review` (blind-hunter and acceptance-auditor). Aligning the frontmatter edits this story file.
+- `false` — the final-review block defers BH-01–BH-14 and EC-01–EC-06 against a “do not defer it again” instruction: those clauses carry an existing deferred entry and tell a later review not to open a second one.
+- `false` — healing a foreign roll-up leaves a foreign sequence on the tenant index: `PersistRollUpAsync` writes only the roll-up document. `UpsertTenantIndexAsync` compares `LastSequences` with the delivered request sequence, not the foreign roll-up’s `LatestAcceptedSourceSequence`.
+- `false` — the current-schema roll-up heal is a different code path: `PersistRollUpAsync` selects `CurrentRollUpKey` or `RollUpKey` and runs the same identity-and-sequence predicate for both.
+- `false` — a control-character suffix makes `WorkItemCreated` miss the catalog: `SimpleTypeName` keeps the characters after the last dot, so a contaminated token is an unknown type and is skipped. That is the fail-closed lookup.
+- `false` — a 256-character work-item id breaks the 512-character log assertion: `AggregateIdentity` already caps aggregate ids at 256 ASCII characters with no controls. Event 4500 logs that validated id. `ShouldBeLessThan(512)` bounds the short fixture message, not every legal identifier.
+- `low`, not worth fixing — Task 4 still says `FromSequence = LastSequenceReturned + 1` while the cursor is exclusive: the implementation and tests keep the exclusive lower bound, and the correction edits this story’s task text.
