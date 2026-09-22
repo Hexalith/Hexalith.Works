@@ -21,6 +21,7 @@ jobs:
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
+      dapr-runtime-version: '1.18.3'
       build-timeout-minutes: 60
       run-consumer-validation: true
       unit-test-projects: |

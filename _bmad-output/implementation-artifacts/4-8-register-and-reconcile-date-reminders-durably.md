@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-progress
+status: done
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -123,7 +123,7 @@ _Added by the 2026-07-21 correct-course (audit findings F-RT-3 critical, F-RT-5 
 - [x] [Review][Patch] [Medium] `IndexedPendingDateAwaitSource.ScanTenantAsync` propagates any single aggregate's stream-read failure, which aborts the entire cross-tenant `GetPendingDateAwaitsAsync` scan (by design — the comment states this is deliberate, to avoid treating a partial scan as success). Combined with `ReminderReconciliationService.ExecuteAsync` running its bounded retries only once at host startup and then giving up permanently on exhaustion, one persistently-unreadable stream in any single tenant silently disables date-reminder recovery for **every** tenant until the next host restart — a cross-tenant blast-radius regression versus the retired `StreamReadingPendingDateAwaitSource`, which caught and logged per-tenant failures and kept scanning the rest. Recommend isolating per-tenant failures (log + skip that tenant, still mark the overall pass incomplete for retry) instead of aborting the whole scan. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:65-73] — resolved 2026-09-05: `GetPendingDateAwaitsAsync` now catches per-tenant, logs (`WorksRecoveryLog.PendingDateAwaitTenantScanFailed`), continues scanning the remaining tenants, and throws the now-actually-wired-in `PendingDateAwaitScanIncompleteException` carrying the partial results once every tenant has been attempted; `DateReminderReconciler.ReconcileAsync` acts on those partial results before rethrowing so the retry-worthy failure is still surfaced. Proven by `IndexedPendingDateAwaitSourceTests.Isolates_a_single_tenant_scan_failure_and_still_returns_partial_results_from_the_others` and `DateReminderRecoveryRuntimeTests.Reconciler_acts_on_partial_results_then_rethrows_when_the_source_scan_is_incomplete`. This also closes the 2026-09-05 finding below (line 130) that the exception was dead code.
 - [x] [Review][Patch] [Low] `WorksEventIdentity.Matches` treats a payload type with no `AggregateId` property as a match (`payloadAggregate is null || ...`) instead of failing closed. Low impact today since `TenantId`+`WorkItemId` remain mandatory, but it silently weakens the identity check for any future payload shape lacking that property. [src/Hexalith.Works/Runtime/WorksEventIdentity.cs:18-21] — resolved 2026-09-05: fails closed for any non-rejection payload missing `AggregateId`. Note: all nine `IRejectionEvent` types (`WorkItemTransitionRejected` etc.) legitimately carry no `AggregateId` by design, so an unconditional fail-closed broke `WorkItemProjectionQueryAdapterTests` in the first pass of this fix — corrected to check `payload is IRejectionEvent` before failing closed, keeping rejection events matching by `TenantId`+`WorkItemId` alone. Proven by new `WorksEventIdentityTests` (5 facts).
 - [x] [Review][Patch] [Low] `PendingDateAwaitStreamReader.RebuildAsync` doesn't advance its `from` cursor when a page reports `IsTruncated=true` but `Metadata.LastSequenceReturned=null` (a documented-possible shape per `StreamReadMetadata`'s own XML doc: null "when the page is empty"), so it re-reads the same page every remaining iteration until the page budget is exhausted, then fails closed with a message ("exceeded the ... page budget") that misdescribes the actual condition. [src/Hexalith.Works/Reminders/PendingDateAwaitStreamReader.cs:75-89] — resolved 2026-09-05: fails closed immediately with an accurate message when this shape is seen, instead of looping to budget exhaustion. Proven by `IndexedPendingDateAwaitSourceTests.Fails_closed_immediately_when_a_truncated_page_reports_no_last_sequence_instead_of_stalling_the_cursor` (asserts exactly one gateway call).
-- [ ] [Review][Patch] [Low] `WorksDomainEventProcessor.MarkCompletedSafelyAsync`/`ReleaseSafelyAsync` (new file) catch every exception from the durable marker store and only log — no retry, no escalation. A marker-store failure after a handler already ran successfully leaves that message id permanently "acquired but unresolved," discoverable only via log monitoring. [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:268-302] — not fixed 2026-09-05: this is the same family of issue already tracked as `deferred-work.md` DW-56 ("Completed-marker failure can still be acknowledged as processed"), whose own recorded decision requires extending the **EventStore submodule's** marker protocol with a durable post-dispatch/retry state — a cross-repo change out of a single Works-repo session's scope, not an in-band patch. Left open here and cross-referenced to DW-56 rather than building a narrower, protocol-incompatible retry mechanism.
+- [x] [Review][Defer] [Low] `WorksDomainEventProcessor.MarkCompletedSafelyAsync`/`ReleaseSafelyAsync` (new file) catch every exception from the durable marker store and only log — no retry, no escalation. A marker-store failure after a handler already ran successfully leaves that message id permanently "acquired but unresolved," discoverable only via log monitoring. [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:268-302] — accepted deferral 2026-09-05: this is the same family of issue already tracked as `deferred-work.md` DW-56 ("Completed-marker failure can still be acknowledged as processed"), whose own recorded decision requires extending the **EventStore submodule's** marker protocol with a durable post-dispatch/retry state — a cross-repo change out of a single Works-repo session's scope, not an in-band patch. Cross-referenced to DW-56 rather than building a narrower, protocol-incompatible retry mechanism.
 - [x] [Review][Patch] [Low] `_bmad-output/implementation-artifacts/sprint-status.yaml` — this diff rewrites every line of the file for what is only a couple of actual field changes (`4-8` status, `last_updated`), most likely a line-ending/whitespace normalization slip. Worth a clean re-save so the diff reflects only the real change. [_bmad-output/implementation-artifacts/sprint-status.yaml] — resolved 2026-09-05: normalized to consistent CRLF (5 lines had drifted to LF-only); re-save now diffs as only the 5 corrected lines.
 
 ### Review Findings (2026-09-05, bmad-code-review)
@@ -374,6 +374,35 @@ retain their earlier verdict and route with carried evidence._
 - **[edge-case-hunter EC-08] The append-only tenant registry grows without compaction.** Verdict: `low`, rejected. Carried with EC-07: sharding or removal is a durable schema redesign for a low ordinary-use risk.
 - **[edge-case-hunter EC-09] Pre-index suspended streams can be undiscoverable after retiring configured-tenant scans.** Verdict: `maybe-false` → **defer**. Carried: this is the same empty-registry/backfill reachability question as BH-03 and still depends on projection-poller reset behavior.
 
+_2026-09-22 final bmad-build review after the final three-finding close-out. All three layers reviewed the
+`9526c31` baseline diff. Every raw finding is classified below before grouping; repeated findings retain
+their earlier verdict and route with carried evidence._
+
+- **[blind-hunter BH-01] Startup reminder reconciliation permanently stops after its bounded retry budget.** Verdict: `medium` → **defer**. Carried: the same `ReminderReconciliationService` location and give-up behavior remain exactly as the existing retry/readiness rows and deferred entry record; do not defer it again.
+- **[blind-hunter BH-02] EventId 4603 promises an at-least-once retry even on the last attempt or at call sites without a retry loop.** Verdict: `medium` → **defer**. Carried: the unchanged shared template and final-attempt consequence are already recorded in the 4603 exhaustion-policy entries; do not defer it again.
+- **[blind-hunter BH-03] One submit or schedule failure can starve later reconciliation and steady-state awaits.** Verdict: `medium` → **defer**. Carried: both cited loops still fail fast exactly as the canonical reconciler/handler ordering entries record.
+- **[blind-hunter BH-04] Reconciliation and steady-state scheduling reuse one pre-loop clock snapshot.** Verdict: `medium` → **defer**. Carried: the existing reconciler and handler stale-delay entries own both unchanged loops.
+- **[blind-hunter BH-05] Due-now reconciliation has no identity-bearing failure telemetry.** Verdict: `medium` → **defer**. Carried: the existing diagnostics decision retains generic 4603 and assigns any new event surface to the exhaustion/ordering work.
+- **[blind-hunter BH-06] Re-suspending at the same instant reuses the earlier resume identity.** Verdict: `medium` → **defer**. Carried: the canonical occurrence/sequence-identity entry already owns the required cross-record redesign.
+- **[blind-hunter BH-07] Duplicate or very large date-await sets produce redundant work and larger index documents.** Verdict: `low` → **defer**. Carried: deterministic identities bound accepted outcomes, while the existing durable await-set normalization entry owns duplicate conditions; no separate maximum-policy defect was demonstrated.
+- **[blind-hunter BH-08] Early resume or termination leaves stale reminders until their due time.** Verdict: `low`, rejected. Carried: Story 4.8 explicitly accepts the idempotent stale-reminder posture, and proactive cleanup requires new event-consumption/state machinery.
+- **[blind-hunter BH-09] Pending-date watermark and tenant-registry documents grow without compaction.** Verdict: `low`, rejected. Carried: ordinary impact remains low, and safe pruning or sharding requires a durable migration/retention policy rather than a direct correction.
+- **[blind-hunter BH-10] Parked reminder candidates have no supported unpark/replay path.** Verdict: `medium` → **defer**. Carried: the unchanged parked skip and terminal disposition are already owned by the canonical unpark/replay entry.
+- **[blind-hunter BH-11] Exact caller cancellation inside a tenant can discard that tenant's accumulated evidence.** Verdict: `medium` → **defer**. Carried: the source remarks and prior human ruling deliberately retain this exact-token in-tenant limitation.
+- **[blind-hunter BH-12] The sibling future-reminder live fact can pass on subscription redelivery instead of startup recovery.** Verdict: `medium` → **defer**. Carried: the exact sibling-fact marker-barrier ambiguity is already recorded as a pre-existing verification gap.
+- **[blind-hunter BH-13] A raw-sequence watermark can prevent index repair after a decoder upgrade.** Verdict: `medium` → **defer**. Carried: the same `MaxSequence` plus `>=` repairability gap remains recorded in the pending-index entry.
+- **[blind-hunter BH-14] Local EventStore/Admin ACLs allow by default and Works receives broad EventStore `POST /**`.** Verdict: `medium` → **defer**. Carried: the two existing local-ACL entries own both unchanged policies and require route enumeration before narrowing.
+- **[blind-hunter BH-15] Story lifecycle and historical task prose are internally stale.** Verdict: `low`, rejected. The runtime and tests use the correct exclusive cursor and retry semantics, and this finding's correction edits the build spec under review; presentation synchronizes lifecycle tracking separately.
+- **[verification-gap VG-01] EventId 4500 did not adopt the new single-line correlation sanitization.** Verdict: `medium` → **patch, resolved**. `BoundCorrelationId` now replaces control characters within its 128-character bound; the focused regression injects CR/LF/tab/control-1 and the affected class passed **25/25**.
+- **[verification-gap VG-02] CI inherited Dapr runtime 1.18.2 while the runnable smoke harness requires at least 1.18.3.** Verdict: `high` → **patch, resolved**. The exact pinned reusable workflow defaults to 1.18.2 and consumes its input for the integration job; `.github/workflows/ci.yml` now passes `dapr-runtime-version: '1.18.3'`, and `actionlint` passes.
+- **[edge-case-hunter EC-01] The reconciler's one-time clock snapshot can make later awaits late.** Verdict: `medium` → **defer**. Carried: identical location and consequence to BH-04 and the canonical reconciliation stale-delay entry.
+- **[edge-case-hunter EC-02] The handler's one-time clock snapshot can make later registrations late.** Verdict: `medium` → **defer**. Carried: identical location and consequence to BH-04 and the canonical steady-state stale-delay entry.
+- **[edge-case-hunter EC-03] Stream-page cursor metadata can disagree with the request or returned sequences.** Verdict: `maybe-false` → **defer**. Carried: the cursor-consistency and unread-tail rows own these unchanged invariant questions and still require gateway-contract evidence or fault injection.
+- **[edge-case-hunter EC-04] Projection replay does not reject duplicate or gapped positive sequence numbers.** Verdict: `maybe-false` → **defer**. Carried: the existing projection-ingress row records the same missing contiguity check and the contract evidence needed to establish reachability.
+- **[edge-case-hunter EC-05] Pending awaits that predate registry population may remain undiscoverable after upgrade.** Verdict: `maybe-false` → **defer**. Carried: the existing empty-registry/backfill row owns the same reachability question and still depends on projection-poller replay semantics.
+- **[edge-case-hunter EC-06] Startup reconciliation can finish before late projection index entries appear.** Verdict: `maybe-false` → **defer**. Carried with EC-05: the no-readiness-barrier consequence is unchanged, while reachability still depends on the same projection-poller/backfill evidence.
+- **[edge-case-hunter EC-07] Task text says `LastSequenceReturned + 1` although the cursor is exclusive.** Verdict: `low`, rejected. Carried: the implementation correctly preserves the exclusive lower bound, and the proposed correction edits only the build spec under review.
+
 ## Dev Notes
 
 ### Scope Boundary
@@ -580,6 +609,19 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - 2026-09-05 session Tier-3 attempt (honest, inconclusive): `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class *SmokeTests` against live Dapr prerequisites confirmed present (`dapr_placement`/`dapr_scheduler`/`dapr_redis`/`dapr_zipkin` containers already up, ports 6050/6060/6379 listening). The process ran **13+ minutes** consuming almost no CPU (12s total) — the same symptom (stuck, not crashing) as the 2026-08-28/2026-09-01 `DistributedApplication.StartAsync` hang finding (open, line 118) — and was terminated (`kill -9`) to stop burning session time on an already-tracked, previously-undiagnosed blocker rather than re-diagnose it from scratch. **This truncated the process's own output before its failure-detail lines flushed**: the captured output shows both `Suspend_time_registration_resumes_the_item_when_the_scheduler_fires` and `Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration` as `[FAIL]`, but with no stack trace or exception detail (lost to the forced kill), so this session cannot add a verified root cause beyond confirming the blocker still reproduces. **This is not a fresh live-pass or live-fail claim** — findings #100 (line 100) and #118 (line 118) remain open exactly as before, now with one more reproduction data point. In hindsight, terminating the process before its normal 5-minute internal `CancelAfter` timeout was premature; a future session should let it run to that natural timeout (or the outer harness timeout) rather than force-kill, so the process's own diagnostic output survives intact.
 
 ### Completion Notes List
+
+- **2026-09-22 final bmad-build review close-out.** EventId 4500 now applies the same bounded
+  control-character sanitization as projection skip diagnostics, and CI explicitly installs Dapr runtime
+  **1.18.3**, matching the live harness minimum instead of inheriting **1.18.2**. `actionlint` passed; Release
+  build passed with zero warnings/errors; non-smoke Integration **547/547**, Unit **568/568**, Property
+  **3/3**, and Architecture **268/268** passed with zero skips. No Tier-3 live evidence was repeated.
+
+- **2026-09-22 final three-finding close-out.** The roll-up sequence guard now heals a newer document stored
+  under a foreign tenant/work-item identity, projection skip diagnostics retain the sanitized simple event type
+  on one bounded line, and the Group 2/3 build record includes the NuGet-audit and MinVer pins actually used.
+  Release build passed with zero warnings/errors; focused Integration **58/58**, Unit **568/568**, Property
+  **3/3**, non-smoke Integration **547/547**, and Architecture **268/268** all passed with zero skips. The older
+  DW-56 marker-protocol review item is normalized as an accepted cross-repository deferral.
 
 - **2026-09-22 Group 2/3 review-patch and full-baseline review close-out.** Closed all seven latest review patches: fail-closed
   persisted-child identity coverage, bounded projection log fields, constructor-rejected suspension coverage on
@@ -838,6 +880,21 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-22 final bmad-build review close-out**
+- `.github/workflows/ci.yml`
+- `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs`
+- `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
+
+**2026-09-22 final three-finding close-out**
+- `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs`
+- `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs`
+- `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorkItemProjectionQueryAdapterTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-22 Group 2/3 review-patch close-out**
 - `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs`
@@ -1189,6 +1246,15 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-22 — Final bmad-build review sanitized EventId 4500 correlation metadata and aligned the blocking CI
+  lane with the harness's Dapr runtime 1.18.3 minimum. Workflow lint, Release build, and every deterministic
+  suite passed; no fresh Tier-3 live credit is claimed.
+
+- 2026-09-22 — Closed the final three review findings by healing newer foreign-identity roll-ups, retaining a
+  sanitized simple event type in bounded projection diagnostics, and recording the exact build pins. Release
+  build and all deterministic suites passed with zero skips; the historical DW-56 marker-protocol finding is
+  normalized as an accepted cross-repository deferral.
 
 - 2026-09-22 — Closed all seven latest Group 2/3 review patches plus two full-baseline verification gaps with
   bounded structured diagnostics, fail-closed projection and decoder regressions, warning-level pins, complete
@@ -1924,9 +1990,9 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Runtime` (HEAD `643d375`) — 
 
 _Scope: `c2a59b8^..c2a59b8` (`fix(reminders): harden durable reminder recovery`) — 13 files, +384/−26, 810 diff lines. Spec: this story. Layers: blind-hunter, verification-gap (no gaps), acceptance-auditor. Edge Case Hunter returned empty and is excluded. 9 raw findings triaged to 0 decision, 3 patch, 1 defer, 5 rejected._
 
-- [ ] [Review][Patch] A newer foreign roll-up at the aggregate key is kept, so the identity fail-closed read never heals the document [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:465]
-- [ ] [Review][Patch] The new 128-character skip bound slices the raw event-type name, so a long namespace drops the simple name and control characters stay in the line [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:49]
-- [ ] [Review][Patch] The 2026-09-22 zero-warning build line omits the NuGetAudit and MinVer pins the previous close-outs passed on the build [\_bmad-output/implementation-artifacts/tests/test-summary.md:3653]
+- [x] [Review][Patch] A newer foreign roll-up at the aggregate key is kept, so the identity fail-closed read never heals the document [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:465] — resolved 2026-09-22: the sequence guard now preserves only a newer roll-up whose embedded tenant/work-item identity matches the requested key; a newer foreign document is replaced by the authoritative replay. The two-case regression uses a foreign sequence 99 and proves the repaired sequence is 2 with no foreign children.
+- [x] [Review][Patch] The new 128-character skip bound slices the raw event-type name, so a long namespace drops the simple name and control characters stay in the line [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:49] — resolved 2026-09-22: every skip path logs the catalog-derived simple name, and the shared bound replaces control characters before structured logging. The regression uses a 2,000-character namespace plus CR/LF/tab and proves the simple name remains visible on one bounded line.
+- [x] [Review][Patch] The 2026-09-22 zero-warning build line omits the NuGetAudit and MinVer pins the previous close-outs passed on the build [\_bmad-output/implementation-artifacts/tests/test-summary.md:3653] — resolved 2026-09-22: the recorded command now includes `-p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`; the same command completed with 0 warnings and 0 errors in this close-out.
 - [x] [Review][Defer] Domain-event Skipped, Duplicate, and MarkerFailure still log raw EventTypeName and CorrelationId [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:31] — deferred: pre-existing; this commit only added the caught exception argument on MarkerFailure
 
 **Rejected:**

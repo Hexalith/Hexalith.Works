@@ -3650,7 +3650,8 @@ positive cascade stale-window configuration.
 
 ```text
 DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
-DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
 # Restore and build succeeded; build: 0 warnings, 0 errors
 
 tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
@@ -3678,3 +3679,70 @@ The focused Debug project build remains blocked before these changes compile by 
 The Release solution and all deterministic lanes above are green. No Tier-3 live fact was needed for these
 deterministic review patches, so no fresh live acceptance credit is claimed. The older DW-56 marker-protocol
 finding remains open because it requires a cross-repository EventStore contract change.
+
+## Story 4.8 final three-finding close-out — 2026-09-22
+
+The final review findings now heal a newer roll-up persisted under the wrong aggregate identity and keep
+caller-controlled projection diagnostics single-line while retaining the event's simple type name. The prior
+Group 2/3 build record also names the NuGet-audit and MinVer pins used by the clean build.
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+# Restore succeeded; all projects were up-to-date
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*WorkItemProjectionQueryAdapterTests" \
+  -class "*PendingDateAwaitIndexDispatcherTests"
+# 58/58 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 547/547 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+These patches do not change the AppHost topology or reminder-delivery path, so no Tier-3 live fact was repeated
+and no fresh live acceptance credit is claimed. `git diff --check` passed.
+
+## Story 4.8 final bmad-build review close-out — 2026-09-22
+
+The final review applies single-line sanitization to EventId 4500 correlation metadata and pins the blocking CI
+integration lane to Dapr runtime 1.18.3, matching the minimum enforced by the live harness.
+
+```text
+actionlint .github/workflows/ci.yml
+# Passed with no diagnostics
+
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+# Restore succeeded; all projects were up-to-date
+
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 547/547 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+No AppHost topology or reminder-delivery behavior changed, so no Tier-3 live fact was repeated and no fresh
+live acceptance credit is claimed. `git diff --check` passed.

@@ -46,7 +46,7 @@ internal static partial class WorkItemProjectionEventDecoder
 
         if (!s_eventTypesByName.TryGetValue(simpleName, out Type? eventType))
         {
-            LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
+            LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
             return new WorkItemProjectionEventDecodeResult(null, false, false);
         }
 
@@ -55,7 +55,7 @@ internal static partial class WorkItemProjectionEventDecoder
             IEventPayload? payload = JsonSerializer.Deserialize(dto.Payload, eventType, s_webOptions) as IEventPayload;
             if (payload is null)
             {
-                LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
+                LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
@@ -71,7 +71,7 @@ internal static partial class WorkItemProjectionEventDecoder
 
             if (payload is ConversationLinked { ConversationCorrelationId: null })
             {
-                LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
+                LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
                 return new WorkItemProjectionEventDecodeResult(null, true, true);
             }
 
@@ -79,7 +79,7 @@ internal static partial class WorkItemProjectionEventDecoder
         }
         catch (Exception exception) when (WorksEventDecoder.IsHandledDecodeFailure(exception))
         {
-            LogSkipped(logger, dto.EventTypeName, workItemId.Value, tenantId.Value, correlationId);
+            LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
             return new WorkItemProjectionEventDecodeResult(null, true, true);
         }
     }
@@ -137,9 +137,24 @@ internal static partial class WorkItemProjectionEventDecoder
     }
 
     private static string BoundForLog(string? value, int maximumLength)
-        => string.IsNullOrEmpty(value) || value.Length <= maximumLength
-            ? value ?? string.Empty
-            : value[..maximumLength];
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        int length = Math.Min(value.Length, maximumLength);
+        return string.Create(
+            length,
+            value,
+            static (destination, source) =>
+            {
+                for (int index = 0; index < destination.Length; index++)
+                {
+                    destination[index] = char.IsControl(source[index]) ? '?' : source[index];
+                }
+            });
+    }
 
     [LoggerMessage(
         EventId = 4504,

@@ -182,7 +182,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
     [Theory]
     [InlineData(OtherTenant, WorkId)]
     [InlineData(Tenant, "foreign-work")]
-    public async Task Persisted_children_are_not_merged_when_the_stored_roll_up_identity_does_not_match(
+    public async Task A_newer_roll_up_with_the_wrong_identity_is_replaced_without_merging_its_children(
         string persistedTenantId,
         string persistedWorkItemId)
     {
@@ -196,7 +196,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
             null,
             [],
             [new WorkItemId(ChildId)],
-            1);
+            99);
         await store.SaveAsync(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.RollUpKey(Tenant, WorkId),
@@ -213,6 +213,7 @@ public sealed class WorkItemProjectionQueryAdapterTests
         projected.WorkItemId.Value.ShouldBe(WorkId);
         projected.ChildWorkItemIds.ShouldBeEmpty();
         projected.ExposedChildCount.ShouldBe(0);
+        projected.LatestAcceptedSourceSequence.ShouldBe(2);
     }
 
     [Fact]

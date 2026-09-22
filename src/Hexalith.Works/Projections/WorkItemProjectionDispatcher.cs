@@ -330,9 +330,19 @@ public sealed class WorkItemProjectionDispatcher
             .Max();
 
     private static string BoundCorrelationId(string correlationId)
-        => correlationId.Length <= MaximumLoggedCorrelationIdLength
-            ? correlationId
-            : correlationId[..MaximumLoggedCorrelationIdLength];
+    {
+        int length = Math.Min(correlationId.Length, MaximumLoggedCorrelationIdLength);
+        return string.Create(
+            length,
+            correlationId,
+            static (destination, source) =>
+            {
+                for (int index = 0; index < destination.Length; index++)
+                {
+                    destination[index] = char.IsControl(source[index]) ? '?' : source[index];
+                }
+            });
+    }
 
     private async Task<bool> UpsertTenantIndexAsync(
         TenantId tenant,
@@ -462,7 +472,9 @@ public sealed class WorkItemProjectionDispatcher
             useCurrentSchema
                 ? WorksReadModelKeys.CurrentRollUpKey(tenant.Value, workItemId.Value)
                 : WorksReadModelKeys.RollUpKey(tenant.Value, workItemId.Value),
-            current => current is not null && current.LatestAcceptedSourceSequence > model.LatestAcceptedSourceSequence
+            current => current is not null
+                && MatchesIdentity(current, tenant, workItemId)
+                && current.LatestAcceptedSourceSequence > model.LatestAcceptedSourceSequence
                 ? current
                 : model,
             context,
@@ -486,12 +498,15 @@ public sealed class WorkItemProjectionDispatcher
                 cancellationToken)
             .ConfigureAwait(false);
         WorkItemRollUp? persisted = entry.Value;
-        return persisted is not null
-            && string.Equals(persisted.TenantId?.Value, tenant.Value, StringComparison.Ordinal)
-            && string.Equals(persisted.WorkItemId?.Value, workItemId.Value, StringComparison.Ordinal)
+        return persisted is not null && MatchesIdentity(persisted, tenant, workItemId)
                 ? persisted
                 : null;
     }
+
+    /// <summary>Returns whether a persisted roll-up belongs to the requested aggregate identity.</summary>
+    private static bool MatchesIdentity(WorkItemRollUp rollUp, TenantId tenant, WorkItemId workItemId)
+        => string.Equals(rollUp.TenantId?.Value, tenant.Value, StringComparison.Ordinal)
+            && string.Equals(rollUp.WorkItemId?.Value, workItemId.Value, StringComparison.Ordinal);
 
     private async Task<bool> UseCurrentSchemaAsync(TenantId tenant, CancellationToken cancellationToken)
     {

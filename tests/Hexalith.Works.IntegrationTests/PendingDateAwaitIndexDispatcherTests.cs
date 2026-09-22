@@ -344,15 +344,17 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     }
 
     [Fact]
-    public async Task Projection_logs_bound_caller_controlled_event_type_and_correlation_metadata()
+    public async Task Projection_logs_safe_simple_event_type_and_bounded_correlation_metadata()
     {
         var store = new Story47InMemoryReadModelStore();
         var logger = new CapturingLogger();
         var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger);
-        string eventTypePrefix = new('x', 128);
-        string correlationPrefix = new('c', 128);
+        string eventTypeNamespace = new('x', 2_000);
+        const string eventTypeSimpleName = "UnknownProjectionEvent";
+        string correlationPrefix = $"corr\r\n\t\u0001{new string('c', 120)}";
+        string sanitizedCorrelationPrefix = $"corr????{new string('c', 120)}";
         ProjectionEventDto unknown = new(
-            eventTypePrefix + new string('y', 2_000),
+            $"{eventTypeNamespace}.\r\n{eventTypeSimpleName}\t",
             "{}"u8.ToArray(),
             "json",
             1,
@@ -370,16 +372,24 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         (int Id, LogLevel Level, string Message) skipped = logger.Entries
             .Where(static entry => entry.Id == 4504)
             .ShouldHaveSingleItem();
-        skipped.Message.ShouldContain(eventTypePrefix);
-        skipped.Message.ShouldContain(correlationPrefix);
-        skipped.Message.ShouldNotContain('y');
+        skipped.Message.ShouldContain($"??{eventTypeSimpleName}?");
+        skipped.Message.ShouldContain(sanitizedCorrelationPrefix);
+        skipped.Message.ShouldNotContain(eventTypeNamespace[..128]);
+        skipped.Message.ShouldNotContain('\r');
+        skipped.Message.ShouldNotContain('\n');
+        skipped.Message.ShouldNotContain('\t');
+        skipped.Message.ShouldNotContain('\u0001');
         skipped.Message.ShouldNotContain('z');
         skipped.Message.Length.ShouldBeLessThan(512);
 
         (int Id, LogLevel Level, string Message) projected = logger.Entries
             .Where(static entry => entry.Id == 4500)
             .ShouldHaveSingleItem();
-        projected.Message.ShouldContain(correlationPrefix);
+        projected.Message.ShouldContain(sanitizedCorrelationPrefix);
+        projected.Message.ShouldNotContain('\r');
+        projected.Message.ShouldNotContain('\n');
+        projected.Message.ShouldNotContain('\t');
+        projected.Message.ShouldNotContain('\u0001');
         projected.Message.ShouldNotContain('z');
         projected.Message.Length.ShouldBeLessThan(512);
     }
