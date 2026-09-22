@@ -653,6 +653,50 @@ public class WorksDomainEventProcessorTests
             Arg.Any<CancellationToken>());
     }
 
+    /// <summary>A handler failure releases the marker so the same delivery can run again and complete.</summary>
+    [Fact]
+    public async Task Works_processor_handler_failure_releases_for_successful_redelivery()
+    {
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+        int attempts = 0;
+        IEventStoreDomainEventHandler<WorkItemCancelled> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemCancelled>>();
+        _ = handler
+            .HandleAsync(
+                Arg.Any<WorkItemCancelled>(),
+                Arg.Any<EventStoreDomainEventContext>(),
+                Arg.Any<CancellationToken>())
+            .Returns(_ => ++attempts == 1
+                ? Task.FromException(new InvalidOperationException("synthetic first handler failure"))
+                : Task.CompletedTask);
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var markerStore = new InMemoryEventStoreDomainEventMarkerStore();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        EventStoreDomainEventEnvelope envelope = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FC0");
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => processor.ProcessAsync(
+            envelope,
+            TestContext.Current.CancellationToken));
+        EventStoreDomainEventProcessingResult redelivery = await processor.ProcessAsync(
+            envelope,
+            TestContext.Current.CancellationToken);
+        EventStoreDomainEventProcessingResult completedRedelivery = await processor.ProcessAsync(
+            envelope,
+            TestContext.Current.CancellationToken);
+
+        redelivery.ShouldBe(EventStoreDomainEventProcessingResult.Processed);
+        completedRedelivery.ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+        attempts.ShouldBe(2);
+        await handler.Received(2).HandleAsync(
+            Arg.Is<WorkItemCancelled>(value => value == @event),
+            Arg.Any<EventStoreDomainEventContext>(),
+            Arg.Any<CancellationToken>());
+    }
+
     /// <summary>A release failure is swallowed but retains its exception in the marker-failure diagnostic.</summary>
     [Fact]
     public async Task Works_processor_release_failure_logs_the_caught_exception()

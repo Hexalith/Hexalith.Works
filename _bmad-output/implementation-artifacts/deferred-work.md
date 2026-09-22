@@ -1086,3 +1086,7 @@ status: open
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22)
 
 - `ReadModelWriteContext.WithEventDiagnostics` still copies the first raw correlation id and up to eight raw event-type names into read-model conflict and exhaustion logs. Pre-existing platform helper; this close-out sanitized projection EventIds 4500 and 4504 only. [references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelWritePolicy.cs:254]
+
+- source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+  summary: Determine whether projection parking failures must reset after an intervening healthy replay at the same sequence.
+  evidence: The durable counter is not reset on the healthy path, but the decoder is deterministic for an immutable stream; establish whether the projection contract or a supported upgrade/rollback can produce a successful delivery between two failures at the same sequence before changing the persistence policy.

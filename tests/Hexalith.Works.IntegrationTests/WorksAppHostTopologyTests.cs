@@ -6,6 +6,7 @@ using Aspire.Hosting.Testing;
 
 using CommunityToolkit.Aspire.Hosting.Dapr;
 
+using Hexalith.EventStore.Aspire;
 using Hexalith.Works.AppHost;
 
 using Shouldly;
@@ -234,6 +235,43 @@ public sealed class WorksAppHostTopologyTests
         builder.Resources
             .Select(static resource => resource.Name)
             .ShouldNotContain(static name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Keycloak mode binds the Works EventStore client to the intended credential parameters.</summary>
+    [Fact]
+    public async Task KeycloakTopologyBindsTheWorksEventStoreClientCredentials()
+    {
+        const string username = "works-topology-user";
+        const string password = "WorksTopologyPassword-42";
+        IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
+            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                [
+                    "--EnableKeycloak=true",
+                    "--KeycloakPersistent=false",
+                    $"--LocalAuthentication:TenantAUsername={username}",
+                    $"--LocalAuthentication:TenantAPassword={password}",
+                ],
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        ProjectResource works = Project(builder, WorksName);
+        Dictionary<string, object> environment = await EvaluateEnvironmentAsync(
+            works,
+            builder.ExecutionContext);
+
+        StringValue(environment, "EventStore__Authentication__ClientId")
+            .ShouldBe(HexalithEventStoreSecurityOptions.DefaultEventStoreClientId);
+        (await ResolveAsync(
+            environment["EventStore__Authentication__Username"],
+            works,
+            builder.ExecutionContext)).ShouldBe(username);
+        (await ResolveAsync(
+            environment["EventStore__Authentication__Password"],
+            works,
+            builder.ExecutionContext)).ShouldBe(password);
+        builder.Resources
+            .OfType<ParameterResource>()
+            .Single(static resource => string.Equals(resource.Name, "works-client-password", StringComparison.Ordinal))
+            .Secret.ShouldBeTrue();
     }
 
     /// <summary>Verifies the default local topology owns a TLS actor control plane with durable scheduler data.</summary>
@@ -867,6 +905,25 @@ public sealed class WorksAppHostTopologyTests
         }
 
         return [.. args.Select(static argument => argument.ToString() ?? string.Empty)];
+    }
+
+    private static async Task<string> ResolveAsync(
+        object value,
+        IResource caller,
+        DistributedApplicationExecutionContext executionContext)
+    {
+        if (value is not IValueProvider provider)
+        {
+            return value.ToString() ?? string.Empty;
+        }
+
+        return await provider.GetValueAsync(
+            new ValueProviderContext
+            {
+                Caller = caller,
+                ExecutionContext = executionContext,
+            },
+            TestContext.Current.CancellationToken).ConfigureAwait(true) ?? string.Empty;
     }
 
     private static void AssertControlPlaneImageAndCredentials(ContainerResource resource, string entrypoint)
