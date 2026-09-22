@@ -260,18 +260,13 @@ public sealed class WorksAppHostTopologyTests
 
         StringValue(environment, "EventStore__Authentication__ClientId")
             .ShouldBe(HexalithEventStoreSecurityOptions.DefaultEventStoreClientId);
-        (await ResolveAsync(
-            environment["EventStore__Authentication__Username"],
-            works,
-            builder.ExecutionContext)).ShouldBe(username);
-        (await ResolveAsync(
-            environment["EventStore__Authentication__Password"],
-            works,
-            builder.ExecutionContext)).ShouldBe(password);
-        builder.Resources
-            .OfType<ParameterResource>()
-            .Single(static resource => string.Equals(resource.Name, "works-client-password", StringComparison.Ordinal))
-            .Secret.ShouldBeTrue();
+        ParameterResource usernameParameter = Parameter(builder, "works-client-username");
+        ParameterResource passwordParameter = Parameter(builder, "works-client-password");
+        environment["EventStore__Authentication__Username"].ShouldBeSameAs(usernameParameter);
+        environment["EventStore__Authentication__Password"].ShouldBeSameAs(passwordParameter);
+        passwordParameter.Secret.ShouldBeTrue();
+        (await ResolveAsync(usernameParameter, works, builder.ExecutionContext)).ShouldBe(username);
+        (await ResolveAsync(passwordParameter, works, builder.ExecutionContext)).ShouldBe(password);
     }
 
     /// <summary>Verifies the default local topology owns a TLS actor control plane with durable scheduler data.</summary>
@@ -907,24 +902,22 @@ public sealed class WorksAppHostTopologyTests
         return [.. args.Select(static argument => argument.ToString() ?? string.Empty)];
     }
 
-    private static async Task<string> ResolveAsync(
-        object value,
+    private static ParameterResource Parameter(IDistributedApplicationTestingBuilder builder, string name)
+        => builder.Resources
+            .OfType<ParameterResource>()
+            .Single(resource => string.Equals(resource.Name, name, StringComparison.Ordinal));
+
+    private static async Task<string?> ResolveAsync(
+        IValueProvider provider,
         IResource caller,
         DistributedApplicationExecutionContext executionContext)
-    {
-        if (value is not IValueProvider provider)
-        {
-            return value.ToString() ?? string.Empty;
-        }
-
-        return await provider.GetValueAsync(
+        => await provider.GetValueAsync(
             new ValueProviderContext
             {
                 Caller = caller,
                 ExecutionContext = executionContext,
             },
-            TestContext.Current.CancellationToken).ConfigureAwait(true) ?? string.Empty;
-    }
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
 
     private static void AssertControlPlaneImageAndCredentials(ContainerResource resource, string entrypoint)
     {

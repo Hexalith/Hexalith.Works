@@ -3779,3 +3779,25 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 
 These patches do not change reminder delivery or the AppHost topology, so no Tier-3 live fact was repeated
 and no fresh live acceptance credit is claimed. `git diff --check` passed.
+
+## Story 4.8 incremental review close-out (`f1f377f`) — 2026-09-22
+
+Commit `f1f377f` added two Integration facts (handler-failure redelivery through `WorksDomainEventProcessor`;
+Keycloak credential binding). The incremental code review then tightened the Keycloak fact to assert that the
+Works `EventStore__Authentication__Username`/`Password` environment values are the `works-client-username` /
+secret `works-client-password` parameter instances themselves, rather than matching by resolved value.
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -method "*KeycloakTopologyBindsTheWorksEventStoreClientCredentials"
+# 1/1 passed, 0 skipped
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 552/552 passed, 0 skipped (550 + the two f1f377f facts)
+```
+
+Test-only change; Unit, Property, and Architecture lanes were not re-run and no Tier-3 live credit is claimed.

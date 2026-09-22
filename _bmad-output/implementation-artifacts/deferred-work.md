@@ -1090,3 +1090,7 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Determine whether projection parking failures must reset after an intervening healthy replay at the same sequence.
   evidence: The durable counter is not reset on the healthy path, but the decoder is deterministic for an immutable stream; establish whether the projection contract or a supported upgrade/rollback can produce a successful delivery between two failures at the same sequence before changing the persistence policy.
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22, incremental f1f377f)
+
+- `WorksAppHostTopologyTests` never disposes `IDistributedApplicationTestingBuilder` (no `await using`) in any topology fact, including the new Keycloak credential fact; each undisposed builder retains its host configuration sources. Pre-existing file-wide pattern; fix all facts together. [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:246]

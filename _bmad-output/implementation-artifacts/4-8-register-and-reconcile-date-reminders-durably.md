@@ -5,7 +5,7 @@ status: done
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -183,6 +183,27 @@ _Diff scoped to Story 4.8's own surface (`ff329cc..HEAD` over `src/Hexalith.Work
 - `low`, not worth fixing — "`PendingDateAwaitTenantIndex`/`PendingDateAwaitTenantRegistry` have no `SchemaVersion` handle, unlike the `WorksWhatsNextTenantIndex` v2 rollout landing alongside them": the unversioned key is a recorded deliberate decision (`WorksReadModelKeys.cs:52-58` — reminder recovery reads the registry independently of the roll-up read-model generation), and the fix adds a version field plus validation surface to two documents that have had no shape change.
 - `low`, not worth fixing — "`FailedInvalidPayload => Results.Ok()` means malformed payloads are acknowledged and never reach `deadletter.work.events`, contradicting the operator guide's triage step 2": the ack is the deliberate poison-message protection, and the guide's "malformed or unidentified entries" is still reachable — an envelope that fails model binding never reaches `MapProcessingResult` and does dead-letter through Dapr's retry policy. The guide is not wrong as written.
 - rejected — "the File List credits `Program.cs` and the deleted `WorksWhatsNextReadModel.cs` while omitting `WorksHost.cs`, `WorksReadModelKeys.cs`, `WorksWhatsNextTenantIndex.cs`, `WorksWhatsNextTenantIndexValidation.cs`, `PendingDateAwaitScanIncompleteException.cs`, `WorksRecoveryLog.cs`, `WorksDomainEventEndpointExtensions.cs`, and `WorksDomainEventLog.cs`": accurate as filed, but the fix is to edit the File List inside the spec under review, which this workflow does not do. The `WorksHost.cs` half is already acknowledged at line 119.
+
+### Review Findings (2026-09-22, bmad-code-review, incremental `c4d40e5..f1f377f`)
+
+_Scope: the incremental diff of commit `f1f377f` (VG-01/VG-02 test patches), 137 lines, chosen instead of the full `9526c31` baseline diff. Four layers ran: blind-hunter (10 raw), edge-case-hunter (3 raw), verification-gap (clean), acceptance-auditor (4 raw)._
+
+- [x] [Review][Patch] Keycloak credential fact asserts the password by resolved value, not by binding identity — `ResolveAsync` silently falls back to `ToString()` for non-`IValueProvider` values, and `Secret.ShouldBeTrue()` is checked on a parameter looked up by name, independently of the env var. The env value is the `ParameterResource` itself (`WithEventStoreClientCredentials` passes the builder), so assert `environment["EventStore__Authentication__Password"]` is that same secret `ParameterResource` instance (and the username likewise) instead of relying on value equality. [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:263-274] — fixed: identity assertions via a `Parameter` helper; `ResolveAsync` now takes an `IValueProvider` (no `ToString()` fallback); focused fact 1/1.
+- [x] [Review][Patch] `test-summary.md` still reports non-smoke Integration **550/550** after `f1f377f` added two facts (expected 552); only focused 1/1 runs were recorded — re-run the non-smoke Integration lane and record the actual total. [_bmad-output/implementation-artifacts/tests/test-summary.md:3774] — fixed: lane re-run **552/552**, 0 skipped; recorded in a new test-summary section.
+- [x] [Review][Defer] Topology facts never dispose `IDistributedApplicationTestingBuilder` [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:246] — deferred, pre-existing: the new fact follows the file-wide pattern (no `await using`) shared by every existing topology fact; each undisposed builder retains its host configuration sources (appsettings reload watchers). Fix belongs file-wide, not in this increment.
+
+**Rejected:**
+- `low`, not worth fixing — (blind-hunter + edge-case-hunter + acceptance-auditor) "Keycloak fallback defaults (`tenant-a-user`, random 24-byte password) are untested": true, but the branch is pre-existing, no acceptance lane runs Keycloak mode, and closing it requires a new fact rather than a direct correction.
+- `low`, not worth fixing — (acceptance-auditor) "`TokenEndpoint` env var not asserted": emitted by the EventStore submodule's `WithEventStoreClientCredentials`, not Works code; asserting it duplicates the submodule's contract.
+- `false` — (blind-hunter) "`works-client-username` parameter name/secret flag unchecked, so a rename would go unnoticed": resolution goes through the env value object, not the name; a rename has no bad outcome and the username is intentionally non-secret.
+- `false` — (blind-hunter) "Keycloak test doesn't prove dev symmetric-key vars are absent": `Program.cs` composes them only in the `else` branch of `if (security is not null)`; both branches cannot apply.
+- `false` — (blind-hunter) "`Should.ThrowAsync<InvalidOperationException>` could pass on a processor-raised exception": the handler throws on attempt 1 before any post-handler transition, release failures are swallowed by `ReleaseSafelyAsync`, and `attempts == 2` + `Received(2)` pin the injected failure.
+- `false` — (blind-hunter) "marker release not asserted directly": without the release, the second delivery returns `RetryableInProgress` (`WorksDomainEventProcessor.cs:88-91`), so asserting `Processed` proves the release.
+- `false` — (edge-case-hunter) "with several handlers, already-successful handlers re-run on redelivery": that is the processor's documented at-least-once contract (`DispatchAsync<TEvent>` iterates all handlers); consumed handlers are idempotent by deterministic reminder names/message ids, so no bad outcome.
+- `low`, not worth fixing — (blind-hunter) "handler `OperationCanceledException` path untested": it flows through the same bare `catch` → `ReleaseSafelyAsync` path the new fact already exercises.
+- `low`, not worth fixing — (acceptance-auditor) "VG-01 uses `WorkItemCancelled` rather than `WorkItemSuspended`": the release-on-failure path is type-agnostic shared processor code.
+- `low`, not worth fixing — (blind-hunter / edge-case-hunter) `ResolveAsync` maps null to `""`, `attempts` duplicates `Received(2)`, and indexing throws `KeyNotFoundException` rather than a Shouldly message: diagnostics-only; the facts still fail on regression.
+- rejected — (acceptance-auditor) "frontmatter `status: done` contradicts body `in-review` and sprint `review`": real, but the fix edits the spec under review; this workflow's status sync (step 6) realigns frontmatter, body, and sprint status.
 
 ## Review Triage Log
 
