@@ -46,6 +46,8 @@ public sealed class WorksRecoveryOptionsTests
     [InlineData("MaxStreamPagesPerTenant", "0")]
     [InlineData("ReminderReconciliationMaxAttempts", "0")]
     [InlineData("ReminderReconciliationRetryDelayMilliseconds", "-1")]
+    [InlineData("CascadeCheckpointIndexStaleAfterHours", "0")]
+    [InlineData("CascadeCheckpointIndexStaleAfterHours", "-1")]
     public void Invalid_recovery_configuration_fails_the_validation_chain(string key, string value)
     {
         IOptions<WorksRecoveryOptions> options = BuildOptions(new Dictionary<string, string?>(StringComparer.Ordinal)

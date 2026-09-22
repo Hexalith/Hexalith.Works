@@ -40,6 +40,8 @@ namespace Hexalith.Works.Projections;
 /// </remarks>
 public sealed class WorkItemProjectionDispatcher
 {
+    private const int MaximumLoggedCorrelationIdLength = 128;
+
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
     private static readonly Action<ILogger, string, string, long, int, int, Exception?> s_projectionDecodeFailed =
@@ -298,7 +300,14 @@ public sealed class WorkItemProjectionDispatcher
                 .ConfigureAwait(false);
         }
 
-        s_projected(_logger, request.AggregateId, tenant.Value, correlationId, decoded, changed, null);
+        s_projected(
+            _logger,
+            request.AggregateId,
+            tenant.Value,
+            BoundCorrelationId(correlationId),
+            decoded,
+            changed,
+            null);
 
         return item is not null
             ? new ProjectionResponse(
@@ -319,6 +328,11 @@ public sealed class WorkItemProjectionDispatcher
             .Where(static value => value is not null)
             .Select(static value => (long?)value.SequenceNumber)
             .Max();
+
+    private static string BoundCorrelationId(string correlationId)
+        => correlationId.Length <= MaximumLoggedCorrelationIdLength
+            ? correlationId
+            : correlationId[..MaximumLoggedCorrelationIdLength];
 
     private async Task<bool> UpsertTenantIndexAsync(
         TenantId tenant,

@@ -55,7 +55,7 @@ internal sealed class WorksDomainEventProcessor
             // before any handler runs: its pending-date-await index key is byte-identical to the well-known
             // pending-date-await tenant registry key, so admitting it would overwrite the registry with an
             // index document and silently disable date-reminder recovery for every tenant.
-            WorksDomainEventLog.InvalidEnvelope(_logger, "reserved-tenant-id");
+            WorksDomainEventLog.ReservedTenant(_logger, envelope.MessageId, "reserved-tenant-id");
             return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
         }
 
@@ -87,6 +87,7 @@ internal sealed class WorksDomainEventProcessor
 
         if (acquisition == EventStoreDomainEventMarkerAcquisitionResult.InProgress)
         {
+            WorksDomainEventLog.InProgress(_logger, envelope.MessageId);
             return EventStoreDomainEventProcessingResult.RetryableInProgress;
         }
 
@@ -323,6 +324,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                exception,
                 envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
@@ -344,6 +346,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                exception,
                 envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
@@ -364,6 +367,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                exception,
                 envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,
@@ -384,6 +388,7 @@ internal sealed class WorksDomainEventProcessor
         {
             WorksDomainEventLog.MarkerFailure(
                 _logger,
+                exception,
                 envelope.MessageId,
                 envelope.EventTypeName,
                 envelope.TenantId,

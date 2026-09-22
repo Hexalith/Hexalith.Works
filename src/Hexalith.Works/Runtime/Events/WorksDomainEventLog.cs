@@ -16,6 +16,13 @@ internal static partial class WorksDomainEventLog
         Message = "Works domain event was skipped before dispatch. ReasonCode={ReasonCode}.")]
     internal static partial void InvalidEnvelope(ILogger logger, string reasonCode);
 
+    /// <summary>Logs a reserved-tenant delivery rejected before marker acquisition.</summary>
+    [LoggerMessage(
+        EventId = 4806,
+        Level = LogLevel.Warning,
+        Message = "Works domain event message {MessageId} was skipped before dispatch. ReasonCode={ReasonCode}.")]
+    internal static partial void ReservedTenant(ILogger logger, string messageId, string reasonCode);
+
     /// <summary>Logs a terminally skipped delivery without including its payload.</summary>
     [LoggerMessage(
         EventId = 4801,
@@ -48,12 +55,20 @@ internal static partial class WorksDomainEventLog
         Message = "Works domain event marker operation failed for message {MessageId}, {EventTypeName}, tenant {TenantId}, work item {WorkItemId}, correlation {CorrelationId}. ReasonCode={ReasonCode}.")]
     internal static partial void MarkerFailure(
         ILogger logger,
+        Exception exception,
         string messageId,
         string eventTypeName,
         string tenantId,
         string workItemId,
         string correlationId,
         string reasonCode);
+
+    /// <summary>Logs a delivery whose durable marker is still owned by another in-flight attempt.</summary>
+    [LoggerMessage(
+        EventId = 4807,
+        Level = LogLevel.Warning,
+        Message = "Works domain event message {MessageId} is already in progress; keeping delivery retryable.")]
+    internal static partial void InProgress(ILogger logger, string messageId);
 
     /// <summary>Logs an unsupported marker acquisition result that remains retryable.</summary>
     [LoggerMessage(

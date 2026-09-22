@@ -14,6 +14,7 @@ namespace Hexalith.Works.Projections;
 internal static partial class WorkItemProjectionEventDecoder
 {
     private const int MaximumLoggedCorrelationIdLength = 128;
+    private const int MaximumLoggedEventTypeLength = 128;
 
     private static readonly JsonSerializerOptions s_webOptions = new(JsonSerializerDefaults.Web);
 
@@ -108,7 +109,12 @@ internal static partial class WorkItemProjectionEventDecoder
     {
         if (logger is not null)
         {
-            SkippedEvent(logger, eventType, workItemId, tenantId, correlationId);
+            SkippedEvent(
+                logger,
+                BoundForLog(eventType, MaximumLoggedEventTypeLength),
+                workItemId,
+                tenantId,
+                BoundForLog(correlationId, MaximumLoggedCorrelationIdLength));
         }
     }
 
@@ -123,14 +129,17 @@ internal static partial class WorkItemProjectionEventDecoder
         {
             ProjectionEventIdentityMismatch(
                 logger,
-                eventType,
+                BoundForLog(eventType, MaximumLoggedEventTypeLength),
                 workItemId,
                 tenantId,
-                correlationId.Length <= MaximumLoggedCorrelationIdLength
-                    ? correlationId
-                    : correlationId[..MaximumLoggedCorrelationIdLength]);
+                BoundForLog(correlationId, MaximumLoggedCorrelationIdLength));
         }
     }
+
+    private static string BoundForLog(string? value, int maximumLength)
+        => string.IsNullOrEmpty(value) || value.Length <= maximumLength
+            ? value ?? string.Empty
+            : value[..maximumLength];
 
     [LoggerMessage(
         EventId = 4504,

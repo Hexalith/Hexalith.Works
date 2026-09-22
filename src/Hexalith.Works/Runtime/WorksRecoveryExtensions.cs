@@ -33,6 +33,7 @@ public static class WorksRecoveryExtensions
             .Validate(static options => options.EffectiveMaxStreamPagesPerAggregate > 0, "MaxStreamPagesPerAggregate must be greater than zero (the deprecated MaxStreamPagesPerTenant alias binds to the same budget).")
             .Validate(static options => options.ReminderReconciliationMaxAttempts > 0, "ReminderReconciliationMaxAttempts must be greater than zero.")
             .Validate(static options => options.ReminderReconciliationRetryDelayMilliseconds >= 0, "ReminderReconciliationRetryDelayMilliseconds cannot be negative.")
+            .Validate(static options => options.CascadeCheckpointIndexStaleAfterHours > 0, "CascadeCheckpointIndexStaleAfterHours must be greater than zero.")
             .ValidateOnStart();
         services.TryAddSingleton(TimeProvider.System);
 

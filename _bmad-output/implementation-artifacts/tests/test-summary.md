@@ -3640,3 +3640,41 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 The exact modified Tier-3 recovery fact ran and passed. The other live facts were not repeated in this final
 close-out, so no fresh aggregate **4/4** claim is made. `git diff --check` passed and `aspire ps` was empty after
 the live run.
+
+## Story 4.8 Group 2/3 review-patch close-out — 2026-09-22
+
+Seven review patches plus two full-baseline verification gaps were closed with production and regression
+coverage for persisted roll-up identity fail-closed behavior, bounded projection diagnostics,
+constructor-rejected suspensions, warning-level runtime diagnostics, complete marker-exception paths, and
+positive cascade stale-window configuration.
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet restore Hexalith.Works.slnx -p:NuGetAudit=false -m:1 -v minimal
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal
+# Restore and build succeeded; build: 0 warnings, 0 errors
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "*WorkItemProjectionQueryAdapterTests" \
+  -class "*PendingDateAwaitIndexDispatcherTests" \
+  -class "*WorksDomainEventProcessorTests" \
+  -class "*WorksRecoveryOptionsTests"
+# 99/99 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 547/547 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+The focused Debug project build remains blocked before these changes compile by the pre-existing duplicate
+`Hexalith.PolymorphicSerializations` assembly conflict (package 1.19.3 versus source assembly 1.0, CS1704).
+The Release solution and all deterministic lanes above are green. No Tier-3 live fact was needed for these
+deterministic review patches, so no fresh live acceptance credit is claimed. The older DW-56 marker-protocol
+finding remains open because it requires a cross-repository EventStore contract change.

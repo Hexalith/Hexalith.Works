@@ -189,6 +189,8 @@ public class WorksDomainEventProcessorTests
 
     private sealed class CapturingLogger<T> : ILogger<T>
     {
+        public List<(EventId EventId, LogLevel Level, Exception? Exception)> Calls { get; } = [];
+
         public List<IReadOnlyDictionary<string, object?>> StructuredEntries { get; } = [];
 
         public IDisposable? BeginScope<TState>(TState state)
@@ -204,6 +206,7 @@ public class WorksDomainEventProcessorTests
             Exception? exception,
             Func<TState, Exception?, string> formatter)
         {
+            Calls.Add((eventId, logLevel, exception));
             if (state is IEnumerable<KeyValuePair<string, object?>> values)
             {
                 StructuredEntries.Add(values.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal));
@@ -443,6 +446,35 @@ public class WorksDomainEventProcessorTests
         duplicate.ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
     }
 
+    /// <summary>A known suspension rejected by its JSON constructor follows the terminal malformed-delivery path.</summary>
+    [Fact]
+    public async Task Works_processor_acknowledges_constructor_rejected_suspension_without_dispatching_it()
+    {
+        WorkItemSuspended suspended = WorkItemV1Catalog.All.OfType<WorkItemSuspended>().Single();
+        IEventStoreDomainEventHandler<WorkItemSuspended> handler = Substitute.For<IEventStoreDomainEventHandler<WorkItemSuspended>>();
+        var registrations = new ServiceCollection();
+        registrations.AddScoped(_ => handler);
+        using ServiceProvider services = registrations.BuildServiceProvider();
+        var markerStore = new InMemoryEventStoreDomainEventMarkerStore();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            NullLogger<WorksDomainEventProcessor>.Instance);
+        EventStoreDomainEventEnvelope envelope = CreateEnvelope(suspended, "01ARZ3NDEKTSV4RRFFQ69G5FBF") with
+        {
+            Payload = ConstructorRejectedSuspensionPayload(suspended),
+        };
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            envelope,
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
+        (await processor.ProcessAsync(envelope, TestContext.Current.CancellationToken))
+            .ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+    }
+
     /// <summary>An envelope whose identity disagrees with its decoded event is terminally skipped, never dispatched.</summary>
     [Fact]
     public async Task Works_processor_skips_envelope_with_identity_mismatch()
@@ -475,23 +507,28 @@ public class WorksDomainEventProcessorTests
     [Fact]
     public async Task Works_processor_returns_retryable_when_marker_in_progress()
     {
+        const string messageId = "01ARZ3NDEKTSV4RRFFQ69G5FB1";
         IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
         markerStore
             .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(EventStoreDomainEventMarkerAcquisitionResult.InProgress);
         using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
         var processor = new WorksDomainEventProcessor(
             services.GetRequiredService<IServiceScopeFactory>(),
             markerStore,
-            NullLogger<WorksDomainEventProcessor>.Instance);
+            logger);
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
 
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
-            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB1"),
+            CreateEnvelope(@event, messageId),
             TestContext.Current.CancellationToken);
 
         result.ShouldBe(EventStoreDomainEventProcessingResult.RetryableInProgress);
         await markerStore.DidNotReceiveWithAnyArgs().MarkCompletedAsync(default!, Arg.Any<CancellationToken>());
+        logger.Calls.ShouldContain(call => call.EventId.Id == 4807 && call.Level == LogLevel.Warning);
+        logger.StructuredEntries.Any(entry => entry.TryGetValue("MessageId", out object? value)
+            && Equals(value, messageId)).ShouldBeTrue();
     }
 
     /// <summary>An unknown marker acquisition result remains retryable and carries diagnostic context.</summary>
@@ -552,6 +589,7 @@ public class WorksDomainEventProcessorTests
     [Fact]
     public async Task Works_processor_rejects_reserved_tenant_before_marker_acquisition()
     {
+        const string messageId = "01ARZ3NDEKTSV4RRFFQ69G5FBE";
         IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
         markerStore
             .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -560,15 +598,16 @@ public class WorksDomainEventProcessorTests
         var registrations = new ServiceCollection();
         registrations.AddScoped(_ => handler);
         using ServiceProvider services = registrations.BuildServiceProvider();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
         var processor = new WorksDomainEventProcessor(
             services.GetRequiredService<IServiceScopeFactory>(),
             markerStore,
-            NullLogger<WorksDomainEventProcessor>.Instance);
+            logger);
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single() with
         {
             TenantId = new TenantId(WorksReadModelKeys.ReservedTenantId),
         };
-        EventStoreDomainEventEnvelope reserved = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBE");
+        EventStoreDomainEventEnvelope reserved = CreateEnvelope(@event, messageId);
 
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
             reserved,
@@ -577,6 +616,11 @@ public class WorksDomainEventProcessorTests
         result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
         await markerStore.DidNotReceiveWithAnyArgs().TryAcquireAsync(default!, Arg.Any<CancellationToken>());
         await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
+        logger.Calls.ShouldContain(call => call.EventId.Id == 4806 && call.Level == LogLevel.Warning);
+        logger.StructuredEntries.Any(entry => entry.TryGetValue("MessageId", out object? value)
+            && Equals(value, messageId)
+            && entry.TryGetValue("ReasonCode", out object? reasonCode)
+            && Equals(reasonCode, "reserved-tenant-id")).ShouldBeTrue();
     }
 
     /// <summary>Invalid metadata after acquisition releases the marker so a corrected delivery can run.</summary>
@@ -607,6 +651,35 @@ public class WorksDomainEventProcessorTests
             Arg.Is<WorkItemCancelled>(value => value == @event),
             Arg.Any<EventStoreDomainEventContext>(),
             Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>A release failure is swallowed but retains its exception in the marker-failure diagnostic.</summary>
+    [Fact]
+    public async Task Works_processor_release_failure_logs_the_caught_exception()
+    {
+        var releaseFailure = new InvalidOperationException("synthetic release failure");
+        IEventStoreDomainEventMarkerStore markerStore = Substitute.For<IEventStoreDomainEventMarkerStore>();
+        markerStore
+            .TryAcquireAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+        markerStore
+            .ReleaseAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(releaseFailure));
+        using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
+        var processor = new WorksDomainEventProcessor(
+            services.GetRequiredService<IServiceScopeFactory>(),
+            markerStore,
+            logger);
+        WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
+
+        EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(
+            CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB3") with { AggregateId = " " },
+            TestContext.Current.CancellationToken);
+
+        result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
+        logger.Calls.ShouldContain(call => call.EventId.Id == 4803
+            && ReferenceEquals(call.Exception, releaseFailure));
     }
 
     /// <summary>A foreign or differently-cased domain is rejected before any marker access.</summary>
@@ -684,10 +757,11 @@ public class WorksDomainEventProcessorTests
     {
         using ServiceProvider services = new ServiceCollection().BuildServiceProvider();
         var markerStore = new CompletionPendingFailingMarkerStore();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
         var processor = new WorksDomainEventProcessor(
             services.GetRequiredService<IServiceScopeFactory>(),
             markerStore,
-            NullLogger<WorksDomainEventProcessor>.Instance);
+            logger);
         WorkItemCancelled @event = WorkItemV1Catalog.All.OfType<WorkItemCancelled>().Single();
         EventStoreDomainEventEnvelope envelope = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FB7") with
         {
@@ -697,11 +771,12 @@ public class WorksDomainEventProcessorTests
             Payload = [],
         };
 
-        _ = await Should.ThrowAsync<InvalidOperationException>(
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(
             () => processor.ProcessAsync(envelope, TestContext.Current.CancellationToken));
 
         markerStore.CompletionCount.ShouldBe(1);
         markerStore.ReleaseCount.ShouldBe(0);
+        logger.Calls.ShouldContain(call => call.EventId.Id == 4803 && ReferenceEquals(call.Exception, thrown));
     }
 
     /// <summary>A failed durable dispatch marker is logged, escapes, and cannot release after handlers ran.</summary>
@@ -721,7 +796,7 @@ public class WorksDomainEventProcessorTests
             markerStore,
             logger);
 
-        _ = await Should.ThrowAsync<InvalidOperationException>(
+        InvalidOperationException thrown = await Should.ThrowAsync<InvalidOperationException>(
             () => processor.ProcessAsync(
                 CreateEnvelope(@event, messageId),
                 TestContext.Current.CancellationToken));
@@ -737,6 +812,7 @@ public class WorksDomainEventProcessorTests
                 && entry.ContainsKey("ReasonCode")
                 && Convert.ToString(entry["ReasonCode"])!.StartsWith("dispatch-", StringComparison.Ordinal))
             .ShouldBeTrue();
+        logger.Calls.ShouldContain(call => call.EventId.Id == 4803 && ReferenceEquals(call.Exception, thrown));
     }
 
     /// <summary>An envelope with a non-JSON serialization format is terminally acknowledged, not left to a retry loop.</summary>
@@ -837,10 +913,11 @@ public class WorksDomainEventProcessorTests
         registrations.AddScoped(_ => handler);
         using ServiceProvider services = registrations.BuildServiceProvider();
         var markerStore = new CompletionAlwaysFailingMarkerStore();
+        var logger = new CapturingLogger<WorksDomainEventProcessor>();
         var processor = new WorksDomainEventProcessor(
             services.GetRequiredService<IServiceScopeFactory>(),
             markerStore,
-            NullLogger<WorksDomainEventProcessor>.Instance);
+            logger);
         EventStoreDomainEventEnvelope envelope = CreateEnvelope(@event, "01ARZ3NDEKTSV4RRFFQ69G5FBD") with
         {
             SerializationFormat = "xml",
@@ -853,7 +930,22 @@ public class WorksDomainEventProcessorTests
         result.ShouldBe(EventStoreDomainEventProcessingResult.FailedInvalidPayload);
         markerStore.ReleaseCount.ShouldBe(0);
         await handler.DidNotReceiveWithAnyArgs().HandleAsync(default!, default!, Arg.Any<CancellationToken>());
+        logger.Calls.Any(call => call.EventId.Id == 4803
+            && call.Exception is InvalidOperationException { Message: "synthetic completion failure" }).ShouldBeTrue();
     }
+
+    private static byte[] ConstructorRejectedSuspensionPayload(WorkItemSuspended suspended)
+        => JsonSerializer.SerializeToUtf8Bytes(
+            new
+            {
+                suspended.AggregateId,
+                suspended.Sequence,
+                suspended.TenantId,
+                suspended.WorkItemId,
+                AwaitConditions = new object?[] { null },
+                AwaitCondition = (AwaitCondition?)null,
+            },
+            s_web);
 
     private static EventStoreDomainEventEnvelope CreateEnvelope(
         IEventPayload @event,

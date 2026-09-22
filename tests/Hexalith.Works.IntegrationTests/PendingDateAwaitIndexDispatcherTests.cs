@@ -302,6 +302,89 @@ public sealed class PendingDateAwaitIndexDispatcherTests
     }
 
     [Fact]
+    public async Task Constructor_rejected_suspension_uses_the_bounded_parking_path()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var logger = new CapturingLogger();
+        var dispatcher = new WorkItemProjectionDispatcher(
+            store,
+            notifier: null,
+            logger,
+            new WorksProjectionOptions { MaxUndecodableEventDispatchesBeforeParking = 1 });
+        byte[] payload = JsonSerializer.SerializeToUtf8Bytes(
+            new
+            {
+                AggregateId = WorkId,
+                Sequence = 7,
+                TenantId = new TenantId(TenantA),
+                WorkItemId = new WorkItemId(WorkId),
+                AwaitConditions = new object?[] { null },
+                AwaitCondition = (AwaitCondition?)null,
+            },
+            s_web);
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(
+                TenantA,
+                "work",
+                WorkId,
+                [new ProjectionEventDto(nameof(WorkItemSuspended), payload, "json", 7, default, "corr-1")]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        ReadModelEntry<WorkItemProjectionParking> parking = await store
+            .GetAsync<WorkItemProjectionParking>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.ProjectionParkingKey(TenantA, WorkId),
+                TestContext.Current.CancellationToken)
+            .ConfigureAwait(true);
+        parking.Value.ShouldNotBeNull().Parked.ShouldBeTrue();
+        parking.Value.FailedSequence.ShouldBe(7);
+        logger.Entries.ShouldContain(entry => entry.Id == 4504);
+        (await ReadIndexAsync(store, TenantA).ConfigureAwait(true)).Entries.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task Projection_logs_bound_caller_controlled_event_type_and_correlation_metadata()
+    {
+        var store = new Story47InMemoryReadModelStore();
+        var logger = new CapturingLogger();
+        var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger);
+        string eventTypePrefix = new('x', 128);
+        string correlationPrefix = new('c', 128);
+        ProjectionEventDto unknown = new(
+            eventTypePrefix + new string('y', 2_000),
+            "{}"u8.ToArray(),
+            "json",
+            1,
+            default,
+            correlationPrefix + new string('z', 2_000));
+
+        _ = await dispatcher.DispatchAsync(
+            new ProjectionRequest(
+                TenantA,
+                "work",
+                WorkId,
+                [unknown, Dto(Created(TenantA, WorkId, 1), 2)]),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        (int Id, LogLevel Level, string Message) skipped = logger.Entries
+            .Where(static entry => entry.Id == 4504)
+            .ShouldHaveSingleItem();
+        skipped.Message.ShouldContain(eventTypePrefix);
+        skipped.Message.ShouldContain(correlationPrefix);
+        skipped.Message.ShouldNotContain('y');
+        skipped.Message.ShouldNotContain('z');
+        skipped.Message.Length.ShouldBeLessThan(512);
+
+        (int Id, LogLevel Level, string Message) projected = logger.Entries
+            .Where(static entry => entry.Id == 4500)
+            .ShouldHaveSingleItem();
+        projected.Message.ShouldContain(correlationPrefix);
+        projected.Message.ShouldNotContain('z');
+        projected.Message.Length.ShouldBeLessThan(512);
+    }
+
+    [Fact]
     public async Task Undecodable_state_affecting_event_parks_the_aggregate_after_the_configured_failure_budget()
     {
         var store = new Story47InMemoryReadModelStore();

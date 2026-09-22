@@ -179,6 +179,42 @@ public sealed class WorkItemProjectionQueryAdapterTests
         queryItem.GetProperty("latestAcceptedSourceSequence").GetInt64().ShouldBe(4);
     }
 
+    [Theory]
+    [InlineData(OtherTenant, WorkId)]
+    [InlineData(Tenant, "foreign-work")]
+    public async Task Persisted_children_are_not_merged_when_the_stored_roll_up_identity_does_not_match(
+        string persistedTenantId,
+        string persistedWorkItemId)
+    {
+        var store = new InMemoryReadModelStore();
+        var persisted = new WorkItemRollUp(
+            new TenantId(persistedTenantId),
+            new WorkItemId(persistedWorkItemId),
+            WorkItemStatus.Assigned,
+            null,
+            null,
+            null,
+            [],
+            [new WorkItemId(ChildId)],
+            1);
+        await store.SaveAsync(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.RollUpKey(Tenant, WorkId),
+            persisted,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        WorkItemProjectionDispatcher dispatcher = NewDispatcher(store);
+
+        _ = await dispatcher.DispatchAsync(
+            CreateThenAssign(),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        WorkItemRollUp projected = await ReadRollUpAsync(store, Tenant, WorkId).ConfigureAwait(true);
+        projected.TenantId.Value.ShouldBe(Tenant);
+        projected.WorkItemId.Value.ShouldBe(WorkId);
+        projected.ChildWorkItemIds.ShouldBeEmpty();
+        projected.ExposedChildCount.ShouldBe(0);
+    }
+
     [Fact]
     public async Task Undecodable_child_spawn_event_type_conservatively_refuses_incomplete_local_totals()
     {

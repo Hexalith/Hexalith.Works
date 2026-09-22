@@ -1,6 +1,6 @@
 ---
 baseline_commit: 9526c31
-status: in-progress
+status: done
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
@@ -342,6 +342,38 @@ their earlier verdict and route with carried evidence._
 - **[edge-case-hunter EC-10] Child-completion reads silently ignore undecodable lifecycle evidence.** Verdict: `high` → **defer**. Carried: the earlier child-completion row owns this unchanged Story 4.7 behavior.
 - **[edge-case-hunter EC-11] Child-completion reads do not reject a foreign stream domain.** Verdict: `high` → **defer**. Carried: the same earlier child-completion row owns this unchanged cross-domain behavior.
 
+_2026-09-22 bmad-build full-baseline review after the Group 2/3 seven-patch close-out. All three layers
+reviewed the `9526c31` baseline diff. Every raw finding is classified below before grouping; repeated findings
+retain their earlier verdict and route with carried evidence._
+
+- **[blind-hunter BH-01] Mixed-case `TENANTS` bypasses the raw ordinal `/project` guard.** Verdict: `low` → **defer**. Carried: the same projection guard, lowercasing path, and direct-endpoint consequence remain exactly as the prior triage row records.
+- **[blind-hunter BH-02] Startup reminder reconciliation stops permanently after its bounded retry budget.** Verdict: `medium` → **defer**. Carried: `ReminderReconciliationService` still returns after the final attempt and the canonical retry/readiness entry already owns the behavior.
+- **[blind-hunter BH-03] An empty registry/index window can let startup reconciliation finish before backfill appears.** Verdict: `maybe-false` → **defer**. Carried: the existing row owns the same reachability question; projection-poller reset/backfill semantics remain the evidence needed to settle it.
+- **[blind-hunter BH-04] Parked reminder candidates have no supported unpark/replay path.** Verdict: `medium` → **defer**. Carried: the parked skip and missing operator recovery path are unchanged and the canonical unpark entry already owns the work.
+- **[blind-hunter BH-05] A first failed reminder action can starve later reconciliation and steady-state awaits.** Verdict: `medium` → **defer**. Carried: both cited loops still fail fast exactly as the earlier reconciler and handler rows record.
+- **[blind-hunter BH-06] Due-now reconciliation has no identity-bearing failure telemetry.** Verdict: `medium` → **defer**. Carried: the existing recovery-diagnostics decision intentionally keeps the generic 4603 fallback and defers a new event surface.
+- **[blind-hunter BH-07] The actor removes reminder state after gateway acceptance rather than terminal command success.** Verdict: `medium` → **defer**. Carried: the actor-cleanup retry-gap row records the same unchanged behavior.
+- **[blind-hunter BH-08] Re-suspending at the same instant reuses the earlier resume identity.** Verdict: `medium` → **defer**. Carried: the canonical occurrence/sequence-identity entry already owns the required redesign.
+- **[blind-hunter BH-09] Reconciler and steady-state scheduling reuse a stale pre-loop clock snapshot.** Verdict: `medium` → **defer**. Carried: the existing reconciliation and handler stale-delay entries own both unchanged loops.
+- **[blind-hunter BH-10] Exact caller cancellation inside a tenant can discard that tenant's accumulated evidence.** Verdict: `medium` → **defer**. Carried: the source remarks and prior human ruling deliberately retain this exact-token in-tenant limitation.
+- **[blind-hunter BH-11] A raw-sequence watermark can prevent repair after a decoder upgrade.** Verdict: `medium` → **defer**. Carried: the same `MaxSequence` plus `>=` repairability gap remains recorded in the pending-index row.
+- **[blind-hunter BH-12] The sibling future-reminder live fact can pass on subscription redelivery instead of startup recovery.** Verdict: `medium` → **defer**. Carried: the exact `Recovery_re_registers_a_still_future_await_that_later_fires` marker-wait ambiguity is already recorded as the pre-existing sibling-fact gap.
+- **[blind-hunter BH-13] Marker acquisition is not exclusive across concurrent deliveries.** Verdict: `high` → **defer**. Carried: the EventStore marker protocol still has no durable in-progress lease and the cross-repository protocol entry already owns the correction.
+- **[blind-hunter BH-14] Duplicate identical `DateReached` conditions survive folding.** Verdict: `low` → **defer**. Carried: deterministic identities bound accepted outcomes while the durable await-set normalization entry owns the redundant work.
+- **[blind-hunter BH-15] Shared rebuild accumulation is quadratic and retains full raw histories under a 1 MiB candidate ceiling.** Verdict: `medium` → **defer**. Carried: this is the same pre-existing shared-rebuild subsystem defect already assigned to its owning reconciliation spec.
+- **[blind-hunter BH-16] Shared-rebuild descendant traversal is recursive without an explicit depth bound.** Verdict: `medium` → **defer**. Carried: the shared-rebuild subsystem entry already records the 10,000-member/deep-chain stack risk and routes it to its owning spec.
+- **[verification-gap VG-01] EventIds 4806 and 4807 do not verify their warning level.** Verdict: `medium` → **patch, resolved**. The capturing logger now retains `LogLevel`, and both existing facts require `Warning`; the focused processor class passed 25/25 with zero skips.
+- **[verification-gap VG-02] Strict-completion and release marker failures do not verify their structured exception.** Verdict: `medium` → **patch, resolved**. A strict-completion fact and a new release-failure fact now require EventId 4803 to carry the exact caught exception; the focused processor class passed 25/25 with zero skips.
+- **[edge-case-hunter EC-01] One reconciler failure can starve later awaits.** Verdict: `medium` → **defer**. Carried: identical location and consequence to BH-05 and the canonical fail-fast reconciler row.
+- **[edge-case-hunter EC-02] One steady-state scheduler failure can starve later awaits.** Verdict: `medium` → **defer**. Carried: identical location and consequence to BH-05 and the canonical handler fail-fast row.
+- **[edge-case-hunter EC-03] A later suspension can reuse a consumed date condition's resume identity.** Verdict: `medium` → **defer**. Carried: identical root cause and route to BH-08 and the occurrence-identity entry.
+- **[edge-case-hunter EC-04] Early resume or termination leaves stale reminders until their due time.** Verdict: `low`, rejected. Carried: Story 4.8 explicitly accepts the idempotent stale-reminder posture, and proactive cleanup requires new event-consumption machinery.
+- **[edge-case-hunter EC-05] Duplicate date conditions cause redundant registrations or submissions.** Verdict: `low` → **defer**. Carried: identical root cause and route to BH-14 and the durable await-set normalization entry.
+- **[edge-case-hunter EC-06] Stream metadata sequence can disagree with the decoded payload sequence.** Verdict: `maybe-false` → **defer**. The reader orders by `StreamReadEvent.SequenceNumber` and does not compare a payload ordinal, but reachability requires EventStore contract evidence or fault injection showing persisted envelope/payload sequence divergence.
+- **[edge-case-hunter EC-07] Historical pending-index watermarks grow without compaction.** Verdict: `low`, rejected. Carried: ordinary impact remains low and safe pruning requires a migration/retention policy rather than a direct correction.
+- **[edge-case-hunter EC-08] The append-only tenant registry grows without compaction.** Verdict: `low`, rejected. Carried with EC-07: sharding or removal is a durable schema redesign for a low ordinary-use risk.
+- **[edge-case-hunter EC-09] Pre-index suspended streams can be undiscoverable after retiring configured-tenant scans.** Verdict: `maybe-false` → **defer**. Carried: this is the same empty-registry/backfill reachability question as BH-03 and still depends on projection-poller reset behavior.
+
 ## Dev Notes
 
 ### Scope Boundary
@@ -548,6 +580,16 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - 2026-09-05 session Tier-3 attempt (honest, inconclusive): `tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class *SmokeTests` against live Dapr prerequisites confirmed present (`dapr_placement`/`dapr_scheduler`/`dapr_redis`/`dapr_zipkin` containers already up, ports 6050/6060/6379 listening). The process ran **13+ minutes** consuming almost no CPU (12s total) — the same symptom (stuck, not crashing) as the 2026-08-28/2026-09-01 `DistributedApplication.StartAsync` hang finding (open, line 118) — and was terminated (`kill -9`) to stop burning session time on an already-tracked, previously-undiagnosed blocker rather than re-diagnose it from scratch. **This truncated the process's own output before its failure-detail lines flushed**: the captured output shows both `Suspend_time_registration_resumes_the_item_when_the_scheduler_fires` and `Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration` as `[FAIL]`, but with no stack trace or exception detail (lost to the forced kill), so this session cannot add a verified root cause beyond confirming the blocker still reproduces. **This is not a fresh live-pass or live-fail claim** — findings #100 (line 100) and #118 (line 118) remain open exactly as before, now with one more reproduction data point. In hindsight, terminating the process before its normal 5-minute internal `CancelAfter` timeout was premature; a future session should let it run to that natural timeout (or the outer harness timeout) rather than force-kill, so the process's own diagnostic output survives intact.
 
 ### Completion Notes List
+
+- **2026-09-22 Group 2/3 review-patch and full-baseline review close-out.** Closed all seven latest review patches: fail-closed
+  persisted-child identity coverage, bounded projection log fields, constructor-rejected suspension coverage on
+  both delivery paths, identity-bearing in-progress/reserved-tenant diagnostics, structured marker exceptions,
+  and positive cascade stale-window validation. The full-baseline review then closed two focused verification
+  gaps by pinning warning levels and the two remaining marker-exception paths. Release solution build passed
+  with zero warnings/errors; focused Integration **99/99**, Unit **568/568**, Property **3/3**, non-smoke
+  Integration **547/547**, and Architecture **268/268** all passed with zero skips. The pre-existing Debug
+  duplicate-assembly conflict remains separate from this patch; the older DW-56 marker-protocol item remains
+  intentionally open.
 
 - **2026-09-21 final full-baseline review close-out.** The three surviving review patches now distinguish
   startup reconciliation from subscription redelivery: Host 1 waits for each suspension marker to complete,
@@ -796,6 +838,21 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-22 Group 2/3 review-patch close-out**
+- `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs`
+- `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs`
+- `src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs`
+- `src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs`
+- `src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs`
+- `src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs`
+- `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorkItemProjectionQueryAdapterTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs`
+- `tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-21 final full-baseline review close-out**
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs`
@@ -1132,6 +1189,11 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-22 — Closed all seven latest Group 2/3 review patches plus two full-baseline verification gaps with
+  bounded structured diagnostics, fail-closed projection and decoder regressions, warning-level pins, complete
+  marker-exception coverage, and positive stale-window validation. Release build and every deterministic suite
+  passed with zero skips; the older cross-repository DW-56 marker-protocol finding remains open.
 
 - 2026-09-21 — Closed the final full-baseline review with whitespace credential coverage and a marker/canary
   live proof that distinguishes subscription redelivery from both startup reconciliation passes. Release build
@@ -1800,8 +1862,8 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Reminders` (HEAD `3373ab1`) �
 
 _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Projections` (HEAD `20a8ca5`) — 16 files, +1370/−103, 1,712 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported; acceptance-auditor found no Group 2 AC violations. 36 raw findings triaged to 0 decision, 2 patch, 4 defer, 30 rejected._
 
-- [ ] [Review][Patch] Dispatch merge of persisted children has no identity-mismatch test [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:209]
-- [ ] [Review][Patch] SkippedEvent and EventId 4500 still log unbounded EventTypeName or CorrelationId [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:48]
+- [x] [Review][Patch] Dispatch merge of persisted children has no identity-mismatch test [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:209] — resolved 2026-09-22: a two-case regression plants a roll-up under the requested key with a foreign tenant or work-item identity, then proves dispatch refuses its persisted children and preserves the requested identity.
+- [x] [Review][Patch] SkippedEvent and EventId 4500 still log unbounded EventTypeName or CorrelationId [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:48] — resolved 2026-09-22: both caller-controlled values are bounded to 128 characters on skip and projected-event paths, with a focused regression proving suffixes are absent.
 - [x] [Review][Defer] No unpark, delete, or operator replay path; a later successful shared rebuild still leaves the parking document in place [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:609] — deferred: pre-existing; canonical unpark/replay ledger already owns this, including the reminder-recovery skip
 - [x] [Review][Defer] Mixed-case reserved tenant `TENANTS` still misses the `/project` Ordinal guard, then `TenantId` lowercases to `tenants` [src/Hexalith.Works/Projections/WorksReadModelKeys.cs:69] — deferred: pre-existing; reserved-tenant spec Never list puts mixed-case direct `/project` out of scope
 - [x] [Review][Defer] `UseCurrentSchemaAsync` is read once per dispatch and reused across later awaits [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:199] — deferred: documented generation-switch race in the DW-84 dispatcher rework; not Story 4.8 reminder/index behavior
@@ -1836,11 +1898,11 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Runtime` (HEAD `643d375`) — 
 
 - [x] [Review][Patch] Cascade startup still stops after one failed pass — resolved 2026-09-22: keep the single pass. `CascadeRecoveryService` remarks now state that a thrown pass is logged and replayed from the durable incomplete index on the next process start, and that a per-entry failure stays on that index. No in-process retry loop. [src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs:9]
 
-- [ ] [Review][Patch] Constructor-rejected `WorkItemSuspended` is untested on the subscription and `/project` paths [src/Hexalith.Works/Runtime/WorksEventDecoder.cs:56]
-- [ ] [Review][Patch] In-progress marker acquisition returns HTTP 500 with no log [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:88]
-- [ ] [Review][Patch] Reserved-tenant refusal logs only a reason code and omits the message id [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:58]
-- [ ] [Review][Patch] Marker-store failures keep the exception type name and drop the exception [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:45]
-- [ ] [Review][Patch] `CascadeCheckpointIndexStaleAfterHours` of zero or less is accepted and prunes the crash window immediately [src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs:65]
+- [x] [Review][Patch] Constructor-rejected `WorkItemSuspended` is untested on the subscription and `/project` paths [src/Hexalith.Works/Runtime/WorksEventDecoder.cs:56] — resolved 2026-09-22: malformed `AwaitConditions: [null]` now proves terminal fail-closed subscription handling and budgeted `/project` parking with no index write.
+- [x] [Review][Patch] In-progress marker acquisition returns HTTP 500 with no log [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:88] — resolved 2026-09-22: EventId 4807 emits a structured warning with the bounded message id before the retryable outcome is returned.
+- [x] [Review][Patch] Reserved-tenant refusal logs only a reason code and omits the message id [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:58] — resolved 2026-09-22: EventId 4806 now retains both structured `MessageId` and `ReasonCode` fields, covered by the processor regression.
+- [x] [Review][Patch] Marker-store failures keep the exception type name and drop the exception [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:45] — resolved 2026-09-22: EventId 4803 now receives the caught exception as structured logger exception data on strict and best-effort marker paths.
+- [x] [Review][Patch] `CascadeCheckpointIndexStaleAfterHours` of zero or less is accepted and prunes the crash window immediately [src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs:65] — resolved 2026-09-22: startup options validation requires a positive value, with zero and negative cases pinned by a theory.
 
 - [x] [Review][Defer] Concurrent deliveries that both observe no marker both run handlers [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:62] — deferred: pre-existing Dapr marker-store contract; `TryAcquireAsync` does not persist a lease, and adding one is an EventStore protocol change
 

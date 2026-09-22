@@ -61,6 +61,7 @@ public sealed class WorksRecoveryOptions
     /// <summary>
     /// How long an incomplete-cascade-checkpoint index entry with no matching checkpoint (the documented
     /// crash window between index-add and checkpoint-write) is retried before it is pruned as abandoned.
+    /// Must be greater than zero.
     /// </summary>
     public int CascadeCheckpointIndexStaleAfterHours { get; init; } = 24;
 }
