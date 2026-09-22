@@ -1829,3 +1829,31 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Projections` (HEAD `20a8ca5`) 
 - `false` — neither dispatcher nor rebuild handler implements `IDeclaresProjectionReadModelSlots`: `/project` is a bespoke `MapPost`, not an SDK `IDomainProjectionHandler`; the slot scan does not apply to this adapter.
 - `false` — `IsRolledTotalUnavailable` can `StackOverflowException` on a deep parent/child chain: traversal already cycle-detects; a work-item tree deep enough to blow the stack was not shown.
 - `low`, not worth fixing — watermark-rejected what's-next/pending transforms still allocate and `TrySaveAsync`: skipping the save needs a write-policy no-op seam, not a one-line correction, and equal-sequence redelivery is the common path.
+
+### Review Findings (2026-09-22, bmad-code-review, Group 3 Runtime `9526c31...HEAD`)
+
+_Scope: `9526c31...HEAD` over `src/Hexalith.Works/Runtime` (HEAD `643d375`) — 11 files, +986/−22, 1,158 diff lines. Spec: this story. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported; acceptance-auditor found no Group 3 AC violations. 20 raw findings triaged to 1 decision, 5 patch, 1 defer, 12 rejected. The story frontmatter `baseline_commit: 9526c31` was the diff baseline, narrowed to Runtime._
+
+- [x] [Review][Patch] Cascade startup still stops after one failed pass — resolved 2026-09-22: keep the single pass. `CascadeRecoveryService` remarks now state that a thrown pass is logged and replayed from the durable incomplete index on the next process start, and that a per-entry failure stays on that index. No in-process retry loop. [src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs:9]
+
+- [ ] [Review][Patch] Constructor-rejected `WorkItemSuspended` is untested on the subscription and `/project` paths [src/Hexalith.Works/Runtime/WorksEventDecoder.cs:56]
+- [ ] [Review][Patch] In-progress marker acquisition returns HTTP 500 with no log [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:88]
+- [ ] [Review][Patch] Reserved-tenant refusal logs only a reason code and omits the message id [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:58]
+- [ ] [Review][Patch] Marker-store failures keep the exception type name and drop the exception [src/Hexalith.Works/Runtime/Events/WorksDomainEventLog.cs:45]
+- [ ] [Review][Patch] `CascadeCheckpointIndexStaleAfterHours` of zero or less is accepted and prunes the crash window immediately [src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs:65]
+
+- [x] [Review][Defer] Concurrent deliveries that both observe no marker both run handlers [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:62] — deferred: pre-existing Dapr marker-store contract; `TryAcquireAsync` does not persist a lease, and adding one is an EventStore protocol change
+
+**Rejected:**
+- `false` — `IsValidUniqueId` turns a non-format parser failure into a terminal ack: `UniqueIdHelper.ToGuid` only throws `ArgumentException` or `FormatException`, and its inner catch wraps every other failure as `FormatException` before it escapes.
+- `false` — an unknown event type is completed, so a later deploy cannot dispatch it: the EventStore exemplar processor also `MarkCompleted`s unknown types and returns `SkippedUnknownEventType`, which this endpoint already maps to HTTP 200; Works uses `FailedInvalidPayload` for the same ack-and-complete contract.
+- `false` — a constructor or converter defect on the subscription is permanently dropped, and the parking budget never applies: `WorksHost` documents terminal malformed-delivery handling, and the decoder comment requires constructor rejection to take that fail-closed path; `/project` parking is a different consumer.
+- `false` — the identity check permanently skips a future event whose aggregate id is not the work-item id, contrary to a comment that the shape should be admitted: the comment says the second comparison is defense-in-depth against that shape, and the skip is the check working.
+- `false` — `TENANTS` is refused on `/process` and accepted by the subscription: ordinal `IsReservedTenantId` misses `TENANTS`, then `TenantId` lowercases the payload to `tenants`, and the identity check completes `SkippedAggregateMismatch` before any handler runs.
+- `false` — the endpoint remarks disagree, and a caller that can reach the app port bypasses the sidecar policy: the first paragraph already makes topology the boundary because pub/sub has no `dapr-caller-app-id`; the second paragraph adds the sidecar allow-list for service invocation and does not claim the app checks that header.
+- `false` — dropping the SDK `EventStoreDomainEventProcessor` registration would leave the Works route mapped but not unwrapped: `UseEventStoreDomainService` turns CloudEvents and `/dapr/subscribe` on from that registration, and `WorksHost` still calls `AddEventStoreDomainEvents`, so the current route is unwrapped.
+- `false` — the deprecated page-budget alias silently wins, and a leftover `Works:Recovery:Tenants` list is ignored: the alias remarks say the old key wins when set, and AC #3 requires reconciliation without that hand-configured list.
+- `false` — a consumed type with no registered handler is acknowledged and never schedules a reminder: `WorksHost` registers `WorkItemSuspendedReminderHandler`; the outcome needs a later deletion of that registration.
+- `false` — a failed `MarkDispatched` leaves an in-progress lease that redelivery can never complete: the registered Dapr store does not persist `InProgress`; a failed transition leaves no marker, and the next delivery is `Acquired` and runs handlers again.
+- `false` — a non-HTTP gateway URI makes recovery commands target that endpoint: `HttpClient` rejects schemes other than HTTP and HTTPS when the request is sent.
+- `low`, not worth fixing — the gateway URI is checked on first client use, `Uri.TryCreate` accepts userinfo, query, and fragment, and a null `DAPR_API_TOKEN` is forwarded: a bad absolute URI already throws, non-HTTP fails at send, and `DaprServiceInvocationHandler` adds the token header only when the token is non-empty; extra origin checks are more than a direct correction of an everyday miss.

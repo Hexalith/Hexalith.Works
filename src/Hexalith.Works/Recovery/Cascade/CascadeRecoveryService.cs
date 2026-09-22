@@ -8,6 +8,12 @@ namespace Hexalith.Works.Recovery.Cascade;
 /// <summary>
 /// Runs one durable-index cascade recovery pass when the Works host starts.
 /// </summary>
+/// <remarks>
+/// A pass that throws is logged as <c>startup-cascade-recovery</c> and is not retried in-process.
+/// The durable incomplete index is replayed on the next process start. A single checkpoint that fails
+/// inside <see cref="CascadeRecoveryReconciler"/> is logged as <c>startup-cascade-replay</c> and left
+/// on that index; the rest of the pass continues.
+/// </remarks>
 public sealed class CascadeRecoveryService(
     CascadeRecoveryReconciler reconciler,
     ILogger<CascadeRecoveryService> logger) : BackgroundService

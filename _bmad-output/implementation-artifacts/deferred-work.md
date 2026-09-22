@@ -1072,3 +1072,7 @@ status: open
 - `UseCurrentSchemaAsync` is still read once per dispatch and reused across later awaits, so a concurrent schema cut-over can make this dispatch write resurrected legacy keys. Documented DW-84 generation-switch race; not Story 4.8 reminder/index behavior.
 - Equal-sequence pending-date watermarks (`storedLastSequence >= incomingLastSequence`) can still reject the same full replay after a decoder upgrade would make a previously skipped event state-affecting. Pre-existing; Group 2 re-observation only.
   - Canonical entry: the 2026-09-21 final bmad-build index-repairability `source_spec` row
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22, Group 3 Runtime)
+
+- Concurrent deliveries that both observe no durable marker both run handlers. Pre-existing Dapr marker-store contract: `TryAcquireAsync` reads state and does not persist an in-progress lease, so `Acquired` is not exclusive. Adding a lease is an EventStore protocol change, not a Works-only patch. [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:62]
