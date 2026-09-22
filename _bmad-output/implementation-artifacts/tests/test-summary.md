@@ -3748,3 +3748,34 @@ tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.Archit
 
 No AppHost topology or reminder-delivery behavior changed, so no Tier-3 live fact was repeated and no fresh
 live acceptance credit is claimed. `git diff --check` passed.
+
+## Story 4.8 Unicode log-sanitizer and known-type skip close-out — 2026-09-22
+
+The two remaining review patches now replace Unicode line and paragraph separators in both projection
+single-line sanitizers, and pin known-type skip diagnostics to the catalog simple name.
+
+```text
+DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal \
+  -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0
+# Build succeeded: 0 warnings, 0 errors
+# Restore was already up to date from the preceding project build in this session.
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests \
+  -class "Hexalith.Works.IntegrationTests.PendingDateAwaitIndexDispatcherTests"
+# 28/28 passed, 0 skipped
+
+tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests
+# 568/568 passed, 0 skipped
+
+tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests
+# 3/3 passed, 0 skipped; each property completed 100 cases
+
+tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests -class- "*SmokeTests"
+# 550/550 passed, 0 skipped
+
+tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests
+# 268/268 passed, 0 skipped
+```
+
+These patches do not change reminder delivery or the AppHost topology, so no Tier-3 live fact was repeated
+and no fresh live acceptance credit is claimed. `git diff --check` passed.

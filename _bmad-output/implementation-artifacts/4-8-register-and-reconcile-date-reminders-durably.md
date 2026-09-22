@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-progress
+status: in-review
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: in-progress
+Status: in-review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -610,6 +610,8 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 
 ### Completion Notes List
 
+- **2026-09-22 open review-patch close-out.** Projection log sanitizers now replace Unicode line and paragraph separators (U+2028, U+2029) as well as control characters, and known-type skip paths are pinned to the catalog simple name. `DOTNET_CLI_HOME=/tmp dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -v minimal -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` passed with zero warnings/errors. `PendingDateAwaitIndexDispatcherTests` **28/28**, non-smoke Integration (`-class- "*SmokeTests"`) **550/550**, Unit **568/568**, Property **3/3** (100 cases each), and Architecture **268/268** passed with zero skips. `git diff --check` passed. No Tier-3 live evidence was repeated. The same commands and totals are in `tests/test-summary.md`.
+
 - **2026-09-22 final bmad-build review close-out.** EventId 4500 now applies the same bounded
   control-character sanitization as projection skip diagnostics, and CI explicitly installs Dapr runtime
   **1.18.3**, matching the live harness minimum instead of inheriting **1.18.2**. `actionlint` passed; Release
@@ -880,6 +882,13 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - **AC #1 status (honest):** suspend-time registration is implemented and deterministically proven. **2026-09-05:** the live resume-without-restart depended on the Dapr actor-reminder fire (Story-4.6 infra), which the WSL2 `dapr init` sandbox did not deliver — recorded as a substrate blocker (test-summary), not hidden. That session's Tier-3 attempt did not add a fresh live-pass or live-fail data point (AppHost `StartAsync` hang, finding line 118; run terminated before diagnostics flushed); AC #1 and the AppHost-startup finding remained open then. **Superseded 2026-09-08:** the recorded live 4/4 includes the scheduler-fire resume (AC #1); AC #1 is no longer open. AC #2/#3 were already proven live; AC #4 remains proven by unchanged green kernel-purity guards.
 
 ### File List
+
+**2026-09-22 open review-patch close-out**
+- `src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs`
+- `src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs`
+- `tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs`
+- `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+- `_bmad-output/implementation-artifacts/tests/test-summary.md`
 
 **2026-09-22 final bmad-build review close-out**
 - `.github/workflows/ci.yml`
@@ -1246,6 +1255,8 @@ _Docs_
   class can reach them — introduced by commit `df46f71`, left the solution unable to build in Release)
 
 ## Change Log
+
+- 2026-09-22 — Closed the two remaining review patches: projection diagnostics replace Unicode line and paragraph separators, and known-type skip logs are pinned to the catalog simple name. Release build and every deterministic suite passed with zero skips; no fresh Tier-3 live credit is claimed.
 
 - 2026-09-22 — Final bmad-build review sanitized EventId 4500 correlation metadata and aligned the blocking CI
   lane with the harness's Dapr runtime 1.18.3 minimum. Workflow lint, Release build, and every deterministic
@@ -2007,8 +2018,8 @@ _Scope: `origin/main...HEAD` (HEAD `94c2e34`) — 8 files, +210/−34, 471 diff 
 
 - [x] [Review][Decision] **DW-56 is closed while this close-out still treats the marker-store failure as an open deferral** — Decided 2026-09-22 (human): reopen DW-56. The 2026-09-05 sweep had closed the row; `MarkCompletedSafelyAsync` and `ReleaseSafelyAsync` still only log. The story deferral stays on that row, and the Group 2/3 test-summary sentence now names the reopened deferral.
 
-- [ ] [Review][Patch] Unicode line separators still pass the new single-line sanitizers [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:342]
-- [ ] [Review][Patch] Known-type projection skip paths are not pinned to the simple event name [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:58]
+- [x] [Review][Patch] Unicode line separators still pass the new single-line sanitizers [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:342] — resolved 2026-09-22: both projection sanitizers replace U+2028 and U+2029 along with control characters, and the log regression requires those separators to be absent from EventIds 4500 and 4504.
+- [x] [Review][Patch] Known-type projection skip paths are not pinned to the simple event name [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:58] — resolved 2026-09-22: null-payload, malformed known-type, and matching null conversation-link skips must log the catalog simple name and must not log the namespace prefix.
 
 - [x] [Review][Defer] Read-model write diagnostics still copy raw correlation ids and event-type names [references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/ReadModelWritePolicy.cs:254] — deferred: pre-existing; `WithEventDiagnostics` is unchanged by this close-out and still forwards the first raw correlation id plus up to eight raw event-type names into conflict and exhaustion logs
 
@@ -2020,3 +2031,15 @@ _Scope: `origin/main...HEAD` (HEAD `94c2e34`) — 8 files, +210/−34, 471 diff 
 - `false` — a control-character suffix makes `WorkItemCreated` miss the catalog: `SimpleTypeName` keeps the characters after the last dot, so a contaminated token is an unknown type and is skipped. That is the fail-closed lookup.
 - `false` — a 256-character work-item id breaks the 512-character log assertion: `AggregateIdentity` already caps aggregate ids at 256 ASCII characters with no controls. Event 4500 logs that validated id. `ShouldBeLessThan(512)` bounds the short fixture message, not every legal identifier.
 - `low`, not worth fixing — Task 4 still says `FromSequence = LastSequenceReturned + 1` while the cursor is exclusive: the implementation and tests keep the exclusive lower bound, and the correction edits this story’s task text.
+
+### Review Findings (2026-09-22, bmad-build patch close-out)
+
+_Scope: the uncommitted Story 4.8 close-out, 5 files. The frontmatter baseline `9526c31` spans 3563 files and was not used, matching the prior close-out review. Layers: blind-hunter (5 findings), edge-case-hunter (no findings), verification-gap (no gaps)._
+
+- [x] [Review][Patch] Known-type skip facts still pass when the logged type is a dotted tail of the raw name [tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs:421] — resolved 2026-09-22: the three new facts require `event {SimpleName} for work item` and reject `.{SimpleName}`, so a namespace tail cannot sit beside the simple name. `PendingDateAwaitIndexDispatcherTests` was re-run **28/28**.
+
+**Rejected:**
+- `false` — the known-type branches should log `eventType.Name` instead of the sliced simple name: after a catalog hit, `simpleName` is the dictionary key and equals `eventType.Name`. Passing `dto.EventTypeName` fails these facts because the first 128 characters are the namespace and do not contain `WorkItemCreated`.
+- `false` — the null conversation fact only repeats the malformed-JSON result shape: a `conversationCorrelationId: null` payload deserializes to a matching `ConversationLinked` whose correlation is null, so decode takes the pattern branch. The catch needs a throw, and that JSON does not throw. The fact already requires `ConversationLinked` and rejects the 128-character namespace prefix.
+- `false` — `AssertSingleLine` would stay green if `char.IsControl` were replaced by six literals, so U+0085 could survive: both sanitizers still call `char.IsControl`, which includes U+0085, and also replace U+2028 and U+2029. The new assertions add the two separators the review named.
+- `low`, not worth fixing — `IsSingleLineUnsafe` is copied in the dispatcher and the decoder: both copies use the same predicate, and EventIds 4500 and 4504 are both asserted. A shared helper is a new member, not a direct correction of a current miss.

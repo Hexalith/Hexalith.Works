@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Projections;
@@ -351,10 +352,10 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         var dispatcher = new WorkItemProjectionDispatcher(store, notifier: null, logger);
         string eventTypeNamespace = new('x', 2_000);
         const string eventTypeSimpleName = "UnknownProjectionEvent";
-        string correlationPrefix = $"corr\r\n\t\u0001{new string('c', 120)}";
-        string sanitizedCorrelationPrefix = $"corr????{new string('c', 120)}";
+        string correlationPrefix = $"corr\r\n\t\u0001\u2028\u2029{new string('c', 118)}";
+        string sanitizedCorrelationPrefix = $"corr??????{new string('c', 118)}";
         ProjectionEventDto unknown = new(
-            $"{eventTypeNamespace}.\r\n{eventTypeSimpleName}\t",
+            $"{eventTypeNamespace}.\r\n\u2028{eventTypeSimpleName}\t\u2029",
             "{}"u8.ToArray(),
             "json",
             1,
@@ -372,13 +373,10 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         (int Id, LogLevel Level, string Message) skipped = logger.Entries
             .Where(static entry => entry.Id == 4504)
             .ShouldHaveSingleItem();
-        skipped.Message.ShouldContain($"??{eventTypeSimpleName}?");
+        skipped.Message.ShouldContain($"???{eventTypeSimpleName}??");
         skipped.Message.ShouldContain(sanitizedCorrelationPrefix);
         skipped.Message.ShouldNotContain(eventTypeNamespace[..128]);
-        skipped.Message.ShouldNotContain('\r');
-        skipped.Message.ShouldNotContain('\n');
-        skipped.Message.ShouldNotContain('\t');
-        skipped.Message.ShouldNotContain('\u0001');
+        AssertSingleLine(skipped.Message);
         skipped.Message.ShouldNotContain('z');
         skipped.Message.Length.ShouldBeLessThan(512);
 
@@ -386,12 +384,84 @@ public sealed class PendingDateAwaitIndexDispatcherTests
             .Where(static entry => entry.Id == 4500)
             .ShouldHaveSingleItem();
         projected.Message.ShouldContain(sanitizedCorrelationPrefix);
-        projected.Message.ShouldNotContain('\r');
-        projected.Message.ShouldNotContain('\n');
-        projected.Message.ShouldNotContain('\t');
-        projected.Message.ShouldNotContain('\u0001');
+        AssertSingleLine(projected.Message);
         projected.Message.ShouldNotContain('z');
         projected.Message.Length.ShouldBeLessThan(512);
+    }
+
+    [Theory]
+    [InlineData(nameof(WorkItemCreated), "null")]
+    [InlineData(nameof(WorkItemSuspended), "{")]
+    public void Known_type_projection_skips_log_the_simple_event_name(string simpleName, string payloadJson)
+    {
+        var logger = new CapturingLogger();
+        string eventTypeNamespace = new('n', 2_000);
+        string correlationPrefix = $"id\u2028\u2029{new string('k', 124)}";
+        ProjectionEventDto dto = new(
+            $"{eventTypeNamespace}.{simpleName}",
+            Encoding.UTF8.GetBytes(payloadJson),
+            "json",
+            1,
+            default,
+            correlationPrefix + "TAIL");
+
+        WorkItemProjectionEventDecodeResult result = WorkItemProjectionEventDecoder.Decode(
+            dto,
+            new TenantId(TenantA),
+            new WorkItemId(WorkId),
+            correlationPrefix + "TAIL",
+            logger);
+
+        result.Payload.ShouldBeNull();
+        result.KnownEventType.ShouldBeTrue();
+        result.Malformed.ShouldBeTrue();
+        (int Id, LogLevel Level, string Message) skipped = logger.Entries
+            .Where(static entry => entry.Id == 4504)
+            .ShouldHaveSingleItem();
+        skipped.Level.ShouldBe(LogLevel.Warning);
+        skipped.Message.ShouldContain($"event {simpleName} for work item");
+        skipped.Message.ShouldNotContain(eventTypeNamespace[..128]);
+        skipped.Message.ShouldNotContain($".{simpleName}");
+        skipped.Message.ShouldContain($"id??{new string('k', 124)}");
+        skipped.Message.ShouldNotContain("TAIL");
+        AssertSingleLine(skipped.Message);
+        logger.Entries.ShouldNotContain(entry => entry.Id == 4505);
+    }
+
+    [Fact]
+    public void A_matching_null_conversation_link_logs_the_simple_event_name()
+    {
+        var logger = new CapturingLogger();
+        string eventTypeNamespace = new('n', 2_000);
+        ConversationLinked linked = new(
+            WorkId,
+            1,
+            new TenantId(TenantA),
+            new WorkItemId(WorkId),
+            null!);
+        ProjectionEventDto dto = Dto(linked, 1) with
+        {
+            EventTypeName = $"{eventTypeNamespace}.{nameof(ConversationLinked)}",
+        };
+
+        WorkItemProjectionEventDecodeResult result = WorkItemProjectionEventDecoder.Decode(
+            dto,
+            new TenantId(TenantA),
+            new WorkItemId(WorkId),
+            "corr-link",
+            logger);
+
+        result.Payload.ShouldBeNull();
+        result.KnownEventType.ShouldBeTrue();
+        result.Malformed.ShouldBeTrue();
+        (int Id, LogLevel Level, string Message) skipped = logger.Entries
+            .Where(static entry => entry.Id == 4504)
+            .ShouldHaveSingleItem();
+        skipped.Level.ShouldBe(LogLevel.Warning);
+        skipped.Message.ShouldContain($"event {nameof(ConversationLinked)} for work item");
+        skipped.Message.ShouldNotContain(eventTypeNamespace[..128]);
+        skipped.Message.ShouldNotContain($".{nameof(ConversationLinked)}");
+        logger.Entries.ShouldNotContain(entry => entry.Id == 4505);
     }
 
     [Fact]
@@ -711,6 +781,16 @@ public sealed class PendingDateAwaitIndexDispatcherTests
         roundTrippedIndex.LastSequences[WorkId].ShouldBe(2);
         roundTrippedRegistry.ShouldNotBeNull();
         roundTrippedRegistry.Tenants.ShouldBe([TenantA, TenantB], ignoreOrder: true);
+    }
+
+    private static void AssertSingleLine(string message)
+    {
+        message.ShouldNotContain('\r');
+        message.ShouldNotContain('\n');
+        message.ShouldNotContain('\t');
+        message.ShouldNotContain('\u0001');
+        message.ShouldNotContain('\u2028');
+        message.ShouldNotContain('\u2029');
     }
 
     private static WorkItemProjectionDispatcher NewDispatcher(IReadModelStore store)

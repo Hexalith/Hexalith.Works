@@ -151,10 +151,14 @@ internal static partial class WorkItemProjectionEventDecoder
             {
                 for (int index = 0; index < destination.Length; index++)
                 {
-                    destination[index] = char.IsControl(source[index]) ? '?' : source[index];
+                    // U+2028 and U+2029 break a log line but are not Char.IsControl.
+                    destination[index] = IsSingleLineUnsafe(source[index]) ? '?' : source[index];
                 }
             });
     }
+
+    private static bool IsSingleLineUnsafe(char value)
+        => char.IsControl(value) || value is '\u2028' or '\u2029';
 
     [LoggerMessage(
         EventId = 4504,
