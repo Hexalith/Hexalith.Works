@@ -1,11 +1,11 @@
 ---
 baseline_commit: 9526c31
-status: in-review
+status: in-progress
 ---
 
 # Story 4.8: Register and Reconcile Date Reminders Durably
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -1795,3 +1795,37 @@ _Scope: `9526c31...HEAD` over `src/Hexalith.Works/Reminders` (HEAD `3373ab1`) �
 - `false` — a registry entry equal to reserved tenant `tenants` burns the startup retry budget: `/project` and `/process` refuse that id before an index key is minted; the mixed-case `TENANTS` hole is already on the ledger.
 - `false` — a folded stream that has not reached `context.SequenceNumber` acks and skips registration: a still-truncated rebuild throws (redelivery); empty pending is the specified already-resumed path; persist-then-publish was not shown to return a complete prefix missing the delivered sequence.
 - `false` — a deserialized registry with a null `Tenants` collection throws before tenant isolation: the dispatcher always writes a `HashSet`; a missing JSON property uses the property initializer; `"Tenants": null` was not shown on a production write.
+
+### Review Findings (2026-09-21, bmad-code-review, Group 2 Projections `9526c31...HEAD`)
+
+_Scope: `9526c31...HEAD` over `src/Hexalith.Works/Projections` (HEAD `20a8ca5`) — 16 files, +1370/−103, 1,712 diff lines. Spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`. Layers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor — all four reported; acceptance-auditor found no Group 2 AC violations. 36 raw findings triaged to 0 decision, 2 patch, 4 defer, 30 rejected._
+
+- [ ] [Review][Patch] Dispatch merge of persisted children has no identity-mismatch test [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:209]
+- [ ] [Review][Patch] SkippedEvent and EventId 4500 still log unbounded EventTypeName or CorrelationId [src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs:48]
+- [x] [Review][Defer] No unpark, delete, or operator replay path; a later successful shared rebuild still leaves the parking document in place [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:609] — deferred: pre-existing; canonical unpark/replay ledger already owns this, including the reminder-recovery skip
+- [x] [Review][Defer] Mixed-case reserved tenant `TENANTS` still misses the `/project` Ordinal guard, then `TenantId` lowercases to `tenants` [src/Hexalith.Works/Projections/WorksReadModelKeys.cs:69] — deferred: pre-existing; reserved-tenant spec Never list puts mixed-case direct `/project` out of scope
+- [x] [Review][Defer] `UseCurrentSchemaAsync` is read once per dispatch and reused across later awaits [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:199] — deferred: documented generation-switch race in the DW-84 dispatcher rework; not Story 4.8 reminder/index behavior
+- [x] [Review][Defer] Equal-sequence pending-date watermarks (`>=`) can reject the same full replay after a decoder upgrade would make a skipped event state-affecting [src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:565] — deferred: already recorded in the 2026-09-21 final bmad-build ledger row on index repairability
+
+**Rejected:**
+- `false` — `MaxSequence` throws on an all-null `Events` list: `MaintainPendingDateAwaitIndexAsync` returns on `Count == 0`; the poller delivers `GetEventsAsync(0)` envelopes, not `[null]`; throwing on that hand-crafted body is fail-closed.
+- `false` — shared rebuild never rewrites `PendingDateAwaitTenantIndex` / registry: those keys are deliberately unversioned and independent of roll-up generation (`WorksReadModelKeys` registry remarks); Task 3 maintains them from `/project`; DD-3 already treats a stale index as discovery with stream as truth.
+- `false` — ghost `MemberWorkItemIds` with no roll-up are a query lie: membership is sealed inventory (every accumulated aggregate id); `GetWorkItemQueryHandler` NotFound when the roll-up is missing is the identity fail-closed path, not a false child.
+- `false` — an empty shared-rebuild candidate can never cut over a genuinely empty tenant: `Build` documents empty inventory as a failed capture and refuses to delete the legacy index; `CreateEmptyCandidateAsync` is the accumulate seed, not a sealed empty tenant.
+- `false` — `WorkItemSharedProjectionRebuildHandler` must call `ThrowIfReservedTenantId`: rebuild writes only generation-qualified what's-next/roll-up keys, never the pending-date index that collides with the registry.
+- `false` — `model is null && stateEvidenceDelivered` upserts a roll-up-less eligible item: `WorkItemProjectionBoundarySanitizer` no longer returns null when a model exists (it only clears rolled totals); a `Get`-null roll-up with decoded non-rejection events was not shown.
+- `false` — unknown or nameless event types skip `malformedEvidence` and publish rolled totals: unknown types are not Works catalog events (`KnownEventType: false`, `Malformed: false`); `/project` skips them; shared rebuild's incomplete mark is the operator-inventory fail-closed path, not the poller contract.
+- `false` — a slice without `WorkItemSuspended` is treated as never-had and leaves a stale pending entry: `ProjectionUpdateOrchestrator` full-replays from sequence 0; the never-had gate is the 2026-09-15 history-gating decision proven by `An_item_that_never_held_a_date_await_writes_no_index_document_at_all`.
+- `false` — deserialized pending-index `Entries`/`LastSequences` or registry `Tenants` null throws: production transforms always write dictionaries/`HashSet`; property initializers cover omitted JSON; `"…": null` was not shown on a production write.
+- `false` — a null `Histories` item or null `Events` array throws mid-rebuild: `AccumulateAsync` coalesces `Events ?? []` into a non-null array; `FromCandidate` already rejects a null `Histories` collection; a null element was not shown on a production candidate.
+- `false` — shared rebuild commits from non-positive sequences and therefore misses the `bd76a9b` "before any write" claim: `/project` already throws at `DispatchAsync` line 118; rebuild inventory is the same EventStore prefix; a non-positive `SequenceNumber` was not shown on a sealed candidate.
+- `false` — rebuild keys and parent matching use raw mixed-case `identity.TenantId`: shared-rebuild identity is EventStore `AggregateIdentity`, which lowercases tenant id before delivery.
+- `false` — `FromCandidate` catching only `JsonException` lets negative `GlobalPosition` fail unclassified: the candidate state has no `GlobalPosition`; `JsonSerializer.Deserialize` of this DTO was not shown to throw `ArgumentException`/`NotSupportedException`.
+- `false` — decode exceptions outside `IsHandledDecodeFailure` skip parking and 500-loop the poller: the filter is `JsonException | ArgumentException | NotSupportedException`, the same set `WorksEventDecoder` documents as handled malformed evidence; `InvalidOperationException` was only asserted as unclassified in a governance check, not thrown from `Deserialize`.
+- `false` — a null `ChildWorkItemIds` element throws during merge `Exists`/`Sort`: the merge already skips `child?.Value` whitespace; roll-up projection was not shown to persist a null child id.
+- `false` — `PersistRollUpAsync` watermark ignores stored identity mismatch and can permanently block the real aggregate: this dispatcher always writes `model` from the requested identity; a foreign higher-sequence document at that key was not shown to be produced here (query tests plant miskeyed docs for GET, not for persist).
+- `false` — missing `LastSequences` falling back to an ahead item watermark freezes additive rollout: the comment at `UpsertTenantIndexAsync` documents that fallback as the alternative to maximizing both watermarks, which would freeze harder.
+- `false` — parking budget is not required to be positive: `WorksHost` `ValidateOnStart` requires `MaxUndecodableEventDispatchesBeforeParking > 0`; the constructor `?? new` fallback is test-only.
+- `false` — neither dispatcher nor rebuild handler implements `IDeclaresProjectionReadModelSlots`: `/project` is a bespoke `MapPost`, not an SDK `IDomainProjectionHandler`; the slot scan does not apply to this adapter.
+- `false` — `IsRolledTotalUnavailable` can `StackOverflowException` on a deep parent/child chain: traversal already cycle-detects; a work-item tree deep enough to blow the stack was not shown.
+- `low`, not worth fixing — watermark-rejected what's-next/pending transforms still allocate and `TrySaveAsync`: skipping the save needs a write-policy no-op seam, not a one-line correction, and equal-sequence redelivery is the common path.

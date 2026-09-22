@@ -1063,3 +1063,12 @@ status: open
   - Canonical entry: the 2026-09-20 post-startup retry/readiness `source_spec` row
 - `PendingDateAwaitStreamReader` still trusts truncated-page cursor metadata and does not apply the dispatcher's AD-27 non-positive/monotonic envelope checks. maybe-false (would be medium): settle with gateway-contract evidence or fault injection that `LastSequenceReturned` can stall at `from`, or that a page can carry non-positive or non-increasing `SequenceNumber`s.
   - Canonical entry: the 2026-09-20 stream-page cursor metadata `source_spec` row
+
+## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-21, Group 2 Projections)
+
+- No unpark, delete, or operator replay path; a later successful shared rebuild still leaves `projection:works:parked:{tenant}:{id}` in place so `/project` and reminder recovery keep skipping. Pre-existing; Group 2 re-observation only.
+  - Canonical entry: [2026-09-08 Group 1 unpark/replay](#story-4-8-canonical-unpark-replay)
+- Mixed-case reserved tenant `TENANTS` still misses `WorksReadModelKeys.IsReservedTenantId` (`StringComparison.Ordinal`) on `/project`, then `TenantId` lowercases to `tenants`. Pre-existing; reserved-tenant spec Never list puts mixed-case direct `/project` out of scope.
+- `UseCurrentSchemaAsync` is still read once per dispatch and reused across later awaits, so a concurrent schema cut-over can make this dispatch write resurrected legacy keys. Documented DW-84 generation-switch race; not Story 4.8 reminder/index behavior.
+- Equal-sequence pending-date watermarks (`storedLastSequence >= incomingLastSequence`) can still reject the same full replay after a decoder upgrade would make a previously skipped event state-affecting. Pre-existing; Group 2 re-observation only.
+  - Canonical entry: the 2026-09-21 final bmad-build index-repairability `source_spec` row
