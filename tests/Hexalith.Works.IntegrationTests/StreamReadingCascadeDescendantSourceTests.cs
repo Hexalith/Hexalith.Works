@@ -119,6 +119,60 @@ public sealed class StreamReadingCascadeDescendantSourceTests
         error.Message.ShouldContain(s_parent.Value);
     }
 
+    /// <summary>The event immediately after a page boundary is included by the exclusive cursor.</summary>
+    [Fact]
+    public async Task Descendant_discovery_does_not_skip_first_event_on_next_page()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        StreamReadPage first = CreateChildPage(s_activeChild) with
+        {
+            Metadata = new StreamReadMetadata(0, null, 1, 2, 1, IsTruncated: true, NextContinuationToken: null),
+        };
+        ChildSpawned secondSpawn = CreateSpawn(2, s_missingChild);
+        StreamReadEvent secondEvent = new(
+            2,
+            typeof(ChildSpawned).FullName!,
+            JsonSerializer.SerializeToUtf8Bytes(secondSpawn, s_web),
+            "json",
+            1,
+            "message-2",
+            "correlation-2",
+            null,
+            new DateTimeOffset(2026, 7, 22, 8, 0, 2, TimeSpan.Zero),
+            null);
+        StreamReadPage second = new(
+            s_tenant.Value,
+            WorkCommandSubmission.WorkDomain,
+            s_parent.Value,
+            [secondEvent],
+            new StreamReadMetadata(1, null, 2, 2, 1, IsTruncated: false, NextContinuationToken: null));
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(call.ArgAt<StreamReadRequest>(0).FromSequence switch
+            {
+                0 => first,
+                1 => second,
+                _ => throw new InvalidOperationException("The reader skipped the page boundary."),
+            }));
+
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        ConfigureNoCurrentManifest(store);
+        var source = new StreamReadingCascadeDescendantSource(
+            gateway,
+            store,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance);
+
+        IReadOnlyList<CascadeDescendant> descendants = await source.GetDescendantsAsync(
+            s_tenant.Value,
+            s_parent.Value,
+            TestContext.Current.CancellationToken);
+
+        descendants.Select(static item => item.WorkItemId.Value).ShouldBe([s_activeChild.Value, s_missingChild.Value]);
+        await gateway.Received(1).ReadStreamAsync(
+            Arg.Is<StreamReadRequest>(request => request.FromSequence == 1 && request.ContinuationToken == null),
+            Arg.Any<CancellationToken>());
+    }
+
     /// <summary>Cancellation during a roll-up read propagates instead of collapsing into a fail-closed "active" verdict.</summary>
     [Fact]
     public async Task Descendant_terminality_propagates_cancellation_rather_than_treating_as_active()

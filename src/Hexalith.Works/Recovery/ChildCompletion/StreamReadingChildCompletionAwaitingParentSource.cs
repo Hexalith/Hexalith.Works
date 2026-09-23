@@ -120,7 +120,6 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
         CancellationToken cancellationToken)
     {
         var events = new List<(long Sequence, IEventPayload Payload)>();
-        ReplayContinuationToken? continuation = null;
         long from = 0;
         bool stillTruncated = false;
 
@@ -131,10 +130,11 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
                 Domain: WorkCommandSubmission.WorkDomain,
                 AggregateId: workItemId,
                 FromSequence: from,
-                ContinuationToken: continuation,
+                ContinuationToken: null,
                 PageSize: PageSize);
             StreamReadPage result = await _gateway.ReadStreamAsync(request, cancellationToken).ConfigureAwait(false);
             if (!string.Equals(result.Tenant, tenantId, StringComparison.Ordinal)
+                || !string.Equals(result.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
                 || !string.Equals(result.AggregateId, workItemId, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("EventStore returned a stream outside the requested identity.");
@@ -155,8 +155,14 @@ internal sealed class StreamReadingChildCompletionAwaitingParentSource(
                 break;
             }
 
-            continuation = result.Metadata.NextContinuationToken;
-            from = result.Metadata.LastSequenceReturned is { } lastSequence ? lastSequence + 1 : from;
+            if (result.Metadata.LastSequenceReturned is not { } lastSequence || lastSequence <= from)
+            {
+                throw new InvalidOperationException(
+                    $"Stream for aggregate '{workItemId}' returned a truncated page without an advancing cursor.");
+            }
+
+            // FromSequence is exclusive. Adding one here would skip the next committed event.
+            from = lastSequence;
         }
 
         if (stillTruncated)

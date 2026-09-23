@@ -134,13 +134,14 @@ NFR18: The eight PRD exit gates remain blocking dependencies: transport idempote
 - Add a tracked CI step that executes the built Release architecture-test assembly; compilation alone is not architecture-fitness evidence.
 - Resolve the approved source conflict in favor of PRD FR8/FR9 and the 2026-09-14 proposal: `ReEstimate` preserves cumulative Done, clamps only Remaining, allows visible `Done > Estimated`, never completes/reopens/changes Status, and only `CorrectProgress` changes Done. Architecture AD-17 and any candidate story text must be amended before implementation.
 - Treat the change from clamp-Done replay to preserve-Done replay as a semantic migration: replay representative legacy streams through aggregate and projection folds, compare live/rebuilt state, rebuild disposable projections, document snapshot/cache invalidation, and change write-side/read-side interpretations atomically.
-- Preserve exact historical story identities and delivered evidence for Epics 1-4: Stories 1.1-1.5, 2.1-2.5, 3.1-3.6, and 4.1-4.9 retain their approved titles, artifacts, and statuses; later target acceptance criteria must not be retroactively applied to them.
+- Preserve exact historical story identities and delivered evidence for Epics 1-4: Stories 1.1-1.5, 2.1-2.5, 3.1-3.6, and 4.1-4.9 retain their approved titles and artifacts; later target acceptance criteria must not be retroactively applied to them. The human-approved 2026-09-23 split resets unfinished Story 4.9 to backlog while its prerequisites are drafted.
 - Quarantine the existing rewritten target bodies under non-executable provisional labels `F1-A`-`F1-D`, `F2-A`-`F2-H`, `F3-A`-`F3-J`, and `F4-A`-`F4-J`. An `F*` label cannot enter sprint status or inherit historical delivery status and requires a unique final ID, dependency review, validated artifact, and aligned traceability before promotion.
 - Preserve the approved Epic 5 remediation scopes without yet changing sprint tracking: overflow-safe progress/event ordinals; a singular executable lifecycle authority; overrun-preserving re-estimation plus bounded act notes; contract-derived durable-catalog completeness; and the 4,000-character Obligation admission bound with historical replay compatibility.
 - Preserve Epic 5 dependencies: Story 5.2 precedes final 5.3 integration; 5.3 depends on 5.4 for changed durable evidence; 5.5 depends on 5.4 before any new rejection producer; 5.1 and 5.4 can proceed independently; named retrospective gates must be green before stories are marked done or unattended implementation resumes.
 - Keep `sprint-status.yaml` unchanged until `epics.md`, PRD, Architecture, and five validated Epic 5 artifacts agree. Then update it once and atomically, preserving every historical key/status, marking Epics 1-3 done, Epic 4 in progress, Epic 5/backlog keys in backlog, and adding no provisional `F*` keys.
 - Follow the approved remediation order: align PRD and Architecture authority, reconcile historical/provisional epic provenance, create and validate Stories 5.1-5.5, update tracking atomically, implement in dependency order with migration evidence, rerun implementation readiness to PASS, and only then rerun sprint planning.
 - Do not roll back delivered source behavior or rewrite historical acceptance evidence. The approved plan is additive except for the explicit replay interpretation of downward re-estimation, and it authorizes planning reconciliation—not code implementation, dependency updates, commits, pushes, or premature tracker generation.
+- The human-approved 2026-09-23 Story 4.9 split adds draft prerequisite Stories 4.10–4.16 and their backlog tracker keys. These IDs do not promote or inherit delivery status from provisional `F4-*` candidates; Story 4.9 remains the sole host-removal gate.
 
 ### UX Design Requirements
 
@@ -256,6 +257,13 @@ The following story identities, statuses, and evidence sources are the immutable
 | 4.7 | Trigger Reactor Translators from the Live Event Stream | done | `_bmad-output/implementation-artifacts/4-7-trigger-reactor-translators-from-the-live-event-stream.md` |
 | 4.8 | Register and Reconcile Date Reminders Durably | review | `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md` |
 | 4.9 | Migrate Works Hosting to the Platform Boundary | backlog | `_bmad-output/implementation-artifacts/sprint-status.yaml` and `_bmad-output/implementation-artifacts/epic-4-context.md` |
+| 4.10 | Publish EventStore Projection Delivery and Rebuild Fence | backlog | `_bmad-output/implementation-artifacts/spec-4-10-publish-eventstore-projection-delivery-and-rebuild-fence.md` |
+| 4.11 | Publish EventStore Typed Reminder Reconciliation | backlog | `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md` |
+| 4.12 | Publish EventStore Checkpointed Process and Recovery Runtime | backlog | `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md` |
+| 4.13 | Publish EventStore Trusted Effect Submission | backlog | `_bmad-output/implementation-artifacts/spec-4-13-publish-eventstore-trusted-effect-submission.md` |
+| 4.14 | Adopt SDK Projection and Query Seams in Works | backlog | `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md` |
+| 4.15 | Adopt SDK Reminder, Process, and Command Seams in Works | backlog | `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md` |
+| 4.16 | Prove Platform Works Parity and Rollback | backlog | `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md` |
 
 ## Forward Candidate Identity Map
 
@@ -268,7 +276,7 @@ The following story identities, statuses, and evidence sources are the immutable
 
 ## Epic List
 
-Epics 1-4 preserve the delivered story identities and evidence recorded by sprint status and durable artifacts. Later target decompositions remain under non-executable `F1-*` through `F4-*` labels until promoted with unique IDs and validated traceability. Epic 5 is the only new executable remediation epic; it hardens existing FR coverage rather than introducing new FR identifiers.
+Epics 1-4 preserve the delivered story identities and evidence recorded by sprint status and durable artifacts. Later target decompositions remain under non-executable `F1-*` through `F4-*` labels until promoted with unique IDs and validated traceability. Epic 5 remains the remediation epic; the 2026-09-23 approved split separately adds Epic 4 migration prerequisites 4.10–4.16 without promoting any `F4-*` candidate.
 
 ### Epic 1: Create and Integrate a Tenant-Safe Work Kernel
 
@@ -2287,11 +2295,11 @@ So that date-based resumes execute in steady state and survive recovery without 
 **Given** Story 4.8 remains in review with deferred follow-up explicitly recorded
 **When** its historical requirement and implementation evidence are assessed
 **Then** the completed reminder-runtime proof and review patches remain attributable to Story 4.8 without silently closing deferred work
-**And** platform-host migration remains exclusively owned by Story 4.9.
+**And** final platform-host removal remains exclusively owned by Story 4.9, after prerequisite Stories 4.10–4.16.
 
 ### Story 4.9: Migrate Works Hosting to the Platform Boundary
 
-> Tracked backlog story. Preserve this approved identity and scope until implementation begins.
+> Final cutover story. The human-approved 2026-09-23 split moved producer, consumer, and Platform parity delivery into draft prerequisite Stories 4.10–4.16 while preserving this story's identity and AD-20 R1–R11 host-removal gate.
 
 As a Hexalith platform maintainer,
 I want Works hosted through the shared EventStore domain-service SDK and a platform-owned Aspire topology,
@@ -2334,6 +2342,52 @@ So that domain modules contain domain code rather than duplicated hosting and in
 **When** ownership and destination are confirmed
 **Then** the named platform host is `Hexalith.Platform` and the accountable owner is the Platform Maintainer (Hexalith)
 **And** no current Works hosting project is removed before the target topology has equivalent passing runtime evidence.
+
+**Given** Stories 4.10–4.16 have not all been accepted
+**When** the Works host-removal gate is evaluated
+**Then** Story 4.9 remains blocked from cutover even if the Platform topology starts successfully.
+
+### Story 4.10: Publish EventStore Projection Delivery and Rebuild Fence
+
+As a platform SDK maintainer, I want generic event delivery and a bounded shared-projection epoch, so domain modules can rebuild without lost acknowledged writes. This is the R3–R4 producer prerequisite for Story 4.14.
+
+**Acceptance Criteria:** Given concurrent delivery through capture and Commit, when a rebuild promotes, then readers select one committed generation and catch-up converges. Given a crash, conflict, or 10,000-item capture/stage, when recovery runs, then no acknowledged envelope is lost and the published contract tests pass.
+
+### Story 4.11: Publish EventStore Typed Reminder Reconciliation
+
+As a platform SDK maintainer, I want generic typed reminder registration and reconciliation, so Works can provide domain intents without owning Scheduler mechanics. This is the R6 producer prerequisite for Story 4.15.
+
+**Acceptance Criteria:** Given duplicate, stale, lost, or restarted reminder delivery, when the SDK reconciles, then one logical effect or audited no-op remains and pending intents stay discoverable.
+
+### Story 4.12: Publish EventStore Checkpointed Process and Recovery Runtime
+
+As a platform SDK maintainer, I want a checkpointed process runner with strict paging, quarantine, and readiness, so Reactor translations recover after failures. This is the R7–R8 producer prerequisite for Story 4.15.
+
+**Acceptance Criteria:** Given a page boundary, crash, or invalid evidence, when the runner resumes, then no source envelope is skipped, unresolved work remains durable, and readiness degrades until authorized disposition.
+
+### Story 4.13: Publish EventStore Trusted Effect Submission
+
+As a platform SDK maintainer, I want deterministic effect IDs and target-partition receipts, so cross-aggregate commands remain idempotent after redelivery and restore. This is the R11 producer prerequisite for Story 4.15.
+
+**Acceptance Criteria:** Given identical or conflicting replay, when the target actor receives an effect, then it returns the durable prior outcome or quarantines the conflict without a second mutation; wrong origin, tenant, or purpose is denied.
+
+### Story 4.14: Adopt SDK Projection and Query Seams in Works
+
+As a Works maintainer, I want domain folds and tenant query policy behind the published SDK seams, so generic delivery, rebuild, and query transport leave Works. This consumes Story 4.10 for R3–R5 and preserves the old host for rollback.
+
+**Acceptance Criteria:** Given live delivery, rebuild, restart, and authorized or denied queries, when SDK consumers run, then persisted projections converge and only permitted tenant results are disclosed.
+
+### Story 4.15: Adopt SDK Reminder, Process, and Command Seams in Works
+
+As a Works maintainer, I want pure reminder and Reactor translations driven by published SDK runtime APIs, so Works no longer owns generic reminder, recovery, and submission machinery. This consumes Stories 4.11–4.13 for R6–R8/R11 and preserves the old host.
+
+**Acceptance Criteria:** Given callback replay, lost firing, cascade, child resume, crash, or unauthorized submission, when SDK consumers run, then persisted end states converge once logically and failures remain quarantined/readiness-affecting.
+
+### Story 4.16: Prove Platform Works Parity and Rollback
+
+As the Platform Maintainer, I want one executable R1–R11 verifier and rollback drill, so Story 4.9 can decide cutover from persisted evidence. This completes R1/R2/R10 hosting and security after producer and Works consumer stories.
+
+**Acceptance Criteria:** Given named producer versions and Works consumers, when `eng/verify-works-host.sh` runs from Platform, then every required row passes with a persisted end state, negative security case, and rollback evidence; the Agents clean-checkout gate still passes. No Works host is removed in this story.
 
 ### Forward Candidate F4-A: Fold Absolute Work Contribution Snapshots
 

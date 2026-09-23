@@ -43,7 +43,6 @@ public sealed class StreamReadingCascadeDescendantSource(
 
         try
         {
-            ReplayContinuationToken? continuation = null;
             long from = 0;
             bool stillTruncated = false;
 
@@ -54,10 +53,16 @@ public sealed class StreamReadingCascadeDescendantSource(
                     Domain: WorkCommandSubmission.WorkDomain,
                     AggregateId: parentWorkItemId,
                     FromSequence: from,
-                    ContinuationToken: continuation,
+                    ContinuationToken: null,
                     PageSize: PageSize);
 
                 StreamReadPage result = await _gateway.ReadStreamAsync(request, cancellationToken).ConfigureAwait(false);
+                if (!string.Equals(result.Tenant, tenantId, StringComparison.Ordinal)
+                    || !string.Equals(result.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
+                    || !string.Equals(result.AggregateId, parentWorkItemId, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException("EventStore returned a stream outside the requested identity.");
+                }
 
                 foreach (StreamReadEvent streamEvent in result.Events)
                 {
@@ -78,12 +83,14 @@ public sealed class StreamReadingCascadeDescendantSource(
                     break;
                 }
 
-                continuation = result.Metadata.NextContinuationToken;
+                if (result.Metadata.LastSequenceReturned is not { } lastSequence || lastSequence <= from)
+                {
+                    throw new InvalidOperationException(
+                        $"Stream for aggregate '{parentWorkItemId}' returned a truncated page without an advancing cursor.");
+                }
 
-                // Advance past the last event returned so the next page does not re-read the page-boundary
-                // event (the gateway paginates by FromSequence = LastSequenceReturned + 1). Re-reading is
-                // harmless here — the HashSet dedups child ids — but advancing is clearer and cheaper.
-                from = result.Metadata.LastSequenceReturned is { } lastSequence ? lastSequence + 1 : from;
+                // FromSequence is exclusive. Reusing the last returned sequence includes the next event.
+                from = lastSequence;
             }
 
             if (stillTruncated)

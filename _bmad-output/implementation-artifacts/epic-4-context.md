@@ -17,6 +17,13 @@ Executors and operators can bind, claim, query, dispatch, recover, and observe w
 - Story 4.7: Trigger Reactor Translators from the Live Event Stream
 - Story 4.8: Register and Reconcile Date Reminders Durably
 - Story 4.9: Migrate Works Hosting to the Platform Boundary
+- Story 4.10: Publish EventStore Projection Delivery and Rebuild Fence
+- Story 4.11: Publish EventStore Typed Reminder Reconciliation
+- Story 4.12: Publish EventStore Checkpointed Process and Recovery Runtime
+- Story 4.13: Publish EventStore Trusted Effect Submission
+- Story 4.14: Adopt SDK Projection and Query Seams in Works
+- Story 4.15: Adopt SDK Reminder, Process, and Command Seams in Works
+- Story 4.16: Prove Platform Works Parity and Rollback
 
 ## Requirements & Constraints
 
@@ -36,7 +43,7 @@ Executors and operators can bind, claim, query, dispatch, recover, and observe w
 - The Works Reactor is the sole cross-aggregate process manager. Cascade, child-completion resume, date resume, and recovery use deterministic command/effect identities and durable checkpoints so redelivery or restart cannot create another logical effect.
 - Reminder streams are authoritative and pending indexes are discovery aids. The target design uses typed DateResume and Expiry intents carrying canonical target, UTC due instant, schedule token, source position, and typed payload. Works owns intent translation, EventStore owns generic registration and reconciliation, and Platform owns scheduler persistence, availability, backup, callback policy, and operational health.
 - `Hexalith.Platform` is the target Aspire host. Works retains its contracts, server, projections, Reactor, testing support, and minimal domain-service executable using the canonical EventStore SDK composition. Do not duplicate service defaults, health, telemetry, Dapr wiring, subscriptions, generic projection/query actors, reminders, or recovery machinery in Works.
-- Hosting removal is parity-gated. Transitional Works AppHost and ServiceDefaults remain until the platform topology proves equivalent or stronger behavior for topology, delivery, projections/rebuild, queries, reminders, process recovery, security, and command submission, with rollback evidence.
+- Hosting removal is parity-gated. Stories 4.10–4.13 publish producer seams, 4.14–4.15 consume them in Works, 4.16 proves Platform parity and rollback, and 4.9 alone removes transitional Works AppHost and ServiceDefaults after every AD-20 R1–R11 row is green.
 
 ## UX & Interaction Patterns
 
@@ -44,4 +51,15 @@ The delivered version is headless. Builder-facing evidence should distinguish ac
 
 ## Cross-Story Dependencies
 
-Uniform binding and assignment semantics (4.1–4.2) underpin claim and queue discovery (4.3–4.4). The runtime proof (4.5) establishes the baseline expanded by recovery, live event-stream dispatch, and durable reminder registration (4.6–4.8); these rely on lifecycle, await-condition, tree, cascade, and child-resume behavior from earlier epics. Story 4.8 preserves its own reminder-runtime evidence and deferred follow-up, while platform-host migration remains exclusively owned by 4.9. Story 4.9 must reproduce the earlier pipeline, reminder, Reactor, restart, and rebuild guarantees before any Works-owned host is removed.
+Uniform binding and assignment semantics (4.1–4.2) underpin claim and queue discovery (4.3–4.4). The runtime proof (4.5) establishes the baseline expanded by recovery, live event-stream dispatch, and durable reminder registration (4.6–4.8); these rely on lifecycle, await-condition, tree, cascade, and child-resume behavior from earlier epics. Story 4.8 retains its evidence and deferred follow-up. Stories 4.10–4.13 publish EventStore producer seams; 4.14–4.15 adapt Works consumers; 4.16 proves Platform R1–R11 parity and rollback; only then does 4.9 remove Works hosting. The earlier pipeline, reminder, Reactor, restart, and rebuild guarantees remain required evidence.
+
+| Story | Prerequisite | AD-20 rows |
+| --- | --- | --- |
+| 4.10 | Existing EventStore store/batch contracts | R3–R4 producer |
+| 4.13 | Existing gateway and trusted-intent API | R11 producer |
+| 4.11 | 4.13 effect receipt contract | R6 producer |
+| 4.12 | 4.10 strict page validator; 4.13 effect receipt contract | R7–R8 producer |
+| 4.14 | 4.10 published SDK | R3–R5 Works consumer |
+| 4.15 | 4.11–4.13 published SDK | R6–R8/R11 Works consumer |
+| 4.16 | 4.14–4.15 consumers and all producer versions | R1–R11 Platform proof |
+| 4.9 | 4.16 accepted with full parity and rollback evidence | Final host removal |

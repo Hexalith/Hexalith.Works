@@ -148,6 +148,57 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
         error.Message.ShouldContain(s_child.Value);
     }
 
+    /// <summary>A parent suspension at the start of the second page remains visible to recovery.</summary>
+    [Fact]
+    public async Task Source_does_not_skip_parent_await_at_page_boundary()
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        StreamReadEvent parentCreated = ToStreamEvent(
+            new WorkItemCreated(s_parent.Value, 1, s_tenant, s_parent, new Obligation("Parent work")),
+            1);
+        StreamReadEvent parentSuspended = ToStreamEvent(
+            new WorkItemSuspended(
+                s_parent.Value,
+                2,
+                s_tenant,
+                s_parent,
+                [AwaitCondition.ChildCompleted(s_child)]),
+            2);
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
+                if (request.AggregateId == s_child.Value)
+                {
+                    return Task.FromResult(PageFor(s_child.Value));
+                }
+
+                return Task.FromResult(request.FromSequence switch
+                {
+                    0 => new StreamReadPage(s_tenant.Value, WorkCommandSubmission.WorkDomain, s_parent.Value,
+                        [parentCreated], new StreamReadMetadata(0, null, 1, 2, 1, true, null)),
+                    1 => new StreamReadPage(s_tenant.Value, WorkCommandSubmission.WorkDomain, s_parent.Value,
+                        [parentSuspended], new StreamReadMetadata(1, null, 2, 2, 1, false, null)),
+                    _ => throw new InvalidOperationException("The reader skipped the page boundary."),
+                });
+            });
+        var source = new StreamReadingChildCompletionAwaitingParentSource(
+            gateway,
+            Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingChildCompletionAwaitingParentSource>.Instance);
+
+        IReadOnlyList<AwaitingParent> parents = await source.GetAwaitingParentsAsync(
+            new WorkItemCompleted(s_child.Value, 7, s_tenant, s_child),
+            TestContext.Current.CancellationToken);
+
+        parents.ShouldHaveSingleItem().AwaitConditions.ShouldBe([AwaitCondition.ChildCompleted(s_child)]);
+        await gateway.Received(1).ReadStreamAsync(
+            Arg.Is<StreamReadRequest>(request => request.AggregateId == s_parent.Value
+                && request.FromSequence == 1
+                && request.ContinuationToken == null),
+            Arg.Any<CancellationToken>());
+    }
+
     /// <summary>A completed root work item (no parent reference) yields no awaiting parent and never reads a second stream.</summary>
     [Fact]
     public async Task Source_returns_no_awaiting_parent_for_root_child_without_parent()
@@ -258,5 +309,20 @@ public sealed class StreamReadingChildCompletionAwaitingParentSourceTests
             nameof(WorkItemRejected) => new WorkItemRejected(s_parent.Value, 5, s_tenant, s_parent, Requeue: false),
             _ => throw new ArgumentOutOfRangeException(nameof(eventType), eventType, "Unsupported await-clearing event type."),
         };
+    }
+
+    private static StreamReadEvent ToStreamEvent(IEventPayload payload, long sequence)
+    {
+        return new StreamReadEvent(
+            sequence,
+            payload.GetType().FullName!,
+            JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType(), s_web),
+            "json",
+            1,
+            $"message-parent-{sequence}",
+            $"correlation-parent-{sequence}",
+            null,
+            new DateTimeOffset(2026, 7, 22, 8, 0, checked((int)sequence), TimeSpan.Zero),
+            null);
     }
 }
