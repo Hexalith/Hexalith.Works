@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 09-23-2026 # Story 4.9 split into prerequisite drafts; cutover gate remains open
+last_updated: 09-23-2026 # Story 4.10 implementation started; Story 4.9 cutover gate remains open
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
@@ -77,7 +77,7 @@ development_status:
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
-  4-10-publish-eventstore-projection-delivery-and-rebuild-fence: backlog
+  4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: backlog
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: backlog
   4-13-publish-eventstore-trusted-effect-submission: backlog
