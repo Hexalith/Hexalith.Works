@@ -2,7 +2,8 @@
 title: 'Publish EventStore Trusted Effect Submission'
 type: 'feature'
 created: '2026-09-25'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: 'c3badb0f075b537d4e0aa91a80bbae48de7f9677'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -67,6 +68,10 @@ Paths below are relative to `references/Hexalith.EventStore/` unless prefixed `W
 
 ## Implementation Notes
 
+2026-09-25: Tasks 1–2 are implemented and verified. The approved task list remains frozen. EventStore now has a version-one identity codec, seven-family catalog, public SDK, a signed-delegation admission path, private actor receipt staging for eventful and no-op outcomes, and target-scoped collision records. Ordinary submission reserves the `wrk-` namespace. The trusted endpoint remains closed in production because `ITrustedEffectRetentionGate` has no production registration. No Works translator changed.
+
+Remaining work: complete retained source-floor validation; one authorized source/target legal-hold and offboarding erasure path through the lifecycle actor; append-only privileged audit with fail-closed mutation; dedicated signed-delegation negative tests; production caller mTLS/ACL and restore proof; full release inventory. The data owner's AD-28 approval and restore-drill evidence are prerequisites for real-data admission. The old-source/offboarding matrix row has no passing test. Tasks 3–6 and the acceptance criteria remain open.
+
 ## Spec Change Log
 
 ## Review Triage Log
@@ -80,3 +85,5 @@ Golden vectors cover current child/date resume and cascade cancel/expire, plus p
 **Commands:**
 - Build Gateway; run focused Contracts, Client, Server, and LiveSidecar test projects individually; assert persisted state after faults.
 - Validate release inventory and package-only trusted-effect test against named public packages; record version, source SHA, commands, and restore proof for 4.11/4.15.
+
+**Observed 2026-09-25:** EventStore Gateway Release build passed. Debug codec test assembly `-class Hexalith.EventStore.Contracts.Tests.Effects.EffectIdentityCodecTests`: 9/9 passed. Debug Server test assembly with the three trusted-effect classes: 10/10 passed. Agent-run Client project: 838/838 passed; Server project: 3,351 passed, 25 skipped; one live Redis receipt test passed. Isolated Contracts and Client 3.108.1 package consumers restored, built, and ran. The full Contracts run was stopped after 1,889 passed and 39 unrelated governance/environment failures (missing prohibited nested submodule paths, unavailable pinned Builds commit, OQ8 packet drift). Release inventory and restore drill were not validated.
