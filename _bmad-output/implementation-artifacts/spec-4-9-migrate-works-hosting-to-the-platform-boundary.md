@@ -62,7 +62,7 @@ context:
 
 ## Implementation Notes
 
-Cutover gate remains open: Stories 4.10–4.16 are backlog drafts and Platform has no `eng/verify-works-host.sh`. See the [2026-09-23 evidence archive](story-4-9-pre-cutover-evidence.md) for the earlier partial implementation and checks.
+Cutover gate remains open as of 2026-09-26: Story 4.10 is done, Story 4.13 is in progress, and Stories 4.11, 4.12, and 4.14–4.16 remain in backlog. Platform has no `eng/verify-works-host.sh`, so the AD-20 R1–R11 parity and rollback gate cannot run. Retain Works hosting until these prerequisites are accepted. See the [2026-09-23 evidence archive](story-4-9-pre-cutover-evidence.md) for the earlier partial implementation and checks.
 
 ## Spec Change Log
 
