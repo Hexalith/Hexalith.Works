@@ -17,6 +17,9 @@ sources:
 
 # Works Experience
 
+**Approved McpCli experience correction (2026-09-27):** Future Works MCP and CLI channel access is supplied by `Hexalith.McpCli` after Works Contracts enrollment and authorization qualification. The v1 Works kernel still ships no production machine adapter. Future command-shaped input, status, and recovery descriptions below are requirements for the shared heads, not a Works-owned MCP server or CLI.
+
+
 This file owns how Works behaves. `DESIGN.md` owns its visual contract. Product facts and horizons come from the amended Works PRD; FrontComposer owns shared shell, projection, command, theme, and accessibility behavior.
 
 **Contents:** [Foundation](#foundation) · [Information Architecture](#information-architecture) · [Voice and Tone](#voice-and-tone) · [Component Patterns](#component-patterns) · [Lifecycle and Action Matrix](#lifecycle-and-action-matrix) · [Roll-Up and Freshness](#roll-up-and-freshness) · [State Patterns](#state-patterns) · [Interaction Primitives](#interaction-primitives) · [Privacy and Localization](#privacy-and-localization) · [Accessibility Floor](#accessibility-floor) · [Responsive & Platform](#responsive--platform) · [Inspiration & Anti-patterns](#inspiration--anti-patterns) · [Key Flows](#key-flows) · [FR audit index](#functional-requirement-traceability)

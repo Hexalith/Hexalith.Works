@@ -7,6 +7,9 @@ updated: 2026-09-14
 
 # PRD: Hexalith.Works
 
+**Approved McpCli course correction (2026-09-27):** `Hexalith.McpCli` is the target Hexalith-owned CLI/MCP surface for Works operations that pass contract enrollment and authorization. Any proprietary module CLI, MCP host, plug-in, or planned adapter described below is an obsolete migration source or historical design, not a new target. The module retains its domain, UI, and security semantics; replacement or approved withdrawal and parity evidence precede retirement. External development CLIs are unaffected.
+
+
 ### Amendment history
 
 *Every post-final change to this PRD lands here, in the memlog (`.memlog.md`), and as an inline `(Amended …)` note at the changed text, in the same change.*
@@ -546,7 +549,7 @@ Negative tests cover actor/binding mismatch, self-claim spoofing, forged interna
 
 | Theme | Scope | v1 seam it builds on |
 | --- | --- | --- |
-| **2 (remainder) — Non-LLM command surfaces** *(added 2026-09-08)* | MCP as an actor channel (a system/AI Party issuing the uniform commands through MCP tools), CLI as scriptable work (builders and operators driving the same commands from a shell); no NL interpretation | Channel field on the Executor Binding (FR-17); the uniform command surface itself (FR-6, FR-17, FR-18); the "what's next" query (FR-20); the platform identity-provenance baseline (§9) |
+| **2 (remainder) — Non-LLM command surfaces** *(added 2026-09-08)* | `Hexalith.McpCli` as the shared MCP actor channel (a system/AI Party issuing eligible uniform commands) and CLI scriptable-work surface (builders and operators driving the same eligible commands from a shell); no Works-owned MCP/CLI adapter and no NL interpretation | Channel field on the Executor Binding (FR-17); the uniform command surface itself (FR-6, FR-17, FR-18); the "what's next" query (FR-20); the platform identity-provenance baseline (§9) |
 | **3 — LLM-native interaction** | AI-inferred Expectation, constrained-safe magic links, NL-always-accepted + confidence-gated auto-apply, status-driven re-inference, email-as-UI; production no-login actions depend on Theme 6 binding/expiry/single-use/forwarding/step-up safeguards and must offer no-login used/expired-link recovery | `IExpectationResolver` port; Await-Condition; Channel field; raw-act events |
 | **4 — Executor routing & escalation** | Auto-route + manual override, start-cheap-escalate ladder (small model → premium → human → external) as per-kind data policy (a Work Item *kind* discriminator is not in the v1 kernel and would be added additively when Theme 4 needs it), explainable decision record (candidates/score/cost/confidence), push↔pull auto-assignment | `IExecutorRouter` port; push/pull states (FR-18); AuthorityLevel (FR-19); assignment events |
 | **5 — Economics & cost governance** | Cost as a second Burn-Down, spend caps → graceful degradation, cost Roll-Up, cost-aware (debounced) scheduling | cost-ready Burn-Down + reusable Roll-Up (FR-11) |
