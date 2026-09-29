@@ -2,7 +2,7 @@
 title: 'Publish EventStore Trusted Effect Submission'
 type: 'feature'
 created: '2026-09-25'
-status: 'in-progress'
+status: 'done'
 baseline_commit: 'c3badb0f075b537d4e0aa91a80bbae48de7f9677'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -55,10 +55,10 @@ Paths below are relative to `references/Hexalith.EventStore/` unless prefixed `W
 **Execution:**
 - [x] `src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs`, `EffectKindCatalog.cs`, `tests/Hexalith.EventStore.Contracts.Tests/Effects/EffectIdentityCodecTests.cs` — freeze codec, family ordinals, and synthetic vectors before producers.
 - [x] `src/Hexalith.EventStore.Contracts/Effects/TrustedEffectSubmission.cs`, `TrustedEffectContext.cs`, `TrustedEffectResult.cs`, `src/Hexalith.EventStore.Client/Effects/ITrustedEffectSubmitter.cs` — expose domain-neutral request, context, and result.
-- [ ] `src/Hexalith.EventStore/Controllers/TrustedEffectsController.cs`, `src/Hexalith.EventStore.Server/Commands/TrustedEffectAdmissionPolicy.cs` — validate delegation, origin, tuple, command digest; reserve `wrk-` for trusted effects.
-- [ ] `src/Hexalith.EventStore.Server/Actors/IAggregateActor.cs`, `AggregateActor.cs`, `EffectReceipt.cs` — read receipt before Handle; atomically commit eventful/no-op outcomes; inspect uncertain saves; quarantine conflict.
-- [ ] `src/Hexalith.EventStore.Server/Actors/IdempotencyTenantLifecycleActor.cs`, `docs/guides/trusted-effects.md` — bind retention, source floor, joint offboarding, and AD-28 gate.
-- [ ] `tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs`, `tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Events/TrustedEffectPersistenceTests.cs`, `tests/Hexalith.EventStore.Contracts.Tests/Packaging/TrustedEffectPackageContractTests.cs` — prove matrix, receipt-write failure, crash/restore, persisted state, authorization, and named public package API.
+- [x] `src/Hexalith.EventStore/Controllers/TrustedEffectsController.cs`, `src/Hexalith.EventStore.Server/Commands/TrustedEffectAdmissionPolicy.cs` — validate delegation, origin, tuple, command digest; reserve `wrk-` for trusted effects.
+- [x] `src/Hexalith.EventStore.Server/Actors/IAggregateActor.cs`, `AggregateActor.cs`, `EffectReceipt.cs` — read receipt before Handle; atomically commit eventful/no-op outcomes; inspect uncertain saves; quarantine conflict.
+- [x] `src/Hexalith.EventStore.Server/Actors/IdempotencyTenantLifecycleActor.cs`, `docs/guides/trusted-effects.md` — bind retention, source floor, joint offboarding, and AD-28 gate.
+- [x] `tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs`, `tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Events/TrustedEffectPersistenceTests.cs`, `tests/Hexalith.EventStore.Contracts.Tests/Packaging/TrustedEffectPackageContractTests.cs` — prove matrix, receipt-write failure, crash/restore, persisted state, authorization, and named public package API.
 
 **Acceptance Criteria:**
 - Given an authorized effect, when the target commits or the caller loses its acknowledgement, then one durable target outcome and receipt exist and replay returns that disposition without Handle.
@@ -94,9 +94,93 @@ Production admission remains closed: the floor, joint policy, erasure capability
 
 2026-09-27 owner decision: Jérôme Piquot identified himself as the project's sole contributor and owner and explicitly approved the Story 4.13 data-owner decision. The [approval record](evidence/story-4-13/owner-approval-2026-09-27.md) binds that statement to the documented trusted-effect receipt, retention, legal-hold, and joint offboarding policy. This resolves the accountable data-owner approval item only. Platform append-only audit and trusted-caller mTLS/ACL proof, the AD-28 restore drill, and an immutable published EventStore release remain unevidenced; production admission stays closed and Story 4.13 remains in progress.
 
+2026-09-29 owner scope decision: Jérôme Piquot chose to close Story 4.13 at synthetic scope. The frozen constraint permits this: "use synthetic proof meanwhile." Story 4.16 owns the Platform append-only audit backend, the trusted-caller mTLS/ACL proof, and the AD-28 restore drill. Its spec already assigns AD-24 mTLS/ACL and the AD-28 restore decisions to that story. Production trusted-effect admission stays closed until 4.16 supplies that evidence. EventStore tag `v3.109.0` (`818e28a8af421994e4f77e66327dc33a8c67ca5f`) publishes the Contracts and Client SDK from the same source as current `main` (`59ac4a8ed2e2d1c1808d8e5bed06c9b0a504fe10`). That release does not contain the erasure commit `f54d7ea502ae0f8f853eac4b2baebb8efbb8407b` or the deletion-fence commit `a2cb79be30140cde0080994cf2284d2263d8232e`. 4.11 and 4.15 need a release that contains both commits before they can adopt it; 4.13 does not. To close 4.13: rerun tests for tasks 3–6 and every matrix row against current EventStore `main`. Fix any gap found, then mark the finished tasks.
+
+2026-09-29 closure rerun: Tasks 3–6 and every matrix row were rerun against clean EventStore `main` `59ac4a8ed2e2d1c1808d8e5bed06c9b0a504fe10`. The audit found no production code gap. It found five test gaps:
+- No test proved a domain rejection commits a `Rejection` receipt.
+- No test proved ordinary submission rejects the `wrk-` namespace, at either the gateway controller or the actor.
+- `TrustedEffectsController` had no ingress test for denial before proof signing or target routing.
+- The conflict row lacked a check that an eventful outcome gains no new event, and a positive audit assertion.
+- No test proved expired actor idempotency or gateway status records cannot authorize redispatch.
+
+Eleven tests close these gaps. They sit in `TrustedEffectReceiptTests.cs` and two new files: `Controllers/TrustedEffectsControllerTests.cs` and `Controllers/CommandsControllerTrustedEffectNamespaceTests.cs`. Mutation checks confirmed that each targeted guard is load-bearing. Disabling either `wrk-` guard failed four tests. Recording rejection as success failed the rejection test. No EventStore production source, Works translator, or durable type changed. The new tests are uncommitted in the EventStore working tree. The evidence stays durable only after they are committed in EventStore and the Works submodule pointer advances. Tasks 3–6 are marked finished. Production trusted-effect admission remains closed until Story 4.16 supplies the Platform audit backend, the mTLS/ACL caller proof, and the AD-28 restore drill.
+
+2026-09-29 review fixes: Review found production gaps that the closure rerun missed, so the "no production code gap" statement above is superseded. EventStore now:
+- makes the fence and erasure request DataContract-serializable for real Dapr remoting;
+- lets a validly signed fence replace an earlier one, so a partial fence failure recovers;
+- skips the legacy causation lookup for `wrk-` messages, so same-aggregate effects commit receipts;
+- rejects ordinary commands on fenced or erasing partitions, and erases `idempotency:wrk-<EffectId>` records;
+- length-prefixes collision-key fields, and audits fence and erasure denials;
+- issues each partition's capability immediately before its call, and rejects future deletion approvals;
+- audits `authorized` only after the retention gate passes, and makes the gate's host policies optional and fail-closed;
+- returns 403 for invalid delegation tokens; bounds delegation lifetime to 15 minutes with 30-second skew; refreshes signing keys once;
+- requires app-channel readiness only when internal callers are allow-listed, and compares a configured token in Development;
+- restores the published three-parameter `AggregateMetadata` constructor and deconstruction.
+
+The package-only test now skips when no inventory is supplied, is time-bounded, and captures its output. The trusted-effects guide gained the delegation claim contract. The deployment guides document the `APP_API_TOKEN` breaking upgrade step. The owner committed the source and test fixes as EventStore `33688a83` and part of the documentation as `7509d952`; the remaining documentation edits are uncommitted. The closure verification counts below predate these fixes.
+
 ## Spec Change Log
 
 ## Review Triage Log
+
+Review 2026-09-29, iteration 0. Diff: EventStore `0ba4b95a15b3e597ea63c5dbf956f32bb624d1eb` to the working tree over `src`, `tests`, `deploy`, and `docs/guides`, excluding the unrelated deployed-runtime parity tests. Layers: Blind Hunter (B), Edge Case Hunter (E), and Verification Gap (V). Paths are relative to `references/Hexalith.EventStore/`.
+
+| # | Finding | Verdict | Route | Evidence |
+| --- | --- | --- | --- | --- |
+| V1 | `TrustedEffectAggregateErasure` is not DataContract-serializable | high | patch | Pre-verified. A probe threw `InvalidDataContractException`. Dapr remoting uses DataContract by default, and every fence/erase test replaces the proxy in-process. |
+| V-o1 | Remoting evidence: `Purpose` init property needs its own `[DataMember]` | high | patch (with V1) | Same root cause as V1. The init property sits outside the positional constructor. |
+| E1 | Fence/erasure request fails over real remoting | high | patch (with V1) | Same root cause as V1. |
+| E2 | A deletion-entry retry after partial fencing never succeeds | high | patch | `IdempotencyTenantLifecycleActor.cs:531-545` stays Active. `AggregateActor.cs:1934-1946` rejects any different `approvedAt` or digest. A registration during Active changes the digest permanently, and there is no recovery path. |
+| E9 | A self-targeted effect hits `IdentityConflict` on every retry | high | patch | The `IdempotencyChecker.cs:51-67` legacy lookup uses `CausationId`. That is the source command's MessageId, which the same aggregate already stores. The trusted path writes nothing and throws "no durable receipt". |
+| B5 | Ordinary commands are unfenced during and after erasure | medium | patch | Keyless commands skip lifecycle admission (`SubmitCommandHandler.cs:65,181`). `ProcessCommandCoreAsync` checks only `wrk-`. Resume keeps the old `LastSequence`, and a completed erasure lets the stream restart at 1. |
+| E6 | Same as B5 | medium | patch (with B5) | Same root cause. |
+| B6 | Erasure leaves idempotency, redirect, pipeline, and reminder state | medium | patch (`wrk-`) / defer (ordinary) | The `idempotency:wrk-{id}` records carry `ResultPayload` and are never deleted. Ordinary records and redirects predate this story's erasure scope. Pipeline keys and reminders are cleaned on normal paths. |
+| E20 | Idempotency records survive tenant purge | medium | patch/defer (with B6) | Same root cause as B6. |
+| V-o2 | Idempotency records survive erasure | medium | patch/defer (with B6) | Same root cause as B6. |
+| B1 | Controller maps errors incorrectly | medium | patch (token) / defer (status contract) | `SecurityTokenValidationException` becomes 500 through `GlobalExceptionHandler`. Actor outcomes become 500 via `ActorMethodInvocationException`. "Not configured" becomes 403. |
+| E12 | Same as B1 | medium | patch (token) / defer (status contract), with B1 | Same root cause. |
+| B2 | The client SDK drops error bodies, has no DI helper, and ignores the `Workload` field | medium | defer | `HttpTrustedEffectSubmitter.cs:27`. `TrustedEffectContext.Workload` is never sent and the server derives it. This is public API already published in 3.109.0. |
+| B3 | Issuers cannot compute `command_digest`, and the claim contract is undocumented | medium | patch (doc table) / defer (helper) | The digest needs Server's adapter registry plus the domain adapter. Claim names appear only in `JwtTrustedEffectDelegationVerifier.cs`. |
+| B4a | Delegation lifetime is unbounded | medium | patch | No exp−iat bound, which contradicts "short-lived" in the guide. |
+| B4b | `DateTime.UtcNow` instead of `TimeProvider` | low | reject | Testability only. No user harm is named. |
+| B4c | `ClockSkew = Zero` with actor re-verification | medium | patch | A token that expires between the gateway and the actor returns 500 after evidence registration. |
+| B4d | Audience/typ allow token interchange | false | reject | An ordinary token still needs all 14 single-valued binding claims and an allow-listed Dapr caller. |
+| E13 | Same as B4c | medium | patch (with B4c) | Same root cause. |
+| E14 | No OIDC key refresh on `SecurityTokenSignatureKeyNotFoundException` | medium | patch | Nothing calls `RequestRefresh`, so rotation fails until automatic refresh. |
+| B7 | The erasure nonce is not strictly one-use | low | reject | Only the latest nonce is compared. A replay redoes the same signed scope within 5 minutes, and a fix needs new progress state. |
+| B8 | Collision key hash concatenates fields without length prefixes | low | patch | `AggregateActor.cs:291-298`. The fix is a direct correction. |
+| E7 | Same as B8 | low | patch (with B8) | Same root cause. |
+| B9 | `PendingTrustedEffectIds` is recorded but never used | low | reject | It is dead state that neither deletion nor purge reads. Removing it or gating on it is a design choice with no user-visible harm. |
+| B10 | Tenant inventory grows without bound | medium | defer | `TrustedEffects` grows per effect until purge. Load runs O(n·m) validation, and each effect costs about 4 full-document writes. Fixing it needs a new state layout. |
+| E5 | Inventory growth and unsettled pending IDs | medium | defer (with B10) | Same root cause as B10. |
+| B11 | Up-front capability signing expires on large tenants | medium | patch | Purge signs every partition with one `IssuedAt`, and deletion entry builds once. The fix is fresh per-partition issuance. |
+| E4 | Same as B11 | medium | patch (with B11) | Same root cause. |
+| B12 | Audit records are misordered or incomplete | medium | patch | "Authorized" is logged before `gate.ValidateAsync`. The erasure-marker and fence denials are unaudited. Denials carry an unvalidated tenant. The claim of an unaudited identity check is false, because `PrepareAsync` audits it. |
+| B13 | Actor discards `CommandProcessingResult`; the path has no observability | low | reject | Failure reasons collapse, but callers retry by receipt. The fix adds typed errors. |
+| E8 | Same as B13 | low | reject (with B13) | Same root cause. |
+| B14 | Retention gate does not compare causation with the source envelope | low | reject | The intent lists origin, delegation, tenant, target, and authority, not causation. The fix changes a public interface. |
+| B15 | `EffectKindCatalog` hard-codes Works kinds | false | reject | The frozen intent and task 1 require a versioned seven-family catalog. `.v1` names carry the version. |
+| B16 | Package test passes when not run and has no timeout | medium | patch | `TrustedEffectPackageContractTests.cs:13-36`. |
+| E17 | Same as B16 (timeout) | medium | patch (with B16) | Same root cause. |
+| E21 | Same as B16 (silent pass) | medium | patch (with B16) | Same root cause. |
+| B17 | App-channel token validator diverges from Operations | medium | patch (readiness, dev) / reject (duplication) | Readiness fails with no `AllowedCallers`. Development accepts a wrong configured token. The Operations type is internal to an unreferenced assembly. |
+| B18 | Several documented behaviors are untested | low | patch | Codec negatives, retained-key proof validation, erasure beyond 64 events, controller router failure, and a loose `ThrowAsync<Exception>`. The older-nonce test is dropped with B7. |
+| B19 | Unrelated `CoordinatedCommandActor` change | medium | defer | Commit `e851dd726c08c27f46a95adea6c3797e56929416` is separate work. |
+| E10 | Coordinated replay false positive on a shared causation | medium | defer (with B19) | Same root cause, outside this story. |
+| E11 | Coordinated replay misses an explicit causation | medium | defer (with B19) | Same root cause, outside this story. |
+| E3 | A future `approvedAt` fails capability shape validation | low | patch | `IssuedAt = now` is below `DeletionApprovedAt`. The fix is a direct correction. |
+| E15 | Nonce check runs before the `Completed` return | false | reject | Every purge turn issues fresh nonces, and no path resends an identical request. |
+| E16 | Retention helper without providers breaks every `AggregateActor` activation | medium | patch | A DI repro confirmed that an unresolvable optional dependency throws. The fix makes the provider parameters nullable and fails closed. |
+| E18 | App-channel token requirement is an undocumented breaking change | medium | patch | Several deployment guides and the upgrade path are not updated. An Aspire-published Production gateway is unready. |
+| E19 | `AggregateMetadata` loses its 3-parameter constructor and `Deconstruct` | low | patch | A public record in a published package. The fix restores the overloads. |
+| V2 | Refusal of an unindexed receipt is untested | medium | patch | Pre-verified. Deleting the check fails no test. |
+| V3 | `TrustedEffectRetentionGate.CompleteAsync` is untested | medium | patch | Pre-verified. |
+| V4 | Command allow-list enforcement is untested | medium | patch | Pre-verified. Changing `Any` to `All` opens the default. |
+| V5 | Erasure capability expiry is untested | medium | patch | Pre-verified. |
+| V6 | Readiness check registration is untested | low | patch | Pre-verified. |
+| V-o3 | `Completed` is saved before post-erasure checks | false | reject | Removals and `Completed` commit in one transactional save. The unindexed-receipt pre-check makes the surviving-receipt case unreachable. |
+
+Owner decision, 2026-09-29: the four findings that need new public API or a new state layout are deferred to follow-ups tied to 4.15 and 4.16 rather than looped back. They are the B1/E12 status contract, the B2 client SDK, the B3 digest helper, and B10/E5 inventory growth. The workflow's revert-and-re-derive loopback was not applied, because the trusted-effect code is already pushed in EventStore and partly published in 3.109.0. All patch routes are applied in place.
 
 ## Design Notes
 
@@ -133,3 +217,31 @@ After the final code edits, `python3 tools/pack-release-packages.py /tmp/eventst
 **Deletion-fence verification 2026-09-26:** The EventStore Server Debug and Gateway Release builds passed with zero warnings/errors. Focused Server tests passed 72/72 before the final erasure cleanup, then 59/59 after the cleanup and retry-consistency assertions. The LiveSidecar persisted trusted-effect test passed 1/1. Independently, the built Server assembly run with `-class` filters for `TrustedEffectJointOffboardingTests`, `TrustedEffectReceiptTests`, `TrustedEffectRetentionGateTests`, `TrustedEffectAdmissionPolicyTests`, `JwtTrustedEffectDelegationVerifierTests`, and `ProductionAuthorityAuthenticationTests` passed 34/34 with no skips. `git diff --check` passed. These are synthetic actor and persisted target-outcome checks; no production audit backend, mTLS/ACL caller proof, owner approval, or backup/restore drill was supplied.
 
 **Updated local package check 2026-09-26:** After the deletion-fence edits, the release pack command exited 0, the exact 14-package manifest validated, and the named public package-only consumer test passed 1/1 with 13 isolated library consumers and one tool consumer. The [deletion-fence package inventory](evidence/story-4-13/fence-package-inventory.md) records commands and package SHA-256 values. This is a dirty-tree synthetic package set, so it cannot substitute for the immutable published release or AD-28 operational evidence.
+
+**Closure verification 2026-09-29:** EventStore HEAD was `59ac4a8ed2e2d1c1808d8e5bed06c9b0a504fe10`, clean before the gap tests were added. All builds used `--no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`, and each passed with zero warnings and errors. Built projects: the Debug Server, LiveSidecar, Contracts, and Client test projects, plus Release `src/Hexalith.EventStore` and `src/Hexalith.EventStore.Gateway`. Against unmodified `main`, the focused trusted-effect Server run passed 118/118 and the full Server test DLL passed 3,419 with 25 unrelated skips. All 25 skips are in the DW1 ATDD classes: 13 in `Dw1ProjectionDeliveryAtddTests`, 8 in `Dw1DrainHardeningAtddTests`, and 4 in `Dw1PollerCorruptionAtddTests`. After the gap tests were added, the runs below passed with zero failures:
+- The built Server test DLL with `-class` filters passed 129/129 with no skips. The filters were `TrustedEffectReceiptTests`, `TrustedEffectJointOffboardingTests`, `TrustedEffectRetentionGateTests`, `TrustedEffectAdmissionPolicyTests`, `TrustedEffectGatewayProofTests`, `JwtTrustedEffectDelegationVerifierTests`, `ProductionAuthorityAuthenticationTests`, `DaprInternalAuthenticationHandlerTests`, `IdempotencyTenantLifecycleActorTests`, `EventPersisterTests`, `TrustedEffectsControllerTests`, and `CommandsControllerTrustedEffectNamespaceTests`.
+- The full Server DLL passed 3,430 with the same 25 skips.
+- LiveSidecar `-class Hexalith.EventStore.Server.LiveSidecar.Tests.Events.TrustedEffectPersistenceTests` passed 1/1 against Redis and the Dapr sidecar.
+- Contracts `-class Hexalith.EventStore.Contracts.Tests.Effects.EffectIdentityCodecTests` passed 9/9.
+- The full Client DLL passed 838/838.
+- Against the 14 published `3.109.0` packages from nuget.org, `python3 tools/validate-release-packages.py <dir> 3.109.0` passed. With `EVENTSTORE_PACKAGE_CONTRACT_DIR` set to that directory, `TrustedEffectPackageContractTests` passed 1/1 using 13 isolated library consumers and one tool consumer. See the [public package inventory](evidence/story-4-13/public-package-inventory-3.109.0.md).
+
+`git diff --check` passed in EventStore.
+
+Each matrix row is covered by passing tests:
+- **First effect:** eventful outcome, no-op outcome, rejection outcome, an uncertain save with a lost acknowledgement, a receipt-write failure, and a persisted Redis event and receipt. Tests: `EventfulOutcomeCommitsReceiptWithEventBatch`, `ExactReplayReturnsReceiptWithoutHandle`, `RejectionOutcomeCommitsRejectionReceiptWithEventBatch`, `EventBatchAcknowledgementLossPreservesReceipt`, `ReceiptWriteFailureDoesNotReturnSuccess`, and LiveSidecar `EffectReceiptAndEventPersistTogether`.
+- **Replay/restore:** receipt returned without Handle after actor re-creation from committed state, and after actor idempotency records expire. The gateway ingress has no status-store dependency. Tests: `EventBatchAcknowledgementLossPreservesReceipt`, `ExpiredIdempotencyAndStatusRecordsDoNotAuthorizeRedispatch`, and `AuthorizedEffectRoutesTargetReceiptWithAttestedWorkload`.
+- **Conflict:** no second Handle and no new event, a committed collision record, an audited `collision`/`quarantined` entry, and no quarantine write when audit fails. Tests: `SemanticCollisionDoesNotHandleAgain`, `CollisionAfterEventfulOutcomeAppendsNoTargetEventAndAuditsQuarantine`, and `CollisionAuditFailureDoesNotMutateTarget`.
+- **Denied caller:** each denial stops before disclosure or mutation. The HTTP ingress rejects a bearer principal, a spoofed caller header, and a missing workload. Denied admission stops before proof signing or routing. A changed tenant, source, target, command, workload, purpose, causation, or digest is rejected, as are a forged message ID, a forged or cross-purpose gateway proof, a wrong actor partition, and ordinary `wrk-` identifiers. Denial is audited, and an audit failure blocks the path. Tests: `ProductionAuthorityAuthenticationTests`, `TrustedEffectsControllerTests`, `JwtTrustedEffectDelegationVerifierTests`, `TrustedEffectGatewayProofTests`, `TrustedEffectAdmissionPolicyTests`, `DeniedCallerCannotInspectReceipt`, `InvalidGatewayProofDeniesBeforeRetentionMutation`, `WrongTargetActorDeniesBeforeRetentionMutation`, `OrdinaryCommandCannotUseReservedEffectNamespace`, and `CommandsControllerTrustedEffectNamespaceTests`.
+- **Old source/offboarding:** a source below the floor, an unknown floor, a missing or mismatched source, a non-active lifecycle, and a joint-retention denial all refuse admission. Legal hold fences receipt disclosure, retains source and target evidence, and blocks purge. Stale capabilities are denied. An interrupted erasure retries, and one authorized joint erasure removes the source event, target event, receipt, collision, fence, and protected key references. Tests: `TrustedEffectRetentionGateTests`, `LegalHoldAndAuthorizedOffboardingShareSourceTargetErasure`, `DeletionBetweenRegistrationAndTargetTurnCannotRecreateErasedOutcome`, `ForgedOrChangedErasureCapabilityCannotReadActorState`, and `PurgeOverlappingTargetTurnDoesNotDeadlockLifecycleCompletion`.
+
+This evidence is synthetic, as the owner's 2026-09-29 scope decision permits. It is not a production admission, Platform audit or mTLS/ACL proof, or AD-28 restore drill. The AppHost runtime blocker recorded on 2026-09-26 was not retried.
+
+**Post-review verification 2026-09-29:** EventStore HEAD is `7509d95202d917303cd8761f4097ff11f9be1e52`. It includes the review-fix commits `33688a83d658b760b66d9257d36b394f53805cfb` and `7509d95202d917303cd8761f4097ff11f9be1e52`, plus uncommitted guide edits. All builds used `--no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` and passed with zero warnings and errors: the Debug Server, Contracts, Client, and LiveSidecar test projects, and Release `src/Hexalith.EventStore` and `src/Hexalith.EventStore.Gateway`. Results:
+- The full Server test DLL passed 3,474, with the same 25 DW1 skips.
+- `EffectIdentityCodecTests` passed 17/17.
+- The full Client DLL passed 838/838.
+- LiveSidecar `TrustedEffectPersistenceTests` passed 1/1 against Redis and the Dapr sidecar.
+- `TrustedEffectPackageContractTests` skipped when `EVENTSTORE_PACKAGE_CONTRACT_DIR` was unset, and passed 1/1 against the 14 published `3.109.0` packages.
+
+`git diff --check` passed. All review patch routes are applied. The four design findings and two out-of-scope findings are in `deferred-work.md`. Production trusted-effect admission remains closed pending Story 4.16.
