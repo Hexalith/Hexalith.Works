@@ -1113,3 +1113,9 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-13-publish-eventstore-trusted-effect-submission.md`
   summary: Replace `CoordinatedCommandActor`'s non-fenced replay detection by event `CausationId` with the target's idempotency inspection by message ID.
   evidence: Review findings B19/E10/E11, 2026-09-29. EventStore commit `e851dd726c08c27f46a95adea6c3797e56929416` belongs to separate work, not 4.13. Events carry `command.CausationId ?? CorrelationId` (`EventPersister.cs:58`). A chained command whose causation equals this command's MessageId gives a false positive and bypasses the coordinated source conflict. An explicit causation that differs from the MessageId gives a replay miss.
+
+## Deferred from: code review of spec-4-13-publish-eventstore-trusted-effect-submission.md (2026-09-29, iteration 1)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-13-publish-eventstore-trusted-effect-submission.md`
+  summary: Measure the per-command cost of the tenant-deletion closure check in `AggregateActor.ProcessCommandCoreAsync` and set a perf budget before 4.16 production admission.
+  evidence: Review iteration 1, 2026-09-29. The B5 review fix added `StateManager.ContainsStateAsync` reads to every ordinary command (`references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Actors/AggregateActor.cs:687-690`). Dapr.Actors 1.18.10 `ActorStateManager.ContainsStateAsync` does not cache absent keys, so each read is a sidecar/state-store round trip on the hot path. The owner chose to measure first. If the cost matters, the options are a per-activation closure flag updated by the fence and erasure methods, or a marker folded into a state read the command path already performs, which changes a durable type and needs AD-28 approval.
