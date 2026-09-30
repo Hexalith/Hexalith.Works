@@ -1125,3 +1125,9 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Define retention, TTL, and tenant-offboarding erasure for typed-reminder disposition records before 4.16 production admission.
   evidence: Review finding BH10, 2026-09-29. `ReminderCoordinator.TryWriteDispositionAsync` writes `eventstore:reminders:v1:{ActorTypeName}:item:{wra-id}:disposition:{subject}` with no TTL, one key per reminder name or evidence digest. These records carry `Tenant`, outlive the erasure of item state, and no erasure path reaches them. The frozen intent requires AD-28 owner approval of retention, legal hold, and offboarding before any new durable type or real data is admitted, so the policy belongs to the 4.16 gate. The per-subject last-writer-wins overwrite also means only the latest outcome is retained until the Platform append-only audit backend lands.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-09-30)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Prove that only the Dapr Scheduler can reach the typed-reminder callback under the production mTLS/ACL profile.
+  evidence: Unverified high finding from the production-code review. `ReminderCallbackTokenFilter` authenticates the local sidecar with `APP_API_TOKEN`, but the reviewed diff does not establish whether a different Dapr workload can service-invoke the actor reminder callback and receive the target sidecar's automatically injected app-channel token. Settle with a Story 4.16 cross-application negative test under the production ACL profile; if it reaches the callback, add a Scheduler-only admission control before production opens.

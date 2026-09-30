@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -112,6 +112,29 @@ Paths are relative to `references/Hexalith.EventStore/` (HEAD `f378afdb`, clean)
 - Given lost firing, when periodic reconciliation runs, then due/future intents converge from streams and unresolved work degrades readiness.
 - Given a stale witness or unauthorized caller, when callback admission runs, then no mutation/disclosure occurs and the disposition is audited.
 - Given the published R6 package, when a package-only consumer calls it, then no Works payload types are required.
+
+### Review Findings
+
+- [ ] [Review][Patch] Retain the obsolete witness until Scheduler cancellation and audit succeed [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
+- [ ] [Review][Patch] Hosted reconciler retry cadence lacks behavioral coverage [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderReconcilerTests.cs:69`]
+- [ ] [Review][Patch] Scheduler lookup-failure re-arm path lacks coverage [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1162`]
+- [ ] [Review][Patch] Audit write failures release cancellation and quarantine evidence [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
+- [ ] [Review][Patch] Convergence uses a stale clock when arming a future intent [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:129`]
+- [ ] [Review][Patch] Whitespace `DAPR_APP_ID` defeats the application-name fallback [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderServiceCollectionExtensions.cs:67`]
+- [ ] [Review][Patch] Malformed persisted collection elements strand work or terminate reconciliation [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:492`]
+- [ ] [Review][Patch] Retrying work skips lost-reminder recovery during backoff [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:603`]
+- [ ] [Review][Patch] Actor-collision convergence leaves restored state undiscoverable [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:685`]
+- [ ] [Review][Patch] Existing-state fail-closed errors are acknowledged from a stale snapshot [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:142`]
+- [x] [Review][Defer] Potential Scheduler-callback origin bypass (unverified high) [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCallbackTokenFilter.cs:38`] — deferred: settle in Story 4.16 with a cross-application Dapr invocation test under the production mTLS/ACL profile, proving whether another workload can reach the reminder callback through the target sidecar with its automatically injected app-channel token.
+
+#### Rejected
+
+- `low` — Rechecking `DueUtc` in callbacks would contradict the approved design that Scheduler owns timing; an early callback requires Scheduler clock skew or privileged/misconfigured route access, so another admission branch is not justified here.
+- `false` — The cited `WaitAsync(cancellationToken)` does not exist in `DaprReminderActorInvoker`, and such a call would cancel the caller's wait rather than make shutdown wait for the abandoned proxy call.
+- `false` — Dapr.Actors 1.18.10 validates reminder `DueTime` from zero through `TimeSpan.MaxValue`; the 4,294,967,294-ms ceiling applies to `Task.Delay`-backed host/configuration delays, not actor reminder due times.
+- `low` — The tenant registry does retain empty tenants, but pruning/sharding is explicitly deferred and its fix is disproportionate at the story's synthetic scale.
+- `low` — Per-item intent and payload limits would defend against a buggy trusted in-process source, not an exposed caller; adding quota/configuration surface is disproportionate without a demonstrated workload bound.
+- `low` — A second `AddEventStoreReminders<TIntentSource>` call with a different source is an uncommon host-programming error; changing the presence-keyed registration contract is disproportionate for this story.
 
 ## Implementation Notes
 
