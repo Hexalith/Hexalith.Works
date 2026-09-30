@@ -350,3 +350,53 @@ Chunk 1 (reminder implementation source), 2026-09-30. Reviewers: blind-hunter, e
 - `low` — A document that fails JSON deserialization makes `GetAsync` throw, and the reconciler already marks that pass incomplete. Quarantining the raw bytes needs a store seam this coordinator does not have, and everyday writes are produced by `PersistAsync`.
 - `false` — The callback does not re-check `DueUtc`. The approved design gives timing to the Scheduler.
 - `low` — `UpdatedAt + Backoff` can throw only when `UpdatedAt` is within one max delay of `DateTimeOffset.MaxValue`. Backoff is already capped at the validated max delay.
+
+## Implementation continuation and verification (2026-09-30)
+
+The EventStore implementation and the previously listed review patches were already present in the clean checkout at `d0f8b241a8be34f7d8b9f60f89db130709d944c5`. This continuation adds one correction within the existing unresolved-readiness rule:
+
+- A null or failing final stream fold after a submitted receipt or stale disposition retained its discovery candidate, but callers overwrote the helper's unresolved readiness with zero. The helper now returns its unresolved count, and convergence, submitted callbacks, and stale callbacks preserve that count. Convergence also returns it to the registrar, preventing a second overwrite there. A later successful pass clears the unresolved count and removes the candidate when the stream is empty. The approved nonempty-fold behavior remains unchanged.
+- Six regression cases cover null and throwing cleanup folds through those three paths, assert durable candidate/receipt/Scheduler state and Degraded readiness, and prove recovery to Healthy. All six failed before the correction and passed afterward.
+- The typed-reminder guide and coordinator remarks now document audit, successful Scheduler cancellation, witness release, and the final stream fold in the implemented order. The guide also documents retaining stale witnesses until replacement convergence is durable.
+
+Works code, `docs/ci.md`, the frozen intent, both baseline commits, and the AD-26 codec and golden vectors remain unchanged. No commit, push, publication, dependency update, or nested-submodule initialization was performed.
+
+### Commands and results
+
+Commands below ran from `references/Hexalith.EventStore`. Logs and the synthetic local packages are under `/tmp/eventstore-reminders-4-11-20260930/`.
+
+All four required projects built with `dotnet build tests/<Project>/<Project>.csproj -c Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`, with zero warnings and zero errors:
+
+| Project | Build log |
+| --- | --- |
+| `Hexalith.EventStore.Contracts.Tests` | `build-Hexalith.EventStore.Contracts.Tests.log` |
+| `Hexalith.EventStore.Client.Tests` | `build-Hexalith.EventStore.Client.Tests.log` |
+| `Hexalith.EventStore.DomainService.Tests` | `build-Hexalith.EventStore.DomainService.Tests.log` |
+| `Hexalith.EventStore.Server.LiveSidecar.Tests` | `build-Hexalith.EventStore.Server.LiveSidecar.Tests.log` |
+
+| Exact test command | Result | Log |
+| --- | --- | --- |
+| `tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests -method '*UnavailableCleanupFold*'` before the fix | Six failures reproduced the overwritten unresolved count | `cleanup-red.log` |
+| `tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests -class '*Reminder*'` | 26 passed; one package-only case skipped until the pack was supplied | `contracts-focused.log` |
+| `tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests -class '*Reminder*'` | Zero discovered; these interfaces are exercised by the runtime tests and package probe | `client-focused.log` |
+| `tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests -class '*Reminder*'` | 116/116 passed, including all six regression cases | `domainservice-focused.log` |
+| `tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests -class '*Reminder*'` | 1/1 passed against Redis, placement, and Scheduler, including host restart, receipt replay, and Scheduler re-arm | `live-focused.log` |
+| `tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests` | 838/838 passed | `client-full.log` |
+| `tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests` | 276 passed; one existing architecture failure | `domainservice-full.log` |
+| `tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests` | 2115 passed, 51 failed, two skipped; all failures are in `Packaging/*`, matching the prior environment/evidence failures | `contracts-full.log` |
+
+The exact DomainService blocker remains `TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers`: its required subject, `references/Hexalith.EventStore/references/Hexalith.Tenants/src/Hexalith.Tenants/Hexalith.Tenants.csproj`, is absent because that nested submodule is intentionally uninitialized. The full Contracts failures remain repository-wide package governance/evidence checks involving absent nested repositories and pinned Builds commits, release evidence, and OQ8 `global.json` identity drift. The focused reminder checks have no failures.
+
+The repository-required Aspire baseline attempt, `aspire start --isolated --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json`, exited 2 after its 120-second startup timeout while restoring. Log: `aspire-baseline.log`. `aspire describe` and subsequent `aspire stop` reported no running AppHost. The live-sidecar proof above ran successfully through its independent fixture.
+
+### Local package proof and public release gate
+
+The canonical `python3 tools/pack-release-packages.py /tmp/eventstore-reminders-4-11-20260930/packages 3.110.0-local.431` stalled in restore and was stopped after a bounded attempt (exit 143; `pack.log`). The temporary `pack-with-environment-pins.py` replays the same validated release manifest and canonical pack arguments, adding only `-m:1 -p:NuGetAudit=false` and a 180-second per-project bound. No repository packaging script or build gate was changed.
+
+- `python3 /tmp/eventstore-reminders-4-11-20260930/pack-with-environment-pins.py /tmp/eventstore-reminders-4-11-20260930/packages 3.110.0-local.431` passed and produced all 14 packages (`pack-pinned.log`). The pack contains the final local code based on `d0f8b241a8be34f7d8b9f60f89db130709d944c5` plus the uncommitted readiness correction above.
+- `python3 tools/validate-release-packages.py /tmp/eventstore-reminders-4-11-20260930/packages 3.110.0-local.431` passed: 14 valid packages (`package-validation.log`).
+- `EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/eventstore-reminders-4-11-20260930/packages tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests -method '*PackagedReminderApi*'` passed 1/1 with no skipped case, validating all three isolated package-only consumers (`package-consumer.log`).
+
+The coordinating agent's read-only public-registry check on 2026-09-30 found that the NuGet version indexes for Contracts, Client, and DomainService all end at `3.110.0`. The downloaded packages under `/tmp/eventstore-4-11-public-inspection-sv8c7q91/` all identify source commit `27279fe6431925a6ea046c3f89af61487185c7de`, which predates reminder feature commit `00c6c36522602097b28cd533084927453212c779`. Contracts and Client XML contain no `ReminderIdentityCodec` or `IReminderIntentSource`. That public version cannot satisfy the R6 package acceptance criterion.
+
+**Still required before `done`:** the owner publishes a named public EventStore release containing this API after review, then the package-only test is repeated against that release and its version, source SHA, and result are recorded. This workflow published no release; the story remains `in-progress`.
