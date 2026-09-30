@@ -1131,3 +1131,18 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Prove that only the Dapr Scheduler can reach the typed-reminder callback under the production mTLS/ACL profile.
   evidence: Unverified high finding from the production-code review. `ReminderCallbackTokenFilter` authenticates the local sidecar with `APP_API_TOKEN`, but the reviewed diff does not establish whether a different Dapr workload can service-invoke the actor reminder callback and receive the target sidecar's automatically injected app-channel token. Settle with a Story 4.16 cross-application negative test under the production ACL profile; if it reaches the callback, add a Scheduler-only admission control before production opens.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-09-30, iteration 1)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Exclude the Story 6.1 P1R 3.109 version-pinned evidence projects from the shared consumer-package authority validator.
+  evidence: Review findings R1-EC10 and R1-BH1. The three tracked `6-1-p1r-3109` evidence projects intentionally use exact public package versions and disable central package management, but `ContractsPackageDependencyTests._standaloneEvidenceProbeProjects` lists only the earlier 3.108.1 evidence. The broad Contracts binary confirms 18 deterministic validator errors. This is unrelated post-baseline Story 6.1 work.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Bound every external command in the Story 6.1 public-package evidence replay.
+  evidence: Review finding R1-EC11. Network downloads use a 90-second timeout, but `verify_public_packages.py` invokes `git`, `dotnet nuget verify`, and the package validator through `subprocess.run` without a timeout, so a stalled tool can hang evidence replay indefinitely. This is unrelated post-baseline Story 6.1 work.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: URI-escape Story 6.1 rollback-probe state keys before placing them in Dapr state-read paths.
+  evidence: Review finding R1-EC12. The probe writes the caller-supplied prefix as a JSON state key but interpolates it raw into the read URI. Documented evidence uses safe prefixes, yet reserved characters can select another path or query. This is unrelated post-baseline Story 6.1 work.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Establish whether an approved restore can contain reminder item state while omitting both its tenant registry and candidate index entries.
+  evidence: Review finding R1-BH9 (unverified medium). Reconciliation cannot discover item state absent from both index documents, but no approved reminder backup/restore model exists yet. Story 4.16's restore drill must prove cross-key restore ordering and atomicity; if partial discovery loss is reachable, add an independent stream or item-state enumeration/rebuild seam.

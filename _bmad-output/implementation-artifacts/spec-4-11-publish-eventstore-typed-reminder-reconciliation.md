@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -115,16 +115,16 @@ Paths are relative to `references/Hexalith.EventStore/` (HEAD `f378afdb`, clean)
 
 ### Review Findings
 
-- [ ] [Review][Patch] Retain the obsolete witness until Scheduler cancellation and audit succeed [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
-- [ ] [Review][Patch] Hosted reconciler retry cadence lacks behavioral coverage [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderReconcilerTests.cs:69`]
-- [ ] [Review][Patch] Scheduler lookup-failure re-arm path lacks coverage [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1162`]
-- [ ] [Review][Patch] Audit write failures release cancellation and quarantine evidence [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
-- [ ] [Review][Patch] Convergence uses a stale clock when arming a future intent [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:129`]
-- [ ] [Review][Patch] Whitespace `DAPR_APP_ID` defeats the application-name fallback [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderServiceCollectionExtensions.cs:67`]
-- [ ] [Review][Patch] Malformed persisted collection elements strand work or terminate reconciliation [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:492`]
-- [ ] [Review][Patch] Retrying work skips lost-reminder recovery during backoff [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:603`]
-- [ ] [Review][Patch] Actor-collision convergence leaves restored state undiscoverable [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:685`]
-- [ ] [Review][Patch] Existing-state fail-closed errors are acknowledged from a stale snapshot [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:142`]
+- [x] [Review][Patch] Retain the obsolete witness until Scheduler cancellation and audit succeed [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
+- [x] [Review][Patch] Hosted reconciler retry cadence lacks behavioral coverage [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderReconcilerTests.cs:69`]
+- [x] [Review][Patch] Scheduler lookup-failure re-arm path lacks coverage [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1162`]
+- [x] [Review][Patch] Audit write failures release cancellation and quarantine evidence [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:553`]
+- [x] [Review][Patch] Convergence uses a stale clock when arming a future intent [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:129`]
+- [x] [Review][Patch] Whitespace `DAPR_APP_ID` defeats the application-name fallback [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderServiceCollectionExtensions.cs:67`]
+- [x] [Review][Patch] Malformed persisted collection elements strand work or terminate reconciliation [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:492`]
+- [x] [Review][Patch] Retrying work skips lost-reminder recovery during backoff [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:603`]
+- [x] [Review][Patch] Actor-collision convergence leaves restored state undiscoverable [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:685`]
+- [x] [Review][Patch] Existing-state fail-closed errors are acknowledged from a stale snapshot [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:142`]
 - [x] [Review][Defer] Potential Scheduler-callback origin bypass (unverified high) [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCallbackTokenFilter.cs:38`] — deferred: settle in Story 4.16 with a cross-application Dapr invocation test under the production mTLS/ACL profile, proving whether another workload can reach the reminder callback through the target sidecar with its automatically injected app-channel token.
 
 #### Rejected
@@ -214,6 +214,40 @@ Review iteration 0 (2026-09-29). Reviewers: verification-gap (VG), blind hunter 
 | EC13 | AC3 unauthorized callers are only logged | false | Design Notes define audit as durable records plus digest-only logs. Token denials emit event 200209 and no-witness callbacks emit 200208; writing durable records for unauthenticated calls would open an unauthenticated write path | reject |
 | EC14 | A stale firing re-converges and may submit | false | The stale witness itself submits nothing (`StaleWitnessIsAuditedNoOpAndCancelled`). Re-convergence runs only after origin and stored-identity admission, and submits only intents the current stream reports as due, exactly as any pass would | reject |
 
+Review iteration 1 (2026-09-30). Reviewers: verification-gap (VG), blind hunter (BH), edge-case hunter (EC). Every filed finding is triaged before root-cause grouping.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| R1-VG1 | Blank `DAPR_APP_ID` fallback is not verified through DI composition | low | Pre-verified: the helper is tested directly, but no test resolves registered options while the environment value is blank | patch |
+| R1-VG2 | Stale-callback cancellation-failure retention is untested | medium | Pre-verified: stale success and audit failure are covered, but `RetireStaleAsync` has no `CancelFailure` regression | patch |
+| R1-VG3 | Fail-closed catch re-indexing is not observed | medium | Pre-verified: the reloaded-state test begins with an indexed item and does not prove the catch restores a missing candidate | patch |
+| R1-VG4 | A null persisted candidate can terminate reconciliation | medium | `candidate.ActorId` is read before the per-candidate exception boundary; the existing corrupt-index test covers only tenant mismatch | patch |
+| R1-EC1 | Duplicate callbacks bypass retry backoff | medium | `HandleCallbackCoreAsync` submits a current `Retrying` witness without checking `UpdatedAt + Backoff`, unlike convergence | patch |
+| R1-EC2 | Submitted-receipt cancellation failure releases the witness and readiness | medium | `SettleAsync` returns `null`, persistence removes the witness, and `RunSchedulerAsync` ignores the failed cancellation result | patch |
+| R1-EC3 | Registration audit failure is ignored | medium | The future-witness path persists `Armed` even when the `Registered` disposition write returns `false`, so it never retries the audit | patch |
+| R1-EC4 | A null persisted candidate faults the pass before its guard | medium | Verified at `ReminderReconciler`: dereference occurs before `try`; same root cause as R1-VG4 | patch |
+| R1-EC5 | A candidate whose actor ID does not rederive from its tuple is trusted | medium | Reconciliation observes the stored ID but invokes a registrar that derives a different ID, allowing the corrupt row to remain while readiness tracks the wrong actor | patch |
+| R1-EC6 | Duplicate persisted reminder names can execute twice | medium | `LoadAsync` accepts both records and the due-work loop submits both; the settlement dictionary only collapses the later persisted update | patch |
+| R1-EC7 | `Attempts == int.MaxValue` overflows on retry | low | The arithmetic is unchecked, but reaching this value requires corrupted state or millennia of retries; a new saturation branch is disproportionate alone | reject |
+| R1-EC8 | A manually mapped callback-only actor route suppresses all other actor routes | low | This requires a host to imitate one Dapr route without mapping the actor handler set; the resulting setup error fails loudly and broader route inference adds complexity | reject |
+| R1-EC9 | Downstream path rewriting can bypass the early token filter | low | A custom middleware would have to rewrite a benign path into a reminder actor path after the startup filter; normal Dapr and path-base routing do not do this | reject |
+| R1-EC10 | Story 6.1 P1R 3.109 evidence projects are absent from the packaging-validator exclusion list | medium | The tracked version-pinned evidence projects are intentionally outside CPM and make the repository-wide packaging authority test fail; this is unrelated post-baseline work | defer |
+| R1-EC11 | Story 6.1 public-package evidence subprocesses have no timeout | low | Network calls are bounded, but `git`, `dotnet`, or the validator can hang the evidence replay; this is unrelated post-baseline work | defer |
+| R1-EC12 | Story 6.1 rollback probe does not URI-escape its key prefix | low | Reserved characters can change the state read path, although documented evidence uses safe prefixes; this is unrelated post-baseline work | defer |
+| R1-BH1 | Story 6.1 P1R 3.109 evidence breaks the packaging authority validator | medium | Same verified post-baseline defect as R1-EC10 | defer |
+| R1-BH2 | Persisted-entry validation accepts structurally invalid tuples | medium | Nonblank checks do not validate the reminder token, supported kind, UTC timestamps, positive coordinates, or payload digest before normal processing | patch |
+| R1-BH3 | Duplicate persisted reminder identities can submit twice | medium | Same verified root cause as R1-EC6 | patch |
+| R1-BH4 | A null tenant candidate terminates the reconciliation pass | medium | Same verified root cause as R1-VG4 and R1-EC4 | patch |
+| R1-BH5 | A mismatched candidate actor ID is not rejected | medium | Same verified root cause as R1-EC5 | patch |
+| R1-BH6 | Submission releases state before Scheduler cancellation succeeds | medium | Same verified root cause as R1-EC2 | patch |
+| R1-BH7 | Armed state can permanently lack its `Registered` audit | medium | Same verified root cause as R1-EC3 | patch |
+| R1-BH8 | Dapr actor invocation cannot be cancelled after proxy dispatch | false | This repeats the prior rejected actor-wait claim: cancelling only the caller wait abandons an in-flight actor call and does not make the actor operation cancellable | reject |
+| R1-BH9 | A partial restore that omits all discovery entries strands item state | maybe-false | The code cannot rediscover an item absent from both registry and candidate documents, but no approved restore model exists yet; Story 4.16's restore drill must establish whether such a state is reachable | defer |
+| R1-BH10 | Actor-collision evidence does not retain the colliding coordinates | low | Production operator disposition and the restore gate are explicitly deferred to 4.16; v1 safely retains a digest and fails closed, so adding disclosed coordinates now is disproportionate | reject |
+| R1-BH11 | A translator change across deployment can alter a pending command under one effect identity | false | The approved contract makes the current stream and deterministic versioned domain translator authoritative; EventStore intentionally persists the intent tuple and payload digest, not a duplicate derived command | reject |
+| R1-BH12 | Live-sidecar evidence does not prove two-host reminder failover | false | The evidence table assigns restore/HA races to persisted fake-store tests (`TwoHostsRacingRegisterOnce`) and assigns the live test only restart replay and Scheduler recovery; it makes no live-HA claim | reject |
+| R1-BH13 | The Story 4.11 patch contains unrelated Story 6.x work | false | The preserved baseline predates later mainline commits, so the review artifact contains them; the current working changes are limited to the reminder implementation/tests and this spec | reject |
+
 **Patches applied for review iteration 0 (2026-09-29), in place, no loopback:**
 - A first convergence that fails closed (`index-capacity`, `index-conflict`, `state-conflict`) now rethrows, so the caller retries.
 - Intents with different names but one effect identity are quarantined as `effect-collision`, both at convergence and at callback.
@@ -228,6 +262,25 @@ Review iteration 0 (2026-09-29). Reviewers: verification-gap (VG), blind hunter 
 - Caller-contract rules are documented in the guide and the XML remarks. `configuration-reference.md` gained an `EventStore:Reminders` section and an amended `APP_API_TOKEN` row. That doc is hash-bound by the OQ8 evidence validator, whose pinned hash already differed from HEAD before this edit.
 - The failure-path and readiness tests requested by the review were added.
 
+**Patches applied for review iteration 1 (2026-09-30), in place, no loopback:**
+- Obsolete and stale witnesses now remain durable until their audit and Scheduler cancellation succeed; failed quarantine audits retain the executable witness and do not cancel it.
+- Retry backoff reconciliation repairs a lost Scheduler reminder without submitting early, and lookup failures explicitly exercise the idempotent re-arm path.
+- Scheduling reads a fresh clock after the authoritative stream fold. Blank `DAPR_APP_ID` values fall through to the host application name.
+- Malformed persisted collection elements are converted into durable, audited quarantine evidence. Actor collisions re-index the stored target so restored state remains discoverable.
+- Existing-state fail-closed handling reloads the durable state and re-ensures its candidate before returning an unresolved result.
+- Duplicate callbacks now honor retry backoff. A submitted receipt remains pending until Scheduler cancellation succeeds, and a failed `Registered` audit retains retryable state.
+- Persisted entries are validated against their full durable tuple before use; invalid and duplicate reminder/effect identities are quarantined and audited instead of executed.
+- Reconciliation isolates null or actor-mismatched candidate rows, marks the pass incomplete, and continues scanning valid work.
+
+**Final verification after review iteration 1 (2026-09-30, Debug, `-m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`):**
+- Contracts.Tests, Client.Tests, DomainService.Tests, and Server.LiveSidecar.Tests all build with 0 warnings and 0 errors.
+- `Contracts.Tests -class '*Reminder*'`: 26 passed, 1 skipped because no public-package directory was supplied. `Client.Tests -class '*Reminder*'`: 0 discovered; the Client reminder surface is exercised through the DomainService tests and package probe.
+- `DomainService.Tests -class '*Reminder*'`: 101/101. Full binary: 261 passed, 1 failed; the unchanged failure is `TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers`, whose subject is the intentionally uninitialized nested `references/Hexalith.Tenants` repository.
+- `Server.LiveSidecar.Tests -class '*Reminder*'`: 1/1 against Redis, placement, and Scheduler, including restart receipt replay and Scheduler re-arm.
+- Local package proof: `3.110.0-local.430`; packing and validation produced 14 valid packages, and `PackagedReminderApi` passed 1/1 against that pack.
+- Full `Contracts.Tests`: 2115 passed, 51 failed, 2 skipped. The failures remain repository-wide packaging/evidence environment issues: uninitialized nested repositories and pinned Builds SHAs, OQ8 gate-input drift, OCI/release evidence, plus the deferred Story 6.1 P1R 3.109 validator exclusions. The reminder-focused and package-only proofs pass.
+- **Required before `done`:** after the owner publishes a named public EventStore version, rerun `PackagedReminderApi` against it and record the version, source SHA, and result. No release was published by this workflow.
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -240,7 +293,7 @@ A mismatched tuple is quarantined. A stale witness gets an audited no-op followe
 
 **Submission:**
 - `EffectIdentity` is (tenant, source, source sequence, kind, target, ordinal `0`), with `MessageId` = `IdempotencyKey` = `wrk-<EffectId>`.
-- A durable result deletes pending state; the index entry goes last.
+- A durable result deletes pending state only after Scheduler cancellation succeeds; the index entry goes last.
 - An exception or uncertain outcome keeps state, rearms a backoff retry reminder, and counts as unresolved. The callback never acknowledges by throwing.
 
 **Readiness:**
