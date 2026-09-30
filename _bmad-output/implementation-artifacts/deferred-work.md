@@ -1146,3 +1146,15 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Establish whether an approved restore can contain reminder item state while omitting both its tenant registry and candidate index entries.
   evidence: Review finding R1-BH9 (unverified medium). Reconciliation cannot discover item state absent from both index documents, but no approved reminder backup/restore model exists yet. Story 4.16's restore drill must prove cross-key restore ordering and atomicity; if partial discovery loss is reachable, add an independent stream or item-state enumeration/rebuild seam.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-09-30, chunk 1)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Keep a quarantined reminder name unarmed until an operator disposition path exists.
+  evidence: Chunk 1 review. `ConvergeCoreAsync` drops a current stream intent whose name is already quarantined, or whose quarantine reason is `stored-entry-invalid` or `stored-entry-duplicate` (`ReminderCoordinator.cs:592-614`). Nothing in this story clears `ReminderQuarantineRecord` or a `Quarantined` entry. The frozen spec assigns operator disposition to Story 4.16.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Cap or shard per-item reminder quarantine evidence before production admission.
+  evidence: Chunk 1 review. `MaxCandidatesPerTenant` bounds the discovery index only. Each distinct quarantine digest is appended to the item document, and every convergence rewrites a disposition for each existing record (`ReminderCoordinator.cs:717-730`). Retention and offboarding of this evidence belong to the Story 4.16 AD-28 gate. Quarantine `RecordedAt` itself stays stable because `AddQuarantine` dedupes by digest.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Give operators a repair for a candidate whose actor id does not re-derive from its tuple.
+  evidence: Chunk 1 review. `ReminderReconciler.RunPassAsync` counts that row as incomplete and continues (`ReminderReconciler.cs:87-92`). `CompletePass` does not prune while the pass is incomplete, so readiness stays degraded and no later pass removes or repairs the row. Deleting it could discard the only stored target coordinates. Operator repair belongs to Story 4.16.

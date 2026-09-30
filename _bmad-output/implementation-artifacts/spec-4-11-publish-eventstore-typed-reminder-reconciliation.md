@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-review'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -317,3 +317,36 @@ A mismatched tuple is quarantined. A stale witness gets an audited no-op followe
   - `python3 tools/pack-release-packages.py <dir> <ver>` && `python3 tools/validate-release-packages.py <dir> <ver>`, then `EVENTSTORE_PACKAGE_CONTRACT_DIR=<dir> tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests -method '*PackagedReminderApi*'`.
   - Expected: 1/1 against the local pack. Repeat against the named public version, and record the version, source SHA and results.
 - LiveSidecar: if the fixture reports missing Redis, placement or the scheduler, record the exact blocker. Do not weaken the gate.
+
+### Review Findings
+
+Chunk 1 (reminder implementation source), 2026-09-30. Reviewers: blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor.
+
+- [x] [Review][Patch] Stale callback cancels the witness before replacement convergence is durable [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1102`]
+- [x] [Review][Patch] A null intent-source result is treated as an empty stream and cancels stored reminders [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:138`]
+- [x] [Review][Patch] A terminal receipt removes the witness without folding the stream again [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1343`]
+- [x] [Review][Patch] A null persisted candidate list throws when a candidate is removed [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderIntentIndex.cs:78`]
+- [x] [Review][Patch] A blank target domain is stored, and a later callback retires its witness as stale [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1013`]
+- [x] [Review][Patch] Blank workload denial has no regression test [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:449`]
+- [x] [Review][Patch] A blank or null translation is not covered by a quarantine test [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCallbackAdmissionTests.cs:344`]
+- [x] [Review][Patch] A repeated app-channel token is not denied by the admission tests [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCallbackTokenFilter.cs:94`]
+- [x] [Review][Patch] An uncertain submission drops the exception type [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1330`]
+- [x] [Review][Defer] Quarantine keeps a reminder name from being armed again [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:592`] — deferred: operator disposition of quarantine is explicitly outside 4.11 and belongs to Story 4.16
+- [x] [Review][Defer] Item quarantine evidence has no cap [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:717`] — deferred: retention, TTL, and offboarding of reminder evidence wait for the Story 4.16 AD-28 gate
+- [x] [Review][Defer] A mismatched candidate actor id leaves every later pass incomplete [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:87`] — deferred: dropping the corrupt row can hide the only copy of its target coordinates; operator repair belongs to Story 4.16
+
+#### Rejected
+
+- `false` — `SubmitAsync` is not required to match `CommandType` to `PayloadType` or re-hash the command payload. The source contract makes the current stream and `TranslateDueIntent` authoritative.
+- `low` — A second `AddEventStoreReminders` call ignoring a different intent source is an uncommon host-programming error, and the method documents that second call as configuration-only.
+- `low` — A blank resolved workload denies submission and retains the witness. That is the fail-closed path, and collapsing `Validate()` errors into one startup message is a setup-only annoyance.
+- `low` — Different token lengths return `token-invalid` before `FixedTimeEquals`. Measuring that length requires timing an internal app-channel route, and a padding scheme is more than a direct correction.
+- `false` — Capturing `ReminderCoordinator` for the actor activation matches `IReminderIntentSource`, which already requires the source to re-read the stream on every call for that lifetime.
+- `false` — With reconciliation disabled, `ExecuteAsync` returns without `CompletePass`. Readiness stays degraded until a pass completes, which is the rule that recovery has not run.
+- `false` — After durable item state exists, `ReminderFailClosedException` reloads that state, re-ensures its candidate, and returns a non-zero unresolved count. The next pass reconverges from the stream.
+- `false` — An actor-collision digest is stored on the owning item's quarantine list, and `HasWork` treats quarantine as retained work, so erasing the owner does not drop that digest.
+- `low` — `RemoveCandidateAsync` leaves the tenant registered. Empty-tenant pruning is already deferred, and a scan of an empty tenant is negligible at this story's scale.
+- `low` — The readiness registration's failure status is `Degraded` only when the check throws. The missing-token path returns `Unhealthy` itself.
+- `low` — A document that fails JSON deserialization makes `GetAsync` throw, and the reconciler already marks that pass incomplete. Quarantining the raw bytes needs a store seam this coordinator does not have, and everyday writes are produced by `PersistAsync`.
+- `false` — The callback does not re-check `DueUtc`. The approved design gives timing to the Scheduler.
+- `low` — `UpdatedAt + Backoff` can throw only when `UpdatedAt` is within one max delay of `DateTimeOffset.MaxValue`. Backoff is already capped at the validated max delay.
