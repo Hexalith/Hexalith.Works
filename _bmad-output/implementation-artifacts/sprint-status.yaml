@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-01 # Story 4.11 review iteration 2 patches applied; named public-package proof remains; sprint status review
+last_updated: 2026-10-01 # Story 4.11 open review patches and C4 fixes verified; public release/package proof remains
 # Story 4.11 group 1 patches applied; groups 2-5 and the named public-package close gate remain.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
