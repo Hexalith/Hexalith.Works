@@ -348,6 +348,26 @@ Continuation review C4 (2026-10-01). Three review layers completed. The platform
 | C4-VG-O1 | Null fold cadence contradicts the new guide | low | Independently reproduces C4-BH1. Correct the overbroad prose and test the preserved retained-outcome cadence rather than changing the approved fail-closed result. | patch |
 | C4-VG-O2 | Event 200214 schema disagrees with the guide | low | Independently confirms C4-BH7. Preserve bounded exception-type evidence and verify the resulting event schema. | patch |
 
+Continuation review C5 (2026-10-01). All three context-free review layers completed: blind-hunter (BH, 10 findings), edge-case-hunter (EC, 5 findings), and verification-gap (VG, no gaps). The artifact `/tmp/bmad-build-4-11-resume-ek8r3wwx/all-changes.diff` contains the complete workspace-baseline diff, the current EventStore continuation including untracked tests, and expanded reminder changes for the remaining split-review groups 3–5. Each finding below was judged before grouping. The current continuation matches every corresponding file in the final C4 review artifact, so the existing `.442` package inventory remained valid before these new patches.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C5-BH1 | Same-source rescheduling after an uncertain committed receipt changes causation and cannot replay | medium | `SubmitAsync` uses the schedule name for both delegation and submission causation; the name changes on reschedule while EffectId remains stable. `AggregateActor.ReceiptMatches` requires unchanged causation and rejects that replay. The fake currently compares only EffectId. Use stable logical-effect causation on both calls, document it, and prove replay with a faithful receipt matcher and the real target. | patch |
+| C5-BH2 | Complete-pass pruning discards unresolved work registered after discovery was read | medium | `RunPassAsync` snapshots discovery before actor convergence; a concurrent registration can record a new pending witness while the old candidate list omits it. `CompletePass` then removes its host-local status. Retain records updated during the pass and add a controlled runtime interleaving regression. | patch |
+| C5-BH3 | Restored quarantine reasons can enter logs verbatim | low | `IsValidPersistedQuarantine` accepts any nonblank reason. Normal runtime writes use bounded constant reasons; confidential text requires malformed or manually altered stored state. A new reason allowlist and repair path add guards for that rare state, so the proposed expansion is rejected. | reject |
+| C5-BH4 | Malformed candidate actor IDs can enter logs verbatim | low | The mismatch and catch logs print stored IDs; ordinary discovery writes use derived `wra-` digests. Confidential or arbitrarily long IDs require corrupted or manually altered discovery. Additional log validation is disproportionate for this rare state. | reject |
+| C5-BH5 | No Expiry end-to-end runtime case | low | carried: iteration-0 BH15 explicitly rejected this extra case because the closed kind map, both codec vectors, and generic runtime composition cover the branch. The runtime still treats both kinds through the same code. | carried reject |
+| C5-BH6 | Distinct-source regression does not distinguish source and target domains | low | The current test varies SourceAggregate but keeps SourceDomain equal to the target domain. Extend the existing independent-identity assertions with different source domains so substituting the target domain fails. | patch |
+| C5-BH7 | Same-actor racing test does not exercise independent actors contending on discovery CAS | low | `TwoHostsRacingRegisterOnce` deliberately serializes one actor; the exhaustion test pins refusal but does not prove successful retry retains another item's candidate or tenant. Add forced interleavings for same-tenant candidates and different-tenant registry writes, asserting the accepted durable discovery and item state. | patch |
+| C5-BH8 | Health data omits scan freshness | low | LastPassAt is held internally and pass completion is logged, but health data does not expose it. The recorded contract describes a per-host view from the last completed pass, not a freshness guarantee. A stalled invocation is already deferred to 4.16; adding health output or a freshness policy for that condition is rejected here. | reject |
+| C5-BH9 | Options validation hides detailed startup errors | low | carried: iteration-0 BH11 and iteration-3 chunk-A BH10 retain the generic startup validation decision. The options Validate method still exposes the individual errors, and replacing options validation adds another type for a setup-only diagnostic. | carried reject |
+| C5-BH10 | Removed effect-ID grouping leaves unused validation tuple bookkeeping | low | LoadAsync still carries an EffectId tuple member and validation out parameter solely discarded after the grouping removal. Delete that unused output/bookkeeping while retaining effect-identity validation and blank-domain behavior. | patch |
+| C5-EC1 | A pass prunes unresolved work registered after its snapshot | medium | Independently confirms C5-BH2 at CompletePass; same runtime interleaving and correction. | patch (with C5-BH2) |
+| C5-EC2 | An existing different actor implementation suppresses reminder registration | low | carried: R2-EC5 and iteration-3 chunk-A EC12 already reject this host-programming collision. Registration skips the duplicate, but a convergence proxy to a non-reminder actor fails loudly; no ordinary reminder work is silently accepted. | carried reject |
+| C5-EC3 | Positive sub-millisecond delays can busy-loop | low | carried: C4-BH3 already reproduced Task.Delay truncation and rejected narrowing the positive-delay contract with a new minimum or rounding policy for this unusual tick-valued configuration. | carried reject |
+| C5-EC4 | Malformed stored actor IDs may disclose confidential text in logs | low | Independently confirms C5-BH4; normal rows carry derived digests and the proposed guard covers manually altered or corrupted discovery rather than ordinary runtime input. | reject |
+| C5-EC5 | Stale callback convergence can submit an overdue replacement | false | carried: iteration-0 EC14, C4-EC2, and the resolved group-2 stale comment distinguish the stale witness's audited no-op from independently current replacement convergence. The frozen recovery rule and Design Notes explicitly permit that convergence. | carried reject |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -933,3 +953,106 @@ acceptance gate remains unsatisfied. No staging, commit, push, branch change,
 dependency update, nested-submodule initialization, or publication occurred.
 Works code, the frozen intent, baseline identifiers, sealed CI document, and
 AD-26 codec/vector source remain unchanged.
+
+### Continuation review C5 patches
+
+- [x] [Review][Patch] Keep delegation and submission causation stable for one logical effect across schedule changes; document the contract and prove replay after a committed-but-uncertain original receipt, including the real target.
+- [x] [Review][Patch] Preserve unresolved status recorded during a reconciliation pass; prove a newly registered durable pending witness remains Degraded after the older discovery snapshot completes.
+- [x] [Review][Patch] Extend the distinct-source receipt test to use different source domains and independently expected identities.
+- [x] [Review][Patch] Prove discovery CAS retries preserve independent accepted items and tenants under forced registration interleavings.
+- [x] [Review][Patch] Remove unused persisted-entry effect-ID tuple/output bookkeeping while preserving all validation.
+
+### C5 final implementation, review, and verification (2026-10-01)
+
+The remaining split-review groups 3–5 are reviewed: actor admission and host
+composition, readiness and reconciliation, unit tests and fixtures, live proof,
+and documentation. All three independent review layers completed. Every one
+of their fifteen findings has a triage row above: six patch findings grouped
+into five corrections, nine rejected findings, and no new deferred work.
+All five C5 patch tasks are resolved. Earlier split-review groups and their
+filed patches remain resolved; the public-release close gate remains open.
+
+- Delegation and submission now share stable `wrk-<EffectId>` causation across
+  schedule changes. Tests first commit a receipt while returning an uncertain
+  transport result, then reschedule with the same source coordinates. Matching
+  command semantics replay and release the new witness; changed semantics
+  conflict and retain it for retry. The fake checks the committed receipt's
+  identity, command, workload, purpose, and causation. The live Redis/Dapr test
+  also reschedules one logical effect and reads the real target receipt to
+  verify its stable causation and replay.
+- Readiness captures a record version before discovery begins and prunes only
+  older, undiscovered records. A controlled runtime interleaving registers a
+  new durable pending witness during an older pass and verifies it stays
+  unresolved and `Degraded` after that pass completes. Existing obsolete-record
+  pruning coverage remains passing.
+- Independent registrations force both tenant-candidate and tenant-registry
+  CAS races, proving successful retries preserve both accepted items, their
+  Scheduler registrations, and discovery. The distinct-source receipt test
+  uses different source domains and independently expected effect tuples.
+- Persisted-entry loading drops its unused effect-ID tuple/output while
+  retaining codec validation and the existing blank-domain behavior. The guide
+  and public delegation XML explain stable causation and its distinction from
+  the schedule witness; no public API shape changes.
+
+The new regression run reproduced four failures before the corrections; its
+two discovery-contention rows already passed and add coverage for existing
+behavior. The implementation agent then passed 135/135 affected unit tests and
+1/1 live test. Evidence is under
+`/tmp/story-4-11-review-fixes-final-tu5cwzen/`, including `regressions-red.xml`.
+The coordinating agent independently read the final source/test/documentation
+diff and ran final checks from `references/Hexalith.EventStore`:
+
+| Final check | Result |
+| --- | --- |
+| `dotnet build tests/<Project>/<Project>.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` for Contracts, Client, DomainService, and Server.LiveSidecar | Four builds passed; zero warnings/errors |
+| Built DomainService executable, `-class '*Reminder*' -result-xml <artifact>/domainservice-reminders.xml` | 155/155 passed, no skips |
+| Built Contracts executable, `-class '*ReminderIdentityCodecTests' -class '*EffectIdentityCodecTests' -result-xml <artifact>/contracts-codecs.xml` | 50/50 passed, no skips |
+| Built LiveSidecar executable, `-class '*ReminderRecoveryLiveSidecarTests' -result-xml <artifact>/live-reminders.xml` | 1/1 passed against Redis, placement, and Scheduler |
+| `python3 /tmp/story-4-11-current-patches/pack-with-environment-pins.py <artifact>/packages 3.110.0-local.451` | All 14 packages freshly packed using the unchanged, previously documented environment fallback |
+| `python3 tools/validate-release-packages.py <artifact>/packages 3.110.0-local.451` | All 14 release packages validated |
+| `EVENTSTORE_PACKAGE_CONTRACT_DIR=<artifact>/packages` and built Contracts executable, `-method '*PackagedReminderApiRunsWithoutWorksTypes' -result-xml <artifact>/package-consumer.xml` | 1/1 passed; all three isolated package-only consumers proved, no skips |
+| Independent XML/matrix and protected-file audits; `git diff --check` in both repositories | All five frozen matrix rows have passing executed coverage; 190 protected entries unchanged; diff checks passed |
+
+Here `<artifact>` is
+`/tmp/bmad-build-4-11-resume-ek8r3wwx/final-verification/`. It contains exact
+commands, logs, XML, fresh packages and package hashes, `summary.json`,
+`matrix-audit.json`, and `protected-files.json`. The local pack represents
+EventStore `b01c9fe0b8bd4f052cd0740c7d4ca2fac460964b` plus the preserved
+uncommitted continuation and C5 corrections. Works HEAD remains
+`d73b058c1a430cc2b988e1db4bd5ffcda775434c`; both original full baseline
+identifiers remain unchanged. The review input and rewritten final diff are
+retained in the parent artifact directory.
+
+The previously recorded broad-suite blockers (one nested-Tenants architecture
+test and 51 Contracts packaging/evidence checks) and canonical pack timeout
+were not repeated: none of their failure subjects changed. The environment
+fallback packs the same validated release inventory with Release package
+references, serialized builds, and NuGet audit disabled. The repository's
+canonical pack tooling and dependency versions remain unchanged.
+
+Before the C5 edits, `aspire start --isolated --apphost
+src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj
+--non-interactive --format Json` exited 2 after a 120-second restore timeout,
+also reporting the OpenSSL certificate-trust diagnostic. `aspire describe
+--apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj
+--non-interactive --format Json` and `aspire stop --apphost
+src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj
+--non-interactive` both exited 0 and confirmed no running AppHost. Logs are
+`aspire-start.log`, `aspire-describe.log`, and `aspire-stop.log` in the
+implementation agent's artifact directory above. This baseline environment
+blocker remains separate from the passing Redis/Dapr live proof.
+
+A fresh read-only inspection of official NuGet indexes and packages still
+finds Contracts, Client, and DomainService at public `3.110.0`, source SHA
+`27279fe6431925a6ea046c3f89af61487185c7de`, without the reminder API. Evidence:
+`/tmp/bmad-build-4-11-resume-ek8r3wwx/public-inspection/summary.json`.
+**Still required before `done`:** the owner publishes a named public EventStore
+release containing the reviewed API, then the package-only proof passes
+against that version and records its source SHA. Local proof cannot close this
+frozen gate. Spec and sprint status remain `in-progress`; the workflow's
+completion/commit phase is not entered while acceptance remains incomplete.
+
+Works source, the frozen intent, sealed `docs/ci.md`, and AD-26 codec/vector
+source remain unchanged. Existing Story 4.16 deferred work remains deferred.
+No staging, commit, push, branch change, dependency update, submodule
+initialization, or release publication was performed.
