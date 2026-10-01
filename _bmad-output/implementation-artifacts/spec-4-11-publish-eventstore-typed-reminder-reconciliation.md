@@ -622,3 +622,71 @@ Here `<artifact>` is `/tmp/bmad-4-11-final-review-pf5_557x/verification`. The fi
 The earlier broad-suite evidence, Aspire baseline restore timeout, and canonical pack timeout remain recorded separately above; the repository gates were not weakened. Broad suites were not repeated after these reminder-only private fixes because their unrelated failure subjects and package-governance inputs did not change. Works source, `docs/ci.md`, the AD-26 codec and golden-vector source, the frozen intent, and both preserved baseline identifiers remain unchanged. No commit, push, branch change, dependency update, nested-submodule initialization, public-registry inspection, or release publication occurred.
 
 The local implementation and review work are complete. The frozen close gate still requires the owner to publish a named public EventStore version after review and then record a passing package-only proof against that public version and its source SHA. Local package evidence does not close that gate.
+
+### Review Findings
+
+Split review, group 1: public reminder contracts, Client interfaces, identity codec,
+codec tests, package consumer probes, and package-only test (2026-10-01).
+EventStore `f378afdb7cdeec85144fffc20dd9a13a9775bf85..9efe9c6df8e63d48b82984fca0607f20f0fa44be`;
+13 files, 852 additions, no deletions, 986 diff lines. Review mode: full.
+Context: this spec, Epic 4 context, Works architecture, and EventStore project context.
+All four layers completed: blind-hunter (BH), edge-case-hunter (EC),
+verification-gap (VG), and acceptance-auditor (AA). Eleven individual findings
+were triaged before grouping: 0 decision-needed, 4 patch, 0 defer, 7 rejected.
+This group does not complete the remaining runtime, tests, or documentation review.
+
+- [x] [Review][Patch] Pin case-sensitive aggregate identifiers in reminder regression tests [`references/Hexalith.EventStore/tests/Hexalith.EventStore.Contracts.Tests/Reminders/ReminderIdentityCodecTests.cs:15`] — medium, verification gap (VG). The actor and schedule tuple writers encode aggregate identifiers verbatim, but every existing reminder vector uses lowercase identifiers. A temporary copy of both tuple writers changed `WriteText(buffer, item)` to `WriteText(buffer, item.ToLowerInvariant())`; all 26 existing reminder codec tests still passed. That regression would route valid targets `item-1` and `Item-1` into one actor, where the coordinator's ordinal target comparison quarantines the second. Add case-distinct actor and schedule vectors. In the runtime-test group, add a persisted-state test proving both targets arm independently with separate states and no quarantine. The current implementation preserves case; this finding concerns missing regression protection.
+- [x] [Review][Patch] Document reminder-name uniqueness for intent sources [`references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderIntentSource.cs:17`] — low (BH2). The public remarks require unique effect tuples but omit the separate schedule-name constraint. Two intents with distinct source coordinates can satisfy those remarks while sharing target, kind, due instant, and revision; `ConvergeCoreAsync` then records `witness-collision` and submits neither. Add the existing name/witness constraint to the interface documentation, including changing the witness when its source or payload changes. No runtime behavior or public surface needs to change.
+- [x] [Review][Patch] Clarify effect identity reuse across successive schedules [`references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderIntentSource.cs:17`] — low (BH3). Uniqueness only "among current intents" leaves the lifetime requirement unstated. A later schedule that reuses source domain/aggregate/sequence, kind, and target retains the previous effect identity even if due time or schedule revision changes; the target replays the old receipt or rejects changed command semantics. Document that one logical submission retains its source coordinates for retry, while a distinct logical submission must have distinct committed source-event coordinates. This clarifies the existing AD-26 receipt contract.
+- [x] [Review][Patch] State admissible intent field bounds in the public parameter documentation [`references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Reminders/ReminderIntent.cs:14`] — low (BH4). `ValidateIntent` rejects a non-positive source sequence, negative schedule revision, blank payload type, and null payload, but the record's parameter documentation does not state those constraints. A domain implementer can construct such a record and discover the rule only through quarantine. Add those bounds to the existing parameter descriptions; preserve the record shape and boundary validation.
+
+Verification artifacts are under `/tmp/bmad-4-11-review-85wss_e0/`:
+
+- `dotnet build tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` passed with zero warnings/errors (`contracts-build.log`).
+- The built Contracts test executable with `-class '*ReminderIdentityCodecTests' -class '*EffectIdentityCodecTests' -result-xml /tmp/bmad-4-11-review-85wss_e0/contracts-codecs.xml` passed 43/43, with no skips (`contracts-codecs.log`).
+- The built Contracts test executable with `-method '*PackagedReminderApiRunsWithoutWorksTypes'`, `EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/bmad-4-11-final-review-pf5_557x/verification/packages`, and `-result-xml /tmp/bmad-4-11-review-85wss_e0/contracts-packages.xml` passed 1/1, with no skips (`contracts-packages.log`). This reruns all three isolated consumers against the existing synthetic `3.110.0-local.434` inventory; no fresh packages were produced for this review, and this is not the named-public-version close proof.
+- Python AST parsing of `scripts/validate-consumer-package-references.py` passed. The isolated case-normalization mutation passed 26/26 (`case-mutation.log`, `case-mutation.xml`); no repository source was mutated.
+
+**Group 1 patches applied (2026-10-01).** All four entries above are resolved. The
+mixed-case actor and schedule vectors were calculated independently with Python
+SHA-256 and the frozen tuple encoding; the existing vectors remain unchanged.
+`CaseDistinctAggregatesArmIndependently` proves separate persisted aggregate state,
+armed witnesses, Scheduler registrations, and discovery candidates for `item-1`
+and `Item-1`, with no quarantine. Public XML documentation now states witness-name
+uniqueness, source identity reuse for the same kind and target, and the required
+intent field bounds. The runtime codec, receipt behavior, and public API shapes
+were not changed.
+
+Final verification, from `references/Hexalith.EventStore` (artifacts under
+`/tmp/bmad-4-11-review-85wss_e0/`):
+
+| Command | Result | Artifact |
+| --- | --- | --- |
+| `dotnet build tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` | Passed; zero warnings/errors | `patch-contracts-build.log` |
+| `dotnet build tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` | Passed; zero warnings/errors | `patch-domainservice-build-final.log` |
+| `tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests -class '*ReminderIdentityCodecTests' -class '*EffectIdentityCodecTests' -result-xml /tmp/bmad-4-11-review-85wss_e0/patch-contracts-codecs.xml` | 45/45 passed; no skips | `patch-contracts-codecs.log`, `patch-contracts-codecs.xml` |
+| `tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests -class '*Reminder*' -result-xml /tmp/bmad-4-11-review-85wss_e0/patch-domainservice-reminders.xml` | 134/134 passed; no skips | `patch-domainservice-reminders.log`, `patch-domainservice-reminders.xml` |
+| `dotnet run --project /tmp/bmad-4-11-review-85wss_e0/case-mutation/CaseMutation.csproj -c Debug -p:NuGetAudit=false -- -result-xml /tmp/bmad-4-11-review-85wss_e0/patch-case-mutation.xml` | Expected exit 1: both new mixed-case vectors reject the case-normalization mutant; the other 26 cases pass | `patch-case-mutation.log`, `patch-case-mutation.xml` |
+| `aspire start --isolated --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json` | Exit 2: 120-second startup timeout during restore; OpenSSL certificate trust diagnostic also recorded | `patch-aspire-start.log` |
+| `aspire describe --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json` and `aspire stop --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive` | Both report no running AppHost | `patch-aspire-describe.log`, `patch-aspire-stop.log` |
+
+The four group 1 fixes do not resolve the other review groups, earlier open
+findings, or the frozen named-public-package close gate. Story and sprint status
+remain `in-progress`. No package was repacked or published, and no commit, push,
+branch change, dependency update, or submodule initialization was performed.
+
+Remaining groups for follow-up runs: (2) coordinator, persisted state, and index;
+(3) actor admission, composition, readiness, periodic reconciliation, and their
+composition/reconciler tests; (4) coordinator/callback unit tests and fixtures;
+(5) live-sidecar tests/fixtures and guide/configuration documentation.
+The frozen public-release close gate and earlier open findings remain in force.
+
+#### Rejected
+
+- `low` — BH1: Nonzero final Base32 padding passes the name parser. A temporary consumer confirmed parsing succeeds but stored-tuple rederivation returns false. SDK-generated tokens always have canonical padding, so everyday callers do not encounter this; another parser guard adds complexity without changing callback safety.
+- `low` — EC1: The same final-padding acceptance. Every executable stored witness must pass rederivation, which refuses the demonstrated token; a new shape guard is disproportionate for an impossible SDK-generated token.
+- `low` — AA1: The public name helper accepts noncanonical final padding. The helper deliberately does not authenticate a tuple, and the actual tuple guard refuses it. The small cosmetic validation benefit does not justify another branch for this rare input.
+- `low` — BH5: The Client package probe's synthetic delegation uses an effect identity with a different source aggregate from its synthetic reminder. It proves public API availability, not production delegation admission; the fake is never submitted to a gateway. Reworking the fake into an authority validator exceeds a direct correction and would duplicate the separate runtime proof.
+- `low` — BH6: The isolated Contracts consumer probes only DateResume, not Expiry. The current-source codec tests already pin both golden names and kind mappings, and the package lane builds the archives from that source. Expanding the probe adds duplicate coverage without a demonstrated archive defect.
+- `low` — BH7: Unknown/repeated `--package` selections and malformed unselected inventory lack dedicated selector regressions. Inspection confirms complete inventory validation precedes filtering, unknown IDs are rejected, and repeated IDs are deduplicated. The successful three-package proof exercises the selection path; a new test harness for uncommon argument mistakes is disproportionate.
+- `low` — BH8: Caller cancellation is reported as a 30-minute timeout. The subprocess is still killed and the test fails safely. A separate cancellation branch would improve a rare shutdown diagnostic but does not affect the contract or validation result.
