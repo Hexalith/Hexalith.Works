@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-review'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -379,6 +379,54 @@ Chunk 1 (reminder implementation source), 2026-09-30. Reviewers: blind-hunter, e
 - `low` — A document that fails JSON deserialization makes `GetAsync` throw, and the reconciler already marks that pass incomplete. Quarantining the raw bytes needs a store seam this coordinator does not have, and everyday writes are produced by `PersistAsync`.
 - `false` — The callback does not re-check `DueUtc`. The approved design gives timing to the Scheduler.
 - `low` — `UpdatedAt + Backoff` can throw only when `UpdatedAt` is within one max delay of `DateTimeOffset.MaxValue`. Backoff is already capped at the validated max delay.
+
+### Review Findings
+
+Chunk A (reminder source, `src/`, 43 files), review iteration 3, 2026-10-01. Diff: EventStore `f378afdb..19dc1f82`, reminder paths only. Reviewers: blind-hunter (BH), edge-case-hunter (EC), verification-gap (VG), acceptance-auditor (AA). Of 51 findings: 2 decision-needed (resolved 2026-10-01: one became a patch, one a deferral), 10 patch (left as action items), 6 defer, 28 rejected. Chunks B (`tests/`) and C (`docs/`, `scripts/`) were not reviewed in this iteration.
+
+- [ ] [Review][Patch] A first registration that fails closed on a full tenant index never degrades readiness [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:64`] — Resolved decision (2026-10-01): the reconciler reports a tenant whose candidate document holds `MaxCandidatesPerTenant` candidates as Degraded, with a regression test. With no durable state, `ConvergeAsync` rethrows without recording status (`ReminderCoordinator.cs:155-168`), and an unindexed item is invisible to the reconciler, so `index-capacity` otherwise leaves `/ready` Healthy (AC2). (AA2)
+- [ ] [Review][Patch] The guide's reason-code lists and the callback's step 2 disagree with the code [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:284`] — `arm-failed` is only ever a `Pending` reason, never `Retrying` or quarantine. `domain-invalid` only quarantines; a failed audit on that path retries as `audit-unavailable`. `tuple-mismatch` is unreachable, because `LoadAsync`/`TryValidatePersistedEntry` re-derive the stored tuple first and quarantine a mismatch as `stored-entry-invalid` before `ReminderCoordinator.cs:1038` runs. Correct the lists, and comment the step-2 branch as defense in depth. (BH14, AA1, AA6, VG-other)
+- [ ] [Review][Patch] The guide's registration steps 5 and 6 put cancellation after the state write [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:101`] — Obsolete and newly quarantined reminders are audited and cancelled before `PersistAsync` (`ReminderCoordinator.cs:700-782`); only arming and submission follow the write. This matches the iteration-1 decision to retain witnesses until cancellation succeeds. (AA7)
+- [ ] [Review][Patch] The coordinator summary claims the stream is re-folded before anything is cancelled [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:19`] — Orphan, already-quarantined, repaired-quarantine, and `domain-invalid` callbacks cancel from persisted state without a fold. (EC14)
+- [ ] [Review][Patch] `IReminderIntentSource` misstates the effect-identity tuple [`references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderIntentSource.cs:17`] — Effect identity also includes the source domain and source aggregate, so only intents that share `(source domain, source aggregate, source sequence, kind, target)` collide. (EC15)
+- [ ] [Review][Patch] No test pairs an actor ID with a target that does not derive it [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:132`] — Add `ConvergeRejectsTargetThatDoesNotDeriveActor`. It should assert an `ArgumentException`, no state under either key, no candidate, and no arm. (VG1)
+- [ ] [Review][Patch] No test covers an unreadable tenant registry [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:49`] — Assert an incomplete pass, that recorded items are not pruned, and that readiness is Degraded. (VG2)
+- [ ] [Review][Patch] No test proves retry backoff stops at `RetryMaxDelay` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:533`] — Drive six or more uncertain attempts and assert that the re-armed due time equals `RetryMaxDelay`. (VG3)
+- [ ] [Review][Patch] Several option validation rules have no test [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderOptions.cs:75`] — Add rows for a zero `ReconciliationInterval`, a zero `RetryInitialDelay`, a blank `StateStoreName`, `IndexWriteAttempts` of 0 and 101, and a blank purpose value. (VG4)
+- [ ] [Review][Patch] No test proves a complete hosted pass waits `ReconciliationInterval` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:138`] — With a short retry delay and a long interval, assert there is no second pass within a window well beyond the retry delay. (VG5)
+- [x] [Review][Defer] The Dapr actor `/healthz` route runs every registered health check [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderEndpointExtensions.cs:30`] — deferred (decision 2026-10-01): the gateway and Operations hosts share the same Dapr SDK `/healthz` behavior; fix every actor host once in the R2 service defaults and prove it in 4.16. `MapActorHealthChecks` (Dapr.Actors.AspNetCore 1.18.10) maps `/healthz` with no predicate, so an Unhealthy `ready` check answers 503 and Dapr disconnects a host that reports actor types from placement (dapr/dapr#7355). (EC13)
+- [x] [Review][Defer] Disposition records are last-write-wins, never expire, and outlive erasure [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1603`] — deferred: carried from iteration 0 (BH10) and chunk 1. Retention, TTL, audit history, and offboarding wait for the AD-28 gate and the Platform audit sink in Story 4.16. (BH2, BH15)
+- [x] [Review][Defer] Every convergence re-audits and Error-logs every stored quarantine record [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:750`] — deferred: carried R2-BH1. This loop is also the retry path for failed actor-collision and repair audits, so stopping it needs a persisted audited flag, which the AD-28 gate owns. (BH3, EC10)
+- [x] [Review][Defer] A permanently bad index candidate keeps every pass incomplete [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:89`] — deferred: carried from chunk 1, R2-EC6, R2-BH3, and R2-BH4. Four kinds of candidate keep readiness Degraded and the loop on retry cadence: null rows, actor-ID mismatches, stored headers that were re-indexed without re-derivation (on the fail-closed and actor-collision paths), and folds that always throw, for example after erasure. Operator repair belongs to Story 4.16. (BH4, EC4, EC3)
+- [x] [Review][Defer] No timeout bounds the calls inside a reminder actor turn [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DaprReminderActorInvoker.cs:27`] — deferred: maybe-false, unverified medium, carried R2-BH5. To settle it, confirm whether the Dapr actor proxy and the store and submitter clients enforce a finite HTTP timeout when a dependency hangs. (BH9)
+- [x] [Review][Defer] AC4 is not yet proven against a published package [`references/Hexalith.EventStore/tests/Hexalith.EventStore.Contracts.Tests/Packaging/PackagedReminderApiTests.cs:22`] — deferred: this is the close gate set by the frozen release decision. Public 3.110.0 (source `27279fe6`) does not contain the API. Rerun the test after the owner publishes. (AA5)
+
+#### Rejected
+
+- `low` — BH1, EC1: The callback does not check `DueUtc`. Rejected three times before, and the Scheduler owns timing. An early firing needs Scheduler clock skew or a caller that holds the app-channel token. Revisit only if Story 4.16 confirms the deferred Scheduler-callback origin bypass, because clock-free handlers would accept an early witnessed command.
+- `low` — BH5: Every replica scans the whole index. Correctness holds through actor turns. Partitioning and jitter are beyond the synthetic scale that the AD-28 gate allows.
+- `low` — BH6: There is one hot candidate document per tenant, and CAS retries run without backoff. Rejected before (BH13). Contention ends in a fail-closed retry, not a loss. The duplicate CAS loop has no named divergent caller.
+- `low` — BH7: `EnsureCandidateAsync` relabels a tenant-mismatched document. Only corrupt state reaches this. Each foreign candidate then fails actor-ID re-derivation and is counted as incomplete, so no tenant is crossed and readiness stays Degraded.
+- `low` — BH8, EC9: A failed `RemoveCandidateAsync` after release surfaces as a failure. It needs CAS exhaustion and heals itself: the caller's retry or the next pass removes the candidate, and nothing is submitted twice.
+- `low` — BH10: Options validation drops error details and accepts a missing workload or purposes. Rejected before. Both cases fail closed, keep the work, and report Degraded.
+- `low` — BH11, EC11: A second intent source is ignored. Rejected three times before; the method documents a second call as configuration-only.
+- `rejected` — BH12: The kind map holds only the two v1 Works kinds. The frozen spec mandates the closed v1 `EffectKindCatalog`, so changing it means editing the spec.
+- `low` — BH13: There are no reminder metrics or traces. Bounded metrics and alerts belong to the AD-20 R8 row (Platform plus SDK), outside 4.11.
+- `low` — BH16, EC16: Unresolved counts differ between the fail-closed and normal paths. Only the count changes. A lost race stays Degraded by design, and readiness depends only on non-zero totals.
+- `low` — BH17: Reminder-route detection hard-codes the Dapr template. Dapr is pinned at 1.18.10, and a mismatch fails loudly as ambiguous routes.
+- `low` — BH18: The token filter allocates `Split` arrays on every request. This is a negligible cost on the app channel.
+- `low` — BH19: `receipt-mismatch` and a permanently denied delegation retry without escalating. The Design Notes and AD-27 require keeping the work and retrying periodically until an audited disposition.
+- `low` — BH20: The `byte[]` payloads in public records compare by reference. This matches `TrustedEffectSubmission`, and no internal code compares intents with record equality.
+- `low` — AA3: An actor collision whose save fails is acknowledged without the colliding target's digest. This needs a split-brain write race inside an actor turn on top of a collision. The colliding target is never indexed, even on success.
+- `low` — AA4: The audit results for denied and retrying outcomes are ignored. The witness is kept and re-armed, never released, and the next pass of the stored target re-audits the collision digest.
+- `low` — AA8: The AD-28 production gate exists only in the docs. The rule is procedural, and a runtime production profile belongs to AD-24 and Story 4.16.
+- `low` — EC2: Undeserializable item state throws on every convergence. Rejected in chunk 1; the pass is marked incomplete, and quarantining the raw bytes needs a store seam.
+- `low` — EC5: Two blank-domain entries share an empty effect ID. Carried rejection (R2-BH2, R2-EC1); they are quarantined, not executed.
+- `low` — EC6: A future `UpdatedAt` after a clock jump stretches the backoff window. It needs a backward clock jump, and the work is kept, not lost.
+- `low` — EC7: A due instant beyond the Scheduler's duration range fails to arm. It needs an intent roughly three centuries ahead; the witness stays `Pending` and readiness stays Degraded.
+- `low` — EC8: The tenant registry has no capacity bound. Registry pruning is already deferred, and the document holds only tenant slugs.
+- `low` — EC12: A different actor class already registered under `ActorTypeName` is left in place. Carried rejection (R2-EC5); a proxy call to it fails loudly.
+- `low` — EC17: A non-`wra-` route actor ID is logged verbatim. Only a caller that holds the app-channel token can choose that ID, and the Scheduler only fires codec names.
 
 ## Implementation continuation and verification (2026-09-30)
 

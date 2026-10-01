@@ -1167,3 +1167,24 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Confirm whether one hung Dapr reminder-actor call can block the rest of a reconciliation pass.
   evidence: Review finding R2-BH5 (unverified medium). `DaprReminderActorInvoker` checks cancellation only before creating the proxy, and `ReminderActor` runs the turn with `CancellationToken.None`. Settle this by checking the Dapr actor HTTP timeout: a timeout that throws is already isolated per candidate; an infinite wait would block later tenants.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-01, iteration 3, chunk A)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Add retention, TTL, audit history, and erasure for reminder disposition records and index rows.
+  evidence: Iteration 3 BH2/BH15, carrying iteration 0 BH10. `TryWriteDispositionAsync` writes one last-write-wins key per subject with no TTL (`ReminderCoordinator.cs:1603`). Item state, candidates, the tenant registry, and dispositions are never removed when Story 4.13 erasure removes a stream or a tenant is offboarded. This waits for the Story 4.16 AD-28 gate and the Platform audit sink.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Stop re-auditing and Error-logging historical quarantine records on every convergence without losing the audit retry.
+  evidence: Iteration 3 BH3/EC10, carrying R2-BH1. The loop at `ReminderCoordinator.cs:750` rewrites a disposition and logs event `200207` at Error for every stored record on every pass. It is also how failed actor-collision and repair audits are retried, so the fix needs a persisted audited flag.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Repair or retire index candidates that can never converge.
+  evidence: Iteration 3 BH4/EC4/EC3, carrying chunk 1, R2-EC6, R2-BH3, and R2-BH4. Four kinds of candidate keep every pass incomplete, readiness Degraded, and the loop on `RetryInitialDelay`: null rows, actor-ID mismatches (`ReminderReconciler.cs:89`), stored headers re-indexed without re-derivation on the fail-closed and actor-collision paths, and folds that always throw, for example after erasure. Operator repair belongs to Story 4.16.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Confirm that every call inside a reminder actor turn is bounded by a finite timeout.
+  evidence: Iteration 3 BH9 (unverified medium), carrying R2-BH5. `ReminderActor` passes `CancellationToken.None`, and `DaprReminderActorInvoker` checks cancellation only before creating the proxy (`DaprReminderActorInvoker.cs:27`). Settle this by measuring the Dapr actor proxy, store, and submitter timeouts under a hung dependency.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Prove AC4 against the named public EventStore release that contains the R6 API.
+  evidence: Iteration 3 AA5. `PackagedReminderApiRunsWithoutWorksTypes` has passed only against local pack `3.110.0-local.431`. Public 3.110.0 (source `27279fe6`) lacks `ReminderIdentityCodec`, `IReminderIntentSource`, and `AddEventStoreReminders`. This is the close gate set by the frozen release decision.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Give every Dapr actor host a liveness-only `/healthz` so a failing readiness check cannot evict its actors from placement.
+  evidence: Iteration 3 EC13, deferred by owner decision on 2026-10-01. `MapEventStoreReminders` calls `MapActorsHandlers` (`EventStoreReminderEndpointExtensions.cs:30`). Dapr.Actors.AspNetCore 1.18.10 `MapActorHealthChecks` maps `/healthz` with no predicate, and domain-service hosts map only `/health`, `/alive`, and `/ready`, so an Unhealthy `ready` check (missing app-channel token, unreachable state store, or a host-added check) answers 503 and Dapr disconnects a host that reports actor types from placement (dapr/dapr#7355). Reason: the gateway and Operations hosts share the same Dapr SDK `/healthz` behavior; fix every actor host once in the R2 service defaults and prove it in 4.16.
