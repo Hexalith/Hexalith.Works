@@ -1056,3 +1056,33 @@ Works source, the frozen intent, sealed `docs/ci.md`, and AD-26 codec/vector
 source remain unchanged. Existing Story 4.16 deferred work remains deferred.
 No staging, commit, push, branch change, dependency update, submodule
 initialization, or release publication was performed.
+
+### Resumption public-release gate audit (2026-10-01)
+
+The resumed build found no missing local implementation or review task. The
+current EventStore HEAD remains `b01c9fe0b8bd4f052cd0740c7d4ca2fac460964b`;
+all 24 changed/untracked source files and all 14 local `.451` package archives
+match the C5 final-verification hashes. Independent XML audits confirm
+155/155 runtime tests, 50/50 codecs, 1/1 live Redis/Dapr proof, and 1/1 local
+package-only proof, with no skips and passing coverage for every frozen matrix
+row. All 190 protected entries match. Passing unchanged checks were not rerun;
+no source correction was warranted. Audit evidence is in
+`/tmp/story-4-11-current-audit-1ceyfg95/audit-summary.json` and
+`/tmp/bmad-build-4-11-public-gate-590_8z_j/prior-verification-audit.json`.
+
+A fresh read-only inspection of the official NuGet indexes and downloaded
+packages still finds Contracts, Client, and DomainService ending at public
+`3.110.0`, source SHA `27279fe6431925a6ea046c3f89af61487185c7de`.
+Their assemblies contain none of the required reminder API names; Contracts
+and Client XML also lack the API, and DomainService ships no XML. Package
+hashes, indexes, nuspec metadata, and symbol checks are retained in
+`/tmp/bmad-build-4-11-public-gate-590_8z_j/summary.json`.
+
+The approved close gate remains unsatisfied: the owner publishes a named
+public EventStore release containing the reviewed API, then package-only proof
+must pass against that version and record its source SHA. Spec and sprint
+status remain `in-progress`; the workflow does not enter completion while
+acceptance remains incomplete. This resumption only records the fresh audit;
+existing source changes, baseline identifiers, frozen intent, deferred work,
+and sprint status are preserved. No staging, commit, push, branch change,
+dependency update, submodule initialization, or publication occurred.
