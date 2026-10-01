@@ -31,3 +31,6 @@
 [submodule "references/Hexalith.AI.Tools"]
 	path = references/Hexalith.AI.Tools
 	url = https://github.com/Hexalith/Hexalith.AI.Tools.git
+[submodule "Hexalith.Platform"]
+	path = references/platform
+	url = https://github.com/Hexalith/Hexalith.Platform.git
