@@ -1158,3 +1158,12 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Give operators a repair for a candidate whose actor id does not re-derive from its tuple.
   evidence: Chunk 1 review. `ReminderReconciler.RunPassAsync` counts that row as incomplete and continues (`ReminderReconciler.cs:87-92`). `CompletePass` does not prune while the pass is incomplete, so readiness stays degraded and no later pass removes or repairs the row. Deleting it could discard the only stored target coordinates. Operator repair belongs to Story 4.16.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-01, iteration 2)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Give operators a repair for a blank tenant left in the reminder registry.
+  evidence: Review finding R2-BH3. `ListCandidatesAsync` rejects a blank tenant, and `ReminderReconciler` counts that exception as an incomplete pass without removing the registry row, so readiness stays degraded. Operator repair belongs to Story 4.16.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Confirm whether one hung Dapr reminder-actor call can block the rest of a reconciliation pass.
+  evidence: Review finding R2-BH5 (unverified medium). `DaprReminderActorInvoker` checks cancellation only before creating the proxy, and `ReminderActor` runs the turn with `CancellationToken.None`. Settle this by checking the Dapr actor HTTP timeout: a timeout that throws is already isolated per candidate; an infinite wait would block later tenants.
