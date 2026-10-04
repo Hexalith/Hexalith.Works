@@ -1,0 +1,36 @@
+{
+  "version": "3.112.0",
+  "sourceCommit": "38efbefd5da65d538723f9f85eca6a186dfc0a2f",
+  "checkedAt": "2026-10-04",
+  "downloadedPackages": 14,
+  "packageConsumerProof": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "isolatedConsumers": 3
+  },
+  "worksRestore": "passed",
+  "worksReleaseBuild": {
+    "result": "passed",
+    "warnings": 0,
+    "errors": 0
+  },
+  "packageGovernance": {
+    "centralCatalog": "300 entries passed",
+    "authoritativeCatalog": "50 identities / 3 family versions passed",
+    "consumerAuthority": "13 Works projects passed",
+    "exceptionInventory": "15 exceptions passed"
+  },
+  "sourcePackagesModified": false,
+  "commands": [
+    "pwsh -NoProfile -File Tools/validate-central-package-versions.ps1",
+    "pwsh -NoProfile -File Tools/test-authoritative-package-catalog.ps1",
+    "pwsh -NoProfile -File Tools/validate-package-version-exceptions.ps1 -InventoryPath Tools/package-version-exceptions.json -CatalogPath Props/Directory.Packages.props",
+    "pwsh -NoProfile -File Tools/validate-consumer-package-authority.ps1 -RepositoryRoot /home/administrator/projects/hexalith/works -CatalogPath Props/Directory.Packages.props",
+    "timeout 180s dotnet restore Hexalith.Works.slnx -p:Configuration=Release --disable-parallel",
+    "timeout 180s dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m:1 -p:MinVerVersionOverride=1.0.0",
+    "python3 tools/validate-release-packages.py /tmp/eventstore-3-112-0-qf7z2woi/packages 3.112.0",
+    "EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/eventstore-3-112-0-qf7z2woi/packages tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests -method '*PackagedReminderApiRunsWithoutWorksTypes' -result-xml /tmp/eventstore-3-112-0-qf7z2woi/public-reminder-proof-final.xml"
+  ],
+  "logs": "/tmp/eventstore-3-112-0-qf7z2woi"
+}

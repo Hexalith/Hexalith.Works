@@ -1,0 +1,85 @@
+[
+  {
+    "assets": "samples/Hexalith.Works.SampleHost/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Client/3.112.0",
+      "Hexalith.EventStore.Contracts/3.112.0",
+      "Hexalith.EventStore.DomainService/3.112.0",
+      "Hexalith.EventStore.ServiceDefaults/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works.AppHost/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Aspire/3.112.0",
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works.Contracts/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works.Projections/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works.Reactor/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "src/Hexalith.Works.Server/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "tests/Hexalith.Works.ArchitectureTests/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "tests/Hexalith.Works.IntegrationTests/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Admin.Abstractions/3.112.0",
+      "Hexalith.EventStore.Aspire/3.112.0",
+      "Hexalith.EventStore.Client/3.112.0",
+      "Hexalith.EventStore.Contracts/3.112.0",
+      "Hexalith.EventStore.DomainService/3.112.0",
+      "Hexalith.EventStore.Server/3.112.0",
+      "Hexalith.EventStore.ServiceDefaults/3.112.0",
+      "Hexalith.EventStore.Testing/3.112.0"
+    ]
+  },
+  {
+    "assets": "tests/Hexalith.Works.PropertyTests/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "tests/Hexalith.Works.Testing/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  },
+  {
+    "assets": "tests/Hexalith.Works.UnitTests/obj/project.assets.json",
+    "packages": [
+      "Hexalith.EventStore.Contracts/3.112.0"
+    ]
+  }
+]

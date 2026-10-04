@@ -1086,3 +1086,73 @@ acceptance remains incomplete. This resumption only records the fresh audit;
 existing source changes, baseline identifiers, frozen intent, deferred work,
 and sprint status are preserved. No staging, commit, push, branch change,
 dependency update, submodule initialization, or publication occurred.
+
+### Current-checkout and public-release gate audit (2026-10-04)
+
+The complete spec and both frontmatter context files were loaded before this
+audit. Works started clean at `381e33b291340d363d64ff132e31439aeb5d6b81` and
+EventStore remains clean at `9b525ba8f0adf30a466f8727f1b37564181798eb`.
+Every implementation and review patch is already present. All 24 files
+committed by the final C5 correction commit
+`4339eb6aa4d52b83adc558d2c03687b7ac7d43f2` still match that commit byte for byte;
+no source correction was warranted. The earlier temporary verification
+directories are absent in this container, so their historical XML/package
+hashes were not re-audited. Fresh focused evidence is under
+`/tmp/story-4-11-current-20261004-0qkoa02d/`.
+
+Commands ran from `references/Hexalith.EventStore`:
+
+| Command | Result |
+| --- | --- |
+| `timeout 180s dotnet build tests/<Project>/<Project>.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` for DomainService.Tests and Contracts.Tests | Both passed; zero warnings/errors |
+| Built DomainService executable with `-class '*Reminder*' -result-xml /tmp/story-4-11-current-20261004-0qkoa02d/domainservice-reminders.xml` | 155/155 passed; no skips/errors |
+| Built Contracts executable with `-class '*ReminderIdentityCodecTests' -class '*EffectIdentityCodecTests' -result-xml /tmp/story-4-11-current-20261004-0qkoa02d/contracts-codecs.xml` | 50/50 passed; no skips/errors |
+| Python AST parsing of `scripts/validate-consumer-package-references.py`; `git diff --check` in both repositories | Passed |
+
+The implementation and coordinating agents independently matched executed,
+passing persisted-state tests to all five frozen matrix rows. Evidence:
+`matrix-audit.json` and `audit-summary.json` in the fresh artifact directory,
+plus `/tmp/bmad-build-4-11-resume-20261004-iyj60jg0/root-matrix-audit.json`.
+The audit records hashes for 62 reminder-related files and confirms the
+AD-26 codec, closed kind catalog, golden-vector test source, and sealed
+`docs/ci.md` still match the original EventStore baseline. The historical
+live-sidecar and local-package proofs were not repeated in this gate audit.
+
+A fresh read-only inspection of official NuGet indexes and downloaded archives
+still finds Contracts, Client, and DomainService ending at public `3.110.0`,
+source SHA `27279fe6431925a6ea046c3f89af61487185c7de`. None of their assemblies
+contains the required reminder API names; Contracts/Client XML also lacks them,
+and DomainService ships no XML. Indexes, package hashes, metadata, and symbol
+checks are retained in `/tmp/story-4-11-public-20261004-tct_s112/summary.json`.
+
+The frozen close gate remains open: the owner publishes a named public release
+containing R6, then package-only proof must pass against that version and record
+its source SHA. Spec and sprint status remain `in-progress`. This continuation
+only appends the audit record; source, frozen intent, baseline identifiers, and
+existing deferred work are unchanged. No staging, commit, push, branch change,
+dependency update, submodule initialization, or publication was performed.
+
+### Public 3.112.0 package gate satisfied (2026-10-04)
+
+The owner-published EventStore `3.112.0` release is now available. All 14 public
+archives were downloaded from the official NuGet flat-container endpoints and
+validated without changing their bytes. Their nuspec source commit is
+`38efbefd5da65d538723f9f85eca6a186dfc0a2f`. Contracts, Client, and DomainService
+contain the required typed-reminder APIs.
+
+`PackagedReminderApiRunsWithoutWorksTypes` passed 1/1 with zero skips against
+these public packages, exercising all three isolated package-only consumers.
+The frozen named-public-package close gate is satisfied; this supersedes the
+earlier dated observations that a reminder release was unavailable.
+
+At the user's request, the shared Builds catalog now pins EventStore to
+`3.112.0`. All Works projects restore and the Release solution build passes with
+zero warnings/errors. The central catalog, family alignment, Works consumer
+authority, and package-version exception checks also pass. Restored Works
+assets select only EventStore `3.112.0` packages.
+
+Durable evidence, including official package URLs/hashes/source metadata and
+passing test XML, is in [the public package summary](evidence/story-4-11-public-3.112.0/summary.json).
+This dependency update records the successful acceptance proof; spec and
+sprint workflow status are preserved. No source implementation, frozen intent,
+baseline identifier, submodule checkout, staging, commit, or push changed.
