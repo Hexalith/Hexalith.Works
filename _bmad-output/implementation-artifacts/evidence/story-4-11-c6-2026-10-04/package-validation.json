@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tools/validate-release-packages.py",
+    "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+    "3.112.0-local.462"
+  ],
+  "exitCode": 0,
+  "validatedReleasePackages": 14
+}

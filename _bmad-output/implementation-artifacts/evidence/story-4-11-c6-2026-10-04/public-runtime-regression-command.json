@@ -1,0 +1,12 @@
+{
+  "command": [
+    "dotnet",
+    "/tmp/bmad-build-4-11-close-28ruiiwr/public-runtime-regression/Hexalith.EventStore.DomainService.Tests.dll",
+    "-method",
+    "*OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent",
+    "-result-xml",
+    "/tmp/bmad-build-4-11-close-28ruiiwr/public-3.112.0-collision-regression.xml"
+  ],
+  "exitCode": 1,
+  "purpose": "Detect whether the current named public release contains the corrected overlapping-collision behavior."
+}

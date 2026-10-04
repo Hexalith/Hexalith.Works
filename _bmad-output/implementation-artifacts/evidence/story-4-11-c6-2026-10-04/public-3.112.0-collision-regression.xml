@@ -1,0 +1,265 @@
+<assemblies schema-version="3" id="05d0ddf4-6908-4d00-a319-321254801436" computer="Code" user="administrator" start-rtf="2026-10-04T15:33:51.1827383+00:00" finish-rtf="2026-10-04T15:33:51.4665037+00:00" timestamp="10/04/2026 17:33:51"><assembly environment="64-bit (x64) .NET 10.0.12 [collection-per-class, parallel (collections, 14 threads)]" id="9991bfb2-56b8-42ed-849e-ebec5b308b8b" name="/tmp/bmad-build-4-11-close-28ruiiwr/public-runtime-regression/Hexalith.EventStore.DomainService.Tests.dll" run-date="2026-10-04" run-time="15:33:51" start-rtf="2026-10-04T15:33:51.1827383+00:00" test-framework="xUnit.net v3 4.0.1+8ed8aa354c" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="24" finish-rtf="2026-10-04T15:33:51.4665037+00:00" not-run="0" passed="0" skipped="0" time="0.284" time-rtf="00:00:00.2839999" total="24"><collection name="Test collection for Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests (id: b25f347c4737d95168244dd707decbbd9dfb685231e8a7718fdad5c6480c85e4)" id="2e2773f6-1698-4c9d-a1f8-6ed714d92442" failed="24" not-run="0" passed="0" skipped="0" time="0.161" time-rtf="00:00:00.1610000" total="24"><test id="e892205d-a9a6-4c3b-a501-4cef5ff31b4d" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 0, future: False)" result="Fail" time="0.157" time-rtf="00:00:00.1570000" start-rtf="2026-10-04T15:33:51.2598512+00:00" finish-rtf="2026-10-04T15:33:51.4308019+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="2c25b075-4441-46dc-9a9a-d616f7777629" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 3, future: True)" result="Fail" time="0.003" time-rtf="00:00:00.0030000" start-rtf="2026-10-04T15:33:51.4328147+00:00" finish-rtf="2026-10-04T15:33:51.4370969+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="491b52a6-a279-47e8-9e9a-1e4ec3c8c7ff" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 2, future: True)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-04T15:33:51.4371436+00:00" finish-rtf="2026-10-04T15:33:51.4384919+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="763a1b89-fe0e-4d68-b8dd-ba7f87b33603" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 1, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4385420+00:00" finish-rtf="2026-10-04T15:33:51.4394910+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="37aef86c-3b1d-40c0-a54e-40ac6e318249" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 0, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4395372+00:00" finish-rtf="2026-10-04T15:33:51.4403316+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="0013f37f-629c-4bf1-8e5e-d5fdd1bd77fe" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 5, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4403770+00:00" finish-rtf="2026-10-04T15:33:51.4414400+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="d902a757-af62-4b0d-a83a-12f4340a9db8" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 4, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4414851+00:00" finish-rtf="2026-10-04T15:33:51.4422827+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="95878681-dbb8-42ff-a07f-bc4f9de213f2" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 3, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4423386+00:00" finish-rtf="2026-10-04T15:33:51.4432669+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="f9c69f2e-21d6-4c6f-bbb3-6a6caf7078c8" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 2, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4433172+00:00" finish-rtf="2026-10-04T15:33:51.4443344+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="75c35ed2-1e32-4082-828c-a7b5c41da84e" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 1, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4443799+00:00" finish-rtf="2026-10-04T15:33:51.4452753+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="787e86f0-b345-4ffb-abf9-6a4474a9ceba" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 0, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4453937+00:00" finish-rtf="2026-10-04T15:33:51.4463614+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="65c5b927-fdba-4171-8f40-5c69a3b0dec4" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 5, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4464082+00:00" finish-rtf="2026-10-04T15:33:51.4474668+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="d85f4d46-f677-44cf-93b5-a6b2d9cf2f48" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 4, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4475109+00:00" finish-rtf="2026-10-04T15:33:51.4483255+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="44f6b481-46b3-4d76-815c-cd6d01cc8e84" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 3, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4483688+00:00" finish-rtf="2026-10-04T15:33:51.4492876+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="c902a0a3-a3fc-4929-91ab-5fe6feefbc64" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 2, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4493453+00:00" finish-rtf="2026-10-04T15:33:51.4500990+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="f6baa8c7-cfab-4d4c-af2e-6a0f08b868a7" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 1, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4501396+00:00" finish-rtf="2026-10-04T15:33:51.4509693+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="255238ea-2664-43dd-ab0f-d60b36eaf437" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 0, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4510093+00:00" finish-rtf="2026-10-04T15:33:51.4518343+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="51b91cf6-3e6e-440d-ae1a-93f2b5937e1a" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 5, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4518831+00:00" finish-rtf="2026-10-04T15:33:51.4526307+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="03bcf13a-71bb-4667-b9bc-e95e98fc2642" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 4, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4526721+00:00" finish-rtf="2026-10-04T15:33:51.4534994+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="4fbe70e8-8798-46eb-82d1-6ebb5f2cf156" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 3, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4535420+00:00" finish-rtf="2026-10-04T15:33:51.4542762+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="066d1d0d-7d9a-4d08-84aa-b99bbb51f4b6" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 2, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4543162+00:00" finish-rtf="2026-10-04T15:33:51.4550956+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="86d4ce0c-4a11-469b-a1fa-63442db71b7f" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 1, future: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4551354+00:00" finish-rtf="2026-10-04T15:33:51.4559180+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Submitted
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 986
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="d6847316-bcb2-4c1a-adde-83384e6ef310" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 4, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4559644+00:00" finish-rtf="2026-10-04T15:33:51.4567697+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="00c9b068-386b-4e5c-b7a8-6aaee070f8f3" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 5, future: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-04T15:33:51.4568104+00:00" finish-rtf="2026-10-04T15:33:51.4577383+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="936"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : result.Armed
+    should be
+0
+    but was
+1</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(Boolean shareSecondSource, Int32 inputOrder, Boolean future) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 987
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test></collection></assembly></assemblies>

@@ -1,0 +1,240 @@
+[
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Client/Hexalith.EventStore.Client.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Server/Hexalith.EventStore.Server.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.SignalR/Hexalith.EventStore.SignalR.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Testing/Hexalith.EventStore.Testing.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Testing.Integration/Hexalith.EventStore.Testing.Integration.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.ServiceDefaults/Hexalith.EventStore.ServiceDefaults.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.DomainService/Hexalith.EventStore.DomainService.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.RestApi.Generators/Hexalith.EventStore.RestApi.Generators.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Gateway/Hexalith.EventStore.Gateway.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Admin.Abstractions/Hexalith.EventStore.Admin.Abstractions.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Admin.Cli/Hexalith.EventStore.Admin.Cli.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "dotnet",
+      "pack",
+      "src/Hexalith.EventStore.Admin.Server/Hexalith.EventStore.Admin.Server.csproj",
+      "--configuration",
+      "Release",
+      "--output",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages",
+      "-p:Version=3.112.0-local.462",
+      "-p:GeneratePackageOnBuild=false",
+      "-p:UseHexalithProjectReferences=false",
+      "-m:1",
+      "-p:NuGetAudit=false"
+    ],
+    "exitCode": 0
+  }
+]

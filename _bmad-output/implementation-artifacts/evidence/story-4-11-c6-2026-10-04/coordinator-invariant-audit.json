@@ -1,0 +1,30 @@
+{
+  "frozenIntentMatchesOriginalHead": true,
+  "frozenIntentSha256": "a6b18e1b93db203952ffef5b341d8b124e6bec1ccb21f9398228faab9d7f4721",
+  "protectedBaseline": "f378afdb7cdeec85144fffc20dd9a13a9775bf85",
+  "protectedFiles": [
+    {
+      "path": "docs/ci.md",
+      "sha256": "3800b3d457c4876939f623155d8df0cfee175dc14ee904a6e1bfb3051e5d4d04",
+      "matchesPreservedBaseline": true
+    },
+    {
+      "path": "src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs",
+      "sha256": "ebfe680f7e276a049aac4a885204bacf1e4b35e91b20cb1f34185777c0ff2184",
+      "matchesPreservedBaseline": true
+    },
+    {
+      "path": "src/Hexalith.EventStore.Contracts/Effects/EffectKindCatalog.cs",
+      "sha256": "4455cea24e40da5faf1020d638ccf0e5c9d55c735ce0a2068197579447b72b13",
+      "matchesPreservedBaseline": true
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Contracts.Tests/Effects/EffectIdentityCodecTests.cs",
+      "sha256": "d51bb595918fc4be4e3d0f6cbe62b31349ffa0f00c0298d49343a480f95b72d2",
+      "matchesPreservedBaseline": true
+    }
+  ],
+  "rootHead": "afb64f2d566e24447f6e98e1e08fc03b3a11aba4",
+  "eventStoreHead": "2242ad55a1b678828df8aa093fd92399c29af5bf",
+  "gitDiffChecksPassed": true
+}

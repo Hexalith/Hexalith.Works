@@ -1,0 +1,11 @@
+{
+  "command": [
+    "dotnet",
+    "/tmp/bmad-build-4-11-close-28ruiiwr/local-runtime-regression/Hexalith.EventStore.DomainService.Tests.dll",
+    "-method",
+    "*OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent",
+    "-result-xml",
+    "/tmp/bmad-build-4-11-close-28ruiiwr/local-release-collision-regression.xml"
+  ],
+  "exitCode": 0
+}

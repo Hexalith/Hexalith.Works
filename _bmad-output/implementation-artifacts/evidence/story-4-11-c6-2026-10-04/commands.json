@@ -1,0 +1,239 @@
+[
+  {
+    "name": "contracts-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "warnings": 0,
+    "errors": 0
+  },
+  {
+    "name": "client-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "warnings": 0,
+    "errors": 0
+  },
+  {
+    "name": "domainservice-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "warnings": 0,
+    "errors": 0
+  },
+  {
+    "name": "server.livesidecar-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "warnings": 0,
+    "errors": 0
+  },
+  {
+    "name": "contracts-reminders",
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final/contracts-reminders.xml"
+    ],
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/bmad-build-4-11-close-28ruiiwr/local-release/packages"
+    },
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "tests": {
+      "total": 34,
+      "passed": 34,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  {
+    "name": "client-reminders",
+    "command": [
+      "tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final/client-reminders.xml"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "tests": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  {
+    "name": "domainservice-reminders",
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final/domainservice-reminders.xml"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "tests": {
+      "total": 179,
+      "passed": 179,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  {
+    "name": "contracts-effect-codec",
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final/contracts-effect-codec.xml"
+    ],
+    "environment": {},
+    "exitCode": 0,
+    "timeoutSeconds": 180,
+    "tests": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  {
+    "name": "live-reminders",
+    "command": [
+      "timeout",
+      "240s",
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "host",
+      "--mount",
+      "type=bind,source=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0,target=/proof,readonly",
+      "--mount",
+      "type=bind,source=/home/administrator/.dapr/bin/daprd,target=/root/.dapr/bin/daprd,readonly",
+      "--mount",
+      "type=bind,source=/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final,target=/evidence",
+      "--workdir",
+      "/proof",
+      "mcr.microsoft.com/dotnet/aspnet@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0",
+      "dotnet",
+      "Hexalith.EventStore.Server.LiveSidecar.Tests.dll",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/evidence/live-reminders.xml"
+    ],
+    "exitCode": 0,
+    "timeoutSeconds": 240,
+    "environmentWorkaround": "Cached .NET 10 Alpine test container and Docker host networking; same read-only daprd 1.18.4 and existing Redis/placement/Scheduler; no host changes",
+    "tests": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  {
+    "name": "domainservice-full",
+    "command": [
+      "timeout",
+      "180s",
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/coordinator-final/domainservice-full.xml"
+    ],
+    "exitCode": 1,
+    "tests": {
+      "total": 340,
+      "passed": 339,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "blocker": "Missing intentionally uninitialized nested Hexalith.Tenants project fixture"
+  },
+  {
+    "name": "contracts-full-before-C6",
+    "command": [
+      "timeout",
+      "180s",
+      "env",
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/eventstore-3-112-0-qf7z2woi/packages",
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-close-28ruiiwr/contracts-full.xml"
+    ],
+    "exitCode": 124,
+    "timeoutSeconds": 180,
+    "finalXmlProduced": false,
+    "reportedFailureLines": 44,
+    "blocker": "Unrelated packaging/governance cases: absent nested sources, pinned Builds tool identity, OCI/OQ8 evidence; no final aggregate result"
+  }
+]

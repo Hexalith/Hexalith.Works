@@ -1,0 +1,18 @@
+{
+  "sourceBaseCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf",
+  "hasUncommittedChanges": true,
+  "changedFiles": [
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs",
+      "sha256": "d3ba06f537e01fbb9f29ab3146e779281c383ecb3de63a0d6eaef3736c8d844a"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs",
+      "sha256": "2c147acea0e2933e1931c8e0a9d992261a852029add67df63381d94aa2799742"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Integration/ReminderRecoveryLiveSidecarTests.cs",
+      "sha256": "c4d1466252651b95c3f431c05770cae0919d2ded24f120ceea3a32870fa82c9c"
+    }
+  ]
+}

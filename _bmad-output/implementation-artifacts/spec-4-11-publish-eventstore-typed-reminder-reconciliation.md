@@ -368,6 +368,27 @@ Continuation review C5 (2026-10-01). All three context-free review layers comple
 | C5-EC4 | Malformed stored actor IDs may disclose confidential text in logs | low | Independently confirms C5-BH4; normal rows carry derived digests and the proposed guard covers manually altered or corrupted discovery rather than ordinary runtime input. | reject |
 | C5-EC5 | Stale callback convergence can submit an overdue replacement | false | carried: iteration-0 EC14, C4-EC2, and the resolved group-2 stale comment distinguish the stale witness's audited no-op from independently current replacement convergence. The frozen recovery rule and Design Notes explicitly permit that convergence. | carried reject |
 
+Continuation release-closure review (2026-10-04). All three context-free layers completed before triage: blind hunter (BH, ten findings), edge-case hunter (EC, five findings), verification gap (VG, one pre-verified gap). The review artifact includes the preserved Works baseline diff and expanded EventStore reminder changes. Each finding is recorded before grouping; previously adjudicated claims retain their existing routes.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C6-BH1 | Candidate writes omit the stored tenant-header guard | low | Carried C4-EC1 / iteration-3 chunk-A BH7: only corrupt stored headers reach this; foreign actor tuples fail discovery rederivation and keep readiness Degraded. A cleanup guard would extend the same rare corruption case. | carried reject |
+| C6-BH2 | Another actor implementation can occupy the configured type name | low | Carried C5-EC2 / R2-EC5: this host-programming collision fails loudly on the registrar proxy call; the earlier rejection remains applicable. | carried reject |
+| C6-BH3 | Normalizing null item collections retains no corruption record | low | Carried split-group-2 BH6: this requires corrupt stored state; discovery survives and a later stream fold rebuilds witnesses. The proposed persisted corruption branch remains rejected. | carried reject |
+| C6-BH4 | Live proof does not exercise an automatic Scheduler firing | low | The live proof deliberately invokes callbacks directly, as the approved execution task specifies. No Scheduler delivery or token-forwarding defect is demonstrated; adding a timed delivery fixture exceeds a direct correction. Scheduler production admission remains under the existing 4.16 gate. | reject |
+| C6-BH5 | Live restart retains synthetic in-memory intents rather than replaying domain events | false | The test and guide claim persisted registration, receipt replay, and Scheduler repair, not a real domain event-fold implementation. The domain implements the intent source; Works adoption is explicitly assigned to 4.15. | reject |
+| C6-BH6 | Disposition writes replace earlier transition evidence | medium | Carried iteration-0 BH10 / iteration-3 BH2-BH15: last-write-wins disposition retention and the append-only production audit sink already belong to the recorded AD-28/4.16 deferral. | carried defer |
+| C6-BH7 | Dispositions and empty tenant rows have no retention/erasure policy | medium | Carried iteration-0 BH10 / iteration-3 BH2-BH15: the existing ledger records retention, TTL, tenant offboarding, and index-row erasure before real-data admission. | carried defer |
+| C6-BH8 | Per-item quarantine evidence is unbounded | medium | Carried chunk-1 quarantine-cap deferral: candidate capacity does not bound an item's evidence list; the existing AD-28/4.16 work remains open. | carried defer |
+| C6-BH9 | Null or actor-mismatched candidates keep later scans incomplete | medium | Carried R2-EC6 / iteration-3 BH4-EC4-EC3: deleting those rows can discard their only coordinates, so the existing audited operator-repair deferral remains. | carried defer |
+| C6-BH10 | The public-package ledger entry still appears unresolved | low | The AC4 entry at deferred-work.md:1185 still describes only local proof, while retained public 3.112.0 XML proves all three consumers passed. Mark that one entry resolved with its public evidence, preserving the historical entry. | patch |
+| C6-EC1 | A witness collision masks a third intent's shared effect identity during convergence | medium | ConvergeCoreAsync collapses same-name intents into desired and excludes collided names from effect grouping; a due third name sharing either hidden source tuple can submit. Callback admission examines all valid intents and quarantines the same overlap. Classify effect collisions across all valid source intents before collapsing names; no new public surface or rule is needed. | patch |
+| C6-EC2 | Registration overwrites tenant-mismatched candidate headers | low | Carried C4-EC1 / iteration-3 chunk-A BH7, independently matching C6-BH1; the earlier rare-corruption rejection stands. | carried reject |
+| C6-EC3 | Corrupted candidate actor identifiers can disclose arbitrary text in logs | low | Carried C5-BH4 / C5-EC4: ordinary discovery writes derived digests; confidential text requires manually altered or corrupted state, and the added validation remains disproportionate. | carried reject |
+| C6-EC4 | int.MaxValue retry attempts overflow and later quarantine | low | Carried R1-EC7: reaching that counter requires corrupted state or millennia of retries; the saturation branch remains rejected. | carried reject |
+| C6-EC5 | A stale callback can submit a currently due replacement | false | Carried C5-EC5 / iteration-0 EC14: only the stale witness is an audited no-op; independently current replacement convergence is explicitly permitted by Design Notes and the callback comment. | carried reject |
+| C6-VG1 | The real actor adapter's Scheduler delay and repeat period are not asserted | medium | Pre-verified: unit delays are observed through FakeReminderScheduler, while the live helper checks only record existence. Swapping dueTime and period in ReminderActor.ArmAsync escapes the current assertions. Extend the existing live proof to verify both Scheduler fields after registration and re-arm. | patch |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -1156,3 +1177,124 @@ passing test XML, is in [the public package summary](evidence/story-4-11-public-
 This dependency update records the successful acceptance proof; spec and
 sprint workflow status are preserved. No source implementation, frozen intent,
 baseline identifier, submodule checkout, staging, commit, or push changed.
+
+### Final implementation verification after public release (2026-10-04)
+
+The complete spec and both frontmatter context files were loaded before this
+verification. Every execution task and review patch is already implemented in
+the clean EventStore checkout at
+`2242ad55a1b678828df8aa093fd92399c29af5bf`. All 24 files from the final C5
+correction commit still match that commit byte for byte; no source correction
+was needed. The sealed `docs/ci.md`, AD-26 effect codec, closed kind catalog,
+and effect golden-vector test source match the original EventStore baseline.
+
+Fresh commands ran from `references/Hexalith.EventStore`. Logs, XML, archive
+audits, and the executed matrix audit are under
+`/tmp/story-4-11-implementation-20261004-B5HFMQjR/`.
+
+| Command / check | Result |
+| --- | --- |
+| `timeout 180s dotnet build tests/<Project>/<Project>.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` for DomainService.Tests and Contracts.Tests | Both passed; zero warnings/errors |
+| Built DomainService executable with `-class '*Reminder*' -result-xml <artifact>/domainservice-reminders.xml` | 155/155 passed; no errors/skips |
+| Built Contracts executable with `-class '*ReminderIdentityCodecTests' -class '*EffectIdentityCodecTests' -result-xml <artifact>/contracts-codecs.xml` | 50/50 passed; no errors/skips |
+| Audit of the existing public `3.112.0` archives against the checked-in public package evidence | All 14 archive hashes and nuspec source commits match |
+| `python3 tools/validate-release-packages.py /tmp/eventstore-3-112-0-qf7z2woi/packages 3.112.0` | All 14 public release packages validated |
+| `EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/eventstore-3-112-0-qf7z2woi/packages` and built Contracts executable with `-method '*PackagedReminderApiRunsWithoutWorksTypes' -result-xml <artifact>/public-package-consumer.xml` | 1/1 passed; all three isolated package-only consumers exercised; no errors/skips |
+| Executed XML matrix audit, Python AST parsing of the package-consumer validator, and `git diff --check` in both repositories | All five frozen matrix rows have passing persisted-state coverage; checks passed |
+
+Here `<artifact>` is the fresh verification directory above. The public
+packages identify source SHA
+`38efbefd5da65d538723f9f85eca6a186dfc0a2f`; this repeat confirms the named
+public-package acceptance gate remains satisfied. The existing durable
+[public package summary](evidence/story-4-11-public-3.112.0/summary.json)
+and proof XML are preserved.
+
+No implementation source changed, so the previously recorded full-suite,
+live-sidecar, and Aspire-baseline evidence was not repeated. The historical
+unrelated broad-suite blockers remain separately recorded; none was hidden
+by changing a gate. Works adoption and the Story 4.16 production, delegation,
+callback-origin, audit, retention, actor-health, operator-repair, and restore
+work remain outside this story. This verification changes only this record;
+it does not change the frozen intent, baseline identifiers, dependency pins,
+submodule checkout, or Git history.
+
+### Release-closure review C6 patches
+
+- [x] [Review][Patch] Classify shared effect identities across every valid current intent before reminder-name collapse; prove overlapping witness/effect collisions cannot submit or arm the third witness.
+- [x] [Review][Patch] Assert the real Scheduler delay and repeat period after initial registration and reconciliation re-arm in the existing live-sidecar proof.
+- [x] [Review][Patch] Mark the historical public R6 package-proof ledger entry resolved and link the retained 3.112.0 evidence.
+
+### C6 verification and corrected-release gate (2026-10-04)
+
+The review found a runtime defect in convergence: collapsing two same-name
+witnesses before grouping effect identities concealed either witness's overlap
+with a third reminder. The correction groups every valid intent first, then
+retains the existing name-collision quarantine. All three evidence digests have
+durable quarantine dispositions; no command is submitted and no reminder is
+armed. The 24 regressions cover both source overlaps, all six input orders,
+and both due and future work. All 24 failed before the correction.
+
+The existing live proof now checks the actual Scheduler delay against the
+scheduling operation's clock interval, with two seconds of tolerance and a
+90-second operation bound, and checks the repeat period exactly against
+`RetryMaxDelay`. It verifies both registration and reconciliation re-arm and
+parses Scheduler's `@every <Go duration>` representation without discarding
+unparsed text.
+
+Durable evidence is under
+[story-4-11-c6-2026-10-04](evidence/story-4-11-c6-2026-10-04/summary.json).
+The coordinator independently inspected the patches and persisted-state
+assertions, rebuilt all four required Debug/source-reference projects with
+zero warnings/errors, and ran the following checks after the implementation
+agent returned. Exact commands, environments, exit codes, and results are in
+[commands.json](evidence/story-4-11-c6-2026-10-04/commands.json).
+
+| Check | Result |
+| --- | --- |
+| DomainService `-class '*Reminder*'` | 179/179 passed, including the 24 new collision cases |
+| Contracts `-class '*Reminder*'`, supplied with the new local inventory | 34/34 passed; includes the one R6 proof exercising all three isolated package-only consumers |
+| Contracts `-class '*EffectIdentityCodecTests'` | 17/17 passed; together with the 33 reminder codec cases above, all 50 codec cases passed |
+| Client `-class '*Reminder*'` | Zero discovered, as previously documented; exit 0 |
+| LiveSidecar `-class '*Reminder*'` | 1/1 passed against Redis, placement, and Scheduler; zero errors/skips |
+| Fresh local `3.112.0-local.462` release inventory and canonical validator | All 14 packages packed and validated |
+| Collision regressions against assemblies extracted from the new local packages | 24/24 passed |
+| The same regressions against official public `3.112.0` assemblies | 24/24 failed on unintended submission or arming; zero errors/skips |
+| Frozen matrix audit | All five rows have passing persisted-state coverage |
+| Frozen intent, sealed CI document, effect codec/catalog, and golden vectors | Bytes unchanged; both repository diff checks passed |
+
+Packing reused the previously documented environment fallback: the validated
+release manifest and canonical pack arguments, adding only `-m:1` and
+`-p:NuGetAudit=false`, with a 180-second per-project limit. No repository
+packaging script or dependency changed. The local package metadata names
+source base `2242ad55a1b678828df8aa093fd92399c29af5bf`; its corrected runtime
+includes the uncommitted C6 patch, so this is not an immutable public release
+SHA. Archive and source hashes are retained in the evidence directory.
+
+The normal live fixture failed before the test body on exhausted administrator
+inotify allocation; a separate root host subprocess then encountered a Redis
+published-port EOF. The successful agent run and independent coordinator
+repeat used the cached .NET 10 Alpine image on Docker host networking, with
+the same read-only Dapr 1.18.4 binary and existing backing containers. No
+shared service, host setting, limit, or test gate changed. The exact image
+digest and command are retained.
+
+Broader verification remains blocked. The post-patch full DomainService
+binary returned exit 1: 339 passed and one failed because the intentionally
+uninitialized nested Tenants project is absent. The pre-patch full Contracts
+binary, supplied with public packages, timed out at 180 seconds (exit 124),
+after reporting 44 unrelated packaging/governance failures; it produced no
+final XML or aggregate result. Both commands and logs are retained. A fresh
+pre-change `aspire start --isolated --apphost
+src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj
+--non-interactive --format Json` returned exit 2 on the same missing nested
+Tenants projects; `aspire describe` and `aspire stop` returned exit 0. No
+nested submodule was initialized to make these checks pass.
+
+The historical public R6 API-availability proof and its resolved ledger entry
+remain valid, but public `3.112.0` does not contain this runtime correction.
+**Story 4.11 remains `in-progress`:** the owner must publish a corrected named
+public release with its immutable source SHA, then repeat the package-only
+R6 proof and collision regressions against that version before closure.
+The build workflow stops at review verification while the broader checks
+remain blocked; no `done` transition or commit was made. The preserved
+baseline identifiers and `review_loop_iteration: 0` remain unchanged.

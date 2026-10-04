@@ -1,0 +1,136 @@
+{
+  "story": "4.11",
+  "review": "C6",
+  "date": "2026-10-04",
+  "status": "in-progress",
+  "reviewLoopIteration": 0,
+  "source": {
+    "sourceBaseCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf",
+    "hasUncommittedChanges": true,
+    "changedFiles": [
+      {
+        "path": "src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs",
+        "sha256": "d3ba06f537e01fbb9f29ab3146e779281c383ecb3de63a0d6eaef3736c8d844a"
+      },
+      {
+        "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs",
+        "sha256": "2c147acea0e2933e1931c8e0a9d992261a852029add67df63381d94aa2799742"
+      },
+      {
+        "path": "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Integration/ReminderRecoveryLiveSidecarTests.cs",
+        "sha256": "c4d1466252651b95c3f431c05770cae0919d2ded24f120ceea3a32870fa82c9c"
+      }
+    ]
+  },
+  "checks": {
+    "contracts-build": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "client-build": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "domainservice-build": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "server.livesidecar-build": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "contracts-reminders": {
+      "total": 34,
+      "passed": 34,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "client-reminders": {
+      "total": 0,
+      "passed": 0,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "domainservice-reminders": {
+      "total": 179,
+      "passed": 179,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "contracts-effect-codec": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "live-reminders": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "domainservice-full": {
+      "total": 340,
+      "passed": 339,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "contracts-full-before-C6": {
+      "exitCode": 124,
+      "warnings": null,
+      "errors": null
+    }
+  },
+  "localVersion": "3.112.0-local.462",
+  "localReleasePackages": 14,
+  "localPackageOnlyR6Proof": {
+    "passed": 1,
+    "isolatedConsumers": 3,
+    "errors": 0,
+    "skips": 0,
+    "xml": "contracts-reminders.xml"
+  },
+  "publicRuntimeRegression": {
+    "total": 24,
+    "passed": 0,
+    "failed": 24,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0
+  },
+  "localPackagedRuntimeRegression": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0
+  },
+  "originalPublicProof": {
+    "version": "3.112.0",
+    "sourceCommit": "38efbefd5da65d538723f9f85eca6a186dfc0a2f",
+    "preserved": true
+  },
+  "matrixRowsPassed": 5,
+  "remainingAcceptanceGate": "Owner publishes a corrected named public release with an immutable source SHA; repeat the package-only R6 and collision regression proof against that version",
+  "workflowStop": "Review verification: broad-suite prerequisites remain blocked; no done transition or commit",
+  "environmentChanges": false,
+  "dependencyChanges": false,
+  "nestedSubmodulesInitialized": false
+}

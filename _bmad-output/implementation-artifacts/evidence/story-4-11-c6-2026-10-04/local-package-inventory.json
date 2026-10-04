@@ -1,0 +1,100 @@
+[
+  {
+    "archive": "Hexalith.EventStore.Admin.Abstractions.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Admin.Abstractions",
+    "version": "3.112.0-local.462",
+    "sha256": "3efc65242c243932fbf983058c9ac32f6129fbfa773f8f200894db69ab81b151",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Admin.Cli.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Admin.Cli",
+    "version": "3.112.0-local.462",
+    "sha256": "fa8a7a352d421ac5c90806914640e768416bba46d7fac7557d058594e3547cfe",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Admin.Server.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Admin.Server",
+    "version": "3.112.0-local.462",
+    "sha256": "6c4626d2ddc102246cdceb304b923e44e2a063975c53108574e88d3a1f1bbabe",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Aspire.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Aspire",
+    "version": "3.112.0-local.462",
+    "sha256": "95aaecf3f870a252d4a31c55360ea5b14133fc4476c017a9c57f13491db4f6ec",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Client.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Client",
+    "version": "3.112.0-local.462",
+    "sha256": "76ba5dee30e05e3063ee7f21ef3f3a48d78327ec07336a07ea6fdc33f4c2d454",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Contracts.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Contracts",
+    "version": "3.112.0-local.462",
+    "sha256": "f8a17f2f43ab6b7d717a70faaef259039fc5abedc7e7ced67ae02f8e98b68c57",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.DomainService.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.DomainService",
+    "version": "3.112.0-local.462",
+    "sha256": "65b771c3d57a63ce68ec00fdfda645bf95db72cf0f70150eb197d02121cce1d7",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Gateway.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Gateway",
+    "version": "3.112.0-local.462",
+    "sha256": "708468384a405662dc3d1d138a2b43afaa2d9b35635d178f4bb6680a9000e062",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.RestApi.Generators.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.RestApi.Generators",
+    "version": "3.112.0-local.462",
+    "sha256": "92c58e57b460c4370e5eb0718a22c95825322778fba61085dac7f3916f812211",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Server.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Server",
+    "version": "3.112.0-local.462",
+    "sha256": "cd5db06910fc5ff35565439198ac2d7fa436b7da2ec3e4939292a718e53bad20",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.ServiceDefaults.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.ServiceDefaults",
+    "version": "3.112.0-local.462",
+    "sha256": "6c7452fa71095acd6131d72e6d672845a178d63152b0595e6d04126be5a62317",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.SignalR.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.SignalR",
+    "version": "3.112.0-local.462",
+    "sha256": "d9c5dd179d11c985f706c266cf3939dea3acd272b558a48b381c9d9d75ff79b3",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Testing.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Testing",
+    "version": "3.112.0-local.462",
+    "sha256": "c5ebe462ee1b9fc96f0fd28921a9597241b9f8e701eb8027acf1bf9d0276d4de",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  },
+  {
+    "archive": "Hexalith.EventStore.Testing.Integration.3.112.0-local.462.nupkg",
+    "package": "Hexalith.EventStore.Testing.Integration",
+    "version": "3.112.0-local.462",
+    "sha256": "83fce5d66b196dc2cdd59d9fe98efb47e5d7bd7adf343899a7d20d462685032e",
+    "nuspecRepositoryCommit": "2242ad55a1b678828df8aa093fd92399c29af5bf"
+  }
+]

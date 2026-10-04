@@ -1,0 +1,123 @@
+{
+  "xml": "domainservice-reminders.xml",
+  "allFrozenRowsPassed": true,
+  "rows": {
+    "Register/reschedule": [
+      {
+        "method": "DuplicateRegistrationKeepsOneReminder",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "RescheduleCancelsObsoleteWitness",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "PendingStateSurvivesSchedulerFailure",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      }
+    ],
+    "Callback replay": [
+      {
+        "method": "CallbackReplayAfterRestartReturnsSameEffectAndReceipt",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "CrashBetweenReceiptAndReleaseReplaysOnAnotherHost",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "UncertainReceiptIsRetriedWithoutAcknowledgement",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      }
+    ],
+    "Stale/forged callback": [
+      {
+        "method": "StaleWitnessIsAuditedNoOpAndCancelled",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "WrongIdentityCallbackMutatesNothing",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "TokenFilterRequiresAppChannelToken",
+        "passedCases": 3,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "TamperedStoredTupleIsQuarantined",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      }
+    ],
+    "Recovery": [
+      {
+        "method": "LostFiringIsReissuedWhenDue",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "DeletedSchedulerReminderIsRearmed",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "PartialScanDegradesReadinessAndRetainsWork",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "RestartRebuildsReadinessFromDurableState",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      }
+    ],
+    "Restore/HA": [
+      {
+        "method": "RestoredStateConvergesToStream",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "TwoHostsRacingRegisterOnce",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "ConflictingWriterFailsClosed",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "ConflictingEraseFailsClosed",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "MissingIndexEntryIsRestored",
+        "passedCases": 1,
+        "persistedStateAssertionsReviewed": true
+      },
+      {
+        "method": "IndependentRegistrationsRetryDiscoveryCas",
+        "passedCases": 2,
+        "persistedStateAssertionsReviewed": true
+      }
+    ]
+  },
+  "newOverlappingCollisionCases": {
+    "passed": 24,
+    "persistedStateAndAuditAssertionsReviewed": true,
+    "submitted": 0,
+    "armed": 0,
+    "quarantinedWitnessDigests": 3
+  }
+}
