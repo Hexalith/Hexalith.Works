@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -388,6 +388,32 @@ Continuation release-closure review (2026-10-04). All three context-free layers 
 | C6-EC4 | int.MaxValue retry attempts overflow and later quarantine | low | Carried R1-EC7: reaching that counter requires corrupted state or millennia of retries; the saturation branch remains rejected. | carried reject |
 | C6-EC5 | A stale callback can submit a currently due replacement | false | Carried C5-EC5 / iteration-0 EC14: only the stale witness is an audited no-op; independently current replacement convergence is explicitly permitted by Design Notes and the callback comment. | carried reject |
 | C6-VG1 | The real actor adapter's Scheduler delay and repeat period are not asserted | medium | Pre-verified: unit delays are observed through FakeReminderScheduler, while the live helper checks only record existence. Swapping dueTime and period in ReminderActor.ArmAsync escapes the current assertions. Extend the existing live proof to verify both Scheduler fields after registration and re-arm. | patch |
+
+Review iteration 4 (2026-10-05). Reviewers: blind hunter (BH), edge-case hunter (EC), verification-gap (VG). Diff: works `613a96c1..` working tree, including untracked `evidence/story-4-11-public-3.113.0/`. No layer was skipped. Each finding is judged before grouping. No intent_gap, bad_spec, or patch survivors.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C7-BH1 | Closing prose says spec and sprint status are `done` while frontmatter is `in-review` and sprint status is `in-progress` | low | The closing sentence overclaims completion. Frontmatter `in-review` is the required review state, and sprint `in-progress` matches an unfinished review. The correction is an edit to this spec. | reject |
+| C7-VG1 | Same status contradiction; a workflow reading frontmatter or sprint status leaves the story open | low | Same root cause as C7-BH1. Leaving the story open during review is the workflow state, not a failed close. | reject |
+| C7-BH2 | The 3.113.0 evidence is untracked and the consumer XML hunk has no diff header | false | `evidence/story-4-11-public-3.113.0/` holds `summary.json`, `public-package-consumer.xml` (1 passed, 0 skipped), and `public-collision-regression.xml` (24 passed, 0 skipped). The consumer hunk has a `diff --git` header; it sits on the previous XML line because that file has no trailing newline. | reject |
+| C7-BH3 | The 3.113.0 summary omits per-archive URLs, hashes, and compared file hashes | low | The summary records version `3.113.0`, nuspec commit `865cd9e`, and the passing XML names. A full hash inventory is a new evidence artifact, not a direct correction, and product callers do not read it. | reject |
+| C7-BH4 | The EventStore pin, the preserved baseline, and the published source SHA are unexplained | false | Frontmatter still preserves `613a96c1` and `f378afdb`. The diff records the superproject pin `738da5c9`. `865cd9e` is an ancestor of that pin, and the summary names it as the package source. | reject |
+| C7-BH5 | Unrelated submodule pointer moves and the `references/platform` path are unexplained | false | Those gitlinks are earlier commits already on `main` inside the since-baseline range. `.gitmodules` already names the platform submodule `Hexalith.Platform` at `references/platform`. | reject |
+| C7-BH6 | `works-assets-audit.json` still shows EventStore `3.112.0` while the summary says the pin is `3.113.0` | false | The audit file is the retained 2026-10-04 `3.112.0` snapshot. `references/Hexalith.Builds/Props/Directory.Packages.props` pins `HexalithEventStoreVersion` to `3.113.0`, and this run did not change that pin. | reject |
+| C7-BH7 | The resolved AC4 ledger entry still cites `3.112.0` after the collision failures | false | The resolved entry covers only `PackagedReminderApiRunsWithoutWorksTypes` on public `3.112.0`. It does not claim the C6 collision regression passed there. Public `3.113.0` evidence closes that separate regression. | reject |
+| C7-BH8 | Verification still expects green full Contracts and DomainService binaries | low | The command list is the original plan. Later notes record the nested-Tenants failure and the Contracts timeout as environmental, and the frozen close gate is the named public package proof. Changing the command list edits this spec. | reject |
+| C7-BH9 | `implementation-verification.md` cites three XML files that are not in the tree | low | `collisions-red.xml`, `coordinator-focused.xml`, and `live-reminders-container-final.xml` are absent. Retained `domainservice-reminders.xml` (179 passed, 0 failed, 0 skipped) and `live-reminders.xml` (passed) cover the same behaviors. The missing `/tmp` files cannot be restored by a direct edit. | reject |
+| C7-BH10 | This diff edits `epic-4-context.md` and drops persist-before-publication | low | Carried C3-BH9: the explicit publication-order sentence is still absent, the architecture document remains the loaded authority, and the existing deferred entry already preserves the refresh rule. | carried defer |
+| C7-EC6 | Same deleted persist-before-publication sentence | low | Carried C3-BH9 with C7-BH10. Acknowledgement-after-durable-commit remains in the context. Do not defer it again. | carried defer |
+| C7-BH11 | The frozen matrix and Spec Change Log have no hunks for the C6 collision or the public close gate | low | The matrix is inside the frozen intent and must stay unchanged. C6 and the `3.113.0` proof are recorded in the verification narrative. A change-log edit is an edit to this spec. | reject |
+| C7-BH12 | Restore/HA is marked passed by fake-store races while live two-host failover is deferred | false | The frozen intent requires synthetic proof until the Story 4.16 AD-28 restore drill. The matrix row is covered by the persisted fake-store tests in `domainservice-reminders.xml`. | reject |
+| C7-BH13 | `spec-implement-works-ci-cd.md` inserts an open iteration-3 intent-gap table after iteration 5, and its 514/514 TRX lives only under `/tmp` | medium | The table at that spec's later "Review iteration 3 (2026-09-20)" still lists intent-gap rows 72–74, 93, and 103, and the acceptance note cites `/tmp/works-loop2-final-broad.vn9QkM/final-broad.trx`. This document is outside Story 4.11. | defer |
+| C7-EC1 | `pack-with-environment-pins.py` raises `IndexError` when arguments are missing | low | `sys.argv[1]` and `sys.argv[2]` are unguarded. This is a one-shot evidence script. An argument check adds a guard, and product callers never run it. | reject |
+| C7-EC2 | A failed pack leaves a partial package directory | low | The script writes straight into the output directory and exits on the first non-zero pack. Replacing the directory only after success adds a staging flow. | reject |
+| C7-EC3 | An existing file at the output path raises `FileExistsError` | low | `Path.mkdir` is called on the caller-supplied path. A file-versus-directory guard is extra branching on the same evidence script. | reject |
+| C7-EC4 | A missing `dotnet` or `OSError` skips the command ledger | low | Only `TimeoutExpired` is caught. Recording `OSError` adds a branch on the same one-shot script. | reject |
+| C7-EC5 | A pack timeout can leave an MSBuild node running | low | `subprocess.run` kills the direct child only. Process-group cleanup is additional machinery on the evidence script. | reject |
+| C7-EC7 | An unauthorized callback returns 401 without a durable disposition | false | Carried EC13: `OriginDenied` logs event-style reason `200209` and returns an empty 401. Design Notes define token denial as digest-only logs, and a durable write would open an unauthenticated write path. | carried reject |
 
 ## Design Notes
 
@@ -1298,3 +1324,32 @@ R6 proof and collision regressions against that version before closure.
 The build workflow stops at review verification while the broader checks
 remain blocked; no `done` transition or commit was made. The preserved
 baseline identifiers and `review_loop_iteration: 0` remain unchanged.
+
+### Public 3.113.0 corrected-release gate satisfied (2026-10-05)
+
+The owner-published EventStore `3.113.0` release contains the C6 overlap correction.
+All 14 public archives were downloaded from the official NuGet flat-container
+endpoints and `python3 tools/validate-release-packages.py` accepted them at
+`3.113.0`. Every nuspec repository commit is
+`865cd9e49273dffbb1cdae85efeaf1aac322e09e`. Reminder contract, client, and
+coordinator sources at that commit match the current EventStore tree.
+
+`PackagedReminderApiRunsWithoutWorksTypes` passed 1/1 with zero skips against
+these public packages, exercising all three isolated package-only consumers.
+`OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent` passed 24/24 with
+zero skips when the DomainService test host loaded the official `3.113.0`
+Client, Contracts, DomainService, ServiceDefaults, Server, and Testing
+assemblies. That is the corrected named-public proof the C6 close gate required.
+
+Durable evidence is in
+[the public 3.113.0 summary](evidence/story-4-11-public-3.113.0/summary.json).
+The shared Builds catalog already pins EventStore to `3.113.0`; this run did
+not change it. Works adoption remains Story 4.15. Story 4.16 still owns
+production Scheduler admission, delegation, callback origin, audit retention,
+actor health, operator repair, and restore. The previously recorded full-suite
+and Aspire blockers stay environmental: the nested Tenants project is
+intentionally uninitialized, and no gate was weakened to hide them.
+
+No EventStore source change, commit, push, dependency update, or nested
+submodule initialization was performed. The frozen intent and both baseline
+identifiers are unchanged. Spec status is `done`. Sprint status is `review`.

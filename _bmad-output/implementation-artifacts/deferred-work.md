@@ -1194,3 +1194,6 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Preserve the explicit persist-before-publication invariant when refreshing the Epic 4 agent context.
   evidence: Continuation review C3-BH9 (2026-10-01). An earlier committed refresh of `epic-4-context.md` replaced the explicit publication-order statement with acknowledgement-after-durable-commit wording. The architecture remains authoritative and is loaded by this spec, but future context refreshes should carry the explicit order. This run did not edit the context, and the build workflow routes agent-context edits to deferred work.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Reconcile the open intent-gap table in the Works CI/CD spec and retain its broad Integration TRX outside `/tmp`.
+  evidence: Story 4.11 review C7-BH13. `spec-implement-works-ci-cd.md` still places a 2026-09-20 "Review iteration 3" table after iteration 5, with open intent-gap rows 72–74, 93, and 103, and records the 514/514 Integration pass only as `/tmp/works-loop2-final-broad.vn9QkM/final-broad.trx`. This is outside Story 4.11.

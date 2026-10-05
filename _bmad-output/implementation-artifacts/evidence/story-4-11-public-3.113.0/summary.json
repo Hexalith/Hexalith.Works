@@ -1,0 +1,27 @@
+{
+  "story": "4.11",
+  "version": "3.113.0",
+  "sourceCommit": "865cd9e49273dffbb1cdae85efeaf1aac322e09e",
+  "checkedAt": "2026-10-05",
+  "downloadedPackages": 14,
+  "releaseValidation": "python3 tools/validate-release-packages.py /tmp/eventstore-3.113.0-public 3.113.0 passed for all 14 archives",
+  "packageConsumerProof": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "isolatedConsumers": 3,
+    "xml": "public-package-consumer.xml"
+  },
+  "collisionRegression": {
+    "method": "OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent",
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0,
+    "assemblies": "official 3.113.0 Client, Contracts, DomainService, ServiceDefaults, Server, and Testing",
+    "xml": "public-collision-regression.xml"
+  },
+  "reminderSourceMatchesPublishedCommit": true,
+  "worksPackagePin": "3.113.0",
+  "worksPackagePinChangedByThisRun": false,
+  "sourcePackagesModified": false
+}
