@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -1353,3 +1353,42 @@ intentionally uninitialized, and no gate was weakened to hide them.
 No EventStore source change, commit, push, dependency update, or nested
 submodule initialization was performed. The frozen intent and both baseline
 identifiers are unchanged. Spec status is `done`. Sprint status is `review`.
+
+### Review Findings
+
+Review of the C6 correction (2026-10-05). EventStore `2242ad55a1b678828df8aa093fd92399c29af5bf..f6f7fd4a973b9db3466d84b632015e4e8b0f2a2e`
+(HEAD `738da5c95107d3ad84b3856558bf4a0ba7c3a9ca` matches `f6f7fd4a` for these files; later `AggregateActor` commits touch drain reminders only and are outside 4.11). Three files:
+`ReminderCoordinator.cs`, `ReminderCoordinatorTests.cs`, and `ReminderRecoveryLiveSidecarTests.cs`;
+161 additions, 18 deletions, 363 diff lines. Review mode: full. Context: this spec, Epic 4 context,
+and Works architecture (AD-20 R6, AD-25 to AD-28). All four layers completed:
+blind-hunter (BH, 11), acceptance-auditor (AA, 4), edge-case-hunter (EC, 2), and
+verification-gap (VG, none). Each of the 17 findings was judged before grouping:
+0 decision-needed, 3 patch (5 findings), 0 defer, 12 rejected. No finding reached the runtime
+behavior: the reordered classification is correct on the fresh, stored-entry, reconciler, and
+callback paths, and the 24 regressions plus the existing `SharedEffectIdentityIsQuarantined`
+(stored armed entry) cover it. All three patches are comment or documentation corrections.
+
+- [ ] [Review][Patch] The shared-effect docs contradict the label the overlap case records [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:49`] — low (AA, BH). The guide (`:49-51`, "both are quarantined as `effect-collision`"; `:105-109`) and the public `IReminderIntentSource` remarks (`src/Hexalith.EventStore.Client/Reminders/IReminderIntentSource.cs:17-19`) say every intent that shares an effect identity is quarantined as `effect-collision`. When a shared-name pair also overlaps a third name, `ReminderCoordinator.cs:593` labels the shared name `effect-collision` and `:603` overwrites it with `witness-collision`. The new theory pins that result: two `witness-collision` records and one `effect-collision` record. An operator holding the third name's `effect-collision` record finds no `effect-collision` partner. Document the precedence: a witness collision on a shared name is recorded as `witness-collision` even when that name also shares an effect identity. Add the same sentence to the code comment at `:584`. The suggested partner pointer on quarantine records is rejected; it adds a durable field that needs AD-28 approval.
+- [ ] [Review][Patch] The convergence comment no longer says why shared effect identities are quarantined [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:584`] — low (BH). C6 deleted the reason: the target rejects the second submission on a semantic-digest conflict, or silently replays the first receipt. The new comment explains only why grouping now runs before name collapse. Restore the reason in the new comment.
+- [ ] [Review][Patch] The new theory's summary says both witnesses are retained [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:932`] — low (BH, AA). The test asserts `state.Entries.ShouldBeEmpty()`. Only the evidence digests of both same-name intents are kept, as quarantine records. Reword the summary.
+
+#### Rejected
+
+- `false` — BH5: No callback test covers the overlap case. The callback path never merges intents by name. It compares the fired name's effect ID with every valid intent under another name (`ReminderCoordinator.cs:1090-1092`), so the C6 defect never existed there. `SharedEffectIdentityAtCallbackIsQuarantined` covers that comparison.
+- `false` — BH6: Wider grouping could over-quarantine, repeated passes could be unstable, and mixed due/future input is untested.
+  - Over-quarantine: a group needs two distinct names that share one effect ID (`Distinct().Skip(1).Any()`), so an unrelated intent cannot join it. Existing multi-intent tests would catch over-quarantine.
+  - Repeated passes: `AddQuarantine` deduplicates by digest (`:346-349`). Re-auditing on each pass is a carried rejection.
+  - Mixed due/future: classification (`:584-595`) never compares due time with now, and collided names are removed before any submission or arming.
+- `false` — BH8: The timing comment contradicts its bounds. The comment says the measured operation interval is bounded first and two seconds are added on top. The accepted range, `[due − completed − 2 s, due − started + 2 s]`, is exactly that.
+- `false` — BH11 (part): The test never shows that earlier reminder names left the Scheduler. A submitted callback releases the item only after `TryCancelAsync` succeeds (`:1275-1278`); a failed cancel keeps a `Retrying` witness (`:1281`). Each `ItemState.ShouldBeNull()` after a callback therefore proves the cancellation.
+- `low` — BH4, AA2: The no-submit/no-arm proof starts from empty state. Reading the code shows the stored-armed third witness (`:646-651`, `:728-740`) and the stored shared name are both quarantined and cancelled. C6 changed only how `collided` is computed, and that computation does not depend on stored state. `SharedEffectIdentityIsQuarantined` already covers a stored armed entry turning into an `effect-collision`.
+- `low` — BH7: The `inputOrder` switch falls back with `_ =>`, and 24 `InlineData` rows are hand-written. Every current row uses 0–5, so no case repeats today. A throwing arm adds a branch for a typing mistake.
+- `low` — BH9 (`maybe-false`): The Scheduler may report remaining rather than registered `dueTime`, which would eat the two-second tolerance. The period comes back as the raw `@every` job schedule, which suggests the stored job fields are echoed. Both live runs passed. To settle it, check what `dueTime` returns from Dapr 1.18 Scheduler-backed `GetReminder`. If it is wrong, it would only cause a slow-run test failure.
+- `low` — BH10: The duration parser is brittle.
+  - Unsupported units and signs fail loudly through the concatenation assertion. Go renders sub-second units only for durations under one second, and these are at least 15 minutes.
+  - Inputs like `1s1s` would need the Scheduler to return malformed text.
+  - The inline `Regex`, the `KeyNotFoundException` messages, and the duplicated `HttpClient` code are test style only.
+- `low` — BH11 (part): Timing is checked only on registration and the reconciler re-arm. That is the scope the C6 patch requested. Registration, restart, reschedule, and reconciler arming all share one delay computation (`ReminderCoordinator.cs:859`).
+- `low` — EC1, BH8 (part): The 90-second operation bound can trip when placement retries finish near the 60-second deadline and the final attempt then takes more than 30 seconds. The C6 record sets this bound deliberately. The helper has no per-attempt timeout to derive a tighter bound from, and both live runs passed.
+- `low` — EC2: Commit `f6f7fd4a` is titled `feat(tests)` but changes production code. That commit is published in `3.113.0`, and rewriting it is not proportionate. The release version itself was correct.
+- `low` — AA4: The new live assertions run before cleanup, which is not in a `finally` block. A failing run can leave a 15-minute periodic reminder in the shared Scheduler. Earlier assertions in the same test have the same exposure, and it only happens when the test has already failed. A `try`/`finally` restructure is more than a direct correction.
