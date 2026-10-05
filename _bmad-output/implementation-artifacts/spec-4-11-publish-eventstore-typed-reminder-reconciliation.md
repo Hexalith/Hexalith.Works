@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -441,6 +441,8 @@ Review iteration 5 (2026-10-05), after the three C6 documentation patches. Revie
 | C8-EC5 | Rewriting `pack-commands.json` is not atomic | low | `write_text` can leave a truncated ledger if the process stops mid-write. Replacing it through a temporary file adds staging machinery on the same one-shot script. | reject |
 
 **Patch for review iteration 5:** the sprint-status header now says the three C6 documentation patches are applied. Development status is `review`. No EventStore behavior changed, so the recorded reminder, live, and public `3.113.0` checks were not repeated.
+
+Review iteration 6 (2026-10-05) is a chunked full-story re-review. Group 2 (the coordinator core) found 12 patches, 6 carried defers, and 23 rejections. Its per-finding record is the last "Review Findings" section of this spec, with IDs prefixed `C9-`. Groups 1, 3, and 4 remain.
 
 ## Design Notes
 
@@ -1436,3 +1438,93 @@ Verification from `references/Hexalith.EventStore`:
 | Built DomainService executable with `-class '*ReminderCoordinatorTests' -method '*OverlappingWitnessAndEffectCollisions*' -method '*SharedEffectIdentityIsQuarantined'` | 25/25 passed; 0 failed, 0 skipped |
 
 The full Contracts, Client, and LiveSidecar reminder binaries were not rerun. These edits do not change executable behavior, and the live Scheduler proof still depends on Redis, placement, and Scheduler. Works code, the frozen intent, sealed `docs/ci.md`, and the AD-26 codec remain unchanged. No commit, push, publication, dependency update, or nested-submodule initialization was performed.
+
+### Review Findings
+
+Review iteration 6 (2026-10-05) is a chunked full-story re-review in a fresh LLM context. This section covers group 2, the coordinator core. The diff is EventStore `f378afdb..8f34b39`, restricted to `ReminderCoordinator.cs` and its persisted state, record, key, log, outcome, and exception types: ten files, 1,999 additions, 2,059 diff lines. `dcc6124a`, the committed C6 documentation patch, matches the patch C8 reviewed line for line, and no reminder file changed between `bf9066f` and `8f34b39`. Review mode: full. Context: this spec, Epic 4 context, and architecture AD-11, AD-20 R6, AD-23 to AD-29.
+
+All four layers completed: blind hunter (BH, 14), edge-case hunter (EC, 20), acceptance auditor (AA, 2, no acceptance-criterion violation), and verification gap (VG, 7). Each of the 43 findings was judged before grouping. Result: 0 decision-needed, 12 patch entries (13 findings), 6 carried defers (7 findings, not appended to the ledger again), and 23 rejected. Groups 1 (public API and codec), 3 (runtime plumbing), and 4 (coordinator, admission, and live tests) remain for follow-up runs.
+
+C9-EC4 and C9-EC15 change runtime code. Public `3.113.0` does not contain them, so applying either reopens the named-public-package close gate. The other ten are tests, comments, or documentation.
+
+- [ ] [Review][Patch] A crafted callback actor ID aliases a disposition key, and the load repair erases that audit record [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:197`] — medium (C9-EC4).
+  - `HandleCallbackAsync` rejects only a blank actor ID. `ReminderStateKeys.Item` appends the ID after `:item:`, so the ID `wra-<digest>:disposition:<subject>` names that actor's disposition key.
+  - `LoadAsync` reads the disposition JSON as a `ReminderItemState` with null collections and marks it repaired. The normalized state holds no work, so `PersistAsync` erases the key through its ETag.
+  - Reaching the route needs the app-channel token, or the callback-origin bypass deferred to Story 4.16.
+  - Fix: return `null` before any store access unless the ID is `wra-` followed by a 52-character digest. The Scheduler fires only the `wra-` IDs this runtime registers.
+- [ ] [Review][Patch] No failing test covers a quarantined witness whose intent leaves or changes in the stream [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:644`] — medium (C9-VG2).
+  - Callback-path quarantines (`translation-failed` and similar) keep only the quarantined entry; no quarantine record is written.
+  - No test converges afterwards with the intent removed or changed. Deleting this branch turns the entry obsolete: it is audited `Cancelled`, erased, and its candidate can be released, and the suite stays green.
+  - Fix: add `QuarantinedWitnessSurvivesIntentRemoval`.
+- [ ] [Review][Patch] No failing test covers purpose denial on the convergence path [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1335`] — medium (C9-VG3).
+  - `UnconfiguredPurposeIsDeniedAndRetained` is denied at callback step 3 and never reaches `SubmitAsync`. Removing this guard lets registration or reconciliation submit a kind that has no configured purpose.
+  - Fix: add `UnconfiguredPurposeOnConvergenceIsDeniedAndRetained`. It asserts no delegation request, no submission, a `Retrying` entry with `purpose-unconfigured`, and a `Denied` audit.
+- [ ] [Review][Patch] No failing test covers an undefined receipt disposition or a null receipt [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1425`] — medium (C9-VG4).
+  - `MismatchedReceiptIsRetained` overrides only `EffectId`.
+  - Dropping the `Enum.IsDefined` check would release a witness on a receipt the coordinator cannot interpret. `HttpTrustedEffectSubmitter` deserializes an out-of-range number as an undefined value.
+  - Fix: make that test a theory over a mismatched effect ID, an undefined disposition, and a null receipt.
+- [ ] [Review][Patch] No failing test covers the write-ownership re-read in `PersistAsync` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1597`] — medium (C9-VG5).
+  - The fake stores can interpose only before the compare-and-swap.
+  - Dropping the version comparison lets a turn adopt a foreign writer's ETag and then overwrite that writer's state.
+  - Fix: add an after-save hook to the test store, and add `ForeignWriteAfterSaveFailsClosed`.
+- [ ] [Review][Patch] The persisted key layout and enum strings are only round-tripped, never pinned [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderStateKeys.cs:35`] — medium (C9-VG6).
+  - Every test writes and reads through `ReminderStateKeys` and the same record types.
+  - Removing a `JsonStringEnumConverter`, renaming a status, or changing the key prefix would strand retained state and the runbook keys, and no test would fail.
+  - Fix: pin the key literals and the raw JSON of one item and one disposition, and deserialize a fixed fixture.
+- [ ] [Review][Patch] No test rejects a non-canonical target domain [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:103`] — low (C9-VG1).
+  - Only a different aggregate and a blank domain are tested.
+  - Without this comparison, `Widget` derives the same actor ID as `widget`, so item state and a candidate are written for the non-canonical domain.
+  - Fix: add `NonCanonicalTargetDomainIsRejected`.
+- [ ] [Review][Patch] Event `200207` is not pinned, although runbook step 1 uses it to find quarantined items [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderLog.cs:39`] — low (C9-VG7).
+  - `ReminderDiagnosticsTests` pins `200211`, `200212`, and `200214`, but not `200207`.
+  - Fix: add `QuarantineEmitsStructuredEvent`. It asserts the event ID, `ActorId`, `Subject`, and `ReasonCode`, with no tenant or aggregate.
+- [ ] [Review][Patch] An `OperationCanceledException` from translation that is not a shutdown skips quarantine [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1350`] — low (C9-EC15).
+  - Unlike the filters at `:1067` and `:1392`, this filter lets every `OperationCanceledException` escape. Translation takes no token, so the exception cannot come from shutdown.
+  - On convergence it aborts the loop before settled entries are persisted. On a callback, the generic catch returns `Retrying` on every firing, so the witness is never quarantined as `translation-failed`.
+  - Fix: add `|| !cancellationToken.IsCancellationRequested` to the filter.
+- [ ] [Review][Patch] The precedence sentence added by `dcc6124a` is wrong for a stored witness [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:587`] — low (C9-EC18).
+  - Case: a stored witness's name now carries different evidence, and that name also shares an effect identity. Convergence runs the collided branch (`:649`) before the witness check (`:666`) and records `effect-collision`. A callback on the same state records `witness-collision` (`:1084`).
+  - The guide (`docs/guides/typed-reminders.md:109-113`) counts a stored witness with changed evidence as a witness collision, then says witness collisions take precedence. That is wrong for this case.
+  - Both paths quarantine and submit nothing. Only the label differs.
+  - Fix: in the comment, the guide (`:51-53`, `:111-113`), and the `IReminderIntentSource` remarks, limit the precedence sentence to two current intents that share one name. State that convergence labels a changed stored witness on a shared name as `effect-collision`.
+- [ ] [Review][Patch] The `ReminderEntryStatus` summaries no longer match how the statuses are used [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderEntryStatus.cs:6`] — low (C9-AA1, C9-BH9).
+  - `Pending` is also set after a successful arm whose `Registered` audit failed (`ReminderCoordinator.cs:880-888`).
+  - `Retrying` also covers audit and cancellation failures (`:720`, `:746`, `:1142`, `:1182`, `:1284`) and `Denied` outcomes (`:1309`).
+  - `Quarantined` also covers `translation-failed`, `translation-invalid`, `effect-identity-invalid`, and `domain-invalid`. A `Denied` admission is retained, not quarantined.
+  - Fix: rewrite the three summaries. An earlier review corrected the matching `Attempts` docs.
+- [ ] [Review][Patch] The audit wording overclaims for quarantine capture [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderDispositionRecord.cs:8`] — low (C9-AA2).
+  - The record summary says an acknowledged outcome always has audit evidence, and the comment at `ReminderCoordinator.cs:701` says audit comes before "releasing or recording".
+  - In fact, new quarantine records are persisted whatever their audit result (`:756-791`), and `QuarantineActorCollisionAsync` discards its audit result and returns normally (`:954`). That behavior stays (carried chunk A AA3/AA4).
+  - Fix: say that release waits for a durable audit, while quarantine capture is persisted first and audited again on every convergence.
+- [x] [Review][Defer] A stored item header is never re-derived against its actor ID [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1494`] — deferred: carried R2-BH4 and the iteration-3 chunk A bad-candidate deferral. A corrupt or wrongly restored tenant or aggregate turns the legitimate target into an `actor-collision` and can index a bad candidate. Readiness stays Degraded until Story 4.16 operator repair. (C9-BH4, C9-EC5)
+- [x] [Review][Defer] Disposition records are last-write-wins [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1634`] — deferred: carried C6-BH6 (AD-28, Story 4.16). (C9-EC9)
+- [x] [Review][Defer] Every convergence audits every quarantine record again [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:756`] — deferred: carried R2-BH1. (C9-EC10)
+- [x] [Review][Defer] No timeout bounds source, delegation, or submitter calls inside a turn [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:150`] — deferred: carried R2-BH5 (maybe-false). (C9-EC16)
+- [x] [Review][Defer] Callback settlement re-arms without re-ensuring discovery [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1239`] — deferred: carried R1-BH9 (restore model, Story 4.16). Stranding needs an index restored older than the item plus a Scheduler reminder that is also lost. (C9-EC20)
+- [x] [Review][Defer] An orphan callback cancels the last pointer after a state restore older than the Scheduler [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1017`] — deferred: carried R1-BH9. (C9-BH14)
+
+#### Rejected
+
+- `false` — BH1: A malformed re-read cancels a still-current witness. The stream is authoritative and no longer reports that witness validly. The malformed intent is quarantined by digest, so the candidate stays and readiness is Degraded. Nothing executes, and a corrected source recreates the same deterministic witness.
+- `low` — BH2: UTF-8 replacement characters can merge two malformed evidence digests. That needs a domain source emitting two intents that differ only in lone surrogates, and changing `AppendText` would re-key every existing quarantine digest.
+- `low` — BH3: The callback catch blocks skip readiness bookkeeping. Carried R2-BH6 and split-group-2 AA2: when the persist fails the durable witness is untouched, and the next pass resubmits within the interval.
+- `low` — BH5: A source that throws escapes `ConvergeAsync` while a null fold is handled, and the fail-closed result reports zero actions. Both fail closed: the registrar's caller retries, and the reconciler marks the pass incomplete, so readiness is Degraded. The counters only feed logs.
+- `low` — BH6: Obsolete and stale dispositions are written before a cancellation that may then fail. This write-ahead audit is the design: the entry keeps `cancel-failed` and is retried. Transition history is the carried C6-BH6 deferral.
+- `low` — BH7: A cancellation failure after a receipt resubmits on the next retry. The target replays the same receipt. A "receipt held, cancellation pending" status would add a new state to save load during a Scheduler outage.
+- `false` — BH8: A cancelled callback returns `null`, which looks like an orphan. `ReminderActor.ReceiveReminderAsync` discards the result and passes `CancellationToken.None`, so no production caller reaches that branch or reads the value.
+- `false` — BH10: `ComputeActorId` in the submission catch can throw. Every submitted entry passed `Rederives` against this actor, or its state was built from a target that derived it. The extra hash runs only on failure.
+- `false` — BH11: Duplicate checks. None of them causes harm. The `SubmitAsync` purpose check guards the convergence path (C9-VG3). `EndsWith` is documented defense in depth. AD-26 golden vectors freeze the digest alphabet.
+- `low` — BH12: `ConvergeCoreAsync` is large. No defect is named, and a refactor is not a direct correction.
+- `low` — BH13: A target `Rejection` is logged at Information level. A domain rejection is an expected outcome and appears in the logged disposition field. A new Warning event would be new operator surface.
+- `low` — EC1: A stored JSON `null` with an ETag drops the ETag, so later writes conflict. This needs corrupt state. It fails closed with Degraded readiness, like the carried rejection for an undecodable document.
+- `low` — EC2: An undecodable item document blocks its item. Carried chunk 1 and chunk A EC2: quarantining the raw bytes needs a store seam.
+- `low` — EC3: Null collections are normalized without a quarantine record. Carried C6-BH3 and split-group-2 BH6.
+- `low` — EC6: A valid entry shares its name with a `stored-entry-invalid` record. Carried split-group-2 EC14.
+- `low` — EC7: An `UpdatedAt` near `MaxValue` overflows the backoff, or a future one stretches it. Carried chunk 1 and chunk A EC6.
+- `low` — EC8: `Attempts` overflows at `int.MaxValue`. Carried R1-EC7 and C6-EC4.
+- `low` — EC11: A failed `RemoveCandidateAsync` after release reports `Retrying`. Carried chunk A BH8/EC9 and split-group-2 EC5.
+- `false` — EC12: A null reload after stale retirement leaves readiness stale. `ConvergeCoreAsync` keeps the stale witness through `retainedReminderNames`, so inside the serialized turn the reload always returns state.
+- `low` — EC13: The callback does not check the due instant. Carried several times: the Scheduler owns timing.
+- `low` — EC14: A callback inside the backoff window waits a full `RetryMaxDelay`. Carried R2-EC3 and split-group-2 EC11.
+- `false` — EC17: A superseded write is reported as `state-conflict`. The re-read proves ownership before the turn chains another write. A version from another writer is not this turn's to build on, and the convergence catch then judges the reloaded durable state.
+- `low` — EC19: After later passes, an older `effect-collision` digest keeps its first reason. The label depends on history, but the evidence is never dropped. Rewriting the reason of a deduplicated record would add update logic for a cosmetic label.
