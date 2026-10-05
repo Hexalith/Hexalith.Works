@@ -1,0 +1,92 @@
+[
+  {
+    "log": "Hexalith.EventStore.Client.Tests-build.log",
+    "artifact": "Hexalith.EventStore.Client.Tests-build.log.gz",
+    "raw_sha256": "032794d00f95be2b9e7118e61c534a9ce4bef345d4ccbb1a934d517eb601221a",
+    "raw_bytes": 2826
+  },
+  {
+    "log": "Hexalith.EventStore.Contracts.Tests-build.log",
+    "artifact": "Hexalith.EventStore.Contracts.Tests-build.log.gz",
+    "raw_sha256": "45351a1e5d663c66cd68ad46bb8148c86edf4a1bf524c32e6c3c5d714be39553",
+    "raw_bytes": 1748
+  },
+  {
+    "log": "Hexalith.EventStore.DomainService.Tests-build.log",
+    "artifact": "Hexalith.EventStore.DomainService.Tests-build.log.gz",
+    "raw_sha256": "41ca529e59ca8cfe928e6f1bcf6dccc43d36bed679da03bf28bae724de62c159",
+    "raw_bytes": 1760
+  },
+  {
+    "log": "Hexalith.EventStore.Server.LiveSidecar.Tests-build.log",
+    "artifact": "Hexalith.EventStore.Server.LiveSidecar.Tests-build.log.gz",
+    "raw_sha256": "0f2351ccdfe0af7932f000bb89e2ea7985aa4340fdac5a90e9e104acb3fb1982",
+    "raw_bytes": 4324
+  },
+  {
+    "log": "aspire-start.log",
+    "artifact": "aspire-start.log.gz",
+    "raw_sha256": "1eadc33219e71d16d49ed6fa2d826813f64bf7de9b8f6a312807699f6cf7dc20",
+    "raw_bytes": 8367
+  },
+  {
+    "log": "client-full.log",
+    "artifact": "client-full.log.gz",
+    "raw_sha256": "3935b3424ecb9995dc02df128db6dd0146112411e01c5f6e61ee9d388bcf3668",
+    "raw_bytes": 2770
+  },
+  {
+    "log": "contracts-build-final-docs.log",
+    "artifact": "contracts-build-final-docs.log.gz",
+    "raw_sha256": "e52e1517109bf6fcefb6fe0265233a82df6f64e0c787e7e8890c39e213070f68",
+    "raw_bytes": 3168
+  },
+  {
+    "log": "contracts-reminders-effects-packaged.log",
+    "artifact": "contracts-reminders-effects-packaged.log.gz",
+    "raw_sha256": "70db50e9589e4ce21836c8107c9183b2be59e2db446879011bf7712f86b4579e",
+    "raw_bytes": 491
+  },
+  {
+    "log": "domainservice-full.log",
+    "artifact": "domainservice-full.log.gz",
+    "raw_sha256": "27292787aee736888d6234881a9718b2e2dd816d1a88a06ed7e1ed0e99ca332b",
+    "raw_bytes": 10632
+  },
+  {
+    "log": "domainservice-reminders.log",
+    "artifact": "domainservice-reminders.log.gz",
+    "raw_sha256": "73304d8b6e50b12294670bc81e2f0526ebb959fecbc501045bfab7e3d47e9532",
+    "raw_bytes": 1819
+  },
+  {
+    "log": "live-reminders-container.log",
+    "artifact": "live-reminders-container.log.gz",
+    "raw_sha256": "926e28b80d743d23a3777f517a3925130aa55110b297b378d890c2c07b2db60c",
+    "raw_bytes": 8987
+  },
+  {
+    "log": "live-reminders-native.log",
+    "artifact": "live-reminders-native.log.gz",
+    "raw_sha256": "eefd831fb473a07357673800e710e01b1406fa773967127032a36d0fc652107e",
+    "raw_bytes": 17091
+  },
+  {
+    "log": "local-packaged-regressions.log",
+    "artifact": "local-packaged-regressions.log.gz",
+    "raw_sha256": "15685ea37f10052f73e8ccad5d1af97e10c51ed49050439cd496964bb02ce37f",
+    "raw_bytes": 510
+  },
+  {
+    "log": "pack-release.log",
+    "artifact": "pack-release.log.gz",
+    "raw_sha256": "07de52ef23c37331761d0014618d7e562bf173cfc4c5dd54cea8e6190262c4ce",
+    "raw_bytes": 19094
+  },
+  {
+    "log": "validate-release.log",
+    "artifact": "validate-release.log.gz",
+    "raw_sha256": "b95e8ff63c473386ee1bec7447afa1a7a17ec4618d895256f6d7f49562eb89bf",
+    "raw_bytes": 128
+  }
+]

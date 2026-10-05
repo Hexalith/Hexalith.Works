@@ -1,0 +1,26 @@
+{
+  "name": "local-packaged-regressions",
+  "command": [
+    "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/package-runtime/Hexalith.EventStore.DomainService.Tests",
+    "-method",
+    "*SlowFailureStartsBackoffAtSettlement",
+    "-method",
+    "*SlowFutureLookupUsesRemainingDelay",
+    "-method",
+    "*SlowRetryLookupUsesRemainingDelay",
+    "-method",
+    "*ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied",
+    "-method",
+    "*MalformedCandidateIdentifierIsNotLogged",
+    "-method",
+    "*RestoredSecretQuarantineReasonIsRepairedBeforeLogging",
+    "-result-xml",
+    "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/local-packaged-regressions.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+  "timeout_seconds": 180,
+  "environment": {},
+  "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/local-packaged-regressions.log",
+  "exit_code": 0,
+  "elapsed_seconds": 0.616
+}

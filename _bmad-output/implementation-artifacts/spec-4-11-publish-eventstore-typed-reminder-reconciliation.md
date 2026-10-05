@@ -459,6 +459,34 @@ Continuation review C10 (2026-10-05), after the twelve C9 patches. All three con
 | C10-BH9 | Retained build commands omit timeout information | low | Implementation-agent clarification: DomainService used shell timeout 180s, which its command entry omits; the other three used Python subprocess.run timeout=180 with correctly recorded bare dotnet command arrays. Correct the DomainService array and record Python timeout metadata without inventing shell wrappers. | patch |
 | C10-BH10 | Local dirty-tree proof lacks source/package hash manifests | low | The evidence explicitly identifies an uncommitted local pack and does not claim an immutable public release. Closure still requires owner publication and version/source-SHA proof. A new archival hash inventory adds artifacts without fixing current behavior or a claimed public proof; the earlier public-hash omission was also rejected as low. | reject |
 
+Continuation review C11 (2026-10-05). All three context-free workflow layers completed over the complete preserved Works-baseline diff plus EventStore reminder API, runtime, coordinator, tests, package probes, and guide changes through `7e19e60b4510551dc3285c567d70c54e92f23096`. This covers the remaining current full-story groups 1, 3, and 4. Each of 23 findings was judged individually before grouping: nine patch groups (eleven findings), two pre-existing shared-SDK deferrals, and ten carried rejections. Parent acceptance/matrix audit confirms all five frozen behavior rows have executed passing coverage; the owner public-release gate remains open.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C11-BH1 | Tenant-mismatched discovery is relabeled on write | low | Carried C4-EC1 / split-review chunk A BH7: unchanged write lambdas relabel only corrupt discovery; foreign actor identifiers fail scan re-derivation and retain Degraded readiness. Do not add the previously rejected rare-state guard. | carried reject |
+| C11-BH2 | Slow failed submission consumes its stored retry window | medium | Convergence and callbacks pass a pre-submission clock to settlement; Retry persists it after an awaited failure. The reproduced 40-second failure with a 30-second backoff permits immediate resubmission. Timestamp retry state when the failed operation finishes. | patch |
+| C11-BH3 | Slow Scheduler lookup delays future re-arming | medium | The per-entry clock precedes awaited IsHeldAsync, and future arming subtracts that stale instant. Refresh after lookup and clamp a crossed deadline to zero; the same correction applies to a backoff reminder being repaired. | patch |
+| C11-BH4 | Callback discards malformed sibling intents before successful cleanup | medium | Callback filters the current fold with Where(ValidateIntent is null) and records no invalid siblings. If the valid effect empties the source, settlement erases item/discovery without retaining observed invalid evidence. Persist the existing digest-based quarantine records before submission/release. | patch |
+| C11-BH5 | Package Client probe uses schedule causation | low | The probe supplies ComputeReminderName to ReminderDelegationRequest although the public contract and runtime use wrk-<EffectId>. Use the submission logical identifier and assert the binding in the synthetic provider. | patch |
+| C11-BH6 | Public disposition summaries overclaim cleanup completion | low | Submitted/Stale/Cancelled audits precede Scheduler cancellation and state release; a failed cancellation retains work with those audits. Correct the enum summaries and include audit/cancellation failure retries. | patch |
+| C11-BH7 | Public convergence count summaries omit retained discovery and cleanup gating | low | Armed increments for retry re-arms; Submitted increments only after applied Submitted settlement; Unresolved includes failed final source folds after witness release. Correct units without changing the contract shape. | patch |
+| C11-BH8 | Delay-limit comment conflates host delays with actor due times | low | The options comment attributes the Task.Delay ceiling to reminder timers, while the pinned actor SDK accepts longer due times. Correct the comment; retain all option bounds. | patch |
+| C11-BH9 | No Expiry runtime or mixed-kind execution case | low | Carried C5-BH5 / iteration-0 BH15: this explicit extra runtime case remains rejected; both kinds use the same generic coordinator path and the closed codec map/composition tests pin kind support. | carried reject |
+| C11-BH10 | Malformed candidate ActorId is logged verbatim | medium | Both mismatch and catch paths in ReminderReconciler log candidate.ActorId before canonical validation. A restored tenant:domain:aggregate value is disclosed. Log only canonical digests or a bounded placeholder; assert emitted fields and preserve the candidate. | patch |
+| C11-EC1 | Custom store can resolve an eraser for a different backend | medium | ReadModelStoreServiceCollectionExtensions at the preserved f378afdb baseline already falls back to DaprReadModelStore when a custom IReadModelStore lacks conditional erasure. Reminder cleanup exposes this existing shared registration defect. Qualify matching store/eraser bindings centrally rather than changing generic registrations in this reminder continuation. | defer |
+| C11-EC2 | Slow uncertainty expires retry timestamp before settlement | medium | Independently confirmed at the same pre-await timestamp and Retry persistence as BH2; retain its failure-end timestamp regression on convergence and callback paths. | patch |
+| C11-EC3 | Candidate write/removal ignores a tenant header mismatch | low | Carried C4-EC1 / chunk A BH7, with the unchanged index write/removal behavior; the earlier rare corrupt-state rejection remains applicable. | carried reject |
+| C11-EC4 | Another actor implementation suppresses reminder registration | low | Carried C6-BH2 / C5-EC2 / R2-EC5: unchanged registration skips an occupied name; a proxy call to a non-reminder actor fails loudly. This host-programming collision was explicitly rejected. | carried reject |
+| C11-EC5 | Same-Version foreign write is accepted after CAS | false | Carried C10-BH1: the isolated reproducer seeds a privileged replacement while preserving Version. Every normal coordinator writer increments Version on CAS and actor turns serialize, so it does not demonstrate a concurrent SDK writer defect. | carried reject |
+| C11-EC6 | Callback catch returns Retrying without readiness bookkeeping | low | Carried C9-BH3 / R2-BH6 / split-group-2 AA2: on failed persistence the durable witness remains; the next pass recovers it within the interval. The earlier rejection stands. | carried reject |
+| C11-EC7 | Corrupt discovery fields can disclose raw text in logs | medium | Same demonstrated malformed candidate ActorId disclosure as BH10. Preserve evidence and sanitize only the diagnostic identifier. | patch |
+| C11-EC8 | Persisted quarantine ReasonCode allows arbitrary logged text | medium | IsValidPersistedQuarantine accepts any nonblank reason; convergence passes it directly to event 200207. Require one of the existing quarantine reason literals; use the existing malformed-quarantine digest repair to retain other evidence and verify secret text is absent from diagnostics. | patch |
+| C11-EC9 | Attempts wraps at int.MaxValue | low | Carried C9-EC8 / R1-EC7 / C6-EC4: unchanged arithmetic needs an extreme or corrupt restored counter, and the extra saturating branch was already rejected. | carried reject |
+| C11-EC10 | UpdatedAt near MaxValue overflows backoff arithmetic | low | Carried C9-EC7 / chunk A EC6: unchanged arithmetic requires a timestamp within the configured backoff of MaxValue. The prior rare-state guard rejection stands. | carried reject |
+| C11-VG1 | CreateEffectIdentity has no Expiry execution assertion | low | Carried C5-BH5 / iteration-0 BH15. The filed hardcoded-kind mutant elaborates the same explicitly rejected lack of an Expiry runtime case at the unchanged generic coordinator path; preserve the recorded verdict. | carried reject |
+| C11-VG2 | Mapped HTTP cancellation forwarding lacks regression tests | medium | Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file. | defer |
+| C11-VG3 | Same-Version foreign item state can be overwritten | false | Carried C10-BH1, independently reproduced through an out-of-band same-Version seed. That write bypasses the normal monotonic Version/CAS protocol, as in the previously rejected case. | carried reject |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -1656,3 +1684,70 @@ needs package-only and runtime regression proof. Spec and sprint status remain
 `in-progress`. Current full-story re-review groups 1, 3, and 4 remain as previously
 recorded. No publication, push, dependency update, branch change, or nested
 submodule initialization was performed.
+
+
+### Continuation review C11 patches (2026-10-05)
+
+- [x] [Review][Patch] Record retry timestamps after failed awaited operations, with persisted-state convergence/callback regressions. (C11-BH2, C11-EC2)
+- [x] [Review][Patch] Recompute Scheduler delays after lookup, including deadlines crossed during lookup. (C11-BH3)
+- [x] [Review][Patch] Persist malformed callback-fold evidence before releasing a valid witness. (C11-BH4)
+- [x] [Review][Patch] Use logical-effect causation in the package-only Client consumer and validate it. (C11-BH5)
+- [x] [Review][Patch] Correct public disposition summaries for write-ahead audit and cleanup retries. (C11-BH6)
+- [x] [Review][Patch] Correct public convergence count summaries without changing the record shape. (C11-BH7)
+- [x] [Review][Patch] Correct the host-delay limit comment without changing options validation. (C11-BH8)
+- [x] [Review][Patch] Keep malformed discovery identifiers out of diagnostics while retaining discovery evidence. (C11-BH10, C11-EC7)
+- [x] [Review][Patch] Repair unknown persisted quarantine reasons through existing digest quarantine and keep arbitrary text out of diagnostics. (C11-EC8)
+
+
+### C11 final verification and reviewable local commit (2026-10-05)
+
+All nine C11 patch groups are implemented and verified. The current full-story
+review scopes 1, 3, and 4 are complete through the workflow's three independent
+layers and the parent acceptance/matrix audit. Every one of 23 findings has its
+own triage row; two existing shared-SDK issues were appended to deferred work,
+and ten prior rejections were carried. Existing Story 4.16 deferrals remain.
+
+Retry timestamps now follow failed operations. Lost future/backoff reminders
+use the clock after Scheduler lookup and clamp elapsed delays to zero. Callbacks
+persist malformed sibling evidence before valid submission or witness release.
+Diagnostics retain discovery evidence while logging only derived digests or a
+bounded placeholder; unknown stored quarantine reasons use the existing digest
+repair. The package probe binds logical-effect causation, and public summaries
+describe write-ahead audit and actual count semantics. No public API shape, enum
+value, codec, catalog kind, option validation, or persisted key changed.
+
+All 14 new regression cases failed before runtime corrections. Final parent
+verification passed 226/226 reminder tests, 51/51 reminder/effect codec and local
+package tests, 917/917 Client tests, 14/14 regressions against fresh packaged SDK
+assemblies, and 1/1 live Redis/Dapr recovery using the documented container
+fallback. All four required Debug/source-reference test projects built without
+warnings or errors. Canonical packing and validation accepted all 14 fresh
+`3.113.0-local.511` packages; all three isolated package-only consumers passed.
+Every frozen matrix row has executed passing persisted-state coverage.
+
+The full DomainService executable returned exit 1 with 412 passed and the one
+known `TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers`
+failure, whose nested source is absent. The pre-change Aspire command returned
+exit 2 for the same missing nested Tenants host projects; describe and stop
+confirmed no running AppHost. Native live recovery failed before its test body
+on Redis EOF; the cached Alpine/host-networking repeat passed. No nested
+submodule was initialized and no validation gate was weakened.
+
+[Commands, build logs, test XML, package hashes, source audit, and matrix proof](evidence/story-4-11-c11-2026-10-05/summary.json)
+bind the reviewed source bytes to local EventStore commit
+`7450da14b18d8ae9374b1cacde9f39765bcb28d9`. Explicit commitlint and the normal commit hook passed.
+The local packages were packed before that commit; their nuspec source metadata
+identifies the precommit base, and the source audit records the final bytes.
+The frozen intent and both original baseline identifiers are unchanged.
+Protected files match this continuation's starting HEAD; effect codec, catalog,
+and golden-vector source also match the original EventStore baseline. Works
+implementation source is unchanged.
+
+**The owner public-release gate remains open.** The owner must publish the
+reviewed C9/C11 runtime corrections as a named public release, then the package-only
+proof and runtime regressions must pass against that release with its immutable
+source SHA recorded. Synthetic local proof does not close that gate. The
+workflow's generic done transition is withheld under the frozen release decision;
+spec and sprint status remain `in-progress`. The local implementation commit
+makes the changes reviewable. No push, publication, dependency update, branch
+change, or nested-submodule initialization was performed.

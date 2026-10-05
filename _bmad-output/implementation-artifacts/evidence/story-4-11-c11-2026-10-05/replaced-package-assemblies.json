@@ -1,0 +1,32 @@
+[
+  {
+    "assembly": "Hexalith.EventStore.Client.dll",
+    "archive": "Hexalith.EventStore.Client.3.113.0-local.511.nupkg",
+    "sha256": "9a1050b81fee215bad18d993a4c3249d5a04a0814847015dd300b9e43115b6a8"
+  },
+  {
+    "assembly": "Hexalith.EventStore.Contracts.dll",
+    "archive": "Hexalith.EventStore.Contracts.3.113.0-local.511.nupkg",
+    "sha256": "5553564ef9a0b29db2e0ff61ab23a29e7c329d27b57c50916e32db5114f656c5"
+  },
+  {
+    "assembly": "Hexalith.EventStore.DomainService.dll",
+    "archive": "Hexalith.EventStore.DomainService.3.113.0-local.511.nupkg",
+    "sha256": "470333f3623e1b69307396d763b9dee27aebcff20849ee4dedcb23d49da756bf"
+  },
+  {
+    "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+    "archive": "Hexalith.EventStore.ServiceDefaults.3.113.0-local.511.nupkg",
+    "sha256": "3cc10f6e5f417cc92b92f2e6237371eb387e6d11995f4e98579c5064bb73c57a"
+  },
+  {
+    "assembly": "Hexalith.EventStore.Server.dll",
+    "archive": "Hexalith.EventStore.Server.3.113.0-local.511.nupkg",
+    "sha256": "318b72a13af5c0c613db6ac7d79cbc42fbb0b6417ad4a565796208f33fa1b021"
+  },
+  {
+    "assembly": "Hexalith.EventStore.Testing.dll",
+    "archive": "Hexalith.EventStore.Testing.3.113.0-local.511.nupkg",
+    "sha256": "878d901f7ff5cde2bde25c5cdf26daf4fa04ba387a3ace572c6b21030a038ed8"
+  }
+]

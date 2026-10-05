@@ -1,0 +1,133 @@
+{
+  "story": "4.11",
+  "review": "C11",
+  "date": "2026-10-05",
+  "eventstore_source_commit": "7450da14b18d8ae9374b1cacde9f39765bcb28d9",
+  "review_layers": [
+    "blind-hunter",
+    "edge-case-hunter",
+    "verification-gap"
+  ],
+  "findings": 23,
+  "patch_groups": 9,
+  "patch_groups_resolved": 9,
+  "new_preexisting_deferrals": 2,
+  "carried_rejections": 10,
+  "remaining_full_story_review_groups": [],
+  "tests": {
+    "client-full.xml": [
+      {
+        "total": 917,
+        "passed": 917,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "contracts-reminders-effects-packaged.xml": [
+      {
+        "total": 51,
+        "passed": 51,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "domainservice-full.xml": [
+      {
+        "total": 413,
+        "passed": 412,
+        "failed": 1,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "domainservice-reminders.xml": [
+      {
+        "total": 226,
+        "passed": 226,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "live-reminders-container.xml": [
+      {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "live-reminders-native.xml": [
+      {
+        "total": 1,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "local-packaged-regressions.xml": [
+      {
+        "total": 14,
+        "passed": 14,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "new_regressions": {
+    "before": {
+      "failed": 14,
+      "passed": 0
+    },
+    "after": {
+      "passed": 14,
+      "failed": 0
+    },
+    "fresh_packaged_runtime": {
+      "passed": 14,
+      "failed": 0
+    }
+  },
+  "builds": "Four required Debug/source-reference test projects passed without warnings/errors; Contracts rebuilt after final XML summary refinement.",
+  "local_package_proof": {
+    "version": "3.113.0-local.511",
+    "packages": 14,
+    "package_only_consumers": 3,
+    "pack": "Canonical pack-release-packages.py passed without fallback.",
+    "validation": "Canonical validate-release-packages.py passed.",
+    "note": "Packed before the source commit; nuspec repository metadata names the precommit source base, and source-audit.json binds the tested source bytes to the final commit. This is synthetic local proof."
+  },
+  "public_release_gate": "Open: owner must publish a named corrected release containing C9 and C11 runtime fixes; package-only and runtime regression proof must then pass against its immutable source SHA.",
+  "known_blockers": [
+    {
+      "command": "Built full DomainService test executable with -result-xml domainservice-full.xml",
+      "result": "exit 1: 412 passed, one missing nested-Tenants source guardrail failure."
+    },
+    {
+      "command": "aspire start --isolated --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json",
+      "result": "exit 2: both nested Tenants host projects absent; describe/stop reported no running host."
+    },
+    {
+      "command": "Native LiveSidecar reminder recovery executable",
+      "result": "exit 1 before its test body: Redis localhost:6379 EOF. Cached Alpine/host-networking fallback passed 1/1."
+    }
+  ],
+  "frozen_intent_sha256": "a6b18e1b93db203952ffef5b341d8b124e6bec1ccb21f9398228faab9d7f4721",
+  "frozen_intent_unchanged": true,
+  "works_source_unchanged": true,
+  "source_commit_validation": "Explicit commitlint and normal commit-msg hook both passed.",
+  "pushed": false,
+  "published": false,
+  "durable_logs": "log-inventory.json: gzip archives preserve exact log bytes; readable local .log copies are ignored by repository policy.",
+  "red_regression_evidence": {
+    "raw_artifact": "patch-regressions-red.xml.gz",
+    "raw_sha256": "afa165a858ebb60a3413d6be1a814c8f1dbcc99164886600ec5995692ba36bed",
+    "readable_artifact": "patch-regressions-red.xml",
+    "normalization": "Trailing display-table padding removed; test identities and outcomes preserved. Exact raw XML is retained in the gzip archive."
+  }
+}

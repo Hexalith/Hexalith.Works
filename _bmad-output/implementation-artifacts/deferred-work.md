@@ -1197,3 +1197,11 @@ status: open
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Reconcile the open intent-gap table in the Works CI/CD spec and retain its broad Integration TRX outside `/tmp`.
   evidence: Story 4.11 review C7-BH13. `spec-implement-works-ci-cd.md` still places a 2026-09-20 "Review iteration 3" table after iteration 5, with open intent-gap rows 72–74, 93, and 103, and records the 514/514 Integration pass only as `/tmp/works-loop2-final-broad.vn9QkM/final-broad.trx`. This is outside Story 4.11.
+
+- source_spec: `spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Custom store can resolve an eraser for a different backend (C11-EC1).
+  evidence: ReadModelStoreServiceCollectionExtensions at the preserved f378afdb baseline already falls back to DaprReadModelStore when a custom IReadModelStore lacks conditional erasure. Reminder cleanup exposes this existing shared registration defect. Qualify matching store/eraser bindings centrally rather than changing generic registrations in this reminder continuation.
+
+- source_spec: `spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Mapped HTTP cancellation forwarding lacks regression tests (C11-VG2).
+  evidence: Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file.

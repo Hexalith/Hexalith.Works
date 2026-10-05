@@ -1,0 +1,283 @@
+[
+  {
+    "name": "Hexalith.EventStore.DomainService.Tests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/Hexalith.EventStore.DomainService.Tests-build.log",
+    "exit_code": 0,
+    "elapsed_seconds": 2.622,
+    "durable_log": "Hexalith.EventStore.DomainService.Tests-build.log.gz"
+  },
+  {
+    "name": "Hexalith.EventStore.Contracts.Tests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/Hexalith.EventStore.Contracts.Tests-build.log",
+    "exit_code": 0,
+    "elapsed_seconds": 4.545,
+    "durable_log": "Hexalith.EventStore.Contracts.Tests-build.log.gz"
+  },
+  {
+    "name": "Hexalith.EventStore.Client.Tests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/Hexalith.EventStore.Client.Tests-build.log",
+    "exit_code": 0,
+    "elapsed_seconds": 6.003,
+    "durable_log": "Hexalith.EventStore.Client.Tests-build.log.gz"
+  },
+  {
+    "name": "Hexalith.EventStore.Server.LiveSidecar.Tests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/Hexalith.EventStore.Server.LiveSidecar.Tests-build.log",
+    "exit_code": 0,
+    "elapsed_seconds": 17.956,
+    "durable_log": "Hexalith.EventStore.Server.LiveSidecar.Tests-build.log.gz"
+  },
+  {
+    "name": "domainservice-reminders",
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/domainservice-reminders.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 300,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/domainservice-reminders.log",
+    "exit_code": 0,
+    "elapsed_seconds": 2.176,
+    "durable_log": "domainservice-reminders.log.gz"
+  },
+  {
+    "name": "client-full",
+    "command": [
+      "tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/client-full.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 300,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/client-full.log",
+    "exit_code": 0,
+    "elapsed_seconds": 4.83,
+    "durable_log": "client-full.log.gz"
+  },
+  {
+    "name": "domainservice-full",
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/domainservice-full.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 300,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/domainservice-full.log",
+    "exit_code": 1,
+    "elapsed_seconds": 9.992,
+    "durable_log": "domainservice-full.log.gz"
+  },
+  {
+    "name": "pack-release",
+    "command": [
+      "python3",
+      "tools/pack-release-packages.py",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/packages",
+      "3.113.0-local.511"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 600,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/pack-release.log",
+    "exit_code": 0,
+    "elapsed_seconds": 37.929,
+    "durable_log": "pack-release.log.gz"
+  },
+  {
+    "name": "validate-release",
+    "command": [
+      "python3",
+      "tools/validate-release-packages.py",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/packages",
+      "3.113.0-local.511"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/validate-release.log",
+    "exit_code": 0,
+    "elapsed_seconds": 0.065,
+    "durable_log": "validate-release.log.gz"
+  },
+  {
+    "name": "contracts-reminders-effects-packaged",
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*Reminder*",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/contracts-reminders-effects-packaged.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 300,
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/packages"
+    },
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/contracts-reminders-effects-packaged.log",
+    "exit_code": 0,
+    "elapsed_seconds": 13.117,
+    "durable_log": "contracts-reminders-effects-packaged.log.gz"
+  },
+  {
+    "name": "live-reminders-native",
+    "command": [
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests",
+      "-class",
+      "*ReminderRecoveryLiveSidecarTests",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/live-reminders-native.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 240,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/live-reminders-native.log",
+    "exit_code": 1,
+    "elapsed_seconds": 1.769,
+    "durable_log": "live-reminders-native.log.gz"
+  },
+  {
+    "name": "live-reminders-container",
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "host",
+      "--mount",
+      "type=bind,source=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0,target=/proof,readonly",
+      "--mount",
+      "type=bind,source=/home/administrator/.dapr/bin/daprd,target=/root/.dapr/bin/daprd,readonly",
+      "--mount",
+      "type=bind,source=/tmp/bmad-build-4-11-continuation-4c28vzgd/verification,target=/evidence",
+      "--workdir",
+      "/proof",
+      "mcr.microsoft.com/dotnet/aspnet@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0",
+      "dotnet",
+      "Hexalith.EventStore.Server.LiveSidecar.Tests.dll",
+      "-class",
+      "*ReminderRecoveryLiveSidecarTests",
+      "-result-xml",
+      "/evidence/live-reminders-container.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 240,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/live-reminders-container.log",
+    "exit_code": 0,
+    "elapsed_seconds": 8.89,
+    "durable_log": "live-reminders-container.log.gz"
+  },
+  {
+    "name": "local-packaged-regressions",
+    "command": [
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/package-runtime/Hexalith.EventStore.DomainService.Tests",
+      "-method",
+      "*SlowFailureStartsBackoffAtSettlement",
+      "-method",
+      "*SlowFutureLookupUsesRemainingDelay",
+      "-method",
+      "*SlowRetryLookupUsesRemainingDelay",
+      "-method",
+      "*ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied",
+      "-method",
+      "*MalformedCandidateIdentifierIsNotLogged",
+      "-method",
+      "*RestoredSecretQuarantineReasonIsRepairedBeforeLogging",
+      "-result-xml",
+      "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/local-packaged-regressions.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/local-packaged-regressions.log",
+    "exit_code": 0,
+    "elapsed_seconds": 0.616,
+    "durable_log": "local-packaged-regressions.log.gz"
+  },
+  {
+    "name": "contracts-build-final-docs",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/verification/contracts-build-final-docs.log",
+    "exit_code": 0,
+    "elapsed_seconds": 11.686,
+    "durable_log": "contracts-build-final-docs.log.gz"
+  }
+]

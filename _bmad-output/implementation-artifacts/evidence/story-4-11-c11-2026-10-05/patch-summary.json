@@ -1,0 +1,70 @@
+{
+  "base_commit": "7e19e60b4510551dc3285c567d70c54e92f23096",
+  "changes": "All nine handed-off review findings corrected; no enum values, record shapes, option validation, effect codec, or Works source changed.",
+  "build": "DomainService Debug/source build passed, zero warnings/errors",
+  "tests": {
+    "regressions-red": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.12 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "b19b3ca8-4b5d-43e7-8320-d0571caecd5f",
+        "name": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll",
+        "run-date": "2026-10-05",
+        "run-time": "14:22:58",
+        "start-rtf": "2026-10-05T14:22:58.7648231+00:00",
+        "test-framework": "xUnit.net v3 4.0.1+8ed8aa354c",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "14",
+        "finish-rtf": "2026-10-05T14:22:59.0955342+00:00",
+        "not-run": "0",
+        "passed": "0",
+        "skipped": "0",
+        "time": "0.331",
+        "time-rtf": "00:00:00.3310000",
+        "total": "14"
+      }
+    ],
+    "focused": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.12 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "738c7987-e43b-42e3-a9c6-c6e5d200038c",
+        "name": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll",
+        "run-date": "2026-10-05",
+        "run-time": "14:27:14",
+        "start-rtf": "2026-10-05T14:27:14.5106542+00:00",
+        "test-framework": "xUnit.net v3 4.0.1+8ed8aa354c",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-05T14:27:14.9868331+00:00",
+        "not-run": "0",
+        "passed": "189",
+        "skipped": "0",
+        "time": "0.477",
+        "time-rtf": "00:00:00.4770000",
+        "total": "189"
+      }
+    ]
+  },
+  "protected_files": {
+    "docs/ci.md": "604e63ffba715c5ace97eff4edcb9afc11fa1f84efef722fa6fa2816c3c51654",
+    "src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs": "ebfe680f7e276a049aac4a885204bacf1e4b35e91b20cb1f34185777c0ff2184",
+    "src/Hexalith.EventStore.Contracts/Effects/EffectKindCatalog.cs": "4455cea24e40da5faf1020d638ccf0e5c9d55c735ce0a2068197579447b72b13",
+    "tests/Hexalith.EventStore.Contracts.Tests/Effects/EffectIdentityCodecTests.cs": "d51bb595918fc4be4e3d0f6cbe62b31349ffa0f00c0298d49343a480f95b72d2"
+  },
+  "changed_files": [
+    "scripts/validate-consumer-package-references.py",
+    "src/Hexalith.EventStore.Contracts/Reminders/ReminderConvergenceResult.cs",
+    "src/Hexalith.EventStore.Contracts/Reminders/ReminderDisposition.cs",
+    "src/Hexalith.EventStore.DomainService/EventStoreReminderOptions.cs",
+    "src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs",
+    "src/Hexalith.EventStore.DomainService/ReminderReconciler.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/DispositionFailingReadModelStore.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/FakeReminderScheduler.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/FakeTrustedEffectSubmitter.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderCallbackAdmissionTests.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs"
+  ],
+  "client_package_probe": "Isolated Client consumer passed against existing 3.113.0-local.491 packages; this verifies the changed script, not new runtime packaging."
+}

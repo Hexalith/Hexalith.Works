@@ -1,0 +1,72 @@
+[
+  {
+    "archive": "Hexalith.EventStore.Admin.Abstractions.3.113.0-local.511.nupkg",
+    "sha256": "830f608eac62383f67ddfba5c367d53ae58779511e4e5f61ed5a99407b1473de",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Admin.Cli.3.113.0-local.511.nupkg",
+    "sha256": "980c5bfe5745d573c75aedf73b2b50fbbf12762948b036d2b06e968b699eaef8",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Admin.Server.3.113.0-local.511.nupkg",
+    "sha256": "97384adc902090dfe97010a7cf66aa811e8af43eb1fb1726e87cdedf549ca5a2",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Aspire.3.113.0-local.511.nupkg",
+    "sha256": "36f529ec823e7723e3c3ac2d4fbfd3975b0140654eb3847643f2ab54efb25944",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Client.3.113.0-local.511.nupkg",
+    "sha256": "b9bd7e65b33a72052ac15e7c84877f588b7030c2fc406f3b3b842a36824ac7db",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Contracts.3.113.0-local.511.nupkg",
+    "sha256": "9534b8937673a30097e572925f484816b105e59a205f083909e61020c7405daf",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.DomainService.3.113.0-local.511.nupkg",
+    "sha256": "61c1176115f616ea5984c309c02a8d79532965d5efded0efabe3efd2e2d02916",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Gateway.3.113.0-local.511.nupkg",
+    "sha256": "386c43ee69daa3ba569f7f46e1ccbeaf57638d1261ecaeee38a714732ca6fc72",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.RestApi.Generators.3.113.0-local.511.nupkg",
+    "sha256": "f08c9aea08e50af5977732da63c5c6417b7aba33d6827e202b33e15f7292ad4d",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Server.3.113.0-local.511.nupkg",
+    "sha256": "5a515fc9680ec556f6982539033f7e610566b0a885181c0f2c5d61b7ef25994f",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.ServiceDefaults.3.113.0-local.511.nupkg",
+    "sha256": "9192cc144e6e5bf6aa673c5aae4e8ed401417eb599d01181bf5c36ac0653d86e",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.SignalR.3.113.0-local.511.nupkg",
+    "sha256": "80bd2c9659b249d4de2aa52cc5f3ee390b7cc0173b3525e8eeb70edc3f60c46d",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Testing.3.113.0-local.511.nupkg",
+    "sha256": "92c2a66cd2a2495c50d1a28fec569cf871e577ed4f59d65f54f71c2e6304654a",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  },
+  {
+    "archive": "Hexalith.EventStore.Testing.Integration.3.113.0-local.511.nupkg",
+    "sha256": "3014fbd2c0e58abc58b0509503981c041cd01fb0f076ffb8f1fc22c52d437809",
+    "repository_commit": "7e19e60b4510551dc3285c567d70c54e92f23096"
+  }
+]

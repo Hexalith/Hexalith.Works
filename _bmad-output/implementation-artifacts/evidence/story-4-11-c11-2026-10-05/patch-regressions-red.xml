@@ -1,0 +1,171 @@
+<assemblies schema-version="3" id="cd1f98ed-637c-489e-9274-736a047492ad" computer="Code" user="administrator" start-rtf="2026-10-05T14:22:58.7648231+00:00" finish-rtf="2026-10-05T14:22:59.0955342+00:00" timestamp="10/05/2026 16:22:59"><assembly environment="64-bit (x64) .NET 10.0.12 [collection-per-class, parallel (collections, 14 threads)]" id="b19b3ca8-4b5d-43e7-8320-d0571caecd5f" name="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll" run-date="2026-10-05" run-time="14:22:58" start-rtf="2026-10-05T14:22:58.7648231+00:00" test-framework="xUnit.net v3 4.0.1+8ed8aa354c" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="14" finish-rtf="2026-10-05T14:22:59.0955342+00:00" not-run="0" passed="0" skipped="0" time="0.331" time-rtf="00:00:00.3310000" total="14"><collection name="Test collection for Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests (id: b25f347c4737d95168244dd707decbbd9dfb685231e8a7718fdad5c6480c85e4)" id="ae7daf7b-a0dd-4c4e-a31c-7876554413e4" failed="10" not-run="0" passed="0" skipped="0" time="0.183" time-rtf="00:00:00.1830000" total="10"><test id="44d32c14-6135-4823-bfe9-52c27197dcc5" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(lookupSeconds: 30, expectedSeconds: 90)" result="Fail" time="0.168" time-rtf="00:00:00.1680000" start-rtf="2026-10-05T14:22:58.8734916+00:00" finish-rtf="2026-10-05T14:22:59.0649275+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFutureLookupUsesRemainingDelay" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="85"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : scheduler.Armed[name].DueTime
+    should be
+00:01:30
+    but was
+00:02:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(Int32 lookupSeconds, Int32 expectedSeconds) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 104
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="97bc7b0b-2672-464b-ab0b-99c18b593ea9" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(lookupSeconds: 180, expectedSeconds: 0)" result="Fail" time="0.002" time-rtf="00:00:00.0020000" start-rtf="2026-10-05T14:22:59.0694916+00:00" finish-rtf="2026-10-05T14:22:59.0727418+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFutureLookupUsesRemainingDelay" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="85"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : scheduler.Armed[name].DueTime
+    should be
+00:00:00
+    but was
+00:02:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(Int32 lookupSeconds, Int32 expectedSeconds) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 104
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="245df758-90dd-4599-a8c1-bd7da2cd855d" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(lookupSeconds: 10, expectedSeconds: 10)" result="Fail" time="0.003" time-rtf="00:00:00.0030000" start-rtf="2026-10-05T14:22:59.0743257+00:00" finish-rtf="2026-10-05T14:22:59.0782065+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowRetryLookupUsesRemainingDelay" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="111"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : scheduler.Armed[name].DueTime
+    should be
+00:00:10
+    but was
+00:00:20</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(Int32 lookupSeconds, Int32 expectedSeconds) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 133
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="590e2049-546c-482c-bcdb-c7ec4218361c" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(lookupSeconds: 30, expectedSeconds: 0)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-05T14:22:59.0782579+00:00" finish-rtf="2026-10-05T14:22:59.0796878+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowRetryLookupUsesRemainingDelay" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="111"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : scheduler.Armed[name].DueTime
+    should be
+00:00:00
+    but was
+00:00:20</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(Int32 lookupSeconds, Int32 expectedSeconds) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 133
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="f79a68d6-e044-4a2b-b57c-6c31222f87fb" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \&quot;submission\&quot;)" result="Fail" time="0.004" time-rtf="00:00:00.0040000" start-rtf="2026-10-05T14:22:59.0808423+00:00" finish-rtf="2026-10-05T14:22:59.0850890+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="9a986a39-7681-43f3-8a07-e214d5e337a6" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \&quot;submission\&quot;)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-05T14:22:59.0851367+00:00" finish-rtf="2026-10-05T14:22:59.0864845+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="cbc89d46-883e-4410-8aca-f26fab1530c9" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \&quot;audit\&quot;)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-05T14:22:59.0865261+00:00" finish-rtf="2026-10-05T14:22:59.0885565+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="a0427abc-c090-4d25-b22d-822410bd2de3" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \&quot;audit\&quot;)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-05T14:22:59.0886488+00:00" finish-rtf="2026-10-05T14:22:59.0897066+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="ce3b4562-3c79-4c39-b449-25cdb11b51f1" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \&quot;cancellation\&quot;)" result="Fail" time="0.002" time-rtf="00:00:00.0020000" start-rtf="2026-10-05T14:22:59.0897580+00:00" finish-rtf="2026-10-05T14:22:59.0920298+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="f4c0aed7-4bf8-4e45-880c-67986401c2ea" name="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \&quot;cancellation\&quot;)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-05T14:22:59.0920773+00:00" finish-rtf="2026-10-05T14:22:59.0932379+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests" method="SlowFailureStartsBackoffAtSettlement" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : retained.UpdatedAt
+    should be
+10/01/2026 09:00:40 +00:00
+    but was
+10/01/2026 09:00:00 +00:00</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(Boolean callback, String failure) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs:line 65
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test></collection><collection name="Test collection for Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests (id: 5c1178bbf21dd6261f7e9848a7dee53fd269de5f14423301e8afdd6af072ce8f)" id="334f6daa-ecac-40ee-9bb2-fbc19f799b9c" failed="1" not-run="0" passed="0" skipped="0" time="0.174" time-rtf="00:00:00.1739999" total="1"><test id="6e6ea21d-524c-4d60-a483-fcff83491d4c" name="Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied" result="Fail" time="0.174" time-rtf="00:00:00.1739999" start-rtf="2026-10-05T14:22:58.8735306+00:00" finish-rtf="2026-10-05T14:22:59.0649610+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests" method="ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCallbackAdmissionTests.cs" source-line="28"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : await harness.FireAsync(actorId, name)
+    should be
+ReminderDisposition.Submitted
+    but was
+ReminderDisposition.Retrying</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied() in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCallbackAdmissionTests.cs:line 48
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test></collection><collection name="Test collection for Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests (id: 9b1052fb590982ac11c1951e971d33ce9853b248495e5a7a2ad305e5b591c41a)" id="227d5986-f141-4930-9c95-c1bc176ca1ea" failed="3" not-run="0" passed="0" skipped="0" time="0.176" time-rtf="00:00:00.1760000" total="3"><test id="6c706170-d48d-41b2-8c32-bb305d64af31" name="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.RestoredSecretQuarantineReasonIsRepairedBeforeLogging" result="Fail" time="0.167" time-rtf="00:00:00.1670000" start-rtf="2026-10-05T14:22:58.8735192+00:00" finish-rtf="2026-10-05T14:22:59.0649762+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests" method="RestoredSecretQuarantineReasonIsRepairedBeforeLogging" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs" source-line="55"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : repaired.ReasonCode
+    should be
+\"stored-quarantine-invalid\"
+    but was
+\"secret payload and delegation token\"
+    difference
+Difference     |       |              |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |      \\|/            \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/
+Index          | ...  2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   17   18   19   20   21   22   ...
+Expected Value | ...  o    r    e    d    -    q    u    a    r    a    n    t    i    n    e    -    i    n    v    a    l    ...
+Actual Value   | ...  c    r    e    t    \\s   p    a    y    l    o    a    d    \\s   a    n    d    \\s   d    e    l    e    ...
+Expected Code  | ...  111  114  101  100  45   113  117  97   114  97   110  116  105  110  101  45   105  110  118  97   108  ...
+Actual Code    | ...  99   114  101  116  32   112  97   121  108  111  97   100  32   97   110  100  32   100  101  108  101  ...
+
+Difference     |       |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+               |      \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/  \\|/
+Index          | ...  14   15   16   17   18   19   20   21   22   23   24   25   26   27   28   29   30   31   32   33   34
+Expected Value | ...  i    n    e    -    i    n    v    a    l    i    d
+Actual Value   | ...  \\s   a    n    d    \\s   d    e    l    e    g    a    t    i    o    n    \\s   t    o    k    e    n
+Expected Code  | ...  105  110  101  45   105  110  118  97   108  105  100
+Actual Code    | ...  32   97   110  100  32   100  101  108  101  103  97   116  105  111  110  32   116  111  107  101  110  </message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.RestoredSecretQuarantineReasonIsRepairedBeforeLogging() in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs:line 72
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="732e0098-f3d1-45e5-8c2b-9dfc7e563e69" name="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(invalidTuple: False)" result="Fail" time="0.009" time-rtf="00:00:00.0090000" start-rtf="2026-10-05T14:22:59.0742353+00:00" finish-rtf="2026-10-05T14:22:59.0835800+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests" method="MalformedCandidateIdentifierIsNotLogged" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : entry.Fields[\"ActorId\"]
+    should be
+\"wra-HZT1ANXRJ95M9MPNEVPJYRE4QS912QRKTCMEZWE0EBFQK015G1WG\"
+    but was
+\"secret-tenant:secret-domain:secret-aggregate:secret-token\"</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(Boolean invalidTuple) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs:line 42
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="7f05b293-9079-4875-8455-dc7ffff0ea86" name="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(invalidTuple: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-05T14:22:59.0836295+00:00" finish-rtf="2026-10-05T14:22:59.0846356+00:00" type="Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests" method="MalformedCandidateIdentifierIsNotLogged" source-file="/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs" source-line="21"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : entry.Fields[\"ActorId\"]
+    should be
+\"candidate-invalid\"
+    but was
+\"secret-tenant:secret-domain:secret-aggregate:secret-token\"</message><stack-trace>   at Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(Boolean invalidTuple) in /home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs:line 42
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test></collection></assembly></assemblies>

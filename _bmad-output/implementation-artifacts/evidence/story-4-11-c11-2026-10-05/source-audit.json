@@ -1,0 +1,42 @@
+{
+  "eventstore_source_commit": "7450da14b18d8ae9374b1cacde9f39765bcb28d9",
+  "base_commit": "7e19e60b4510551dc3285c567d70c54e92f23096",
+  "source_hashes": {
+    "scripts/validate-consumer-package-references.py": "2395526d614888dffdaf6dca64e5ef6b816864824ee79ee6131e0d92ec2466b6",
+    "src/Hexalith.EventStore.Contracts/Reminders/ReminderConvergenceResult.cs": "d347006d9732883966eff82c35582fe1c18fff6b38fa59159a9c6d99f1ee2dcd",
+    "src/Hexalith.EventStore.Contracts/Reminders/ReminderDisposition.cs": "c555cfd47bcee3ee2792c624fbd20dbe36cbc23ae1e0b3c2621b4515a554e638",
+    "src/Hexalith.EventStore.DomainService/EventStoreReminderOptions.cs": "86d39a9899ca6149ce409edbaf9280ff2d9adc24363e68181496a27241cfd050",
+    "src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs": "868526eba7d92d32044a55834a942bddd9738861734902b448ae202737a9a0a9",
+    "src/Hexalith.EventStore.DomainService/ReminderReconciler.cs": "af24f93085358fbc785d924351377032ac61f86fbba2046f033a249248f65b5a",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/DispositionFailingReadModelStore.cs": "0ce31e14831218a6788f584dc7830be54c9a29d24c63be23bb786c110ead4bb8",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/FakeReminderScheduler.cs": "8c5bbcb793e69c14386138553ae9a43f6ec5221683ca3e7b693a0bb415b8f9b4",
+    "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/FakeTrustedEffectSubmitter.cs": "d8b9ea8ef4b57574061fbfca31216a8aafc5978ce33206a621cffb5e8a583a89",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderCallbackAdmissionTests.cs": "aa984edaadd9e325e5d746f622e3216a555d2de104696ac7bbcec0e5aeae5a82",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs": "2395692dd502ace2d936834a806b41befd3e3eca6d215d5c27d5f9d82ce8b710",
+    "tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs": "3ff5b44d624b5a77f7589ba2358d68accc2dd37e24479897f6cc37cd5bf2fffb"
+  },
+  "protected_files": {
+    "docs/ci.md": {
+      "sha256": "604e63ffba715c5ace97eff4edcb9afc11fa1f84efef722fa6fa2816c3c51654",
+      "matches_current_head": true,
+      "matches_original_story_baseline": false
+    },
+    "src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs": {
+      "sha256": "ebfe680f7e276a049aac4a885204bacf1e4b35e91b20cb1f34185777c0ff2184",
+      "matches_current_head": true,
+      "matches_original_story_baseline": true
+    },
+    "src/Hexalith.EventStore.Contracts/Effects/EffectKindCatalog.cs": {
+      "sha256": "4455cea24e40da5faf1020d638ccf0e5c9d55c735ce0a2068197579447b72b13",
+      "matches_current_head": true,
+      "matches_original_story_baseline": true
+    },
+    "tests/Hexalith.EventStore.Contracts.Tests/Effects/EffectIdentityCodecTests.cs": {
+      "sha256": "d51bb595918fc4be4e3d0f6cbe62b31349ffa0f00c0298d49343a480f95b72d2",
+      "matches_current_head": true,
+      "matches_original_story_baseline": true
+    }
+  },
+  "python_ast": "passed",
+  "source_worktree_clean": true
+}

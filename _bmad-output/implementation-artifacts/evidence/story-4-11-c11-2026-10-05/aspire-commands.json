@@ -1,0 +1,41 @@
+[
+  {
+    "command": [
+      "aspire",
+      "start",
+      "--isolated",
+      "--apphost",
+      "src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj",
+      "--non-interactive",
+      "--format",
+      "Json"
+    ],
+    "exit_code": 2,
+    "log": "/tmp/bmad-build-4-11-continuation-4c28vzgd/aspire-start.log",
+    "blocker": "Both nested Hexalith.Tenants host projects are absent; no nested submodule was initialized."
+  },
+  {
+    "command": [
+      "aspire",
+      "describe",
+      "--apphost",
+      "src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj",
+      "--non-interactive",
+      "--format",
+      "Json"
+    ],
+    "exit_code": 0,
+    "result": "No AppHost is currently running."
+  },
+  {
+    "command": [
+      "aspire",
+      "stop",
+      "--apphost",
+      "src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj",
+      "--non-interactive"
+    ],
+    "exit_code": 0,
+    "result": "No AppHost is currently running."
+  }
+]

@@ -1,0 +1,163 @@
+[
+  {
+    "id": "C11-BH1",
+    "finding": "Tenant-mismatched discovery is relabeled on write",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C4-EC1 / split-review chunk A BH7: unchanged write lambdas relabel only corrupt discovery; foreign actor identifiers fail scan re-derivation and retain Degraded readiness. Do not add the previously rejected rare-state guard."
+  },
+  {
+    "id": "C11-BH2",
+    "finding": "Slow failed submission consumes its stored retry window",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "Convergence and callbacks pass a pre-submission clock to settlement; Retry persists it after an awaited failure. The reproduced 40-second failure with a 30-second backoff permits immediate resubmission. Timestamp retry state when the failed operation finishes."
+  },
+  {
+    "id": "C11-BH3",
+    "finding": "Slow Scheduler lookup delays future re-arming",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "The per-entry clock precedes awaited IsHeldAsync, and future arming subtracts that stale instant. Refresh after lookup and clamp a crossed deadline to zero; the same correction applies to a backoff reminder being repaired."
+  },
+  {
+    "id": "C11-BH4",
+    "finding": "Callback discards malformed sibling intents before successful cleanup",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "Callback filters the current fold with Where(ValidateIntent is null) and records no invalid siblings. If the valid effect empties the source, settlement erases item/discovery without retaining observed invalid evidence. Persist the existing digest-based quarantine records before submission/release."
+  },
+  {
+    "id": "C11-BH5",
+    "finding": "Package Client probe uses schedule causation",
+    "verdict": "low",
+    "route": "patch",
+    "evidence": "The probe supplies ComputeReminderName to ReminderDelegationRequest although the public contract and runtime use wrk-<EffectId>. Use the submission logical identifier and assert the binding in the synthetic provider."
+  },
+  {
+    "id": "C11-BH6",
+    "finding": "Public disposition summaries overclaim cleanup completion",
+    "verdict": "low",
+    "route": "patch",
+    "evidence": "Submitted/Stale/Cancelled audits precede Scheduler cancellation and state release; a failed cancellation retains work with those audits. Correct the enum summaries and include audit/cancellation failure retries."
+  },
+  {
+    "id": "C11-BH7",
+    "finding": "Public convergence count summaries omit retained discovery and cleanup gating",
+    "verdict": "low",
+    "route": "patch",
+    "evidence": "Armed increments for retry re-arms; Submitted increments only after applied Submitted settlement; Unresolved includes failed final source folds after witness release. Correct units without changing the contract shape."
+  },
+  {
+    "id": "C11-BH8",
+    "finding": "Delay-limit comment conflates host delays with actor due times",
+    "verdict": "low",
+    "route": "patch",
+    "evidence": "The options comment attributes the Task.Delay ceiling to reminder timers, while the pinned actor SDK accepts longer due times. Correct the comment; retain all option bounds."
+  },
+  {
+    "id": "C11-BH9",
+    "finding": "No Expiry runtime or mixed-kind execution case",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C5-BH5 / iteration-0 BH15: this explicit extra runtime case remains rejected; both kinds use the same generic coordinator path and the closed codec map/composition tests pin kind support."
+  },
+  {
+    "id": "C11-BH10",
+    "finding": "Malformed candidate ActorId is logged verbatim",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "Both mismatch and catch paths in ReminderReconciler log candidate.ActorId before canonical validation. A restored tenant:domain:aggregate value is disclosed. Log only canonical digests or a bounded placeholder; assert emitted fields and preserve the candidate."
+  },
+  {
+    "id": "C11-EC1",
+    "finding": "Custom store can resolve an eraser for a different backend",
+    "verdict": "medium",
+    "route": "defer",
+    "evidence": "ReadModelStoreServiceCollectionExtensions at the preserved f378afdb baseline already falls back to DaprReadModelStore when a custom IReadModelStore lacks conditional erasure. Reminder cleanup exposes this existing shared registration defect. Qualify matching store/eraser bindings centrally rather than changing generic registrations in this reminder continuation."
+  },
+  {
+    "id": "C11-EC2",
+    "finding": "Slow uncertainty expires retry timestamp before settlement",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "Independently confirmed at the same pre-await timestamp and Retry persistence as BH2; retain its failure-end timestamp regression on convergence and callback paths."
+  },
+  {
+    "id": "C11-EC3",
+    "finding": "Candidate write/removal ignores a tenant header mismatch",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C4-EC1 / chunk A BH7, with the unchanged index write/removal behavior; the earlier rare corrupt-state rejection remains applicable."
+  },
+  {
+    "id": "C11-EC4",
+    "finding": "Another actor implementation suppresses reminder registration",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C6-BH2 / C5-EC2 / R2-EC5: unchanged registration skips an occupied name; a proxy call to a non-reminder actor fails loudly. This host-programming collision was explicitly rejected."
+  },
+  {
+    "id": "C11-EC5",
+    "finding": "Same-Version foreign write is accepted after CAS",
+    "verdict": "false",
+    "route": "carried reject",
+    "evidence": "Carried C10-BH1: the isolated reproducer seeds a privileged replacement while preserving Version. Every normal coordinator writer increments Version on CAS and actor turns serialize, so it does not demonstrate a concurrent SDK writer defect."
+  },
+  {
+    "id": "C11-EC6",
+    "finding": "Callback catch returns Retrying without readiness bookkeeping",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C9-BH3 / R2-BH6 / split-group-2 AA2: on failed persistence the durable witness remains; the next pass recovers it within the interval. The earlier rejection stands."
+  },
+  {
+    "id": "C11-EC7",
+    "finding": "Corrupt discovery fields can disclose raw text in logs",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "Same demonstrated malformed candidate ActorId disclosure as BH10. Preserve evidence and sanitize only the diagnostic identifier."
+  },
+  {
+    "id": "C11-EC8",
+    "finding": "Persisted quarantine ReasonCode allows arbitrary logged text",
+    "verdict": "medium",
+    "route": "patch",
+    "evidence": "IsValidPersistedQuarantine accepts any nonblank reason; convergence passes it directly to event 200207. Require one of the existing quarantine reason literals; use the existing malformed-quarantine digest repair to retain other evidence and verify secret text is absent from diagnostics."
+  },
+  {
+    "id": "C11-EC9",
+    "finding": "Attempts wraps at int.MaxValue",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C9-EC8 / R1-EC7 / C6-EC4: unchanged arithmetic needs an extreme or corrupt restored counter, and the extra saturating branch was already rejected."
+  },
+  {
+    "id": "C11-EC10",
+    "finding": "UpdatedAt near MaxValue overflows backoff arithmetic",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C9-EC7 / chunk A EC6: unchanged arithmetic requires a timestamp within the configured backoff of MaxValue. The prior rare-state guard rejection stands."
+  },
+  {
+    "id": "C11-VG1",
+    "finding": "CreateEffectIdentity has no Expiry execution assertion",
+    "verdict": "low",
+    "route": "carried reject",
+    "evidence": "Carried C5-BH5 / iteration-0 BH15. The filed hardcoded-kind mutant elaborates the same explicitly rejected lack of an Expiry runtime case at the unchanged generic coordinator path; preserve the recorded verdict."
+  },
+  {
+    "id": "C11-VG2",
+    "finding": "Mapped HTTP cancellation forwarding lacks regression tests",
+    "verdict": "medium",
+    "route": "defer",
+    "evidence": "Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file."
+  },
+  {
+    "id": "C11-VG3",
+    "finding": "Same-Version foreign item state can be overwritten",
+    "verdict": "false",
+    "route": "carried reject",
+    "evidence": "Carried C10-BH1, independently reproduced through an out-of-band same-Version seed. That write bypasses the normal monotonic Version/CAS protocol, as in the previously rejected case."
+  }
+]
