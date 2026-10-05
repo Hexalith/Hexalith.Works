@@ -1,0 +1,28 @@
+{
+  "command": [
+    "timeout",
+    "240s",
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "host",
+    "--mount",
+    "type=bind,source=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0,target=/proof,readonly",
+    "--mount",
+    "type=bind,source=/home/administrator/.dapr/bin/daprd,target=/root/.dapr/bin/daprd,readonly",
+    "--mount",
+    "type=bind,source=/tmp/story-4-11-c10-verification,target=/evidence",
+    "--workdir",
+    "/proof",
+    "mcr.microsoft.com/dotnet/aspnet@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0",
+    "dotnet",
+    "Hexalith.EventStore.Server.LiveSidecar.Tests.dll",
+    "-class",
+    "*ReminderRecoveryLiveSidecarTests",
+    "-result-xml",
+    "/evidence/live-reminders-container.xml"
+  ],
+  "exit_code": 0,
+  "environment_workaround": "Previously validated cached Alpine image with host networking and existing backing containers."
+}

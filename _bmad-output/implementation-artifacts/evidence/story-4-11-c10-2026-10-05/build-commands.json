@@ -1,0 +1,70 @@
+[
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c10-verification/Hexalith.EventStore.Contracts.Tests-build.log"
+  },
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c10-verification/Hexalith.EventStore.Client.Tests-build.log"
+  },
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c10-verification/Hexalith.EventStore.DomainService.Tests-build.log"
+  },
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c10-verification/Hexalith.EventStore.Server.LiveSidecar.Tests-build.log"
+  }
+]

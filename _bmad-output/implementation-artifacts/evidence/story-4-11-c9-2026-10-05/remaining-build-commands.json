@@ -1,0 +1,53 @@
+[
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Contracts.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  },
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Client.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  },
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Server.LiveSidecar.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  }
+]

@@ -1,0 +1,195 @@
+[
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Contracts.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  },
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Client.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  },
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/Hexalith.EventStore.Server.LiveSidecar.Tests-build.log",
+    "subprocess_timeout_seconds": 180,
+    "invocation": "Python subprocess.run(command, timeout=180)"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*ReminderIdentityCodecTests",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/contracts-codecs.xml"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/contracts-codecs.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/client-full.xml"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/client-full.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/domainservice-full.xml"
+    ],
+    "exit_code": 1,
+    "log": "/tmp/story-4-11-c9-implementation/domainservice-full.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests",
+      "-class",
+      "*ReminderRecoveryLiveSidecarTests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/live-reminders.xml"
+    ],
+    "exit_code": 1,
+    "log": "/tmp/story-4-11-c9-implementation/live-reminders.log"
+  },
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/domainservice-reminders.xml"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-method",
+      "*InvalidActorIdPreservesAuditWithoutStoreAccess",
+      "-method",
+      "*TranslationCancellationWithoutShutdownIsQuarantined",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/runtime-red.xml"
+    ],
+    "exit_code": 1,
+    "phase": "Before runtime fixes: eight expected failures."
+  },
+  {
+    "command": [
+      "timeout",
+      "180s",
+      "python3",
+      "tools/pack-release-packages.py",
+      "/tmp/story-4-11-c9-implementation/packages",
+      "3.113.0-local.491"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "python3",
+      "tools/validate-release-packages.py",
+      "/tmp/story-4-11-c9-implementation/packages",
+      "3.113.0-local.491"
+    ],
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/contracts-reminders-packaged.xml"
+    ],
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/story-4-11-c9-implementation/packages"
+    },
+    "exit_code": 0
+  },
+  {
+    "command": [
+      "timeout",
+      "240s",
+      "docker",
+      "run",
+      "--rm",
+      "--network",
+      "host",
+      "--mount",
+      "type=bind,source=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0,target=/proof,readonly",
+      "--mount",
+      "type=bind,source=/home/administrator/.dapr/bin/daprd,target=/root/.dapr/bin/daprd,readonly",
+      "--mount",
+      "type=bind,source=/tmp/story-4-11-c9-implementation,target=/evidence",
+      "--workdir",
+      "/proof",
+      "mcr.microsoft.com/dotnet/aspnet@sha256:57bd717ac18ff6c8a39cc0ee4a76c1f15adc46df50434c73eff0c3f1df4c88f0",
+      "dotnet",
+      "Hexalith.EventStore.Server.LiveSidecar.Tests.dll",
+      "-class",
+      "*ReminderRecoveryLiveSidecarTests",
+      "-result-xml",
+      "/evidence/live-reminders-container.xml"
+    ],
+    "exit_code": 0,
+    "environment_workaround": "Same cached Alpine image and host networking recorded by C6; read-only test assemblies/daprd and existing backing containers."
+  }
+]

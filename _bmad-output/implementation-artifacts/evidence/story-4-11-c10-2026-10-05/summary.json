@@ -1,0 +1,78 @@
+{
+  "story": "4.11",
+  "date": "2026-10-05",
+  "review": "C10",
+  "eventstore_source_commit": "7e19e60b4510551dc3285c567d70c54e92f23096",
+  "review_layers": {
+    "blind_hunter_findings": 10,
+    "edge_case_findings": 0,
+    "verification_gaps": 0
+  },
+  "triage": {
+    "patches": 6,
+    "resolved": 6,
+    "rejected_or_carried_rejects": 4,
+    "new_deferrals": 0,
+    "intent_gaps": 0,
+    "bad_specs": 0
+  },
+  "tests": {
+    "client-full.xml": [
+      {
+        "total": 917,
+        "passed": 917,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "domainservice-reminders.xml": [
+      {
+        "total": 212,
+        "passed": 212,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "effect-codecs.xml": [
+      {
+        "total": 17,
+        "passed": 17,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "contracts-reminders-packaged.xml": [
+      {
+        "total": 34,
+        "passed": 34,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "live-reminders-container.xml": [
+      {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "builds": "All four Debug sibling-source test projects passed with zero warnings and errors.",
+  "local_package_proof": {
+    "version": "3.113.0-local.491",
+    "packages": 14,
+    "reused_from": "story-4-11-c9-2026-10-05",
+    "note": "C10 changes tests, summaries, and metadata only; executable reminder behavior matches this local pack. The package-only consumer passed again."
+  },
+  "public_release_gate": "Open: owner must publish a corrected named release containing C9 runtime fixes, then repeat package-only and runtime regression proof against that immutable release.",
+  "known_environment_blockers": "Aspire and the full DomainService suite retain the recorded missing nested-Tenants source blocker; live recovery passed using the recorded cached Alpine/host-networking fallback.",
+  "other_review_groups": "Current full-story re-review groups 1, 3, and 4 remain as recorded in the spec.",
+  "frozen_intent_unchanged": true,
+  "pushed": false
+}

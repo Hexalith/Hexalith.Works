@@ -1,0 +1,44 @@
+[
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*ReminderIdentityCodecTests",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/contracts-codecs.xml"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/contracts-codecs.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/client-full.xml"
+    ],
+    "exit_code": 0,
+    "log": "/tmp/story-4-11-c9-implementation/client-full.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/domainservice-full.xml"
+    ],
+    "exit_code": 1,
+    "log": "/tmp/story-4-11-c9-implementation/domainservice-full.log"
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests",
+      "-class",
+      "*ReminderRecoveryLiveSidecarTests",
+      "-result-xml",
+      "/tmp/story-4-11-c9-implementation/live-reminders.xml"
+    ],
+    "exit_code": 1,
+    "log": "/tmp/story-4-11-c9-implementation/live-reminders.log"
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "docs/ci.md": {
+    "sha256": "604e63ffba715c5ace97eff4edcb9afc11fa1f84efef722fa6fa2816c3c51654",
+    "matches_current_head": true,
+    "matches_original_story_baseline": false
+  },
+  "src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs": {
+    "sha256": "ebfe680f7e276a049aac4a885204bacf1e4b35e91b20cb1f34185777c0ff2184",
+    "matches_current_head": true,
+    "matches_original_story_baseline": true
+  },
+  "src/Hexalith.EventStore.Contracts/Effects/EffectKindCatalog.cs": {
+    "sha256": "4455cea24e40da5faf1020d638ccf0e5c9d55c735ce0a2068197579447b72b13",
+    "matches_current_head": true,
+    "matches_original_story_baseline": true
+  },
+  "tests/Hexalith.EventStore.Contracts.Tests/Effects/EffectIdentityCodecTests.cs": {
+    "sha256": "d51bb595918fc4be4e3d0f6cbe62b31349ffa0f00c0298d49343a480f95b72d2",
+    "matches_current_head": true,
+    "matches_original_story_baseline": true
+  }
+}

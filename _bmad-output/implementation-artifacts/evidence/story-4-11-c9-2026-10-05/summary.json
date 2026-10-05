@@ -1,0 +1,87 @@
+{
+  "story": "4.11",
+  "review_patch_group": "C9",
+  "date": "2026-10-05",
+  "eventstore_source_base": "8f34b395d2b05b068ed15635811e5d4adbbf5dc5",
+  "local_package_version": "3.113.0-local.491",
+  "package_count": 14,
+  "package_source": "current dirty EventStore tree; local proof, not an immutable public release",
+  "tests": {
+    "runtime-red.xml": {
+      "total": 8,
+      "passed": 0,
+      "failed": 8,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "domainservice-reminders.xml": {
+      "total": 211,
+      "passed": 211,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "contracts-codecs.xml": {
+      "total": 50,
+      "passed": 50,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "contracts-reminders-packaged.xml": {
+      "total": 34,
+      "passed": 34,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "live-reminders-container.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "domainservice-full.xml": {
+      "total": 398,
+      "passed": 397,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "client-full.xml": {
+      "total": 917,
+      "passed": 917,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "matrix": "All five frozen rows have executed passing coverage in domainservice-reminders.xml.",
+  "public_release_gate": "Reopened: public 3.113.0 predates the C9 actor-ID admission and translator-cancellation fixes. Owner publication and named-public API/runtime regression proof remain required.",
+  "environment_blockers": [
+    {
+      "command": "aspire start --isolated --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json",
+      "exit_code": 2,
+      "reason": "Nested Hexalith.Tenants and Hexalith.Tenants.Api host projects are intentionally absent."
+    },
+    {
+      "command": "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests -result-xml /tmp/story-4-11-c9-implementation/domainservice-full.xml",
+      "exit_code": 1,
+      "reason": "TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers requires the intentionally absent nested Tenants source."
+    },
+    {
+      "command": "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.LiveSidecar.Tests -class *ReminderRecoveryLiveSidecarTests",
+      "exit_code": 1,
+      "reason": "Fixture failed before the test body: Dapr Redis connection to localhost:6379 returned EOF. Cached Alpine/host-networking fallback passed."
+    }
+  ],
+  "protected_files": "All four match current HEAD. docs/ci.md already differs from the original story baseline; no changes were made to it."
+}

@@ -444,6 +444,21 @@ Review iteration 5 (2026-10-05), after the three C6 documentation patches. Revie
 
 Review iteration 6 (2026-10-05) is a chunked full-story re-review. Group 2 (the coordinator core) found 12 patches, 6 carried defers, and 23 rejections. Its per-finding record is the last "Review Findings" section of this spec, with IDs prefixed `C9-`. Groups 1, 3, and 4 remain.
 
+Continuation review C10 (2026-10-05), after the twelve C9 patches. All three context-free layers completed: blind hunter (BH, ten findings), edge-case hunter (EC, none), verification-gap (VG, no gaps). Artifact: `/tmp/bmad-build-4-11-c9-review-uc998hu8/all-changes.diff`, containing the complete preserved Works-baseline diff, current EventStore continuation, and untracked source/evidence. Every finding was judged before grouping. Six independent direct patches remain; no intent_gap or bad_spec survivor.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C10-BH1 | A same-version foreign item write is accepted after the ownership re-read | false | The reproducer directly seeded changed bytes while keeping Version 1; the reviewer confirmed no normal runtime writer can do this. The only coordinator writer increments Version on accepted CAS, and actor turns serialize. A privileged out-of-band writer bypassing that protocol does not demonstrate a concurrent SDK-turn defect. | reject |
+| C10-BH2 | Durable JSON fixtures pin default PascalCase instead of the configured Dapr writer | medium | DaprReadModelStore delegates typed writes to DaprClient and reads with that client's JsonSerializerOptions; the default domain host registers AddDaprClient. The new fixtures serialize with different default options. Use configured client options and fixed camelCase documents so the tests actually protect the production format. | patch |
+| C10-BH3 | Discovery-document JSON is not pinned | medium | The new fixture class covers item/disposition records but omits ReminderTenantRegistry and ReminderTenantCandidates/ReminderCandidate. Renaming their fields could strand restart discovery while item fixtures stay green. Add fixed writer/reader fixtures for both discovery documents. | patch |
+| C10-BH4 | Wrong-prefix callback case also fails the length guard | low | The generated other- prefix has six characters, making the identifier 58 rather than 56 characters. Use an incorrect four-character prefix with the same valid digest, isolating the prefix check. | patch |
+| C10-BH5 | No test covers cancellation requested during translation | low | Carried from iteration-3 chunks B/C BH cancellation rejection: the shutdown branch still propagates before settlement/persistence, retaining the witness. Production callbacks use CancellationToken.None. The new behavior is non-shutdown cancellation, covered on both submission paths. | carried reject |
+| C10-BH6 | Audit summary conflates independent evidence capture with entry quarantine | low | SettleAsync retains Retrying/audit-unavailable when a translation quarantine's disposition write fails; only ReminderQuarantineRecord capture is independent. Qualify the summary and state the audit-gated entry behavior. | patch |
+| C10-BH7 | Invalid-receipt theory does not continue to successful recovery | false | The three invalid values all return the same Retrying/receipt-mismatch outcome before settlement. Existing UncertainReceiptIsRetriedWithoutAcknowledgement and crash/restart receipt replay tests exercise the shared retry and valid-receipt release path; the stored reason is not a recovery branch. Their cases passed in the complete reminder run. | reject |
+| C10-BH8 | Sprint comments still say twelve C9 patches are open | low | Both last_updated comments still describe the pre-implementation action items. Update them and distinguish the earlier completed split review from the later C9 remaining groups and public-release gate. | patch |
+| C10-BH9 | Retained build commands omit timeout information | low | Implementation-agent clarification: DomainService used shell timeout 180s, which its command entry omits; the other three used Python subprocess.run timeout=180 with correctly recorded bare dotnet command arrays. Correct the DomainService array and record Python timeout metadata without inventing shell wrappers. | patch |
+| C10-BH10 | Local dirty-tree proof lacks source/package hash manifests | low | The evidence explicitly identifies an uncommitted local pack and does not claim an immutable public release. Closure still requires owner publication and version/source-SHA proof. A new archival hash inventory adds artifacts without fixing current behavior or a claimed public proof; the earlier public-hash omission was also rejected as low. | reject |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -1447,52 +1462,52 @@ All four layers completed: blind hunter (BH, 14), edge-case hunter (EC, 20), acc
 
 C9-EC4 and C9-EC15 change runtime code. Public `3.113.0` does not contain them, so applying either reopens the named-public-package close gate. The other ten are tests, comments, or documentation.
 
-- [ ] [Review][Patch] A crafted callback actor ID aliases a disposition key, and the load repair erases that audit record [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:197`] — medium (C9-EC4).
+- [x] [Review][Patch] A crafted callback actor ID aliases a disposition key, and the load repair erases that audit record [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:197`] — medium (C9-EC4).
   - `HandleCallbackAsync` rejects only a blank actor ID. `ReminderStateKeys.Item` appends the ID after `:item:`, so the ID `wra-<digest>:disposition:<subject>` names that actor's disposition key.
   - `LoadAsync` reads the disposition JSON as a `ReminderItemState` with null collections and marks it repaired. The normalized state holds no work, so `PersistAsync` erases the key through its ETag.
   - Reaching the route needs the app-channel token, or the callback-origin bypass deferred to Story 4.16.
   - Fix: return `null` before any store access unless the ID is `wra-` followed by a 52-character digest. The Scheduler fires only the `wra-` IDs this runtime registers.
-- [ ] [Review][Patch] No failing test covers a quarantined witness whose intent leaves or changes in the stream [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:644`] — medium (C9-VG2).
+- [x] [Review][Patch] No failing test covers a quarantined witness whose intent leaves or changes in the stream [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:644`] — medium (C9-VG2).
   - Callback-path quarantines (`translation-failed` and similar) keep only the quarantined entry; no quarantine record is written.
   - No test converges afterwards with the intent removed or changed. Deleting this branch turns the entry obsolete: it is audited `Cancelled`, erased, and its candidate can be released, and the suite stays green.
   - Fix: add `QuarantinedWitnessSurvivesIntentRemoval`.
-- [ ] [Review][Patch] No failing test covers purpose denial on the convergence path [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1335`] — medium (C9-VG3).
+- [x] [Review][Patch] No failing test covers purpose denial on the convergence path [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1335`] — medium (C9-VG3).
   - `UnconfiguredPurposeIsDeniedAndRetained` is denied at callback step 3 and never reaches `SubmitAsync`. Removing this guard lets registration or reconciliation submit a kind that has no configured purpose.
   - Fix: add `UnconfiguredPurposeOnConvergenceIsDeniedAndRetained`. It asserts no delegation request, no submission, a `Retrying` entry with `purpose-unconfigured`, and a `Denied` audit.
-- [ ] [Review][Patch] No failing test covers an undefined receipt disposition or a null receipt [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1425`] — medium (C9-VG4).
+- [x] [Review][Patch] No failing test covers an undefined receipt disposition or a null receipt [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1425`] — medium (C9-VG4).
   - `MismatchedReceiptIsRetained` overrides only `EffectId`.
   - Dropping the `Enum.IsDefined` check would release a witness on a receipt the coordinator cannot interpret. `HttpTrustedEffectSubmitter` deserializes an out-of-range number as an undefined value.
   - Fix: make that test a theory over a mismatched effect ID, an undefined disposition, and a null receipt.
-- [ ] [Review][Patch] No failing test covers the write-ownership re-read in `PersistAsync` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1597`] — medium (C9-VG5).
+- [x] [Review][Patch] No failing test covers the write-ownership re-read in `PersistAsync` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1597`] — medium (C9-VG5).
   - The fake stores can interpose only before the compare-and-swap.
   - Dropping the version comparison lets a turn adopt a foreign writer's ETag and then overwrite that writer's state.
   - Fix: add an after-save hook to the test store, and add `ForeignWriteAfterSaveFailsClosed`.
-- [ ] [Review][Patch] The persisted key layout and enum strings are only round-tripped, never pinned [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderStateKeys.cs:35`] — medium (C9-VG6).
+- [x] [Review][Patch] The persisted key layout and enum strings are only round-tripped, never pinned [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderStateKeys.cs:35`] — medium (C9-VG6).
   - Every test writes and reads through `ReminderStateKeys` and the same record types.
   - Removing a `JsonStringEnumConverter`, renaming a status, or changing the key prefix would strand retained state and the runbook keys, and no test would fail.
   - Fix: pin the key literals and the raw JSON of one item and one disposition, and deserialize a fixed fixture.
-- [ ] [Review][Patch] No test rejects a non-canonical target domain [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:103`] — low (C9-VG1).
+- [x] [Review][Patch] No test rejects a non-canonical target domain [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:103`] — low (C9-VG1).
   - Only a different aggregate and a blank domain are tested.
   - Without this comparison, `Widget` derives the same actor ID as `widget`, so item state and a candidate are written for the non-canonical domain.
   - Fix: add `NonCanonicalTargetDomainIsRejected`.
-- [ ] [Review][Patch] Event `200207` is not pinned, although runbook step 1 uses it to find quarantined items [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderLog.cs:39`] — low (C9-VG7).
+- [x] [Review][Patch] Event `200207` is not pinned, although runbook step 1 uses it to find quarantined items [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderLog.cs:39`] — low (C9-VG7).
   - `ReminderDiagnosticsTests` pins `200211`, `200212`, and `200214`, but not `200207`.
   - Fix: add `QuarantineEmitsStructuredEvent`. It asserts the event ID, `ActorId`, `Subject`, and `ReasonCode`, with no tenant or aggregate.
-- [ ] [Review][Patch] An `OperationCanceledException` from translation that is not a shutdown skips quarantine [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1350`] — low (C9-EC15).
+- [x] [Review][Patch] An `OperationCanceledException` from translation that is not a shutdown skips quarantine [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:1350`] — low (C9-EC15).
   - Unlike the filters at `:1067` and `:1392`, this filter lets every `OperationCanceledException` escape. Translation takes no token, so the exception cannot come from shutdown.
   - On convergence it aborts the loop before settled entries are persisted. On a callback, the generic catch returns `Retrying` on every firing, so the witness is never quarantined as `translation-failed`.
   - Fix: add `|| !cancellationToken.IsCancellationRequested` to the filter.
-- [ ] [Review][Patch] The precedence sentence added by `dcc6124a` is wrong for a stored witness [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:587`] — low (C9-EC18).
+- [x] [Review][Patch] The precedence sentence added by `dcc6124a` is wrong for a stored witness [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs:587`] — low (C9-EC18).
   - Case: a stored witness's name now carries different evidence, and that name also shares an effect identity. Convergence runs the collided branch (`:649`) before the witness check (`:666`) and records `effect-collision`. A callback on the same state records `witness-collision` (`:1084`).
   - The guide (`docs/guides/typed-reminders.md:109-113`) counts a stored witness with changed evidence as a witness collision, then says witness collisions take precedence. That is wrong for this case.
   - Both paths quarantine and submit nothing. Only the label differs.
   - Fix: in the comment, the guide (`:51-53`, `:111-113`), and the `IReminderIntentSource` remarks, limit the precedence sentence to two current intents that share one name. State that convergence labels a changed stored witness on a shared name as `effect-collision`.
-- [ ] [Review][Patch] The `ReminderEntryStatus` summaries no longer match how the statuses are used [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderEntryStatus.cs:6`] — low (C9-AA1, C9-BH9).
+- [x] [Review][Patch] The `ReminderEntryStatus` summaries no longer match how the statuses are used [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderEntryStatus.cs:6`] — low (C9-AA1, C9-BH9).
   - `Pending` is also set after a successful arm whose `Registered` audit failed (`ReminderCoordinator.cs:880-888`).
   - `Retrying` also covers audit and cancellation failures (`:720`, `:746`, `:1142`, `:1182`, `:1284`) and `Denied` outcomes (`:1309`).
   - `Quarantined` also covers `translation-failed`, `translation-invalid`, `effect-identity-invalid`, and `domain-invalid`. A `Denied` admission is retained, not quarantined.
   - Fix: rewrite the three summaries. An earlier review corrected the matching `Attempts` docs.
-- [ ] [Review][Patch] The audit wording overclaims for quarantine capture [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderDispositionRecord.cs:8`] — low (C9-AA2).
+- [x] [Review][Patch] The audit wording overclaims for quarantine capture [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderDispositionRecord.cs:8`] — low (C9-AA2).
   - The record summary says an acknowledged outcome always has audit evidence, and the comment at `ReminderCoordinator.cs:701` says audit comes before "releasing or recording".
   - In fact, new quarantine records are persisted whatever their audit result (`:756-791`), and `QuarantineActorCollisionAsync` discards its audit result and returns normally (`:954`). That behavior stays (carried chunk A AA3/AA4).
   - Fix: say that release waits for a durable audit, while quarantine capture is persisted first and audited again on every convergence.
@@ -1528,3 +1543,116 @@ C9-EC4 and C9-EC15 change runtime code. Public `3.113.0` does not contain them, 
 - `low` — EC14: A callback inside the backoff window waits a full `RetryMaxDelay`. Carried R2-EC3 and split-group-2 EC11.
 - `false` — EC17: A superseded write is reported as `state-conflict`. The re-read proves ownership before the turn chains another write. A version from another writer is not this turn's to build on, and the convergence catch then judges the reloaded durable state.
 - `low` — EC19: After later passes, an older `effect-collision` digest keeps its first reason. The label depends on history, but the evidence is never dropped. Rewriting the reason of a deduplicated record would add update logic for a cosmetic label.
+
+
+### C9 coordinator patches implemented and verified (2026-10-05)
+
+The complete spec and both frontmatter context files were read before work in
+EventStore, starting from clean source commit
+`8f34b395d2b05b068ed15635811e5d4adbbf5dc5`. All twelve C9 patch entries above
+are implemented. The frozen intent, baseline identifiers, and deferred work
+are unchanged. This completes the filed group-2 patches; the remaining full-story
+review groups are still open.
+
+- Callback admission now refuses actor IDs unless they are `wra-` plus exactly
+  52 uppercase Crockford digest characters, before any store read. Six cases
+  cover a disposition-key alias, short/long IDs, lowercase, an excluded letter,
+  and a wrong prefix, asserting the legitimate audit record and ETag survive.
+- Translation `OperationCanceledException` is quarantined as `translation-failed`
+  when the supplied token is not cancelled, on convergence and callback paths.
+  All eight runtime regression cases failed before these two fixes.
+- Persisted-state regressions cover quarantine retention after stream removal
+  or changed evidence, purpose denial during convergence, invalid/null receipts,
+  a foreign write between accepted CAS and ownership re-read, and non-canonical
+  target domains. Event 200207 is pinned through emitted structured output.
+- A new `ReminderPersistenceContractTests` class pins every version-one key,
+  fixed item/disposition JSON fixtures, tolerant deserialization, and all stored
+  lifecycle/disposition enum names. The test-store wrapper can observe a write
+  after it commits; the submitter fake can now return a null receipt deliberately.
+- The guide and intent-source remarks limit witness-collision precedence to
+  two current intents under one name and state the stored-witness convergence
+  exception. Status summaries and quarantine-audit wording describe the retained
+  state without changing classification or audit behavior.
+
+Durable XML, exact commands, environment blockers, protected-file hashes, and
+an executed matrix audit are in
+[the C9 verification summary](evidence/story-4-11-c9-2026-10-05/summary.json).
+Additional build/test/pack logs and the synthetic local packages are under
+`/tmp/story-4-11-c9-implementation/`. Commands ran from
+`references/Hexalith.EventStore`.
+
+| Check | Result |
+| --- | --- |
+| `timeout 180s dotnet build tests/<Project>/<Project>.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` for Contracts, Client, DomainService, and LiveSidecar | All four passed; zero warnings/errors |
+| Built DomainService executable with `-class '*Reminder*'` | 211/211 passed; no skips/errors |
+| Built Contracts executable with both reminder and effect codec class filters | 50/50 passed; no skips/errors |
+| Full built Client executable | 917/917 passed; no skips/errors |
+| Canonical `tools/pack-release-packages.py` and `tools/validate-release-packages.py`, version `3.113.0-local.491` | All 14 packages packed and validated; no packaging fallback required |
+| `EVENTSTORE_PACKAGE_CONTRACT_DIR=/tmp/story-4-11-c9-implementation/packages` with Contracts `-class '*Reminder*'` | 34/34 passed; includes the R6 package-only proof and all three isolated consumers |
+| LiveSidecar `-class '*ReminderRecoveryLiveSidecarTests'`, cached Alpine image and Docker host networking | 1/1 passed; persisted registration, restart receipt replay, same-source reschedule, deleted-Scheduler recovery, due time, and repeat period proved |
+| Executed frozen matrix audit | All five rows have passing persisted-state coverage |
+| `git diff --check` in EventStore and Works | Passed |
+
+The native live command failed before its test body: Dapr's Redis connection to
+`localhost:6379` returned EOF. The successful repeat used the same cached Alpine
+image, read-only `daprd` 1.18.4, existing backing containers, and host-networking
+workaround already recorded by C6. No service or host configuration changed.
+
+The full DomainService executable returned exit 1: 397 passed and one failed,
+`TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers`,
+whose nested Tenants source is intentionally absent. The pre-change command
+`aspire start --isolated --apphost src/Hexalith.EventStore.AppHost/Hexalith.EventStore.AppHost.csproj --non-interactive --format Json`
+returned exit 2 on the same absent nested Tenants host projects. `aspire describe`
+and `aspire stop` confirmed no running AppHost. The known unrelated Contracts
+packaging/governance failures were not rerun; their subjects did not change.
+No nested submodule was initialized and no validation gate was weakened.
+
+All four protected files match this session's starting EventStore HEAD. The
+sealed `docs/ci.md` already differs from the original `f378afdb` story baseline;
+this continuation leaves its current bytes untouched. Effect codec, catalog,
+and golden-vector source still match that original baseline. Works source is
+unchanged. No staging, commit, push, branch change, dependency update, or
+publication was performed.
+
+**The corrected public-release gate is open again.** Public `3.113.0` predates
+C9-EC4 and C9-EC15. The owner must publish the reviewed corrections as a named
+public release, then the R6 package-only proof and runtime regressions must pass
+against that release with its immutable source SHA recorded. The synthetic local
+pack includes uncommitted C9 code and does not close that gate. Story status
+remains `in-progress`.
+
+
+### C10 review corrections and final verification (2026-10-05)
+
+All six direct C10 patches are implemented. Persistence fixtures now resolve
+serializer options from the domain host's configured Dapr client and pin the
+actual camelCase item, disposition, tenant registry, and candidate documents.
+The wrong-prefix vector keeps a valid actor-ID length and digest. The audit
+summary distinguishes independent quarantine-record evidence from audit-gated
+entry transitions. Sprint comments and exact build timeout metadata are corrected.
+No executable reminder behavior changed after the C9 fixes.
+
+All four test projects rebuilt in Debug with sibling sources, zero warnings,
+and zero errors. Final parent-agent checks passed: DomainService reminders
+212/212; packaged Contracts reminders 34/34; effect codec 17/17; Client full
+917/917; live recovery 1/1 with the documented container fallback. The packaged
+Contracts run includes 33 reminder codec cases and the package-only proof, so
+both codec suites remain 50/50. Every frozen matrix row was checked against the
+final executed XML. All three review layers completed; six direct corrections
+were applied, four findings rejected or carried as rejections, and no new work
+was deferred. The existing nested-Tenants/Aspire blocker remains documented.
+
+[Final C10 commands, build logs, test XML, and matrix audit](evidence/story-4-11-c10-2026-10-05/summary.json)
+bind this verification to EventStore source commit
+`7e19e60b4510551dc3285c567d70c54e92f23096`. That local Conventional Commit passed explicit commitlint
+validation and the repository commit hook. The baseline identifiers and frozen
+intent are unchanged. The existing fourteen-package local inventory was reused
+because C10 changes only tests, comments, and metadata; it is not a public-release
+closure proof.
+
+The workflow's generic done transition is withheld under the frozen release
+decision: a named owner-published release containing the C9 runtime fixes still
+needs package-only and runtime regression proof. Spec and sprint status remain
+`in-progress`. Current full-story re-review groups 1, 3, and 4 remain as previously
+recorded. No publication, push, dependency update, branch change, or nested
+submodule initialization was performed.

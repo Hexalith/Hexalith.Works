@@ -1,0 +1,50 @@
+[
+  {
+    "command": [
+      "tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-c10-verification/domainservice-reminders.xml"
+    ],
+    "environment": {},
+    "exit_code": 0,
+    "timeout_seconds": 300
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-c10-verification/contracts-reminders-packaged.xml"
+    ],
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/story-4-11-c9-implementation/packages"
+    },
+    "exit_code": 0,
+    "timeout_seconds": 300
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/story-4-11-c10-verification/effect-codecs.xml"
+    ],
+    "environment": {},
+    "exit_code": 0,
+    "timeout_seconds": 300
+  },
+  {
+    "command": [
+      "tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-c10-verification/client-full.xml"
+    ],
+    "environment": {},
+    "exit_code": 0,
+    "timeout_seconds": 300
+  }
+]
