@@ -1,0 +1,190 @@
+[
+  {
+    "name": "build-Hexalith.EventStore.Contracts.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 10.101,
+    "durable_log": "build-Hexalith.EventStore.Contracts.Tests.log.gz"
+  },
+  {
+    "name": "build-Hexalith.EventStore.DomainService.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 3.885,
+    "durable_log": "build-Hexalith.EventStore.DomainService.Tests.log.gz"
+  },
+  {
+    "name": "build-Hexalith.EventStore.Client.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 6.055,
+    "durable_log": "build-Hexalith.EventStore.Client.Tests.log.gz"
+  },
+  {
+    "name": "build-Hexalith.EventStore.Server.LiveSidecar.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 9.131,
+    "durable_log": "build-Hexalith.EventStore.Server.LiveSidecar.Tests.log.gz"
+  },
+  {
+    "name": "source-domainservice-reminders",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-public-3.117.1-20261008/source-domainservice-reminders.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 1.368,
+    "durable_log": "source-domainservice-reminders.log.gz"
+  },
+  {
+    "name": "source-codecs",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-class",
+      "*ReminderIdentityCodecTests",
+      "-class",
+      "*EffectIdentityCodecTests",
+      "-result-xml",
+      "/tmp/story-4-11-public-3.117.1-20261008/source-codecs.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 0.515,
+    "durable_log": "source-codecs.log.gz"
+  },
+  {
+    "name": "source-client-full",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests",
+      "-result-xml",
+      "/tmp/story-4-11-public-3.117.1-20261008/source-client-full.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 6.153,
+    "durable_log": "source-client-full.log.gz"
+  },
+  {
+    "name": "public-package-validation",
+    "command": [
+      "python3",
+      "tools/validate-release-packages.py",
+      "/tmp/story-4-11-public-3.117.1-20261008/packages",
+      "3.117.1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 0.064,
+    "durable_log": "public-package-validation.log.gz",
+    "preparation_replay": {
+      "recipe": "replay-proof.py",
+      "instructions": "REPLAY.md",
+      "operations": "Download the 14 public archives from retained URLs; verify archive hashes and nuspec source commits. These preparation operations were not individually logged in the original command ledger."
+    }
+  },
+  {
+    "name": "public-package-consumer",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-method",
+      "*PackagedReminderApiRunsWithoutWorksTypes",
+      "-result-xml",
+      "/tmp/story-4-11-public-3.117.1-20261008/public-package-consumer.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "timeout_seconds": 240,
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/story-4-11-public-3.117.1-20261008/packages"
+    },
+    "exit_code": 0,
+    "duration_seconds": 11.928,
+    "durable_log": "public-package-consumer.log.gz"
+  },
+  {
+    "name": "public-domainservice-reminders",
+    "command": [
+      "/tmp/story-4-11-public-3.117.1-20261008/public-runtime-host/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-public-3.117.1-20261008/public-domainservice-reminders.xml"
+    ],
+    "cwd": "/tmp/story-4-11-public-3.117.1-20261008/public-runtime-host",
+    "timeout_seconds": 180,
+    "environment": {},
+    "exit_code": 0,
+    "duration_seconds": 1.573,
+    "durable_log": "public-domainservice-reminders.log.gz",
+    "preparation_replay": {
+      "recipe": "replay-proof.py",
+      "instructions": "REPLAY.md",
+      "operations": "Copy the source-built DomainService test fixture, retain its dependency graph, and replace the six EventStore SDK DLLs with verified public archive entries.",
+      "retained_dependency_manifest": "public-runtime-dependencies.json"
+    }
+  }
+]

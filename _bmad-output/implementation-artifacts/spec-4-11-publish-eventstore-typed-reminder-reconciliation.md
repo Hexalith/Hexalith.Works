@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -486,6 +486,25 @@ Continuation review C11 (2026-10-05). All three context-free workflow layers com
 | C11-VG1 | CreateEffectIdentity has no Expiry execution assertion | low | Carried C5-BH5 / iteration-0 BH15. The filed hardcoded-kind mutant elaborates the same explicitly rejected lack of an Expiry runtime case at the unchanged generic coordinator path; preserve the recorded verdict. | carried reject |
 | C11-VG2 | Mapped HTTP cancellation forwarding lacks regression tests | medium | Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file. | defer |
 | C11-VG3 | Same-Version foreign item state can be overwritten | false | Carried C10-BH1, independently reproduced through an out-of-band same-Version seed. That write bypasses the normal monotonic Version/CAS protocol, as in the previously rejected case. | carried reject |
+
+Continuation review C12 (2026-10-08). All three context-free workflow layers reviewed the complete preserved Works-baseline diff, including the new public `3.117.1` closure evidence. Blind hunter returned ten findings, edge-case hunter four, and verification-gap no gaps. Every finding was judged before grouping. Six direct evidence/metadata corrections are assigned; two pre-existing agent-context omissions are deferred. Previously adjudicated findings retain their routes and are not filed again.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C12-BH1 | Public SDK regression host retains source-built transitive dependencies | low | The shadow host replaces six EventStore DLLs and retains `Hexalith.Commons.UniqueIds/1.0.0` from its source test graph; the package-only consumers independently restore public package dependencies. Qualify the runtime fixture in the evidence rather than claiming a wholly restored package graph. | patch |
+| C12-BH2 | Recorded test commands omit download and shadow-host preparation | low | `commands.json` starts with builds and later assumes the public archives and prepared host exist. Retain a replay recipe for downloading/hash-checking the named packages and preparing the same fixture before executing the recorded checks. | patch |
+| C12-BH3 | Shadow-host dependency manifest is hashed but not retained | low | `public-runtime-bindings.json` binds the `.deps.json` hash without retaining its bytes. Copy that manifest into the evidence and bind its retained filename so the fixture graph remains inspectable. | patch |
+| C12-BH4 | Reused live proof lacks retained actor/test/fixture source comparisons | low | Parent comparison confirms unchanged actor, live reminder test, and reminder-specific fixtures. The shared fixture gained an optional HotReload override that is inactive when its environment variable is absent. Retain those comparisons and the default-path qualification; do not claim every fixture byte is unchanged. | patch |
+| C12-BH5 | Current sprint comments still report an open public-release gate | low | The current sprint header predates the passing `3.117.1` proof. Correct its publication comments and review-phase status now; the final workflow transition will synchronize completion. | patch |
+| C12-BH6 | Client result filename omits the retained gzip suffix | low | The new summary names `source-client-full.xml`, while the retained bytes are `source-client-full.xml.gz`. Name the actual artifact and state its compression. | patch |
+| C12-BH7 | Epic context says Claim is the only entry to InProgress | low | `epic-4-context.md` contains that statement while the existing lifecycle also resumes Suspended work to InProgress. This pre-existing agent-context wording can misdirect future stories; record the Claim-versus-Resume qualification for a context refresh. | defer |
+| C12-BH8 | Epic context omits explicit persist-before-publication wording | low | Carried C3-BH9 / C7-BH10: the same committed context omission and loaded architecture authority remain. Preserve the existing deferred entry without rewriting context or filing it again. | carried defer |
+| C12-BH9 | Epic context omits runtime persisted-end-state evidence requirements | low | The earlier context refresh retains Tier-1 isolation but omits its previous explicit runtime evidence sentence. This story itself requires and executes persisted-state tests; restore the context requirement in its next dedicated refresh. | defer |
+| C12-BH10 | Works CI/CD acceptance TRX is retained only under /tmp | medium | Carried C7-BH13 / C8-BH9: the unchanged CI/CD spec still cites its temporary broad Integration TRX. The existing separate-story deferred entry already records this defect. | carried defer |
+| C12-EC1 | Historical packaging helper raises IndexError without arguments | low | Carried C7-EC1 / C8-EC1: the same one-shot evidence helper reads positional arguments directly. Adding an argument guard remains disproportionate for a helper product callers never execute. | carried reject |
+| C12-EC2 | Historical packaging helper can retain stale output archives | low | The retained one-shot fallback accepts an existing output directory; historical proof used a fresh versioned directory and canonical validation. A new nonempty-directory guard adds branching for an uncommon reuse of an archival helper. | reject |
+| C12-EC3 | Epic context removes persist-before-publication | low | Carried C3-BH9, as for C12-BH8. The existing context-refresh deferral is preserved and not appended again. | carried defer |
+| C12-EC4 | Stale callback convergence may submit a due replacement | false | Carried iteration-0 EC14 / C4-EC2 / C6-EC5: the stale witness is the audited no-op; admitted convergence may independently submit a current due intent. The recorded design explicitly permits that behavior. | carried reject |
 
 ## Design Notes
 
@@ -1751,3 +1770,78 @@ workflow's generic done transition is withheld under the frozen release decision
 spec and sprint status remain `in-progress`. The local implementation commit
 makes the changes reviewable. No push, publication, dependency update, branch
 change, or nested-submodule initialization was performed.
+
+### Public 3.117.1 corrected-release proof (2026-10-08)
+
+The complete spec and both frontmatter context files were loaded before this
+continuation. Every implementation task and filed patch is already present in
+the clean EventStore checkout at
+`07d1e23a6c5b06bbbb1fc8ddb5174cc3382d3d93`; no implementation change was needed.
+
+All 14 owner-published EventStore `3.117.1` archives were downloaded from the
+official NuGet flat-container endpoints. The canonical release validator
+accepted the complete inventory. Every nuspec identifies source commit
+`0dad344d37343f589d859d6d8d6701283122b338`. Its Contracts and Client reminder
+directories, coordinator, and reconciler are byte-identical to the reviewed
+C11 source at `7450da14b18d8ae9374b1cacde9f39765bcb28d9`. This proof uses exact
+source equality; it does not claim the C11 commit is an ancestor of the release.
+
+`PackagedReminderApiRunsWithoutWorksTypes` passed 1/1 with zero skips against
+these public packages, exercising all three isolated package-only consumers.
+The current DomainService reminder test host also passed 227/227 with zero
+skips after its Contracts, Client, DomainService, ServiceDefaults, Server, and
+Testing assemblies were replaced with the public package assemblies. The
+executed XML includes all 24 C6 collision cases, eight C9 admission/translation
+cases, and fourteen C11 regressions. The binding artifact records each public
+archive, extracted assembly, test-host assembly, test assembly, and result XML
+hash; the SDK assembly hashes were checked again after the run.
+
+Fresh source checks also passed: 227/227 DomainService reminder tests, 50/50
+reminder/effect codec tests, and 1,498/1,498 Client tests, with no errors or
+skips. All four required test projects built in Debug with sibling sources,
+zero warnings, and zero errors. Every frozen matrix row has passing executed
+persisted-state coverage against the public runtime.
+
+[Durable commands, package metadata and hashes, assembly bindings, XML, source audit, and matrix proof](evidence/story-4-11-public-3.117.1-2026-10-08/summary.json)
+record this named-public-release acceptance proof. **The corrected public
+release gate is satisfied**, superseding the dated open-gate observation above.
+Workflow status is preserved for the final review.
+
+The retained C11 Redis/Dapr live proof remains valid: its actor and test source
+are unchanged. It was not rerun for this documentation-only continuation.
+Historical broad-suite and Aspire environment limitations remain separately
+recorded; no gate was weakened. Works adoption remains Story 4.15, and the
+production delegation, callback-origin/ACL, audit/retention, actor-health,
+operator-repair, and restore gates remain Story 4.16 work.
+
+Works source and its `3.114.0` package pin, the frozen intent, both baseline
+identifiers, sealed `docs/ci.md`, and the effect codec/catalog/vector source are
+unchanged. No staging, commit, push, branch change, dependency update,
+submodule initialization, or publication was performed.
+
+### C12 final review and release closure (2026-10-08)
+
+All three independent review layers completed. Each of fourteen findings has
+an individual C12 triage row: six evidence/metadata corrections are resolved,
+two pre-existing Epic 4 context-refresh issues are deferred, and six findings
+retain their prior routes or are rejected. No intent or implementation gap
+remains in this story. Reminder behavior and Works source are unchanged.
+
+The parent executed the retained replay recipe from a fresh temporary directory.
+All fourteen public archives reproduced their retained hashes and source SHA;
+the three isolated package consumers and all 227 reminder checks passed again,
+with zero errors, failures, or skips. Every frozen matrix row and all C6/C9/C11
+regression cases passed in that fresh execution. The test assembly, dependency
+manifest, six public SDK assemblies, and retained source-built dependency bytes
+also matched the original fixture. The evidence explicitly distinguishes that
+source-based regression fixture from the independently restored package-only
+consumer graph.
+
+[Final parent replay, review dispositions, commands, logs, and XML](evidence/story-4-11-public-3.117.1-2026-10-08/parent-replay-summary.json)
+complete the named-public `3.117.1` close gate. The spec is `done`; sprint status
+is `review`, the bmad-build handoff for human review. The final workflow step
+records the documentation and evidence in a validated local Conventional Commit.
+No push, publication, dependency update, branch change, or nested-submodule
+initialization accompanies this closure. Previously recorded broad-suite
+environment limitations and the Story 4.16 production gates remain separately
+documented.

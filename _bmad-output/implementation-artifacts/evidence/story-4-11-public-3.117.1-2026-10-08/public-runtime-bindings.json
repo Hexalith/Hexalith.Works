@@ -1,0 +1,93 @@
+{
+  "source_commit": "0dad344d37343f589d859d6d8d6701283122b338",
+  "public_version": "3.117.1",
+  "host": "/tmp/story-4-11-public-3.117.1-20261008/public-runtime-host",
+  "assemblies": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "version": "3.117.1",
+      "archive_sha256": "2aee83e93aaee0819f856af8a5b32a031535649bb30ef546c4f855a01bb35580",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.Contracts.dll",
+      "assembly": "Hexalith.EventStore.Contracts.dll",
+      "public_assembly_sha256": "260b47e43019081afa99b50b68655fbaf5df5478e5b0d14a472e70019f513788",
+      "prior_source_assembly_sha256": "72f7adcb6e250aa1d83017ceabd67d1f443fb8330dbb7c1ef30f19a4b53694e1",
+      "test_host_assembly_sha256": "260b47e43019081afa99b50b68655fbaf5df5478e5b0d14a472e70019f513788"
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "version": "3.117.1",
+      "archive_sha256": "f2bf7cb0ba626dd659d2a4756db66795deaf7e321340b19496392363279cfc0c",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.Client.dll",
+      "assembly": "Hexalith.EventStore.Client.dll",
+      "public_assembly_sha256": "535dd9744c35d7c00e38525b03d5922344ed417e9f4ab7d7636045f523fec974",
+      "prior_source_assembly_sha256": "a304bb71ba785fd61e1c88e54676c1cf14ecab48c3a4772ccde675cdd82d8996",
+      "test_host_assembly_sha256": "535dd9744c35d7c00e38525b03d5922344ed417e9f4ab7d7636045f523fec974"
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "version": "3.117.1",
+      "archive_sha256": "5d2dd07282f76f8aa29fbf222354edfb001fb3a58b109bfe0f5f8dd6b9ace805",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.Server.dll",
+      "assembly": "Hexalith.EventStore.Server.dll",
+      "public_assembly_sha256": "996804193241ddd96e24584283a45915453f3958f26dd657921c154f831052d9",
+      "prior_source_assembly_sha256": "8a5bb693563875ecef73a185bfbbdd0b0ae4334676b37c784b94bd129df4056b",
+      "test_host_assembly_sha256": "996804193241ddd96e24584283a45915453f3958f26dd657921c154f831052d9"
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "version": "3.117.1",
+      "archive_sha256": "e135ad5b2d61b87f39b58505ea6fefa78b7ac6a6de09ed87df4c7ebc34c2ffee",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.Testing.dll",
+      "assembly": "Hexalith.EventStore.Testing.dll",
+      "public_assembly_sha256": "774cae8363c45ae372767b61344369002ea0cd82369cd4983ce9340f3f6ee121",
+      "prior_source_assembly_sha256": "9b54be36cc4bd129b803cc819945ab53d6ef03f71104dab80b0627cdb89da53f",
+      "test_host_assembly_sha256": "774cae8363c45ae372767b61344369002ea0cd82369cd4983ce9340f3f6ee121"
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "version": "3.117.1",
+      "archive_sha256": "8d7391c51f7433dba066f2a5783d62072c6a61e36ae940473619b7fe34726ba1",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.ServiceDefaults.dll",
+      "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+      "public_assembly_sha256": "6e070b57fcf3e59e1d785571f141a7bb175eabc1c93f3e6538f05041a8bce53b",
+      "prior_source_assembly_sha256": "dfe411d8b947987f740c17e68f16e117108406e9f993ce48424d32d9a7e60fe3",
+      "test_host_assembly_sha256": "6e070b57fcf3e59e1d785571f141a7bb175eabc1c93f3e6538f05041a8bce53b"
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "version": "3.117.1",
+      "archive_sha256": "d6da079ad344316be5d6cb718745d1b7a187a6e80d9fec376954688bad145cdb",
+      "archive_entry": "lib/net10.0/Hexalith.EventStore.DomainService.dll",
+      "assembly": "Hexalith.EventStore.DomainService.dll",
+      "public_assembly_sha256": "bc29babfc12dc25f524d79c8f0c7a29666a9ab17f71c13329592dbda4c65ae71",
+      "prior_source_assembly_sha256": "994fd0f51c0b94ce84f30d6029f2aadc9d2e58c6f735273de5308ab018ea1ce2",
+      "test_host_assembly_sha256": "bc29babfc12dc25f524d79c8f0c7a29666a9ab17f71c13329592dbda4c65ae71"
+    }
+  ],
+  "test_assembly_sha256": "79965f661aec61d4191ff0a1beac18dc7ea0e9b7d6ec171c47270e1df7cc86e1",
+  "deps_sha256": "ca39ffca4ac84b1ce1d892c15e98f7d9c1528599faa473e9a2e1a1d04b11134f",
+  "result_xml": {
+    "path": "public-domainservice-reminders.xml",
+    "sha256": "2826119062b8576a361d721f929c9848974189a9a795c843b8821243e9a7e8f6"
+  },
+  "assembly_hashes_unchanged_after_run": true,
+  "deps_artifact": "public-runtime-dependencies.json",
+  "fixture_graph": {
+    "kind": "Source-based regression fixture with six public EventStore SDK DLL replacements.",
+    "source_checkout_commit": "07d1e23a6c5b06bbbb1fc8ddb5174cc3382d3d93",
+    "retained_source_dependencies": [
+      {
+        "library": "Hexalith.Commons.UniqueIds/1.0.0",
+        "dependency_manifest_type": "project",
+        "assembly": "Hexalith.Commons.UniqueIds.dll",
+        "assembly_sha256": "98b8d5f6a7a2dc57d95fc8fcf35173131eac507b1b78c9446ea0beac114269db"
+      }
+    ],
+    "qualification": "The test fixture retains its source-built test assembly, source-built transitive dependencies, and original dependency graph. Its passing regressions prove behavior of the six public SDK DLLs in that fixture; they do not claim an independently restored public NuGet graph.",
+    "independent_package_only_proof": {
+      "artifact": "public-package-consumer.xml",
+      "consumers": 3,
+      "qualification": "These isolated consumers independently restore the named public packages and their NuGet dependency graph with no project references."
+    }
+  }
+}

@@ -1,0 +1,217 @@
+[
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/3.117.1/hexalith.eventstore.contracts.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Contracts.3.117.1.nupkg",
+    "sha256": "2aee83e93aaee0819f856af8a5b32a031535649bb30ef546c4f855a01bb35580",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/3.117.1/hexalith.eventstore.client.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Client.3.117.1.nupkg",
+    "sha256": "f2bf7cb0ba626dd659d2a4756db66795deaf7e321340b19496392363279cfc0c",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/3.117.1/hexalith.eventstore.server.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Server.3.117.1.nupkg",
+    "sha256": "5d2dd07282f76f8aa29fbf222354edfb001fb3a58b109bfe0f5f8dd6b9ace805",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.signalr/3.117.1/hexalith.eventstore.signalr.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.SignalR.3.117.1.nupkg",
+    "sha256": "123d170f18bc23e09f85e9757ad752421f3960bb97f5aff14879ad745621eb01",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/3.117.1/hexalith.eventstore.testing.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Testing.3.117.1.nupkg",
+    "sha256": "e135ad5b2d61b87f39b58505ea6fefa78b7ac6a6de09ed87df4c7ebc34c2ffee",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing.integration/3.117.1/hexalith.eventstore.testing.integration.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Testing.Integration.3.117.1.nupkg",
+    "sha256": "a678795c153e6ee3177a154901eeb6426de138600b5d20ded77ac74bbe0e2f2d",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/3.117.1/hexalith.eventstore.aspire.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Aspire.3.117.1.nupkg",
+    "sha256": "c5ffd501b239aa1c1dba77888ef6ee80ab225d140edc668a5d0ad346085ef754",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/3.117.1/hexalith.eventstore.servicedefaults.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.ServiceDefaults.3.117.1.nupkg",
+    "sha256": "8d7391c51f7433dba066f2a5783d62072c6a61e36ae940473619b7fe34726ba1",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/3.117.1/hexalith.eventstore.domainservice.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.DomainService.3.117.1.nupkg",
+    "sha256": "d6da079ad344316be5d6cb718745d1b7a187a6e80d9fec376954688bad145cdb",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.restapi.generators/3.117.1/hexalith.eventstore.restapi.generators.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.RestApi.Generators.3.117.1.nupkg",
+    "sha256": "bde5111ca73c46955cc88979d6edb8c81ed7520bf80b2effaf3ff2f03368370b",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/3.117.1/hexalith.eventstore.gateway.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Gateway.3.117.1.nupkg",
+    "sha256": "9e0b94476d1286966437daceef5fe1ce83182824ddf4f650c9f0233c0046ba65",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/3.117.1/hexalith.eventstore.admin.abstractions.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Admin.Abstractions.3.117.1.nupkg",
+    "sha256": "8391428904225f3eb3f64e9bba0ec17beb6a4d61445244bbab452e5e67ac53f4",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.cli/3.117.1/hexalith.eventstore.admin.cli.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Admin.Cli.3.117.1.nupkg",
+    "sha256": "0a53c97f1a65f4f8ac4730dd1085bf39748421a90e417cebd59acde0fe56d145",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "download and verify",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.server/3.117.1/hexalith.eventstore.admin.server.3.117.1.nupkg",
+    "archive": "/tmp/story-4-11-replay-ox277ejh/packages/Hexalith.EventStore.Admin.Server.3.117.1.nupkg",
+    "sha256": "f47f7c7ca8d7c97bc4781ce1ed93f2187182748e626d337c3f37e14ffef7ea80",
+    "source_commit": "0dad344d37343f589d859d6d8d6701283122b338"
+  },
+  {
+    "operation": "command",
+    "name": "build-Hexalith.EventStore.Contracts.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "environment": {},
+    "timeout_seconds": 180,
+    "exit_code": 0
+  },
+  {
+    "operation": "command",
+    "name": "build-Hexalith.EventStore.DomainService.Tests",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj",
+      "-c",
+      "Debug",
+      "-m:1",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "environment": {},
+    "timeout_seconds": 180,
+    "exit_code": 0
+  },
+  {
+    "operation": "command",
+    "name": "package-validation",
+    "command": [
+      "python3",
+      "tools/validate-release-packages.py",
+      "/tmp/story-4-11-replay-ox277ejh/packages",
+      "3.117.1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "environment": {},
+    "timeout_seconds": 180,
+    "exit_code": 0
+  },
+  {
+    "operation": "command",
+    "name": "package-consumers",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests",
+      "-method",
+      "*PackagedReminderApiRunsWithoutWorksTypes",
+      "-result-xml",
+      "/tmp/story-4-11-replay-ox277ejh/package-consumers.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "environment": {
+      "EVENTSTORE_PACKAGE_CONTRACT_DIR": "/tmp/story-4-11-replay-ox277ejh/packages"
+    },
+    "timeout_seconds": 240,
+    "exit_code": 0
+  },
+  {
+    "operation": "prepare source-based regression host",
+    "source": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0",
+    "host": "/tmp/story-4-11-replay-ox277ejh/source-regression-host",
+    "deps_sha256": "ca39ffca4ac84b1ce1d892c15e98f7d9c1528599faa473e9a2e1a1d04b11134f",
+    "retained_source_dependency": "Hexalith.Commons.UniqueIds/1.0.0",
+    "assemblies": [
+      {
+        "assembly": "Hexalith.EventStore.Contracts.dll",
+        "sha256": "260b47e43019081afa99b50b68655fbaf5df5478e5b0d14a472e70019f513788"
+      },
+      {
+        "assembly": "Hexalith.EventStore.Client.dll",
+        "sha256": "535dd9744c35d7c00e38525b03d5922344ed417e9f4ab7d7636045f523fec974"
+      },
+      {
+        "assembly": "Hexalith.EventStore.Server.dll",
+        "sha256": "996804193241ddd96e24584283a45915453f3958f26dd657921c154f831052d9"
+      },
+      {
+        "assembly": "Hexalith.EventStore.Testing.dll",
+        "sha256": "774cae8363c45ae372767b61344369002ea0cd82369cd4983ce9340f3f6ee121"
+      },
+      {
+        "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+        "sha256": "6e070b57fcf3e59e1d785571f141a7bb175eabc1c93f3e6538f05041a8bce53b"
+      },
+      {
+        "assembly": "Hexalith.EventStore.DomainService.dll",
+        "sha256": "bc29babfc12dc25f524d79c8f0c7a29666a9ab17f71c13329592dbda4c65ae71"
+      }
+    ]
+  },
+  {
+    "operation": "command",
+    "name": "reminder-regressions",
+    "command": [
+      "/tmp/story-4-11-replay-ox277ejh/source-regression-host/Hexalith.EventStore.DomainService.Tests",
+      "-class",
+      "*Reminder*",
+      "-result-xml",
+      "/tmp/story-4-11-replay-ox277ejh/reminder-regressions.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "environment": {},
+    "timeout_seconds": 180,
+    "exit_code": 0
+  }
+]

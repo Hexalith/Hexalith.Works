@@ -1,0 +1,18 @@
+{
+  "command": [
+    "node",
+    "node_modules/@commitlint/cli/cli.js",
+    "--config",
+    "commitlint.config.mjs",
+    "--edit",
+    "/tmp/story-4-11-commit-6bubrcb0.txt",
+    "--verbose"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "cli_version": "21.2.2",
+  "message": "docs(story-4.11): verify public typed reminder release\n\nClose the named public-release gate with EventStore 3.117.1 package consumers\nand reminder regression evidence. Record completed review and fresh replay.\n",
+  "configuration_sha256": "796a04abdd8c35e645f654c9d8d571556f34ccf4ab3611c9327697a452add38d",
+  "exit_code": 0,
+  "stdout": "\u29d7   --- input ---\ndocs(story-4.11): verify public typed reminder release\n\nClose the named public-release gate with EventStore 3.117.1 package consumers\nand reminder regression evidence. Record completed review and fresh replay.\n\u2714   found 0 problems, 0 warnings\n",
+  "stderr": ""
+}

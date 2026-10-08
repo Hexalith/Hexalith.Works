@@ -1,0 +1,123 @@
+{
+  "story": "4.11",
+  "date": "2026-10-08",
+  "public_version": "3.117.1",
+  "public_source_commit": "0dad344d37343f589d859d6d8d6701283122b338",
+  "eventstore_checkout_commit": "07d1e23a6c5b06bbbb1fc8ddb5174cc3382d3d93",
+  "reviewed_source_commit": "7450da14b18d8ae9374b1cacde9f39765bcb28d9",
+  "source_binding": "Exact reminder source equality; no ancestry claim.",
+  "public_packages": 14,
+  "package_only_consumers": 3,
+  "runtime_assembly_binding": "public-runtime-bindings.json binds six public SDK DLLs in a source-based regression fixture retaining source-built transitive dependencies, including Hexalith.Commons.UniqueIds/1.0.0, to the public archives and executed XML. It does not claim an independently restored public NuGet regression graph.",
+  "builds": [
+    {
+      "project": "Hexalith.EventStore.Contracts.Tests",
+      "exit_code": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "Hexalith.EventStore.DomainService.Tests",
+      "exit_code": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "Hexalith.EventStore.Client.Tests",
+      "exit_code": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "Hexalith.EventStore.Server.LiveSidecar.Tests",
+      "exit_code": 0,
+      "warnings": 0,
+      "errors": 0
+    }
+  ],
+  "tests": {
+    "source-domainservice-reminders.xml": [
+      {
+        "total": 227,
+        "passed": 227,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "source-codecs.xml": [
+      {
+        "total": 50,
+        "passed": 50,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "source-client-full.xml.gz": [
+      {
+        "total": 1498,
+        "passed": 1498,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "public-package-consumer.xml": [
+      {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "public-domainservice-reminders.xml": [
+      {
+        "total": 227,
+        "passed": 227,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "public_runtime_regressions": {
+    "C6": {
+      "passed": 24,
+      "failed": 0
+    },
+    "C9": {
+      "passed": 8,
+      "failed": 0
+    },
+    "C11": {
+      "passed": 14,
+      "failed": 0
+    }
+  },
+  "matrix": "All five frozen rows have passing executed persisted-state coverage in public-matrix-audit.json.",
+  "public_release_gate": "Satisfied: owner-published 3.117.1 contains the reviewed C9/C11 corrections and passes R6 package-only and runtime regression proof.",
+  "live_recovery": "Retained C11 live Redis/Dapr evidence is reused by exact actor, live reminder test, and reminder-specific fixture comparisons in public-source-audit.json. The shared Dapr fixture differs only by an optional HotReload override, inactive when EVENTSTORE_TEST_DAPR_HOT_RELOAD is absent. No new live run is claimed.",
+  "historical_broad_gate_limitations": "Previously recorded nested-Tenants and Contracts packaging/governance/Aspire environment blockers remain separate; broad suites were not rerun in this documentary release closure.",
+  "production_gate": "Story 4.16 still owns delegation, callback-origin/ACL proof, append-only audit/retention, actor health, operator repair, and restore. Real-data admission remains closed.",
+  "works_source_unchanged": true,
+  "works_package_pin_unchanged": "3.114.0",
+  "frozen_intent_unchanged": true,
+  "baseline_identifiers_unchanged": true,
+  "eventstore_source_changes": false,
+  "publication_performed": false,
+  "git_mutations_performed": false,
+  "workflow_status": "Spec done; sprint review is the bmad-build handoff for human review. Three independent review layers completed, six evidence corrections resolved, and two pre-existing context-refresh findings deferred.",
+  "package_only_consumer_graph": "Three isolated consumers independently restored public 3.117.1 packages and their NuGet dependency graph with no project references; this proof is distinct from the source-based regression fixture.",
+  "compressed_test_artifacts": {
+    "source-client-full.xml.gz": {
+      "compression": "gzip",
+      "archive_sha256": "91e536e21c381ef76bcfcedf76c1d574591205e15a659797357da94c954b3883",
+      "uncompressed_sha256": "825f8af154a9251baf0e85a21585730b38842315aff63c49f0608a20404aa638"
+    }
+  },
+  "replay_recipe": "REPLAY.md and replay-proof.py download/hash-check the named archives and prepare the source-based fixture in a fresh directory without pre-existing /tmp artifacts.",
+  "git_mutations_scope": "Public-release proof execution before the parent workflow completion local commit.",
+  "parent_replay": "parent-replay-summary.json records a fresh download/hash check and passing package-only/reminder execution with the original fixture bytes reproduced."
+}

@@ -1,0 +1,45 @@
+diff --git a/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Fixtures/DaprTestContainerFixture.cs b/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Fixtures/DaprTestContainerFixture.cs
+index 48b9c8ea..f4debd5e 100644
+--- a/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Fixtures/DaprTestContainerFixture.cs
++++ b/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Fixtures/DaprTestContainerFixture.cs
+@@ -113,6 +113,7 @@ public sealed class DaprTestContainerFixture : IAsyncLifetime
+     private int _replicaDaprMetricsPort;
+     private int _replicaDaprProfilePort;
+     private string? _componentsDir;
++    private string? _runtimeConfigurationPath;
+ 
+     private string? _previousDaprHttpPort;
+     private string? _previousDaprGrpcPort;
+@@ -211,6 +212,8 @@ public sealed class DaprTestContainerFixture : IAsyncLifetime
+             await VerifyPrerequisitesAsync().ConfigureAwait(false);
+ 
+             _componentsDir = CreateComponentFiles();
++            _runtimeConfigurationPath = DaprTestRuntimeConfiguration.Create(
++                _componentsDir, Environment.GetEnvironmentVariable("EVENTSTORE_TEST_DAPR_HOT_RELOAD"));
+ 
+             await StartTestHostAsync().ConfigureAwait(false);
+ 
+@@ -754,6 +757,11 @@ public sealed class DaprTestContainerFixture : IAsyncLifetime
+         };
+ 
+         // The sidecar presents this token on every app-channel call, which the reminder callback filter requires.
++        if (_runtimeConfigurationPath is not null)
++        {
++            _daprProcess.StartInfo.Arguments += $" --config \"{_runtimeConfigurationPath}\"";
++        }
++
+         _daprProcess.StartInfo.Environment["APP_API_TOKEN"] = AppApiToken;
+ 
+         _daprProcess.OutputDataReceived += (_, e) =>
+@@ -820,6 +828,11 @@ public sealed class DaprTestContainerFixture : IAsyncLifetime
+             EnableRaisingEvents = true,
+         };
+ 
++        if (_runtimeConfigurationPath is not null)
++        {
++            _replicaDaprProcess.StartInfo.Arguments += $" --config \"{_runtimeConfigurationPath}\"";
++        }
++
+         _replicaDaprProcess.OutputDataReceived += (_, e) =>
+         {
+             if (e.Data is not null)

@@ -1205,3 +1205,11 @@ status: open
 - source_spec: `spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Mapped HTTP cancellation forwarding lacks regression tests (C11-VG2).
   evidence: Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Qualify the Epic 4 context Claim-only InProgress rule to preserve the existing Suspended-to-Resume transition.
+  evidence: Story 4.11 continuation review C12-BH7 (2026-10-08). `epic-4-context.md` says Claim is the only entry to InProgress, while the existing `WorkItemLifecycle` also resumes suspended work. This run did not modify lifecycle behavior or context; agent-context corrections belong to a dedicated refresh.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Restore the explicit runtime persisted-end-state and recovery evidence requirement in the next Epic 4 context refresh.
+  evidence: Story 4.11 continuation review C12-BH9 (2026-10-08). The earlier context refresh dropped that sentence while retaining Tier-1 isolation. Story 4.11 itself retains executed persisted-state evidence for all five frozen matrix rows; the omission affects future context-guided stories.

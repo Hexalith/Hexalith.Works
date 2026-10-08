@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-08",
+  "command": [
+    "timeout",
+    "360s",
+    "python3",
+    "_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/replay-proof.py",
+    "--eventstore-root",
+    "references/Hexalith.EventStore"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exit_code": 0,
+  "output_directory": "/tmp/story-4-11-replay-ox277ejh",
+  "downloaded_and_hash_verified_archives": 14,
+  "public_version": "3.117.1",
+  "public_source_commit": "0dad344d37343f589d859d6d8d6701283122b338",
+  "executed_recipe_sha256": "fa11cdd6591cbad4523deff70ed1bc0497f75dc635f6e139685bd6ab989180ef",
+  "recorded_test_assembly_reproduced": true,
+  "recorded_dependency_manifest_reproduced": true,
+  "recorded_source_transitive_dependencies_reproduced": true,
+  "public_sdk_assembly_hashes_verified": 6,
+  "tests": {
+    "parent-replay-package-consumers.xml": [
+      {
+        "total": 1,
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ],
+    "parent-replay-reminder-regressions.xml": [
+      {
+        "total": 227,
+        "passed": 227,
+        "failed": 0,
+        "skipped": 0,
+        "errors": 0
+      }
+    ]
+  },
+  "matrix_rows_passed": 5,
+  "public_regression_counts": {
+    "C6": 24,
+    "C9": 8,
+    "C11": 14
+  },
+  "review_layers": [
+    "blind-hunter",
+    "edge-case-hunter",
+    "verification-gap"
+  ],
+  "review_findings": 14,
+  "patch_groups_resolved": 6,
+  "new_context_deferrals": 2,
+  "carried_or_rejected": 6,
+  "runtime_source_changes": false,
+  "full_suite_environment_limitations": "Preserved separately in summary.json; unchanged behavior and passing focused/release checks do not claim a fresh broad-suite execution."
+}

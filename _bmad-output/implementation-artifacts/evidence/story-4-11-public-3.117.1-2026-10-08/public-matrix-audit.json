@@ -1,0 +1,298 @@
+{
+  "xml": "public-domainservice-reminders.xml",
+  "xml_sha256": "2826119062b8576a361d721f929c9848974189a9a795c843b8821243e9a7e8f6",
+  "public_version": "3.117.1",
+  "all_rows_passed": true,
+  "rows": {
+    "Register/reschedule": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.DuplicateRegistrationKeepsOneReminder",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.RescheduleCancelsObsoleteWitness",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.RegistrationPersistsWitnessAndIndexBeforeArming",
+        "result": "Pass"
+      }
+    ],
+    "Callback replay": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.CallbackReplayAfterRestartReturnsSameEffectAndReceipt",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.CrashBetweenReceiptAndReleaseReplaysOnAnotherHost",
+        "result": "Pass"
+      }
+    ],
+    "Stale/forged callback": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"audit-key\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"short\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"long\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"lowercase\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"excluded-letter\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"wrong-prefix\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.StaleWitnessIsAuditedNoOpAndCancelled",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.WrongIdentityCallbackMutatesNothing",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.UnconfiguredPurposeIsDeniedAndRetained",
+        "result": "Pass"
+      }
+    ],
+    "Recovery": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.NullDiscoveryCollectionRetainsRecordedItemsAndDegradesReadiness(registry: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.NullDiscoveryCollectionRetainsRecordedItemsAndDegradesReadiness(registry: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.LostRetryReminderIsRearmedDuringBackoff",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SchedulerLookupFailureRearmsFutureWitness",
+        "result": "Pass"
+      }
+    ],
+    "Restore/HA": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.RestoredStateConvergesToStream",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.ForeignWriteAfterSaveFailsClosed",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.TwoHostsRacingRegisterOnce",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.ConflictingWriterFailsClosed",
+        "result": "Pass"
+      }
+    ]
+  },
+  "regressions": {
+    "C6": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 0, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 3, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 2, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 1, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 0, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 5, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 4, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 3, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 2, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 1, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 0, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 5, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 4, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 3, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 2, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 1, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 0, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 5, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 4, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 3, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 2, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: False, inputOrder: 1, future: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 4, future: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.OverlappingWitnessAndEffectCollisionsQuarantineEveryIntent(shareSecondSource: True, inputOrder: 5, future: True)",
+        "result": "Pass"
+      }
+    ],
+    "C9": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.TranslationCancellationWithoutShutdownIsQuarantined(callback: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.TranslationCancellationWithoutShutdownIsQuarantined(callback: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"audit-key\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"short\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"long\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"lowercase\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"excluded-letter\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.InvalidActorIdPreservesAuditWithoutStoreAccess(malformed: \\\"wrong-prefix\\\")",
+        "result": "Pass"
+      }
+    ],
+    "C11": [
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCallbackAdmissionTests.ValidCallbackRetainsMalformedSiblingAfterSourceIsEmptied",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(invalidTuple: False)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(invalidTuple: True)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.RestoredSecretQuarantineReasonIsRepairedBeforeLogging",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(lookupSeconds: 30, expectedSeconds: 90)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFutureLookupUsesRemainingDelay(lookupSeconds: 180, expectedSeconds: 0)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \\\"submission\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \\\"submission\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \\\"audit\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \\\"audit\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: False, failure: \\\"cancellation\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowFailureStartsBackoffAtSettlement(callback: True, failure: \\\"cancellation\\\")",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(lookupSeconds: 10, expectedSeconds: 10)",
+        "result": "Pass"
+      },
+      {
+        "test": "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.SlowRetryLookupUsesRemainingDelay(lookupSeconds: 30, expectedSeconds: 0)",
+        "result": "Pass"
+      }
+    ]
+  }
+}

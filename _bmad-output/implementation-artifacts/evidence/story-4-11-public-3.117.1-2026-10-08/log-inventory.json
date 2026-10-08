@@ -1,0 +1,92 @@
+[
+  {
+    "file": "source-client-full.log.gz",
+    "raw_sha256": "1cb2e3dec53136831f51c19e603e6a00ce19c7fd96cfc7b7959f4bf6b94d56f4",
+    "archive_sha256": "b977954bdd246f2f95dc4eca13c9bc37cc25edc87772370f68b90a652e8a901e",
+    "raw_bytes": 2771
+  },
+  {
+    "file": "public-package-validation.log.gz",
+    "raw_sha256": "ef82a4440c1e319a649d22f743f0506ed8c1940abd366f70fee051b3218ede7e",
+    "archive_sha256": "37022bece543d3fe0646ac58eaf8db6a7afe61822a7bdcc84bf2f0361235670a",
+    "raw_bytes": 102
+  },
+  {
+    "file": "public-package-consumer.log.gz",
+    "raw_sha256": "26553ebbdfc44cb7766af42240dd32276681c887550dfea72b9dff771d52e491",
+    "archive_sha256": "94095fdca5ed563626004569219b007e46316e067e1fc05bc649f1d82b92e341",
+    "raw_bytes": 490
+  },
+  {
+    "file": "build-Hexalith.EventStore.DomainService.Tests.log.gz",
+    "raw_sha256": "d12a5131e81e2e8a5662372c1bd94807a3eda7b6988e1e40a63f776664d63515",
+    "archive_sha256": "7e8e6073eee205850e170d7bc839d56fce01f98609c0dd79275d21a73d104e5a",
+    "raw_bytes": 1955
+  },
+  {
+    "file": "public-domainservice-reminders.log.gz",
+    "raw_sha256": "27da68f3068113703cbc0f2a8779bf4887700a485bbdc66d933ceb6e9b7893ea",
+    "archive_sha256": "7b30e046b07f4323ef1dd53f0c4dac9f97b7fe5a8fc07c2ac3d35795d606debd",
+    "raw_bytes": 2255
+  },
+  {
+    "file": "build-Hexalith.EventStore.Server.LiveSidecar.Tests.log.gz",
+    "raw_sha256": "677c1e932450241e6fdc96a2d691be23a40464b0f2f2f049b4ba5b3383b3ae73",
+    "archive_sha256": "5b96489dfb36436a092acaf0e94c048d7c2e1499b9361257a035dcf800cb7f8b",
+    "raw_bytes": 4877
+  },
+  {
+    "file": "build-Hexalith.EventStore.Contracts.Tests.log.gz",
+    "raw_sha256": "d1a86556ed17775c94e73a3fc30c0c848a9c4da3adaf80e11d1aec15ebb30fc0",
+    "archive_sha256": "db096fd4e95f18200be34c4385db00715aa7dd40833ee4b83555e6d19e59022a",
+    "raw_bytes": 3477
+  },
+  {
+    "file": "build-Hexalith.EventStore.Client.Tests.log.gz",
+    "raw_sha256": "0f176527529626c74086e2f58413cbaf61af670c60fc01aecc7f6842359b3344",
+    "archive_sha256": "ccd782bd0382c8555162e3d44cfb4977bf0ba7315a3f80a046afa7c9228b51ba",
+    "raw_bytes": 3004
+  },
+  {
+    "file": "source-domainservice-reminders.log.gz",
+    "raw_sha256": "85f821a33946ba1485090ce22e46159a8ee237d53fdaa791720b9969b7b9228c",
+    "archive_sha256": "94f7b6380ebed02f8e21f3ff245c24741930156c5430d8480f45a20e24257775",
+    "raw_bytes": 2255
+  },
+  {
+    "file": "source-codecs.log.gz",
+    "raw_sha256": "d4457facff5667adc328bc9f5d2c70497cf591b44ab49e77243403d80c7fa41e",
+    "archive_sha256": "4accef5bceaef4efb1cdbb28621f124721bd56c04bb0b48cb054a9e712a25286",
+    "raw_bytes": 490
+  },
+  {
+    "file": "parent-replay-build-Hexalith.EventStore.Contracts.Tests.log.gz",
+    "raw_sha256": "cdb63dfcefc9c904d5b18ff0e602e4d2f360f50a14bb76c3f189930fea886968",
+    "archive_sha256": "477033497e2ddc3b19928ce12a7443d0fc1473637f17eb7023676b7ea94aebb6",
+    "raw_bytes": 2141
+  },
+  {
+    "file": "parent-replay-build-Hexalith.EventStore.DomainService.Tests.log.gz",
+    "raw_sha256": "21a51b333d47181ed95c2864dd67ddb18ff844da9e8138f76d439b9edef98a1e",
+    "archive_sha256": "7f2372dfa397ecadfa366413a31f116489b52964bcc64ecf28df70d19fa41c02",
+    "raw_bytes": 1760
+  },
+  {
+    "file": "parent-replay-package-consumers.log.gz",
+    "raw_sha256": "058b45cfb771d3783ce5f9b023187c5f6b6e8526270052718ad21db952cfd21c",
+    "archive_sha256": "2fed88e04e3e6832ba90c348144a00ed89a94cd7c97350745b67eafd4647855a",
+    "raw_bytes": 490
+  },
+  {
+    "file": "parent-replay-package-validation.log.gz",
+    "raw_sha256": "7df65f36df02c65ed361a28bdc97513bd61fb87121b20f0c34c1aab34bd9f2fa",
+    "archive_sha256": "c6c5f209bdffc7c8c41327be790a40a9c08ee88e2d4cf0da071bb3fa7fabedb0",
+    "raw_bytes": 94
+  },
+  {
+    "file": "parent-replay-reminder-regressions.log.gz",
+    "raw_sha256": "76ee3afb96084167a17b9445cafbcc7610fa7398343bccd131e0cb4ddeb97b7c",
+    "archive_sha256": "a2a988d9fbcde02dbdd88551b839c777307d39f3b78be2c47577bc2d109e9102",
+    "raw_bytes": 2255
+  }
+]
