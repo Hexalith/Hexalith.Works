@@ -121,15 +121,17 @@
       "C11_sha256": "e212bdf0bcdfcf8b65c37cdd52429beabddaf214393a97605cb54dd2d639c7d5",
       "checkout_sha256": "5af656695ae07f939872135e50c83992a3586a7e8a8c9081ec900148176c321d",
       "byte_identical": false,
-      "diff_artifact": "shared-dapr-fixture-diff.patch",
-      "diff_sha256": "444244fb56846e10583d56b6e7e31c5905d302ff502b6bc95f14bb92348c04a6",
+      "diff_artifact": "shared-dapr-fixture-diff.patch.gz",
+      "diff_sha256": "8aa4c9eaa8a7ab7b6df0dbe657ada8a244bba1021bd7667beb87ff54e5c171d4",
       "difference": "Optional per-test HotReload configuration and its conditional --config arguments on the primary and replica sidecars.",
       "override_source": {
         "path": "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Fixtures/DaprTestRuntimeConfiguration.cs",
         "sha256": "31c57d993d6bde7957de95b0751865f905ca90319216924c65a944bcd9b6b389"
       },
       "inactive_when": "EVENTSTORE_TEST_DAPR_HOT_RELOAD is absent: Create returns null, no private configuration is written, and neither sidecar receives an extra --config argument.",
-      "override_absent_in_current_environment": true
+      "override_absent_in_current_environment": true,
+      "diff_compression": "gzip",
+      "diff_uncompressed_sha256": "444244fb56846e10583d56b6e7e31c5905d302ff502b6bc95f14bb92348c04a6"
     },
     "scope": "Retains the C11 live proof; does not claim every shared fixture byte is unchanged or a new live execution."
   }

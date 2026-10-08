@@ -1,0 +1,18 @@
+{
+  "command": [
+    "node",
+    "node_modules/@commitlint/cli/cli.js",
+    "--config",
+    "commitlint.config.mjs",
+    "--edit",
+    "/tmp/story-4-11-evidence-correction-zhgwisfs.txt",
+    "--verbose"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "cli_version": "21.2.2",
+  "message": "docs(story-4.11): retain fixture patch as compressed evidence\n\nPreserve exact diff bytes while keeping the staged whitespace check green.\nBind the compressed archive and original patch hashes in the source audit.\n",
+  "configuration_sha256": "796a04abdd8c35e645f654c9d8d571556f34ccf4ab3611c9327697a452add38d",
+  "exit_code": 0,
+  "stdout": "\u29d7   --- input ---\ndocs(story-4.11): retain fixture patch as compressed evidence\n\nPreserve exact diff bytes while keeping the staged whitespace check green.\nBind the compressed archive and original patch hashes in the source audit.\n\u2714   found 0 problems, 0 warnings\n",
+  "stderr": ""
+}
