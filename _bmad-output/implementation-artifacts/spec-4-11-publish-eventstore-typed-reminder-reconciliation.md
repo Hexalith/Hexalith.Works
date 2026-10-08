@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -538,6 +538,27 @@ Delta review C13 (2026-10-08). Scope: the reminder files where public `3.117.1` 
 | C13-EC6 | A custom gateway audience breaks submissions | low | Same defect as C13-BH6. | patch (with C13-BH6) |
 | C13-EC7 | `MaximumLifetimeSeconds` below 120 rejects symmetric assertions | low | Same defect as C13-BH8. | patch (with C13-BH8) |
 | C13-EC8 | The "fails startup" guide claim is overbroad | false | The sentence is scoped to hosts that map handlers "before `UseEventStoreDomainService`". That call captures the route builder, and `StartingAsync` validates every data source, including later mappings. | reject |
+
+Delta review C14 (2026-10-08). Scope: the 183-line diff of the eight C13 patches in EventStore (`07d1e23a` plus uncommitted guide, XML-doc, and test edits). Reviewers: blind hunter (BH), edge-case hunter (EC), verification-gap (VG). The full baseline diff is about 3 million lines and was not reviewable; the earlier layers already covered it.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C14-BH1 | No negative tests for the three documented startup failures | false | Bare `MapActorsHandlers()` is already a covered violation (`EventStoreDomainServiceExtensionsTests.cs:1114`, case `actors`), and `DomainServiceTrustBoundaryTests.ProductionWithoutChannelToken_FailsStartup` (`:601`) covers the missing token. The docs describe pre-existing behavior. | reject |
+| C14-EC3 | Bare `MapActorsHandlers()` failure is unguarded in the reminder test class | false | Same evidence as C14-BH1; the inventory rule is tested once at its owner. | reject |
+| C14-BH2 | Test repeats the long `fallbackPolicy` expression | low | Cosmetic. The same expression is already used a few lines above in the same class, and the fix is a refactor. | reject |
+| C14-BH3 | `WorksHost.cs:130-133` is a hard-coded line range | low | The range is accurate today (`WorksHost.cs:130` `UseEventStoreDomainService`, `:133` `MapActorsHandlers`) but goes stale after any edit. A symbol citation is a direct correction. | patch (with C14-EC1, C14-EC2) |
+| C14-EC2 | Same hard-coded line range | low | Same defect as C14-BH3. | patch (with C14-BH3) |
+| C14-EC1 | Handoff bullet never names `MapEventStoreReminders()` as the replacement for the removed mapping | low | The bullet says to remove `MapActorsHandlers()` without saying what maps the actor routes. `UseEventStoreDomainService` calls `MapEventStoreReminders()` when reminders are registered (`EventStoreDomainServiceExtensions.cs:184`), but a Works adopter has to infer that. | patch |
+| C14-BH3b | "Works consumes 3.117" does not say what is versioned | false | It is the EventStore package version series; Works pins `3.114.0` today, and the change is in `3.117.1`. | reject |
+| C14-BH4 | `/alive` guidance gives only the Kubernetes annotation | false | The sentence is generic (point Dapr's application health check at `/alive`); the annotation and Aspire wiring are examples. | reject |
+| C14-BH5 | "Mapper" undefined; lifetime interplay with `MaximumLifetimeSeconds`; authority token lifetime location | false | The clauses restate Story 5.5 requirements and link `security-model.md`. "Must not exceed" already covers a lowered maximum. An authority-issued token's lifetime is the identity provider's setting. | reject |
+| C14-EC5 | Default lifetime 120 vs a lower `MaximumLifetimeSeconds` | false | Same refutation as C14-BH5. | reject |
+| C14-BH6 | Runbook points at event `5501` with no link; proposes distinguishing the statuses | low | `5501` is documented at `security-model.md:348`, which the guide's credentials section already links. Distinguishing the statuses would be new runtime surface. | reject |
+| C14-EC6 | `5501` is the only discriminator for a credential `401` | low | Same disposition as C14-BH6; the runbook sentence already names it. | reject |
+| C14-BH7 | Missing release note for the breaking missing-token change | false | Failing startup without `APP_API_TOKEN` is pre-existing (EventStore Story 5.5, tested by `ProductionWithoutChannelToken_FailsStartup`). The diff only corrects docs. | reject |
+| C14-BH8 | New `### Options` heading risks broken anchors | false | The table had no anchor of its own; a new heading adds an anchor and removes none. | reject |
+| C14-EC4 | No test for mapping after `UseEventStoreDomainService` with the policy | low | The guide prescribes mapping before it, and `StartingAsync` validates every data source regardless of order. A new test would cover an undocumented layout. | reject |
+| C14-VG | No verification gaps | n/a | The layer reported none. | n/a |
 
 ## Design Notes
 
@@ -1899,36 +1920,36 @@ Each of the 28 findings was judged before grouping. Result: 0 decision-needed, 8
 
 Only one runtime change is in scope: SDK-mapped actor handlers now require `SidecarChannel`, and the anonymous metadata on `/healthz` is removed. Checked against Dapr `release-1.18` source, `GET /dapr/config` and actor calls carry `dapr-api-token`, so actor registration and callbacks are unaffected. None of the eight patches changes runtime code. They are guide, XML-doc, and test corrections, so the named-public `3.117.1` close gate stays satisfied, as with the C6 documentation patches.
 
-- [ ] [Review][Patch] The credentials subsection captures the `EventStore:Reminders` options table [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:269`] — low (C13-BH1).
+- [x] [Review][Patch] The credentials subsection captures the `EventStore:Reminders` options table [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:269`] — low (C13-BH1).
   - The options table, its validation paragraph, and the host `APP_API_TOKEN` paragraph now sit under `### Trusted-effect submission credentials`.
   - Fix: move the subsection after the `APP_API_TOKEN` paragraph (`:319-322`), or add an `### Options` heading before the table.
-- [ ] [Review][Patch] The credentials section restates Story 5.5 requirements only partially and links to neither authoritative reference [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:277`] — low (C13-BH4, C13-BH5, C13-BH6, C13-BH7, C13-BH8, C13-EC6, C13-EC7).
+- [x] [Review][Patch] The credentials section restates Story 5.5 requirements only partially and links to neither authoritative reference [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:277`] — low (C13-BH4, C13-BH5, C13-BH6, C13-BH7, C13-BH8, C13-EC6, C13-EC7).
   - The symmetric `Workload` must equal the submitter's Dapr app ID, or the gateway denies it as `caller-conflict`.
   - Authority mode needs the audience and operation scopes declared, each with one mapper.
   - A changed `Authentication:DaprInternal:Audience` needs `AddEventStoreTrustedEffectWorkloadAssertion(gatewayAudience)` and the matching `eventstore-audience.<audience>` scope.
   - Once `AllowedCallers` is non-empty, EventStore itself needs `APP_API_TOKEN`, and the submitter needs the `Authentication:JwtBearer` contract.
   - Step 3 should name `Authentication:WorkloadIssuer:LifetimeSeconds` (default 120, capped at 300) as the value that must not exceed the receiver's `MaximumLifetimeSeconds`.
   - Fix: add these clauses and link `security-model.md` (workload assertions, breaking upgrade step) and the `configuration-reference.md` internal-caller rows.
-- [ ] [Review][Patch] The guide does not say Dapr app health checks must target `/alive` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderEndpointExtensions.cs:32`] — low (C13-EC2).
+- [x] [Review][Patch] The guide does not say Dapr app health checks must target `/alive` [`references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderEndpointExtensions.cs:32`] — low (C13-EC2).
   - Dapr 1.18's `HealthProbe` sends no `dapr-api-token`. `/healthz` on a reminder host now requires `SidecarChannel`, so an app health check on Dapr's default path returns `401` and marks the host unhealthy.
   - The in-repo Aspire wiring already uses `/alive`.
   - Fix: state the requirement in the host-composition section (`typed-reminders.md:259`), with `dapr.io/app-health-check-path: /alive` on Kubernetes.
-- [ ] [Review][Patch] The readiness runbook describes a running host that startup validation now prevents [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:353`] — low (C13-BH10, C13-AA4).
+- [x] [Review][Patch] The readiness runbook describes a running host that startup validation now prevents [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:353`] — low (C13-BH10, C13-AA4).
   - With `AddEventStoreDomainService()`, a missing `APP_API_TOKEN` outside Development fails startup in `EventStoreDomainServiceSecurityStartupValidator` before readiness is ever reported.
   - Fix: say startup fails, and keep the `Unhealthy` check only as defense in depth. Correct the same sentence in `configuration-reference.md:680`.
-- [ ] [Review][Patch] The pre-mapped composition test still models the bare `MapActorsHandlers()` host the guide now rejects [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/EventStoreReminderCompositionTests.cs:178`] — low (C13-BH2, C13-AA5, C13-VG-O2, C13-VG-O3).
+- [x] [Review][Patch] The pre-mapped composition test still models the bare `MapActorsHandlers()` host the guide now rejects [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/EventStoreReminderCompositionTests.cs:178`] — low (C13-BH2, C13-AA5, C13-VG-O2, C13-VG-O3).
   - Fix: pre-map with `MapActorsHandlers().RequireEventStoreSidecarChannel()`, keep the single-route assertion, and assert `EventStoreDomainServiceEndpointInventory.Validate(...)` is empty under the registered fallback policy. That covers the supported self-mapping shape together with `AddEventStoreReminders`.
-- [ ] [Review][Patch] The public XML docs still prescribe plain `MapActorsHandlers` [`references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderRegistrar.cs:14`] — low (C13-VG-O1, C13-BH11).
+- [x] [Review][Patch] The public XML docs still prescribe plain `MapActorsHandlers` [`references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderRegistrar.cs:14`] — low (C13-VG-O1, C13-BH11).
   - The `IReminderRegistrar` remarks say to call `MapActorsHandlers` before `UseEventStoreDomainService`.
   - The `MapEventStoreReminders` summary (`EventStoreReminderEndpointExtensions.cs:14`) mentions only the token filter.
   - Fix: both must name `.RequireEventStoreSidecarChannel()` for self-mapped handlers. This is a doc-comment-only change.
-- [ ] [Review][Patch] The Story 4.15 handoff omits the new host requirements [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:480`] — low (C13-AA3).
+- [x] [Review][Patch] The Story 4.15 handoff omits the new host requirements [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:480`] — low (C13-AA3).
   - Fix: add three bullets.
     - Remove the host's own `MapActorsHandlers()`, or apply `.RequireEventStoreSidecarChannel()` and map before `UseEventStoreDomainService`.
     - Attach `.AddEventStoreTrustedEffectWorkloadAssertion()` to the submitter client.
     - Allow-list the Works workload on EventStore.
   - Works `WorksHost.cs:130-133` maps bare handlers after `UseEventStoreDomainService`, so its startup inventory fails as soon as Works consumes ≥3.117.
-- [ ] [Review][Patch] The runbook gives no way to tell a credential `401` from a transient submission failure [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:404`] — low (C13-BH9).
+- [x] [Review][Patch] The runbook gives no way to tell a credential `401` from a transient submission failure [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:404`] — low (C13-BH9).
   - Both surface as `Retrying`/`submission-uncertain` with `HttpRequestException`.
   - Fix: add a runbook sentence. If `submission-uncertain` persists with `HttpRequestException`, check the gateway's event `5501` reason code and the assertion handler, `AllowedCallers`, and lifetime provisioning.
 
@@ -1943,3 +1964,28 @@ Only one runtime change is in scope: SDK-mapped actor handlers now require `Side
 - `low` — C13-EC3: A host that never maps the canonical endpoints skips the inventory. The composition is undocumented, a misconfigured route fails loudly on the any-workload fallback, and a guard adds branching.
 - `false` — C13-EC5: The no-leak assertions skip exceptions. No `ReminderLog` method accepts an `Exception`.
 - `false` — C13-EC8: "Fails startup" is overbroad. The sentence is scoped to `UseEventStoreDomainService` hosts, whose captured builder is validated at `StartingAsync` across every data source.
+
+### C13 patches implemented (2026-10-08)
+
+All eight C13 patches are implemented as uncommitted changes in `references/Hexalith.EventStore`. They change only the guide, two XML doc comments, and one test. No runtime behavior, public API shape, codec, option, or persisted key changed, so the named-public `3.117.1` close gate stays satisfied.
+
+- `docs/guides/typed-reminders.md`:
+  - an `### Options` heading now precedes the options table;
+  - the credentials section names the `caller-conflict` identity rule, the authority-mode scopes with one mapper each, the non-default gateway audience, `Authentication:WorkloadIssuer:LifetimeSeconds`, and the `APP_API_TOKEN` and `Authentication:JwtBearer` prerequisites, and links `security-model.md` and `configuration-reference.md`;
+  - the host-composition section requires app health checks on `/alive`;
+  - the readiness runbook says startup fails without `APP_API_TOKEN`, keeping the `Unhealthy` check as defense in depth;
+  - the Story 4.15 handoff gains the three host requirements;
+  - the runbook explains how to tell a credential `401` from a transient submission failure.
+- `docs/guides/configuration-reference.md`: the `APP_API_TOKEN` row matches the startup-failure wording.
+- `IReminderRegistrar` and `MapEventStoreReminders` XML docs name `.RequireEventStoreSidecarChannel()`.
+- `PreMappedActorHandlersAreNotDuplicated` pre-maps with `MapActorsHandlers().RequireEventStoreSidecarChannel()`, keeps the single-route assertion, and asserts the endpoint inventory is empty under the any-workload fallback policy.
+
+Verification (from `references/Hexalith.EventStore`): `dotnet build tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj -c Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` passed with 0 warnings and 0 errors. The built executable with `-class '*Reminder*'` passed 227/227 with no skips. `git diff --check` is clean. The live-sidecar and package-only proofs were not rerun because no runtime or packaged-API bytes changed. Nothing was staged, committed, pushed, or published.
+
+### C14 delta review and patch (2026-10-08)
+
+Delta review C14 covered the eight C13 patches. Fifteen findings were judged. One patch group was filed: the Story 4.15 handoff bullet now names `MapEventStoreReminders()` as the replacement for the host's own `MapActorsHandlers()`, and cites `WorksHost` symbols instead of a line range. The other findings were rejected as false or cosmetic; each has a C14 triage row. No intent or implementation gap remains.
+
+Verification: the DomainService test project built in Debug with zero warnings and errors. The built xUnit v3 assembly with `-class '*Reminder*'` passed 227/227 with zero skips. The final patch is docs only, so that result stands. `git diff --check` is clean in EventStore. The public `3.117.1` close gate is unaffected: no runtime, API, codec, option, or persisted-key change.
+
+The C13 and C14 changes remain uncommitted in `references/Hexalith.EventStore`. No staging, push, branch change, dependency update, or nested-submodule initialization was performed.
