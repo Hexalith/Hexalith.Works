@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -2141,18 +2141,18 @@ Verification: all four EventStore test projects built in Debug with zero warning
 Delta review C17 (2026-10-09) is a fresh-context review of the committed C15 action items and C16 patches: EventStore `c4dff081..8d033bd8`, three files, 181 diff lines. Review mode: full. All four layers completed: blind hunter 10, edge-case hunter 7, acceptance auditor 4, and verification gap with no gaps. Each of the 21 findings was judged before grouping (24 rows with parts). Result: 1 decision-needed, 5 patch entries (8 finding rows), 0 defer, 15 rejected. The triage log carries every C17 row. No entry changes reminder runtime behavior, so the named-public `3.117.1` close gate is unaffected.
 
 - [x] [Review][Decision] Works `b4df05e` pins an EventStore commit that is not on its remote — medium (C17-AA1). Works `main` is one commit ahead of `origin/main`, and that commit pins EventStore `8d033bd8`. EventStore `main` is ahead 1, behind 14. The 14 upstream commits do not touch the three reviewed files, so a rebase is clean, but it changes the SHA recorded in the C16 completion note and in the gitlink. Pushing Works first would repeat C15-AA2. Resolved by the owner on 2026-10-09: keep both repositories local until the C17 patches land; then rebase EventStore onto `origin/main` and push it first, repoint the Works gitlink once, correct the recorded EventStore SHA, and push Works. No commit was created or pushed by this review.
-- [ ] [Review][Patch] `EventStore:Reminders:Workload` and the issuer `Workload` default from different sources [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:342`] — low (C17-BH1, C17-EC4).
+- [x] [Review][Patch] `EventStore:Reminders:Workload` and the issuer `Workload` default from different sources [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:342`] — low (C17-BH1, C17-EC4).
   - The issuer default reads `EventStore:DomainService:AppId` first; the reminder default reads only `DAPR_APP_ID`, then the application name. A host that sets `AppId` because `DAPR_APP_ID` is absent requests mismatched delegations, and every reminder stays `Retrying`.
   - Fix: in the Options row (and the `configuration-reference.md:371` row), say to set `Workload` explicitly to the same value whenever `EventStore:DomainService:AppId` or `Authentication:WorkloadIssuer:Workload` is set, because its default reads neither key.
-- [ ] [Review][Patch] The runbook's `403` guidance names no signal and confines `5501` to assertion denials [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:471`] — low (C17-BH3, C17-EC3).
+- [x] [Review][Patch] The runbook's `403` guidance names no signal and confines `5501` to assertion denials [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:471`] — low (C17-BH3, C17-EC3).
   - A controller `Forbid()` for an admission or delegation refusal also logs gateway event `5501` with `StatusCode=403` and `Reason=operation-not-granted`, the same reason as a missing operation grant. The admission policy's payload-free `denied` audit record tells them apart.
   - Fix: say that `5501` covers both `401` assertion denials and `403` refusals, that a `403` with `operation-not-granted` can also be an admission or delegation refusal shown by the trusted-effect audit sink's `denied` record, and link [`trusted-effects.md#production-admission-gate`](trusted-effects.md#production-admission-gate).
-- [ ] [Review][Patch] Scope-prefix wording derives only the audience scope [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:310`] — low (C17-BH5, C17-EC6).
+- [x] [Review][Patch] Scope-prefix wording derives only the audience scope [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:310`] — low (C17-BH5, C17-EC6).
   - `GetOperationScope` builds `OperationScopePrefix` plus the operation with `:` replaced by `.`; the guide derives only a changed audience scope.
   - Fix: name the full keys in the parenthetical, and add that a custom `Authentication:WorkloadIssuer:OperationScopePrefix` makes the operation scope `<OperationScopePrefix>eventstore.trusted-effect`, which the authority must declare instead.
-- [ ] [Review][Patch] The runbook dropped its link to the credentials section [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:474`] — low (C17-EC7).
+- [x] [Review][Patch] The runbook dropped its link to the credentials section [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:474`] — low (C17-EC7).
   - Fix: restore "described under [Trusted-effect submission credentials](#trusted-effect-submission-credentials)" after "assertion lifetime provisioning".
-- [ ] [Review][Patch] The Azure Container Apps sentence permits a self-defined token [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:275`] — low (C17-BH10d).
+- [x] [Review][Patch] The Azure Container Apps sentence permits a self-defined token [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:275`] — low (C17-BH10d).
   - Fix: say operators must not define their own `APP_API_TOKEN` there, because a value that differs from the injected one makes every reminder actor call receive `401`, matching `deployment-azure-container-apps.md`.
 
 #### Rejected
@@ -2169,3 +2169,22 @@ Delta review C17 (2026-10-09) is a fresh-context review of the committed C15 act
 - `false` — C17-EC1: `BadRequest` is unreachable from the SDK submitter, catalog commands are far below 1 MiB, and `500` is the named transient case.
 - `false` — C17-EC2: The gateway always returns `Ok(result)`; a malformed `2xx` needs an undocumented intermediary.
 - `false` — C17-EC5: The guide already conditions `caller-conflict` on the header (C16-EC1), and Dapr service invocation attaches it.
+
+### C18 triage (2026-10-09)
+
+The current documentation and tracker delta was reviewed by blind hunter (BH), edge-case hunter (EC), and verification gap (VG). VG found no gaps. Each reported finding was checked against the current source before grouping.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| BH1 | Sprint tracker still says five C17 patches are open and leaves Story 4.11 in progress | low | All five C17 entries above are complete and this spec is in review, while `sprint-status.yaml` retains the old note and `in-progress` value. | patch |
+| BH2 | C16 completion note names an EventStore SHA not reachable from current HEAD | low | `8d033bd8` is no longer an ancestor after the rebase; `6caf9ef4b2712988d17ea4285ef1a7c8b2e93706` carries the reviewed patch on current `main`. The proposed correction edits this build's spec. | reject |
+| BH3 | Checked C17 entries lack a new completion note | low | The checkboxes have no adjacent C17 completion record or verification summary. The proposed correction edits this build's spec. | reject |
+| BH4 | The runbook treats a missing `denied` audit record as decisive for a 403 | low | `TrustedEffectAdmissionPolicy.PrepareAsync` throws before writing an audit record when the audit sink is absent, and `TrustedEffectsController` returns `Forbid()`. | patch |
+| BH5 | The 5501 troubleshooting text omits verifier-unavailable 503 | low | `WorkloadJwtBearerEvents.Challenge` records event 5501 with `StatusCode=503` for `verifier-unavailable`. | patch |
+| EC1 | A 403 can have no `denied` audit record when an admission component is absent | low | The same pre-audit fail-closed branch in `TrustedEffectAdmissionPolicy.PrepareAsync` produces this case. | patch (BH4 root cause) |
+
+### C18 completion (2026-10-09)
+
+The five C17 guide actions and the C18 diagnostic and tracker follow-ups are complete. EventStore commit `0e6276a6747d2a6e573d2dad2e89b834fd6ff2c9` contains documentation only. The C16 note's `8d033bd8` is its historical pre-rebase identifier; the same reviewed patch is reachable on current EventStore `main` as `6caf9ef4b2712988d17ea4285ef1a7c8b2e93706`.
+
+All four EventStore test projects built in Debug with zero warnings and errors. The current reminder filters passed 33 Contracts tests (one package probe skipped without `EVENTSTORE_PACKAGE_CONTRACT_DIR`), 227 DomainService tests, and one live Redis/Dapr test; the Client reminder filter matched zero tests. The previously recorded public `3.117.1` package-only and five-row matrix proof remains the release evidence because this patch changes no runtime or package API. Focused guide/link and sprint YAML checks and `git diff --check` passed. C18 review found no verification gap and deferred no new work.
