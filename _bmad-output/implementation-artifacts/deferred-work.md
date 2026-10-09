@@ -1213,3 +1213,17 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore the explicit runtime persisted-end-state and recovery evidence requirement in the next Epic 4 context refresh.
   evidence: Story 4.11 continuation review C12-BH9 (2026-10-08). The earlier context refresh dropped that sentence while retaining Tier-1 isolation. Story 4.11 itself retains executed persisted-state evidence for all five frozen matrix rows; the omission affects future context-guided stories.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-09, C15)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Make the transitional Works host pass the EventStore Story 5.5 startup route inventory, which sibling-source Debug builds already enforce.
+  evidence: Story 4.11 delta review C15-BH1b (2026-10-09), high. Works Debug defaults `UseHexalithProjectReferences=true`, so `WorksHost` compiles against EventStore source, which has carried Story 5.5 since Works `dcd90e7` pinned `07d1e23a`. With `xUnit1051` demoted (the Debug integration-test build otherwise fails on 19 such analyzer errors), `WorksDomainEventSubscriptionTests.WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute` fails with "route inventory violates the internal trust boundary". The violations are `/project` (the bespoke `MapPost` lacks `.RequireEventStoreDomainServicePolicy("/project")`), `/work/events` (`MapWorksDomainEvents()` lacks `.RequireEventStoreSidecarChannel()`), and `/dapr/config` plus `/actors/*` (bare `MapActorsHandlers()` after `UseEventStoreDomainService`). Package mode is unaffected until the `3.114.0` pin moves to ≥3.117. Pre-existing; not caused by the C13/C14 patches.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Add app-channel token configuration to the EventStore Kubernetes sample domain service.
+  evidence: Story 4.11 delta review C15-BH5 (2026-10-09). In `references/Hexalith.EventStore/samples/deploy/kubernetes/dapr-annotations-example.yaml`, `sample_annotations` has no `dapr.io/app-token-secret` and there is no `APP_API_TOKEN` entry, while `EventStoreDomainServiceSecurityStartupValidator` fails every SDK domain service's startup without the token outside Development. This is a pre-existing EventStore Story 5.5 sample gap; the sample is not a reminder host.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Document `/alive` as the Dapr app health-check path for every EventStore domain service, not only reminder hosts.
+  evidence: Story 4.11 delta review C15-EC1 (2026-10-09). An SDK domain service without actor handlers never maps `/healthz`, so a Dapr app health check on the default path fails there too. The typed-reminder guide is correctly scoped to reminder hosts; general deployment guidance belongs to EventStore's domain-service documentation.

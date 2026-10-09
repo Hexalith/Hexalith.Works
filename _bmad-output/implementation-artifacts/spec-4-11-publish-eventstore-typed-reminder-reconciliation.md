@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -559,6 +559,53 @@ Delta review C14 (2026-10-08). Scope: the 183-line diff of the eight C13 patches
 | C14-BH8 | New `### Options` heading risks broken anchors | false | The table had no anchor of its own; a new heading adds an anchor and removes none. | reject |
 | C14-EC4 | No test for mapping after `UseEventStoreDomainService` with the policy | low | The guide prescribes mapping before it, and `StartingAsync` validates every data source regardless of order. A new test would cover an undocumented layout. | reject |
 | C14-VG | No verification gaps | n/a | The layer reported none. | n/a |
+
+Delta review C15 (2026-10-09). Scope: EventStore `07d1e23a..29e8e270`, the committed C13 and C14 patches (five files, +69/−15, 184 diff lines). C14 saw 183 uncommitted lines, so only the C14 handoff fix is new to review. Review mode: full. Four layers completed: blind hunter (BH) 11, edge-case hunter (EC) 12, acceptance auditor (AA) 9 plus one informational, and verification gap with no gaps. Each of the 32 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C15-BH1a | The inventory rule ships in `v3.116.0`, not 3.117 | false | `git tag --contains c4d5455a` starts at `v3.116.0`, but nuget.org lists `3.114.0`, `3.115.0`, `3.117.0`, and `3.117.1`: `3.116.0` was never published, so package consumers first meet the rule at 3.117. | reject |
+| C15-BH1b | Works' sibling-source Debug host already fails the inventory | high | Works Debug defaults `UseHexalithProjectReferences=true` (`Directory.Build.props:26`), so `WorksHost` compiles against EventStore source, which carries Story 5.5 since Works `dcd90e7` (`07d1e23a`). The Debug integration-test build fails on 19 `xUnit1051` analyzer errors; with that rule demoted, `WorksDomainEventSubscriptionTests.WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute` fails with "route inventory violates the internal trust boundary" for `/project`, `/work/events`, `/dapr/config`, and `/actors/*`. Pre-existing since `dcd90e7`; not caused by this diff. | defer |
+| C15-BH2a | The 4.15 handoff names only the actor-handler failure | medium | The same inventory rejects `WorksHost`'s own `MapPost("/project")` (catalog policy missing) and `MapWorksDomainEvents()` (topic route without `SidecarChannel`), as the C15-BH1b run shows. An adopter who fixes only the bullet's actor mapping still fails startup, and the first story to bump the EventStore pin (likely 4.14) meets all three. | patch (with C15-AA1) |
+| C15-BH2b | `MapEventStoreReminders()` throws without `AddEventStoreReminders`; the explicit call is redundant | false | The 4.15 bullets adopt the seam (intent source, actor type, purposes), so reminders are registered wherever the replacement applies. The bullet already says `UseEventStoreDomainService` calls it. | reject |
+| C15-BH3a | `caller-conflict` is the wrong reason for a `Workload`/app-ID mismatch | low | `WorkloadAssertionEvaluator` checks `AllowedCallers` first (`caller-not-allowed`), then the `dapr-caller-app-id` cross-check (`caller-conflict`). With step 1 allow-listing the app ID, a differing `Workload` is denied as `caller-not-allowed`; `caller-conflict` appears only when the differing value is itself allow-listed. | patch (with C15-EC4, C15-AA6) |
+| C15-BH3b | `EventStore:Reminders:Workload` must also equal the assertion caller | low | `TrustedEffectsController` takes the workload from the verified assertion, `JwtTrustedEffectDelegationVerifier.cs:82` requires the delegation's `workload` claim to equal it, and `ReminderCoordinator` requests the delegation with `EventStoreReminderOptions.Workload`. Both identities default to `DAPR_APP_ID`, then the application name, but an explicit `EventStore:DomainService:AppId` or `Workload` diverges and every submission receives `403`. The options row says only "Workload named in the trusted-effect context". | patch |
+| C15-BH4a | `app-health-check-path` needs `enable-app-health-check` | false | Dapr app health checks are off by default; with them off no probe runs and no `401` occurs. The sentence governs where an enabled check points. | reject |
+| C15-BH4b | Self-hosted `daprd` and Azure Container Apps forms are missing | false | Carried C14-BH4: the instruction is generic; the annotation and Aspire wiring are examples. | carried reject |
+| C15-BH4c | Development without a token hides the `401` | low | True (`development-unverified`), but the guidance is unconditional, so following it avoids the failure in every environment. A Development caveat adds prose for no behavior change. | reject |
+| C15-BH5 | The Kubernetes sample domain service lacks token configuration | low | `samples/deploy/kubernetes/dapr-annotations-example.yaml` `sample_annotations` has no `dapr.io/app-token-secret` and no `APP_API_TOKEN` entry, while every SDK domain service fails startup without the token outside Development. Pre-existing since Story 5.5; the sample is not a reminder host. The missing health-check annotations are not a defect (C15-BH4a). | defer |
+| C15-BH6a | The runbook omits submitter-side events `200219`, `5542`, and `5511` | low | Carried C14-BH6/C14-EC6: the runbook names gateway event `5501`, and the credentials section links `security-model.md`. | carried reject |
+| C15-BH6b | A `403` admission denial also surfaces as `submission-uncertain` | low | Delegation mismatches and admission denials return `Forbid()` (`TrustedEffectsController`), and `HttpTrustedEffectSubmitter` turns that into an `HttpRequestException` through `EnsureSuccessStatusCode`. The sentence names only a credential `401` and transient failures, and event `5501` does not cover delegation denials. | patch (with C15-EC7) |
+| C15-BH7a | The JwtBearer requirement reads as conditional on `AllowedCallers` | low | `EventStoreDomainServiceSecurityStartupValidator` requires `APP_API_TOKEN`, the workload options, and the JwtBearer contract on every SDK domain service outside Development, whatever EventStore's allow-list holds. Only the EventStore half of the sentence depends on `AllowedCallers`. | patch |
+| C15-BH7b | The guide does not say symmetric signing is Development-only | false | Step 2 names it "symmetric `Development` mode" and contrasts authority mode. | reject |
+| C15-BH8 | The authority-mode lifetime location and `assertion-stale` are unnamed | low | Carried C14-BH5: an authority-issued token's lifetime is the identity provider's setting, and "must not exceed" covers it. | carried reject |
+| C15-BH9 | `### Options` now holds the host `APP_API_TOKEN` paragraph | low | `typed-reminders.md:345-348` ("The host must also configure `APP_API_TOKEN`…") follows the options validation paragraph under `### Options`; it is host configuration, not an `EventStore:Reminders` key. C13-BH1 named this paragraph as one of three misplaced blocks. | patch (with C15-AA7) |
+| C15-BH10 | The `configuration-reference.md` `APP_API_TOKEN` row contradicts itself | low | The row says the token is required on "every domain service: without it the domain service fails startup", then calls the reminder check "defense in depth for another composition". Only `AddEventStoreDomainService()` registers the startup validator, so the first sentence needs that qualifier. | patch (with C15-AA5) |
+| C15-BH11a | The bare pre-mapping case lost its test | false | Carried C14-BH1/C14-EC3: bare `MapActorsHandlers()` is covered at `EventStoreDomainServiceExtensionsTests.cs:1114` (case `actors`); carried C14-EC4 for the after-activation order. | carried reject |
+| C15-BH11b | The test name no longer describes the test | false | It still asserts a single reminder route (`CountReminderRoutes(app).ShouldBe(1)`), which is the name's claim; the inventory assertion is additive. | reject |
+| C15-EC1 | Non-reminder domain services also need `/alive` | low | An SDK host without actor handlers never maps `/healthz`, so Dapr's default probe fails there too. That predates this diff and Story 4.11; the reminder guide is correctly scoped. | defer |
+| C15-EC2 | The self-hosted `daprd` form is missing | false | Carried C14-BH4. | carried reject |
+| C15-EC3 | `AddAspireDaprDomainModule` with `EnableAppHealthCheck` and no path uses Dapr's `/healthz` | low | The lower-level API takes the caller's path; `AddHexalithEventStoreDomainModule` sets `/alive` (`HexalithEventStoreDomainModuleExtensions.cs:14,75-76`), and the guide tells callers to use `/alive`. A defaulting branch adds runtime surface. | reject |
+| C15-EC4 | `caller-not-allowed` is evaluated before `caller-conflict` | low | Same defect as C15-BH3a. | patch (with C15-BH3a) |
+| C15-EC5 | `Workload` can fall back to the application name | low | The guide states the invariant (`Workload` must equal the Dapr app ID); the proposed startup check is new runtime branching. | reject |
+| C15-EC6 | The scope names assume the default prefixes | low | `WorkloadAssertionIssuerOptions.AudienceScopePrefix` and `OperationScopePrefix` are configurable (defaults `eventstore-audience.` and `eventstore-operation.`), and the guide names only default-prefixed scopes. A default-prefix qualifier beside the existing outbound-settings link is a direct correction. | patch |
+| C15-EC7 | Timeouts surface as `TaskCanceledException`, not `HttpRequestException` | low | `ReminderCoordinator` rethrows only caller cancellation, so an `HttpClient.Timeout` falls into the catch-all and logs `TaskCanceledException`. The runbook names only `HttpRequestException` for transient failures. | patch (with C15-BH6b) |
+| C15-EC8 | A policy-carrying mapping after activation duplicates routes and passes the inventory | low | Carried C14-EC4: the guide, `IReminderRegistrar`, and the handoff all require mapping before `UseEventStoreDomainService`; duplicate detection would be a runtime change. | carried reject |
+| C15-EC9 | The `IReminderRegistrar` "fails startup" claim is overbroad without `AddEventStoreDomainService` | false | Carried C13-EC1/C13-EC8: every documented composition registers it, and the undocumented host fails loudly. | carried reject |
+| C15-EC10 | `MapEventStoreReminders` without the policy registered returns `500` | low | Carried C13-EC1: undocumented composition, loud failure, and a guard adds branching. | carried reject |
+| C15-EC11 | The test validates against a rebuilt fallback, not the registered one | low | The C13 patch asked for "the registered fallback policy", but the test passes `CreateAnyWorkloadPolicy(...)` instead of `IOptions<AuthorizationOptions>.Value.FallbackPolicy` from `app.Services`, so a change to the SDK-registered fallback would go unnoticed. `BuildApp` calls `AddEventStoreDomainService()`, so the registered policy is resolvable. | patch (with C15-AA8) |
+| C15-EC12 | Removing the bare-mapping case leaves the fails-startup claim untested | false | Same evidence as C15-BH11a. | carried reject |
+| C15-AA1 | The 4.15 handoff names one of three `WorksHost` inventory failures | medium | Same defect as C15-BH2a. | patch (with C15-BH2a) |
+| C15-AA2 | Pushed Works `main` pins an EventStore commit missing from its remote | medium | Works `origin/main` is `aae6b9b`, which pins `29e8e270`; EventStore `origin/main` is `07d1e23a`, and the local branch is ahead by one. A fresh clone cannot check out `references/Hexalith.EventStore`. The fix is a push, which is the owner's call; the stale "remain uncommitted" C14 closure sentence would edit this spec and is not routed. Resolved by the owner: EventStore `c4dff081` (rebased, same patch-id) and Works `9fc21f5`. | decision (resolved) |
+| C15-AA3 | The corrected IntelliSense ships only in a later package | low | True, and inherent to a post-release doc fix; the guide is authoritative. Correcting the "no packaged-API bytes changed" wording would edit this spec. | reject |
+| C15-AA4 | The readiness runbook drops "outside Development" for `Unhealthy` | low | `ReminderCallbackTokenFilter.IsConfigured` is `IsDevelopment() || token present`, so in Development a missing token never makes `eventstore-reminders-unresolved` Unhealthy; the new sentence says it does "when the token is missing". | patch |
+| C15-AA5 | The `APP_API_TOKEN` row contradicts itself | low | Same defect as C15-BH10. | patch (with C15-BH10) |
+| C15-AA6 | The guide names the wrong denial reason for the likeliest misconfiguration | low | Same defect as C15-BH3a. | patch (with C15-BH3a) |
+| C15-AA7 | `### Options` covers the host paragraph | low | Same defect as C15-BH9. | patch (with C15-BH9) |
+| C15-AA8 | The test uses a rebuilt fallback | low | Same defect as C15-EC11. | patch (with C15-EC11) |
+| C15-AA9 | The handoff offers a self-mapping path that AD-20 R9 rules out | false | R9 binds the final minimal executable (Story 4.9). Story 4.15 is transitional while `DateReminderActor` remains, and the bullet names the SDK mapping first. | reject |
+| C15-AA10 | No AC or frozen-constraint breach | n/a | Informational. | n/a |
+| C15-VG | No verification gaps | n/a | The layer reported none. | n/a |
 
 ## Design Notes
 
@@ -1989,3 +2036,58 @@ Delta review C14 covered the eight C13 patches. Fifteen findings were judged. On
 Verification: the DomainService test project built in Debug with zero warnings and errors. The built xUnit v3 assembly with `-class '*Reminder*'` passed 227/227 with zero skips. The final patch is docs only, so that result stands. `git diff --check` is clean in EventStore. The public `3.117.1` close gate is unaffected: no runtime, API, codec, option, or persisted-key change.
 
 The C13 and C14 changes remain uncommitted in `references/Hexalith.EventStore`. No staging, push, branch change, dependency update, or nested-submodule initialization was performed.
+
+### Review Findings
+
+Delta review C15 (2026-10-09) is a fresh-context review of the committed C13 and C14 patches: EventStore `07d1e23a..29e8e270`, five files, 184 diff lines. Review mode: full. All four layers completed: blind hunter 11, edge-case hunter 12, acceptance auditor 9 plus one informational, and verification gap with no gaps. Each of the 32 findings was judged before grouping. Result: 1 decision-needed (resolved by the owner), 10 patch entries (19 findings), 3 defer, 19 rejected. The reviewed bytes now live on EventStore `main` as `c4dff081`, identical to `29e8e270` for all five files. The triage log carries every C15 row. None of the entries changes reminder runtime behavior, so the named-public `3.117.1` close gate is unaffected.
+
+- [x] [Review][Decision] Pushed Works `main` pins an EventStore commit missing from its remote — medium (C15-AA2). Works `origin/main` `aae6b9b` pinned EventStore `29e8e270`, but EventStore `origin/main` was still `07d1e23a`, so a fresh clone or CI submodule checkout could not resolve `references/Hexalith.EventStore`. Resolved by the owner on 2026-10-09: the patch was rebased onto the Story 6.6 commits and pushed as EventStore `c4dff081` (same patch-id as `29e8e270`; the five reviewed files are byte-identical), and Works `9fc21f5` repoints the gitlink to it. No commit was created or pushed by this review.
+- [ ] [Review][Patch] The Story 4.15 handoff names only one of three `WorksHost` inventory failures [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:523`] — medium (C15-BH2a, C15-AA1).
+  - The startup inventory also rejects `WorksHost`'s own `MapPost("/project")`, which lacks `.RequireEventStoreDomainServicePolicy("/project")`, and its `MapWorksDomainEvents()` topic route, which lacks `.RequireEventStoreSidecarChannel()`. The C15-BH1b run shows all three.
+  - Fix: add a sentence to the bullet naming both routes and their policy calls, and note that sibling-source Debug builds already consume the inventory.
+- [ ] [Review][Patch] The guide names the wrong denial reason for a `Workload`/app-ID mismatch [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:294`] — low (C15-BH3a, C15-EC4, C15-AA6).
+  - The allow-list is checked first, so a differing `Workload` is denied as `caller-not-allowed`; `caller-conflict` appears only when that value is itself allow-listed.
+  - Fix: name both reasons in that order.
+- [ ] [Review][Patch] `EventStore:Reminders:Workload` must also equal the assertion caller [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:328`] — low (C15-BH3b).
+  - The gateway takes the workload from the assertion, and the delegation's `workload` claim, requested with `EventStore:Reminders:Workload`, must equal it or the call receives `403`.
+  - Fix: say so in the options row and in step 2.
+- [ ] [Review][Patch] `### Options` now holds the host `APP_API_TOKEN` paragraph [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:345`] — low (C15-BH9, C15-AA7).
+  - Fix: move the paragraph into the host-composition section before `### Trusted-effect submission credentials`.
+- [ ] [Review][Patch] The `APP_API_TOKEN` row contradicts itself [`references/Hexalith.EventStore/docs/guides/configuration-reference.md:680`] — low (C15-BH10, C15-AA5).
+  - Fix: scope the startup-failure sentence to domain services composed with `AddEventStoreDomainService()` and keep the reminder readiness check as defense in depth for another composition.
+- [ ] [Review][Patch] The readiness runbook drops "outside Development" for `Unhealthy` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:380`] — low (C15-AA4).
+  - In Development a missing token never makes the check `Unhealthy` (`ReminderCallbackTokenFilter.IsConfigured`).
+  - Fix: restore the qualifier.
+- [ ] [Review][Patch] The runbook's `submission-uncertain` sentence omits admission `403` denials and timeouts [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:458`] — low (C15-BH6b, C15-EC7).
+  - A delegation or admission `403` also becomes `HttpRequestException`, and an `HttpClient` timeout logs `TaskCanceledException`.
+  - Fix: name both, and point `403` at the delegation provider and admission policy.
+- [ ] [Review][Patch] The JwtBearer requirement reads as conditional on `AllowedCallers` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:310`] — low (C15-BH7a).
+  - Every SDK domain service needs `APP_API_TOKEN` and the JwtBearer contract outside Development; only EventStore's own token requirement depends on `AllowedCallers`.
+  - Fix: split the sentence.
+- [ ] [Review][Patch] The scope names assume the default prefixes [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:298`] — low (C15-EC6).
+  - Fix: mark the scope names as the default `AudienceScopePrefix` and `OperationScopePrefix` forms, beside the existing outbound-settings link.
+- [ ] [Review][Patch] The pre-mapped test validates against a rebuilt fallback instead of the registered one [`references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/EventStoreReminderCompositionTests.cs:189`] — low (C15-EC11, C15-AA8).
+  - Fix: pass `app.Services.GetRequiredService<IOptions<AuthorizationOptions>>().Value.FallbackPolicy`.
+- [x] [Review][Defer] Works' sibling-source Debug host already fails the EventStore startup inventory [`src/Hexalith.Works/Runtime/WorksHost.cs:111`] — deferred: pre-existing since Works `dcd90e7` advanced EventStore to Story 5.5 (`07d1e23a`); high for Works developers (C15-BH1b). With `xUnit1051` demoted (the Debug integration-test build otherwise fails on 19 analyzer errors), `WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute` fails on `/project`, `/work/events`, `/dapr/config`, and `/actors/*`. Owner: the Works host adoption stories (4.14/4.15), or an earlier Works host fix.
+- [x] [Review][Defer] The Kubernetes sample domain service lacks token configuration [`references/Hexalith.EventStore/samples/deploy/kubernetes/dapr-annotations-example.yaml:64`] — deferred: pre-existing EventStore Story 5.5 sample gap, outside Story 4.11 (C15-BH5).
+- [x] [Review][Defer] Non-reminder domain services also need Dapr app health on `/alive` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:269`] — deferred: pre-existing general domain-service deployment guidance, outside the reminder guide's scope (C15-EC1).
+
+#### Rejected
+
+- `false` — C15-BH1a: 3.116.0 was never published to nuget.org, so package consumers first meet the inventory at 3.117.
+- `false` — C15-BH2b: The 4.15 bullets register reminders, so `MapEventStoreReminders()` does not throw, and the bullet already says activation calls it.
+- `false` — C15-BH4a: Dapr app health checks are off by default; the sentence governs where an enabled check points.
+- `false` — C15-BH4b, C15-EC2: Carried C14-BH4; the instruction is generic, and the annotation and Aspire wiring are examples.
+- `low` — C15-BH4c: The guidance is unconditional, so a Development caveat changes no behavior.
+- `low` — C15-BH6a: Carried C14-BH6/C14-EC6; gateway event `5501` and the linked security model suffice.
+- `false` — C15-BH7b: Step 2 already names "symmetric `Development` mode".
+- `low` — C15-BH8: Carried C14-BH5; an authority-issued lifetime is the identity provider's setting.
+- `false` — C15-BH11a, C15-EC12: Carried C14-BH1/C14-EC3/C14-EC4; bare mapping is covered at `EventStoreDomainServiceExtensionsTests.cs:1114`.
+- `false` — C15-BH11b: The test still asserts a single reminder route, as its name says.
+- `low` — C15-EC3: The lower-level Aspire API takes the caller's path, the high-level one sets `/alive`, and a defaulting branch adds runtime surface.
+- `low` — C15-EC5: The guide states the identity invariant; a startup check adds runtime branching.
+- `low` — C15-EC8: Carried C14-EC4; every surface requires mapping before activation, and duplicate detection is a runtime change.
+- `false` — C15-EC9: Carried C13-EC1/C13-EC8; every documented composition registers the domain service.
+- `low` — C15-EC10: Carried C13-EC1; undocumented composition, loud failure, and a guard adds branching.
+- `low` — C15-AA3: Stale IntelliSense in the published 3.117.1 package is inherent to a post-release doc fix; correcting the closure wording would edit this spec.
+- `false` — C15-AA9: AD-20 R9 binds the final Story 4.9 executable, not the transitional 4.15 host.
