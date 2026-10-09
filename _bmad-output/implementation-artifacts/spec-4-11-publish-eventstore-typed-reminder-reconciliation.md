@@ -2185,6 +2185,6 @@ The current documentation and tracker delta was reviewed by blind hunter (BH), e
 
 ### C18 completion (2026-10-09)
 
-The five C17 guide actions and the C18 diagnostic and tracker follow-ups are complete. EventStore commit `0e6276a6747d2a6e573d2dad2e89b834fd6ff2c9` contains documentation only. The C16 note's `8d033bd8` is its historical pre-rebase identifier; the same reviewed patch is reachable on current EventStore `main` as `6caf9ef4b2712988d17ea4285ef1a7c8b2e93706`.
+The five C17 guide actions and the C18 diagnostic and tracker follow-ups are complete. EventStore commit `691fc1bdf717413a08c52e1c8fa499c5aca188ac` contains documentation only. The C16 note's `8d033bd8` is its historical pre-rebase identifier; the same reviewed patch is reachable on current EventStore `main` as `6caf9ef4b2712988d17ea4285ef1a7c8b2e93706`.
 
 All four EventStore test projects built in Debug with zero warnings and errors. The current reminder filters passed 33 Contracts tests (one package probe skipped without `EVENTSTORE_PACKAGE_CONTRACT_DIR`), 227 DomainService tests, and one live Redis/Dapr test; the Client reminder filter matched zero tests. The previously recorded public `3.117.1` package-only and five-row matrix proof remains the release evidence because this patch changes no runtime or package API. Focused guide/link and sprint YAML checks and `git diff --check` passed. C18 review found no verification gap and deferred no new work.
