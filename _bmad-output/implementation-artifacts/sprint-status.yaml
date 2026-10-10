@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-10 (Story 4.11: C23 patches completed, C24 review found no new patch, and public 3.117.1 gate remains satisfied)
+# last_updated: 2026-10-10 (Story 4.11: C22 replay-recipe hardening and guide fix, C23 patches, and C25 patches completed; C24 found no new patch; C26 delta review pending; public 3.117.1 gate remains satisfied)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,9 +35,9 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-10 # Story 4.11: C23 patches completed, C24 review found no new patch, and public 3.117.1 gate remains satisfied
+last_updated: 2026-10-10 # Story 4.11: C22 replay-recipe hardening and guide fix, C23 patches, and C25 patches completed; C24 found no new patch; C26 delta review pending; public 3.117.1 gate remains satisfied
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
-# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C23 corrections passed C24 review, so Story 4.11 is ready for human review.
+# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C22 corrections (incl. the C22 replay-recipe hardening and guide fix) and the C23 and C25 patches are complete, so Story 4.11 awaits its C26 delta review.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)

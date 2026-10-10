@@ -2657,17 +2657,17 @@ Delta review C25 (2026-10-10) is a fresh-context review of the C23 patches and t
 - The triage log carries every C25 row.
 - No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected. The three `REPLAY.md` patches change a hash-bound file; rebind `evidence-sha256.json` once.
 
-- [ ] [Review][Patch] The service-invocation sentence names the wrong sidecar [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:490`] — low (C25-VG-O2, C25-BH5, C25-EC1, C25-AA2).
+- [x] [Review][Patch] The service-invocation sentence names the wrong sidecar [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:490`] — low (C25-VG-O2, C25-BH5, C25-EC1, C25-AA2).
   - Fix: say the submitter sends its `DAPR_API_TOKEN` to its own sidecar, which relays the call to EventStore's sidecar, and EventStore's sidecar presents EventStore's `APP_API_TOKEN` to the gateway.
-- [ ] [Review][Patch] The sprint tracker no longer records the C22 fixes [`_bmad-output/implementation-artifacts/sprint-status.yaml:2`] — low (C25-AA1, C25-EC5).
+- [x] [Review][Patch] The sprint tracker no longer records the C22 fixes [`_bmad-output/implementation-artifacts/sprint-status.yaml:2`] — low (C25-AA1, C25-EC5).
   - Fix: name the C22 replay hardening and guide fix again in the tracker comments (lines 2, 38, and 40), so the C23-BH15a patch and the C23 completion claim hold.
-- [ ] [Review][Patch] `REPLAY.md` gives no restore step after rewinding the live submodule [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:8`] — low (C25-EC3, C25-BH8b).
+- [x] [Review][Patch] `REPLAY.md` gives no restore step after rewinding the live submodule [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:8`] — low (C25-EC3, C25-BH8b).
   - Fix: say that after the replay, a non-recursive `git submodule update -- references/Hexalith.EventStore` restores the pinned commit, and that the rewound gitlink must not be committed.
-- [ ] [Review][Patch] The `REPLAY.md` result sentence is garbled and incomplete [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:20`] — low (C25-BH9, C25-AA8).
+- [x] [Review][Patch] The `REPLAY.md` result sentence is garbled and incomplete [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:20`] — low (C25-BH9, C25-AA8).
   - Fix: say each run must report exactly one assembly with no failures, errors, or skips (1/1 package-only, 227/227 reminders), and rejoin the stray line-26 wrap.
-- [ ] [Review][Patch] `REPLAY.md` attributes two parent-side checks to the executed recipe [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:39`] — low (C25-BH3).
+- [x] [Review][Patch] `REPLAY.md` attributes two parent-side checks to the executed recipe [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:39`] — low (C25-BH3).
   - Fix: say the retained summaries describe that run, and that its test-assembly and retained-dependency matches were checked by the parent outside the executed recipe (C12 record).
-- [ ] [Review][Patch] `AllowInsecureSymmetricKey` lacks its configuration path [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:506`] — low (C25-BH7).
+- [x] [Review][Patch] `AllowInsecureSymmetricKey` lacks its configuration path [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:506`] — low (C25-BH7).
   - Fix: write `Authentication:JwtBearer:AllowInsecureSymmetricKey=true`.
 
 #### Rejected
@@ -2681,3 +2681,29 @@ Delta review C25 (2026-10-10) is a fresh-context review of the C23 patches and t
 - `false` — C25-BH6: The sentence names the key-mismatch cause, and the paragraph says to compare the signer with EventStore's trusted signing key.
 - `false` — C25-BH10, C25-AA6: The candidates are retained verbatim, the Works SHA cannot be self-recorded, the other two commits are owner commits, and citing the file edits this spec's record.
 - `false` — C25-BH12: The line counts the 7 finding-derived entries exactly; the eighth came from the owner's decision.
+
+### C25 patch completion (2026-10-10)
+
+All six C25 patches are applied. The EventStore guide now says the submitter
+sends its `DAPR_API_TOKEN` only to its own sidecar, which relays the call to
+EventStore's sidecar, and that EventStore's sidecar presents EventStore's
+`APP_API_TOKEN` to the gateway. The symmetric-mode exception now names the
+full `Authentication:JwtBearer:AllowInsecureSymmetricKey=true` path.
+
+`REPLAY.md` now says to restore the pinned submodule after a replay with the
+non-recursive `git submodule update -- references/Hexalith.EventStore` and
+never to commit the rewound `07d1e23a` gitlink. It states the exact result gate
+that `verify_result_xml` enforces: one assembly, all tests passed, and no
+failures, errors, or skips, with 1/1 for the package-only method and 227/227
+for the reminder checks. It also says the parent checked the test-assembly and
+retained-dependency matches outside the executed recipe, which hashes neither
+(C12 record). `evidence-sha256.json` rebinds `REPLAY.md` once to
+`1cd27d9882b288c6a95ba3a64b4741bd617901ef9539ef6b3460865cfaeeb34b`. All 39
+listed files match that manifest, and the retained summaries, archives, XML,
+and both recipes are unchanged.
+
+The Works sprint tracker again names the C22 replay-recipe hardening and guide
+fix, records the C23 and C25 patches, and keeps 4.11 at `review` pending a
+C26 delta review of these patches. No runtime code or package API changed, so
+the named-public `3.117.1` acceptance proof remains the existing runtime
+evidence.
