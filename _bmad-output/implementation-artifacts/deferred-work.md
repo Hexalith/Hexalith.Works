@@ -1237,3 +1237,12 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Carry the `EventStore__Reminders__Workload` requirement into the Story 4.15 Works adoption spec.
   evidence: Story 4.11 delta review C21-BH5 (2026-10-10), medium. The requirement lives only in EventStore `docs/guides/typed-reminders.md` (the Story 4.15 handoff list) and this spec's C19 record. `spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md` (draft) never mentions it, and the Works AppHost calls `AddEventStoreDomainModule(…, "works", …)` (`src/Hexalith.Works.AppHost/Program.cs:141`) without it. Without the override, Works reminder submissions fail before HTTP as `delegation-failed` or `delegation-unavailable`, or at the gateway as `403`. Set it to `works` in the 4.15 acceptance criteria unless C21-BH4 is fixed at the source first.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Qualify the Epic 4 context claim-loss guidance so a surface does not promise the winning party's identity without an authorized source.
+  evidence: C27-BH6 (2026-10-10). `epic-4-context.md` says a claim loss names the other party, but `WorkItemTransitionRejected` records only status and attempted act, and the executor query filters another party's assigned items. Agent-context changes are deferred by the build workflow.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Qualify Epic 4 problem-detail guidance so tenant context appears only after authorization permits disclosure.
+  evidence: C27-BH7 (2026-10-10). The context says problem details carry tenant context, while the epic's AD-23 acceptance requires denial before tenant-existence disclosure. Agent-context changes are deferred by the build workflow.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Restore the terminal-work mutation and defined no-op rule in the Epic 4 context.
+  evidence: C27-EC8 (2026-10-10). The refreshed context omits the rule, although the epic requires terminal invalidity to reject and the architecture allows only defined idempotent no-ops. Agent-context changes are deferred by the build workflow.

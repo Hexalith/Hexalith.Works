@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -922,6 +922,33 @@ Delta review C26 (2026-10-10). Scope: the C25 patches. That is Works `3ebc68b..7
 | C26-AA7 | Spec frontmatter `done` conflicts with tracker `review` | low | Carried C23-BH11 and C25-BH11. The C12 record names `done` and `review` as the bmad-build handoff. | carried reject |
 | C26-VG-O1 | The submodule bump is not docs-only, but the record says no runtime code changed | low | Same as C26-BH6a; the layer traced no Works regression (distinct `Handle` command names, Works' own processor and `/project` route). | carried reject |
 | C26-VG-O2 | The Builds and Projects gitlink moves were not reviewed | false | Neither is 4.11 work; both were excluded by the scope approved at the C26 checkpoint. | reject |
+
+### C27 review triage (2026-10-10)
+
+The baseline diff and the current EventStore guide edit were reviewed by blind hunter (12 findings), edge-case hunter (8 findings), and verification gap (no gaps). Each finding was checked before grouping. No intent or implementation change is required; three previously unlogged agent-context omissions are deferred.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C27-BH1 | The parent diff omits EventStore source and the guide edit | low | The parent gitlink alone does not expose historical EventStore source changes, but the guide edit is appended to this review diff and the reminder runtime already has the C11 source and public-package reviews. The review-input limitation does not identify a current artifact defect. | reject |
+| C27-BH2 | The public source audit compares only part of the reminder runtime | low | Carried C13-AA2 and C24-BH1: `public-source-audit.json` names its compared paths, and C13 separately reviewed the endpoint and admission delta. | carried reject |
+| C27-BH3 | Epic context says Claim is the only entry to InProgress | low | Carried C12-BH7: Resume also enters InProgress; the agent-context correction is already deferred. | carried defer |
+| C27-BH4 | Epic context omits persist-before-publication | low | Carried C3-BH9: the architecture remains authoritative and this context refresh is already deferred. | carried defer |
+| C27-BH5 | Epic context omits persisted-end-state runtime test requirements | low | Carried C12-BH9: the omission affects later context-guided stories and is already deferred. | carried defer |
+| C27-BH6 | Epic context promises a claim loser the winning party's identity | low | `WorkItemTransitionRejected` contains status and attempted act, not the winner, and the executor query filters other parties' assigned items. The context can misdirect a later surface; changing agent context is deferred. | defer |
+| C27-BH7 | Epic context leaves tenant context in problem details unqualified | low | The context says problem details carry tenant context, while the epic's AD-23 acceptance denies tenant-existence disclosure before authorization. A later surface needs an explicit authorized-only qualification; changing agent context is deferred. | defer |
+| C27-BH8 | The spec's created date changed | low | The original draft used 2026-09-24 and the current spec uses 2026-09-29. Correcting historical spec metadata edits this build's spec, which this review route rejects. | reject |
+| C27-BH9 | The Code Map calls the historical EventStore baseline a clean HEAD | low | Carried C8-BH11: `f378afdb` is the recorded historical baseline, while later sections name the reviewed and public revisions. The requested correction edits this spec. | carried reject |
+| C27-BH10 | Replay accepts a dirty checkout at the recorded HEAD | low | Carried C23-BH4: the recipe checks the commit but not tracked modifications; a fresh checkout is documented and adding a clean-tree guard exceeds a direct correction to this archival replay. | carried reject |
+| C27-BH11 | A timed-out command is absent from the replay ledger | low | `replay-proof.py` writes the command row after `subprocess.run` returns; on timeout the log and raised exception remain. This rare failure does not create a false success, and recording attempts requires exception handling. | reject |
+| C27-BH12 | `last_updated` parses as a YAML date | false | The field is a human-readable tracker timestamp with no repository consumer; its current bare date does not change a checked behavior. The earlier baseline value was also not a full ISO timestamp. | reject |
+| C27-EC1 | Epic context omits Resume as an entry to InProgress | low | Carried C12-BH7 and C27-BH3; the context correction is already deferred. | carried defer |
+| C27-EC2 | Replay permits tracked checkout modifications | low | Carried C23-BH4 and C27-BH10. | carried reject |
+| C27-EC3 | A trickling archive can outlast the socket timeout | low | Carried C24-BH4: the manual official-NuGet replay is length-bounded, and an overall deadline adds machinery for a rare failure. | carried reject |
+| C27-EC4 | A timed-out command can leave a child process running | low | `subprocess.run` times out its direct process, which may leave a descendant. This manual replay is rare and a process-group manager is more than a direct correction; the failed run does not claim success. | reject |
+| C27-EC5 | The historical packaging helper accepts a nonempty output directory | low | Carried C12-EC2: the retained proof used a fresh versioned directory, and guarding reuse adds branching to an archival helper. | carried reject |
+| C27-EC6 | Epic context omits persist-before-publication | low | Carried C3-BH9 and C27-BH4. | carried defer |
+| C27-EC7 | Epic context omits persisted-end-state runtime tests | low | Carried C12-BH9 and C27-BH5. | carried defer |
+| C27-EC8 | Epic context omits the terminal-work mutation rule | low | The context no longer states the rule, though the epic requires terminal invalidity to reject and the architecture specifies the defined no-ops. A later implementation can miss the rule; changing agent context is deferred. | defer |
 
 ## Design Notes
 
@@ -2757,11 +2784,11 @@ Delta review C26 (2026-10-10) is a fresh-context review of the C25 patches. That
 - The triage log carries every C26 row.
 - No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected. The two `REPLAY.md` patches change a hash-bound file; rebind `evidence-sha256.json` once.
 
-- [ ] [Review][Patch] `REPLAY.md` does not say which recipe enforces the result gate [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:27`] — low (C26-BH3, C26-BH4).
+- [x] [Review][Patch] `REPLAY.md` does not say which recipe enforces the result gate [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:27`] — low (C26-BH3, C26-BH4).
   - Fix: at lines 27-30, say the recipe rejects any run whose result XML does not report exactly one assembly whose tests all passed (1/1 package-only, 227/227 reminders). At lines 45-47, say the executed recipe checked neither archive lengths nor result counts and hashed neither the test assembly nor the retained source dependency, accepting any run that exited zero. The parent checked those counts and matches outside it (C12 record).
-- [ ] [Review][Patch] The restore step leaves other rewound root submodules rewound [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:16`] — low (C26-EC3).
+- [x] [Review][Patch] The restore step leaves other rewound root submodules rewound [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:16`] — low (C26-EC3).
   - Fix: say to restore every root submodule rewound for the replay with the non-recursive `git submodule update -- <path>…` (for example `references/Hexalith.EventStore` and `references/Hexalith.Builds`), and never to commit a rewound gitlink.
-- [ ] [Review][Patch] The C25 guide edit breaks the paragraph's line wrap [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:492`] — low (C26-BH9, C26-AA5).
+- [x] [Review][Patch] The C25 guide edit breaks the paragraph's line wrap [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:492`] — low (C26-BH9, C26-AA5).
   - Fix: rewrap lines 490-494 and 505-510 to about 80 columns, changing no words.
 
 #### Rejected
@@ -2782,3 +2809,7 @@ Delta review C26 (2026-10-10) is a fresh-context review of the C25 patches. That
 - `false` — C26-AA4: The C12 record states the parent's matches, and the retained recipe shows they were outside it.
 - `low` — C26-AA7: Carried C23-BH11 and C25-BH11.
 - `false` — C26-VG-O2: Excluded by the scope approved at the C26 checkpoint.
+
+### C27 completion (2026-10-10)
+
+The three C26 patches are complete. The replay recipe unit tests pass (3/3), all 39 retained evidence hashes match, and the public matrix audit names 22 passing XML cases across all five frozen rows. Markdown lint and `git diff --check` pass for the guide and evidence edits. C27 found no verification gap or new 4.11 patch; three agent-context corrections were deferred.

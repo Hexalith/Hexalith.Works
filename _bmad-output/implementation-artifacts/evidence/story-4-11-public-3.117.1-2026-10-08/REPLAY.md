@@ -13,9 +13,10 @@ python3 _bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1
   --eventstore-root references/Hexalith.EventStore
 ```
 
-After the replay, restore the pinned submodule commit with the non-recursive
-`git submodule update -- references/Hexalith.EventStore`. Never commit the
-rewound `07d1e23a` gitlink.
+After the replay, restore every root submodule rewound for it with a
+non-recursive `git submodule update -- <path>...` (for example,
+`git submodule update -- references/Hexalith.EventStore references/Hexalith.Builds`).
+Never commit a rewound gitlink.
 
 The recipe creates and prints a fresh directory. It downloads the 14 named
 public archives with reads bounded by their recorded lengths, verifies their
@@ -24,12 +25,12 @@ fixtures, validates the inventory, and runs the three isolated package-only
 consumers through one test method. It then copies the source regression
 fixture and verifies the dependency manifest, test assembly, and retained
 source dependency hashes before replacing its six EventStore SDK DLLs with the
-hash-verified public DLLs, and runs the reminder checks. Each run's result XML
-must report exactly one assembly whose tests all passed, with no failures,
-errors, or skips: 1/1 for the package-only method and 227/227 for the reminder
-checks. Original archives and the prepared host remain in that new directory
-alongside logs, XML, and a ledger of the replay's downloads and preparation
-operations.
+hash-verified public DLLs, and runs the reminder checks. The current recipe
+rejects any run whose result XML does not report exactly one assembly whose
+tests all passed, with no failures, errors, or skips: 1/1 for the package-only
+method and 227/227 for the reminder checks. Original archives and the prepared
+host remain in that new directory alongside logs, XML, and a ledger of the
+replay's downloads and preparation operations.
 
 Run the three focused checks for the current recipe from the evidence directory:
 
@@ -42,9 +43,10 @@ The 2026-10-08 parent replay ran the retained
 `fa11cdd6591cbad4523deff70ed1bc0497f75dc635f6e139685bd6ab989180ef`).
 The current `replay-proof.py` adds the checks described above; it has not been
 run end to end. The retained replay summaries describe that 2026-10-08 run.
-The executed recipe did not hash the test assembly or the retained source
-dependency; the parent checked those matches outside it (Story 4.11 spec, C12
-record).
+The executed recipe checked neither archive lengths nor result counts and
+hashed neither the test assembly nor the retained source dependency; it
+accepted any test run that exited zero. The parent checked those counts and
+matches outside it (Story 4.11 spec, C12 record).
 
 The regression host retains source-built transitive dependencies, including
 `Hexalith.Commons.UniqueIds/1.0.0`. This exercises the six public SDK DLLs in
