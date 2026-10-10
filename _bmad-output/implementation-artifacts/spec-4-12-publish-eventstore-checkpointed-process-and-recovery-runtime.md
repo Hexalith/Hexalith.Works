@@ -1,53 +1,84 @@
 ---
 title: 'Publish EventStore Checkpointed Process and Recovery Runtime'
 type: 'feature'
-created: '2026-09-23'
-status: 'draft'
+created: '2026-10-10'
+status: 'ready-for-dev'
 route: 'dispatch'
+review_loop_iteration: 0
 context:
   - '_bmad-output/implementation-artifacts/epic-4-context.md'
   - '_bmad-output/planning-artifacts/architecture.md'
 ---
 
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
 ## Intent
 
-**Problem:** AD-20 R7–R8 still depend on Works-owned process/recovery loops, and parked work can escape a generic readiness and operations contract.
+**Problem:** EventStore has stream paging and effect receipts but no checkpointed process runner. Works-owned Reactor recovery cannot satisfy AD-20 R7–R8 through the SDK, and failed work can strand silently.
 
-**Approach:** Publish an EventStore checkpointed process runner with Story 4.10's strict stream validator, Story 4.13's effect receipts, durable retry/quarantine, periodic reconciliation, and health/operations evidence. Works translations belong to Story 4.15.
+**Approach:** Publish a bounded, checkpointed EventStore runner for domain-supplied translations and trusted effects, with periodic reconciliation, durable unresolved evidence, readiness, and disposition hooks.
 
 ## Boundaries & Constraints
 
-- EventStore owns generic source traversal, process checkpoints, retry/parking, and health signals. Story 4.13 owns target effect receipts; Works owns cascade, child-completion, and other Reactor translations.
-- AD-27 makes `FromSequence` exclusive: reuse `LastSequenceReturned`, validate each page identity and increasing envelope positions, and decode all state-affecting evidence before checkpointing.
-- Acknowledgement requires persisted effect/checkpoint or tenant-scoped quarantine; unresolved work degrades readiness and remains discoverable for authenticated, audited disposition.
+**Always:** Treat `FromSequence` as exclusive; reuse `LastSequenceReturned` without increment. Validate identity, continuity, and full state-affecting decode before checkpointing. Derive effect IDs from stable source coordinates, kind, target, and ordinal. Advance only after all effects have terminal receipts or the envelope is durably quarantined. Bound pages, retries, and scans; rediscover work after restart. Unresolved or incomplete scans degrade readiness with bounded reason metrics and alert signals. Authenticate and audit disposition, fail closed on audit failure, and re-enter the same validator. Keep new durable types synthetic until AD-28 owner policy and restore proof permit real data.
+
+**Never:** Reimplement receipts, trust gateway status or broker order, acknowledge unrecorded failure, copy Works decisions into EventStore, expose payloads in diagnostics, or remove the Works host. Platform owns production alerts/admission; Story 4.15 supplies Works translators.
 
 ## I/O & Edge-Case Matrix
 
-| Scenario | Expected behavior |
-| --- | --- |
-| Page boundary and long stream | No skipped or duplicated state-affecting envelope. |
-| Crash after effect before checkpoint | Deterministic replay yields one logical effect. |
-| Corrupt, foreign, or unknown evidence | Quarantine captures the source and readiness degrades. |
-| Parked item after restart | Periodic retry and operations evidence persist until disposition. |
+| Scenario | Input / State | Expected Output / Behavior | Error Handling |
+| --- | --- | --- | --- |
+| Long source | Full and partial pages | Every position processed; cursor equals last returned sequence | Invalid page quarantines |
+| Ambiguous crash | Effect commits before checkpoint | Identical replay settles by receipt, then advances | Unknown result retries |
+| Terminal outcomes | Rejection or no-op receipt | Record outcome and advance without re-handling | Unknown disposition quarantines |
+| Duplicate/reorder | Old delivery or concurrent runner | CAS prevents regression; receipts prevent duplicates | Conflicts quarantine |
+| Bad evidence | Foreign, malformed, unknown event | Durable source-scoped record and degraded readiness | No skip or coercion |
+| Parked source | Retry exhausted or dependency down | Periodic discovery and alert persist | Audited disposition revalidates |
+| Denied disposition | Wrong tenant or failed audit sink | No record change or source disclosure | Fail closed |
+
+</frozen-after-approval>
 
 ## Code Map
 
-- `references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Streams/` — stream paging contract.
-- `references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/` — process runner, recovery, and readiness producer seams.
-- `src/Hexalith.Works/Recovery/` and `src/Hexalith.Works/Reactor/` — historical consumer behavior.
+Paths here are relative to `references/Hexalith.EventStore/`.
+
+- `src/Hexalith.EventStore.Contracts/Streams/StreamReadPageValidator.cs:19` — reuse scope/order/cursor validation; add decode and continuity.
+- `src/Hexalith.EventStore.Client/Gateway/IEventStoreGatewayClient.cs:21` — use `ReadWorkloadStreamAsync`.
+- `src/Hexalith.EventStore.Client/Streams/AuthoritativeEventStreamReader.cs:66` — reuse gap checks, not its full-prefix limit.
+- `src/Hexalith.EventStore.Client/Effects/ITrustedEffectSubmitter.cs:9`, `src/Hexalith.EventStore.Contracts/Effects/EffectIdentityCodec.cs:19` — reuse receipt and identity.
+- `src/Hexalith.EventStore.Client/Projections/IReadModelStore.cs:23` — reuse ETag CAS, never blind writes.
+- `src/Hexalith.EventStore.DomainService/ReminderReconciler.cs:17`, `ReminderReadinessHealthCheck.cs:12` — reuse periodic/status patterns, not reminder records.
 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] Publish generic checkpointed process execution, reuse the shared strict page validator from Story 4.10, integrate Story 4.13 effect acknowledgement, and expose periodic recovery interfaces.
-- [ ] Persist bounded retry/parking/quarantine and expose degraded readiness, bounded reason metrics, alerts, and authenticated disposition hooks.
-- [ ] Prove crash, page boundary, replay, unresolved work, and restart with source-backed tests; publish a named EventStore package/API contract for R7–R8.
+- [ ] `src/Hexalith.EventStore.Client/Processes/IProcessTranslator.cs`, `IProcessSourceCatalog.cs`, `src/Hexalith.EventStore.Contracts/Processes/ProcessEffect.cs` — publish authoritative source discovery, full decode/translation, and stable effect-ordinal contracts with explicit unknown-evidence failure.
+- [ ] `src/Hexalith.EventStore.DomainService/ProcessCheckpointStore.cs`, `ProcessStateKeys.cs`, `ProcessSourceState.cs` — persist tenant/source-scoped checkpoint, retry, quarantine, and discovery state with CAS and versioned validation; retain unresolved evidence across restart.
+- [ ] `src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs` — read bounded workload pages, reuse strict validation, enforce continuity and full decode, submit every deterministic effect, and advance only after durable receipt or quarantine.
+- [ ] `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs`, `EventStoreProcessOptions.cs`, `EventStoreProcessServiceCollectionExtensions.cs` — start and periodically rescan authoritative candidates with validated bounds, including persisted parked work.
+- [ ] `src/Hexalith.EventStore.DomainService/ProcessReadinessHealthCheck.cs`, `ProcessDispositionService.cs`, `src/Hexalith.EventStore.Client/Processes/IProcessDispositionAuthorizer.cs`, `IProcessDispositionAuditSink.cs` — expose readiness and bounded alert signals; require authentication, audit, and revalidation for disposition.
+- [ ] `tests/Hexalith.EventStore.DomainService.Tests/Processes/CheckpointedProcessRunnerTests.cs`, `ProcessRecoveryTests.cs`, `tests/Hexalith.EventStore.Contracts.Tests/Packaging/ProcessPackageContractTests.cs`, `docs/guides/checkpointed-processes.md` — prove every matrix row with persisted end state and fault injection; document a named package API, producer version, R7–R8 handoff, and AD-28 synthetic-only gate.
 
 **Acceptance Criteria:**
-- Given a multi-page source and a crash at a checkpoint boundary, when the runner restarts, then every state-affecting envelope is processed once logically and no page boundary is skipped.
-- Given invalid evidence or exhausted retry, when recovery continues, then the tenant-scoped unresolved record persists, readiness is degraded, and authorized disposition re-enters the same validator.
-- Given the released SDK contract, when Works translations are supplied without generic runtime code, then the runner can drive them through the documented seam.
+- Given a multi-page source with a crash after target commit, when the runner restarts, then the same effect identity replays to one durable target outcome and the checkpoint reaches the final validated position without a skipped envelope.
+- Given invalid evidence or exhausted retry, when recovery runs again, then a tenant-scoped unresolved record remains discoverable, readiness and alert evidence remain degraded, and authorized audited disposition re-enters the validator.
+- Given the published EventStore SDK contract and a synthetic pure translator, when a package-only consumer runs it, then process execution needs no Works runtime code and exposes the R7–R8 producer API for Story 4.15.
+
+## Implementation Notes
+
+## Spec Change Log
+
+## Review Triage Log
+
+## Design Notes
+
+One per-source CAS record owns checkpoint and unresolved evidence; target receipts close the crash gap. Discovery indexes are aids: incomplete source scans cannot report Ready.
 
 ## Verification
 
-- Record producer version, contract tests, fault-injection/restart commands, readiness/alert assertions, and R7–R8 API evidence for Story 4.15.
+**Commands:**
+- `dotnet build Hexalith.EventStore.slnx --configuration Debug -m:1` — EventStore source and SDK compile.
+- `dotnet test tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj --configuration Debug` — stream and package contracts pass.
+- `dotnet test tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj --configuration Debug` — checkpoint, crash, restart, readiness, and disposition tests pass.
+
+Record package-consumer commands, persisted end state, and SDK version. Run test projects separately.
