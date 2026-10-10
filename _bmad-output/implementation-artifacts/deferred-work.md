@@ -1261,3 +1261,13 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore projection freshness and explicit Unavailable guidance in the Epic 4 context.
   evidence: Story 4.11 review C29-BH5 (2026-10-10), low. `epic-4-context.md:48` omits the freshness and Unavailable behavior required by `epics.md:158,196`; a later surface could present a stale or repairing projection as zero or current. This is an agent-context correction.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C30)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Apply the eight queued Epic 4 context corrections in one `epic-4-context.md` refresh before the next Epic 4 story is drafted.
+  evidence: Story 4.11 review C30-BH11 (2026-10-10), low. The eight one-line corrections are C3-BH9, C12-BH7, C12-BH9, C27-BH6, C27-BH7, C27-EC8, C29-BH4, and C29-BH5 (`deferred-work.md:1195-1262`). They sit under three review headings with no owner or trigger, and each delta review raises them again (C29 carried six). This is an agent-context correction.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Make the sprint tracker's `generated` stamp pass `sprint_plan.py validate`.
+  evidence: Story 4.11 review C30-EC5 (2026-10-10), low. `validate` flags only `generated: 2026-06-15T18:47:50+02:00` (`sprint-status.yaml:37`) against `%m-%d-%Y %H:%M`, while `status` accepts it. The sprint-planning generator wrote the ISO form. This is pre-existing: C28-EC1 fixed only `last_updated`.

@@ -1011,6 +1011,65 @@ Three context-free layers reviewed the complete baseline diff: blind hunter (12 
 | C29-VG1 | Focused tests do not mutate the archive hash gate | low | The gap is real: the overlength test exits before `verify_bytes`. The current correct-length SHA-256 check rejects a wrong archive, and adding a test that mirrors that branch would edit hash-bound archival evidence without exercising a new behavior. | reject |
 | C29-VG-O1 | Checkout HEAD check omits tracked edits | low | Carried C23-BH4: a modified Contracts consumer is possible, but a fresh checkout is documented and an extra guard was rejected for the archival replay. | carried reject |
 
+### C30 review triage (2026-10-10)
+
+Delta review C30 (2026-10-10). Scope: the C28 record and sync plus the C29 review and patch. That is Works `6090e43..1f71c6a` (`5faf266`, `1f71c6a`), limited to `_bmad-output/implementation-artifacts`: 5 file diffs, 199 diff lines (+123/−8). The EventStore gitlink did not move (`47f397df`). Review mode: full. Four layers completed: blind hunter (BH) 11, edge-case hunter (EC) 11, acceptance auditor (AA) 13 with no acceptance-criterion violation, and verification gap with 1 gap (VG) plus 2 other findings (VG-O). Each of the 38 findings was judged before grouping; multi-part findings carry one row per part (44 rows). Rechecked during triage:
+- All 39 manifest hashes match, and `replay-proof.py` hashes to `91b59b87b58847aa6c30843a14bf36be32191ffb59838c6c6be5464cceba54e7`.
+- `git diff --check` is clean. `sprint_plan.py status` reports no warning, and `validate` flags only `generated`.
+- markdownlint finds only the MD013, MD024, and MD052 classes the base files already carried.
+- The 4.11 ledger holds eight open Epic 4 context corrections.
+- Against EventStore `47f397df`, the Works solution builds in Debug: 0 errors and 19 xUnit1051 warnings with `-p:WarningsNotAsErrors=xUnit1051`. UnitTests pass 568/568, PropertyTests 3/3, and ArchitectureTests 266/268.
+- Both architecture failures predate the pin move:
+  - `P1_EventStorePersistsRejectionsAndUsesEnvelopeCanonicalSequencing` expects an `EventPersister` line that is already absent at the old pin `a5405602` and at `07d1e23a`.
+  - `RootSubmodulesShouldLiveUnderReferences` follows the Works `e25fe90` Platform relocation.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C30-BH1a | Tracker line 40 says five agent-context corrections are deferred | low | `sprint-status.yaml:40` says "C29 review and patch work is complete, with five agent-context corrections deferred". C29 deferred two. The ledger holds eight open Epic 4 context corrections for 4.11 (`deferred-work.md:1195,1210,1214,1244,1248,1252,1258,1262`). Whoever schedules the context refresh gets a wrong count. A one-clause tracker correction. | patch |
+| C30-BH1b | Line 40 narrows the completion claim from C17-C27 to C29 | low | `1f71c6a` replaced "C17-C27 review and patch work is complete" with "C29 review and patch work is complete". The tracker no longer states that the C17-C28 work is complete, and the count in the same clause runs from C27. Same defective clause as C30-BH1a. | patch (with C30-BH1a) |
+| C30-BH1c | The line-2 header drops the C22-C26 completion summary | false | Line 2 is a last-update note and states the current state: C29 complete, pin published, gate satisfied. Lines 194-196 and this spec keep the history, and no statement became false. | reject |
+| C30-BH2 | The pin move to `47f397df` was never build-verified in Works | false | Rechecked here: the Works solution builds in Debug against `47f397df` with 0 errors, and UnitTests (568/568) and PropertyTests (3/3) pass. ArchitectureTests pass 266/268, and both failures predate the pin move (see the header). The added `IEventStoreGatewayClient` members have default bodies, and Works implements none of the changed interfaces. The record's "not re-run" sentence is this spec's record. | reject |
+| C30-BH3a | Build steps keep the 180-second default despite the cold-restore rationale | maybe-false | The executed builds restored nothing ("All projects are up-to-date for restore") and took 6.35 s and 2.34 s. Only the package consumers use an isolated `NUGET_PACKAGES` folder (`validate-consumer-package-references.py:391`), which is why C29-BH11 applied there. A timed cold-cache build at `07d1e23a` would settle it. If true, it is low: a loud timeout, then a warm rerun. | reject |
+| C30-BH3b | A timed-out step is missing from the ledger, and only the direct child is killed | low | True of `subprocess.run`. But the outer 2100 s now exceeds the consumer's own 30-minute bound, which kills its whole process tree (`PackagedReminderApiTests.cs:69` at `07d1e23a`), and the replay prints its output directory first. Process-group and exception handling go beyond a direct correction for a manual archival replay. | reject |
+| C30-BH4 | `REPLAY.md` omits the 240 s to 2100 s change and gives no warning of a 35-minute run | false | `REPLAY.md:44-48` lists the checks the current recipe adds and the checks the executed recipe lacked; it does not claim to enumerate every difference. The executed recipe, with its 240 s, is retained and hash-bound, and the documented command uses no wrapper. The `timeout 360s` belongs to the retained summary of the 10-08 run, which line 45 identifies as such. | reject |
+| C30-BH5a | Nothing ties 2100 to the consumer's `_processTimeout`, so the two can drift | false | The replay refuses any checkout other than `07d1e23a` (`replay-proof.py:101-103`), so the consumer bound it runs stays fixed at 30 minutes. | reject |
+| C30-BH5b | The 3/3 focused tests do not exercise the timeout change | low | Same as C30-VG1. | reject (with C30-VG1) |
+| C30-BH5c | C29-BH11 cites `PackagedReminderApiTests.cs:12` without a repository or commit; the field is on line 11 | low | True at `07d1e23a` and `47f397df`. The fix edits this spec's record. | reject |
+| C30-BH5d | The 30-minute bound covers the whole validator, not just "three isolated restores" | low | True: the bound wraps the restore, build, and run of all three consumers. The fix edits this spec's record, and 2100 s still exceeds the bound. | reject |
+| C30-BH6 | C29-VG1's hash-bound rationale conflicts with C29's own rebind, and its header calls every remaining finding carried | low | True: C29 rebound `replay-proof.py`, and C29-VG1 is a new rejection. The fix edits this spec's record. | reject |
+| C30-BH7 | The C29 records omit range, size, mode, the auditor skip, a result tally, and the rebound hash | low | Repeats C28-BH6a and C28-BH7 for C29. The fix edits this spec's record. This C30 header names the range, and the rebound hash was rechecked here. | reject |
+| C30-BH8 | C29 ran no Markdown lint and no tracker validation | false | Rechecked here: the delta adds only the MD013, MD024, and MD052 classes the base files already carried. `sprint_plan.py status` reports no warning, and `validate` flags only the pre-existing `generated` stamp (C30-EC5). | reject |
+| C30-BH9 | The C28 checklist is inconsistent after resolution | low | True: the ledger-heading item has no "Resolved by" line, and the decision bullet keeps its pre-resolution present-tense text and options after the resolution. The fix edits this spec's record. `47f397df` and `6090e43` are on `origin/main`. | reject |
+| C30-BH10 | The C29 deferrals cite weaker sources and bare filenames | false | `epics.md:182` (UX-DR18) does require a distinct idempotent no-op. The proposed freshness anchors `epics.md:2534,2554,2924` sit in the non-executable forward candidates F4-C and F4-J, so the "later surface" framing holds. The C27 siblings also cite a bare `epic-4-context.md`. | reject |
+| C30-BH11 | No single entry tracks the Epic 4 context refresh, so every delta review raises it again | low | Eight one-line context corrections sit under three review headings (`deferred-work.md:1195-1262`), and C29 carried six of them again (C29-BH1 to BH3 and BH6 to BH8). The fix is one `epic-4-context.md` refresh, which is an agent-context edit. | defer |
+| C30-EC1 | An outer timeout orphans the validator and restore grandchildren | low | Same as C30-BH3b. | reject |
+| C30-EC2 | `TimeoutExpired` escapes before the ledger write and omits the log path | low | Same as C30-BH3b. | reject |
+| C30-EC3 | Cold-cache build steps can time out at 180 s | maybe-false | Same as C30-BH3a. | reject |
+| C30-EC4 | `REPLAY.md` does not record the new consumer timeout | false | Same as C30-BH4. | reject |
+| C30-EC5 | `generated` stays ISO, so `sprint_plan.py validate` still fails | low | True: `validate` flags only `generated: 2026-06-15T18:47:50+02:00` (rerun here; the base flagged it too). It is pre-existing and was already noted in C28-EC1. The sprint-planning generator writes ISO, while its validator demands `%m-%d-%Y %H:%M`. | defer |
+| C30-EC6 | The C28-AA1b rejection cites line-40 text that no longer exists | low | Same defect as C30-BH1b. Restoring the range in line 40 restores the coverage C28-AA1b relied on. | patch (with C30-BH1a) |
+| C30-EC7 | "five agent-context corrections deferred" miscounts | low | Same as C30-BH1a. | patch (with C30-BH1a) |
+| C30-EC8 | The resolved decision still says the Works commits are unpushed | low | Same as C30-BH9. | reject |
+| C30-EC9 | "None touching a reminder or Effects source file" is false for the pin move | low | True: `2bc32915` adds P1R fixture files such as `FixtureReminderIntentSource.cs` and `FixtureTrustedEffectAuditSink.cs`, and `cf10b4c7` edits `EventStoreWorkloadOperations.cs`. No EventStore reminder or Effects runtime file changed, and Works builds and tests are unaffected (C30-BH2). The fix edits this spec's record. | reject |
+| C30-EC10 | The C29-BH11 anchor lands on a blank line | low | Same as C30-BH5c. | reject |
+| C30-EC11 | Commit `5faf266` says "in-progress" and omits the C28 record | low | The commit's own tracker change is to `in-progress`, so the message is accurate for it. Naming the C28 record would mean rewriting local history, and a log reader can find C28 in this spec. | reject |
+| C30-AA1 | The C28 decision item contradicts itself after its resolution | low | Same as C30-BH9. | reject |
+| C30-AA2 | The C28 ranges cite `a546f50` and `d36d5ba5`, now on no branch or tag | low | True: `git branch -a --contains` and `git tag --contains` return nothing, so `gc` can prune them. The resolution names their twins: `6090e43` differs from `a546f50` only by the gitlink, and `47f397df` is patch-identical to `d36d5ba5`. The fix edits this spec's record. | reject |
+| C30-AA3 | "No entry changes … package API" overstates the pin move | low | True: `cf10b4c7` adds default-bodied `IEventStoreGatewayClient` members, and `19bc28a2` tightens the endpoint inventory. Works builds and tests are unaffected (C30-BH2). The fix edits this spec's record. | reject |
+| C30-AA4 | The C29 triage record repeats the C27 omissions | low | Same as C30-BH7. | reject |
+| C30-AA5 | The C29 completion omits the rebound hash | low | Same as C30-BH7. | reject |
+| C30-AA6 | The C29 hash-bound reasoning is inconsistent | low | Same as C30-BH6. | reject |
+| C30-AA7 | The timeout fix covers only one of the cold-restore steps | maybe-false | Same as C30-BH3a. | reject |
+| C30-AA8 | `REPLAY.md` undercounts the recipe differences, and the parent ran under a 360-second wrapper | false | Same as C30-BH4. | reject |
+| C30-AA9 | The tracker's deferral count matches neither C29 nor the total | low | Same as C30-BH1a. | patch (with C30-BH1a) |
+| C30-AA10 | The C29-BH11 anchor is off by one | low | Same as C30-BH5c. | reject |
+| C30-AA11 | The C27-EC8 ledger entry and triage row cite different sources | false | `docs/lifecycle-transition-matrix.md:196` states the terminal-row rule that the triage row paraphrases from the epic and architecture. The two records agree in substance. | reject |
+| C30-AA12 | The third C28 patch item lacks a "Resolved by" line | low | Same as C30-BH9. | reject |
+| C30-AA13 | Spec status `done` disagrees with tracker `review` | false | That pair is the bmad-build handoff to human review (as at `9ec5693`), and this review's status step sets both. | reject |
+| C30-VG1 | No test checks the package-consumer timeout against the 30-minute bound | low | The gap is real: no test runs `main()`, and CI does not run `test_replay_proof.py`. A regression needs an edit to the archival recipe's literal at a fixed checkout. The proposed harness patches five functions plus `subprocess` to assert one constant, which is more than a direct correction (as in C29-VG1). | reject |
+| C30-VG-O1 | The C29-BH11 anchor cites line 12 | low | Same as C30-BH5c. | reject |
+| C30-VG-O2 | The resolved C28 decision repeats the unpushed state | low | Same as C30-BH9. | reject |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -2913,3 +2972,41 @@ Delta review C28 (2026-10-10) is a fresh-context review of the C26 patches and t
 The C27 ledger entries now have their own review heading, spacing, severity, and source anchors. Review C29 found one direct replay correction: its package-consumer outer timeout is now 35 minutes, exceeding the consumer's 30-minute bound. The replay script's entry in `evidence-sha256.json` was rebound. Two Epic 4 agent-context omissions were appended to deferred work. The retained public 3.117.1 execution and source runtime are unchanged.
 
 Focused verification: `python3 -m unittest -v test_replay_proof.py` passed 3/3; all 39 evidence-manifest hashes matched; `git diff --check` passed. The public matrix audit's SHA-256 matches its XML, and all 22 named passing cases across the five frozen rows appear in that XML. The full replay and EventStore runtime gates were not repeated for these ledger and archival-recipe edits; their retained results and limitations remain in the public evidence packet.
+
+### Review Findings
+
+Delta review C30 (2026-10-10) is a fresh-context review of the C28 record and sync and the C29 review and patch. That is Works `6090e43..1f71c6a` (this spec, `sprint-status.yaml`, `deferred-work.md`, `replay-proof.py`, and `evidence-sha256.json`): 199 diff lines. The EventStore gitlink did not move.
+
+- Review mode: full. All four layers completed: blind hunter 11, edge-case hunter 11, acceptance auditor 13 (no acceptance-criterion violation), and verification gap with 1 gap plus 2 other findings.
+- Each of the 38 findings was judged before grouping, giving 44 rows with parts.
+- Result: 0 decision-needed, 1 patch entry (5 finding rows), 2 defer, 37 rejected.
+- The triage log carries every C30 row.
+- No entry changes reminder runtime behavior, package API, or a hash-bound evidence file, so the named-public `3.117.1` close gate is unaffected and no rebind is needed.
+- Works builds and its unit and property suites pass against the `47f397df` pin. Two ArchitectureTests failures predate the pin move and are outside this story (C30 triage header).
+
+- [x] [Review][Patch] Tracker line 40 misstates the completed review range and the deferred count [`_bmad-output/implementation-artifacts/sprint-status.yaml:40`] — low (C30-BH1a, C30-BH1b, C30-EC6, C30-EC7, C30-AA9).
+  - Resolved in the C30 sprint sync: line 40 now says "C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred", and lines 2 and 38 record the C30 review.
+  - Fix: replace "C29 review and patch work is complete, with five agent-context corrections deferred" with "C17-C29 review and patch work is complete, with eight Epic 4 context corrections deferred".
+- [x] [Review][Defer] Eight queued Epic 4 context corrections have no single owner, so each delta review raises them again [`_bmad-output/implementation-artifacts/deferred-work.md:1195`] — deferred: the fix is one `epic-4-context.md` refresh, which is an agent-context edit (C30-BH11).
+- [x] [Review][Defer] `sprint_plan.py validate` still fails on the ISO `generated` stamp [`_bmad-output/implementation-artifacts/sprint-status.yaml:37`] — deferred: pre-existing; the sprint-planning generator writes ISO while its validator demands `%m-%d-%Y %H:%M` (C30-EC5).
+
+#### Rejected
+
+- `false` — C30-BH1c: Line 2 is a last-update note, and no statement on it became false.
+- `false` — C30-BH2: Works builds against `47f397df`, and its unit and property suites pass. Both architecture failures predate the pin move.
+- `maybe-false` — C30-BH3a, C30-EC3, C30-AA7: The executed builds were up-to-date restores (6.35 s and 2.34 s), and only the consumers use an isolated package folder. A timed cold-cache build at `07d1e23a` would settle it; if true, it is low.
+- `low` — C30-BH3b, C30-EC1, C30-EC2: The consumer's own 30-minute bound kills its process tree before the outer 2100 s. Process-group and exception handling go beyond a direct correction.
+- `false` — C30-BH4, C30-EC4, C30-AA8: `REPLAY.md` does not claim to list every difference. The executed recipe and its 240 s are retained, and the documented command has no wrapper.
+- `false` — C30-BH5a: The replay refuses any checkout other than `07d1e23a`, so the consumer bound cannot drift.
+- `low` — C30-VG1, C30-BH5b: The gap is real, but a mocked `main()` harness that asserts one archival constant is more than a direct correction (as in C29-VG1).
+- `low` — C30-BH5c, C30-BH5d, C30-EC10, C30-AA10, C30-VG-O1: The C29-BH11 anchor and wording are off, but the fix edits this spec's record, and 2100 s still exceeds the bound.
+- `low` — C30-BH6, C30-AA6: The fix edits this spec's record.
+- `low` — C30-BH7, C30-AA4, C30-AA5: The fix edits this spec's record. The C30 header names the range, and the rebound hash was rechecked.
+- `false` — C30-BH8: Lint finds only the house-pattern classes the base already had, `status` is clean, and `validate` flags only `generated`.
+- `low` — C30-BH9, C30-EC8, C30-AA1, C30-AA12, C30-VG-O2: The fix edits this spec's record. Both pushes are confirmed on `origin/main`.
+- `false` — C30-BH10: UX-DR18 does require the idempotent no-op, the proposed freshness anchors are forward candidates, and the sibling entries use the same bare anchors.
+- `low` — C30-EC9, C30-AA3: The pin-move claims are too narrow, but the fix edits this spec's record, and Works builds and tests are unaffected.
+- `low` — C30-EC11: The message is accurate for the commit's own tracker change, and naming the C28 record would mean rewriting local history.
+- `low` — C30-AA2: The fix edits this spec's record, and the resolution names the patch-identical twins.
+- `false` — C30-AA11: Both records state the same terminal-row rule.
+- `false` — C30-AA13: The `done`/`review` pair is the bmad-build handoff, and this review's status step sets both.
