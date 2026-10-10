@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -949,6 +949,44 @@ The baseline diff and the current EventStore guide edit were reviewed by blind h
 | C27-EC6 | Epic context omits persist-before-publication | low | Carried C3-BH9 and C27-BH4. | carried defer |
 | C27-EC7 | Epic context omits persisted-end-state runtime tests | low | Carried C12-BH9 and C27-BH5. | carried defer |
 | C27-EC8 | Epic context omits the terminal-work mutation rule | low | The context no longer states the rule, though the epic requires terminal invalidity to reject and the architecture specifies the defined no-ops. A later implementation can miss the rule; changing agent context is deferred. | defer |
+
+### C28 review triage (2026-10-10)
+
+Delta review C28 (2026-10-10). Scope: the C26 patches and the C27 record. That is Works `718726d..a546f50` (`0546df8`, `9ec5693`, `a546f50`), limited to `_bmad-output/implementation-artifacts` and the EventStore gitlink, plus EventStore `a5405602..d36d5ba5` (`d36d5ba5`, `docs/guides/typed-reminders.md`): 7 file diffs, 259 diff lines (+140/−22). Nothing was excluded; this range moves no other gitlink and carries no other story's runtime commit. `9ec5693` rebinds `REPLAY.md` once to `862ff1709973c5b54d158c066c11928d48b6ffd21fe44d5e19eff7aa9cacc1b5`. Review mode: full. Four layers completed: blind hunter (BH) 10, edge-case hunter (EC) 8, acceptance auditor (AA) 7 with no acceptance-criterion violation (one a nit), and verification gap with no gap plus 2 other findings (VG-O). Each of the 27 findings was judged before grouping; multi-part findings carry one row per part. Rechecked during triage: all 39 manifest hashes match, `test_replay_proof.py` passes 3/3, the public matrix audit names 22 passing cases across the five frozen rows, the `d36d5ba5` word diff is empty and `git diff --check` is clean, and `sprint_plan.py status` warns on the HEAD tracker but not with `last_updated: 2026-10-10 16:57`.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C28-BH1 | The tracker header still lists the C26 patches as open action items | low | `sprint-status.yaml:2` (written by `0546df8`, untouched by `9ec5693`) says the C26 review "left 3 low REPLAY.md and guide patches as action items", while lines 38 and 40 say they are complete and the story is ready for human review. A reader of the header gets the superseded state. Correcting one comment is a direct correction. | patch |
+| C28-BH2 | The C27-BH12 row contradicts the diff that records it | low | True: the row cites a bare date and no consumer, but `9ec5693` sets an ISO timestamp, which `sprint_plan.py` reads (C28-VG-O1a). The fix edits this spec's record; the timestamp regression itself is routed as C28-EC1. | reject |
+| C28-BH3a | The three C27 deferrals sit under the C21 ledger heading without the ledger's entry conventions | low | `deferred-work.md:1240-1248` appends them directly after the last C21 entry under `## Deferred from: … (2026-10-10, C21)` (line 1231), with no blank lines, no "Story 4.11 … review" prefix, no severity, and no file anchors, unlike their siblings. Legacy-ledger migration records the heading as each entry's `origin`, so they would be attributed to C21. Adding a C27 heading and the sibling format is a direct correction. | patch |
+| C28-BH3b | The C27 deferrals name no owner or story for the context refresh | false | No ledger entry carries an owner field (`deferred-work.md` has none), so the omission breaks no ledger convention. | reject |
+| C28-BH4 | `REPLAY.md` never lists which root submodules a replay rewinds, and the restore example omits Commons | low | Carried C24-BH6 and C25-BH8a: a wrong Builds pin fails the bound test-assembly hash loudly, and reconstructing every root pin exceeds a direct correction. The restore command is a no-op for an unrewound submodule, and the Commons pin (`b247ed11`) has not moved since the replay pin set of `dcd90e7`. | carried reject |
+| C28-BH5 | The executed-recipe sentence omits the SHA-256 and nuspec checks that recipe did run | false | The sentence lists only what the executed recipe lacked, which matches `replay-proof.executed-2026-10-08.py`; nothing in `REPLAY.md` says it skipped archive hashes, and the cited C12 record states that all fourteen archives reproduced their retained hashes and source SHA. The full-archive SHA-256 fixes the length, so no unverified gap remains. | reject |
+| C28-BH6a | The C27 triage gives no range, size, mode, layer reason, or result line | low | True; C27 ran three layers and named only "the baseline diff". The fix edits this spec's record. This C28 four-layer review, acceptance auditor included, covers the C27 delta with its range. | reject |
+| C28-BH6b | The C26 patches reached "ready for human review" without a delta review | false | This C28 review is that delta review, run while the story is at `review`, the bmad-build handoff named in the C12 record. | reject |
+| C28-BH7 | The C27 completion omits the `REPLAY.md` hash, `d36d5ba5`, the gitlink move, and its commands | low | True. The fix edits this spec's record; the C28 triage header now names `d36d5ba5`, the `a5405602..d36d5ba5` move, the `862ff170…` rebind, and the rechecks. | reject |
+| C28-BH8 | The new EventStore pin is on no remote and EventStore `main` has diverged | low | `git branch -r --contains d36d5ba5` is empty; EventStore `main` is ahead 1 and behind 4 of `origin/main` (`34087860`), and Works `9ec5693`/`a546f50` are unpushed. A rebase on publish rewrites `d36d5ba5` and orphans the `a546f50` pin; the Works pre-push guard refuses that push loudly, but the publish order is the owner's call (C21 rule). | decision |
+| C28-BH9 | The guide rewrap leaves an orphan line and other ragged or 81-column lines in the paragraph | false | The C26 fix line scoped the rewrap to lines 490-494 and 505-510 "changing no words"; `d36d5ba5` leaves no line over 80 columns there and its word diff is empty. Lines 498, 514-516, and 521 are unchanged by this diff, and Markdown renders the paragraph identically whatever the source breaks. | reject |
+| C28-BH10 | No correction note fixes statements earlier triage confirmed false | low | Carried C25-BH1 and C26-BH7a: the corrections edit this spec's record. | carried reject |
+| C28-EC1 | `last_updated` is now an ISO timestamp that the tracker parser cannot read | low | `sprint-status.yaml:38` moved from `2026-10-10` to `2026-10-10T16:57:28+02:00`. `sprint_plan.py` `_parse_stamp` accepts only `%m-%d-%Y %H:%M`, `%Y-%m-%d %H:%M`, and `%Y-%m-%d` (line 74), so `status` now warns "timestamp format not recognized … staleness check skipped" (rerun here) and `validate` flags the field. `2026-10-10 16:57` parses with no warning. `generated` (line 37) was already ISO before this diff. A one-value correction. | patch |
+| C28-EC2 | The tracker header contradicts lines 38 and 40 | low | Same as C28-BH1. | patch (with C28-BH1) |
+| C28-EC3 | The C27-BH12 rejection cites a bare date and no consumer, neither of which holds | low | Same as C28-BH2. | reject |
+| C28-EC4 | The `d36d5ba5` pin is on no EventStore remote and local `main` has diverged | low | Same as C28-BH8. | decision (with C28-BH8) |
+| C28-EC5 | The C27 deferrals are appended under the C21 section heading | low | Same as C28-BH3a. | patch (with C28-BH3a) |
+| C28-EC6 | The restore step names Builds, but no Builds or Commons replay pin is recorded | low | Same as C28-BH4. | carried reject |
+| C28-EC7 | The C27 completion omits the rebound `REPLAY.md` hash | low | Same as C28-BH7. | reject |
+| C28-EC8 | The rewrap commit message implies the whole paragraph was rewrapped | false | Same as C28-BH9; "rewrap credential troubleshooting guidance" makes no whole-paragraph claim, and the scoped lines meet the C26 fix line. | reject |
+| C28-AA1a | The tracker's line 2 says the C26 patches are open while lines 38 and 40 say complete | low | Same as C28-BH1. | patch (with C28-BH1) |
+| C28-AA1b | Lines 38 and 40 no longer name the C22 replay hardening and guide fix | false | Line 40 says "C17-C27 review and patch work is complete", which covers C22; the C25-AA1 harm was a claim that the tracker named C22 work it no longer named, and no such claim remains. | reject |
+| C28-AA2 | Publishing the diverged EventStore commit will change its SHA and orphan the Works pin | low | Same as C28-BH8. | decision (with C28-BH8) |
+| C28-AA3 | The C27 record omits the reviewed range, mode, `d36d5ba5`, and the `REPLAY.md` hash | low | Same as C28-BH6a and C28-BH7. | reject |
+| C28-AA4 | The C27-BH12 rejection does not match the diff, and its `false` verdict is wrong | low | Same as C28-BH2. | reject |
+| C28-AA5 | The C27 deferrals are filed under the C21 heading | low | Same as C28-BH3a. | patch (with C28-BH3a) |
+| C28-AA6 | The restore step names a Builds rewind that `REPLAY.md` never instructs | low | Same as C28-BH4. | carried reject |
+| C28-AA7 | "Checked neither archive lengths" can read as the archives going unchecked | false | Same as C28-BH5. | reject |
+| C28-VG-O1a | The ISO `last_updated` skips the status staleness check and fails `validate` | low | Same as C28-EC1. | patch (with C28-EC1) |
+| C28-VG-O1b | C27-BH12's "no repository consumer" is false | low | Same as C28-BH2. | reject |
+| C28-VG-O2 | The three C27 deferrals are filed under the C21 heading | low | Same as C28-BH3a. | patch (with C28-BH3a) |
 
 ## Design Notes
 
@@ -2813,3 +2851,36 @@ Delta review C26 (2026-10-10) is a fresh-context review of the C25 patches. That
 ### C27 completion (2026-10-10)
 
 The three C26 patches are complete. The replay recipe unit tests pass (3/3), all 39 retained evidence hashes match, and the public matrix audit names 22 passing XML cases across all five frozen rows. Markdown lint and `git diff --check` pass for the guide and evidence edits. C27 found no verification gap or new 4.11 patch; three agent-context corrections were deferred.
+
+### Review Findings
+
+Delta review C28 (2026-10-10) is a fresh-context review of the C26 patches and the C27 record. That is Works `718726d..a546f50` (this spec, `sprint-status.yaml`, `deferred-work.md`, `REPLAY.md`, `evidence-sha256.json`, and the EventStore gitlink) plus EventStore `a5405602..d36d5ba5` (`docs/guides/typed-reminders.md`): 259 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 10, edge-case hunter 8, acceptance auditor 7 (no acceptance-criterion violation), and verification gap with no gap plus 2 other findings.
+- Each of the 27 findings was judged before grouping, giving 31 rows with parts.
+- Result: 1 decision-needed (3 finding rows), 3 patch entries (9 finding rows), 0 defer, 19 rejected.
+- The triage log carries every C28 row.
+- No entry changes reminder runtime behavior, package API, or a hash-bound evidence file, so the named-public `3.117.1` close gate is unaffected and no rebind is needed.
+
+- [x] [Review][Decision] Publish order for the unpushed EventStore pin `d36d5ba5` — low (C28-BH8, C28-EC4, C28-AA2).
+  - Resolved by the owner on 2026-10-10: rebase and amend. EventStore `d36d5ba5` was rebased onto `origin/main` `2bc32915` as patch-identical `47f397df` and pushed; Works `a546f50` was amended to `6090e43` (gitlink only, message unchanged and commitlint-validated) and pushed with `9ec5693`, passing the pre-push guard. The pin move `a5405602..47f397df` also carries seven upstream commits (Story 6.6 `f0838240`/`34087860`, `19bc28a2`, gateway `cf10b4c7`, 6.1-P1R `2bc32915`, and two tracker commits), none touching a reminder or Effects source file; the Works sibling-source build was not re-run against it. Works `a546f50` pins `d36d5ba5`, which is on no EventStore remote; EventStore `main` is ahead 1 and behind 4 of `origin/main` (`34087860`), and Works `9ec5693`/`a546f50` are unpushed. A rebase on publish rewrites `d36d5ba5`, so the Works pre-push guard refuses `a546f50` until it is amended (C21 rule: bump the Works gitlink only after EventStore is pushed). Options: rebase `d36d5ba5` onto `origin/main`, push EventStore, amend `a546f50` to the rebased SHA, then push Works; merge `origin/main` into EventStore `main` so `d36d5ba5` stays reachable, then push both; or leave it to the owner's next publish, where the guard refuses an orphaned pin.
+- [x] [Review][Patch] The tracker header still lists the C26 patches as open action items [`_bmad-output/implementation-artifacts/sprint-status.yaml:2`] — low (C28-BH1, C28-EC2, C28-AA1a).
+  - Resolved by the C28 sprint sync, which rewrote lines 2, 38, and 40 to the C28 state.
+  - Fix: replace the line 2 comment with the current state, in step with lines 38 and 40: the C26 patches are complete, C27 found no new 4.11 patch, and the `3.117.1` gate still holds.
+- [x] [Review][Patch] `last_updated` is an ISO timestamp the tracker parser cannot read [`_bmad-output/implementation-artifacts/sprint-status.yaml:38`] — low (C28-EC1, C28-VG-O1a).
+  - Resolved by the C28 sprint sync, which wrote the bare date `2026-10-10`.
+  - Fix: write `last_updated` in a `sprint_plan.py` `STAMP_FORMATS` form, for example `2026-10-10 16:57`, which `status` reads with no warning.
+- [ ] [Review][Patch] The three C27 deferrals are filed under the C21 ledger heading [`_bmad-output/implementation-artifacts/deferred-work.md:1240`] — low (C28-BH3a, C28-EC5, C28-AA5, C28-VG-O2).
+  - Fix: insert `## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C27)` before the three entries, separate the entries with blank lines, and give each evidence line the sibling form `Story 4.11 review C27-… (2026-10-10), low.` with its anchor (`epic-4-context.md:49` and `src/Hexalith.Works.Contracts/Events/Rejections/WorkItemTransitionRejected.cs` for C27-BH6, `epic-4-context.md:37` for C27-BH7).
+
+#### Rejected
+
+- `low` — C28-BH2, C28-EC3, C28-AA4, C28-VG-O1b: The C27-BH12 row is wrong, but correcting it edits this spec's record; the regression it missed is patched as C28-EC1.
+- `false` — C28-BH3b: No ledger entry carries an owner field.
+- `low` — C28-BH4, C28-EC6, C28-AA6: Carried C24-BH6 and C25-BH8a; a wrong root pin fails the bound assembly hash loudly, the restore command is a no-op for an unrewound submodule, and Commons has not moved since the replay.
+- `false` — C28-BH5, C28-AA7: The sentence lists only what the executed recipe lacked; the cited C12 record states the archives reproduced their hashes and source SHA.
+- `low` — C28-BH6a, C28-BH7, C28-EC7, C28-AA3: The C27 record omissions are real, but the fix edits this spec's record; the C28 header names the range, `d36d5ba5`, and the `862ff170…` rebind.
+- `false` — C28-BH6b: C28 is the delta review of the C26 patches.
+- `false` — C28-BH9, C28-EC8: The rewrap meets the C26 fix line; the other lines are unchanged and render identically.
+- `low` — C28-BH10: Carried C25-BH1 and C26-BH7a; corrections edit this spec's record.
+- `false` — C28-AA1b: Line 40's "C17-C27" covers the C22 work.

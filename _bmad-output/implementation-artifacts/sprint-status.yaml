@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-10 (Story 4.11: C26 delta review of the C25 patches left 3 low REPLAY.md and guide patches as action items; C22 replay-recipe hardening and guide fix, C23 patches, and C25 patches completed; 3.117.1 gate still satisfied)
+# last_updated: 2026-10-10 (Story 4.11: C28 delta review of the C26 patches and C27 record left 1 low ledger patch as an action item; EventStore pin published as 47f397df with Works 6090e43; C22 replay-recipe hardening and guide fix and the C23, C25, and C26 patches completed; 3.117.1 gate still satisfied)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,9 +35,9 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-10T16:57:28+02:00 # Story 4.11: C26 replay and guide patches complete; C27 review found no new 4.11 patch; 3.117.1 gate remains satisfied
+last_updated: 2026-10-10 # Story 4.11: C28 delta review left 1 low ledger patch as an action item; EventStore pin published as 47f397df with Works 6090e43; C26 patches complete; 3.117.1 gate remains satisfied
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
-# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C27 review and patch work is complete, with three agent-context corrections deferred; Story 4.11 is ready for human review.
+# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C27 review and patch work is complete, with three agent-context corrections deferred; the C28 ledger patch is open, so Story 4.11 is in-progress.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
@@ -80,7 +80,7 @@ development_status:
   4-8-register-and-reconcile-date-reminders-durably: done
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
-  4-11-publish-eventstore-typed-reminder-reconciliation: review
+  4-11-publish-eventstore-typed-reminder-reconciliation: in-progress
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: backlog
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: backlog
