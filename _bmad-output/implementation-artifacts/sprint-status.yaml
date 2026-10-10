@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-10 (Story 4.11: C19 delta review left 5 doc patches as action items; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied)
+# last_updated: 2026-10-10 (Story 4.11: C19/C20 documentation corrections complete; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,9 +35,9 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-10 # Story 4.11: C19 delta review left 5 doc patches as action items; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied
+last_updated: 2026-10-10 # Story 4.11: C19/C20 documentation corrections complete; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
-# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; the C17 and C18 documentation patches are complete; C19 left 5 guide patches open.
+# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C20 documentation corrections are complete.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
@@ -80,7 +80,7 @@ development_status:
   4-8-register-and-reconcile-date-reminders-durably: done
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
-  4-11-publish-eventstore-typed-reminder-reconciliation: in-progress
+  4-11-publish-eventstore-typed-reminder-reconciliation: review
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: backlog
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: backlog

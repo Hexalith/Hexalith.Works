@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -680,6 +680,23 @@ Delta review C19 (2026-10-09). Scope: the committed C17 guide patches and C18 fo
 | C19-AA4 | C18 ran three layers, not four | false | bmad-build's internal review runs three context-free layers by design (C4, C5, C10, C11, C16, C18). The code-review workflow adds the acceptance auditor, as this C19 run does. | reject |
 | C19-AA5 | The audience-prefix guidance is still lopsided | low | Same defect as C19-EC3. | patch (with C19-EC3) |
 | C19-VG | No verification gaps | n/a | The layer reported none. | n/a |
+
+### C20 review triage (2026-10-10)
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C20-BH1 | The parent shows a dirty EventStore submodule | false | The current working tree contains the reviewable guide edits. This workflow has not requested a commit or gitlink advance; the parent dirty marker reflects those uncommitted edits, not a missing documentation change. | reject |
+| C20-BH2 | The issuer Workload row applies its equality rule to authority mode | medium | `EventStoreTrustedEffectSubmissionExtensions` says symmetric assertions use `Workload`, while authority assertions use the client's `azp`. The table's unconditional reminder-host sentence can misdirect authority configuration. | patch |
+| C20-BH3 | `verifier-unconfigured` guidance names only JwtBearer | low | `WorkloadJwtBearerEvents.GetMessageRejection` also returns this reason when `WorkloadAuthenticationOptions.GetConfigurationFailure` fails for receiver `AllowedCallers`, `Audience`, or `MaximumLifetimeSeconds`. | patch |
+| C20-BH4 | An open circuit produces no gateway event 5501 | low | `BrokenCircuitException` is raised in the submitter's resilience handler before HTTP reaches EventStore; the current next sentence directs operators only to gateway event 5501. | patch |
+| C20-BH5 | The 503 text conflates metadata retrieval and a signing-key mismatch | low | `WorkloadJwtBearerEvents.Challenge` returns 503 only for `verifier-unavailable`. `WorkloadAssertionEvaluator.ClassifyFailure` maps ordinary signature failures to 401 reasons; a metadata load failure may be 503. | patch |
+| C20-BH6 | Other 401 reasons omit receiver-side checks | low | `ClassifyFailure` emits `audience-invalid`, `issuer-invalid`, and `algorithm-invalid` for receiver JWT validation; the runbook routes all remaining 401s to submitter and caller checks. | patch |
+| C20-EC1 | Authority mode uses client-token azp rather than issuer Workload | medium | Same verified outcome as C20-BH2. | patch (with C20-BH2) |
+| C20-EC2 | Invalid DaprInternal receiver settings produce verifier-unconfigured | low | Same verified outcome as C20-BH3. | patch (with C20-BH3) |
+| C20-EC3 | `channel-token-missing` can come from bypassing Dapr invocation | low | `HttpTrustedEffectSubmitter` requires `AddEventStoreDaprServiceInvocation` in its documented client chain. A direct HTTP call can omit the sidecar-injected channel token even with EventStore configured. | patch |
+| C20-EC4 | Malformed issuer metadata can be verifier-unavailable | low | `WorkloadAssertionValidator.ValidateAsync` catches metadata-load exceptions and returns `verifier-unavailable`; reachability alone does not settle it. | patch (with C20-BH5) |
+| C20-EC5 | A custom client can still surface TaskCanceledException | low | The new text correctly names the standard handler, but removing the former custom-HttpClient timeout clue leaves other supported client configurations without it. | patch |
+| C20-VG | No verification gaps | n/a | The layer reported none. | n/a |
 
 ## Design Notes
 
@@ -2244,19 +2261,19 @@ Delta review C19 (2026-10-09) is a fresh-context review of the committed C17 gui
   - The GitHub API now serves all eight, and a fresh repository fetched `0e6276a6` by SHA.
   - No EventStore workflow triggers on tags, semantic-release reads only `v*` tags, and the `Protect` ruleset targets branches.
   - To prevent recurrence, the Works clone now sets `push.recurseSubmodules=check`, so `git push` refuses any pushed Works commit whose EventStore pin is not on an EventStore remote. Bump the Works gitlink only after EventStore is pushed.
-- [ ] [Review][Patch] Aspire-composed reminder hosts always get mismatched `Workload` defaults, and the issuer row omits the coupling [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:347`] — medium (C19-BH1, C19-BH2a).
+- [x] [Review][Patch] Aspire-composed reminder hosts always get mismatched `Workload` defaults, and the issuer row omits the coupling [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:347`] — medium (C19-BH1, C19-BH2a).
   - `AddEventStoreDomainModule` sets `EventStore__DomainService__AppId`, and nothing in Aspire sets `DAPR_APP_ID`. The reminder default therefore becomes the application name (`Hexalith.Works` under the Works AppHost), while the issuer `azp` is the app ID.
   - Fix part 1: in the Options row, the `configuration-reference.md:371` row, and the Story 4.15 Works handoff list (`typed-reminders.md:543`), say that a host composed with `AddEventStoreDomainModule` sets `AppId` but not `DAPR_APP_ID`, so it must set `EventStore__Reminders__Workload` to its app ID.
   - Fix part 2: in the `Authentication:WorkloadIssuer:Workload` row (`configuration-reference.md:504`), add that on a reminder host it must equal `EventStore:Reminders:Workload`.
-- [ ] [Review][Patch] The `5501` runbook gives only submitter-side remedies for gateway-side outcomes [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:476`] — low (C19-BH3, C19-BH4, C19-EC4, C19-EC5).
+- [x] [Review][Patch] The `5501` runbook gives only submitter-side remedies for gateway-side outcomes [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:476`] — low (C19-BH3, C19-BH4, C19-EC4, C19-EC5).
   - `Challenge` records `verifier-unconfigured` and the app-channel `channel-*` reasons as `401`, and it returns `503` only for `verifier-unavailable`.
   - Fix: say that a `channel-*` reason points at EventStore's own `APP_API_TOKEN` and its sidecar, `verifier-unconfigured` at EventStore's `Authentication:JwtBearer`, and a `503` at EventStore reaching its issuer's metadata and signing keys. Keep the submitter checks for the other `401` reasons.
-- [ ] [Review][Patch] A custom `AudienceScopePrefix` with the default audience is not derived [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:314`] — low (C19-EC3, C19-AA5).
+- [x] [Review][Patch] A custom `AudienceScopePrefix` with the default audience is not derived [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:314`] — low (C19-EC3, C19-AA5).
   - Fix: make the prefix guidance symmetric. If `Authentication:WorkloadIssuer:AudienceScopePrefix` is customized, request and declare `<AudienceScopePrefix><audience>` even when the audience stays `eventstore`.
-- [ ] [Review][Patch] The runbook names `TaskCanceledException` for a timeout that the standard resilience handler reports as `TimeoutRejectedException` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:475`] — low (C19-EC7).
+- [x] [Review][Patch] The runbook names `TaskCanceledException` for a timeout that the standard resilience handler reports as `TimeoutRejectedException` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:475`] — low (C19-EC7).
   - `AddEventStoreDomainService` calls `AddServiceDefaults`, whose `AddStandardResilienceHandler` covers the documented submitter client.
   - Fix: say that with those defaults a timeout surfaces as `TimeoutRejectedException` and an open circuit as `BrokenCircuitException`.
-- [ ] [Review][Patch] The delegation-refusal check no longer reaches the delegation claim contract [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:489`] — low (C19-EC9).
+- [x] [Review][Patch] The delegation-refusal check no longer reaches the delegation claim contract [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:489`] — low (C19-EC9).
   - Fix: link [`trusted-effects.md#delegation-claim-contract`](trusted-effects.md#delegation-claim-contract) beside "the delegation token provider", and keep the production-admission-gate link.
 
 #### Rejected
@@ -2274,3 +2291,30 @@ Delta review C19 (2026-10-09) is a fresh-context review of the committed C17 gui
 - `low` — C19-EC2: A whitespace-padded `Workload` needs an operator typo, and the trim is runtime work (C15-EC5 pattern).
 - `low` — C19-EC6: Actor-stage denials reach the caller as `500`, so a misattribution needs two concurrent failure modes.
 - `false` — C19-AA4: bmad-build's internal reviews run three layers by design; this code review adds the acceptance auditor.
+
+### C19 completion (2026-10-10)
+
+All five C19 documentation patches are applied in `typed-reminders.md` and
+`configuration-reference.md`; no runtime or package API changed. The story is
+handed to review with the public `3.117.1` package proof still valid.
+
+`npx --no-install markdownlint-cli2 docs/guides/typed-reminders.md` passed with
+zero issues. Linting both edited guides reported four pre-existing issues at
+`configuration-reference.md:862` (`MD038` and `MD056`); the line is identical in
+`HEAD` and the working tree. `git diff --check` and a focused check of the new
+guide anchors and Aspire workload setting passed.
+
+### C20 review completion (2026-10-10)
+
+The three build review layers found seven guide corrections, all patched in the
+two EventStore guide files. The review triage above records every finding. The
+verification-gap layer found no gap, and no runtime or package source changed.
+The public `3.117.1` package-only proof and five-row matrix audit remain the
+unchanged-runtime evidence.
+The guide changes are in local EventStore commit
+`890d346f571aa7dd28c29d9db04077cb29841cd9`; it has not been pushed.
+
+After the corrections, `git diff --check` passed in both repositories. Running
+`npx --no-install markdownlint-cli2 docs/guides/typed-reminders.md
+docs/guides/configuration-reference.md` reported only four pre-existing
+`MD038`/`MD056` findings on the unchanged configuration-reference line 862.
