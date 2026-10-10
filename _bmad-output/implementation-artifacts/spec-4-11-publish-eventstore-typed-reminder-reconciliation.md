@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -987,6 +987,29 @@ Delta review C28 (2026-10-10). Scope: the C26 patches and the C27 record. That i
 | C28-VG-O1a | The ISO `last_updated` skips the status staleness check and fails `validate` | low | Same as C28-EC1. | patch (with C28-EC1) |
 | C28-VG-O1b | C27-BH12's "no repository consumer" is false | low | Same as C28-BH2. | reject |
 | C28-VG-O2 | The three C27 deferrals are filed under the C21 heading | low | Same as C28-BH3a. | patch (with C28-BH3a) |
+
+### C29 review triage (2026-10-10)
+
+Three context-free layers reviewed the complete baseline diff: blind hunter (12 findings), edge-case hunter (2), and verification gap (1 gap, 1 other finding). Each finding was judged before grouping. One replay timeout correction is a direct patch; two agent-context omissions are deferred. All remaining findings repeat recorded decisions or concern a documented, accepted limitation.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C29-BH1 | Claim described as the only entry to InProgress | low | Carried C12-BH7: Resume also enters InProgress; the context refresh is already deferred. | carried defer |
+| C29-BH2 | Claim-loss text promises the winner's identity | low | Carried C27-BH6: the rejection event has no winner and the executor query filters other parties. | carried defer |
+| C29-BH3 | Tenant context in problem details lacks an authorization qualifier | low | Carried C27-BH7: AD-23 requires denial before tenant-existence disclosure. | carried defer |
+| C29-BH4 | Headless outcome guidance omits idempotent no-op | low | `epic-4-context.md:48` lists accepted, domain-rejected, authorization-denied, and infrastructure-unknown outcomes, while `epics.md:182` also requires a distinct idempotent no-op outcome. A later surface could incorrectly report a no-op as accepted work. Agent-context edits are deferred. | defer |
+| C29-BH5 | Headless guidance omits projection freshness and Unavailable | low | `epic-4-context.md:48` does not carry the freshness and explicit Unavailable rule from `epics.md:158,196`; a later surface could show a zero or stale result as current. Agent-context edits are deferred. | defer |
+| C29-BH6 | Context omits the terminal-work mutation rule | low | Carried C27-EC8: terminal invalidity rejects except for defined duplicate no-ops. | carried defer |
+| C29-BH7 | Context omits persist-before-publication wording | low | Carried C3-BH9: the architecture remains authoritative and the context refresh is already deferred. | carried defer |
+| C29-BH8 | Context omits persisted-end-state runtime test guidance | low | Carried C12-BH9: this story has persisted-state proof; future context-guided stories need the rule. | carried defer |
+| C29-BH9 | Current replay recipe has no end-to-end run | low | The owner selected retention of the executed recipe and explicit qualification of the hardened recipe in C23; `REPLAY.md:42-46` states the limitation, and the named public proof remains bound to its actual run. Repeating a historical replay is more than a direct correction. | carried reject |
+| C29-BH10 | Replay permits a dirty checkout at the recorded HEAD | low | Carried C23-BH4: the test source is not hash-bound and the runbook requires a fresh checkout; adding a guard to this archival recipe was rejected. | carried reject |
+| C29-BH11 | Replay outer timeout is shorter than the package consumer's limit | low | `replay-proof.py:134` allows 240 seconds, while `PackagedReminderApiTests.cs:12` allows 30 minutes for its three isolated restores. A cold restore can fail replay before the consumer's own bound. Set the outer limit above 30 minutes. | patch |
+| C29-BH12 | Trickling archive can outlast socket timeout | low | Carried C24-BH4: the length-bound official NuGet download has no whole-download deadline, and deadline machinery is disproportionate to this manual replay. | carried reject |
+| C29-EC1 | Dirty checkout can change package-consumer proof | low | Carried C23-BH4 and C29-BH10. | carried reject |
+| C29-EC2 | Trickling archive can stall replay | low | Carried C24-BH4 and C29-BH12. | carried reject |
+| C29-VG1 | Focused tests do not mutate the archive hash gate | low | The gap is real: the overlength test exits before `verify_bytes`. The current correct-length SHA-256 check rejects a wrong archive, and adding a test that mirrors that branch would edit hash-bound archival evidence without exercising a new behavior. | reject |
+| C29-VG-O1 | Checkout HEAD check omits tracked edits | low | Carried C23-BH4: a modified Contracts consumer is possible, but a fresh checkout is documented and an extra guard was rejected for the archival replay. | carried reject |
 
 ## Design Notes
 
@@ -2870,7 +2893,7 @@ Delta review C28 (2026-10-10) is a fresh-context review of the C26 patches and t
 - [x] [Review][Patch] `last_updated` is an ISO timestamp the tracker parser cannot read [`_bmad-output/implementation-artifacts/sprint-status.yaml:38`] — low (C28-EC1, C28-VG-O1a).
   - Resolved by the C28 sprint sync, which wrote the bare date `2026-10-10`.
   - Fix: write `last_updated` in a `sprint_plan.py` `STAMP_FORMATS` form, for example `2026-10-10 16:57`, which `status` reads with no warning.
-- [ ] [Review][Patch] The three C27 deferrals are filed under the C21 ledger heading [`_bmad-output/implementation-artifacts/deferred-work.md:1240`] — low (C28-BH3a, C28-EC5, C28-AA5, C28-VG-O2).
+- [x] [Review][Patch] The three C27 deferrals are filed under the C21 ledger heading [`_bmad-output/implementation-artifacts/deferred-work.md:1240`] — low (C28-BH3a, C28-EC5, C28-AA5, C28-VG-O2).
   - Fix: insert `## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C27)` before the three entries, separate the entries with blank lines, and give each evidence line the sibling form `Story 4.11 review C27-… (2026-10-10), low.` with its anchor (`epic-4-context.md:49` and `src/Hexalith.Works.Contracts/Events/Rejections/WorkItemTransitionRejected.cs` for C27-BH6, `epic-4-context.md:37` for C27-BH7).
 
 #### Rejected
@@ -2884,3 +2907,9 @@ Delta review C28 (2026-10-10) is a fresh-context review of the C26 patches and t
 - `false` — C28-BH9, C28-EC8: The rewrap meets the C26 fix line; the other lines are unchanged and render identically.
 - `low` — C28-BH10: Carried C25-BH1 and C26-BH7a; corrections edit this spec's record.
 - `false` — C28-AA1b: Line 40's "C17-C27" covers the C22 work.
+
+### C29 completion (2026-10-10)
+
+The C27 ledger entries now have their own review heading, spacing, severity, and source anchors. Review C29 found one direct replay correction: its package-consumer outer timeout is now 35 minutes, exceeding the consumer's 30-minute bound. The replay script's entry in `evidence-sha256.json` was rebound. Two Epic 4 agent-context omissions were appended to deferred work. The retained public 3.117.1 execution and source runtime are unchanged.
+
+Focused verification: `python3 -m unittest -v test_replay_proof.py` passed 3/3; all 39 evidence-manifest hashes matched; `git diff --check` passed. The public matrix audit's SHA-256 matches its XML, and all 22 named passing cases across the five frozen rows appear in that XML. The full replay and EventStore runtime gates were not repeated for these ledger and archival-recipe edits; their retained results and limitations remain in the public evidence packet.

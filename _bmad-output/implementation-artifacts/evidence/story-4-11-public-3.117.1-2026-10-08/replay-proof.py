@@ -133,7 +133,7 @@ def main() -> None:
     contracts = repository / "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests"
     run("package-consumers", [str(contracts), "-method", "*PackagedReminderApiRunsWithoutWorksTypes",
                               "-result-xml", str(output / "package-consumers.xml")],
-        environment={"EVENTSTORE_PACKAGE_CONTRACT_DIR": str(packages)}, timeout=240)
+        environment={"EVENTSTORE_PACKAGE_CONTRACT_DIR": str(packages)}, timeout=2100)
     verify_result_xml(output / "package-consumers.xml", 1)
     host = output / "source-regression-host"
     ledger.append(prepare_host(repository, packages, host, binding))

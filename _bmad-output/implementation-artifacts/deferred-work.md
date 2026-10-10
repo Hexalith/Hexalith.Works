@@ -1237,12 +1237,27 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Carry the `EventStore__Reminders__Workload` requirement into the Story 4.15 Works adoption spec.
   evidence: Story 4.11 delta review C21-BH5 (2026-10-10), medium. The requirement lives only in EventStore `docs/guides/typed-reminders.md` (the Story 4.15 handoff list) and this spec's C19 record. `spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md` (draft) never mentions it, and the Works AppHost calls `AddEventStoreDomainModule(…, "works", …)` (`src/Hexalith.Works.AppHost/Program.cs:141`) without it. Without the override, Works reminder submissions fail before HTTP as `delegation-failed` or `delegation-unavailable`, or at the gateway as `403`. Set it to `works` in the 4.15 acceptance criteria unless C21-BH4 is fixed at the source first.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C27)
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Qualify the Epic 4 context claim-loss guidance so a surface does not promise the winning party's identity without an authorized source.
-  evidence: C27-BH6 (2026-10-10). `epic-4-context.md` says a claim loss names the other party, but `WorkItemTransitionRejected` records only status and attempted act, and the executor query filters another party's assigned items. Agent-context changes are deferred by the build workflow.
+  evidence: Story 4.11 review C27-BH6 (2026-10-10), low. `epic-4-context.md:49` says a claim loss names the other party, but `src/Hexalith.Works.Contracts/Events/Rejections/WorkItemTransitionRejected.cs` records only status and attempted act, and the executor query filters another party's assigned items. Agent-context changes are deferred by the build workflow.
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Qualify Epic 4 problem-detail guidance so tenant context appears only after authorization permits disclosure.
-  evidence: C27-BH7 (2026-10-10). The context says problem details carry tenant context, while the epic's AD-23 acceptance requires denial before tenant-existence disclosure. Agent-context changes are deferred by the build workflow.
+  evidence: Story 4.11 review C27-BH7 (2026-10-10), low. `epic-4-context.md:37` says problem details carry tenant context, while the epic's AD-23 acceptance requires denial before tenant-existence disclosure. Agent-context changes are deferred by the build workflow.
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore the terminal-work mutation and defined no-op rule in the Epic 4 context.
-  evidence: C27-EC8 (2026-10-10). The refreshed context omits the rule, although the epic requires terminal invalidity to reject and the architecture allows only defined idempotent no-ops. Agent-context changes are deferred by the build workflow.
+  evidence: Story 4.11 review C27-EC8 (2026-10-10), low. The refreshed `epic-4-context.md` omits the rule, although `docs/lifecycle-transition-matrix.md:196` requires terminal invalidity to reject except for defined idempotent no-ops. Agent-context changes are deferred by the build workflow.
+
+## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C29)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Restore the distinct idempotent no-op outcome in Epic 4 headless experience guidance.
+  evidence: Story 4.11 review C29-BH4 (2026-10-10), low. `epic-4-context.md:48` lists four outcome classes but omits the distinct idempotent no-op required by `epics.md:182`; future surfaces could report a no-op as accepted work. This is an agent-context correction.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
+  summary: Restore projection freshness and explicit Unavailable guidance in the Epic 4 context.
+  evidence: Story 4.11 review C29-BH5 (2026-10-10), low. `epic-4-context.md:48` omits the freshness and Unavailable behavior required by `epics.md:158,196`; a later surface could present a stale or repairing projection as zero or current. This is an agent-context correction.
