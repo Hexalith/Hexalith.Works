@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -883,6 +883,45 @@ Delta review C25 (2026-10-10). Scope: the C23 patches and the C24 record. That i
 | C25-VG-O1a | The gitlink move carries `882a0761`, and Works CI never compiles that source | low | Same as C25-BH1; Works package-mode CI is pre-existing. | reject |
 | C25-VG-O1b | The Conversations and Tenants gitlink moves were not reviewed | false | Neither is 4.11 work; both were excluded by the scope approved at the C25 checkpoint. | reject |
 | C25-VG-O2 | The new sentence says the submitter's sidecar presents EventStore's app-channel credential | low | `typed-reminders.md:490-491`. In Dapr service invocation the receiving application's own sidecar presents `APP_API_TOKEN` (`HexalithEventStoreAppChannelExtensions.cs:14`, `DaprAppChannelToken.cs:15`), as the guide itself says at lines 275-276 and 487. An operator diagnosing `channel-token-invalid` could inspect the submitter's sidecar. | patch |
+
+### C26 review triage (2026-10-10)
+
+Delta review C26 (2026-10-10). Scope: the C25 patches. That is Works `3ebc68b..718726d` (`718726d`), limited to `_bmad-output/implementation-artifacts` and the EventStore gitlink, plus EventStore `c6d26698..a5405602`, limited to `docs/guides/typed-reminders.md` (`a5405602`): 6 file diffs, 177 diff lines (+60/−26). Excluded as not 4.11 work: the Hexalith.Builds (`6a002df5..9c46679b`) and Hexalith.Projects (`44188d89..0ee8d9a4`) gitlink bumps in `718726d`, and EventStore `83987f22` (Story 6.6 event-versioning boundary fixes) and `73c4b4f3` (6.1 published-run evidence and `tools/p1r*`), neither of which touches a reminder or Effects file. Review mode: full. Four layers completed: blind hunter (BH) 9, edge-case hunter (EC) 6, acceptance auditor (AA) 7 with no acceptance-criterion violation (one carried), and verification gap with no gap plus 2 other findings (VG-O). Each of the 24 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C26-BH1a | The restore step checks out the gitlink in the Works index, so a staged rewound gitlink survives it | low | True: `git submodule update` checks out the index gitlink. The operator must first stage `07d1e23a`, which `REPLAY.md:17-18` forbids committing, and the fix adds an unstage-and-verify guard. | reject |
+| C26-BH1b | The restore leaves the submodule on a detached `HEAD` instead of its previous branch | low | True: the submodule is on `main`, and `git submodule update` detaches it at the pin. Replays are rare (C23 owner decision: no end-to-end rerun), a commit on a detached `HEAD` fails at `git push`, and restoring branch context adds steps beyond a direct correction. | reject |
+| C26-BH2a | `REPLAY.md` gives no rewind command or clean-tree precondition | low | Lines 3-8, unchanged here, name the commit and the bound path; a guarded rewind procedure exceeds a direct correction for this archival guide. | reject |
+| C26-BH2b | The restore step does not say it also applies after a failed replay | false | "After the replay" is not limited to a successful run; a `ValueError` or `RuntimeError` exit still ends the replay. | reject |
+| C26-BH2c | Replay build outputs from `07d1e23a` survive the restore | low | True, as after any checkout. The checkout gives the changed sources new timestamps, so the next incremental `dotnet build` rebuilds; running stale binaries requires skipping the build, and the caveat adds guidance. | reject |
+| C26-BH3 | The executed-recipe sentence omits the missing result gate and archive-length check | low | `replay-proof.executed-2026-10-08.py` only checked exit codes for test runs (line 102); `verify_result_xml`, the bounded archive read, and the length check exist only in the current recipe (`diff -u`). `REPLAY.md:45-47` names only the test-assembly and retained-dependency hashes, so a reader can attribute the 1/1 and 227/227 gate at lines 27-30 to the 2026-10-08 run. The C12 record says the parent saw zero errors, failures, or skips. | patch |
+| C26-BH4 | `REPLAY.md` no longer says the recipe enforces the result gate | low | The C25 rewrite replaced "It rejects …" with "Each run's result XML must report …" (`REPLAY.md:27-30`), stating the gate but not that `replay-proof.py:137,142` raises on it. C24-EC4 was rejected because `REPLAY.md` directs new runs to a recipe whose gates reject those outcomes. Same defect as C26-BH3: the text does not say which recipe enforces the gate. | patch (with C26-BH3) |
+| C26-BH5 | `test_replay_proof.py` does not test zero or two assemblies, `errors>0`, `failed>0`, or a missing attribute | low | Carried C23-VG1 and C24-VG1. `verify_result_xml` (`replay-proof.py:28-36`) rejects each case by construction: an assembly-count check plus whole-dict equality, with a missing attribute read as `-1`. This diff changed no code. | carried reject |
+| C26-BH6a | The EventStore gitlink move carries undisclosed runtime code, contradicting "No runtime code or package API changed" | low | `c6d26698..a5405602` adds `83987f22`, which changes `EventPersister`, `EventStoreDomainEventProcessor`, `EventStoreAggregate`, `EventPayloadEvolutionRegistry`, and `DomainProjectionDispatcher`, and `73c4b4f3` (3,044 evidence and tooling files). Neither touches a reminder or Effects source file, the C26-VG-O1 trace found no affected Works consumer, and the 3.117.1 proof is bound to public packages and `07d1e23a`. Carried C25-BH1: disclosure edits this spec's record. | carried reject |
+| C26-BH6b | The Builds and Projects gitlink moves and guide commit `a5405602` are not recorded | low | Both pins are reachable from their `origin/main`, neither is 4.11 work, and `718726d` is pushed. Recording them edits this spec's record. | reject |
+| C26-BH7a | The completion record says the guide sends the token "only" to its own sidecar; the guide has no "only" | low | True (`typed-reminders.md:490`); the guide matches the C25 fix line. The fix edits this spec's record. | reject |
+| C26-BH7b | The guide does not say the submitter's token never reaches the gateway | false | `typed-reminders.md:490-493` traces the documented path to EventStore's sidecar presenting EventStore's `APP_API_TOKEN`, and names a direct gateway call as the way the submitter's token reaches it. | reject |
+| C26-BH7c | The guide treats `DAPR_API_TOKEN` as always present | false | The documented call passes `builder.Configuration["DAPR_API_TOKEN"]` (line 253), and a `channel-*` `401` points to EventStore's `APP_API_TOKEN` whether or not the submitter has a token, so the diagnosis does not change. | reject |
+| C26-BH8 | The symmetric-mode sentence does not say the submitter also needs `AllowInsecureSymmetricKey` | low | True: `JwtWorkloadAssertionIssuer.cs:121-124` validates the same contract and logs `contract-unusable` (event `5512`) without attaching an assertion. The resulting `assertion-missing` `401` is an "other `401` reason", which `typed-reminders.md:513-516` routes to the submitter's assertion handler. This affects only symmetric mode outside Development, and adding a submitter failure path exceeds a direct correction. | reject |
+| C26-BH9 | The C25 guide edit breaks the paragraph's line wrap | low | `typed-reminders.md:492` is 145 characters and `:508` is 82, in a paragraph wrapped near 80. MD013 is disabled, so lint passes. A rewrap is a direct correction, as C25-BH9 made in `REPLAY.md`. | patch |
+| C26-EC1 | A staged rewound gitlink survives the restore | low | Same as C26-BH1a. | reject |
+| C26-EC2a | The restore loses the submodule's branch context | low | Same as C26-BH1b. | reject |
+| C26-EC2b | The rewind or restore aborts on local submodule changes | false | Git refuses a checkout that would overwrite local changes, which is a loud, correct failure. | reject |
+| C26-EC3 | The restore step leaves other rewound root submodules rewound | low | `REPLAY.md:4-5` requires "the same root-declared source dependencies", so a faithful replay also rewinds `Hexalith.Builds` (now `9c46679b`) to its recorded pin. `REPLAY.md:16-18` restores only EventStore, so a later `commit -a` re-pins Builds: the harm C25-EC3 patched for EventStore. Naming every rewound root submodule is a direct correction. | patch |
+| C26-EC4 | Stale `07d1e23a` test binaries can run after the restore | low | Same as C26-BH2c. | reject |
+| C26-EC5 | "No runtime code or package API changed" is false for the gitlink move | low | Same as C26-BH6a. | carried reject |
+| C26-EC6 | `718726d` moves the Builds and Projects gitlinks without disclosure | low | Same as C26-BH6b. | reject |
+| C26-AA1a | The gitlink move pulls in Story 6.6 runtime code and a 3,044-file commit | low | Same as C26-BH6a. | carried reject |
+| C26-AA1b | The Builds and Projects moves and `a5405602` are not cited | low | Same as C26-BH6b. | reject |
+| C26-AA2 | The C25 completion records no verification commands | low | True. This review re-ran the manifest check (39/39 match), and the auditor re-ran markdownlint, `git diff --check`, and `test_replay_proof.py`, all passing. The fix edits this spec's record. | reject |
+| C26-AA3 | The record's "only" is not in the guide | low | Same as C26-BH7a. | reject |
+| C26-AA4 | `REPLAY.md` cites the C12 record for a method it does not record | false | The C12 record says the parent's replay matched the test assembly and retained source-built dependency bytes. "Outside it" follows from the retained executed recipe, which the same paragraph names by hash and which hashes neither. | reject |
+| C26-AA5 | The guide patch adds a stray 145-character line | low | Same defect as C26-BH9. | patch (with C26-BH9) |
+| C26-AA6 | The restore step ignores stale build outputs | low | Same as C26-BH2c. | reject |
+| C26-AA7 | Spec frontmatter `done` conflicts with tracker `review` | low | Carried C23-BH11 and C25-BH11. The C12 record names `done` and `review` as the bmad-build handoff. | carried reject |
+| C26-VG-O1 | The submodule bump is not docs-only, but the record says no runtime code changed | low | Same as C26-BH6a; the layer traced no Works regression (distinct `Handle` command names, Works' own processor and `/project` route). | carried reject |
+| C26-VG-O2 | The Builds and Projects gitlink moves were not reviewed | false | Neither is 4.11 work; both were excluded by the scope approved at the C26 checkpoint. | reject |
 
 ## Design Notes
 
@@ -2707,3 +2746,39 @@ fix, records the C23 and C25 patches, and keeps 4.11 at `review` pending a
 C26 delta review of these patches. No runtime code or package API changed, so
 the named-public `3.117.1` acceptance proof remains the existing runtime
 evidence.
+
+### Review Findings
+
+Delta review C26 (2026-10-10) is a fresh-context review of the C25 patches. That is Works `3ebc68b..718726d` (this spec, `sprint-status.yaml`, `REPLAY.md`, `evidence-sha256.json`, and the EventStore gitlink) plus EventStore `c6d26698..a5405602` (`docs/guides/typed-reminders.md`): 177 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 9, edge-case hunter 6, acceptance auditor 7 (no acceptance-criterion violation), and verification gap with no gap plus 2 other findings.
+- Each of the 24 findings was judged before grouping, giving 32 rows with parts.
+- Result: 0 decision-needed, 3 patch entries (5 finding rows), 0 defer, 27 rejected.
+- The triage log carries every C26 row.
+- No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected. The two `REPLAY.md` patches change a hash-bound file; rebind `evidence-sha256.json` once.
+
+- [ ] [Review][Patch] `REPLAY.md` does not say which recipe enforces the result gate [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:27`] — low (C26-BH3, C26-BH4).
+  - Fix: at lines 27-30, say the recipe rejects any run whose result XML does not report exactly one assembly whose tests all passed (1/1 package-only, 227/227 reminders). At lines 45-47, say the executed recipe checked neither archive lengths nor result counts and hashed neither the test assembly nor the retained source dependency, accepting any run that exited zero. The parent checked those counts and matches outside it (C12 record).
+- [ ] [Review][Patch] The restore step leaves other rewound root submodules rewound [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:16`] — low (C26-EC3).
+  - Fix: say to restore every root submodule rewound for the replay with the non-recursive `git submodule update -- <path>…` (for example `references/Hexalith.EventStore` and `references/Hexalith.Builds`), and never to commit a rewound gitlink.
+- [ ] [Review][Patch] The C25 guide edit breaks the paragraph's line wrap [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:492`] — low (C26-BH9, C26-AA5).
+  - Fix: rewrap lines 490-494 and 505-510 to about 80 columns, changing no words.
+
+#### Rejected
+
+- `low` — C26-BH1a, C26-EC1: A staged rewound gitlink requires an action `REPLAY.md` forbids, and the guard adds steps.
+- `low` — C26-BH1b, C26-EC2a: The detached `HEAD` follows a rare replay and fails loudly at `git push`; restoring branch context adds steps.
+- `low` — C26-BH2a: The prerequisites name the commit and bound path; a guarded rewind procedure exceeds a direct correction.
+- `false` — C26-BH2b: "After the replay" includes a failed run.
+- `low` — C26-BH2c, C26-EC4, C26-AA6: Stale outputs follow any checkout; the next incremental build replaces them.
+- `low` — C26-BH5: Carried C23-VG1 and C24-VG1; the whole-dict check rejects each listed case by construction.
+- `low` — C26-BH6a, C26-EC5, C26-AA1a, C26-VG-O1: Carried C25-BH1. The Story 6.6 and 6.1 commits touch no reminder or Effects source file, no affected Works consumer was found, and disclosure edits this spec's record.
+- `low` — C26-BH6b, C26-EC6, C26-AA1b: The Builds and Projects pins are pushed and not 4.11 work; recording them edits this spec's record.
+- `low` — C26-BH7a, C26-AA3: The guide matches the C25 fix line; removing "only" edits this spec's record.
+- `false` — C26-BH7b, C26-BH7c: The guide traces the documented token path, and the `channel-*` diagnosis does not depend on the submitter's token.
+- `low` — C26-BH8: The `assertion-missing` `401` is already routed to the submitter's assertion handler; a submitter failure path exceeds a direct correction.
+- `false` — C26-EC2b: Git refusing to overwrite local changes is a correct, loud failure.
+- `low` — C26-AA2: The checks pass on rerun; recording them edits this spec's record.
+- `false` — C26-AA4: The C12 record states the parent's matches, and the retained recipe shows they were outside it.
+- `low` — C26-AA7: Carried C23-BH11 and C25-BH11.
+- `false` — C26-VG-O2: Excluded by the scope approved at the C26 checkpoint.
