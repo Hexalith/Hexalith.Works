@@ -27,7 +27,7 @@
   "public-runtime-bindings.json": "dc5c259c612cc3d675cf67e04941539805884674a5bba178bf15ab089bf10825",
   "public-runtime-dependencies.json": "ca39ffca4ac84b1ce1d892c15e98f7d9c1528599faa473e9a2e1a1d04b11134f",
   "public-source-audit.json": "ffb97ef95bcc7b186b437b071b6463a4c5af29732ddecce2bf612c7b3f839975",
-  "replay-proof.py": "fa11cdd6591cbad4523deff70ed1bc0497f75dc635f6e139685bd6ab989180ef",
+  "replay-proof.py": "e6a6f48c3716797db3482c86ccd2b3bdf2ddc9b84a3661b275671e8fabefca1a",
   "shared-dapr-fixture-diff.patch.gz": "8aa4c9eaa8a7ab7b6df0dbe657ada8a244bba1021bd7667beb87ff54e5c171d4",
   "source-client-full.log.gz": "b977954bdd246f2f95dc4eca13c9bc37cc25edc87772370f68b90a652e8a901e",
   "source-client-full.xml.gz": "91e536e21c381ef76bcfcedf76c1d574591205e15a659797357da94c954b3883",
@@ -35,5 +35,6 @@
   "source-codecs.xml": "3c7e8a3160ec0270d831b5cd1b8a4dabfe488d2a1b71ce7da6e459b200b7c43a",
   "source-domainservice-reminders.log.gz": "94f7b6380ebed02f8e21f3ff245c24741930156c5430d8480f45a20e24257775",
   "source-domainservice-reminders.xml": "955700280985b05c03d71306c948fee4cd8b3083c6a8355dfc9d643e92210a2c",
-  "summary.json": "4ff3f4b849f9701210a66a042142947b4e5b02556b8bbd9ce240a3e0016de2bf"
+  "summary.json": "4ff3f4b849f9701210a66a042142947b4e5b02556b8bbd9ce240a3e0016de2bf",
+  "test_replay_proof.py": "efbd4d51573f6198f1fce9d6c96b6942c956474836e6ebedcdbda59e06f07871"
 }

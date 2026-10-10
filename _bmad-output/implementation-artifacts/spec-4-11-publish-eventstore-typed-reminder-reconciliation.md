@@ -698,6 +698,74 @@ Delta review C19 (2026-10-09). Scope: the committed C17 guide patches and C18 fo
 | C20-EC5 | A custom client can still surface TaskCanceledException | low | The new text correctly names the standard handler, but removing the former custom-HttpClient timeout clue leaves other supported client configurations without it. | patch |
 | C20-VG | No verification gaps | n/a | The layer reported none. | n/a |
 
+### C21 review triage (2026-10-10)
+
+Delta review C21 (2026-10-10). Scope: the C19 and C20 guide patches and their Works record. That is EventStore `691fc1bd..1bc1c76e`, limited to `docs/guides/typed-reminders.md` and `docs/guides/configuration-reference.md`, plus Works `00b989a..e25fe90` for this spec, `sprint-status.yaml`, and the EventStore gitlink: 239 diff lines (+85/−20). The other EventStore commits in the gitlink range (Story 8.4 tests, the 6.1-P1R spec, nested pointer bumps) and the later escape fix `9b26956f` touch no reminder runtime source and are not 4.11 work. Review mode: full. Four layers completed: blind hunter (BH) 10, edge-case hunter (EC) 10, acceptance auditor (AA) 3 with no runtime acceptance-criterion violation, and verification gap with no gaps plus 2 other findings (VG-O). Each of the 25 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C21-BH1a | Pushed Works commits pin an EventStore commit GitHub does not have | medium | Works `896d3be` and `976d372`, both on `origin/main`, pin EventStore `890d346f`. It was rebased into `1bc1c76e` (identical patch-id) at 08:44:57, no branch or tag contains it, and the GitHub API answers `422 No commit found for SHA`. This repeats C19-AA1. `push.recurseSubmodules=check` did not stop it: a scratch repro showed the check refuses a pin that is reachable locally but unpushed, yet passes a pin that a rebase or amend has orphaned, because git treats a commit unreachable from every local ref as absent and skips it. | decision |
+| C21-BH1b | The C20 completion note names `890d346f` as an unpushed local commit | low | The gitlink is `1bc1c76e` on EventStore `origin/main`, with identical guide content. The fix edits this spec's record, and the decision's resolution record will supersede the note. | reject |
+| C21-BH2 | The C20-BH1 rejection rationale is contradicted by the later commit | low | The rationale was true while the build review ran on uncommitted edits; `896d3be` committed and advanced the gitlink afterwards. The fix edits this spec's record. | reject |
+| C21-BH3 | Spec `done` disagrees with sprint `review` | false | This is the bmad-build step-05 handoff (C19-BH11a precedent); the verification-gap layer confirmed step-05 prescribes it. | reject |
+| C21-BH4 | The Aspire `Workload` trap is documented but not fixed at its source | medium | `AddEventStoreDomainModule` already holds `appId` and sets only `EventStore__DomainService__AppId` (`HexalithEventStoreDomainModuleExtensions.cs:65`); `ResolveWorkload` reads neither that setting nor `Authentication:WorkloadIssuer:Workload`. Pre-existing runtime and package behavior; changing it is outside this docs-only delta and would need a new named public release. | defer |
+| C21-BH5 | The Story 4.15 `Workload` handoff exists only in the EventStore guide | medium | `spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md` (draft, 53 lines) never mentions `EventStore__Reminders__Workload`, and the Works AppHost calls `AddEventStoreDomainModule` (`src/Hexalith.Works.AppHost/Program.cs:141`) without it. The fix edits another spec. | defer |
+| C21-BH6a | The open-circuit sentence hides the failures that opened the breaker | false | The next sentence sends every request that reached the gateway, including the failures that tripped the breaker, to event `5501`; nothing tells operators to skip them. | reject |
+| C21-BH6b | Standard retries can write several `5501` records per submission | low | True for a retried `503`, but each record is accurate and duplicates do not change the diagnosis. | reject |
+| C21-BH7 | The "other `401`" bucket misroutes `caller-conflict`, `credential-conflict`, `operation-missing`, and `assertion-stale` | false | The bucket links the credentials section, which documents `caller-conflict` (`typed-reminders.md:299-302`), the operation scope and mapper behind `operation-missing` (`:309-311`), and the lifetime cap behind `assertion-stale` (`:325-329`). `credential-conflict` is a submitter client handler fault, which the bucket names. | reject |
+| C21-BH8 | The runbook paragraph should be a status/reason table | low | A rewrite, not a direct correction (C17-BH4, C19-BH8 precedent). | reject |
+| C21-BH9 | `configuration-reference.md` gives two identity targets and mixes env-var notation | false | Both name one identity: an authority client's `azp` must be the app ID (the `ClientId` row and credentials step 2). `EventStore__Reminders__Workload` is the form an Aspire host sets. | reject |
+| C21-BH10 | The C20 record lacks a range, counts, and patch entries | low | The fix edits this spec's record. The unrelated gitlink-range commits touch no `src/` (AA and VG confirmed). | reject |
+| C21-EC1 | Receiver-side `401` mappings omit submitter-side causes | low | Same defect as C21-AA2. | patch (with C21-AA2) |
+| C21-EC2 | `caller-conflict` is routed as a handler or lifetime fault | false | Same refutation as C21-BH7. | reject |
+| C21-EC3 | An empty or kid-less JWKS yields `401 signature-invalid`, not `503` | false | `SecurityTokenSignatureKeyNotFoundException` derives from `SecurityTokenInvalidSignatureException`, and the guide already maps a key that does not validate to `401 signature-invalid` with a JWKS comparison. The runbook is keyed by the observed status and reason, so the actual `401` reaches the right check. | reject |
+| C21-EC4 | `channel-token-invalid` can also come from a direct gateway call | low | The documented chain passes `DAPR_API_TOKEN` to `AddEventStoreDaprServiceInvocation` (`typed-reminders.md:253`). `DaprServiceInvocationHandler` sets `dapr-api-token` without rewriting the URI, so a client aimed at the gateway presents the submitter's token, and `DaprAppChannelToken.Verify` answers `Invalid`, not `Missing`. The runbook names the direct-call check only for `channel-token-missing`. | patch |
+| C21-EC5 | An open circuit follows repeated earlier failures | false | Same refutation as C21-BH6a. | reject |
+| C21-EC6 | Event `5501` records only credential denials | low | `WorkloadAuthenticationTelemetry.cs:79` logs "Internal credential denied", called only from the channel and workload authentication paths and projection provenance. The rewrite dropped the former list of covered outcomes, so "For requests that reach the gateway, check event `5501`" now implies every such request has one; a `400`, `413`, or actor-stage `500` (C19-EC6) has none. | patch |
+| C21-EC7 | Spec status should be `review` | false | Same refutation as C21-BH3. | reject |
+| C21-EC8 | The deleted general checks left a `403` missing grant without a remedy | false | The deleted sentence never named the operation grant. A documented submitter's token always carries `eventstore:trusted-effect` (symmetric) or only the trusted-effect scopes (authority), so a missing grant surfaces as `401 operation-missing`, which the "other `401`" sentence routes to the credentials section. | reject |
+| C21-EC9 | The C20 note's evidence SHA is orphaned | low | Same as C21-BH1b. | reject |
+| C21-EC10 | The C20-BH1 rejection rests on a stale premise | low | Same as C21-BH2. | reject |
+| C21-AA1a | The spec SHA is unpushed and Works history pins it; the sprint comment undercounts | medium | Same defect as C21-BH1a. The sprint comment "8 orphaned EventStore pins archived as tags" stays true but will be stale once the decision is resolved. | decision (with C21-BH1a) |
+| C21-AA1b | The spec records an unpushed EventStore SHA | low | Same as C21-BH1b. | reject |
+| C21-AA2 | The `401` routing no longer keeps submitter checks for mismatch reasons | low | C19's instruction was "Keep the submitter checks for the other `401` reasons." The C20 text sends `caller-not-allowed`, `audience-invalid`, `issuer-invalid`, and `algorithm-invalid` only to EventStore keys. The credentials section says `caller-not-allowed` is a mismatch of the submitter's `Workload` with the allow-list, `audience-invalid` follows a `gatewayAudience` mismatch, a symmetric submitter signs with its own `Authentication:JwtBearer:Issuer` (`JwtWorkloadAssertionIssuer.cs:181`), and `algorithm-invalid` follows a signing-mode mismatch. Event `5501` does not log the presented caller, so an operator who finds the EventStore value correct has no next step. | patch |
+| C21-AA3 | The C20-BH1 rejection reason is false | low | Same as C21-BH2. | reject |
+| C21-VG-O1 | A ninth unfetchable Works pin | medium | Same defect as C21-BH1a. | decision (with C21-BH1a) |
+| C21-VG-O2 | The C20 completion note is out of date | low | Same as C21-BH1b. | reject |
+| C21-VG | No verification gaps | n/a | The layer reported none. | n/a |
+
+### C22 review triage (2026-10-10)
+
+Review scope was the full Works baseline diff plus the current EventStore guide
+patch. The broad baseline includes historical Story 4.11 evidence; repeated
+findings below retain their earlier verdicts and routes. The blind layer filed
+15 findings, the edge-case layer 5, and verification-gap 1. Each finding was
+judged before grouping.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C22-BH1 | Dirty EventStore gitlink prevents a clean checkout from receiving the guide edit | false | The guide is the working-tree change under review; the spec is `in-review`, not a claim that HEAD already delivers it. Delivery is the workflow handoff after review. | reject |
+| C22-BH2 | Sprint tracker still calls the three C21 patches open | low | The guide and spec now mark them complete, but both tracker comments and the story status still describe the earlier review state. | patch |
+| C22-BH3 | Submitter `Authentication:JwtBearer` wording misroutes authority mode | low | The new receiver-mismatch sentence applies to both supported assertion modes; the guide's credential section says an external authority issues and signs in authority mode. | patch |
+| C22-BH4 | Clone-local pre-push guard does not protect other clones | low | The C21 owner decision explicitly installed a local guard and did not claim a shared policy; tracking a cross-clone enforcement tool would be a separate governance change beyond the R6 intent. | reject |
+| C22-BH5 | Aspire helper leaves reminder Workload default mismatched | medium | Carried C21-BH4: the helper sets AppId but not the reminder Workload; the guide documents the override and the source fix needs a separate public release. | carried defer |
+| C22-BH6 | Story 4.15 draft lacks the Workload override | medium | Carried C21-BH5: the Works adoption requirement is already in the deferred ledger. | carried defer |
+| C22-BH7 | Production callback origin needs a cross-workload negative test | maybe-false | Carried the original callback-origin deferral: the production mTLS/ACL profile and reachability proof belong to the Story 4.16 admission gate. | carried defer |
+| C22-BH8 | Restore omitting both discovery documents can strand item state | maybe-false | Carried R1-BH9: code cannot discover that item, but the approved restore model has not established whether this state is reachable; the 4.16 drill must settle it. | carried defer |
+| C22-BH9 | Dispositions lack retention and offboarding erasure | medium | Carried C6-BH7: last-write-wins disposition and index retention wait for the AD-28/4.16 real-data gate. | carried defer |
+| C22-BH10 | Quarantine lacks an operator disposition path | medium | Carried the original operator-disposition deferral: a quarantined name stays unarmed until the 4.16 repair path exists. | carried defer |
+| C22-BH11 | Corrupt discovery rows can degrade readiness indefinitely | medium | Carried R2-BH3/R2-BH4: malformed registry/candidate evidence is retained; safe repair is deferred to 4.16 rather than deleted on scan. | carried defer |
+| C22-BH12 | Hung actor work could block a pass | maybe-false | Carried R2-BH5: the proxy awaits without a caller token, but the Dapr HTTP/store timeout behavior under a hung dependency has not been established. | carried defer |
+| C22-BH13 | Epic context says Claim is the only InProgress entry | low | Carried C12-BH7: Resume also enters InProgress. This is an agent-context correction already deferred. | carried defer |
+| C22-BH14 | Epic context omits persist-before-publication wording | low | Carried C3-BH9 and C7-BH10: architecture remains authoritative; agent-context refresh was deferred. | carried defer |
+| C22-BH15 | One deferred ledger source path is absolute | low | Carried C8-BH10: the entry is historical, readable here, and changing it would rewrite an existing deferred entry. | carried reject |
+| C22-EC1 | Replay fixture does not verify the copied test and retained dependency DLLs | medium | `public-runtime-bindings.json` records the test assembly and UniqueIds source DLL hashes, but `prepare_host` checks only the dependency manifest before replacement. A dirty or stale build can run different tests or dependency code. | patch |
+| C22-EC2 | Replay accepts an empty or skipped xUnit selection | medium | Both filtered executables exit zero for no matches; `run` checks only the exit code and does not inspect the XML. The recorded current proof did execute 1 and 227 passing tests, but a later replay can falsely report success. | patch |
+| C22-EC3 | Replay downloads an unbounded archive before hash checking | low | `response.read()` has no size bound although the inventory records `archive_bytes`; a too-large response can consume memory before SHA verification. | patch |
+| C22-EC4 | Epic context misstates Claim-only entry | low | Same location and claim as C22-BH13 and C12-BH7. | carried defer |
+| C22-EC5 | Epic context drops explicit publication ordering | low | Same location and claim as C22-BH14 and C3-BH9. | carried defer |
+| C22-VG1 | Replay success does not require selected tests to pass | medium | Pre-verified by the reviewer's zero-match filtered runs: both exited zero and emitted `total=0`. The replay needs XML count, pass, failure, and skip checks. | patch (with C22-EC2) |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -2318,3 +2386,74 @@ After the corrections, `git diff --check` passed in both repositories. Running
 `npx --no-install markdownlint-cli2 docs/guides/typed-reminders.md
 docs/guides/configuration-reference.md` reported only four pre-existing
 `MD038`/`MD056` findings on the unchanged configuration-reference line 862.
+
+### Review Findings
+
+Delta review C21 (2026-10-10) is a fresh-context review of the C19 and C20 guide patches and their Works record. That is EventStore `691fc1bd..1bc1c76e` (two guide files) plus Works `00b989a..e25fe90` (this spec, `sprint-status.yaml`, and the EventStore gitlink): 239 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 10, edge-case hunter 10, acceptance auditor 3 (no runtime acceptance-criterion violation), and verification gap with no gaps plus 2 other findings.
+- Each of the 25 findings was judged before grouping, giving 28 rows with parts.
+- Result: 1 decision-needed (3 finding rows), 3 patch entries (4 finding rows), 2 defer, 19 rejected.
+- The triage log carries every C21 row.
+- No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected.
+
+- [x] [Review][Decision] Pushed Works commits again pin an EventStore commit GitHub does not have — medium (C21-BH1a, C21-AA1a, C21-VG-O1).
+  - Works `896d3be` and `976d372`, both in `origin/main` history, pin EventStore `890d346f`, the pre-rebase copy of `1bc1c76e` (identical patch-id); `b89368f` then repointed to `1bc1c76e`.
+  - No branch or tag contains `890d346f`, and the GitHub API answers `422 No commit found for SHA`, so a checkout or bisect at either commit cannot fetch the submodule. This repeats C19-AA1.
+  - The C19 safeguard did not catch it. A scratch repro showed `push.recurseSubmodules=check` refuses a pin that is reachable locally but unpushed, and silently passes a pin that a rebase or amend has orphaned, because git treats a commit unreachable from every local ref as absent. The reflog fits that path: Works `976d372` was committed at 08:42:01, EventStore was rebased at 08:44:57, and Works `b89368f` followed at 08:45:28.
+  - Options: (a) push lightweight tag `archive/works-896d3be` → `890d346f` (it covers `976d372` too), as in C19, and record that the check misses rebase-orphaned pins; (b) do (a) and add a local Works `pre-push` hook that refuses any pushed gitlink not reachable from an EventStore remote-tracking ref; (c) accept the unfetchable history.
+  - A full Works history scan during the decision found three more orphans that the C19 scan missed, each with a patch-identical twin on EventStore `main`: `7fa36253` (Works `7011082`, twin `ac5b0c47`), `319c78f1` (Works `c7e699f` and `5928ee9`, twin `5cbb1535`), and `c8a2bf8b` (Works `d9235f5` and `a9d8578`, twin `5a9b502f`). Seven Works commits on `origin/main` were unfetchable in all. The three older objects were already past the default 30-day unreachable-reflog expiry, so the next local `gc` could have pruned them.
+  - Resolved by the owner on 2026-10-10 (option b, all four). EventStore lightweight tags `archive/works-7011082`→`7fa36253`, `archive/works-c7e699f`→`319c78f1`, `archive/works-d9235f5`→`c8a2bf8b`, and `archive/works-896d3be`→`890d346f` were pushed in one push. The GitHub API now serves all four, a fresh repository fetched each by SHA, EventStore carries 12 `archive/works-*` tags, and the tag push started no workflow run.
+  - The Works clone now has an untracked `.git/hooks/pre-push`. For every pushed commit it refuses any changed gitlink that no remote-tracking branch of an initialized submodule contains. Replaying the incident range `00b989a..b89368f` and the `d9235f5` range was refused; the clean range `b89368f..f00b82d`, a no-op push, a new-branch push, and a deletion passed. On refusal, amend the unpushed Works commits to the pushed submodule commit before pushing again.
+- [x] [Review][Patch] Receiver-side `401` mappings drop the submitter half of each mismatch [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:489`] — low (C21-AA2, C21-EC1).
+  - Fix: after the four receiver mappings, say that each value must match what the submitter presents: its `Authentication:WorkloadIssuer:Workload` or client `azp` for `caller-not-allowed`, the `gatewayAudience` passed to `AddEventStoreTrustedEffectWorkloadAssertion` for `audience-invalid`, and its own `Authentication:JwtBearer` issuer and signing mode for `issuer-invalid` and `algorithm-invalid`.
+- [x] [Review][Patch] `channel-token-invalid` can also come from a direct gateway call [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:486`] — low (C21-EC4).
+  - Fix: name `channel-token-missing` or `channel-token-invalid` in the Dapr service-invocation check, because the documented chain forwards the submitter's `DAPR_API_TOKEN`.
+- [x] [Review][Patch] The runbook implies every request reaching the gateway logs event `5501` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:484`] — low (C21-EC6).
+  - Fix: say that event `5501` records only internal credential denials (`401`, `403`, and `503 verifier-unavailable`), so a `400`, `413`, or `500` has no `5501` entry.
+- [x] [Review][Defer] `AddEventStoreDomainModule` leaves the reminder `Workload` default on the application name [`references/Hexalith.EventStore/src/Hexalith.EventStore.Aspire/HexalithEventStoreDomainModuleExtensions.cs:65`] — deferred: pre-existing runtime and package default (C21-BH4); the guides document the workaround, and a source fix needs a new named public release.
+- [x] [Review][Defer] Story 4.15 does not carry the `EventStore__Reminders__Workload` requirement [`_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`] — deferred: the fix edits another spec (C21-BH5); the requirement lives only in the EventStore guide's 4.15 handoff list.
+
+#### Rejected
+
+- `low` — C21-BH1b, C21-EC9, C21-AA1b, C21-VG-O2, C21-BH2, C21-EC10, C21-AA3, C21-BH10: Each fix edits this spec's record. The decision's resolution record will supersede the stale `890d346f` note.
+- `false` — C21-BH3, C21-EC7: Spec `done` with sprint `review` is the bmad-build step-05 handoff (C19-BH11a).
+- `false` — C21-BH6a, C21-EC5: The next sentence routes every request that reached the gateway, including the ones that tripped the breaker, to event `5501`.
+- `low` — C21-BH6b: Each retried `503` record is accurate; duplicates do not change the diagnosis.
+- `false` — C21-BH7, C21-EC2: The "other `401`" bucket links the credentials section, which documents `caller-conflict`, the operation-scope mappers, and the lifetime cap.
+- `low` — C21-BH8: A table restructure is a rewrite (C17-BH4, C19-BH8).
+- `false` — C21-BH9: Both rows name one identity, because the authority `azp` must be the app ID; the env-var form is what an Aspire host sets.
+- `false` — C21-EC3: A kid-less JWKS raises a signature-invalid subtype, and the guide already maps `401 signature-invalid` to a JWKS comparison.
+- `false` — C21-EC8: A documented submitter always carries the trusted-effect operation, so a missing grant is `401 operation-missing`, which reaches the credentials section.
+
+### C21 patch completion (2026-10-10)
+
+The three open C21 runbook patches are applied in EventStore
+`docs/guides/typed-reminders.md`. The guide now scopes event `5501` to internal
+credential denials, names both direct-call channel-token failures, and pairs
+receiver `401` settings with the submitter values to inspect.
+
+`git diff --check` passed in Works and EventStore. EventStore
+`npx --no-install markdownlint-cli2 docs/guides/typed-reminders.md` reported
+zero issues. This is a documentation-only continuation; the named-public
+`3.117.1` package proof remains the runtime acceptance evidence. The retained
+`public-matrix-audit.json` matches its executed XML SHA-256, and all 22 listed
+tests passed across the five frozen matrix rows. No runtime tests were rerun for
+these guide edits.
+
+### C22 review fixes and verification (2026-10-10)
+
+- [x] [Review][Patch] Sprint tracker now records C21 guide completion and the review handoff (C22-BH2).
+- [x] [Review][Patch] The runbook distinguishes Development symmetric signing from external authority signing when checking issuer and algorithm mismatches (C22-BH3).
+- [x] [Review][Patch] The replay recipe verifies its copied test assembly and retained source dependency hashes before substituting public SDK DLLs (C22-EC1).
+- [x] [Review][Patch] The replay recipe rejects empty, skipped, failed, or changed-count xUnit selections; both recorded XML results retain 1/1 and 227/227 passes with no skips (C22-EC2, C22-VG1).
+- [x] [Review][Patch] Package downloads stop at the recorded archive length plus one byte and reject length mismatches (C22-EC3).
+
+The three focused replay tests passed. The retained `evidence-sha256.json` now
+binds the revised recipe and its test file; both hashes were checked. The
+original public package archives, execution XML, matrix audit, and named-public
+release evidence were not changed. The guide correction is EventStore commit
+`c3bac11a49eef12af54b185cf3d689f9dfa70771`. EventStore guide lint and `git diff --check`
+passed. The full public replay was not rerun because this correction only
+hardens the repeatable proof recipe and the recorded checkout is not the
+current EventStore HEAD.

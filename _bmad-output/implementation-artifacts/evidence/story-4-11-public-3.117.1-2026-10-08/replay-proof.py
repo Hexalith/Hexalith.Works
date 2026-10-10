@@ -25,11 +25,24 @@ def verify_bytes(data: bytes, expected: str, subject: str) -> None:
         raise ValueError(f"SHA-256 mismatch for {subject}: {actual} != {expected}")
 
 
+def verify_result_xml(path: Path, expected_passed: int) -> None:
+    assemblies = ET.parse(path).getroot().findall("assembly")
+    if len(assemblies) != 1:
+        raise ValueError(f"Expected one test assembly in {path}")
+    counts = {name: int(assemblies[0].get(name, "-1"))
+              for name in ("total", "passed", "failed", "skipped", "errors")}
+    if counts != {"total": expected_passed, "passed": expected_passed,
+                  "failed": 0, "skipped": 0, "errors": 0}:
+        raise ValueError(f"Unexpected test results in {path}: {counts}")
+
+
 def download_packages(inventory: dict, output: Path, ledger: list[dict]) -> None:
     output.mkdir()
     for package in inventory["packages"]:
         with urllib.request.urlopen(package["url"], timeout=45) as response:
-            data = response.read()
+            data = response.read(package["archive_bytes"] + 1)
+        if len(data) != package["archive_bytes"]:
+            raise ValueError(f"Archive length mismatch for {package['id']}")
         verify_bytes(data, package["archive_sha256"], package["id"])
         archive = output / f"{package['id']}.{package['version']}.nupkg"
         archive.write_bytes(data)
@@ -52,6 +65,11 @@ def prepare_host(repository: Path, packages: Path, output: Path, binding: dict) 
     libraries = json.loads(deps.read_bytes())["libraries"]
     if libraries.get("Hexalith.Commons.UniqueIds/1.0.0", {}).get("type") != "project":
         raise ValueError("The recorded fixture requires source-built Hexalith.Commons.UniqueIds/1.0.0")
+    verify_bytes((output / "Hexalith.EventStore.DomainService.Tests.dll").read_bytes(),
+                 binding["test_assembly_sha256"], "source fixture test assembly")
+    for dependency in binding["fixture_graph"]["retained_source_dependencies"]:
+        verify_bytes((output / dependency["assembly"]).read_bytes(), dependency["assembly_sha256"],
+                     f"source fixture dependency {dependency['assembly']}")
     installed = []
     for assembly in binding["assemblies"]:
         archive = packages / f"{assembly['package']}.{binding['public_version']}.nupkg"
@@ -116,10 +134,12 @@ def main() -> None:
     run("package-consumers", [str(contracts), "-method", "*PackagedReminderApiRunsWithoutWorksTypes",
                               "-result-xml", str(output / "package-consumers.xml")],
         environment={"EVENTSTORE_PACKAGE_CONTRACT_DIR": str(packages)}, timeout=240)
+    verify_result_xml(output / "package-consumers.xml", 1)
     host = output / "source-regression-host"
     ledger.append(prepare_host(repository, packages, host, binding))
     run("reminder-regressions", [str(host / "Hexalith.EventStore.DomainService.Tests"),
                                  "-class", "*Reminder*", "-result-xml", str(output / "reminder-regressions.xml")])
+    verify_result_xml(output / "reminder-regressions.xml", 227)
     for assembly in binding["assemblies"]:
         verify_bytes((host / assembly["assembly"]).read_bytes(), assembly["public_assembly_sha256"],
                      assembly["assembly"])

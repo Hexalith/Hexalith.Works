@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-10 (Story 4.11: C19/C20 documentation corrections complete; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied)
+# last_updated: 2026-10-10 (Story 4.11: C21 guide patches complete and handed to review; 12 orphaned EventStore pins archived as tags plus a Works pre-push guard; 3.117.1 gate still satisfied)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,9 +35,9 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-10 # Story 4.11: C19/C20 documentation corrections complete; 8 orphaned EventStore pins archived as tags; 3.117.1 gate still satisfied
+last_updated: 2026-10-10 # Story 4.11: C21 guide patches complete and handed to review; 12 orphaned EventStore pins archived as tags plus a Works pre-push guard; 3.117.1 gate still satisfied
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
-# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C20 documentation corrections are complete.
+# Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C21 documentation corrections are complete and Story 4.11 is in review.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
 # correct-course approved 2026-09-06: VAL-H03 resolved (FR-20 tiebreak = deterministic identity order,
 #   docs-only — no story change); VAL-H10 binding must precede AD-21 registry story drafting (see epics.md Epic 3 note)
