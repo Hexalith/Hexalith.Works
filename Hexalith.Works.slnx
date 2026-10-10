@@ -46,6 +46,9 @@
   <Folder Name="/references/Hexalith.Conversations/">
     <File Path="references/Hexalith.Conversations/README.md" />
   </Folder>
+  <Folder Name="/references/Hexalith.Platform/">
+    <File Path="references/Hexalith.Platform/README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Hexalith.Works/Hexalith.Works.csproj" />
     <Project Path="src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj" />
