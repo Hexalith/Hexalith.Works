@@ -847,6 +847,43 @@ Each finding was judged before grouping. No new patch or deferral resulted.
 | C24-EC8 | Unauthorized callback has no durable disposition | false | Carried EC13 and C7-EC7: token denial logs audit event 200209 and returns an empty 401; writing an unauthenticated durable disposition would open an unauthenticated write path. | carried reject |
 | C24-VG1 | Focused tests do not execute the new `main()` XML gates | low | Carried C23-VG1: deleting those two calls leaves 3/3 focused tests green, but each gate is two explicit lines in a hash-bound, hand-run recipe; a mocked end-to-end test is disproportionate. | carried reject |
 
+### C25 review triage (2026-10-10)
+
+Delta review C25 (2026-10-10). Scope: the C23 patches and the C24 record. That is Works `79689aa..c43ff7f` (`5f6b536`, `c43ff7f`), limited to `_bmad-output/implementation-artifacts` and the EventStore gitlink, plus EventStore `c3bac11a..c6d26698`, limited to `docs/guides/typed-reminders.md` (`c6d26698`): 9 file diffs, 478 diff lines (+312/−17). Excluded as not 4.11 work: the Hexalith.Conversations and Hexalith.Tenants gitlink bumps in `5f6b536`, and EventStore `882a0761` (Story 6.6 logical-replay removal, 143 files, no reminder or Effects file). Review mode: full. Four layers completed: blind hunter (BH) 12, edge-case hunter (EC) 6, acceptance auditor (AA) 8 with no acceptance-criterion violation, and verification gap with no gap plus 2 other findings (VG-O). Each of the 28 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C25-BH1 | The EventStore gitlink move carries an undisclosed `src/` deletion | low | `c3bac11a..c6d26698` includes `882a0761`, which deletes 104 `src/*.cs` files in Client and Server and removes `DomainServiceRequestRouter.ProcessCompletedLogicalAsync`. This spec never names it, and the C23 completion says "No runtime code or package API changed". The bump is the owner's routine sync in `5f6b536`; it touches no reminder or Effects file, and no Works `.cs` file references any of the 104 deleted type names. Disclosing it edits this spec's record. | reject |
+| C25-BH2 | The C24 record omits range, size, and mode, and ran without the acceptance auditor | low | True: three layers, no range, and no C24 findings or completion section. The fix edits this spec's record; this four-layer C25 review, acceptance auditor included, now covers the same delta. | reject |
+| C25-BH3 | `REPLAY.md` says the retained summaries describe the executed recipe, but two summary checks came from outside it | low | `parent-replay-summary.json` reports `recorded_test_assembly_reproduced` and `recorded_source_transitive_dependencies_reproduced` as `true`. The executed recipe (`fa11cdd6…`) hashes neither the test assembly nor `Hexalith.Commons.UniqueIds.dll`, and `parent-replay-commands.json` records no such hash; the C12 record says the parent compared those bytes separately. `REPLAY.md:39` reads as if the executed recipe made checks that only the current recipe has. | patch |
+| C25-BH4 | The C23 decision does not explain the 2 of 14 uncached archives | low | The fix edits this spec's record. | reject |
+| C25-BH5 | The new `DAPR_API_TOKEN` sentence names the wrong sidecar | low | Same defect as C25-VG-O2. | patch (with C25-VG-O2) |
+| C25-BH6 | The symmetric text drops the signing-key remedy and misroutes `signature-invalid` | false | The sentence names the cause ("A mismatched symmetric signing key yields `signature-invalid`"), so `signature-invalid` is not an "other `401` reason", and the same paragraph says to "compare the assertion's signer with EventStore's trusted signing key or issuer JWKS". | reject |
+| C25-BH7 | `AllowInsecureSymmetricKey` lacks its configuration path | low | Every other setting in the paragraph is a full path, and `configuration-reference.md:872` names `Authentication:JwtBearer:AllowInsecureSymmetricKey`; `typed-reminders.md:506` gives only the leaf name. | patch |
+| C25-BH8a | `REPLAY.md` does not name the `Hexalith.Builds` pin | low | Carried C24-BH6: a mismatched Builds pin changes the bound test-assembly hash and fails loudly, and reconstructing every root pin exceeds a direct correction. | carried reject |
+| C25-BH8b | `REPLAY.md` gives no restore step after rewinding the live submodule | low | Same defect as C25-EC3. | patch (with C25-EC3) |
+| C25-BH9 | The new `REPLAY.md` result sentence is garbled and incomplete | low | `REPLAY.md:20-21` ("rejects an empty, failed, or skipped package-only result instead of accepting anything other than 1/1 passed") is a double negative; lines 24-25 omit the `errors=0` and single-assembly checks that `verify_result_xml` enforces; line 26 is a stray short wrap. | patch (with C25-AA8) |
+| C25-BH10 | The commit-message evidence is incomplete and unreferenced | false | The JSON retains each validated candidate verbatim (both commits are single-line); the Works entry cannot record its own commit SHA; `5f6b536` and `882a0761` are owner commits outside the assistant validation rule; citing the file from this spec edits its record. | reject |
+| C25-BH11 | Spec frontmatter `done` conflicts with tracker `review` | low | Carried C23-BH11: the fix edits this spec's record. | carried reject |
+| C25-BH12 | The C23 result line counts 7 patch entries, but 8 were applied | false | The line counts the 7 finding-derived entries (13 rows) exactly; the eighth patch is labelled "from the C23-BH1 decision" and came from the owner's choice. | reject |
+| C25-EC1 | The service-invocation sentence points operators at the submitter's sidecar | low | Same defect as C25-VG-O2. | patch (with C25-VG-O2) |
+| C25-EC2 | A replay from another path fails late with a generic hash mismatch | low | Carried C23-BH2: `REPLAY.md:5-8` now documents the bound path, and a path guard adds code to the hash-bound recipe. | carried reject |
+| C25-EC3 | Rewinding the live submodule for a replay leaves the Works gitlink modified | low | `REPLAY.md:5-8` requires `07d1e23a` checked out in `references/Hexalith.EventStore` and gives no restore step. A later `commit -a` re-pins EventStore to `07d1e23a`, which the local pre-push guard accepts because that commit is pushed. One sentence fixes it. | patch |
+| C25-EC4 | Tracker "ready for human review" conflicts with spec `done` | low | Same as C25-BH11. | carried reject |
+| C25-EC5 | The tracker no longer records the C22 fixes, though C23-BH15a is ticked | low | Same defect as C25-AA1. | patch (with C25-AA1) |
+| C25-EC6 | An unreviewed runtime deletion enters the Works EventStore pin | low | Same as C25-BH1. | reject |
+| C25-AA1 | The C23-BH15a tracker patch is ticked but no longer in effect | low | `5f6b536` named the "C22 replay-recipe hardening" and "C17-C22 corrections"; `c43ff7f` replaced all three comments (`sprint-status.yaml:2,38,40`) with C23/C24 wording that names neither the C22 replay hardening nor the C22 guide fix. The C23 completion claim "The Works sprint tracker records the C22 replay and guide fixes" is false at `c43ff7f`. | patch |
+| C25-AA2 | The `DAPR_API_TOKEN` sentence names the wrong sidecar | low | Same defect as C25-VG-O2. | patch (with C25-VG-O2) |
+| C25-AA3 | The gitlink move pulls in `882a0761` without disclosure | low | Same as C25-BH1. | reject |
+| C25-AA4 | C24 was recorded as a pass without the acceptance auditor | low | Same as C25-BH2. | reject |
+| C25-AA5 | Story status conflicts between spec and tracker | low | Same as C25-BH11. | carried reject |
+| C25-AA6 | The commit-message evidence is unreferenced and labelled C24 | false | Same refutation as C25-BH10; the folder names the C24 round that produced those commits. | reject |
+| C25-AA7 | `REPLAY.md` does not name the root dependency pins | low | Same as C25-BH8a. | carried reject |
+| C25-AA8 | One `REPLAY.md` sentence is garbled | low | Same defect as C25-BH9. | patch (with C25-BH9) |
+| C25-VG-O1a | The gitlink move carries `882a0761`, and Works CI never compiles that source | low | Same as C25-BH1; Works package-mode CI is pre-existing. | reject |
+| C25-VG-O1b | The Conversations and Tenants gitlink moves were not reviewed | false | Neither is 4.11 work; both were excluded by the scope approved at the C25 checkpoint. | reject |
+| C25-VG-O2 | The new sentence says the submitter's sidecar presents EventStore's app-channel credential | low | `typed-reminders.md:490-491`. In Dapr service invocation the receiving application's own sidecar presents `APP_API_TOKEN` (`HexalithEventStoreAppChannelExtensions.cs:14`, `DaprAppChannelToken.cs:15`), as the guide itself says at lines 275-276 and 487. An operator diagnosing `channel-token-invalid` could inspect the submitter's sidecar. | patch |
+
 ## Design Notes
 
 **Callback admission, in order:**
@@ -2609,3 +2646,38 @@ guide markdownlint reported zero issues; `git diff --check` passed in Works and
 EventStore. No runtime code or package API changed, so the named public
 `3.117.1` acceptance proof remains the existing runtime evidence. The current
 recipe was not run end to end, in accordance with the C23 owner decision.
+
+### Review Findings
+
+Delta review C25 (2026-10-10) is a fresh-context review of the C23 patches and the C24 record. That is Works `79689aa..c43ff7f` (this spec, `sprint-status.yaml`, `deferred-work.md`, the evidence packet, the new commit-message evidence, and the EventStore gitlink) plus EventStore `c3bac11a..c6d26698` (`docs/guides/typed-reminders.md`): 478 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 12, edge-case hunter 6, acceptance auditor 8 (no acceptance-criterion violation), and verification gap with no gap plus 2 other findings.
+- Each of the 28 findings was judged before grouping, giving 30 rows with parts.
+- Result: 0 decision-needed, 6 patch entries (12 finding rows), 0 defer, 18 rejected.
+- The triage log carries every C25 row.
+- No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected. The three `REPLAY.md` patches change a hash-bound file; rebind `evidence-sha256.json` once.
+
+- [ ] [Review][Patch] The service-invocation sentence names the wrong sidecar [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:490`] — low (C25-VG-O2, C25-BH5, C25-EC1, C25-AA2).
+  - Fix: say the submitter sends its `DAPR_API_TOKEN` to its own sidecar, which relays the call to EventStore's sidecar, and EventStore's sidecar presents EventStore's `APP_API_TOKEN` to the gateway.
+- [ ] [Review][Patch] The sprint tracker no longer records the C22 fixes [`_bmad-output/implementation-artifacts/sprint-status.yaml:2`] — low (C25-AA1, C25-EC5).
+  - Fix: name the C22 replay hardening and guide fix again in the tracker comments (lines 2, 38, and 40), so the C23-BH15a patch and the C23 completion claim hold.
+- [ ] [Review][Patch] `REPLAY.md` gives no restore step after rewinding the live submodule [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:8`] — low (C25-EC3, C25-BH8b).
+  - Fix: say that after the replay, a non-recursive `git submodule update -- references/Hexalith.EventStore` restores the pinned commit, and that the rewound gitlink must not be committed.
+- [ ] [Review][Patch] The `REPLAY.md` result sentence is garbled and incomplete [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:20`] — low (C25-BH9, C25-AA8).
+  - Fix: say each run must report exactly one assembly with no failures, errors, or skips (1/1 package-only, 227/227 reminders), and rejoin the stray line-26 wrap.
+- [ ] [Review][Patch] `REPLAY.md` attributes two parent-side checks to the executed recipe [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:39`] — low (C25-BH3).
+  - Fix: say the retained summaries describe that run, and that its test-assembly and retained-dependency matches were checked by the parent outside the executed recipe (C12 record).
+- [ ] [Review][Patch] `AllowInsecureSymmetricKey` lacks its configuration path [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:506`] — low (C25-BH7).
+  - Fix: write `Authentication:JwtBearer:AllowInsecureSymmetricKey=true`.
+
+#### Rejected
+
+- `low` — C25-BH1, C25-EC6, C25-AA3, C25-VG-O1a: Disclosing `882a0761` edits this spec's record; it touches no reminder or Effects file, and no Works `.cs` file references the 104 deleted types.
+- `false` — C25-VG-O1b: The Conversations and Tenants gitlink moves are not 4.11 work and were excluded at the C25 checkpoint.
+- `low` — C25-BH2, C25-AA4, C25-BH4: Each fix edits this spec's record; C25 now reviews the C24 delta with all four layers.
+- `low` — C25-BH11, C25-EC4, C25-AA5: Carried C23-BH11; the fix edits this spec's record.
+- `low` — C25-BH8a, C25-AA7: Carried C24-BH6; a wrong Builds pin fails the bound test-assembly hash loudly.
+- `low` — C25-EC2: Carried C23-BH2; the path is documented, and a guard adds code to the hash-bound recipe.
+- `false` — C25-BH6: The sentence names the key-mismatch cause, and the paragraph says to compare the signer with EventStore's trusted signing key.
+- `false` — C25-BH10, C25-AA6: The candidates are retained verbatim, the Works SHA cannot be self-recorded, the other two commits are owner commits, and citing the file edits this spec's record.
+- `false` — C25-BH12: The line counts the 7 finding-derived entries exactly; the eighth came from the owner's decision.
