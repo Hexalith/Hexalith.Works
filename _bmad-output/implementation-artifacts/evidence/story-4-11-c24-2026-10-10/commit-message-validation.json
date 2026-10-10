@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-10",
+  "validations": [
+    {
+      "repository": "references/Hexalith.EventStore",
+      "candidate": "docs(reminders): close typed reminder replay review",
+      "command": "npx --no-install commitlint --config commitlint.config.mjs --edit /tmp/eventstore-4-11-commit-eyNduU.txt",
+      "cli": "@commitlint/cli@21.1.0",
+      "exit_code": 0,
+      "commit": "c6d26698274aa942d56d92008d149e73ca11151e"
+    },
+    {
+      "repository": ".",
+      "candidate": "docs(story-4.11): close replay evidence review",
+      "command": "npx --no-install commitlint --config commitlint.config.mjs --edit /tmp/works-4-11-commit-zk3Ken.txt",
+      "cli": "@commitlint/cli@21.2.2",
+      "exit_code": 0
+    }
+  ]
+}
