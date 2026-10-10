@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -644,6 +644,42 @@ Delta review C17 (2026-10-09). Scope: EventStore `c4dff081..8d033bd8`, the commi
 | C17-EC6 | Custom scope prefixes are not derived | low | Same defect as C17-BH5. | patch (with C17-BH5) |
 | C17-EC7 | The runbook dropped its link to the credentials section | low | The C16 rewrite removed `[Trusted-effect submission credentials](#trusted-effect-submission-credentials)` after "assertion lifetime provisioning" (`typed-reminders.md:474`). The allow-list and lifetime checks no longer lead to their setup steps. | patch |
 | C17-VG | No verification gaps | n/a | The layer reported none. | n/a |
+
+Delta review C19 (2026-10-09). Scope: the committed C17 guide patches and C18 follow-ups. That is EventStore `6caf9ef4..691fc1bd`, limited to `docs/guides/typed-reminders.md` and `docs/guides/configuration-reference.md` (+28/−15), plus Works `71cb292..53c56ab` for this spec and `sprint-status.yaml` (+29/−10): 183 diff lines. Later EventStore commits (`fe4e7559..37451b52`, Story 8.4 and route inventory #369) are not 4.11 work. Review mode: full. Four layers completed: blind hunter (BH) 12, edge-case hunter (EC) 9, acceptance auditor (AA) 5 with no acceptance-criterion violation, and verification gap with no gaps. Each of the 26 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C19-BH1 | The new `Workload` condition fires for every Aspire host and names the wrong risk | medium | The condition is right; what is missing is its trigger on the documented Aspire path. `AddEventStoreDomainModule` sets `EventStore__DomainService__AppId` (`HexalithEventStoreDomainModuleExtensions.cs:65`). Neither it nor CommunityToolkit Dapr hosting sets `DAPR_APP_ID`, so the reminder default falls back to the application name. Under the Works AppHost that name is `Hexalith.Works`, while the issuer's `azp` is the app ID `works`. Every Aspire-composed reminder host, including Works in 4.15, stays `Retrying` unless it sets `EventStore__Reminders__Workload`, and the guide never says that the helper sets `AppId`. EventStore itself has no Aspire reminder host. | patch |
+| C19-BH2a | The issuer `Workload` row omits the reminder coupling | low | `configuration-reference.md:504` gives the issuer default (`EventStore:DomainService:AppId`) but not that a reminder host must keep it equal to `EventStore:Reminders:Workload`. Only the reminder rows state the coupling. This is the same incomplete C17-BH1 mitigation as C19-BH1. | patch (with C19-BH1) |
+| C19-BH2b | `EventStore:DomainService:AppId` has no configuration-reference entry | low | Pre-existing; the rows at `:496` and `:504` name it as a default. A new section is more than a direct correction, and no wrong setting follows from its absence. | reject |
+| C19-BH3 | Not every `5501` `401` is an assertion denial | low | `WorkloadJwtBearerEvents.GetMessageRejection` returns `verifier-unconfigured` and the app-channel `channel-*` reasons. `MessageReceived` fails with them, and `Challenge` records them as `401`. The paragraph calls every `401` an assertion denial and lists only submitter-side checks, so a fault in the gateway's own `APP_API_TOKEN` or `Authentication:JwtBearer` sends the operator to the wrong service. | patch |
+| C19-BH4 | The newly named `503` has no remedy | low | `Challenge` returns `503` only for `verifier-unavailable`, which means signing keys or metadata cannot be retrieved (`security-model.md`, Internal Workload Assertions). Every check the paragraph lists is a credential remedy. | patch (with C19-BH3) |
+| C19-BH5 | "Check admission component registration" hides the likeliest cause | false | The same paragraph links `trusted-effects.md#production-admission-gate`. Its first sentence says `ITrustedEffectRetentionGate` has no default registration, and its audit paragraph says no default audit sink is registered. The "C18-BH4 evidence understates" part would edit this spec. | reject |
+| C19-BH6 | The audit-record check cannot be applied, and correlation guidance is missing | false | With no sink, `TrustedEffectAdmissionPolicy.PrepareAsync` throws before any audit write, which is exactly the "no record" branch the runbook covers. Correlating `5501`, `denied`, and event `200219` by trace, workload, purpose, and time would be new runbook material. The production sink belongs to Story 4.16 (carried). | reject |
+| C19-BH7 | The Azure Container Apps sentence understates the impact and contradicts "must configure" | false | The platform injection satisfies the preceding requirement, as the sentence itself says. "Every reminder actor call receives `401`" is accurate for this guide's scope; the broader domain-service consequence is in the host-composition paragraph (carried C17-BH10a/b). An operator who follows the instruction meets no failure. | reject |
+| C19-BH8 | The runbook paragraph should be a status/reason table | low | Readability only; restructuring is a rewrite (C17-BH4 precedent). | reject |
+| C19-BH9 | C18 rejects BH2 and BH3, then implements both | low | True of the record, but the fix edits this spec. The C18 completion does record the reachable `6caf9ef4`. | reject (spec-only) |
+| C19-BH10 | The C18 triage block breaks the triage format, and its IDs collide with iteration 0 | low | True: the IDs `BH1`…`EC1` are unprefixed, and the block sits after the C17 Rejected list. The fix edits this spec. C19 rows use the `C19-` prefix. | reject (spec-only) |
+| C19-BH11a | Spec `done` disagrees with sprint `review` | false | bmad-build step 05 sets spec `done` and sprint `review`, which is the house handoff. Correcting the C18-BH1 "in review" wording would edit this spec. | reject |
+| C19-BH11b | The sprint comments omit the C18 runbook patches | low | True; this review's status sync rewrites both comment lines. | reject (superseded) |
+| C19-BH12a | The verification record names no command and does not record the anchor check | low | Spec-record wording, so the fix edits this spec. C19 confirmed that every new anchor exists. | reject (spec-only) |
+| C19-BH12b | The cited test evidence does not test a documentation change | false | The completion says the patch is documentation-only. It cites the tests as unchanged-runtime regression evidence, not as proof of the guide. | reject |
+| C19-BH12c | The push decision has no record of being carried out, and the gitlink moved twice | medium | Same defect as C19-AA1. | decision (resolved, with C19-AA1) |
+| C19-EC1 | Authority mode needs `Workload` set to the client's `azp` | false | The guide requires the authority client's `azp` to be the app ID, so the `DAPR_APP_ID` default already matches it (carried C17-BH4). The case where `DAPR_APP_ID` is unset is C19-BH1. | reject |
+| C19-EC2 | An explicit `Workload` with surrounding whitespace mismatches | low | `JwtWorkloadAssertionIssuer` trims `Workload` and `ResolveWorkload` does not. Configuration binders add no whitespace, though, so this takes an operator typo. The correcting trim is runtime work (carried C15-EC5 pattern). | reject |
+| C19-EC3 | A custom `AudienceScopePrefix` with the default audience is not derived | low | `GetAudienceScope` always prepends the configured prefix (`WorkloadAssertionIssuerOptions.cs:81`). The guide derives the scope for a changed audience and for a custom operation prefix, but not for this case. The authority then rejects the default-form scope, and every submission gets `401`. | patch |
+| C19-EC4 | `channel-*` and `verifier-unconfigured` `401`s get submitter-side remedies | low | Same defect as C19-BH3. | patch (with C19-BH3) |
+| C19-EC5 | `503 verifier-unavailable` has no remedy | low | Same defect as C19-BH4. | patch (with C19-BH3) |
+| C19-EC6 | Actor-stage `denied` records can be misattributed to a `403` | low | `AggregateActor` appends actor-stage `denied` records, but those failures reach the caller as `500`, not as a `5501` `403`. A retried reminder repeats one stage, so a wrong attribution needs two concurrent failure modes. The proposed qualifiers are new correlation guidance. | reject |
+| C19-EC7 | The runbook names the wrong exception type for a timeout | low | `AddEventStoreDomainService` calls `AddServiceDefaults` (`EventStoreDomainServiceExtensions.cs:490`), which adds `AddStandardResilienceHandler` to every client (`ServiceDefaults/Extensions.cs:41-42`), the documented submitter included. Its total and attempt timeouts fire before `HttpClient.Timeout`, so a timeout surfaces as `TimeoutRejectedException` and an open circuit as `BrokenCircuitException`. The coordinator logs that type name (`ReminderCoordinator.cs:1484-1492`), but the rewritten paragraph names `TaskCanceledException`. | patch |
+| C19-EC8 | Pushed Works `c231da0` pins an EventStore commit that no ref contains | medium | Same defect as C19-AA1. | decision (resolved, with C19-AA1) |
+| C19-EC9 | The delegation-refusal check lost its route to the delegation claim contract | low | The old page-level link reached `### Delegation claim contract`. The new anchor lands on `## Production admission gate`, which covers retention and audit, not delegation claims. A mismatched `Workload` (C19-BH1) is exactly a delegation refusal. | patch |
+| C19-AA1 | The Works gitlink was repointed twice, and pushed `c231da0` pins an unpublished EventStore commit | medium | Works `c231da0`, on `origin/main`, pins `0e6276a6`, the pre-rebase copy of `691fc1bd`. No local or remote branch or tag contains it, and GitHub answers `422 No commit found for SHA`. A checkout or bisect at `c231da0` cannot fetch the submodule. This repeats C15-AA2 despite the C17 decision to repoint once. The tip (`3e32d5c`) is fine. Restoring fetchability takes an outward-facing push, which is the owner's call. The scan found eight such pins. Resolved by the owner: `archive/works-*` EventStore tags for all eight, plus Works `push.recurseSubmodules=check`. | decision (resolved) |
+| C19-AA2 | The C16 SHA was annotated rather than corrected | low | The same record as C19-BH9; the fix edits this spec. | reject (spec-only) |
+| C19-AA3 | The status wording disagrees, and the sprint comment omits C18 | low | Same as C19-BH11a and C19-BH11b. | reject |
+| C19-AA4 | C18 ran three layers, not four | false | bmad-build's internal review runs three context-free layers by design (C4, C5, C10, C11, C16, C18). The code-review workflow adds the acceptance auditor, as this C19 run does. | reject |
+| C19-AA5 | The audience-prefix guidance is still lopsided | low | Same defect as C19-EC3. | patch (with C19-EC3) |
+| C19-VG | No verification gaps | n/a | The layer reported none. | n/a |
 
 ## Design Notes
 
@@ -2188,3 +2224,53 @@ The current documentation and tracker delta was reviewed by blind hunter (BH), e
 The five C17 guide actions and the C18 diagnostic and tracker follow-ups are complete. EventStore commit `691fc1bdf717413a08c52e1c8fa499c5aca188ac` contains documentation only. The C16 note's `8d033bd8` is its historical pre-rebase identifier; the same reviewed patch is reachable on current EventStore `main` as `6caf9ef4b2712988d17ea4285ef1a7c8b2e93706`.
 
 All four EventStore test projects built in Debug with zero warnings and errors. The current reminder filters passed 33 Contracts tests (one package probe skipped without `EVENTSTORE_PACKAGE_CONTRACT_DIR`), 227 DomainService tests, and one live Redis/Dapr test; the Client reminder filter matched zero tests. The previously recorded public `3.117.1` package-only and five-row matrix proof remains the release evidence because this patch changes no runtime or package API. Focused guide/link and sprint YAML checks and `git diff --check` passed. C18 review found no verification gap and deferred no new work.
+
+### Review Findings
+
+Delta review C19 (2026-10-09) is a fresh-context review of the committed C17 guide patches and C18 follow-ups. That is EventStore `6caf9ef4..691fc1bd` (two guide files) plus Works `71cb292..53c56ab` (this spec and `sprint-status.yaml`): 183 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 12, edge-case hunter 9, acceptance auditor 5 (no acceptance-criterion violation), and verification gap with no gaps.
+- Each of the 26 findings was judged before grouping, giving 31 rows with parts.
+- Result: 1 decision-needed (3 finding rows), 5 patch entries (10 finding rows), 0 defer, 17 rejected.
+- The triage log carries every C19 row.
+- No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected.
+
+- [x] [Review][Decision] Pushed Works commits pin EventStore commits that GitHub did not have — medium (C19-AA1, C19-EC8, C19-BH12c).
+  - Works `c231da0`, now in `origin/main` history, sets `references/Hexalith.EventStore` to `0e6276a6`, the pre-rebase copy of `691fc1bd`; Works `53c56ab` then repointed it.
+  - Before the fix, no branch or tag contained `0e6276a6`, and the GitHub API answered `422 No commit found for SHA`, so a checkout or bisect at `c231da0` could not fetch the submodule. This repeats C15-AA2, even though the C17 decision said to repoint once.
+  - A history scan found the same defect in eight Works commits. Each pins a pre-rebase EventStore commit that survived only in the local reflog. Each has a patch-identical twin on EventStore `main`, and four of them (`7450da14`, `7e19e60b`, `29e8e270`, `8d033bd8`) are this spec's cited review targets.
+  - Works CI and release check out with `submodules: false`, so they were unaffected.
+  - Resolved by the owner on 2026-10-10 (option a, all eight). EventStore lightweight tags `archive/works-<Works commit>` were pushed in one push: `c231da0`→`0e6276a6`, `b4df05e`→`8d033bd8`, `aae6b9b`→`29e8e270`, `bc7f928`→`7450da14`, `c7a2757`→`7e19e60b`, `4cf9f6c`→`bf9066f9`, `6a1d262`→`6f558784`, and `0bb0adf`→`56bf3487`.
+  - The GitHub API now serves all eight, and a fresh repository fetched `0e6276a6` by SHA.
+  - No EventStore workflow triggers on tags, semantic-release reads only `v*` tags, and the `Protect` ruleset targets branches.
+  - To prevent recurrence, the Works clone now sets `push.recurseSubmodules=check`, so `git push` refuses any pushed Works commit whose EventStore pin is not on an EventStore remote. Bump the Works gitlink only after EventStore is pushed.
+- [ ] [Review][Patch] Aspire-composed reminder hosts always get mismatched `Workload` defaults, and the issuer row omits the coupling [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:347`] — medium (C19-BH1, C19-BH2a).
+  - `AddEventStoreDomainModule` sets `EventStore__DomainService__AppId`, and nothing in Aspire sets `DAPR_APP_ID`. The reminder default therefore becomes the application name (`Hexalith.Works` under the Works AppHost), while the issuer `azp` is the app ID.
+  - Fix part 1: in the Options row, the `configuration-reference.md:371` row, and the Story 4.15 Works handoff list (`typed-reminders.md:543`), say that a host composed with `AddEventStoreDomainModule` sets `AppId` but not `DAPR_APP_ID`, so it must set `EventStore__Reminders__Workload` to its app ID.
+  - Fix part 2: in the `Authentication:WorkloadIssuer:Workload` row (`configuration-reference.md:504`), add that on a reminder host it must equal `EventStore:Reminders:Workload`.
+- [ ] [Review][Patch] The `5501` runbook gives only submitter-side remedies for gateway-side outcomes [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:476`] — low (C19-BH3, C19-BH4, C19-EC4, C19-EC5).
+  - `Challenge` records `verifier-unconfigured` and the app-channel `channel-*` reasons as `401`, and it returns `503` only for `verifier-unavailable`.
+  - Fix: say that a `channel-*` reason points at EventStore's own `APP_API_TOKEN` and its sidecar, `verifier-unconfigured` at EventStore's `Authentication:JwtBearer`, and a `503` at EventStore reaching its issuer's metadata and signing keys. Keep the submitter checks for the other `401` reasons.
+- [ ] [Review][Patch] A custom `AudienceScopePrefix` with the default audience is not derived [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:314`] — low (C19-EC3, C19-AA5).
+  - Fix: make the prefix guidance symmetric. If `Authentication:WorkloadIssuer:AudienceScopePrefix` is customized, request and declare `<AudienceScopePrefix><audience>` even when the audience stays `eventstore`.
+- [ ] [Review][Patch] The runbook names `TaskCanceledException` for a timeout that the standard resilience handler reports as `TimeoutRejectedException` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:475`] — low (C19-EC7).
+  - `AddEventStoreDomainService` calls `AddServiceDefaults`, whose `AddStandardResilienceHandler` covers the documented submitter client.
+  - Fix: say that with those defaults a timeout surfaces as `TimeoutRejectedException` and an open circuit as `BrokenCircuitException`.
+- [ ] [Review][Patch] The delegation-refusal check no longer reaches the delegation claim contract [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:489`] — low (C19-EC9).
+  - Fix: link [`trusted-effects.md#delegation-claim-contract`](trusted-effects.md#delegation-claim-contract) beside "the delegation token provider", and keep the production-admission-gate link.
+
+#### Rejected
+
+- `low` — C19-BH2b: `EventStore:DomainService:AppId` is pre-existing and named as a default at `configuration-reference.md:496/504`; a new section is more than a direct correction.
+- `false` — C19-BH5: The linked production admission gate opens by stating that the retention gate has no default registration, and it says that no default audit sink is registered.
+- `false` — C19-BH6: With no sink, `PrepareAsync` throws before auditing, which is the runbook's "no record" branch. Correlation guidance is new material, and the sink belongs to 4.16 (carried).
+- `false` — C19-BH7: The platform injection satisfies "must configure", and the reminder-scope consequence is accurate (carried C17-BH10a/b).
+- `low` — C19-BH8: The status-table restructure is a rewrite (C17-BH4 precedent).
+- `low` — C19-BH9, C19-BH10, C19-BH12a, C19-AA2: Each fix edits this spec's record.
+- `false` — C19-BH11a, C19-AA3 (status part): Spec `done` with sprint `review` is the bmad-build step-05 handoff.
+- `low` — C19-BH11b, C19-AA3 (sprint-comment part): Superseded, because this review's status sync rewrites both comment lines.
+- `false` — C19-BH12b: The tests are cited as unchanged-runtime regression evidence, not as proof of the guide.
+- `false` — C19-EC1: The guide requires the authority client's `azp` to be the app ID (carried C17-BH4); the unset-`DAPR_APP_ID` case is C19-BH1.
+- `low` — C19-EC2: A whitespace-padded `Workload` needs an operator typo, and the trim is runtime work (C15-EC5 pattern).
+- `low` — C19-EC6: Actor-stage denials reach the caller as `500`, so a misattribution needs two concurrent failure modes.
+- `false` — C19-AA4: bmad-build's internal reviews run three layers by design; this code review adds the acceptance auditor.
