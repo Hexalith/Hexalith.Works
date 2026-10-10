@@ -2,7 +2,7 @@
 title: 'Publish EventStore Typed Reminder Reconciliation'
 type: 'feature'
 created: '2026-09-29'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '613a96c1b200fc71491fe8ad2c1a7b80990b9dc7'
 eventstore_baseline_commit: 'f378afdb7cdeec85144fffc20dd9a13a9775bf85'
 route: 'dispatch'
@@ -765,6 +765,56 @@ judged before grouping.
 | C22-EC4 | Epic context misstates Claim-only entry | low | Same location and claim as C22-BH13 and C12-BH7. | carried defer |
 | C22-EC5 | Epic context drops explicit publication ordering | low | Same location and claim as C22-BH14 and C3-BH9. | carried defer |
 | C22-VG1 | Replay success does not require selected tests to pass | medium | Pre-verified by the reviewer's zero-match filtered runs: both exited zero and emitted `total=0`. The replay needs XML count, pass, failure, and skip checks. | patch (with C22-EC2) |
+
+### C23 review triage (2026-10-10)
+
+Delta review C23 (2026-10-10). Scope: the C21 guide patches and the C22 fixes. That is EventStore `1bc1c76e..c3bac11a`, limited to `docs/guides/typed-reminders.md` (`c3bac11a`), plus Works `e25fe90..79689aa` (`a1e282a` and two gitlink bumps): 8 file diffs, 408 diff lines (+279/−13). The other commits in the gitlink range (`36a99504` versioned-actor tests, `6421b236` nested pointer bumps, `9b26956f` escape fix) touch no `src/` and are not 4.11 work. Review mode: full. Four layers completed: blind hunter (BH) 16, edge-case hunter (EC) 10, acceptance auditor (AA) 7 with no acceptance-criterion violation, and verification gap with 1 gap (VG1) plus 3 other findings (VG-O). Each of the 37 findings was judged before grouping; multi-part findings carry one row per part.
+
+| ID | Finding | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- |
+| C23-BH1 | The evidence packet no longer holds the recipe that ran | medium | `parent-replay-summary.json:17` records `executed_recipe_sha256` `fa11cdd6…`, while `evidence-sha256.json` now binds `replay-proof.py` to `e6a6f48c…`. The executed bytes exist only at `a1e282a^`. Neither `REPLAY.md` nor the summary says so, and the bound recipe has never run end to end (C22 record). | decision |
+| C23-BH2 | The test-assembly hash binds the replay to one absolute checkout path | low | The built `Hexalith.EventStore.DomainService.Tests.dll` embeds absolute `.cs` paths (`/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/…`) from xUnit v3 `CallerFilePath`, and EventStore sets no `PathMap` or `ContinuousIntegrationBuild`. `REPLAY.md:6` says only "Run from the Works workspace", so a replay from any other clone fails with `SHA-256 mismatch for source fixture test assembly` and no explanation. | patch |
+| C23-BH3a | `REPLAY.md` still describes the pre-C22 recipe | low | `REPLAY.md:17` says the recipe "verifies its exact dependency manifest" and omits the test-assembly and retained-dependency hashes, the 1/227 result checks, the bounded download, and `test_replay_proof.py`. | patch (with C23-VG-O2) |
+| C23-BH3b | The spec gives no command for the three focused replay tests | low | The fix edits this spec's record. | reject |
+| C23-BH4 | The Contracts consumer test is unhashed and the checkout may be dirty | low | True: the recipe checks only `git rev-parse HEAD` and records no Contracts.Tests hash. Pre-existing, a replay needs a fresh `07d1e23a` submodule checkout, and a clean-tree check adds a guard. | reject |
+| C23-BH5 | The focused tests cover less than the C22 record claims | low | Only `(0,0,0)` and `(1,0,1)` are exercised; failed, error, wrong-count, multi-assembly, short-download and public-DLL-swap cases are not. `verify_result_xml` is an exact dictionary comparison that rejects them all by inspection; adding cases to a hash-bound recipe test is more than a direct correction. | reject |
+| C23-BH6 | The replay ledger does not record the new checks | low | True: `replay-commands.json` lists command exits only, the counts are hard-coded, and a failed check leaves only exit-0 command rows. The failure signal is the process exit and traceback, and the ledger never claims success. Recording checks adds code. | reject |
+| C23-BH7 | Symmetric-mode advice compares the signing key for `algorithm-invalid` | low | `JwtWorkloadAssertionIssuer.cs:187` always signs HS256, and a symmetric receiver accepts only `[]` or `HS256` (`configuration-reference.md:453`). So `algorithm-invalid` means the two sides use different modes, while a wrong key yields `signature-invalid`. The C21-AA2 fix text said "signing mode". | patch (with C23-AA3, C23-EC6) |
+| C23-BH8 | The `DAPR_API_TOKEN` sentence states a fact without its consequence | low | Read alone, "forwards the submitter's `DAPR_API_TOKEN`" can suggest aligning it with EventStore's `APP_API_TOKEN`. The point is that a direct gateway call presents that token, which EventStore rejects as `channel-token-invalid`. A one-sentence rewording fixes it. | patch |
+| C23-BH9a | The non-`5501` status list is incomplete | false | "Event `5501` records internal credential denials only" makes the list exhaustive; `400`, `413`, and `500` are examples. | reject |
+| C23-BH9b | The runbook gives no next step for a non-credential gateway failure | low | True since C21-EC6 scoped `5501` truthfully, but the gap predates it: the old text misrouted these failures to `5501`. Naming the right log per status needs gateway-logging research, and these are incident-only paths. | reject |
+| C23-BH10 | The runbook does not say how to find a reminder's `5501` record | low | Pre-existing instruction; the trace-ID correlation fallback would need verification before documenting it. | reject |
+| C23-BH11 | The C22-BH1 rejection cites `in-review` against frontmatter `done` | low | The fix edits this spec's record. | reject |
+| C23-BH12 | The C22 record lacks range, counts, layer status, and the unrelated gitlink commits | low | The fix edits this spec's record (C21-BH10 precedent). None of `36a99504`, `6421b236`, or `9b26956f` touches `src/`. | reject |
+| C23-BH13 | Known-false C20 statements stay without a superseded pointer | low | The fix edits this spec's record. | reject |
+| C23-BH14 | The pre-push guard is untracked and skips merges and uninitialized paths | low | Verified: `git diff-tree -r` without `-m` prints nothing for a merge (4 merges in 349 Works commits), and `[ -e "$path/.git" ] \|\| continue` skips uninitialized submodules by design. The hook is local tooling outside this diff (C21 owner decision; C22-BH4 rejected shared enforcement), and a merge that introduces a gitlink neither parent pushed is rare. | reject |
+| C23-BH15a | Sprint tracker comments omit the C22 fixes | low | Both `last_updated` comments stop at "C21 guide patches complete"; the C22 replay hardening and guide fix are unmentioned. | patch |
+| C23-BH15b | The commit title "close review" contradicts "handed to review" | low | Changing it rewrites history. | reject |
+| C23-BH16a | The new ledger entries use the legacy format | false | Every 4.11 ledger section since 2026-09-29 uses this format, and `bmad-loop-sweep --migrate` converts legacy entries. | reject |
+| C23-BH16b | The ledger C21-BH4 entry cites `:126` without its file and says the helper sets "only" AppId | low | `ResolveWorkload` is at `src/Hexalith.EventStore.DomainService/EventStoreReminderServiceCollectionExtensions.cs:126`, not the Aspire file cited just before, and `HexalithEventStoreDomainModuleExtensions.cs:66` also sets `EventStore__DomainService__ServiceVersion`. | patch |
+| C23-EC1 | Relocated replays fail the test-assembly hash | low | Same defect as C23-BH2. | patch (with C23-BH2) |
+| C23-EC2 | A dirty checkout can change the Contracts consumer test | low | Same as C23-BH4. | reject |
+| C23-EC3 | A rejected replay leaves a ledger of exit-0 commands | low | Same as C23-BH6. | reject |
+| C23-EC4 | A failing subtest skips its restore and masks the second subtest | low | True, but the failing first subtest already fails the test, so there is no false pass; only the second subtest's diagnostic is lost. | reject |
+| C23-EC5 | The non-`5501` list omits `429` | false | Same refutation as C23-BH9a; the remaining no-next-step claim is C23-BH9b. | reject |
+| C23-EC6 | The symmetric `algorithm-invalid` branch compares keys | low | Same defect as C23-BH7. | patch (with C23-BH7) |
+| C23-EC7 | The mode split names only Development | low | `JwtBearerAuthenticationContract.cs:132` allows symmetric validation in a non-Production environment with `AllowInsecureSymmetricKey=true` (`configuration-reference.md:456`), which "symmetric Development mode" excludes. | patch |
+| C23-EC8 | The executed recipe is gone from the packet | medium | Same defect as C23-BH1. | decision (with C23-BH1) |
+| C23-EC9 | The C22 record understates the recipe change | low | The fix edits this spec's record; the path binding itself is C23-BH2. | reject |
+| C23-EC10 | `a1e282a` pins `9b26956f`, which lacks the guide edit | low | True, but the next commit `79689aa` pins `c3bac11a`, both are unpushed, and `9b26956f` is fetchable; a fix rewrites history. | reject |
+| C23-AA1 | The replay recipe was replaced after it ran | medium | Same defect as C23-BH1. | decision (with C23-BH1) |
+| C23-AA2a | The C21-BH6a/EC5 rejection rationale no longer holds | low | The fix edits this spec's record. | reject |
+| C23-AA2b | Breaker-tripping `500`s and timeouts have no diagnostic route | low | Same gap as C23-BH9b. | reject |
+| C23-AA3 | The symmetric sentence departs from the C21-AA2 fix text | low | Same defect as C23-BH7. | patch (with C23-BH7) |
+| C23-AA4 | The C22-BH1 rejection rests on a false status | low | Same as C23-BH11. | reject |
+| C23-AA5a | `REPLAY.md` omits the C22 checks | low | Same defect as C23-BH3a. | patch (with C23-BH3a) |
+| C23-AA5b | The new hash check may make the replay path-dependent | low | Same defect as C23-BH2. | patch (with C23-BH2) |
+| C23-AA6 | The focused tests cover less than the C22 claim | low | Same as C23-BH5. | reject |
+| C23-AA7 | The C22 record omits the unrelated gitlink commits | low | Same as C23-BH12. | reject |
+| C23-VG1 | The `main()` pass-count gates are untested | low | Pre-verified: deleting both `verify_result_xml(output / …)` calls left all three tests green. The filed `patch` disposition was weighed: the gates are two lines in a hash-bound evidence recipe whose every edit rebinds `evidence-sha256.json` under review, the tests run only by hand, and the fix is a new mocked end-to-end test of `main()`. | reject |
+| C23-VG-O1 | The retained replay evidence came from a recipe the packet no longer has | medium | Same defect as C23-BH1. | decision (with C23-BH1) |
+| C23-VG-O2 | `REPLAY.md` is out of date | low | Same defect as C23-BH3a. | patch (with C23-BH3a) |
+| C23-VG-O3 | The C22 record names only part of the submodule bump | low | Same as C23-BH12. | reject |
 
 ## Design Notes
 
@@ -2457,3 +2507,51 @@ release evidence were not changed. The guide correction is EventStore commit
 passed. The full public replay was not rerun because this correction only
 hardens the repeatable proof recipe and the recorded checkout is not the
 current EventStore HEAD.
+
+### Review Findings
+
+Delta review C23 (2026-10-10) is a fresh-context review of the C21 guide patches and the C22 fixes. That is EventStore `1bc1c76e..c3bac11a` (`docs/guides/typed-reminders.md`) plus Works `e25fe90..79689aa` (this spec, `sprint-status.yaml`, `deferred-work.md`, the replay recipe, its test and hash manifest, and the EventStore gitlink): 408 diff lines.
+
+- Review mode: full. All four layers completed: blind hunter 16, edge-case hunter 10, acceptance auditor 7 (no acceptance-criterion violation), and verification gap with 1 gap plus 3 other findings.
+- Each of the 37 findings was judged before grouping, giving 43 rows with parts.
+- Result: 1 decision-needed (4 finding rows), 7 patch entries (13 finding rows), 0 defer, 26 rejected.
+- The triage log carries every C23 row.
+- No entry changes reminder runtime behavior or package API, so the named-public `3.117.1` close gate is unaffected.
+
+- [x] [Review][Decision] The evidence packet no longer holds the replay recipe that ran — medium (C23-BH1, C23-EC8, C23-AA1, C23-VG-O1).
+  - `parent-replay-summary.json:17` records `executed_recipe_sha256` `fa11cdd6…` for `replay-proof.py`. The C22 fix replaced that file and rebound `evidence-sha256.json` to `e6a6f48c…`, so no file in the packet now has the executed hash; the bytes exist only at Works `a1e282a^`.
+  - The bound recipe has never run end to end (C22 record), and neither `REPLAY.md` nor either summary says the recipe changed after its last run.
+  - The new gates should pass at the recorded checkout: the retained XMLs hold exactly 1/1 and 227/227, 12 of 14 cached archives match their recorded length and SHA-256, and the parent replay reproduced the bound test-assembly and dependency hashes at `references/Hexalith.EventStore`.
+  - Options: (a) keep the executed bytes as `replay-proof.executed-2026-10-08.py`, bind it in `evidence-sha256.json`, and note in `REPLAY.md` that the current recipe hardens it without an end-to-end run; (b) do (a) and also rerun the hardened recipe at a temporary `07d1e23a` submodule checkout, keeping that run as separate evidence; (c) add only a `REPLAY.md` pointer to `git show a1e282a^:…/replay-proof.py`; (d) accept as is.
+  - Resolved by the owner on 2026-10-10: option (a), applied with the two `REPLAY.md` patches so that file is rebound once. A rerun was declined because Works `Hexalith.Builds` moved since the replay (`58d9b546` → `6a002df5`), so it would need two submodule rewinds, and the `3.117.1` gate does not depend on it. The executed bytes come from pushed Works `f00b82d`, whose `replay-proof.py` hashes to `fa11cdd6…`.
+- [ ] [Review][Patch] Keep the executed replay recipe in the evidence packet [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/evidence-sha256.json`] — medium (from the C23-BH1 decision).
+  - Fix: restore `f00b82d:…/replay-proof.py` as `replay-proof.executed-2026-10-08.py`, confirm SHA-256 `fa11cdd6…`, bind it in `evidence-sha256.json`, and state in `REPLAY.md` which recipe the 2026-10-08 replay ran and that `replay-proof.py` has not run end to end. Leave the retained summaries unchanged.
+- [ ] [Review][Patch] The symmetric-mode check compares the signing key for `algorithm-invalid` [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:501`] — low (C23-BH7, C23-EC6, C23-AA3).
+  - Fix: compare the issuer for `issuer-invalid`; for `algorithm-invalid`, say the submitter and EventStore use different signing modes (a symmetric submitter always signs `HS256`), while a wrong key yields `signature-invalid`.
+- [ ] [Review][Patch] The mode split names only Development [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:501`] — low (C23-EC7).
+  - Fix: say "symmetric mode (Development, or a non-Production environment with `AllowInsecureSymmetricKey=true`)".
+- [ ] [Review][Patch] The `DAPR_API_TOKEN` sentence lacks its consequence [`references/Hexalith.EventStore/docs/guides/typed-reminders.md:490`] — low (C23-BH8).
+  - Fix: say that a direct gateway call presents the submitter's `DAPR_API_TOKEN` (or none), which EventStore rejects, so the remedy is routing through Dapr service invocation, not aligning tokens.
+- [ ] [Review][Patch] `REPLAY.md` still describes the pre-C22 recipe [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:17`] — low (C23-BH3a, C23-AA5a, C23-VG-O2).
+  - Fix: list the test-assembly and retained-dependency hash checks, the 1/227 non-skipped pass checks, the length-bounded downloads, and how to run `test_replay_proof.py`.
+- [ ] [Review][Patch] The test-assembly hash binds the replay to one absolute checkout path, undocumented [`_bmad-output/implementation-artifacts/evidence/story-4-11-public-3.117.1-2026-10-08/REPLAY.md:6`] — low (C23-BH2, C23-EC1, C23-AA5b).
+  - Fix: state that the bound test assembly embeds absolute source paths, so the fixture must be built from the Works submodule at `/home/administrator/projects/hexalith/works/references/Hexalith.EventStore` checked out at `07d1e23a`.
+- [ ] [Review][Patch] Sprint tracker comments omit the C22 fixes [`_bmad-output/implementation-artifacts/sprint-status.yaml:2`] — low (C23-BH15a).
+  - Fix: name the C22 replay hardening and guide fix in both `last_updated` comments when the C23 outcome is recorded.
+- [ ] [Review][Patch] The ledger C21-BH4 entry has an ambiguous citation and overstates "only" [`_bmad-output/implementation-artifacts/deferred-work.md:1235`] — low (C23-BH16b).
+  - Fix: cite `src/Hexalith.EventStore.DomainService/EventStoreReminderServiceCollectionExtensions.cs:126` for `ResolveWorkload`, and say the helper sets `EventStore__DomainService__AppId` and `ServiceVersion` but not the reminder `Workload`.
+
+#### Rejected
+
+- `low` — C23-BH3b, C23-BH11, C23-AA4, C23-BH12, C23-AA7, C23-VG-O3, C23-BH13, C23-EC9, C23-AA2a: Each fix edits this spec's record.
+- `low` — C23-BH4, C23-EC2: The pre-existing Contracts-side gap needs a dirty checkout of a fresh `07d1e23a` submodule, and a clean-tree check adds a guard.
+- `low` — C23-BH5, C23-AA6: `verify_result_xml` rejects every uncovered case by exact comparison; more cases in a hash-bound recipe test are more than a direct correction.
+- `low` — C23-BH6, C23-EC3: The process exit and traceback carry failure; the ledger records true command exits and never claims success.
+- `false` — C23-BH9a, C23-EC5: "Records internal credential denials only" already excludes `429`, `404`, `415`, `502`, and `504`.
+- `low` — C23-BH9b, C23-AA2b: A pre-existing, incident-only routing gap; naming the right log per status needs gateway-logging research.
+- `low` — C23-BH10: The trace-ID correlation fallback needs verification before it can be documented.
+- `low` — C23-BH14: The untracked hook is outside this diff and was an owner decision; a merge that introduces an unpushed gitlink is rare.
+- `low` — C23-BH15b, C23-EC10: Each fix rewrites Works history; the next commit pins `c3bac11a`.
+- `false` — C23-BH16a: The legacy format matches every 4.11 ledger section, and `bmad-loop-sweep --migrate` converts it.
+- `low` — C23-EC4: A failing first subtest already fails the test; there is no false pass.
+- `low` — C23-VG1: The `main()` gates are two lines in a hash-bound, review-gated recipe whose tests run only by hand; a mocked end-to-end test is more than a direct correction.
