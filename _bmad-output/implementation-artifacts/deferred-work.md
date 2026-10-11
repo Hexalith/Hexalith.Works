@@ -1271,3 +1271,89 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Make the sprint tracker's `generated` stamp pass `sprint_plan.py validate`.
   evidence: Story 4.11 review C30-EC5 (2026-10-10), low. `validate` flags only `generated: 2026-06-15T18:47:50+02:00` (`sprint-status.yaml:37`) against `%m-%d-%Y %H:%M`, while `status` accepts it. The sprint-planning generator wrote the ISO form. This is pre-existing: C28-EC1 fixed only `last_updated`.
+
+## Deferred from: code review of spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md (2026-10-11, C12 chunk 1)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Monotonic process candidate retention caps the lifetime source count near the supported capacity.
+  evidence: Story 4.12 review C12 BH7+AA9 (2026-10-11), medium. `RetainedCandidates` only grows (`ProcessSweepStore.cs:162`) and sources are never retired. Option ceilings (T ≥ 100 ms, Q ≥ (3+5E)T, A ≤ 30 min) cap `SupportedCandidateCount` near 540, so past that lifetime count readiness stays `capacity-exceeded` permanently. This waits on the AD-28 owner retention and offboarding policy and matters for the Story 4.15 handoff.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Losing or restoring the process sweep record resets Cycle and Generation below persisted source values.
+  evidence: Story 4.12 review C12 EC11 (2026-10-11), unverified medium. If only the sweep key is lost (`ProcessSweepStore.cs:20`), a source `LastDispositionGeneration` above the new generation makes `RevalidateAsync` return false until generations catch up (`ProcessCheckpointStore.cs:135`). A contract for state-provider restore and partial key loss, or the AD-28 restore proof, would settle whether this is reachable. Joins cycle 10 B9.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The single process sweep record is a serialization and CAS point for every source mutation.
+  evidence: Story 4.12 review C12 BH10 (2026-10-11), unverified medium. Each checkpoint or status change reads and re-serializes a record of up to 256 KiB (`ProcessSweepState.cs:143`), hashes every map key, and CASes it with 8 write attempts. A load test with concurrent direct `RunAsync` callers would settle whether CAS exhaustion occurs at the supported capacity.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The AD-28 synthetic-only gate for process control records exists only in documentation.
+  evidence: Story 4.12 review C12 AA-C10, carried from cycle 4 B13 (2026-10-10), unverified high. `docs/guides/checkpointed-processes.md:38` states the gate, but no code enforces it. Platform admission and release evidence would settle whether code enforcement is required.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Direct runner and disposition invalidation reset an in-progress cycle and abort hosted passes.
+  evidence: Story 4.12 review C12 BH4+AA3 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessSweepStore.cs:249`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: An unaccepted publication admission pins the catalog and freezes candidate service.
+  evidence: Story 4.12 review C12 BH8+AA2 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:235`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The sweep-record byte ceiling wedges reconciliation.
+  evidence: Story 4.12 review C12 BH9+AA1+EC9 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:105`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: An undrainable pending observation or publication freezes all hosted processing.
+  evidence: Story 4.12 review C12 EC7+EC8 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessSweepStore.cs:117`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The process-wide read pools refuse admission without waiting and fail under ordinary concurrency.
+  evidence: Story 4.12 review C12 BH12+AA5 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReadDeadline.cs:19`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: orphaned transition handoff after a failed source CAS.
+  evidence: Story 4.12 review C12 BH3+EC5+AA-C1; cycle 10 E1, cycle 11 B8/E1 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessCheckpointStore.cs:85`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: a malformed persisted `CatalogAfterKey` can sort past every source and complete an incomplete catalog scan.
+  evidence: Story 4.12 review C12 AA-C2; cycle 10 B4, cycle 11 B3 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessSweepState.cs:88`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: a large durable tail keeps one unreadable candidate chain ahead of later tenants for many passes.
+  evidence: Story 4.12 review C12 AA-C3; cycle 10 B6, cycle 11 B5 (2026-10-11), high; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:395`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Local read-admission exhaustion counts as a source retry and parks healthy sources.
+  evidence: Story 4.12 review C12 EC3 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs:312`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: A catalog failure discards the catalog continuation every cycle.
+  evidence: Story 4.12 review C12 EC12 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:226`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: A missing or erased source stream parks the source permanently as `source-read`.
+  evidence: Story 4.12 review C12 EC1 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs:86`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Maximum-size domain events can never be processed.
+  evidence: Story 4.12 review C12 AA4 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs:277`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: A backlog drains at four envelopes per source per pass, while the guide says eight.
+  evidence: Story 4.12 review C12 BH5 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs:75`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The process runtime has no logging or metrics.
+  evidence: Story 4.12 review C12 BH15+AA8 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:721`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: a full pending-observation map stalls both scans while only one marker is retried per pass.
+  evidence: Story 4.12 review C12 AA-C4; cycle 10 B7, cycle 11 B6 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessReconciler.cs:105`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: a restored missing page cannot clear its unknown-page flag after a complete membership recheck.
+  evidence: Story 4.12 review C12 AA-C5; cycle 10 B8, cycle 11 B7 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/ProcessCheckpointStore.cs:357`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Carried: admitted command bytes can exceed the trusted-effects endpoint's 1 MiB request cap after base64 encoding.
+  evidence: Story 4.12 review C12 AA-C6; cycle 10 B2, cycle 11 B1 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs:76`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
