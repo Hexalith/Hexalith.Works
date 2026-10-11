@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-10 (Story 4.11: C30 delta review complete and its tracker patch applied; EventStore pin 47f397df with Works 6090e43; 3.117.1 gate remains satisfied; story done)
+# last_updated: 2026-10-10 (Story 4.12: checkpointed process and recovery runtime implementation started)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -81,7 +81,7 @@ development_status:
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: done
-  4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: backlog
+  4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: in-progress
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: backlog
   4-15-adopt-sdk-reminder-process-and-command-seams-in-works: backlog
