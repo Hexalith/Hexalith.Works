@@ -2,10 +2,10 @@
 title: 'Publish EventStore Checkpointed Process and Recovery Runtime'
 type: 'feature'
 created: '2026-10-10'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: 'ff35795d674afea7f677da94a1310d7074b185b2'
 route: 'dispatch'
-review_loop_iteration: 10
+review_loop_iteration: 11
 context:
   - '_bmad-output/implementation-artifacts/epic-4-context.md'
   - '_bmad-output/planning-artifacts/architecture.md'
@@ -370,6 +370,46 @@ Review cycle 9 (ninth implementation; B blind hunter, E edge-case hunter, V veri
 | E2 | high: the same sixteen-slot `ProcessReadDeadline` pool as B2 remains occupied by cancellation-ignoring reads, preventing later candidate progress. | bad_spec |
 
 B1 requires a unique handoff for every source mutation and observation confirmation against the latest state; B2/E2 require bounded failure isolation without permanent global read starvation. B6 requires an aggregate sweep-state byte budget, E1 requires catalog-page reuse or truthful request-cost accounting, and B8/B10 require failure and composition evidence. Those design gaps trigger loop 10. B7/B9/B12 are direct corrections to preserve; B4 is already deferred, and B3/B5/B11 are rejected. The human's continuation authorization permits this loop.
+
+Review cycle 10 (current implementation; B blind hunter, E edge-case hunter, V verification-gap reviewer). Each finding was checked separately against the staged code before grouping. V reported no verification gaps.
+
+| ID | Verdict and evidence | Route |
+| --- | --- | --- |
+| B1 | carried high: the pre-existing `StreamsController` metadata-before-range race can still produce a valid appended page that the strict process validator quarantines (cycle 6 B1). | defer |
+| B2 | medium: options admit up to 1 MiB of command bytes per envelope, but `TrustedEffectsController.SubmitAsync` caps the entire JSON body at 1,048,576 bytes. A valid 900 KiB binary payload expands past the HTTP cap in base64 and repeatedly fails submission. | bad_spec |
+| B3 | medium: `TryAddScoped<IProcessSourceCatalog, TCatalog>` and its translator counterpart silently retain a previously registered adapter even when it differs from the method's generic types. A host can therefore run different adapters than its `AddEventStoreProcesses` call names. | patch (moot) |
+| B4 | high: persisted `CatalogAfterKey` has no shape validation. A malformed high-sorting cursor is passed to the keyset catalog, whose empty page can complete authoritative coverage while undiscovered sources remain. | bad_spec |
+| B5 | medium: persisted tenant and candidate page cursors have no upper bound even though storage page keys stop below 1,000,000. A very large accepted cursor can overflow during a probe or make later recovery repeatedly fail. | patch (moot) |
+| B6 | high: an unreadable early candidate page with a durable large tail takes the `tail > CandidatePage` branch on every pass and keeps the same tenant ahead of later tenants for potentially hundreds of thousands of passes. | bad_spec |
+| B7 | medium: a full pending-observation map stops both scans, while the pass retries only one observation marker. Persistently unwritable markers can keep later healthy sources unvisited even though their own state provider is available. | bad_spec |
+| B8 | medium: missing linked-page repair sets a permanent unknown-page flag and advances the repair cursor. If the page is restored without the sought identity, the repair never rechecks or clears the flag, leaving publication pending and readiness degraded. | bad_spec |
+| B9 | maybe-false: a page restored independently to older valid contents could hide a retained source while its marker and retained count survive; the current sweep does not compare those counts. Whether this cross-key rollback is reachable needs a state-provider restore contract or fault proof. | defer (unverified high) |
+| B10 | carried maybe-false: replay after a changed translator deployment still lacks a cross-version effect-plan policy, so the same claim remains unverified (cycle 6 B8). | defer (unverified high) |
+| B11 | low: the current build and 136 focused process results are absent from `## Verification`, whose newest entry describes withdrawn round 9. The proposed correction edits this build's spec, which the review routing rule rejects. | reject |
+| B12 | medium: the publication crash matrix faults candidate and tenant page and marker writes, but never a `ProcessIndexTail` write. A tail-write recovery regression can pass the claimed every-write test matrix. | patch (moot) |
+| E1 | high: `UpdateOwnedAsync` writes a new pending transition before source CAS; if another source write wins and ownership is lost, the token remains absent from source state. Observation only clears a matching token, so readiness can remain degraded indefinitely. | bad_spec |
+
+B2 needs transport-sized effect admission; B4 needs canonical durable catalog cursor validation; B6/B7 need fair progress under retained scan and observation pressure; B8 needs truthful, resumable unknown-page repair; E1 needs orphan-handoff recovery without clearing a newer transition. These are design gaps. B3/B5/B12 are direct corrections whose patches are moot while the design gaps remain. B1 and B10 were already deferred, B9 is unverified pending provider restore evidence, and B11 is rejected by the spec-edit routing rule. The review loop counter is now 11, above the workflow's five-loopback limit; this run halts for human escalation without reverting the EventStore implementation.
+
+Review cycle 11 (resumed committed implementation; B blind hunter, E edge-case hunter, V verification-gap reviewer). Each finding was adjudicated separately. The prior findings remain at the same code locations and retain their recorded verdicts and routes.
+
+| ID | Verdict and evidence | Route |
+| --- | --- | --- |
+| B1 | carried medium: the admitted command payload can exceed the trusted-effects endpoint's JSON request cap after base64 encoding (cycle 10 B2). | bad_spec |
+| B2 | carried medium: an earlier catalog or translator registration can silently override the adapter named by process registration (cycle 10 B3). | patch (moot) |
+| B3 | carried high: malformed persisted `CatalogAfterKey` can sort beyond every source and complete an incomplete catalog scan (cycle 10 B4). | bad_spec |
+| B4 | carried medium: persisted tenant or candidate page cursors can exceed the storage key ceiling and fail every later pass (cycle 10 B5). | patch (moot) |
+| B5 | carried high: a large durable tail keeps probing one unreadable candidate chain ahead of later tenants for many passes (cycle 10 B6). | bad_spec |
+| B6 | carried medium: a full pending-observation map stalls both discovery scans while only one marker is retried per pass (cycle 10 B7). | bad_spec |
+| B7 | carried medium: a restored missing page cannot clear its unknown-page flag after a complete membership recheck (cycle 10 B8). | bad_spec |
+| B8 | carried high: source CAS failure after admitting a transition can strand an unmatched handoff and readiness (cycle 10 E1). | bad_spec |
+| B9 | carried medium: the publication crash matrix omits index-tail writes (cycle 10 B12). | patch (moot) |
+| B10 | carried high: metadata-before-range reads can make a concurrent append appear as a truncated page and quarantine valid source evidence (cycle 10 B1). | defer |
+| E1 | carried high: source CAS exhaustion after transition admission leaves an unmatched durable handoff (cycle 10 E1). | bad_spec |
+| E2 | medium: `RunPassAsync` executes one pending observation before its scan loop without charging it to `SourcesPerPass`; a one-source pass can perform two source operations and exceed the documented freshness cost. This is directly corrected by charging the observation to the remaining pass budget. | patch (moot) |
+| V1 | medium: no test exhausts all adapter read slots while reading durable sweep or checkpoint state through the separate control pool. Replacing `ControlSlots` with `AdapterSlots` would leave current tests passing and make readiness unavailable under adapter exhaustion. | patch (moot) |
+
+The carried bad-spec findings require another design loopback; the direct patches are moot until that re-derivation. The workflow's five-loopback limit was already exceeded before this review, so this run preserves the committed EventStore code and seeks an explicit human decision before another implementation cycle.
 
 ## Design Notes
 
