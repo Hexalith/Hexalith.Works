@@ -1379,3 +1379,7 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: Track the process-runtime hardening dependency explicitly before Story 4.15 consumes the checkpointed process seam.
   evidence: Story 4.12 test-patch review B2 (2026-10-12), medium. The spec defers several high-impact runtime findings to a hardening story before Story 4.15, but `sprint-status.yaml` has no hardening story or dependency. An explicit tracking gate would keep the handoff from proceeding on the synthetic-only implementation.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Verify persisted process sweep claims with host-supplied Dapr JSON serializer options.
+  evidence: Story 4.12 follow-up review V1 (2026-10-12), medium. The Web-default JSON contract test pins the shipped default shape, but `DaprReadModelStore` uses the host's `DaprClient.JsonSerializerOptions` and host registration can preserve a supplied client. A custom naming policy could make earlier sweep claims unreadable while the default-options test passes. Settle the supported host serializer policy and prove restore through the configured Dapr client.
