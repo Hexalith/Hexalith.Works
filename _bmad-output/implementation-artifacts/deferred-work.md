@@ -1375,3 +1375,7 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: The checked-in `python3 scripts/verify-process-packages.py` has no passing run at EventStore `1c919430`; it exited 130 twice locally, while the manual pack plus `validate-consumer-package-references.py` fallback passed all three consumers.
   evidence: Story 4.12 review C12 chunk 2 AA17 (2026-10-11), low. Primary site `scripts/verify-process-packages.py`. Deferral reason: environment-blocked locally; the next CI run of the process-packages job settles it.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Track the process-runtime hardening dependency explicitly before Story 4.15 consumes the checkpointed process seam.
+  evidence: Story 4.12 test-patch review B2 (2026-10-12), medium. The spec defers several high-impact runtime findings to a hardening story before Story 4.15, but `sprint-status.yaml` has no hardening story or dependency. An explicit tracking gate would keep the handoff from proceeding on the synthetic-only implementation.
