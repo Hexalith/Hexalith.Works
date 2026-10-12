@@ -1357,3 +1357,21 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: Carried: admitted command bytes can exceed the trusted-effects endpoint's 1 MiB request cap after base64 encoding.
   evidence: Story 4.12 review C12 AA-C6; cycle 10 B2, cycle 11 B1 (2026-10-11), medium; decision deferred by the owner. Primary site `src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs:76`; full evidence is in the spec's Review Findings. Deferral reason: Cycle 12 found new gaps in the sweep-record design again; deferred to a dedicated process-runtime hardening story that must land before Story 4.15 adopts the seam (runtime is synthetic-only under AD-28).
+
+## Deferred from: code review of spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md (2026-10-11, C12 chunk 2)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Fairness tests check only the end state under generous loop caps (12–30 passes), so a regression from 2 passes to 20 still passes.
+  evidence: Story 4.12 review C12 chunk 2 BH14 (2026-10-11), medium. Primary site `tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessPublicationTests.cs:269`; the same pattern appears across the Processes fairness and starvation tests. Deferral reason: pass-count bounds depend on the owner-deferred fairness redesign (cycle-12 B2, B8, E2, E7); pin bounds derived from `SourcesPerPass` in the process-runtime hardening story.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Pending-publication saturation is tested only at the store level; no reconciler test shows the catalog cursor held on the rejected key, Degraded readiness, and later acceptance.
+  evidence: Story 4.12 review C12 chunk 2 AA9 (2026-10-11), medium. Primary site `tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessPublicationTests.cs:243`. Deferral reason: reconciler behavior under an unaccepted admission is the owner-deferred cycle-12 B2 design gap; write the test against the hardening story's policy.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Read-admission failure is not tested across a reconciler pass; the cycle-9 rule "must not publish Healthy or lose the source cursor" is proven only for the runner and the pool.
+  evidence: Story 4.12 review C12 chunk 2 AA16 (2026-10-11), medium. Primary site `tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessRunnerEdgeTests.cs:69`. Deferral reason: depends on the owner-deferred pool-sizing (B5/E5) and catalog-continuation (E6) decisions.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: The checked-in `python3 scripts/verify-process-packages.py` has no passing run at EventStore `1c919430`; it exited 130 twice locally, while the manual pack plus `validate-consumer-package-references.py` fallback passed all three consumers.
+  evidence: Story 4.12 review C12 chunk 2 AA17 (2026-10-11), low. Primary site `scripts/verify-process-packages.py`. Deferral reason: environment-blocked locally; the next CI run of the process-packages job settles it.
