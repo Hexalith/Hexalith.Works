@@ -2,56 +2,80 @@
 title: 'Adopt SDK Projection and Query Seams in Works'
 type: 'feature'
 created: '2026-09-23'
-status: 'draft'
+updated: '2026-10-13'
+status: 'ready-for-dev'
 route: 'dispatch'
+review_loop_iteration: 0
 context:
-  - '_bmad-output/implementation-artifacts/epic-4-context.md'
-  - '_bmad-output/planning-artifacts/architecture.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-14/planning.md'
 ---
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
 ## Intent
 
-**Problem:** Works still owns generic `/project` delivery and query/rebuild plumbing, so EventStore R3–R4 contracts have no Works consumer and AD-20 R5 query authorization is unproved under the target boundary.
+**Problem:** Works owns projection delivery and generation selection; queries enforce tenant scoping without Executor authorization. Rebuilds omit pending-date and parking state.
 
-**Approach:** Consume the published Story 4.10 SDK seam for ordinary projection, fan-out, and shared rebuild while keeping Works folds pure; adapt tenant queries to the SDK authorization and result-filter path. Platform parity belongs to Story 4.16.
+**Approach:** Put Works folds and query policy behind published SDK contracts, proving R3–R5 consumer behavior with persisted synthetic state.
 
 ## Boundaries & Constraints
 
-- Preserve the Works AppHost and a usable rollback route until Story 4.16 passes. Opt-in or dual-path migration cannot acknowledge the same delivery through two independent writers.
-- Works owns roll-up/what's-next/topology/pending-intent folds and query policy. EventStore owns envelope validation, delivery, epoch fence, generation selection, and generic query transport.
-- AD-16 requires generation-pinned reads across query and recovery consumers; AD-23/24 require tenant, actor, origin, and result filtering before disclosure. Unknown or corrupt state-affecting evidence fails closed.
+**Always:** Consume EventStore 3.120.0, retaining Story 4.10's published contract. SDK owns validation, fencing, persistence, checkpoints, and generation selection; Works owns folds and query policy. One tenant/family `works-runtime-v3` contains roll-up, queue, topology, pending intents, and parking. Family equals handler projection type. Reads stay generation-pinned and report stale/unavailable. Executor requests require authoritative current Party binding and return own Assigned work plus tenant Queued work; all-work requires an explicitly permitted trusted workload. Missing authority denies before Works state access.
+
+**Never:** Acknowledge through two writers; infer PartyId from UserId; trust payload privileges; disclose foreign results; skip corrupt state-affecting evidence. Preserve legacy hosting and complete pre-cutover restore until 4.16. Exclude production activation, host removal, reminder/process migration, new durable catalog types, and non-synthetic admission; AD-28 gates remain.
 
 ## I/O & Edge-Case Matrix
 
 | Scenario | Expected behavior |
 | --- | --- |
-| Live accepted event | SDK delivery converges the Works read models and acknowledges after durable state/checkpoint. |
-| Shared rebuild with live traffic | Old generation serves reads until Commit; catch-up converges the promoted generation. |
-| Query from wrong actor or tenant | No tenant data, membership, or result leaks. |
-| Restart or redelivery | Same persisted projection and query result, without a second logical update. |
+| Live/redelivery/restart | Persisted folds and checkpoints converge once logically. |
+| Concurrent rebuild | Prior generation serves marked-stale reads; full promotion/catch-up restore freshness; abort drains safely. |
+| Executor/coordinator query | Only permitted tenant results, ordered deterministically. |
+| Wrong actor/tenant/origin | No unauthorized state access, writes, or disclosure. |
+| Corrupt/gapped/conflicting evidence | Durable unresolved/quarantine disposition and degraded readiness. |
+| Rollback | Restore pre-cutover store/fleet and replay source; no in-place v2 downgrade. |
+
+</frozen-after-approval>
 
 ## Code Map
 
-- `src/Hexalith.Works/Runtime/WorksHost.cs` and `src/Hexalith.Works/Projections/` — current custom route and pure folds.
-- `src/Hexalith.Works/Queries/` and `src/Hexalith.Works/Recovery/` — tenant query and generation-sensitive readers.
-- `tests/Hexalith.Works.IntegrationTests/` — current projection, query, and rebuild baseline.
+Implementation paths below are relative to `src/Hexalith.Works/`, except repository-root configuration and tests. Expanded map and published API evidence are in the context file.
+
+- `Runtime/WorksHost.cs` — SDK discovery plus bespoke projection writer.
+- `Projections/SharedRebuild/` — reuse history/relationship folds; ordinary delivery returns UnsupportedCapability and manifests omit recovery state.
+- `Projections/WorkItemProjectionDispatcher.cs`, `Reminders/PendingDateAwaitProjection.cs` — reuse decoders, domain transformations, and tombstones.
+- `Queries/`, reminder and cascade readers — replace schema-key selection; retain authoritative stream refolds/exclusive cursors.
 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] Pin a named, published Story 4.10 EventStore package and migrate Works ordinary delivery/fan-out to its documented handler and epoch contracts.
-- [ ] Connect Works shared-rebuild fold and generation-selected query/recovery readers, including full pending-date and parking manifests, without generic Works-owned storage plumbing.
-- [ ] Adapt authorized executor/coordinator queries and result filters; run persisted-state live, rebuild, restart, redelivery, and negative security tests. Preserve the rollback path for Story 4.16.
+
+- [ ] `Directory.Packages.props`, `Directory.Build.props`, `src/Hexalith.Works/Hexalith.Works.csproj` — freeze EventStore 3.120.0 and host-only Parties.Client 1.2.1; preserve source-Debug/package-Release modes.
+- [ ] `Runtime/WorksHost.cs`, `Runtime/WorksProjectionOptions.cs` — default legacy; opt in exclusively to SDK named delivery and matching readers; preserve reminder/Reactor composition.
+- [ ] `Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs` — implement epoch scope and per-envelope catch-up using SDK generation reads/logical mutations and bounded domain fold context.
+- [ ] `Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs`, `Projections/WorksReadModelKeys.cs` — stage complete family, including topology, cleared-await tombstones and parking; preserve rollback evidence and reject partial promotion.
+- [ ] `Queries/WorksQueryPolicy.cs`, `Queries/WorksQueryOptions.cs` — verify Party binding through published Parties client and authenticated gateway transport; empty coordinator allowlist denies; restrict SDK query ingress to gateway origin.
+- [ ] `Queries/WhatsNextQueryHandler.cs`, `Queries/GetWorkItemQueryHandler.cs` — authorize before reading, reuse pure result predicates, and emit SDK freshness metadata.
+- [ ] `Reminders/IndexedPendingDateAwaitSource.cs`, `Recovery/Cascade/StreamReadingCascadeDescendantSource.cs` — SDK tenant discovery and pinned related reads; preserve stream truth/partial failures.
+- [ ] `tests/Hexalith.Works.IntegrationTests/` — extend named classes in context; prove matrix with durable model/checkpoint assertions, package-only consumer, and Dapr/Redis state.
+- [ ] `docs/eventstore-api-surface-constraints.md`, `docs/boundary-decision-record.md`, `docs/sdk-projection-query-adoption.md` — document configuration, exact producer/consumer evidence, and complete restore rollback.
 
 **Acceptance Criteria:**
-- Given the SDK delivery and rebuild path is enabled, when accepted events and a concurrent rebuild run, then persisted roll-up, what's-next, and pending intents converge without lost or duplicate logical writes.
-- Given an authorized executor or coordinator query, when the SDK query path executes, then only permitted tenant results are returned with explicit stale/unavailable status.
-- Given an unauthorized tenant, origin, or result filter, when a query or projection call arrives, then it has no effect or disclosure.
+
+- Given SDK mode, when delivery overlaps rebuild and restart/redelivery, then persisted family state/checkpoints converge without lost or duplicate logical updates.
+- Given verified Executor or permitted coordinator authority, when queries execute, then only permitted results return with truthful freshness; denied requests perform no Works state read/disclosure.
+- Given isolated migration fixtures, when mode selection and restore rollback run, then one writer is active and legacy state remains recoverable.
 
 ## Implementation Notes
 
-Story 4.9 corrected two Works recovery readers' exclusive stream cursor and added focused tests. Those fixes remain in the current working tree, but do not by themselves make Works an SDK epoch consumer.
+## Spec Change Log
+
+## Review Triage Log
+
+## Design Notes
+
+SDK delivery supplies one envelope, not full history. Retain bounded domain fold context and use a common document representation for heterogeneous pinned reads. Authority transport failure never falls back to identity equality.
 
 ## Verification
 
-- Record the exact EventStore producer version, Works consumer build, persisted query/projection/rebuild commands, and R3–R5 evidence for the Platform matrix.
+Run the exact commands/classes in context: source Debug build, isolated Release/package consumer, each test project individually, and persisted provider proof. Record package/source identities, R3–R5 evidence, and remaining Platform/AD-28 gates.
