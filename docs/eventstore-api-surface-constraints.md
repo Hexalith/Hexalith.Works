@@ -1,5 +1,9 @@
 # EventStore API Surface Constraints
 
+## Story 4.14 published SDK consumer surface
+
+Works' Release host pins EventStore `3.120.0` and Parties.Client `1.2.1`. Its `IAsyncDomainSharedProjectionEpochHandler` uses `works-runtime-v3` as both projection type and scope family; SDK `SharedProjectionEpochCoordinator` owns writer leases, journal, selected generation, checkpoints, control index, and pinned reads. Works returns logical `ReadModelBatchOperation` values and keeps its existing writer as the default until a later cutover. The common `WorksRuntimeDocument` permits heterogeneous values in one SDK `ReadManyAsync<T>` call. The published Parties client resolves current actor-to-Party authority for SDK queries. Configuration, rollback, and proof limits are recorded in [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md).
+
 Story 1.1 verified the live `Hexalith.EventStore` source surface before Works depends on domain behavior in later stories.
 
 ## Schema compatibility contract (VAL-H11)

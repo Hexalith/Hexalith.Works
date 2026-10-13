@@ -12,6 +12,9 @@ public sealed class WorksProjectionOptions
     /// <summary>The default bounded failure count before a poisoned aggregate is parked.</summary>
     public const int DefaultMaxUndecodableEventDispatchesBeforeParking = 5;
 
+    /// <summary>Opt in to the SDK named writer and generation-selected readers as one mode.</summary>
+    public bool UseSdkDelivery { get; init; }
+
     /// <summary>
     /// How many consecutive dispatches may fail to decode the same state-affecting event before the aggregate is
     /// parked. Decoding stays fail-closed for every attempt up to this bound, so a transient cause still retries;

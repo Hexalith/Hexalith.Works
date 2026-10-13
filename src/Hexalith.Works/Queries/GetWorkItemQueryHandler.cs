@@ -6,6 +6,10 @@ using Hexalith.EventStore.DomainService;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Runtime;
+
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Queries;
 
@@ -28,13 +32,23 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly IReadModelStore _store;
+    private readonly SharedProjectionEpochCoordinator? _coordinator;
+    private readonly WorksQueryPolicy? _policy;
+    private readonly IOptions<WorksProjectionOptions>? _options;
 
     /// <summary>Initializes a new instance of the <see cref="GetWorkItemQueryHandler"/> class.</summary>
     /// <param name="store">The persisted read-model store.</param>
-    public GetWorkItemQueryHandler(IReadModelStore store)
+    public GetWorkItemQueryHandler(
+        IReadModelStore store,
+        IOptions<WorksProjectionOptions>? options = null,
+        WorksQueryPolicy? policy = null,
+        SharedProjectionEpochCoordinator? coordinator = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         _store = store;
+        _options = options;
+        _policy = policy;
+        _coordinator = coordinator;
     }
 
     /// <inheritdoc/>
@@ -53,6 +67,11 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         // can never resolve another tenant's work item.
         var tenantId = new TenantId(query.TenantId);
         var workItemId = new WorkItemId(query.AggregateId);
+
+        if (_options?.Value.UseSdkDelivery == true)
+        {
+            return await ExecuteSdkAsync(query, tenantId, workItemId, cancellationToken).ConfigureAwait(false);
+        }
 
         ReadModelEntry<WorksWhatsNextTenantIndex> currentIndexEntry = await _store
             .GetAsync<WorksWhatsNextTenantIndex>(
@@ -101,6 +120,126 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             : NotFound(tenantId, workItemId);
     }
 
+    private async Task<QueryResult> ExecuteSdkAsync(
+        QueryEnvelope query,
+        TenantId tenantId,
+        WorkItemId workItemId,
+        CancellationToken cancellationToken)
+    {
+        WorksQueryAuthority authority = _policy is null
+            ? new WorksQueryAuthority(false, false, null)
+            : await _policy.AuthorizeAsync(query, cancellationToken).ConfigureAwait(false);
+        if (!authority.Allowed)
+        {
+            return QueryResult.Failure(QueryAdapterFailureReason.Forbidden);
+        }
+
+        if (_coordinator is null)
+        {
+            return SdkUnavailable(0, false);
+        }
+
+        try
+        {
+            var scope = new SharedProjectionScope(
+                WorksReadModelKeys.StateStoreName,
+                query.TenantId,
+                DomainName,
+                WorksReadModelKeys.RuntimeFamily,
+                ["works-runtime-v3-writer"]);
+            string rollUpKey = WorksReadModelKeys.RuntimeRollUpKey(query.AggregateId);
+            string parkingKey = WorksReadModelKeys.RuntimeParkingKey(query.AggregateId);
+            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await _coordinator
+                .ReadManyAsync<WorksRuntimeDocument>(
+                    scope,
+                    [WorksReadModelKeys.RuntimeQueueKey, rollUpKey, parkingKey],
+                    cancellationToken).ConfigureAwait(false);
+            if (!read.IsAvailable || read.Value is null
+                || !read.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queueDocument)
+                || queueDocument is null)
+            {
+                return SdkUnavailable(read.Generation, read.IsStale);
+            }
+
+            SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
+                .ConfigureAwait(false);
+            if (status.IsOffboarded || status.ActiveGeneration != read.Generation)
+            {
+                return SdkUnavailable(read.Generation, true);
+            }
+
+            bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
+
+            WorksWhatsNextTenantIndex index = queueDocument.As<WorksWhatsNextTenantIndex>();
+            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
+            {
+                return SdkUnavailable(read.Generation, stale);
+            }
+
+            QueryResponseMetadata metadata = SdkMetadata(read.Generation, stale);
+            if (!index.MemberWorkItemIds.Contains(query.AggregateId, StringComparer.Ordinal))
+            {
+                return NotFound(tenantId, workItemId, metadata);
+            }
+
+            if (!authority.AllWork
+                && (!index.Items.TryGetValue(query.AggregateId, out WhatsNextItem? item)
+                    || WhatsNextQueryAuthorization.Filter(query.TenantId, item, candidate =>
+                        string.Equals(candidate.WorkItemId?.Value, query.AggregateId, StringComparison.Ordinal)
+                        && (candidate.Status == WorkItemStatus.Queued
+                            || candidate.Status == WorkItemStatus.Assigned
+                                && string.Equals(candidate.ExecutorBinding?.PartyId?.Value, authority.PartyId,
+                                    StringComparison.Ordinal))) is null))
+            {
+                return NotFound(tenantId, workItemId, metadata);
+            }
+
+            if (!read.Value.TryGetValue(parkingKey, out WorksRuntimeDocument? parkingDocument)
+                || parkingDocument is null
+                || parkingDocument.As<WorkItemProjectionParking>().Parked)
+            {
+                return SdkUnavailable(read.Generation, stale);
+            }
+
+            if (!read.Value.TryGetValue(rollUpKey, out WorksRuntimeDocument? rollUpDocument)
+                || rollUpDocument is null)
+            {
+                return SdkUnavailable(read.Generation, stale);
+            }
+
+            WorkItemRollUp rollUp = rollUpDocument.As<WorkItemRollUp>();
+            return MatchesIdentity(rollUp, query.TenantId, query.AggregateId)
+                ? Found(rollUp, metadata)
+                : NotFound(tenantId, workItemId, metadata);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return SdkUnavailable(0, false);
+        }
+    }
+
+    private static QueryResponseMetadata SdkMetadata(long generation, bool stale)
+        => new(IsStale: stale, IsDegraded: stale,
+            ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture))
+        {
+            Provenance = QueryResponseProvenance.ProjectionBacked,
+            Lifecycle = stale ? ProjectionLifecycleState.Stale : ProjectionLifecycleState.Current,
+        };
+
+    private static QueryResult SdkUnavailable(long generation, bool stale)
+        => QueryResult.Failure("projection-unavailable",
+            new QueryResponseMetadata(IsStale: stale, IsDegraded: true,
+                ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                WarningCodes: ["works-runtime-unavailable"])
+            {
+                Provenance = QueryResponseProvenance.ProjectionBacked,
+                Lifecycle = ProjectionLifecycleState.Unavailable,
+            });
+
     private async Task<QueryResult> ReadCurrentAsync(
         string tenantIdValue,
         string workItemIdValue,
@@ -131,13 +270,14 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             && string.Equals(rollUp.TenantId?.Value, tenantId, StringComparison.Ordinal)
             && string.Equals(rollUp.WorkItemId?.Value, workItemId, StringComparison.Ordinal);
 
-    private static QueryResult Found(WorkItemRollUp rollUp)
-        => QueryResult.FromPayload(JsonSerializer.SerializeToElement(ToView(rollUp), s_jsonOptions), WorksReadModelKeys.WorkItemViewProjectionType);
+    private static QueryResult Found(WorkItemRollUp rollUp, QueryResponseMetadata? metadata = null)
+        => QueryResult.FromPayload(JsonSerializer.SerializeToElement(ToView(rollUp), s_jsonOptions), WorksReadModelKeys.WorkItemViewProjectionType, metadata);
 
-    private static QueryResult NotFound(TenantId tenantId, WorkItemId workItemId)
+    private static QueryResult NotFound(TenantId tenantId, WorkItemId workItemId, QueryResponseMetadata? metadata = null)
         => QueryResult.FromPayload(
             JsonSerializer.SerializeToElement(WorkItemView.NotFound(tenantId, workItemId), s_jsonOptions),
-            WorksReadModelKeys.WorkItemViewProjectionType);
+            WorksReadModelKeys.WorkItemViewProjectionType,
+            metadata);
 
     private static WorkItemView ToView(WorkItemRollUp rollUp)
         => new(

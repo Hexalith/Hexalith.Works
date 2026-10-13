@@ -1,23 +1,63 @@
 using System.Text.Json;
 
+using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.DomainService;
+using Hexalith.Works.Runtime;
+
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Projections.SharedRebuild;
 
 /// <summary>Reconciles the complete authoritative Works tenant inventory as one shared roll-up projection.</summary>
-public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedProjectionRebuildHandler
+public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedProjectionEpochHandler
 {
     /// <summary>The named internal shared-projection route.</summary>
     public const string ProjectionTypeName = "works-shared-rollup";
 
     private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
+    private readonly IOptions<WorksProjectionOptions>? _options;
+    private readonly bool _useSdkDelivery;
+
+    /// <summary>Creates the rebuild and optional SDK epoch handler.</summary>
+    public WorkItemSharedProjectionRebuildHandler(
+        IOptions<WorksProjectionOptions>? options = null,
+        IConfiguration? configuration = null)
+    {
+        _options = options;
+        // SDK route discovery reads this property while Build maps endpoints. Leave validated options to
+        // ValidateOnStart so an invalid projection budget fails at host startup as configured.
+        _useSdkDelivery = configuration is null
+            ? options?.Value.UseSdkDelivery ?? false
+            : configuration.GetValue<bool>($"{WorksProjectionOptions.SectionName}:UseSdkDelivery");
+    }
+
+    /// <inheritdoc/>
+    public bool EpochEnabled => _useSdkDelivery;
+
+    /// <inheritdoc/>
+    public string OrdinaryWriterId => "works-runtime-v3-writer";
+
+    /// <inheritdoc/>
+    public string? ControlIndexName => EpochEnabled ? WorksReadModelKeys.RuntimeControlIndex : null;
+
+    /// <inheritdoc/>
+    public SharedProjectionScope CreateScope(string tenantId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        return new SharedProjectionScope(
+            WorksReadModelKeys.StateStoreName,
+            tenantId,
+            Domain,
+            ProjectionType,
+            [OrdinaryWriterId]);
+    }
 
     /// <inheritdoc/>
     public string Domain => "work";
 
     /// <inheritdoc/>
-    public string ProjectionType => ProjectionTypeName;
+    public string ProjectionType => EpochEnabled ? WorksReadModelKeys.RuntimeFamily : ProjectionTypeName;
 
     /// <inheritdoc/>
     public string RebuildStoreName => WorksReadModelKeys.StateStoreName;
@@ -75,7 +115,127 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
         ValidateIdentity(identity);
         ArgumentNullException.ThrowIfNull(candidate);
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(WorkItemSharedRebuildManifestBuilder.Build(identity, FromCandidate(candidate), cancellationToken));
+        return Task.FromResult(EpochEnabled
+            ? WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, FromCandidate(candidate), cancellationToken)
+            : WorkItemSharedRebuildManifestBuilder.Build(identity, FromCandidate(candidate), cancellationToken));
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ReadModelBatchOperation>> FoldCatchUpAsync(
+        SharedProjectionDelivery delivery,
+        long generation,
+        SharedProjectionEpochCoordinator coordinator,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(delivery);
+        ArgumentNullException.ThrowIfNull(coordinator);
+        if (!EpochEnabled)
+        {
+            throw new InvalidOperationException("The Works SDK projection mode is disabled.");
+        }
+
+        ProjectionRequest? request;
+        try
+        {
+            request = JsonSerializer.Deserialize<ProjectionRequest>(delivery.CanonicalPayload, s_json);
+        }
+        catch (JsonException)
+        {
+            throw FoldFailure(delivery, delivery.SourceStream, delivery.EnvelopePosition);
+        }
+
+        if (request is null)
+        {
+            throw FoldFailure(delivery, delivery.SourceStream, delivery.EnvelopePosition);
+        }
+        if (!string.Equals(request.Domain, Domain, StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(request.TenantId)
+            || string.IsNullOrWhiteSpace(request.AggregateId)
+            || !string.Equals(request.AggregateId, delivery.SourceStream, StringComparison.Ordinal)
+            || request.Events is not { Length: 1 }
+            || request.Events[0] is null
+            || request.Events[0].GlobalPosition != delivery.EnvelopePosition)
+        {
+            throw FoldFailure(delivery, delivery.SourceStream, delivery.EnvelopePosition);
+        }
+
+        SharedProjectionScope scope = CreateScope(request.TenantId);
+        ReadModelEntry<WorksRuntimeDocument> indexEntry = await coordinator
+            .ReadGenerationAsync<WorksRuntimeDocument>(scope, generation, WorksReadModelKeys.RuntimeQueueKey, cancellationToken)
+            .ConfigureAwait(false);
+        WorksWhatsNextTenantIndex? index = indexEntry.Value?.As<WorksWhatsNextTenantIndex>();
+        if (index is not null && !WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
+        {
+            throw new InvalidOperationException("The selected Works runtime queue is invalid.");
+        }
+
+        if (index?.MemberWorkItemIds.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount)
+        {
+            throw FoldFailure(delivery, request.AggregateId, request.Events[0].SequenceNumber);
+        }
+
+        var histories = new List<WorkItemSharedRebuildAggregateHistory>();
+        foreach (string member in index?.MemberWorkItemIds ?? [])
+        {
+            ReadModelEntry<WorksRuntimeDocument> entry = await coordinator
+                .ReadGenerationAsync<WorksRuntimeDocument>(scope, generation, WorksReadModelKeys.RuntimeHistoryKey(member), cancellationToken)
+                .ConfigureAwait(false);
+            WorkItemSharedRebuildAggregateHistory history = entry.Value?.As<WorkItemSharedRebuildAggregateHistory>()
+                ?? throw new InvalidOperationException("The selected Works runtime generation is missing source context.");
+            if (!string.Equals(history.AggregateId, member, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException("The selected Works runtime history has a foreign identity.");
+            }
+
+            histories.Add(history);
+        }
+
+        int existingIndex = histories.FindIndex(history => string.Equals(history.AggregateId, request.AggregateId, StringComparison.Ordinal));
+        ProjectionEventDto incoming = request.Events[0];
+        WorkItemSharedRebuildAggregateHistory nextHistory;
+        if (existingIndex < 0)
+        {
+            nextHistory = new WorkItemSharedRebuildAggregateHistory(request.AggregateId, [incoming]);
+            histories.Add(nextHistory);
+        }
+        else
+        {
+            WorkItemSharedRebuildAggregateHistory previous = histories[existingIndex];
+            ProjectionEventDto? duplicate = previous.Events.FirstOrDefault(item => item.SequenceNumber == incoming.SequenceNumber);
+            if (duplicate is not null && !string.Equals(
+                    JsonSerializer.Serialize(duplicate, s_json),
+                    JsonSerializer.Serialize(incoming, s_json),
+                    StringComparison.Ordinal))
+            {
+                throw FoldFailure(delivery, request.AggregateId, incoming.SequenceNumber);
+            }
+
+            nextHistory = duplicate is not null
+                ? previous
+                : previous with { Events = [.. previous.Events, incoming] };
+            histories[existingIndex] = nextHistory;
+        }
+
+        if (histories.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount
+            || JsonSerializer.SerializeToUtf8Bytes(new WorkItemSharedRebuildCandidateState(histories), s_json).Length
+                > ProjectionDispatchOptions.DefaultMaxSharedRebuildCandidateBytes)
+        {
+            throw FoldFailure(delivery, request.AggregateId, incoming.SequenceNumber);
+        }
+
+        try
+        {
+            var identity = new DomainSharedProjectionRebuildIdentity(
+                request.TenantId, Domain, ProjectionType, "ordinary-catch-up", "ordinary-catch-up");
+            return WorkItemSharedRebuildManifestBuilder.BuildEpoch(
+                identity,
+                new WorkItemSharedRebuildCandidateState(histories),
+                cancellationToken).Operations;
+        }
+        catch (InvalidOperationException)
+        {
+            throw FoldFailure(delivery, request.AggregateId, incoming.SequenceNumber);
+        }
     }
 
     /// <inheritdoc/>
@@ -110,13 +270,28 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
     private static DomainSharedProjectionRebuildCandidate ToCandidate(WorkItemSharedRebuildCandidateState state)
         => new(JsonSerializer.SerializeToUtf8Bytes(state, s_json));
 
-    private static void ValidateIdentity(DomainSharedProjectionRebuildIdentity identity)
+    private void ValidateIdentity(DomainSharedProjectionRebuildIdentity identity)
     {
         ArgumentNullException.ThrowIfNull(identity);
         if (!string.Equals(identity.Domain, "work", StringComparison.Ordinal)
-            || !string.Equals(identity.ProjectionType, ProjectionTypeName, StringComparison.Ordinal))
+            || !string.Equals(identity.ProjectionType, ProjectionType, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("The shared rebuild identity does not target the Works roll-up route.");
         }
     }
+
+    private SharedProjectionFoldFailureException FoldFailure(SharedProjectionDelivery delivery, string aggregateId, long sourceSequence)
+        => new(
+            delivery.SourceStream,
+            delivery.EnvelopePosition,
+            (_options?.Value ?? new WorksProjectionOptions()).MaxUndecodableEventDispatchesBeforeParking,
+            failures => [ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimeParkingKey(aggregateId),
+                WorksRuntimeDocument.From(new WorkItemProjectionParking
+                {
+                    FailedSequence = sourceSequence,
+                    FailureCount = failures,
+                    Parked = true,
+                }),
+                ReadModelBatchConcurrency.LastWrite)]);
 }

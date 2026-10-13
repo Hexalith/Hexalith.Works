@@ -3,7 +3,8 @@ title: 'Adopt SDK Projection and Query Seams in Works'
 type: 'feature'
 created: '2026-09-23'
 updated: '2026-10-13'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '8708bb935c4306c42d7453b761e203682aad5919'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -50,15 +51,15 @@ Implementation paths below are relative to `src/Hexalith.Works/`, except reposit
 
 **Execution:**
 
-- [ ] `Directory.Packages.props`, `Directory.Build.props`, `src/Hexalith.Works/Hexalith.Works.csproj` — freeze EventStore 3.120.0 and host-only Parties.Client 1.2.1; preserve source-Debug/package-Release modes.
-- [ ] `Runtime/WorksHost.cs`, `Runtime/WorksProjectionOptions.cs` — default legacy; opt in exclusively to SDK named delivery and matching readers; preserve reminder/Reactor composition.
-- [ ] `Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs` — implement epoch scope and per-envelope catch-up using SDK generation reads/logical mutations and bounded domain fold context.
-- [ ] `Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs`, `Projections/WorksReadModelKeys.cs` — stage complete family, including topology, cleared-await tombstones and parking; preserve rollback evidence and reject partial promotion.
+- [x] `Directory.Packages.props`, `Directory.Build.props`, `src/Hexalith.Works/Hexalith.Works.csproj` — freeze EventStore 3.120.0 and host-only Parties.Client 1.2.1; preserve source-Debug/package-Release modes.
+- [x] `Runtime/WorksHost.cs`, `Runtime/WorksProjectionOptions.cs` — default legacy; opt in exclusively to SDK named delivery and matching readers; preserve reminder/Reactor composition.
+- [x] `Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs` — implement epoch scope and per-envelope catch-up using SDK generation reads/logical mutations and bounded domain fold context.
+- [x] `Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs`, `Projections/WorksReadModelKeys.cs` — stage complete family, including topology, cleared-await tombstones and parking; preserve rollback evidence and reject partial promotion.
 - [ ] `Queries/WorksQueryPolicy.cs`, `Queries/WorksQueryOptions.cs` — verify Party binding through published Parties client and authenticated gateway transport; empty coordinator allowlist denies; restrict SDK query ingress to gateway origin.
-- [ ] `Queries/WhatsNextQueryHandler.cs`, `Queries/GetWorkItemQueryHandler.cs` — authorize before reading, reuse pure result predicates, and emit SDK freshness metadata.
-- [ ] `Reminders/IndexedPendingDateAwaitSource.cs`, `Recovery/Cascade/StreamReadingCascadeDescendantSource.cs` — SDK tenant discovery and pinned related reads; preserve stream truth/partial failures.
+- [x] `Queries/WhatsNextQueryHandler.cs`, `Queries/GetWorkItemQueryHandler.cs` — authorize before reading, reuse pure result predicates, and emit SDK freshness metadata.
+- [x] `Reminders/IndexedPendingDateAwaitSource.cs`, `Recovery/Cascade/StreamReadingCascadeDescendantSource.cs` — SDK tenant discovery and pinned related reads; preserve stream truth/partial failures.
 - [ ] `tests/Hexalith.Works.IntegrationTests/` — extend named classes in context; prove matrix with durable model/checkpoint assertions, package-only consumer, and Dapr/Redis state.
-- [ ] `docs/eventstore-api-surface-constraints.md`, `docs/boundary-decision-record.md`, `docs/sdk-projection-query-adoption.md` — document configuration, exact producer/consumer evidence, and complete restore rollback.
+- [x] `docs/eventstore-api-surface-constraints.md`, `docs/boundary-decision-record.md`, `docs/sdk-projection-query-adoption.md` — document configuration, exact producer/consumer evidence, and complete restore rollback.
 
 **Acceptance Criteria:**
 
@@ -67,6 +68,10 @@ Implementation paths below are relative to `src/Hexalith.Works/`, except reposit
 - Given isolated migration fixtures, when mode selection and restore rollback run, then one writer is active and legacy state remains recoverable.
 
 ## Implementation Notes
+
+- The SDK mode and published-package consumer compile; ordinary delivery, rebuild, restart, malformed/gapped evidence, protected HTTP ingress, and isolated Redis restore/replay have focused proof. The legacy writer remains the default.
+- Executor policy fails closed in live SDK transport: EventStore 3.120.0 removes the caller Authorization header before invoking Works, and Parties.Client 1.2.1 has no delegated identity-query transport. The required authoritative current binding cannot be proved end to end with the frozen contracts.
+- The isolated restore fixture verifies the Works state/configuration sequence. A deployed fleet and source archive remain an admission gate for Story 4.16.
 
 ## Spec Change Log
 
@@ -78,4 +83,9 @@ SDK delivery supplies one envelope, not full history. Retain bounded domain fold
 
 ## Verification
 
-Run the exact commands/classes in context: source Debug build, isolated Release/package consumer, each test project individually, and persisted provider proof. Record package/source identities, R3–R5 evidence, and remaining Platform/AD-28 gates.
+- `dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`: passed, zero warnings/errors (package mode).
+- `tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh`: passed; Release integration build zero warnings/errors, live Dapr/Redis SDK projection class 13/13, isolated restore/replay 1/1.
+- Focused Release integration classes `WorksSdkProjectionQueryTests`, `WorksSdkProtectedHttpTests`, `WorksDomainEventSubscriptionTests`, and `WorksRecoveryOptionsTests`: 39/39 passed after the query predicate fix.
+- `WorksSdkRecoverySourceTests`: 5/5 passed; the implementation agent also reported 119/119 related existing and adjacent recovery tests passing. `WorksReminderRecoveryPipelineSmokeTests` was retried with `timeout 120s` and exited 124 after reporting a prerequisite failure: AppHost control-plane ports 50001, 51005, and 51006 plus a scheduler volume were occupied after 60 seconds. The existing resources were left untouched.
+- The implementation agent reported UnitTests 568/568, PropertyTests 3/3, and architecture dependency-direction checks 24/24 passing. Full ArchitectureTests passed 268/268 after updating stale root-submodule and EventStore source-shape expectations; a full unfiltered IntegrationTests run stalled before completion. `MSBUILDDISABLENODEREUSE=1 DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER=1 dotnet build src/Hexalith.Works/Hexalith.Works.csproj --configuration Debug --no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0 -v:q` exited 1: CS1704 duplicate PolymorphicSerializations assemblies and CS0246 missing identity-evidence types in local Parties.Contracts (11 errors, 1 warning).
+- Published EventStore 3.120.0 and Parties.Client 1.2.1 are pinned in `Directory.Packages.props`. Platform/AD-28 and deployed rollback gates remain open.

@@ -4,12 +4,15 @@
     <!-- Detect only root-declared sibling modules under references/; nested submodules are intentionally not required. -->
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Parties\src\Hexalith.Parties.Client')">$(MSBuildThisFileDirectory)references\Hexalith.Parties</HexalithPartiesRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Parties\src\Hexalith.Parties.Client')">$(MSBuildThisFileDirectory)..\Hexalith.Parties</HexalithPartiesRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)..\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
+    <HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.Parties</HexalithPartiesRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
 
     <!-- Preserve caller intent before defaults are applied so the validation target can reject every

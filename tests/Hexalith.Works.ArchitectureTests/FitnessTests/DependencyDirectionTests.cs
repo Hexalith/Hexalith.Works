@@ -514,6 +514,7 @@ public sealed class DependencyDirectionTests
     {
         string root = RepositoryRoot.Locate();
         string eventStoreRoot = RepositoryRoot.DependencyRoot("Hexalith.EventStore");
+        string partiesRoot = RepositoryRoot.DependencyRoot("Hexalith.Parties");
         string polymorphicSerializationsRoot = RepositoryRoot.DependencyRoot("Hexalith.PolymorphicSerializations");
         var expectations = new[]
         {
@@ -537,9 +538,10 @@ public sealed class DependencyDirectionTests
                 DebugProjects: new[]
                 {
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.DomainService", "Hexalith.EventStore.DomainService.csproj"),
+                    Path.Combine(partiesRoot, "src", "Hexalith.Parties.Client", "Hexalith.Parties.Client.csproj"),
                 },
                 ReleaseProjects: Array.Empty<string>(),
-                ReleasePackages: new[] { "Hexalith.EventStore.DomainService" }),
+                ReleasePackages: new[] { "Hexalith.EventStore.DomainService", "Hexalith.Parties.Client" }),
             (
                 Project: "src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
                 DebugProjects: new[]
@@ -831,7 +833,7 @@ public sealed class DependencyDirectionTests
 
     /// <summary>Gets the evaluated external Hexalith module roots, normalized to canonical full paths.</summary>
     private static IEnumerable<string> ExternalModuleRoots(MsBuildProjectSnapshot snapshot)
-        => new[] { "HexalithEventStoreRoot", "HexalithPolymorphicSerializationsRoot", "HexalithTenantsRoot" }
+        => new[] { "HexalithEventStoreRoot", "HexalithPartiesRoot", "HexalithPolymorphicSerializationsRoot", "HexalithTenantsRoot" }
             .Select(snapshot.PropertyValue)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => Path.GetFullPath(value.Replace('\\', Path.DirectorySeparatorChar)))

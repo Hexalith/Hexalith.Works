@@ -2,14 +2,19 @@ using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Registration;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.DomainService;
+using Hexalith.EventStore.ServiceDefaults.Authentication;
+using Hexalith.Parties.Client;
+using Hexalith.Parties.Client.Abstractions;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Queries;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime.Events;
 
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -59,8 +64,8 @@ internal static class WorksHost
         builder.Services.AddDaprClient();
         _ = builder.Services.AddEventStoreReadModelStore(static options =>
         {
-            options.MaxOperations = (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 2) + 2;
-            options.MaxCanonicalManifestBytes = 4 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes;
+            options.MaxOperations = (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 4) + 3;
+            options.MaxCanonicalManifestBytes = 8 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes;
         });
 
         // EventStore publishes options-free PascalCase Works payloads on one shared work.events topic; the
@@ -96,6 +101,32 @@ internal static class WorksHost
                 "MaxUndecodableEventDispatchesBeforeParking must be greater than zero.")
             .ValidateOnStart();
 
+        _ = builder.Services.AddOptions<WorksQueryOptions>()
+            .Bind(builder.Configuration.GetSection(WorksQueryOptions.SectionName))
+            .Validate(static options => !string.IsNullOrWhiteSpace(options.GatewayWorkloadId),
+                "GatewayWorkloadId is required for SDK query ingress.")
+            .ValidateOnStart();
+        bool useSdkDelivery = builder.Configuration.GetValue<bool>("Works:Projection:UseSdkDelivery");
+        if (useSdkDelivery)
+        {
+            _ = builder.Services.AddHttpContextAccessor();
+            _ = builder.Services.AddTransient<WorksPartiesGatewayAuthorizationHandler>();
+            _ = builder.Services.AddHttpClient<IPartiesIdentityClient, HttpPartiesIdentityClient>((services, client) =>
+                {
+                    WorksQueryOptions queryOptions = services.GetRequiredService<IOptions<WorksQueryOptions>>().Value;
+                    string? address = queryOptions.PartiesGatewayBaseAddress
+                        ?? builder.Configuration["EventStore:CommandGateway:BaseAddress"];
+                    if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri))
+                    {
+                        throw new InvalidOperationException("Works SDK queries require a canonical Parties gateway base address.");
+                    }
+
+                    client.BaseAddress = uri;
+                })
+                .AddHttpMessageHandler<WorksPartiesGatewayAuthorizationHandler>();
+            _ = builder.Services.AddScoped<WorksQueryPolicy>();
+        }
+
         _ = builder.Services.AddWorksDateReminderActors();
         _ = builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
         configureServices?.Invoke(builder.Services);
@@ -103,13 +134,40 @@ internal static class WorksHost
         WebApplication app = builder.Build();
 
         // Route unhandled exceptions through the registered ProblemDetails service (RFC 9457).
-        _ = app.UseExceptionHandler();
+        _ = app.UseExceptionHandler(new ExceptionHandlerOptions
+        {
+            StatusCodeSelector = static exception => exception is BadHttpRequestException badRequest
+                ? badRequest.StatusCode
+                : StatusCodes.Status500InternalServerError,
+        });
         _ = app.UseStatusCodePages();
+
+        if (useSdkDelivery)
+        {
+            _ = app.UseAuthentication();
+            _ = app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "/query")
+                {
+                    WorksQueryOptions queryOptions = context.RequestServices.GetRequiredService<IOptions<WorksQueryOptions>>().Value;
+                    string? caller = context.User.FindFirst(EventStoreWorkloadAuthenticationDefaults.WorkloadClaimType)?.Value;
+                    if (!string.Equals(caller, queryOptions.GatewayWorkloadId, StringComparison.Ordinal))
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return;
+                    }
+                }
+
+                await next(context).ConfigureAwait(false);
+            });
+        }
 
         // Bespoke /project handler: translate a single work item's replayed events into the tenant-scoped
         // what's-next index + per-item roll-up and notify on a real eligibility/order change. Mapping it before
         // UseEventStoreDomainService makes the SDK yield the /project route to this persisted-read-model handler.
-        _ = app.MapPost("/project", static async (
+        if (!useSdkDelivery)
+        {
+            _ = app.MapPost("/project", static async (
             ProjectionRequest request,
             IReadModelStore store,
             IServiceProvider services,
@@ -122,7 +180,13 @@ internal static class WorksHost
                 loggerFactory.CreateLogger<WorkItemProjectionDispatcher>(),
                 services.GetRequiredService<IOptions<WorksProjectionOptions>>().Value);
             return Results.Ok(await dispatcher.DispatchAsync(request, cancellationToken).ConfigureAwait(false));
-        });
+            }).RequireEventStoreDomainServicePolicy("/project");
+        }
+        else
+        {
+            _ = app.MapPost("/project", static () => Results.Conflict())
+                .RequireEventStoreDomainServicePolicy("/project");
+        }
 
         // The host-owned case-insensitive JSON route must be present before SDK activation. Canonical activation
         // observes it, preserves it, and supplies CloudEvents plus the single Dapr subscription-discovery endpoint.
@@ -130,7 +194,7 @@ internal static class WorksHost
         _ = app.UseEventStoreDomainService();
 
         // Map the Dapr actor-runtime endpoints so the date-resume reminder actor receives reminder callbacks.
-        _ = app.MapActorsHandlers();
+        _ = app.MapActorsHandlers().RequireEventStoreSidecarChannel();
 
         return app;
     }

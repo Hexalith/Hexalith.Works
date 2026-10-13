@@ -44,6 +44,14 @@ internal sealed class WorkItemSharedRebuildRelationshipGraph
         _ = _incomplete.Add(aggregateId);
     }
 
+    /// <summary>Returns a deterministic snapshot of the direct-child graph.</summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<string>> ChildrenByParent()
+        => _children.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+            .ToDictionary(
+                static pair => pair.Key,
+                static pair => (IReadOnlyList<string>)[.. pair.Value.Order(StringComparer.Ordinal)],
+                StringComparer.Ordinal);
+
     /// <summary>
     /// Returns whether the aggregate or any reachable descendant is incomplete, missing from the sealed
     /// authoritative membership, or cyclic.

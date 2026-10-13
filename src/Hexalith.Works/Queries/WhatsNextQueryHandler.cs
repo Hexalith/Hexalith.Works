@@ -4,8 +4,12 @@ using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.EventStore.DomainService;
 using Hexalith.Works.Contracts.Models;
+using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Runtime;
+
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Queries;
 
@@ -28,13 +32,23 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
     private readonly IReadModelStore _store;
+    private readonly SharedProjectionEpochCoordinator? _coordinator;
+    private readonly WorksQueryPolicy? _policy;
+    private readonly IOptions<WorksProjectionOptions>? _options;
 
     /// <summary>Initializes a new instance of the <see cref="WhatsNextQueryHandler"/> class.</summary>
     /// <param name="store">The persisted read-model store.</param>
-    public WhatsNextQueryHandler(IReadModelStore store)
+    public WhatsNextQueryHandler(
+        IReadModelStore store,
+        IOptions<WorksProjectionOptions>? options = null,
+        WorksQueryPolicy? policy = null,
+        SharedProjectionEpochCoordinator? coordinator = null)
     {
         ArgumentNullException.ThrowIfNull(store);
         _store = store;
+        _options = options;
+        _policy = policy;
+        _coordinator = coordinator;
     }
 
     /// <inheritdoc/>
@@ -47,6 +61,11 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
     public async Task<QueryResult> ExecuteAsync(QueryEnvelope query, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(query);
+
+        if (_options?.Value.UseSdkDelivery == true)
+        {
+            return await ExecuteSdkAsync(query, cancellationToken).ConfigureAwait(false);
+        }
 
         string tenantId = query.TenantId;
         if (string.IsNullOrWhiteSpace(tenantId))
@@ -90,6 +109,138 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             ? Success(CurrentItems(tenantId, currentEntry.Value))
             : Success([]);
     }
+
+    private async Task<QueryResult> ExecuteSdkAsync(QueryEnvelope query, CancellationToken cancellationToken)
+    {
+        WorksQueryAuthority authority = _policy is null
+            ? new WorksQueryAuthority(false, false, null)
+            : await _policy.AuthorizeAsync(query, cancellationToken).ConfigureAwait(false);
+        if (!authority.Allowed)
+        {
+            return QueryResult.Failure(QueryAdapterFailureReason.Forbidden);
+        }
+
+        if (_coordinator is null)
+        {
+            return Unavailable(0, false);
+        }
+
+        try
+        {
+            var scope = new SharedProjectionScope(
+                WorksReadModelKeys.StateStoreName,
+                query.TenantId,
+                DomainName,
+                WorksReadModelKeys.RuntimeFamily,
+                ["works-runtime-v3-writer"]);
+            SharedProjectionReadResult<WorksRuntimeDocument> preliminary = await _coordinator
+                .ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, cancellationToken)
+                .ConfigureAwait(false);
+            if (!preliminary.IsAvailable || preliminary.Value is null)
+            {
+                return Unavailable(preliminary.Generation, preliminary.IsStale);
+            }
+
+            WorksWhatsNextTenantIndex initialIndex = preliminary.Value.As<WorksWhatsNextTenantIndex>();
+            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(initialIndex))
+            {
+                return Unavailable(preliminary.Generation, preliminary.IsStale);
+            }
+
+            string[] parkingKeys = [.. initialIndex.MemberWorkItemIds.Select(WorksReadModelKeys.RuntimeParkingKey)];
+            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await _coordinator
+                .ReadManyAsync<WorksRuntimeDocument>(scope,
+                    [WorksReadModelKeys.RuntimeQueueKey, .. parkingKeys], cancellationToken)
+                .ConfigureAwait(false);
+            if (!read.IsAvailable || read.Value is null
+                || !read.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queueDocument)
+                || queueDocument is null)
+            {
+                return Unavailable(read.Generation, read.IsStale);
+            }
+
+            SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
+                .ConfigureAwait(false);
+            if (status.IsOffboarded || status.ActiveGeneration != read.Generation)
+            {
+                return Unavailable(read.Generation, true);
+            }
+
+            bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
+
+            WorksWhatsNextTenantIndex index = queueDocument.As<WorksWhatsNextTenantIndex>();
+            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
+            {
+                return Unavailable(read.Generation, stale);
+            }
+
+            if (index.MemberWorkItemIds.Except(initialIndex.MemberWorkItemIds, StringComparer.Ordinal).Any())
+            {
+                return Unavailable(read.Generation, stale);
+            }
+
+            var parked = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string member in index.MemberWorkItemIds)
+            {
+                if (!read.Value.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
+                        out WorksRuntimeDocument? parkingDocument) || parkingDocument is null)
+                {
+                    return Unavailable(read.Generation, stale);
+                }
+
+                if (parkingDocument.As<WorkItemProjectionParking>().Parked)
+                {
+                    _ = parked.Add(member);
+                }
+            }
+
+            var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
+            IReadOnlyList<WhatsNextItem> items = WhatsNextQueryAuthorization.FilterList(
+                query.TenantId,
+                index.Items.Values
+                    .Where(item => item?.WorkItemId is not null
+                        && members.Contains(item.WorkItemId.Value)
+                        && !parked.Contains(item.WorkItemId.Value))
+                    .OrderBy(static item => item, WhatsNextOrdering.Instance),
+                item => authority.AllWork
+                    || item.Status == WorkItemStatus.Queued
+                    || item.Status == WorkItemStatus.Assigned
+                        && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
+            return QueryResult.FromPayload(
+                JsonSerializer.SerializeToElement(items, s_jsonOptions),
+                WorksReadModelKeys.WhatsNextProjectionType,
+                Metadata(read.Generation, stale, parked.Count > 0));
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return Unavailable(0, false);
+        }
+    }
+
+    private static QueryResponseMetadata Metadata(long generation, bool stale, bool parked)
+        => new(IsStale: stale, IsDegraded: stale || parked,
+            ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WarningCodes: parked ? ["works-runtime-parked"] : null)
+        {
+            Provenance = QueryResponseProvenance.ProjectionBacked,
+            Lifecycle = stale ? ProjectionLifecycleState.Stale
+                : parked ? ProjectionLifecycleState.Degraded : ProjectionLifecycleState.Current,
+        };
+
+    private static QueryResult Unavailable(long generation, bool stale)
+        => QueryResult.Failure(
+            "projection-unavailable",
+            new QueryResponseMetadata(IsStale: stale, IsDegraded: true,
+                ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                WarningCodes: ["works-runtime-unavailable"])
+            {
+                Provenance = QueryResponseProvenance.ProjectionBacked,
+                Lifecycle = ProjectionLifecycleState.Unavailable,
+            });
 
     private static IReadOnlyList<WhatsNextItem> CurrentItems(string tenantId, WorksWhatsNextTenantIndex index)
     {

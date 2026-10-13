@@ -155,6 +155,8 @@ public sealed class WorksRecoveryOptionsTests
             .Addresses
             .ShouldHaveSingleItem();
         using var client = new HttpClient { BaseAddress = new Uri(address, UriKind.Absolute) };
+        WorksHostTestAuthentication.AddSidecarChannel(client);
+        WorksHostTestAuthentication.AddProjectAssertion(client);
         var request = new ProjectionRequest(
             "tenant-alpha",
             "work",
@@ -235,7 +237,7 @@ public sealed class WorksRecoveryOptionsTests
         => BuildHost(
             static () => Directory.CreateTempSubdirectory("works-recovery-options-keys").FullName,
             keyDirectory => WorksHost.Build(
-                args,
+                [.. args, .. WorksHostTestAuthentication.ConfigurationArguments],
                 static webHost => webHost.UseUrls("http://127.0.0.1:0"),
                 services =>
                 {

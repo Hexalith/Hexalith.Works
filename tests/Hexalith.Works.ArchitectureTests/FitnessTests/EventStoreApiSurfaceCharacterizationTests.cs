@@ -88,16 +88,16 @@ public sealed class EventStoreApiSurfaceCharacterizationTests
             "SequenceNumber: sequenceNumber",
             customMessage: "EventPersister must still stamp the derived envelope position onto the stored envelope.");
         eventPersister.ShouldContain(
-            "long newSequence = currentSequence + domainResult.Events.Count;",
+            "long newSequence = checked(currentSequence + domainResult.Events.Count);",
             customMessage: "EventPersister must still advance the metadata watermark by the full event count, rejections included.");
 
         string aggregateReplayer = ReadEventStoreSource(eventStoreRoot, "Hexalith.EventStore.Client", "Aggregates", "AggregateReplayer.cs");
         aggregateReplayer.ShouldContain(
-            ".OrderBy(e => e.SequenceNumber)",
-            customMessage: "AggregateReplayer must still order replay by envelope SequenceNumber; Works relies on envelope order, not payload ordinals.");
+            "eligible[0].SequenceNumber != 1",
+            customMessage: "AggregateReplayer must reject replay that does not start at envelope sequence 1.");
         aggregateReplayer.ShouldContain(
             "if (eligible[i].SequenceNumber != expectedSequence)",
-            customMessage: "AggregateReplayer must still gap-validate envelope positions; a tolerated gap would hide a dropped rejection envelope.");
+            customMessage: "AggregateReplayer must reject reordered or gapped envelope positions; a tolerated gap would hide a dropped rejection envelope.");
         aggregateReplayer.ShouldContain(
             "lastApplied = evt.SequenceNumber;",
             customMessage: "AggregateReplayer must still report the last applied ENVELOPE position; Works asserts it lands at 2 after rejection-then-create.");

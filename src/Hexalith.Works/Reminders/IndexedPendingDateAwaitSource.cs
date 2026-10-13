@@ -39,22 +39,39 @@ internal sealed class IndexedPendingDateAwaitSource(
     IReadModelStore store,
     IEventStoreGatewayClient gateway,
     IOptions<WorksRecoveryOptions> options,
-    ILogger<IndexedPendingDateAwaitSource> logger) : IPendingDateAwaitSource
+    ILogger<IndexedPendingDateAwaitSource> logger,
+    IOptions<WorksProjectionOptions>? projectionOptions = null,
+    SharedProjectionEpochCoordinator? coordinator = null) : IPendingDateAwaitSource
 {
     private readonly IEventStoreGatewayClient _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
     private readonly ILogger<IndexedPendingDateAwaitSource> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
     private readonly IReadModelStore _store = store ?? throw new ArgumentNullException(nameof(store));
+    private readonly bool _useSdkDelivery = projectionOptions?.Value.UseSdkDelivery ?? false;
+    private readonly SharedProjectionEpochCoordinator? _coordinator = coordinator;
 
     /// <inheritdoc/>
     public async Task<PendingDateAwaitScanResult> GetPendingDateAwaitsAsync(CancellationToken cancellationToken = default)
     {
-        ReadModelEntry<PendingDateAwaitTenantRegistry> entry = await _store
-            .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
-            .ConfigureAwait(false);
-        PendingDateAwaitTenantRegistry? registry = entry.Value;
+        IReadOnlyList<string> tenants;
+        if (_useSdkDelivery)
+        {
+            tenants = _coordinator is null
+                ? throw new InvalidOperationException("The Works SDK tenant discovery coordinator is unavailable.")
+                : await _coordinator.GetControlIndexTenantsAsync(
+                    WorksReadModelKeys.StateStoreName,
+                    WorksReadModelKeys.RuntimeControlIndex,
+                    cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            ReadModelEntry<PendingDateAwaitTenantRegistry> entry = await _store
+                .GetAsync<PendingDateAwaitTenantRegistry>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, cancellationToken)
+                .ConfigureAwait(false);
+            tenants = entry.Value?.Tenants.ToArray() ?? [];
+        }
 
-        if (registry is null || registry.Tenants.Count == 0)
+        if (tenants.Count == 0)
         {
             return new PendingDateAwaitScanResult([]);
         }
@@ -65,7 +82,7 @@ internal sealed class IndexedPendingDateAwaitSource(
         int skippedParkedCount = 0;
         Exception? lastFailure = null;
 
-        foreach (string tenant in registry.Tenants)
+        foreach (string tenant in tenants)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -123,10 +140,54 @@ internal sealed class IndexedPendingDateAwaitSource(
 
     private async Task<TenantScanResult> ScanTenantAsync(string tenant, CancellationToken cancellationToken)
     {
-        ReadModelEntry<PendingDateAwaitTenantIndex> entry = await _store
-            .GetAsync<PendingDateAwaitTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(tenant), cancellationToken)
-            .ConfigureAwait(false);
-        if (entry.Value is null || entry.Value.Entries.Count == 0)
+        PendingDateAwaitTenantIndex? index;
+        IReadOnlyDictionary<string, WorksRuntimeDocument?>? pinned = null;
+        if (_useSdkDelivery)
+        {
+            if (_coordinator is null)
+            {
+                throw new InvalidOperationException("The Works SDK pending-date coordinator is unavailable.");
+            }
+
+            var scope = new SharedProjectionScope(
+                WorksReadModelKeys.StateStoreName, tenant, "work", WorksReadModelKeys.RuntimeFamily,
+                ["works-runtime-v3-writer"]);
+            SharedProjectionReadResult<WorksRuntimeDocument> candidate = await _coordinator
+                .ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, cancellationToken)
+                .ConfigureAwait(false);
+            if (!candidate.IsAvailable || candidate.Value is null)
+            {
+                throw new InvalidOperationException("The Works SDK pending-date generation is unavailable.");
+            }
+
+            PendingDateAwaitTenantIndex preliminary = candidate.Value.As<PendingDateAwaitTenantIndex>();
+            string[] keys = [WorksReadModelKeys.RuntimePendingDateKey,
+                .. preliminary.Entries.Keys.Order(StringComparer.Ordinal).Select(WorksReadModelKeys.RuntimeParkingKey)];
+            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> related = await _coordinator
+                .ReadManyAsync<WorksRuntimeDocument>(scope, keys, cancellationToken).ConfigureAwait(false);
+            if (!related.IsAvailable || related.Value is null
+                || !related.Value.TryGetValue(WorksReadModelKeys.RuntimePendingDateKey, out WorksRuntimeDocument? pendingDocument)
+                || pendingDocument is null)
+            {
+                throw new InvalidOperationException("The Works SDK pending-date related read is unavailable.");
+            }
+
+            index = pendingDocument.As<PendingDateAwaitTenantIndex>();
+            pinned = related.Value;
+            if (index.Entries.Keys.Except(preliminary.Entries.Keys, StringComparer.Ordinal).Any())
+            {
+                throw new InvalidOperationException("The Works SDK pending-date candidate changed during the pinned read.");
+            }
+        }
+        else
+        {
+            ReadModelEntry<PendingDateAwaitTenantIndex> entry = await _store
+                .GetAsync<PendingDateAwaitTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(tenant), cancellationToken)
+                .ConfigureAwait(false);
+            index = entry.Value;
+        }
+
+        if (index is null || index.Entries.Count == 0)
         {
             return new TenantScanResult([], 0, 0, null);
         }
@@ -135,17 +196,31 @@ internal sealed class IndexedPendingDateAwaitSource(
         int failedCandidateCount = 0;
         int skippedParkedCount = 0;
         Exception? lastFailure = null;
-        foreach (string workItemId in entry.Value.Entries.Keys)
+        foreach (string workItemId in index.Entries.Keys)
         {
             ReadModelEntry<WorkItemProjectionParking> parking;
             try
             {
-                parking = await _store
-                    .GetAsync<WorkItemProjectionParking>(
-                        WorksReadModelKeys.StateStoreName,
-                        WorksReadModelKeys.ProjectionParkingKey(tenant, workItemId),
-                        cancellationToken)
-                    .ConfigureAwait(false);
+                if (_useSdkDelivery)
+                {
+                    if (pinned is null
+                        || !pinned.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(workItemId), out WorksRuntimeDocument? document)
+                        || document is null)
+                    {
+                        throw new InvalidOperationException("The Works SDK parking read is incomplete.");
+                    }
+
+                    parking = new ReadModelEntry<WorkItemProjectionParking>(document.As<WorkItemProjectionParking>(), null);
+                }
+                else
+                {
+                    parking = await _store
+                        .GetAsync<WorkItemProjectionParking>(
+                            WorksReadModelKeys.StateStoreName,
+                            WorksReadModelKeys.ProjectionParkingKey(tenant, workItemId),
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException ex) when (
                 cancellationToken.IsCancellationRequested

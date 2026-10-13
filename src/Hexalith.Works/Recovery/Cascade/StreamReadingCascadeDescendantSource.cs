@@ -26,7 +26,9 @@ public sealed class StreamReadingCascadeDescendantSource(
     IEventStoreGatewayClient gateway,
     IReadModelStore store,
     IOptions<WorksRecoveryOptions> options,
-    ILogger<StreamReadingCascadeDescendantSource> logger) : ICascadeDescendantSource
+    ILogger<StreamReadingCascadeDescendantSource> logger,
+    IOptions<WorksProjectionOptions>? projectionOptions = null,
+    SharedProjectionEpochCoordinator? coordinator = null) : ICascadeDescendantSource
 {
     private const int PageSize = 200;
 
@@ -34,6 +36,8 @@ public sealed class StreamReadingCascadeDescendantSource(
     private readonly IReadModelStore _store = store ?? throw new ArgumentNullException(nameof(store));
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
     private readonly ILogger<StreamReadingCascadeDescendantSource> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly bool _useSdkDelivery = projectionOptions?.Value.UseSdkDelivery ?? false;
+    private readonly SharedProjectionEpochCoordinator? _coordinator = coordinator;
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<CascadeDescendant>> GetDescendantsAsync(string tenantId, string parentWorkItemId, CancellationToken cancellationToken = default)
@@ -69,7 +73,7 @@ public sealed class StreamReadingCascadeDescendantSource(
                     if (WorksEventDecoder.Decode(streamEvent.EventTypeName, streamEvent.Payload) is ChildSpawned childSpawned
                         && seen.Add(childSpawned.ChildWorkItemId.Value))
                     {
-                        bool isTerminal = await IsTerminalAsync(
+                        bool isTerminal = !_useSdkDelivery && await IsTerminalAsync(
                             tenantId,
                             childSpawned.ChildWorkItemId.Value,
                             cancellationToken).ConfigureAwait(false);
@@ -102,6 +106,11 @@ public sealed class StreamReadingCascadeDescendantSource(
                 throw new InvalidOperationException(
                     $"Stream for aggregate '{parentWorkItemId}' exceeded the configured {nameof(WorksRecoveryOptions.MaxStreamPagesPerAggregate)} page budget while still truncated.");
             }
+
+            if (_useSdkDelivery && children.Count > 0)
+            {
+                return await PinSdkTerminalsAsync(tenantId, children, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (OperationCanceledException)
         {
@@ -116,6 +125,54 @@ public sealed class StreamReadingCascadeDescendantSource(
         }
 
         return children;
+    }
+
+    private async Task<IReadOnlyList<CascadeDescendant>> PinSdkTerminalsAsync(
+        string tenantId,
+        IReadOnlyList<CascadeDescendant> children,
+        CancellationToken cancellationToken)
+    {
+        if (_coordinator is null)
+        {
+            throw new InvalidOperationException("The Works SDK cascade coordinator is unavailable.");
+        }
+
+        var scope = new SharedProjectionScope(
+            WorksReadModelKeys.StateStoreName, tenantId, WorkCommandSubmission.WorkDomain,
+            WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);
+        string[] keys = [WorksReadModelKeys.RuntimeQueueKey,
+            .. children.Select(child => WorksReadModelKeys.RuntimeRollUpKey(child.WorkItemId.Value))];
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> related = await _coordinator
+            .ReadManyAsync<WorksRuntimeDocument>(scope, keys, cancellationToken).ConfigureAwait(false);
+        if (!related.IsAvailable || related.Value is null
+            || !related.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queue)
+            || queue is null)
+        {
+            throw new InvalidOperationException("The Works SDK cascade generation is unavailable.");
+        }
+
+        WorksWhatsNextTenantIndex index = queue.As<WorksWhatsNextTenantIndex>();
+        if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
+        {
+            throw new InvalidOperationException("The Works SDK cascade membership is invalid.");
+        }
+
+        return [.. children.Select(child =>
+        {
+            string id = child.WorkItemId.Value;
+            if (!index.MemberWorkItemIds.Contains(id, StringComparer.Ordinal)
+                || !related.Value.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(id), out WorksRuntimeDocument? document)
+                || document is null)
+            {
+                return child;
+            }
+
+            WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
+            return child with
+            {
+                IsTerminal = MatchesIdentity(rollUp, tenantId, id) && IsTerminal(rollUp),
+            };
+        })];
     }
 
     private async Task<bool> IsTerminalAsync(string tenantId, string workItemId, CancellationToken cancellationToken)

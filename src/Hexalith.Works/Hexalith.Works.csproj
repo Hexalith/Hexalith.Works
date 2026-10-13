@@ -30,6 +30,8 @@
          so the host does not reference Hexalith.Works.ServiceDefaults. -->
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.DomainService" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
+    <ProjectReference Include="$(HexalithPartiesRoot)\src\Hexalith.Parties.Client\Hexalith.Parties.Client.csproj" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
+    <PackageReference Include="Hexalith.Parties.Client" Condition="'$(UseHexalithProjectReferences)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>

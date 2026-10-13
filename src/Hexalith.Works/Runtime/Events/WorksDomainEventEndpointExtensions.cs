@@ -1,6 +1,7 @@
 using Dapr;
 
 using Hexalith.EventStore.Client.Subscriptions;
+using Hexalith.EventStore.DomainService;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -14,12 +15,8 @@ namespace Hexalith.Works.Runtime.Events;
 /// Maps the Works-local EventStore subscription endpoint with case-insensitive Works payload binding.
 /// </summary>
 /// <remarks>
-/// Intentionally carries no additional caller authentication, matching the EventStore SDK's own generic
-/// <c>EventStoreDomainEventsEndpointExtensions.MapEventStoreDomainEvents</c> (this endpoint's exemplar): the
-/// <c>dapr-caller-app-id</c> header used by <c>Authentication:DaprInternal:AllowedCallers</c> is attached only
-/// to Dapr <em>service-invocation</em> (app-to-app RPC) requests, not <em>pub/sub delivery</em> callbacks like
-/// this one, so that check does not apply here. The protection boundary for a pub/sub subscription endpoint is
-/// network/deployment topology, not an app-level header check.
+/// Requires the EventStore SDK sidecar-channel policy, matching the current generic subscription route.
+/// Dapr pub/sub callbacks carry the application-channel token rather than a service-invocation caller id.
 /// <para>
 /// This route is no longer reached by pub/sub delivery alone: the <c>eventstore-operations</c> workload replays
 /// a captured dead letter to it through Dapr <em>service invocation</em>. That caller is admitted by the Dapr
@@ -54,7 +51,7 @@ internal static class WorksDomainEventEndpointExtensions
             // Derived from the subscribed topic so the poison destination cannot drift away from the topic it
             // drains. With the host's configured "work.events" this resolves to "deadletter.work.events".
             DeadLetterTopic = DeadLetterTopicName(options.TopicName),
-        });
+        }).RequireEventStoreSidecarChannel();
 
         return endpoints;
     }

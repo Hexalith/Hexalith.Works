@@ -13,6 +13,30 @@ internal static class WorksReadModelKeys
     /// <summary>The current persisted Works read-model schema generation.</summary>
     public const int CurrentSchemaVersion = 2;
 
+    /// <summary>The SDK-owned generation family for the complete Works runtime view.</summary>
+    public const string RuntimeFamily = "works-runtime-v3";
+
+    /// <summary>The SDK control index used to discover tenants with a runtime generation.</summary>
+    public const string RuntimeControlIndex = "works-runtime-v3-tenants";
+
+    /// <summary>The logical tenant queue key inside a runtime generation.</summary>
+    public const string RuntimeQueueKey = "works-runtime-v3:queue";
+
+    /// <summary>The logical pending-date index key inside a runtime generation.</summary>
+    public const string RuntimePendingDateKey = "works-runtime-v3:pending-date";
+
+    /// <summary>The logical topology key inside a runtime generation.</summary>
+    public const string RuntimeTopologyKey = "works-runtime-v3:topology";
+
+    /// <summary>Builds a logical per-item roll-up key inside a runtime generation.</summary>
+    public static string RuntimeRollUpKey(string workItemId) => $"works-runtime-v3:rollup:{workItemId}";
+
+    /// <summary>Builds a logical per-item source-context key inside a runtime generation.</summary>
+    public static string RuntimeHistoryKey(string workItemId) => $"works-runtime-v3:history:{workItemId}";
+
+    /// <summary>Builds a logical per-item parking key inside a runtime generation.</summary>
+    public static string RuntimeParkingKey(string workItemId) => $"works-runtime-v3:parking:{workItemId}";
+
     /// <summary>The Dapr state-store component name shared with the EventStore platform.</summary>
     public const string StateStoreName = "statestore";
 

@@ -74,7 +74,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         await stateManager.SaveStateAsync(cancellationToken);
 
         stateManager.CommittedState.ShouldContainKey($"{Identity.EventStreamKeyPrefix}1");
-        RehydrationResult rejectionOnlyStream = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult rejectionOnlyStream = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         rejectionOnlyStream.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L]);
 
         AggregateReconstructionResult rejectionOnlyReplay = Replay(rejectionOnlyStream, includeTimeline: true);
@@ -90,7 +90,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         var aggregate = new WorkItemEventStoreAggregate();
         DomainResult createResult = await aggregate.ProcessAsync(
             CommandFor(acceptedCommand, "01ARZ3NDEKTSV4RRFFQ69G5FAW"),
-            ToDomainServiceCurrentState(rejectionOnlyStream));
+            ToDomainServiceCurrentState(rejectionOnlyStream), cancellationToken);
         WorkItemCreated created = createResult.Events.Single().ShouldBeOfType<WorkItemCreated>();
         created.Sequence.ShouldBe(1);
 
@@ -104,7 +104,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         await stateManager.SaveStateAsync(cancellationToken);
 
         stateManager.CommittedState.ShouldContainKey($"{Identity.EventStreamKeyPrefix}2");
-        RehydrationResult committedStream = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult committedStream = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         committedStream.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L]);
 
         StoredEventEnvelope persistedRejection = committedStream.Events[0];
@@ -159,7 +159,7 @@ public sealed class EnvelopeCanonicalSequencingTests
             rejectionResult,
             cancellationToken);
 
-        RehydrationResult rejectionStream = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult rejectionStream = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         AggregateReconstructionResult rejectionReplay = Replay(rejectionStream, includeTimeline: true);
         AssertUnknownStateIsUnchanged(rejectionReplay.StateJson);
 
@@ -174,7 +174,7 @@ public sealed class EnvelopeCanonicalSequencingTests
             AggregateId: Item.Value,
             TenantId: Tenant.Value);
 
-        RehydrationResult snapshotBacked = (await reader.RehydrateAsync(Identity, rejectionPositionSnapshot)).ShouldNotBeNull();
+        RehydrationResult snapshotBacked = (await reader.RehydrateAsync(Identity, rejectionPositionSnapshot, cancellationToken)).ShouldNotBeNull();
         snapshotBacked.Events.ShouldBeEmpty();
         snapshotBacked.LastSnapshotSequence.ShouldBe(1);
         snapshotBacked.CurrentSequence.ShouldBe(1);
@@ -194,7 +194,7 @@ public sealed class EnvelopeCanonicalSequencingTests
             createResult,
             cancellationToken);
 
-        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L]);
         AggregateReconstructionResult completedReplay = Replay(committed, includeTimeline: true);
         AssertState(completedReplay.StateJson, WorkItemStatus.Created, expectedPayloadOrdinal: 1);
@@ -214,7 +214,7 @@ public sealed class EnvelopeCanonicalSequencingTests
             TenantId: Tenant.Value);
 
         RehydrationResult establishedSnapshot =
-            (await reader.RehydrateAsync(Identity, createPositionSnapshot)).ShouldNotBeNull();
+            (await reader.RehydrateAsync(Identity, createPositionSnapshot, cancellationToken)).ShouldNotBeNull();
         establishedSnapshot.Events.ShouldBeEmpty();
         establishedSnapshot.LastSnapshotSequence.ShouldBe(2);
         establishedSnapshot.CurrentSequence.ShouldBe(2);
@@ -247,7 +247,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         DomainResult createResult = await ProcessAsync(create, "01ARZ3NDEKTSV4RRFFQ69G5FB2", currentStream: null);
         await CommitAsync(stateManager, persister, create, "01ARZ3NDEKTSV4RRFFQ69G5FB2", createResult, cancellationToken);
 
-        RehydrationResult afterCreate = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult afterCreate = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         var illegalComplete = new CompleteWorkItem(Tenant, Item);
         DomainResult rejectionResult = await ProcessAsync(illegalComplete, "01ARZ3NDEKTSV4RRFFQ69G5FB3", afterCreate);
         rejectionResult.IsRejection.ShouldBeTrue();
@@ -261,13 +261,13 @@ public sealed class EnvelopeCanonicalSequencingTests
             rejectionResult,
             cancellationToken);
 
-        RehydrationResult afterRejection = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult afterRejection = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         var assign = new AssignWorkItem(Tenant, Item, WorkItemV1Catalog.Binding);
         DomainResult assignResult = await ProcessAsync(assign, "01ARZ3NDEKTSV4RRFFQ69G5FB4", afterRejection);
         assignResult.Events.Single().ShouldBeOfType<WorkItemAssigned>().Sequence.ShouldBe(2);
         await CommitAsync(stateManager, persister, assign, "01ARZ3NDEKTSV4RRFFQ69G5FB4", assignResult, cancellationToken);
 
-        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L, 3L]);
         JsonSerializer.Deserialize<WorkItemCreated>(committed.Events[0].Payload, JsonOptions)
             .ShouldNotBeNull().Sequence.ShouldBe(1);
@@ -310,7 +310,7 @@ public sealed class EnvelopeCanonicalSequencingTests
             firstRejection,
             cancellationToken);
 
-        RehydrationResult afterFirst = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult afterFirst = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         CreateWorkItem crossTenantParent = RejectedCreate("cross-tenant-parent");
         DomainResult secondRejection = await ProcessAsync(crossTenantParent, "01ARZ3NDEKTSV4RRFFQ69G5FB6", afterFirst);
         await CommitAsync(
@@ -321,13 +321,13 @@ public sealed class EnvelopeCanonicalSequencingTests
             secondRejection,
             cancellationToken);
 
-        RehydrationResult afterSecond = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult afterSecond = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         var create = new CreateWorkItem(Tenant, Item, "Create after two persisted rejections");
         DomainResult createResult = await ProcessAsync(create, "01ARZ3NDEKTSV4RRFFQ69G5FB7", afterSecond);
         createResult.Events.Single().ShouldBeOfType<WorkItemCreated>().Sequence.ShouldBe(1);
         await CommitAsync(stateManager, persister, create, "01ARZ3NDEKTSV4RRFFQ69G5FB7", createResult, cancellationToken);
 
-        RehydrationResult committed = (await reader.RehydrateAsync(Identity)).ShouldNotBeNull();
+        RehydrationResult committed = (await reader.RehydrateAsync(Identity, snapshot: null, cancellationToken)).ShouldNotBeNull();
         committed.Events.Select(static envelope => envelope.SequenceNumber).ShouldBe([1L, 2L, 3L]);
         WorkItemCannotBeCreatedWithoutObligation persistedFirst = JsonSerializer
             .Deserialize<WorkItemCannotBeCreatedWithoutObligation>(committed.Events[0].Payload, JsonOptions)

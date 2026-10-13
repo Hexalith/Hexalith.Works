@@ -20,6 +20,7 @@ internal static class MsBuildProjectEvaluation
         "Configuration",
         "HexalithDependencyModeDefaulted",
         "HexalithEventStoreRoot",
+        "HexalithPartiesRoot",
         "HexalithPolymorphicSerializationsRoot",
         "HexalithTenantsRoot",
         "IsPackable",

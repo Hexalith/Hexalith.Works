@@ -69,7 +69,7 @@ public sealed class WorksDomainEventSubscriptionTests
         try
         {
             await using WebApplication app = WorksHost.Build(
-                ["--Works:Recovery:RunReconciliationOnStartup=false"],
+                ["--Works:Recovery:RunReconciliationOnStartup=false", .. WorksHostTestAuthentication.ConfigurationArguments],
                 static webHost => webHost.UseUrls("http://127.0.0.1:0"),
                 services =>
                 {
@@ -93,6 +93,7 @@ public sealed class WorksDomainEventSubscriptionTests
                 .Addresses
                 .ShouldHaveSingleItem();
             using var client = new HttpClient { BaseAddress = new Uri(address, UriKind.Absolute) };
+            WorksHostTestAuthentication.AddSidecarChannel(client);
 
             RouteEndpoint delivery = Route(app, "/work/events", HttpMethods.Post);
             Route(app, "dapr/subscribe", HttpMethods.Get);
@@ -124,9 +125,9 @@ public sealed class WorksDomainEventSubscriptionTests
                     .GetRequiredService<IOptions<ReadModelBatchOptions>>()
                     .Value;
                 batchOptions.MaxOperations.ShouldBe(
-                    (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 2) + 2);
+                    (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 4) + 3);
                 batchOptions.MaxCanonicalManifestBytes.ShouldBe(
-                    4 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes);
+                    8 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes);
             }
 
             ITopicMetadata topic = delivery.Metadata.GetMetadata<ITopicMetadata>().ShouldNotBeNull();

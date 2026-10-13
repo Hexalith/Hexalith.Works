@@ -7,6 +7,7 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections.Models;
 using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Reminders;
 
 namespace Hexalith.Works.Projections.SharedRebuild;
 
@@ -17,6 +18,20 @@ internal static class WorkItemSharedRebuildManifestBuilder
     public static DomainProjectionRebuildPlan Build(
         DomainSharedProjectionRebuildIdentity identity,
         WorkItemSharedRebuildCandidateState candidate,
+        CancellationToken cancellationToken)
+        => BuildCore(identity, candidate, epoch: false, cancellationToken);
+
+    /// <summary>Builds the complete SDK generation without touching recoverable legacy keys.</summary>
+    public static DomainProjectionRebuildPlan BuildEpoch(
+        DomainSharedProjectionRebuildIdentity identity,
+        WorkItemSharedRebuildCandidateState candidate,
+        CancellationToken cancellationToken)
+        => BuildCore(identity, candidate, epoch: true, cancellationToken);
+
+    private static DomainProjectionRebuildPlan BuildCore(
+        DomainSharedProjectionRebuildIdentity identity,
+        WorkItemSharedRebuildCandidateState candidate,
+        bool epoch,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(identity);
@@ -41,17 +56,30 @@ internal static class WorkItemSharedRebuildManifestBuilder
         var relationships = new WorkItemSharedRebuildRelationshipGraph();
         var rollUpProjection = new WorkItemRollUpProjection();
         var queueProjection = new WhatsNextQueueProjection();
+        var pendingEntries = new Dictionary<string, IReadOnlyList<PendingDateAwait>>(StringComparer.Ordinal);
+        var pendingLastSequences = new Dictionary<string, long>(StringComparer.Ordinal);
 
         foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            if (epoch)
+            {
+                ValidateHistory(history);
+            }
+
             var workItemId = new WorkItemId(history.AggregateId);
             string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(history.Events);
+            var decodedPayloads = new List<IEventPayload>();
             foreach (ProjectionEventDto? dto in history.Events)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (dto is null)
                 {
+                    if (epoch)
+                    {
+                        throw new InvalidOperationException("The Works runtime history contains a null envelope.");
+                    }
+
                     relationships.MarkIncomplete(history.AggregateId);
                     continue;
                 }
@@ -64,6 +92,11 @@ internal static class WorkItemSharedRebuildManifestBuilder
                     logger: null);
                 if (!decoded.KnownEventType || decoded.Malformed)
                 {
+                    if (epoch)
+                    {
+                        throw new InvalidOperationException("The Works runtime history contains undecodable evidence.");
+                    }
+
                     relationships.MarkIncomplete(history.AggregateId);
                     continue;
                 }
@@ -81,6 +114,22 @@ internal static class WorkItemSharedRebuildManifestBuilder
                 var delivery = new WorkItemRollUpEvent(tenantId, workItemId, dto.SequenceNumber, safePayload);
                 rollUpProjection.Project(delivery);
                 _ = queueProjection.Project(delivery);
+                decodedPayloads.Add(safePayload);
+            }
+
+            if (epoch)
+            {
+                IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(decodedPayloads);
+                if (pending.Count > 0)
+                {
+                    pendingEntries.Add(history.AggregateId, pending);
+                }
+
+                if (decodedPayloads.OfType<WorkItemSuspended>().Any(static suspended =>
+                        suspended.AwaitConditions.Any(static condition => condition.Kind == AwaitConditionKind.DateReached)))
+                {
+                    pendingLastSequences.Add(history.AggregateId, history.Events[^1].SequenceNumber);
+                }
             }
         }
 
@@ -124,6 +173,51 @@ internal static class WorkItemSharedRebuildManifestBuilder
             MemberWorkItemIds = [.. members.OrderBy(static id => id, StringComparer.Ordinal)],
         };
 
+        if (epoch)
+        {
+            List<ReadModelBatchOperation> generationOperations =
+            [
+                ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimeQueueKey,
+                    WorksRuntimeDocument.From(index),
+                    ReadModelBatchConcurrency.LastWrite),
+                ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimePendingDateKey,
+                    WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex
+                    {
+                        Entries = pendingEntries,
+                        LastSequences = pendingLastSequences,
+                    }),
+                    ReadModelBatchConcurrency.LastWrite),
+                ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimeTopologyKey,
+                    WorksRuntimeDocument.From(new WorksRuntimeTopology(relationships.ChildrenByParent())),
+                    ReadModelBatchConcurrency.LastWrite),
+            ];
+
+            foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories.OrderBy(static item => item.AggregateId, StringComparer.Ordinal))
+            {
+                generationOperations.Add(ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimeHistoryKey(history.AggregateId),
+                    WorksRuntimeDocument.From(history),
+                    ReadModelBatchConcurrency.LastWrite));
+                generationOperations.Add(ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimeParkingKey(history.AggregateId),
+                    WorksRuntimeDocument.From(new WorkItemProjectionParking()),
+                    ReadModelBatchConcurrency.LastWrite));
+            }
+
+            foreach ((string aggregateId, WorkItemRollUp rollUp) in rollUps.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            {
+                generationOperations.Add(ReadModelBatchOperation.Write(
+                    WorksReadModelKeys.RuntimeRollUpKey(aggregateId),
+                    WorksRuntimeDocument.From(rollUp),
+                    ReadModelBatchConcurrency.LastWrite));
+            }
+
+            return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, generationOperations);
+        }
+
         List<ReadModelBatchOperation> operations =
         [
             ReadModelBatchOperation.Write(
@@ -154,6 +248,20 @@ internal static class WorkItemSharedRebuildManifestBuilder
 
         cancellationToken.ThrowIfCancellationRequested();
         return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, operations);
+    }
+
+    private static void ValidateHistory(WorkItemSharedRebuildAggregateHistory history)
+    {
+        long expected = 1;
+        foreach (ProjectionEventDto? envelope in history.Events)
+        {
+            if (envelope is null || envelope.SequenceNumber != expected)
+            {
+                throw new InvalidOperationException("The Works runtime history is gapped, reordered, or corrupt.");
+            }
+
+            expected++;
+        }
     }
 
     private static IEventPayload? PrepareRelationshipPayload(

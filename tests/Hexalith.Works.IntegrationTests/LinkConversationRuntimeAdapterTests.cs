@@ -119,7 +119,7 @@ public sealed class LinkConversationRuntimeAdapterTests
         DomainServiceCurrentState current = CurrentState(
             new WorkItemCreated(Item.Value, 1, Tenant, Item, new Obligation("Link runtime work")));
 
-        DomainResult result = await aggregate.ProcessAsync(CommandFor(command), current).ConfigureAwait(true);
+        DomainResult result = await aggregate.ProcessAsync(CommandFor(command), current, TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         ConversationLinked linked = result.Events.ShouldHaveSingleItem().ShouldBeOfType<ConversationLinked>();
         result.IsSuccess.ShouldBeTrue();
@@ -138,10 +138,10 @@ public sealed class LinkConversationRuntimeAdapterTests
 
         DomainResult retry = await aggregate.ProcessAsync(
             CommandFor(new LinkConversation(Tenant, Item, Conversation)),
-            current).ConfigureAwait(true);
+            current, TestContext.Current.CancellationToken).ConfigureAwait(true);
         DomainResult conflict = await aggregate.ProcessAsync(
             CommandFor(new LinkConversation(Tenant, Item, ConflictingConversation)),
-            current).ConfigureAwait(true);
+            current, TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         retry.IsNoOp.ShouldBeTrue();
         retry.Events.ShouldBeEmpty();
@@ -279,7 +279,7 @@ public sealed class LinkConversationRuntimeAdapterTests
 
         DomainResult actual = await aggregate.ProcessAsync(
             CommandFor(command, Tenant.Value),
-            currentState: null);
+            currentState: null, TestContext.Current.CancellationToken);
 
         actual.IsSuccess.ShouldBe(expected.IsSuccess);
         actual.IsRejection.ShouldBe(expected.IsRejection);
@@ -309,7 +309,7 @@ public sealed class LinkConversationRuntimeAdapterTests
             AggregateId = envelopeAggregateId,
         };
 
-        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null);
+        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken);
 
         actual.IsSuccess.ShouldBe(expected.IsSuccess);
         actual.IsRejection.ShouldBe(expected.IsRejection);
@@ -338,7 +338,7 @@ public sealed class LinkConversationRuntimeAdapterTests
             envelopeTenantId);
         malformed.TenantId.ShouldBe(envelopeTenantId);
 
-        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null);
+        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken);
 
         actual.IsSuccess.ShouldBe(expected.IsSuccess);
         actual.IsRejection.ShouldBe(expected.IsRejection);
