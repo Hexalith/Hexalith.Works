@@ -1383,3 +1383,27 @@ status: open
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: Verify persisted process sweep claims with host-supplied Dapr JSON serializer options.
   evidence: Story 4.12 follow-up review V1 (2026-10-12), medium. The Web-default JSON contract test pins the shipped default shape, but `DaprReadModelStore` uses the host's `DaprClient.JsonSerializerOptions` and host registration can preserve a supplied client. A custom naming policy could make earlier sweep claims unreadable while the default-options test passes. Settle the supported host serializer policy and prove restore through the configured Dapr client.
+
+## Deferred from: code review of spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md (2026-10-12, production chunk)
+
+These four items were reconfirmed on the current production code. They do not open a second action; the cycle-12 entries remain the record.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: A probe-capped scan with no tail still completes the cycle.
+  evidence: 2026-10-12 production review, medium. `ProcessReconciler.cs:279`. Deferral reason: refusing Complete would stop the next cycle from retrying the hole. The four-probe cap is already documented, and Healthy already requires Unresolved == 0.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Orphaned transition handoff after a failed source CAS.
+  evidence: 2026-10-12 production re-review, high. `ProcessCheckpointStore.cs:86` still writes the sweep token before the source CAS. Already deferred in cycle 12.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: A catalog failure drops its continuation on the next cycle.
+  evidence: 2026-10-12 production re-review, high. `ProcessReconciler.cs:240` still sets `CatalogComplete`, and cycle reset still clears `CatalogAfterKey`. Already deferred in cycle 12.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: One pending observation is drained per pass.
+  evidence: 2026-10-12 production re-review, medium. `ProcessReconciler.cs:93` still finishes at most one observation per pass. Already deferred in cycle 12.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
+  summary: Serialized event bytes and the default four-envelope request disagree with the guide's eight-envelope wording.
+  evidence: 2026-10-12 production re-review, medium. `CheckpointedProcessRunner.cs:75` and `:277`. Already deferred in cycle 12.

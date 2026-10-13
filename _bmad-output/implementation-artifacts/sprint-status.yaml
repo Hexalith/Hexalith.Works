@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-12 (Story 4.12 production patches and follow-up review complete; ready for review)
+# last_updated: 2026-10-12 (Story 4.12 review patches applied; story done; runtime hardening remains deferred before 4.15)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-12 # Story 4.12: 222 Process checks, 13 Contracts checks, and package consumers pass; runtime hardening remains deferred before 4.15
+last_updated: 2026-10-12 # Story 4.12 review patches applied; runtime hardening remains deferred before 4.15
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
@@ -81,7 +81,7 @@ development_status:
   4-9-migrate-works-hosting-to-the-platform-boundary: backlog
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: done
-  4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: review
+  4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: done
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: backlog
   4-15-adopt-sdk-reminder-process-and-command-seams-in-works: backlog
