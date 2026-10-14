@@ -289,6 +289,42 @@ public sealed class WorksSdkProtectedHttpTests
     }
 
     [Fact]
+    public async Task ProtectedExecutorQueryWithoutForwardedBearerDeniesBeforeIdentityOrWorksStateAccess()
+    {
+        int identityRequests = 0;
+        await using WebApplication parties = BuildPartiesGateway((request, _) =>
+        {
+            identityRequests++;
+            AssertIdentityRequest(request);
+            return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(CurrentIdentity())));
+        });
+        await parties.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        await using WebApplication app = BuildProtectedHost(store, Address(parties));
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ClearReceivedCalls();
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+
+        // Canonical EventStore invocation strips the human bearer. The actual Works typed client
+        // registration cannot acquire authority from the workload assertion alone.
+        foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
+        {
+            using HttpResponseMessage response = await client.SendAsync(Request("/query",
+                ExecutorQuery() with { QueryType = queryType },
+                channel: true, assertion: Assertion("domain-service:query")),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            QueryResult result = (await response.Content.ReadFromJsonAsync<QueryResult>(
+                cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldNotBeNull();
+            result.Success.ShouldBeFalse();
+            result.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        }
+
+        identityRequests.ShouldBe(0);
+        store.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task FrozenSdkRejectsHumanBearerOnAuthenticatedQueryIngressBeforeWorksStateAccess()
     {
         IReadModelStore store = Substitute.For<IReadModelStore>();

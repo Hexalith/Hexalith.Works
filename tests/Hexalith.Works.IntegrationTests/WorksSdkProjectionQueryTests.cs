@@ -474,6 +474,29 @@ public sealed class WorksSdkProjectionQueryTests
             scope, WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken).ConfigureAwait(true);
         queue.Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>().Items[Aggregate].Status
             .ShouldBe(WorkItemStatus.Queued);
+
+        // Characterize the frozen producer's admission gap: it rejects the conflicting identity
+        // without recording quarantine. This is package-limit evidence, not matrix acceptance.
+        var afterRestart = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionEpochStatus status = await afterRestart.GetStatusAsync(scope,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        status.PendingDeliveryCount.ShouldBe(0);
+        status.IsBuilding.ShouldBeFalse();
+        (await afterRestart.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeParkingKey(Aggregate),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
+            .As<WorkItemProjectionParking>().Parked.ShouldBeFalse();
+        lease = await afterRestart.RefreshLeaseAsync(scope, handler.OrdinaryWriterId,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        (await afterRestart.JournalAsync(scope, lease, conflict, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.IdentityConflict);
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        QueryResult query = await new WhatsNextQueryHandler(store,
+            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }), policy, afterRestart)
+            .ExecuteAsync(CoordinatorQuery("scheduler"), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        query.Success.ShouldBeTrue();
+        query.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(false);
+        query.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
     }
 
     [Fact]
@@ -876,6 +899,100 @@ public sealed class WorksSdkProjectionQueryTests
         result.Success.ShouldBeTrue();
         result.GetPayload().EnumerateArray().Select(item =>
             item.GetProperty("workItemId").GetProperty("value").GetString()).ShouldBe(["healthy"]);
+        result.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
+        result.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Degraded);
+        result.Metadata.WarningCodes.ShouldNotBeNull().ShouldContain("works-runtime-parked");
+    }
+
+    [Fact]
+    public async Task ConflictingSourceSequenceAtNewEnvelopePositionIsDurablyParkedAcrossRestart()
+    {
+        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
+        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null
+            : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        var memory = new InMemoryReadModelStore();
+        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
+        IReadModelStore store = durable is null ? memory : durable;
+        IReadModelBatchStore batches = durable is null ? memory : durable;
+        var coordinator = new SharedProjectionEpochCoordinator(store, batches);
+        string tenantId = client is null ? Tenant : "works-sdk-source-conflict-" + Guid.NewGuid().ToString("N");
+        var tenant = new TenantId(tenantId);
+        var workItem = new WorkItemId(Aggregate);
+        var options = Options.Create(new WorksProjectionOptions
+        {
+            UseSdkDelivery = true,
+            MaxUndecodableEventDispatchesBeforeParking = 1,
+        });
+        var handler = new WorkItemSharedProjectionRebuildHandler(options);
+        SharedProjectionScope scope = handler.CreateScope(tenantId);
+        SharedProjectionLease lease = await coordinator.RegisterWriterAsync(scope, handler.OrdinaryWriterId,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        foreach ((IEventPayload payload, long sequence) in new[]
+        {
+            ((IEventPayload)new WorkItemCreated(Aggregate, 1, tenant, workItem, new Obligation("Source conflict")), 1L),
+            (new WorkItemQueued(Aggregate, 2, tenant, workItem), 2L),
+        })
+        {
+            (await coordinator.JournalAsync(scope, lease, Delivery(payload, sequence, tenantId: tenantId),
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.Journaled);
+            (await coordinator.CatchUpAsync(scope,
+                (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, coordinator, token),
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
+            lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId,
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+
+        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(Aggregate),
+            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+            WorksReadModelKeys.RuntimeHistoryKey(Aggregate), WorksReadModelKeys.RuntimeParkingKey(Aggregate)];
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> before = await coordinator
+            .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        before.IsAvailable.ShouldBeTrue();
+
+        // A new SDK envelope carries conflicting evidence for the already folded source sequence.
+        // Unlike an SDK journal identity collision, this reaches the Works fold and its parking policy.
+        ProjectionEventDto conflicting = Dto(new WorkItemCreated(Aggregate, 2, tenant, workItem,
+            new Obligation("Conflicting source evidence")), 2) with { GlobalPosition = 3 };
+        var delivery = new SharedProjectionDelivery(Aggregate, 3,
+            JsonSerializer.SerializeToUtf8Bytes(new ProjectionRequest(tenantId, "work", Aggregate, [conflicting]), s_web),
+            JsonSerializer.SerializeToUtf8Bytes(3), new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
+        (await coordinator.JournalAsync(scope, lease, delivery, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        (await coordinator.CatchUpAsync(scope,
+            (current, generation, token) => handler.FoldCatchUpAsync(current, generation, coordinator, token),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
+
+        using DaprClient? restartedClient = client is null ? null : new DaprClientBuilder().UseGrpcEndpoint(endpoint!).Build();
+        var restartedStore = restartedClient is null ? null : new DaprReadModelStore(restartedClient,
+            Options.Create(new ReadModelBatchOptions()));
+        IReadModelStore currentStore = restartedStore is null ? store : restartedStore;
+        IReadModelBatchStore currentBatches = restartedStore is null ? batches : restartedStore;
+        var restarted = new SharedProjectionEpochCoordinator(currentStore, currentBatches);
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await restarted
+            .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        after.IsAvailable.ShouldBeTrue();
+        after.Generation.ShouldBe(before.Generation);
+        foreach (string key in keys.Where(key => key != WorksReadModelKeys.RuntimeParkingKey(Aggregate)))
+        {
+            after.Value![key]!.Value.GetRawText().ShouldBe(before.Value![key]!.Value.GetRawText());
+        }
+
+        WorkItemProjectionParking parking = after.Value![WorksReadModelKeys.RuntimeParkingKey(Aggregate)]!
+            .As<WorkItemProjectionParking>();
+        parking.Parked.ShouldBeTrue();
+        parking.FailedSequence.ShouldBe(2);
+        parking.FailureCount.ShouldBe(1);
+        (await restarted.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true))!.Position.ShouldBe(3);
+        (await restarted.GetStatusAsync(scope, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).PendingDeliveryCount.ShouldBe(0);
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        QueryResult result = await new WhatsNextQueryHandler(currentStore, options, policy, restarted)
+            .ExecuteAsync(CoordinatorQuery("scheduler") with { TenantId = tenantId },
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+        result.Success.ShouldBeTrue();
+        result.GetPayload().GetArrayLength().ShouldBe(0);
         result.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
         result.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Degraded);
         result.Metadata.WarningCodes.ShouldNotBeNull().ShouldContain("works-runtime-parked");
