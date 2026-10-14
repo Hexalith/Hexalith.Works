@@ -1,0 +1,316 @@
+{
+  "verified_on": "2026-10-14",
+  "story_status": "in-progress",
+  "repository_head": "65d4e1ff665e796e849ea102022422a45377ff0d",
+  "baseline_commit": "8708bb935c4306c42d7453b761e203682aad5919",
+  "platform_head": "416878a74975b1023b3a00ab5d35aad4ce6365d9",
+  "note": "The repository head advanced concurrently during this run; service transport and documentation changes remain in the working tree. No staging, commit, push or submodule update was performed by the implementation agent.",
+  "outputs": [
+    {
+      "file": "2026-10-14-service-authority-focused.log.gz",
+      "uncompressed_sha256": "4498472eea3ce552573e16ccb8bc016d3c1a4e493c485ebbacb380fecf0a76c3",
+      "bytes": 781
+    },
+    {
+      "file": "2026-10-14-service-authority-focused.xml.gz",
+      "uncompressed_sha256": "57713bfca31efd18241aa464e70ecc490dbc9b1a99b9a378b7b81a6653f208c7",
+      "bytes": 32310
+    },
+    {
+      "file": "2026-10-14-context-tests.log.gz",
+      "uncompressed_sha256": "5f1f0cec908fba026c2203e9a5a4db6b895cb479d2a07083dd57d72b4e9ac1ff",
+      "bytes": 400
+    },
+    {
+      "file": "2026-10-14-context-tests.xml.gz",
+      "uncompressed_sha256": "7dfcd0439869db66de7555a03845e35ee1b1435f50ea0a267799097b30dcc161",
+      "bytes": 89802
+    },
+    {
+      "file": "2026-10-14-unit-tests.log.gz",
+      "uncompressed_sha256": "29a169b527b684474fe834ba911612bce89219f8e37b6e3a5ce858d16b8a3e64",
+      "bytes": 365
+    },
+    {
+      "file": "2026-10-14-architecture-tests.log.gz",
+      "uncompressed_sha256": "a26bccc2e7bc56e6542cd5f1f14350522e00664efa8b25bf5fcb59ade0149d39",
+      "bytes": 405
+    },
+    {
+      "file": "2026-10-14-property-tests.log.gz",
+      "uncompressed_sha256": "fe2e2023121fdbe0acc857753148cbfaa7aef84e58e6abd9490ff7a76be2c3e1",
+      "bytes": 449
+    },
+    {
+      "file": "2026-10-14-live-restore.log.gz",
+      "uncompressed_sha256": "a152314ef17234468b2c7de0d000909848962bff0ec9bab56c738dd7ccfc6e9d",
+      "bytes": 2615
+    },
+    {
+      "file": "2026-10-14-parent-live-restore.log.gz",
+      "uncompressed_sha256": "b6d7c2dbb5b734133d3502074c6c5b0921831ecef385e763f84a65432e8f60b5",
+      "bytes": 2615
+    }
+  ],
+  "test_results": {
+    "sdk_http_package": {
+      "total": 47,
+      "passed": 47,
+      "failed": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "executed_tests": [
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConflictingSourceSequenceAtNewEnvelopePositionIsDurablyParkedAcrossRestart",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Published_sdk_journals_a_gap_but_Works_fold_parks_it_without_advancing_visible_queue",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Rebuild_manifest_retains_cleared_date_await_tombstone",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Aborted_concurrent_rebuild_keeps_old_generation_and_allows_live_delivery_afterward",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.OrdinaryDeliveryOnAnotherAggregatePreservesTerminalParkingAndDegradedQueries",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Gapped_capture_is_rejected_before_a_generation_can_be_staged",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Permitted_coordinator_reads_current_queue_while_unlisted_workload_is_denied_before_store_access",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Sdk_host_maps_one_named_projection_route_despite_legacy_project_conflict_route",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Malformed_envelope_gets_durable_terminal_parking_in_sdk_generation",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Ordinary_delivery_and_redelivery_persist_one_complete_runtime_family_and_checkpoint",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests.ReleaseConsumerLoadsTheFrozenPublishedContracts",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests.Works_epoch_handler_implements_the_published_named_delivery_contract",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ConfiguredServiceBearerAuthorizesProtectedExecutorQueriesWithSyntheticCurrentAuthority",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.FrozenSdkRejectsHumanBearerOnAuthenticatedQueryIngressBeforeWorksStateAccess",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorQueryWithoutForwardedBearerDeniesBeforeIdentityOrWorksStateAccess",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/query\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/query/\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/QUERY\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExecutorDetailRefusesContaminatedRollupWithTruthfulUnavailableMetadata(contamination: \\\"status\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExecutorDetailRefusesContaminatedRollupWithTruthfulUnavailableMetadata(contamination: \\\"watermark\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExecutorDetailRefusesContaminatedRollupWithTruthfulUnavailableMetadata(contamination: \\\"tenant\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExecutorDetailRefusesContaminatedRollupWithTruthfulUnavailableMetadata(contamination: \\\"aggregate\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.Query_and_named_projection_require_channel_and_exact_operation_assertions",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedPartiesTransportAuthorizesPersistedExecutorWorkWithSyntheticCurrentAuthority",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.RejectedServiceBearerDeniesProtectedExecutorBeforeWorksStateAccess(failure: \\\"rejected\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.RejectedServiceBearerDeniesProtectedExecutorBeforeWorksStateAccess(failure: \\\"expired\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.RejectedNamedProjectionIngressPreservesPersistedFamilyAndCheckpoint",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"missing-bearer\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-bearer\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"expired-binding\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"future-binding\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"expired-custody\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"unsafe-custody\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-actor\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-party\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-tenant\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"inactive\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"restricted\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"erased\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"stale\\\")",
+          "result": "Pass"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"degraded\\\")",
+          "result": "Pass"
+        }
+      ]
+    },
+    "context": {
+      "total": 130,
+      "passed": 130,
+      "failed": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "unit": {
+      "total": 568,
+      "passed": 568,
+      "failed": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "architecture": {
+      "total": 268,
+      "passed": 268,
+      "failed": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "property": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "frozen_package_dependencies": {
+    "Hexalith.EventStore.DomainService/3.120.0": "package",
+    "Hexalith.EventStore.Client/3.120.0": "package",
+    "Hexalith.Parties.Client/1.2.1": "package"
+  },
+  "live_sdk_projection": {
+    "total": 16,
+    "failed": 0,
+    "skipped": 0,
+    "not_run": 0
+  },
+  "isolated_restore_replay": {
+    "total": 1,
+    "failed": 0,
+    "skipped": 0,
+    "not_run": 0
+  },
+  "parent_acceptance_audit": {
+    "frozen_requirements_unchanged": true,
+    "archived_outputs_verified": 8,
+    "executed_integration_cases_verified": 177,
+    "record_file": "tests/Hexalith.Works.IntegrationTests/RedisSnapshotValue.cs",
+    "final_live_command": "tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh",
+    "final_live_exit_code": 0,
+    "release_integration_build_warnings": 0,
+    "release_integration_build_errors": 0,
+    "live_sdk_projection_passed": 16,
+    "isolated_restore_replay_passed": 1,
+    "incomplete_tasks": [
+      "real Platform identity-reader admission",
+      "durable SDK journal-identity conflict disposition and degraded readiness"
+    ],
+    "workflow_advanced_to_review": false
+  }
+}

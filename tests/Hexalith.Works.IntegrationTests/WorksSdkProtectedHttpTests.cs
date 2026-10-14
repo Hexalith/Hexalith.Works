@@ -23,6 +23,7 @@ using Hexalith.Works.Queries;
 using Hexalith.Works.Runtime;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -289,6 +290,105 @@ public sealed class WorksSdkProtectedHttpTests
     }
 
     [Fact]
+    public async Task ConfiguredServiceBearerAuthorizesProtectedExecutorQueriesWithSyntheticCurrentAuthority()
+    {
+        int identityRequests = 0;
+        await using WebApplication parties = BuildAuthenticatedPartiesGateway((request, context) =>
+        {
+            identityRequests++;
+            context.User.Identity.ShouldNotBeNull().IsAuthenticated.ShouldBeTrue();
+            context.User.FindFirst("sub").ShouldNotBeNull().Value.ShouldBe("works-identity-reader");
+            AssertIdentityRequest(request);
+            return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(CurrentIdentity())));
+        });
+        await parties.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        await using WebApplication app = BuildProtectedHost(store, Address(parties), coordinator,
+            [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}"]);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+
+        // The protected SDK receiver sees only the gateway assertion. Its published Parties client
+        // authenticates independently; neither payload flags nor the actor's bearer supply service authority.
+        using HttpResponseMessage listResponse = await client.SendAsync(Request("/query", ExecutorQuery(),
+            channel: true, assertion: Assertion("domain-service:query")),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        listResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+        QueryResult list = (await listResponse.Content.ReadFromJsonAsync<QueryResult>(
+            cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldNotBeNull();
+        list.Success.ShouldBeTrue();
+        list.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
+        list.GetPayload().EnumerateArray().Select(item =>
+            item.GetProperty("workItemId").GetProperty("value").GetString()).ShouldBe(["mine", "queue"]);
+
+        foreach ((string aggregate, bool expected) in new[] { ("mine", true), ("queue", true), ("foreign", false) })
+        {
+            using HttpResponseMessage detailResponse = await client.SendAsync(Request("/query", ExecutorQuery() with
+            {
+                AggregateId = aggregate,
+                QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType,
+            }, channel: true, assertion: Assertion("domain-service:query")),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            detailResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            QueryResult detail = (await detailResponse.Content.ReadFromJsonAsync<QueryResult>(
+                cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldNotBeNull();
+            detail.Success.ShouldBeTrue();
+            detail.GetPayload().GetProperty("found").GetBoolean().ShouldBe(expected);
+            detail.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
+        }
+
+        identityRequests.ShouldBe(4);
+        var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        SharedProjectionScope scope = projection.CreateScope(Tenant);
+        foreach (string aggregate in new[] { "mine", "queue", "foreign" })
+        {
+            (await coordinator.GetCheckpointAsync(scope, aggregate, TestContext.Current.CancellationToken)
+                .ConfigureAwait(true))!.Position.ShouldBe(2);
+        }
+
+        (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey,
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
+            .As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(["foreign", "mine", "queue"]);
+    }
+
+    [Theory]
+    [InlineData("rejected")]
+    [InlineData("expired")]
+    public async Task RejectedServiceBearerDeniesProtectedExecutorBeforeWorksStateAccess(string failure)
+    {
+        int identityRequests = 0;
+        await using WebApplication parties = BuildAuthenticatedPartiesGateway((_, _) =>
+        {
+            identityRequests++;
+            return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(CurrentIdentity())));
+        });
+        await parties.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        string bearer = failure == "expired" ? ServiceBearer(expired: true) : "rejected-service-credential";
+        await using WebApplication app = BuildProtectedHost(store, Address(parties), settings:
+            [$"--Works:Query:PartiesGatewayBearerToken={bearer}"]);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ClearReceivedCalls();
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
+        {
+            using HttpResponseMessage response = await client.SendAsync(Request("/query", ExecutorQuery() with { QueryType = queryType },
+                channel: true, assertion: Assertion("domain-service:query")),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            QueryResult result = (await response.Content.ReadFromJsonAsync<QueryResult>(
+                cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldNotBeNull();
+            result.Success.ShouldBeFalse();
+            result.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        }
+
+        identityRequests.ShouldBe(0);
+        store.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    [Fact]
     public async Task ProtectedExecutorQueryWithoutForwardedBearerDeniesBeforeIdentityOrWorksStateAccess()
     {
         int identityRequests = 0;
@@ -494,6 +594,50 @@ public sealed class WorksSdkProtectedHttpTests
         WebApplication app = builder.Build();
         app.MapPost("/api/v1/queries", query);
         return app;
+    }
+
+    private static WebApplication BuildAuthenticatedPartiesGateway(Func<SubmitQueryRequest, HttpContext, IResult> query)
+    {
+        WebApplicationBuilder builder = WebApplication.CreateBuilder(["--Logging:LogLevel:Default=Error"]);
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+        {
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = Issuer,
+                ValidAudience = "parties-identity-reader",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+                ClockSkew = TimeSpan.Zero,
+            };
+        });
+        builder.Services.AddAuthorization();
+        WebApplication app = builder.Build();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.MapPost("/api/v1/queries", query).RequireAuthorization();
+        return app;
+    }
+
+    private static string ServiceBearer(bool expired = false)
+    {
+        DateTime now = DateTime.UtcNow;
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = Issuer,
+            Audience = "parties-identity-reader",
+            Claims = new Dictionary<string, object> { ["sub"] = "works-identity-reader" },
+            IssuedAt = now.AddMinutes(-2),
+            NotBefore = now.AddMinutes(-2),
+            Expires = expired ? now.AddMinutes(-1) : now.AddMinutes(5),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
+                SecurityAlgorithms.HmacSha256),
+        });
     }
 
     private static HttpClient PartiesClient(string address, string? bearer)

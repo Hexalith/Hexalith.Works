@@ -2,7 +2,7 @@
 title: 'Adopt SDK Projection and Query Seams in Works'
 type: 'feature'
 created: '2026-09-23'
-updated: '2026-10-13'
+updated: '2026-10-14'
 status: 'in-progress'
 baseline_commit: '8708bb935c4306c42d7453b761e203682aad5919'
 route: 'dispatch'
@@ -70,8 +70,8 @@ Implementation paths below are relative to `src/Hexalith.Works/`, except reposit
 ## Implementation Notes
 
 - The SDK mode and published-package consumer compile; ordinary delivery, rebuild, restart, malformed/gapped evidence, protected HTTP ingress, and isolated Redis restore/replay have focused proof. The legacy writer remains the default.
-- Executor policy fails closed with the current forwarding transport: EventStore 3.120.0 removes the caller Authorization header before invoking Works. Published Parties.Client can carry an independently configured service credential through its injected HttpClient, and EventStore exposes identity-admission seams, but the existing gateway and trusted-reader policies do not compose a supported service-to-service identity-read path. The required authoritative current binding remains unproved end to end; a package-version change is not inherently required.
-- The protected SDK receiver additionally rejects any Authorization header alongside a workload assertion with HTTP 401. The executable HTTP test proves this denial occurs before Works state access. Published-client success, lifetime, and custody checks are proven separately through synthetic HTTP authority at the adapter-policy boundary; they do not close the end-to-end transport gap.
+- SDK Executor ingress now supports an independently configured service credential through `Works:Query:PartiesGatewayBearerToken` and the published Parties client. Protected HTTP success, scoped persisted results, and absent/rejected/expired authority denial are proven against authenticated synthetic Party authority. The real Platform gateway and trusted-reader policies still require a supported identity-reader admission composition; authoritative current binding remains unproved through that composition. The authority prerequisite does not inherently require a package-version change.
+- The protected SDK receiver rejects an inbound human Authorization header alongside a workload assertion with HTTP 401 before Works state access. Independent outbound service authority avoids that credential conflict without weakening ingress. Published-client lifetime, custody, and scope checks plus protected synthetic HTTP success do not establish real Platform identity admission.
 - Ordinary delivery now preserves pinned persisted parking dispositions during tenant refolds. Healthy delivery for another aggregate cannot clear terminal parking or degraded query metadata; complete authoritative rebuilds may reset parking.
 - The isolated restore fixture verifies the Works state/configuration sequence. A deployed fleet and source archive remain an admission gate for Story 4.16.
 
@@ -85,6 +85,7 @@ SDK delivery supplies one envelope, not full history. Retain bounded domain fold
 
 ## Verification
 
+- Current continuation and parent acceptance evidence are recorded in [evidence/story-4-14/implementation-2026-10-14.md](evidence/story-4-14/implementation-2026-10-14.md) and [verification-2026-10-14.json](evidence/story-4-14/verification-2026-10-14.json): Release solution build clean; focused integration 177/177; unit 568/568; architecture 268/268; property 3/3; final Dapr/Redis projection 16/16 and restore/replay 1/1. Frozen intent remains unchanged. The two unchecked tasks remain open; the build workflow has not advanced to review.
 - Follow-up implementation evidence and exact commands are recorded in [evidence/story-4-14/implementation-follow-up.md](evidence/story-4-14/implementation-follow-up.md). The authority task remains incomplete; the [matrix audit](evidence/story-4-14/matrix-audit.md) also records the missing durable conflict-disposition proof.
 - `dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0`: passed, zero warnings/errors (package mode).
 - Final focused SDK/context verification passed 172/172. `tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh` passed; Release integration build zero warnings/errors, live Dapr/Redis SDK projection class 15/15, isolated restore/replay 1/1. Both new parking and concurrent named-delivery regressions ran against Redis.

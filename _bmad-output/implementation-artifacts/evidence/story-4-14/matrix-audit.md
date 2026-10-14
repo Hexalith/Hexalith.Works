@@ -22,3 +22,18 @@ The source Debug dependency failures, incomplete full integration run, and unsuc
 ## Evidence checks
 
 Archived output hashes, resolved package identities, test counts, unchanged frozen intent, and the two unchecked task entries were verified. Plain `git diff --check` exits 2 because it classifies the spec's required CRLF terminators on changed lines as trailing whitespace. `git -c core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol diff --check` exits 0. No repository Git configuration or line-ending policy was changed to obtain that result.
+
+## Continuation audit — 2026-10-14
+
+The parent verified the baseline diff, unchanged frozen requirements, archived hashes, and XML execution results for all 177 focused integration cases. Current commands and prerequisite details are in [implementation-2026-10-14.md](implementation-2026-10-14.md); [verification-2026-10-14.json](verification-2026-10-14.json) also includes the parent rerun after the snapshot-record file move.
+
+| Frozen matrix scenario | Current evidence and disposition |
+| --- | --- |
+| Live/redelivery/restart | Ordinary delivery, two-aggregate named overlap, restart, and redelivery tests ran and passed. |
+| Concurrent rebuild | Capture serves prior-generation stale reads; promotion/catch-up and abort tests ran and passed. Published CatchingUp/Aborting unavailability remains the documented phase limit. |
+| Executor/coordinator query | Protected Works Executor HTTP now succeeds with independently configured service authority and synthetic authenticated current Party evidence; permitted/denied coordinator policy tests passed. Real Platform target-actor/Party reader admission remains missing. |
+| Wrong actor/tenant/origin | Denial tests passed without Works reads or unauthorized persisted changes. Missing, expired, and rejected service authority were also tested through protected ingress. |
+| Corrupt/gapped/conflicting evidence | Corrupt/gap parking and conflicting source-sequence parking passed, including fresh-client Redis recovery. Same-position journal identity conflicts still return IdentityConflict without durable disposition or degraded readiness; this row remains incomplete. |
+| Rollback | The final isolated live rerun passed 16/16 projection tests and complete store restore/replay 1/1. Deployed fleet/source archive remains the Story 4.16 gate. |
+
+Story and sprint status remain in-progress. Neither outstanding task is marked complete, and the workflow has not advanced to review. The scoped decision needed is technical-module identity-reader admission plus a producer-owned conflict capability; consuming a changed producer requires renegotiating the frozen EventStore 3.120.0 pin.

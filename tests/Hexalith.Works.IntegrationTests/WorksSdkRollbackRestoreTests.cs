@@ -172,5 +172,4 @@ public sealed class WorksSdkRollbackRestoreTests
         => new(payload.GetType().Name, JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()),
             "json", sequence, DateTimeOffset.UnixEpoch, "corr-rollback", GlobalPosition: sequence);
 
-    private sealed record RedisSnapshotValue(byte[] Dump, TimeSpan? Expiry, string Canonical);
 }

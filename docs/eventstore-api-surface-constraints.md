@@ -4,6 +4,8 @@
 
 Works' Release host pins EventStore `3.120.0` and Parties.Client `1.2.1`. Its `IAsyncDomainSharedProjectionEpochHandler` uses `works-runtime-v3` as both projection type and scope family; SDK `SharedProjectionEpochCoordinator` owns writer leases, journal, selected generation, checkpoints, control index, and pinned reads. Works returns logical `ReadModelBatchOperation` values and keeps its existing writer as the default until a later cutover. The common `WorksRuntimeDocument` permits heterogeneous values in one SDK `ReadManyAsync<T>` call. The published Parties client resolves current actor-to-Party authority for SDK queries. Configuration, rollback, and proof limits are recorded in [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md).
 
+The published Parties HttpClient accepts independently configured service authority, now preserved by the Works transport. The frozen SDK receiver still rejects an inbound human bearer alongside its workload assertion. EventStore `3.120.0` rejects same-position delivery digest conflicts before calling the domain fold, without a durable conflict disposition or query-visible degraded state. Its public coordinator has no consumer hook to record that disposition. Both the real Platform identity-reader policy composition and producer conflict-readiness capability remain acceptance gates.
+
 Story 1.1 verified the live `Hexalith.EventStore` source surface before Works depends on domain behavior in later stories.
 
 ## Schema compatibility contract (VAL-H11)

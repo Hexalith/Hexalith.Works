@@ -14,4 +14,7 @@ public sealed class WorksQueryOptions
 
     /// <summary>The canonical authenticated gateway URI used by the Parties identity client.</summary>
     public string? PartiesGatewayBaseAddress { get; init; }
+
+    /// <summary>The independently provisioned service bearer for authoritative Parties gateway queries.</summary>
+    public string? PartiesGatewayBearerToken { get; init; }
 }

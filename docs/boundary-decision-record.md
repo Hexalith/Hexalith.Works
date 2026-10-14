@@ -4,6 +4,8 @@
 
 EventStore `3.120.0` owns generation fencing, persistence, checkpointing, and selected reads for the opt-in `works-runtime-v3` family. Works owns domain folds, runtime document content, and query authorization. Parties.Client `1.2.1` supplies the current Party binding verdict for Executor reads; Works does not equate a user or actor identifier with a Party identifier. One startup mode selects one projection writer and matching readers. The pre-cutover keys and host remain available for complete store-and-fleet restore; no production activation is part of this decision. See [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md) for the configuration and restore sequence.
 
+The host can configure an independent Parties gateway service bearer through the published client's injected HttpClient. Protected SDK ingress, current synthetic Party binding, scoped results, and missing/rejected/expired credential denial are executable consumer proofs. Real Platform trusted-reader admission remains open. Same-position SDK identity conflicts also require a producer-owned durable disposition and readiness signal; Works cannot create a second projection writer to compensate for the frozen coordinator's missing hook.
+
 **Status:** Accepted — Epic 1 (Story 1.4).
 **Tracks:** FR-21 (reference siblings, never copy them), FR-22 (expose module ports as
 abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realization), AR-19

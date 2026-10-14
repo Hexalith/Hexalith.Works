@@ -1,3 +1,5 @@
+using System.Net.Http.Headers;
+
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Registration;
 using Hexalith.EventStore.Contracts.Projections;
@@ -122,6 +124,11 @@ internal static class WorksHost
                     }
 
                     client.BaseAddress = uri;
+                    if (!string.IsNullOrWhiteSpace(queryOptions.PartiesGatewayBearerToken))
+                    {
+                        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                            "Bearer", queryOptions.PartiesGatewayBearerToken);
+                    }
                 })
                 .AddHttpMessageHandler<WorksPartiesGatewayAuthorizationHandler>();
             _ = builder.Services.AddScoped<WorksQueryPolicy>();
