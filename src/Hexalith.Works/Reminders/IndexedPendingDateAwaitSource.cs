@@ -155,7 +155,7 @@ internal sealed class IndexedPendingDateAwaitSource(
             SharedProjectionReadResult<WorksRuntimeDocument> candidate = await _coordinator
                 .ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, cancellationToken)
                 .ConfigureAwait(false);
-            if (!candidate.IsAvailable || candidate.Value is null)
+            if (!candidate.IsAvailable || candidate.IsDegraded || candidate.Value is null)
             {
                 throw new InvalidOperationException("The Works SDK pending-date generation is unavailable.");
             }
@@ -165,13 +165,16 @@ internal sealed class IndexedPendingDateAwaitSource(
                 .. preliminary.Entries.Keys.Order(StringComparer.Ordinal).Select(WorksReadModelKeys.RuntimeParkingKey)];
             SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> related = await _coordinator
                 .ReadManyAsync<WorksRuntimeDocument>(scope, keys, cancellationToken).ConfigureAwait(false);
-            if (!related.IsAvailable || related.Value is null
+            if (!related.IsAvailable || related.IsDegraded || related.Value is null
                 || !related.Value.TryGetValue(WorksReadModelKeys.RuntimePendingDateKey, out WorksRuntimeDocument? pendingDocument)
                 || pendingDocument is null)
             {
                 throw new InvalidOperationException("The Works SDK pending-date related read is unavailable.");
             }
 
+            SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken).ConfigureAwait(false);
+            if (status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != related.Generation)
+                throw new InvalidOperationException("The Works SDK pending-date readiness changed or is degraded.");
             index = pendingDocument.As<PendingDateAwaitTenantIndex>();
             pinned = related.Value;
             if (index.Entries.Keys.Except(preliminary.Entries.Keys, StringComparer.Ordinal).Any())

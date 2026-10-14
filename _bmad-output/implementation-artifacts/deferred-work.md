@@ -1407,3 +1407,12 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: Serialized event bytes and the default four-envelope request disagree with the guide's eight-envelope wording.
   evidence: 2026-10-12 production re-review, medium. `CheckpointedProcessRunner.cs:75` and `:277`. Already deferred in cycle 12.
+
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
+  summary: Publish the approved corrected upstream EventStore/Platform artifacts and update Works to publicly restorable pins before merge or release.
+  evidence: B9 and carried R2-B7; clean CI does not generate or retrieve ignored local candidate identities. Local source/candidate validation is authorized; public publication is not. The accepted delivery gate remains unresolved.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
+  summary: Benchmark ordinary projection delivery near admitted history/document limits and establish whether full-family read amplification requires optimization (medium, unverified).
+  evidence: R2-B9 traces sequential loading of member histories, parking, and proposed documents, but no latency-bearing boundary run or measured delivery failure establishes operational harm. A representative persisted-capacity fixture with measured store latency, delivery duration and throughput would settle the claim.

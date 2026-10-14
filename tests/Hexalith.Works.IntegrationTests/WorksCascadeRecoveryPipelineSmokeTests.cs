@@ -552,6 +552,7 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
             [
                 "--EnableKeycloak=false",
+                $"--Works:Authentication:DevSigningKey={DevSigningKey}",
                 "--environment=Development",
                 "--DcpPublisher:RandomizePorts=false",
                 $"--Works:Recovery:CascadeTargetIntervalMilliseconds={cascadeTargetIntervalMilliseconds}",

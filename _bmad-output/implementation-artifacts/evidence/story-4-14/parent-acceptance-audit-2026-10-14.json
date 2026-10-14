@@ -1,0 +1,250 @@
+{
+  "baseline_commit": "8708bb935c4306c42d7453b761e203682aad5919",
+  "eventstore_baseline": "21b34c01ec919769cfba9cfe0d47e50886b57ded",
+  "platform_baseline": "2594b89cb2efed226e6f24e5e3a7cdf4d993b5a8",
+  "eventstore_candidate": "3.120.1-story414.20261014.8",
+  "platform_candidate": "1.0.0-story414.20261014.3",
+  "verification": {
+    "nonaspire": {
+      "raw_xml_file": "story414-final8-nonaspire.xml",
+      "raw_xml_sha256": "81239fa3b30c6fbe8c1427c20cdfbe7f3b6e0499a083d181a766c48d0c995645",
+      "executed": 620,
+      "passed": 620,
+      "failed": 0,
+      "skipped": 0,
+      "archived_xml": "2026-10-14-remediation-final8-nonaspire.xml.gz"
+    },
+    "architecture": {
+      "raw_xml_file": "story414-final8-architecture.xml",
+      "raw_xml_sha256": "78d6156b0de1e911db88d298cd621b4364d061fffbf24e0b88e56e0386c3b1e8",
+      "executed": 268,
+      "passed": 268,
+      "failed": 0,
+      "skipped": 0,
+      "archived_xml": "2026-10-14-remediation-final8-architecture.xml.gz"
+    },
+    "redis_projections": {
+      "raw_xml_file": "projections.xml",
+      "raw_xml_sha256": "7412ee1000944ae5d6e2b3db919985cd1af76d62617a6bef020ba0ccfc9c93f1",
+      "executed": 19,
+      "passed": 19,
+      "failed": 0,
+      "skipped": 0,
+      "archived_xml": "2026-10-14-remediation-final8-redis-projections.xml.gz"
+    },
+    "redis_rollback": {
+      "raw_xml_file": "rollback.xml",
+      "raw_xml_sha256": "05dbf25f5678fc2e48e6221fc7c45b382369660f8f277a8e7acca6373fca3433",
+      "executed": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "archived_xml": "2026-10-14-remediation-final8-redis-rollback.xml.gz"
+    },
+    "live_recovery": {
+      "raw_xml_file": "story414-final8-recovery-smoke.xml",
+      "raw_xml_sha256": "401822747f1d56eae3c6dd962c49a0b370cc6f2fd40a3a880a3c377158183497",
+      "executed": 21,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "archived_xml": "2026-10-14-remediation-final8-recovery-smoke.xml.gz"
+    },
+    "producer_source": {
+      "archived_xml": "2026-10-14-remediation-final8-client.xml.gz",
+      "raw_xml_sha256": "ec2b835b3aa8bee1fb411c4f4441da58acf2d04d0c2911809f6beb9fd9331a7d",
+      "executed": 166,
+      "passed": 166,
+      "failed": 0,
+      "skipped": 0
+    },
+    "live_command_steady": {
+      "archived_xml": "2026-10-14-remediation-final8-command-steady-smoke.xml.gz",
+      "raw_xml_sha256": "9c9de935345ebcc0b15d9f5e24f30992bd4440094e4762080a4163065eefd45c",
+      "executed": 2,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "matrix": {
+    "Live/redelivery/restart": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Ordinary_delivery_and_redelivery_persist_one_complete_runtime_family_and_checkpoint",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery"
+    ],
+    "Concurrent rebuild": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Aborted_concurrent_rebuild_keeps_old_generation_and_allows_live_delivery_afterward"
+    ],
+    "Executor/coordinator query": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: null)",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"disabled-reader\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"untrusted-reader\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"inactive-actor\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"expired\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"missing\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"binding-actor\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"expired-binding\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"unsafe-custody\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(failure: \\\"unavailable-custody\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Permitted_coordinator_reads_current_queue_while_unlisted_workload_is_denied_before_store_access"
+    ],
+    "Wrong actor/tenant/origin": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.RejectedNamedProjectionIngressPreservesPersistedFamilyAndCheckpoint",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"missing-bearer\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-bearer\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"expired-binding\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"future-binding\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"expired-custody\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"unsafe-custody\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-actor\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-party\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"wrong-tenant\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"inactive\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"restricted\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"erased\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"stale\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.PublishedIdentityTransportDeniesUnavailableAuthorityBeforeWorksStateAccess(failure: \\\"degraded\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/query\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/query/\\\")",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(route: \\\"/QUERY\\\")"
+    ],
+    "Corrupt/gapped/conflicting evidence": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Malformed_envelope_gets_durable_terminal_parking_in_sdk_generation",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Gapped_capture_is_rejected_before_a_generation_can_be_staged",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.NamedOwnerSequenceGapKeepsDurableReadinessDegradedUntilMissingDeliveryConverges",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.OrdinaryDeliveryOnAnotherAggregatePreservesTerminalParkingAndDegradedQueries",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConflictingSourceSequenceAtNewEnvelopePositionIsDurablyParkedAcrossRestart"
+    ],
+    "Rollback": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter(sdkMode: False)",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter(sdkMode: True)",
+      "Hexalith.Works.IntegrationTests.WorksSdkRollbackRestoreTests.Complete_isolated_keyspace_restore_removes_sdk_epoch_then_legacy_replay_recovers_queue"
+    ]
+  },
+  "candidate_packages": [
+    {
+      "id": "Hexalith.EventStore.Admin.Abstractions",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "1262d4118edfff4c042be2f42b6247809ff4e7668d5eab5ac495bc9a63112d98",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Aspire",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "a35c555c97f413fc117ab409cfb6ceaf835a92ec8ed85ce97b088d5f8607b338",
+      "sdk_dependencies": {},
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Client",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "f99a878df6041bc85644bf7fdbd0ccb3836f7ad1afb261f0d31e4c67158054fa",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Contracts",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "7fac8de6e9a07f350a6a55c6836b590462e11d735a2128a5f4fa246f96eb2065",
+      "sdk_dependencies": {},
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.DomainService",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "9e78a81a116dd1707d8ee9d5415b285eb79770f0dfbb4a920e716363e92e0178",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Client": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Gateway",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "b1dd2c2bcfd4c5e830018392564e1655e5bfdfb728b86e336d057ebf920a8b82",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Admin.Abstractions": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Server": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Server",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "04d98d5f894f14f689c7db4309a628bc70c19fd11d801956334911b1ea5ca4b6",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Client": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.DomainService": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.ServiceDefaults",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "9b7956886620c517004bce76f07097e66cff073fbe958816ed9210d7b2dfb5fe",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.EventStore.Testing",
+      "version": "3.120.1-story414.20261014.8",
+      "sha256": "a5ed08dd868e8be834ad0ee4caaf91707e88874d5c4320f700d60af95071a73e",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Client": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Server": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    },
+    {
+      "id": "Hexalith.Platform.Identity",
+      "version": "1.0.0-story414.20261014.3",
+      "sha256": "62b2b7ecece873bb21b48ed7964211f5d070105df0b04798b9e3d6bc2a0cbafc",
+      "sdk_dependencies": {
+        "Hexalith.EventStore.Gateway": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Admin.Abstractions": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Client": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.DomainService": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.Server": "3.120.1-story414.20261014.8",
+        "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.8"
+      },
+      "cache_matches": true
+    }
+  ],
+  "limits": [
+    "Local synthetic fixtures; no upstream publication or production activation.",
+    "Older unchanged-code unit/property/Platform evidence is recorded separately in the implementation report."
+  ],
+  "integration_partition": {
+    "unique_executed": 643,
+    "passed": 643,
+    "failed": 0,
+    "skipped": 0,
+    "disjoint": true,
+    "lanes": [
+      "nonaspire",
+      "live_recovery",
+      "live_command_steady"
+    ]
+  },
+  "review_status": "Historical .8/.3 verification only; review loop 1 requires correction and fresh affected verification.",
+  "final_acceptance": false
+}

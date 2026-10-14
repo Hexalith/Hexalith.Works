@@ -5,6 +5,9 @@
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
     <HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Parties\src\Hexalith.Parties.Client')">$(MSBuildThisFileDirectory)references\Hexalith.Parties</HexalithPartiesRoot>
+    <HexalithPlatformRoot Condition="'$(HexalithPlatformRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Platform\src\Hexalith.Platform.Identity')">$(MSBuildThisFileDirectory)references\Hexalith.Platform</HexalithPlatformRoot>
+    <HexalithPlatformRoot Condition="'$(HexalithPlatformRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Platform\src\Hexalith.Platform.Identity')">$(MSBuildThisFileDirectory)..\Hexalith.Platform</HexalithPlatformRoot>
+    <HexalithPlatformRoot Condition="'$(HexalithPlatformRoot)' == ''">$(MSBuildThisFileDirectory)references\Hexalith.Platform</HexalithPlatformRoot>
     <HexalithPolymorphicSerializationsRoot Condition="'$(HexalithPolymorphicSerializationsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations\src\libraries\Hexalith.PolymorphicSerializations')">$(MSBuildThisFileDirectory)references\Hexalith.PolymorphicSerializations</HexalithPolymorphicSerializationsRoot>
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)..\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)..\Hexalith.Tenants</HexalithTenantsRoot>
@@ -36,6 +39,9 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
+    <!-- Isolated Story 4.14 candidate feed; generated locally, never an upstream release source. -->
+    <WorksSdkCandidateFeed>$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksSdkCandidateFeed>
+    <RestoreAdditionalProjectSources Condition="Exists('$(WorksSdkCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksSdkCandidateFeed)</RestoreAdditionalProjectSources>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

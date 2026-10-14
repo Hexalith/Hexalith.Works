@@ -19,6 +19,7 @@ using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reminders;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -86,6 +87,32 @@ internal static class WorksAppHostSmokeHarness
         return null;
     }
 
+    private static async Task<string> StartupLogsAsync(DistributedApplication app)
+    {
+        using var budget = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var output = new StringBuilder();
+        try
+        {
+            ResourceLoggerService logs = app.Services.GetRequiredService<ResourceLoggerService>();
+            foreach (string resource in new[] { "works", "eventstore-operations", "eventstore-admin" })
+            {
+                var lines = new List<LogLine>();
+                string resourceId = app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? current)
+                    ? current.ResourceId : resource;
+                await foreach (IReadOnlyList<LogLine> batch in logs.GetAllAsync(resourceId)
+                    .WithCancellation(budget.Token).ConfigureAwait(false)) lines.AddRange(batch);
+                _ = output.AppendLine().Append(resource).AppendLine(" startup output:");
+                foreach (LogLine line in lines.TakeLast(40))
+                    _ = output.AppendLine(line.Content.Length > 4000 ? line.Content[..4000] : line.Content);
+            }
+        }
+        catch (Exception exception)
+        {
+            _ = output.AppendLine().Append("Startup output unavailable: ").Append(exception.GetType().Name);
+        }
+        return output.ToString();
+    }
+
     /// <summary>
     /// Starts the full AppHost topology with NO recovery-tenant configuration (Story 4.8: recovery discovers
     /// tenants from the durable registry), waits for eventstore + works to be healthy, runs the body against the
@@ -107,13 +134,18 @@ internal static class WorksAppHostSmokeHarness
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         // A clean checkout now builds the runtime-only EventStore Operations project during the first live start.
         // Keep that cold-build path inside the readiness gate without borrowing from the acceptance-body budget.
-        startupCts.CancelAfter(TimeSpan.FromMinutes(10));
+        string? configuredStartupSeconds = Environment.GetEnvironmentVariable("WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS");
+        int startupSeconds = configuredStartupSeconds is null ? 600
+            : int.TryParse(configuredStartupSeconds, out int seconds) && seconds is > 0 and <= 600 ? seconds
+            : throw new InvalidOperationException("WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS must be from 1 through 600.");
+        startupCts.CancelAfter(TimeSpan.FromSeconds(startupSeconds));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
                 [
                     "--EnableKeycloak=false",
                     "--environment=Development",
+                    $"--Works:Authentication:DevSigningKey={DevSigningKey}",
                     // These acceptance facts share fixed localhost control-plane addresses and are serialized by
                     // WorksAppHostTestCollection. Preserve those ports instead of the testing builder's default
                     // randomization so daprd reaches the AppHost-owned placement and scheduler proxies.
@@ -146,7 +178,7 @@ internal static class WorksAppHostSmokeHarness
                             "works",
                             "eventstore-operations",
                             "eventstore-admin",
-                        ]),
+                        ]) + await StartupLogsAsync(app).ConfigureAwait(true),
                     ex);
             }
 

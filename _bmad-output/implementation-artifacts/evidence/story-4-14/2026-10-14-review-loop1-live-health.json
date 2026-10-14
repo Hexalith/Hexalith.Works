@@ -1,0 +1,46 @@
+{
+  "resources": [
+    {
+      "name": "dapr-placement-mtls-rhafjvwe",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Container"
+    },
+    {
+      "name": "dapr-scheduler-mtls-benbjfht",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Container"
+    },
+    {
+      "name": "dapr-sentry-ednqtxhe",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Container"
+    },
+    {
+      "name": "eventstore-admin-bvxehcmk",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Project"
+    },
+    {
+      "name": "eventstore-mvkwyncr",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Project"
+    },
+    {
+      "name": "eventstore-operations-pugpjctm",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Project"
+    },
+    {
+      "name": "works-ducebspw",
+      "state": "Running",
+      "healthStatus": "Healthy",
+      "resourceType": "Project"
+    }
+  ]
+}

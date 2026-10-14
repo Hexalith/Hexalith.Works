@@ -219,60 +219,47 @@ foreach (ProjectResource project in builder.Resources
         daprScheduler);
 }
 
+// Keep each application's channel credential private to that application and its own sidecar. The SDK
+// still validates the separate signed workload assertion on protected service-invocation routes.
+foreach (IResourceBuilder<ProjectResource> project in new[] { eventStore, adminServer, works, operations })
+{
+    _ = project.WithEnvironment("DOTNET_ENVIRONMENT", builder.Environment.EnvironmentName);
+    if (builder.ExecutionContext.IsRunMode)
+    {
+        _ = project.WithGeneratedEventStoreAppChannelToken();
+    }
+}
+
 if (security is not null)
 {
     _ = eventStore.WithJwtBearerSecurity(security);
     _ = adminServer.WithJwtBearerSecurity(security);
-    // The EventStore Aspire security helper now requires an explicit OIDC client id and per-run user-name /
-    // password parameters for client-credential token acquisition. Values come from the same
-    // LocalAuthentication:* configuration keys the EventStore AppHost reads, falling back to a per-run random
-    // password so no credential is ever checked in. Only the Keycloak-enabled path reaches this branch; the
-    // live smoke lanes run with --EnableKeycloak=false and leave `security` null.
-    IResourceBuilder<ParameterResource> worksClientUsername = builder.AddParameter(
-        "works-client-username",
-        () => builder.Configuration["LocalAuthentication:TenantAUsername"] is { Length: > 0 } configuredUsername
-            ? configuredUsername
-            : "tenant-a-user");
-    IResourceBuilder<ParameterResource> worksClientPassword = builder.AddParameter(
-        "works-client-password",
-        () => builder.Configuration["LocalAuthentication:TenantAPassword"] is { Length: > 0 } configuredPassword
-            ? configuredPassword
-            : Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(24)),
-        secret: true);
-
-    _ = works
-        .WithJwtBearerSecurity(security)
-        .WithEventStoreClientCredentials(
-            security,
-            HexalithEventStoreSecurityOptions.DefaultEventStoreClientId,
-            worksClientUsername,
-            worksClientPassword);
+    // Reuse the security resource's realm-bound secret credentials for authority token acquisition.
+    _ = works.WithJwtBearerSecurity(security).WithEventStoreClientCredentials(security);
 }
 else
 {
-    // Development symmetric-key validation for the `--EnableKeycloak=false` topology the Tier-3 live lanes use.
-    // The EventStore host used to carry these values in its own appsettings.Development.json; the submodule bump
-    // at superproject HEAD 52a56c6 (EventStore 910fda6a → 8745b14b) removed that block, and the host's
-    // ValidateEventStoreAuthenticationOptions then fails at startup with "requires either 'Authority' … or
-    // 'SigningKey'", taking every live lane down before any Works code runs. Composing them here mirrors the
-    // EventStore AppHost's own ConfigureLocalSymmetricValidation and matches the dev token the smoke lanes mint
-    // (issuer hexalith-dev, audience hexalith-eventstore). The key is a development-only literal, overridable
-    // through Works:Authentication:DevSigningKey; the host still refuses symmetric keys outside Development.
-    string devSigningKey = builder.Configuration["Works:Authentication:DevSigningKey"] is { Length: > 0 } configuredKey
+    // The SDK's shared JWT contract validates both human access tokens and narrowly scoped workload
+    // assertions. All local callers and receivers therefore use the same per-run issuer key; receivers still
+    // enforce their own workload audience, caller allow-list, operation, and resource bindings.
+    string devSigningKeyValue = builder.Configuration["Works:Authentication:DevSigningKey"] is { Length: > 0 } configuredKey
         ? configuredKey
-        : "DevOnlySigningKey-AtLeast32Chars!";
-    foreach (IResourceBuilder<ProjectResource> jwtValidator in new[] { eventStore, adminServer })
+        : Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+    IResourceBuilder<ParameterResource> devSigningKey = builder.AddParameter(
+        "works-local-jwt-signing-key",
+        () => devSigningKeyValue,
+        secret: true);
+    foreach (IResourceBuilder<ProjectResource> jwtValidator in new[] { eventStore, adminServer, works })
     {
         _ = jwtValidator
-            // Project resources do not implicitly inherit the AppHost environment under
-            // Aspire.Hosting.Testing, and the symmetric-key path is Development-only by contract.
-            .WithEnvironment("DOTNET_ENVIRONMENT", builder.Environment.EnvironmentName)
             .WithEnvironment("Authentication__JwtBearer__Authority", string.Empty)
             .WithEnvironment("Authentication__JwtBearer__Issuer", "hexalith-dev")
             .WithEnvironment("Authentication__JwtBearer__Audience", HexalithEventStoreSecurityOptions.DefaultAudience)
             .WithEnvironment("Authentication__JwtBearer__ValidAudiences__0", HexalithEventStoreSecurityOptions.DefaultAudience)
+            .WithEnvironment("Authentication__JwtBearer__AllowedAlgorithms__0", "HS256")
             .WithEnvironment("Authentication__JwtBearer__SigningKey", devSigningKey)
-            .WithEnvironment("Authentication__JwtBearer__RequireHttpsMetadata", "false");
+            .WithEnvironment("Authentication__JwtBearer__RequireHttpsMetadata", "false")
+            .WithEnvironment("Authentication__WorkloadIssuer__Workload", jwtValidator.Resource.Name);
     }
 }
 

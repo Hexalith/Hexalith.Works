@@ -184,6 +184,62 @@ public sealed class WorksSdkRecoverySourceTests
         descendants.ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Pending_date_source_reports_incomplete_when_restarted_sdk_family_has_conflict_or_orphan_parking(bool parking)
+    {
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "pending", Suspended(TenantA, "pending"));
+        await DegradeAsync(coordinator, "pending", parking);
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        var error = await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(() =>
+            NewPendingSource(store, gateway, restarted).GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken));
+        error.FailedTenantCount.ShouldBe(1);
+        error.PartialResults.ShouldBeEmpty();
+        await gateway.DidNotReceive().ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Cascade_source_keeps_terminal_child_active_when_restarted_sdk_family_has_conflict_or_orphan_parking(bool parking)
+    {
+        const string child = "terminal";
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, child, new WorkItemCancelled(child, 2, new TenantId(TenantA), new WorkItemId(child)));
+        await DegradeAsync(coordinator, child, parking);
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(ParentPage("parent", child));
+        var source = new StreamReadingCascadeDescendantSource(gateway, store, Options.Create(new WorksRecoveryOptions()),
+            NullLogger<StreamReadingCascadeDescendantSource>.Instance, s_sdkOptions, restarted);
+        (await source.GetDescendantsAsync(TenantA, "parent", TestContext.Current.CancellationToken))
+            .ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
+    }
+
+    private static async Task DegradeAsync(SharedProjectionEpochCoordinator coordinator, string source, bool parking)
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions
+        { UseSdkDelivery = true, MaxUndecodableEventDispatchesBeforeParking = 1 }));
+        var scope = handler.CreateScope(TenantA);
+        var lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        var delivery = new SharedProjectionDelivery(parking ? "first-parked-source" : source, parking ? 1 : 2,
+            [0xff], [], new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
+        var result = await coordinator.JournalAsync(scope, lease, delivery, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        if (parking)
+        {
+            result.ShouldBe(SharedProjectionJournalResult.Journaled);
+            _ = await coordinator.CatchUpAsync(scope, (item, generation, token) => handler.FoldCatchUpAsync(item, generation, coordinator, token),
+                TestContext.Current.CancellationToken).ConfigureAwait(false);
+            (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken).ConfigureAwait(false)).ParkingEvidence.ShouldHaveSingleItem();
+        }
+        else result.ShouldBe(SharedProjectionJournalResult.IdentityConflict);
+    }
+
     private static IndexedPendingDateAwaitSource NewPendingSource(
         IReadModelStore store, IEventStoreGatewayClient gateway, SharedProjectionEpochCoordinator coordinator)
         => new(store, gateway, Options.Create(new WorksRecoveryOptions()),

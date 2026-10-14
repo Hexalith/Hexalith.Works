@@ -1,0 +1,77 @@
+{
+  "2026-10-14-parent-final-restore.log.gz": {
+    "sha256": "488eaa80e2146382a670265cdbd48a3ad24656ba0824d83bf2d8160b252fcef6",
+    "uncompressedSha256": "fb5949cbb41b65f41afa1d3889dc3e667ca47992a37409e0c6ecff053464e0bf",
+    "source": "/tmp/story414-final-r2-restore.log"
+  },
+  "2026-10-14-parent-final-build.log.gz": {
+    "sha256": "67a377247a40c0df007091aa7cd575b0d7f318763028982c654ddc03ce4cde09",
+    "uncompressedSha256": "41ceb09ba76f8e80b606f55dad0d2f2ba880255c1599a236390532c50b15b0fe",
+    "source": "/tmp/story414-final-r2-build.log"
+  },
+  "2026-10-14-parent-final-nonaspire.log.gz": {
+    "sha256": "4a6a8f696e9ce2ebf202a3c9659687ee20c364afb482309f4d84005c2eac4d37",
+    "uncompressedSha256": "967a17cf7dbde92fbdefde4115a06efd0a84040641dd6a85bc11f31219319a11",
+    "source": "/tmp/story414-final-r2-nonaspire.log"
+  },
+  "2026-10-14-parent-final-nonaspire.xml.gz": {
+    "sha256": "4450898821376716ab611179e57b31892feba3b1c860b647cfedaae9bcbcc5b0",
+    "uncompressedSha256": "9b0f4e61a91fe6296efda8cd65e63e432670e96774d5768fad22ce1d7ec1ab61",
+    "source": "/tmp/story414-final-r2-nonaspire.xml"
+  },
+  "2026-10-14-parent-final-architecture.log.gz": {
+    "sha256": "bfd38ce075d86abccb52215a00c4a15ef2bd0a2df3a61eb364134ab3e0499105",
+    "uncompressedSha256": "491e3cb93188b95d887891224b161621f850627c1753ffc5e1711b9d61463198",
+    "source": "/tmp/story414-final-r2-architecture.log"
+  },
+  "2026-10-14-parent-final-architecture.xml.gz": {
+    "sha256": "5f8801d1b58c7244d6b48087ee7e7da4a0fb2019d51f904ed65df84224463c18",
+    "uncompressedSha256": "5ade995a5ac0f9297a351bcba2f75908aa36acff8df2a69657dac2192e8a11a7",
+    "source": "/tmp/story414-final-r2-architecture.xml"
+  },
+  "2026-10-14-parent-final-client.log.gz": {
+    "sha256": "ba30811b8607c7cdafbb08e087b6ffb42275f24501c99bceae50bf17f9451d05",
+    "uncompressedSha256": "b2f7221be969e42f02265f9908e6f1d318bc23cab1e694db300e6d6a0f7db6f2",
+    "source": "/tmp/story414-final-r2-client.log"
+  },
+  "2026-10-14-parent-final-client.xml.gz": {
+    "sha256": "c2ec743b552d2ed3bc2018a0552f0e4d0b7755bafa2a35e333e36f4ef7fb581b",
+    "uncompressedSha256": "c68d8aaa41109c5d5287aeef205a46207003c26f6528f34f96f8afc1a177e1ae",
+    "source": "/tmp/story414-final-r2-client.xml"
+  },
+  "2026-10-14-parent-final-domain.log.gz": {
+    "sha256": "23b6b7dbb3763e0aad907f0f930a3aef42cb1bfbd46430c64772aaeff9940850",
+    "uncompressedSha256": "755b05705a3d4961a02262995d411343b800217100747f92ff8f5d6c44740105",
+    "source": "/tmp/story414-final-r2-domain.log"
+  },
+  "2026-10-14-parent-final-domain.xml.gz": {
+    "sha256": "793d376ff7a1e507cb28ff0b86cd72c323fac47dcae8c71d027cade99d4cc026",
+    "uncompressedSha256": "038ad2718d2291e18b2daf55abe1a4b1f4c06d9ca06355d20d61a3a9d73395c5",
+    "source": "/tmp/story414-final-r2-domain.xml"
+  },
+  "2026-10-14-parent-final-command-steady.log.gz": {
+    "sha256": "ab06cba934326ed90d324530ff59c2cc6c192e84b37ddf809de52c09d281c57b",
+    "uncompressedSha256": "8bb764684f9fdb18a5a84b0fafd303082f2d838c97f2de4a5e0f3ebc7accaba7",
+    "source": "/tmp/story414-final-r2-command-steady.log"
+  },
+  "2026-10-14-parent-final-command-steady.xml.gz": {
+    "sha256": "f9769954f39bcab4c3e8aa3e1c6462fbda8e0ce7ddf805a4ae9e8139ccce549e",
+    "uncompressedSha256": "b1ba7d2fd4504a783cecf3f329b9dc7b85be677a45d09743e17d1115a89068e8",
+    "source": "/tmp/story414-final-r2-command-steady.xml"
+  },
+  "2026-10-14-parent-final-independent-reproduction.log.gz": {
+    "sha256": "f49f4807b28b89dce0c1b3b700fc3db1a82514341fd9c595a1488cfbcb395103",
+    "uncompressedSha256": "4772de70489edf8de2cdd88a2ef675a99682b6a294f027df216482013d178186",
+    "source": "/tmp/story414-final-r2-independent-reproduction.log"
+  },
+  "2026-10-14-parent-final-invalid-filter.log.gz": {
+    "sha256": "c768e8a6eb31cd517ffe50ba1a103de26f791f6d396c78f5684db3ed088ca9d5",
+    "uncompressedSha256": "7330aeddf88731ba76048bfa223e617e6cac1a6133c576f5a9833a2a59ac1632",
+    "source": "/tmp/story414-final-r2-invalid-filter.log"
+  },
+  "2026-10-14-parent-final-domain-invalid-filter.log.gz": {
+    "sha256": "da5c26922ee4d1b7f4065f29cdcc01bd0b7d7830b0de2d13d090634d37800482",
+    "uncompressedSha256": "27a178ff3427a4d14faae3dfc0dc459838e8838d5ca66ca7059f326f67e4fb3e",
+    "source": "/tmp/story414-final-r2-domain-invalid-filter.log"
+  }
+}

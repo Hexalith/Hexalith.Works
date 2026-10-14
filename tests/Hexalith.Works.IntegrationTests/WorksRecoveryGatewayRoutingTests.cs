@@ -1,4 +1,10 @@
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Contracts.Commands;
+using Hexalith.EventStore.Contracts.Streams;
 
 using Hexalith.Works.Runtime;
 
@@ -98,7 +104,31 @@ public sealed class WorksRecoveryGatewayRoutingTests
         capturing.Headers.ShouldNotBeNull().ShouldNotContainKey("dapr-app-id");
     }
 
-    private static ServiceProvider BuildProvider(Dictionary<string, string?> settings, CapturingHandler capturing)
+    /// <summary>Authority mode acquires configured credentials and exercises the real client calls on ordinary protected routes.</summary>
+    [Fact]
+    public async Task RecoveryAuthorityModeAcquiresBearerForRealCommandAndStreamCalls()
+    {
+        var capture = new CapturingHandler();
+        using ServiceProvider provider = BuildProvider(new Dictionary<string, string?>
+        {
+            ["DAPR_HTTP_ENDPOINT"] = "http://127.0.0.1:3500",
+            ["EventStore:Authentication:Authority"] = "https://authority.example/realms/hexalith",
+            ["EventStore:Authentication:TokenEndpoint"] = "https://authority.example/realms/hexalith/protocol/openid-connect/token",
+            ["EventStore:Authentication:GrantType"] = "password",
+            ["EventStore:Authentication:ClientId"] = "hexalith-eventstore",
+            ["EventStore:Authentication:Username"] = "realm-user",
+            ["EventStore:Authentication:Password"] = "realm-secret",
+        }, capture, new TokenHandler());
+        IEventStoreGatewayClient client = provider.GetRequiredService<IEventStoreGatewayClient>();
+        _ = await client.SubmitCommandAsync(new SubmitCommandRequest("message", "tenant-a", "work", "item", "ResumeWorkItem",
+            JsonSerializer.SerializeToElement(new { })), TestContext.Current.CancellationToken);
+        _ = await client.ReadStreamAsync(new StreamReadRequest("tenant-a", "work", "item"), TestContext.Current.CancellationToken);
+        capture.Paths.ShouldBe(["/api/v1/commands", "/api/v1/streams/read"]);
+        capture.Headers.ShouldNotBeNull()["Authorization"].ShouldBe(["Bearer authority-token"]);
+        capture.Headers["dapr-app-id"].ShouldBe(["eventstore"]);
+    }
+
+    private static ServiceProvider BuildProvider(Dictionary<string, string?> settings, CapturingHandler capturing, HttpMessageHandler? tokenHandler = null)
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(settings)
@@ -111,6 +141,8 @@ public sealed class WorksRecoveryGatewayRoutingTests
         // Terminate the gateway client's handler chain locally so the Dapr routing handler still runs but no
         // socket is opened. AddHttpClient with the same name appends to the existing named configuration.
         _ = services.AddHttpClient(GatewayClientName).ConfigurePrimaryHttpMessageHandler(() => capturing);
+        if (tokenHandler is not null)
+            _ = services.AddHttpClient("EventStoreGatewayAuthorityToken").ConfigurePrimaryHttpMessageHandler(() => tokenHandler);
         return services.BuildServiceProvider();
     }
 
@@ -119,17 +151,30 @@ public sealed class WorksRecoveryGatewayRoutingTests
         // Snapshot rather than retain: the HttpRequestMessage the assertions would otherwise read through is
         // disposed by the caller before they run, and IHttpClientFactory owns this handler's lifetime.
         internal Dictionary<string, string[]>? Headers { get; private set; }
+        internal List<string> Paths { get; } = [];
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(request);
+            Paths.Add(request.RequestUri!.AbsolutePath);
             Headers = request.Headers.ToDictionary(
                 static header => header.Key,
                 static header => header.Value.ToArray(),
                 StringComparer.OrdinalIgnoreCase);
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted));
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted)
+            {
+                Content = Paths[^1].Contains("commands", StringComparison.Ordinal)
+                    ? JsonContent.Create(new SubmitCommandResponse("correlation"))
+                    : JsonContent.Create(new StreamReadPage("tenant-a", "work", "item", [], new(0, null, null, 0, 0, false, null))),
+            });
         }
+    }
+    private sealed class TokenHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            { Content = JsonContent.Create(new { access_token = "authority-token", token_type = "Bearer", expires_in = 300 }) });
     }
 }

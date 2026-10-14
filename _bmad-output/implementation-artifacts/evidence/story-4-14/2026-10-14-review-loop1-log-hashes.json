@@ -1,0 +1,114 @@
+{
+  "2026-10-14-review-loop1-client-build.log.gz": {
+    "sha256": "1ef5a6f05fa3444eb8dd1d32c689e7390ee1ee62c91e9483fbc927204426c8f2",
+    "uncompressedSha256": "6796527ca81cead9f561310d408846e400382f5443f56f42190a3b383490a235"
+  },
+  "2026-10-14-review-loop1-client.log.gz": {
+    "sha256": "98e6ee44f06d9f3f5e7db610515189596ca3cde6440616a534fd0dbad0446d2c",
+    "uncompressedSha256": "97553eb85a5f2de6f6694917dbbd9506beca2cbaf3b4ea943b741017d237ecc5"
+  },
+  "2026-10-14-review-loop1-client.xml.gz": {
+    "sha256": "49c6025772eeec867e490b433b292620313a654cc9f0b9d940691fddb9e7a53a",
+    "uncompressedSha256": "011d2279b586c171648fccd30de7549b1f697048c03ed9629f6a9e7bbad4ee5a"
+  },
+  "2026-10-14-review-loop1-domain-build.log.gz": {
+    "sha256": "7682bba7e4056107b3b8b92ba87330ee48d2071aed92de91a8328e2d0135faba",
+    "uncompressedSha256": "f8208859027e82adfb117dbdc0d17f219384aa08b80cfcc10618a057f8b588e7"
+  },
+  "2026-10-14-review-loop1-domain.log.gz": {
+    "sha256": "1df258487fc3935101fbd3bfee536281b173c6ed942862932ae9da7ceec1a6f2",
+    "uncompressedSha256": "5917be3038e68ec78fba5bcd59f27ab5d68f4de1e41327a5ae6f95685bd849cc"
+  },
+  "2026-10-14-review-loop1-domain.xml.gz": {
+    "sha256": "d14730621115fb01377150d6c4c549a9c3ef83221afe1750963bd332fd0a441e",
+    "uncompressedSha256": "320efa36c455fdaf3d1eafe14ae8537c69a3cfbbaae48f1653af8d6ca1a2b1cf"
+  },
+  "2026-10-14-review-loop1-debug-restore.log.gz": {
+    "sha256": "ea86a07dba51a39e0270ee6e89c38f06761cfc470f7965f3ece58d9ffc9e6011",
+    "uncompressedSha256": "b8e6625d9e88b0129875c12df6ca457ae62d13812ac340f4b81a766ee01861ee"
+  },
+  "2026-10-14-review-loop1-debug-source-restore.log.gz": {
+    "sha256": "40ec10c9b80d39899f6b12f5e5ff10253e732df0846858dc7a383abe3f0e46da",
+    "uncompressedSha256": "de1beabda0ac32cc79c8d4f261056b1040145c161c9fa88a56ad141db1d65ae7"
+  },
+  "2026-10-14-review-loop1-debug-build.log.gz": {
+    "sha256": "c095fa28d24c1e5d91f4d9ddc277d38caca836bb4c128f7fe058dc1cc83fc236",
+    "uncompressedSha256": "b59b0e74fb91aed23080db41cd58320a39d02ec4321852b7683b5aff55cbd5f3"
+  },
+  "2026-10-14-review-loop1-works-source.log.gz": {
+    "sha256": "6f74bc63155943c3484a9c1e829e307d8968a28d05be0ccae35b75572780d62c",
+    "uncompressedSha256": "ab5f45d8bd35e149b8eedccba7c01982cad08ab6b22aafc359f3998d0e9dbb8f"
+  },
+  "2026-10-14-review-loop1-works-source.xml.gz": {
+    "sha256": "f27a8e742ee7ff4a603335083d219691bde0c232da951d698e291f04dc9e123d",
+    "uncompressedSha256": "b35b9e121e7eb3e37a005273ad2d6c6dc451bc686fc1c11d4ce5c0cff3444aed"
+  },
+  "2026-10-14-review-loop1-platform-debug-build.log.gz": {
+    "sha256": "3613e1254167eb3ecd4f8161b3b875817d10c7541cc9570861a3a6b35396974c",
+    "uncompressedSha256": "a46803695983f4b493e59d32dafc2e64a10f894e090bf059c8a6440b2997b29b"
+  },
+  "2026-10-14-review-loop1-debug-graph.log.gz": {
+    "sha256": "a5a526d01f3ebbedc877d798e53358e1647853f44897fd7a9dde1815d1b1271d",
+    "uncompressedSha256": "3c1bd31cff135ad4eb5848fd75ffde2439295959d2cbb8e10ea7d91d3f59fe49"
+  },
+  "2026-10-14-review-loop1-pack.log.gz": {
+    "sha256": "c92d373b5e0b2cc45ce761f3a5db6477083894256731ee0bba3238227ce9f4aa",
+    "uncompressedSha256": "458cfaa283b18386cebfb7b7f18732071a40244b98da0646a5b7689301afa2c5"
+  },
+  "2026-10-14-review-loop1-package-proof.log.gz": {
+    "sha256": "dd581841d172030b8dd3112293d9083075aae939999bf5b864c4cbd9abae3b65",
+    "uncompressedSha256": "3ffd4afb41355aa9b6ee286b221b753ef28e7b66bcfdbd52048ee45c0fc6b63d"
+  },
+  "2026-10-14-review-loop1-restore.log.gz": {
+    "sha256": "4547826c3d4c7bd57165ce57839614dd31375d32034468ca06f5a069262fcff5",
+    "uncompressedSha256": "ddb6950f2518f0d4dd28deab853f683e7876ed36b4338d45b3ea3d7027af2ca0"
+  },
+  "2026-10-14-review-loop1-build.log.gz": {
+    "sha256": "beadda258e96f579fc53a1c6c0d9d238e50fad747c95d4e29d1e2e666b4c3010",
+    "uncompressedSha256": "c43885bdca606f8f0f4dff7acf4126fcfb3b734d178ad6f5e065562264a8be69"
+  },
+  "2026-10-14-review-loop1-final-test-build.log.gz": {
+    "sha256": "d477891da5152e4cfbd3b8615ee7607f90d9595a5d9232fa9e8ab081b00dfb43",
+    "uncompressedSha256": "e9d8744762aea4eafc049746d594ecf19c9d604e3b2c973bab6447ff1ed99bd3"
+  },
+  "2026-10-14-review-loop1-nonaspire.log.gz": {
+    "sha256": "5d72c7ac39ee656e44d5a3771367a770a3ea2b221a2b17889c835f44b7e2a4e9",
+    "uncompressedSha256": "58334276a428e86d2a09e7c867e13c5c7b58a66c7c523dff6d74a45b7f1fc810"
+  },
+  "2026-10-14-review-loop1-nonaspire.xml.gz": {
+    "sha256": "4402134852678ea8dab90d69eb9cf900b54915ce1335f4b03f4cd0f8b0301c3c",
+    "uncompressedSha256": "668d99cbdadfb274ef6c118fbdba0b05c01552da880d877ba2411c531e5721ec"
+  },
+  "2026-10-14-review-loop1-architecture-build.log.gz": {
+    "sha256": "f9d4fa6413df2cbaa7dee2dc5604e2536882def9b976242a483ffc6757187c6e",
+    "uncompressedSha256": "7733b9638e78ceb2ba66bf227cbcc457f05ce04a2ca8a2bb9087652f013646db"
+  },
+  "2026-10-14-review-loop1-architecture.log.gz": {
+    "sha256": "33d760a2a71cf45edddf13ec84db0f5f9dc9e63398ce1cbab2ebf455a35a30be",
+    "uncompressedSha256": "921bd63ca4e301873765b281ffa9615bbd44d15f9a2a5557ef70db6d64e9c86b"
+  },
+  "2026-10-14-review-loop1-architecture.xml.gz": {
+    "sha256": "923f0abc0243019236e4c9e5b7bb9ed224647db0784bff43411bc463c23158bb",
+    "uncompressedSha256": "05b1758e19725468a008a9cfcd352b4447613520bb13ce635970d2e45b644be6"
+  },
+  "2026-10-14-review-loop1-redis.log.gz": {
+    "sha256": "cb906c2304cb14a1ec8fa95572d524282892a167d31444cf1f7c7e245fbbb6b3",
+    "uncompressedSha256": "5b94ea8689f87565479a577550b15a27a91e1a8863f3d7dadf90ccba1cab6042"
+  },
+  "2026-10-14-review-loop1-command-steady.log.gz": {
+    "sha256": "4aeac6e11a03c91a3535e309e879d58453277f03aa39251234945adfe99eba13",
+    "uncompressedSha256": "8b6187c0f3f984766eadda0968b077153ccbd097f32274f7cab5f31121231f67"
+  },
+  "2026-10-14-review-loop1-command-steady.xml.gz": {
+    "sha256": "2a3108cf7959abf5c75a051d90cdf5723eed424b5398a2e8cfb24fea128babd9",
+    "uncompressedSha256": "dd1513ca6f0317959572061185713e76cd964f0722b05d74e0a0022238d12dd7"
+  },
+  "2026-10-14-review-loop1-redis-projections.xml.gz": {
+    "sha256": "115a9cfd9aab14e80341e9755ffd98543eec71485e27855c38f8ccc67c2cf988",
+    "uncompressedSha256": "3c6b8c40455b9001877f3acd570e1033b25c2e84af2b7d79471cb6d9de20a92e"
+  },
+  "2026-10-14-review-loop1-redis-rollback.xml.gz": {
+    "sha256": "575e0ecc665cd761d30634344469ae3697a780eb815e2d85f5c760c2a43077a8",
+    "uncompressedSha256": "4dc3eda85fde59bb1b19ff864d4b10d9361be64dd695547c9fbdb05a58a0820a"
+  }
+}

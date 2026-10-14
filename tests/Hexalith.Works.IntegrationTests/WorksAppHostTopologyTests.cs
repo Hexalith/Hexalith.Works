@@ -135,12 +135,12 @@ public sealed class WorksAppHostTopologyTests
         // Two "Reference" relationships to eventstore, not one: AddEventStoreDomainModule contributes the
         // domain-module reference and the explicit EventStore__CommandGateway__BaseAddress endpoint reference
         // contributes the second. Counted rather than de-duplicated so losing either one fails here.
-        ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName]);
+        ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName, "works-app-api-token", "works-local-jwt-signing-key"]);
         WaitedResources(eventStore).ShouldBe([SentryName]);
         WaitedResources(works).ShouldBe([SentryName, EventStoreName, StateStoreName]);
-        ReferencedResources(adminServer).ShouldBe([EventStoreName, EventStoreOperationsName]);
+        ReferencedResources(adminServer).ShouldBe([EventStoreName, "eventstore-admin-app-api-token", EventStoreOperationsName, "works-local-jwt-signing-key"]);
         WaitedResources(adminServer).ShouldBe([SentryName, EventStoreOperationsName]);
-        ReferencedResources(operations).ShouldBe([WorksName]);
+        ReferencedResources(operations).ShouldBe(["eventstore-operations-app-api-token", WorksName]);
         WaitedResources(operations).ShouldBe([SentryName, StateStoreName, WorksName]);
 
         // The bounded inbound retry budget only holds where the CRD's directory reaches --resources-path, so no
@@ -154,7 +154,34 @@ public sealed class WorksAppHostTopologyTests
         ];
         allSidecars.Length.ShouldBe(4);
         allSidecars.ShouldAllBe(sidecar => ReferencedComponents(sidecar).Contains(ResiliencyName));
-        allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 1);
+        allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 2);
+
+        ParameterResource signingKey = Parameter(builder, "works-local-jwt-signing-key");
+        signingKey.Secret.ShouldBeTrue();
+        string? resolvedSigningKey = await ResolveAsync(signingKey, works, builder.ExecutionContext);
+        (resolvedSigningKey is { Length: >= 32 }).ShouldBeTrue();
+        var channelTokens = new HashSet<ParameterResource>();
+        foreach (ProjectResource project in new[] { eventStore, adminServer, works, operations })
+        {
+            Dictionary<string, object> projectEnvironment = await EvaluateEnvironmentAsync(project, builder.ExecutionContext);
+            Dictionary<string, object> sidecarEnvironment = await EvaluateEnvironmentAsync(Sidecar(project), builder.ExecutionContext);
+            ParameterResource channelToken = projectEnvironment["APP_API_TOKEN"].ShouldBeOfType<ParameterResource>();
+            channelToken.Secret.ShouldBeTrue();
+            channelToken.Name.ShouldBe(project.Name + "-app-api-token");
+            sidecarEnvironment["APP_API_TOKEN"].ShouldBeSameAs(channelToken);
+            channelTokens.Add(channelToken).ShouldBeTrue();
+            StringValue(projectEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
+            if (project != operations)
+            {
+                projectEnvironment["Authentication__JwtBearer__SigningKey"].ShouldBeSameAs(signingKey);
+                string.Equals(await ResolveAsync(signingKey, project, builder.ExecutionContext), resolvedSigningKey,
+                    StringComparison.Ordinal).ShouldBeTrue("Every receiver must resolve the same per-run signing key.");
+                StringValue(projectEnvironment, "Authentication__JwtBearer__Authority").ShouldBe(string.Empty);
+                StringValue(projectEnvironment, "Authentication__JwtBearer__Issuer").ShouldBe("hexalith-dev");
+                StringValue(projectEnvironment, "Authentication__JwtBearer__AllowedAlgorithms__0").ShouldBe("HS256");
+                StringValue(projectEnvironment, "Authentication__WorkloadIssuer__Workload").ShouldBe(project.Name);
+            }
+        }
 
         Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
         StringValue(eventStoreEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
@@ -260,13 +287,19 @@ public sealed class WorksAppHostTopologyTests
 
         StringValue(environment, "EventStore__Authentication__ClientId")
             .ShouldBe(HexalithEventStoreSecurityOptions.DefaultEventStoreClientId);
-        ParameterResource usernameParameter = Parameter(builder, "works-client-username");
-        ParameterResource passwordParameter = Parameter(builder, "works-client-password");
+        ParameterResource usernameParameter = Parameter(builder, "security-eventstore-client-username");
+        ParameterResource passwordParameter = Parameter(builder, "security-eventstore-client-password");
         environment["EventStore__Authentication__Username"].ShouldBeSameAs(usernameParameter);
         environment["EventStore__Authentication__Password"].ShouldBeSameAs(passwordParameter);
         passwordParameter.Secret.ShouldBeTrue();
-        (await ResolveAsync(usernameParameter, works, builder.ExecutionContext)).ShouldBe(username);
-        (await ResolveAsync(passwordParameter, works, builder.ExecutionContext)).ShouldBe(password);
+        Dictionary<string, object> authorityEnvironment = await EvaluateEnvironmentAsync(
+            builder.Resources.Single(resource => resource.Name == "security"), builder.ExecutionContext);
+        authorityEnvironment[HexalithEventStoreSecurityOptions.DefaultClientUsernameEnvironmentName].ShouldBeSameAs(usernameParameter);
+        authorityEnvironment[HexalithEventStoreSecurityOptions.DefaultClientPasswordEnvironmentName].ShouldBeSameAs(passwordParameter);
+        usernameParameter.Secret.ShouldBeTrue();
+        builder.Resources.ShouldNotContain(resource => resource.Name == "works-client-username" || resource.Name == "works-client-password");
+        StringValue(environment, "EventStore__Authentication__GrantType").ShouldBe("password");
+        environment.ShouldContainKey("EventStore__Authentication__TokenEndpoint");
     }
 
     /// <summary>Verifies the default local topology owns a TLS actor control plane with durable scheduler data.</summary>
@@ -705,6 +738,15 @@ public sealed class WorksAppHostTopologyTests
                 "/project/rebuild/shared/v1",
                 StringComparison.Ordinal));
         Scalar(sharedRebuildOperation, "action").ShouldBe("allow");
+        Sequence(eventStorePolicy, "operations").Children.Cast<YamlMappingNode>()
+            .Select(static operation => Scalar(operation, "name"))
+            .ShouldBe(["/process", "/query", "/project", "/project/rebuild/shared/v1", "/replay-state",
+                "/admin/operational-index-metadata"]);
+        YamlMappingNode metadataOperation = Sequence(eventStorePolicy, "operations").Children.Cast<YamlMappingNode>()
+            .Single(static operation => Scalar(operation, "name") == "/admin/operational-index-metadata");
+        Scalar(metadataOperation, "action").ShouldBe("allow");
+        Sequence(metadataOperation, "httpVerb").Children.Cast<YamlScalarNode>()
+            .Select(static verb => verb.Value ?? string.Empty).ShouldBe(["POST"]);
         Sequence(sharedRebuildOperation, "httpVerb").Children
             .Cast<YamlScalarNode>()
             .Select(static verb => verb.Value ?? string.Empty)

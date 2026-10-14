@@ -1,0 +1,90 @@
+# Story 4.14 approved upstream remediation — 2026-10-14
+
+The approved scope implements the two technical-module prerequisites recorded in `upstream-remediation.md`, updates the corrected SDK consumer pin, and preserves the runnable legacy development topology. Frozen product intent is unchanged. No commit, push, branch change, submodule update, public package publication, or production activation was performed.
+
+## Producer and consumer provenance
+
+- Works base: `de94386f170245802c39626ebffcca5d33b0ea18` plus the working changes described here. Existing spec/evidence edits were preserved.
+- EventStore producer base: `21b34c01ec919769cfba9cfe0d47e50886b57ded` plus the projection, workload transport, metadata discovery and resilience changes in its root-declared working tree. Corrected local package identity: `3.120.1-story414.20261014.8`.
+- Platform producer base: `2594b89cb2efed226e6f24e5e3a7cdf4d993b5a8` plus scoped identity admission changes. Test-only local Platform.Identity package identity: `1.0.0-story414.20261014.3`, derived from its actual default `1.0.0` version.
+- Published Parties.Client and Parties.Contracts: `1.2.1`. The host-only client remains the runtime consumer boundary.
+- The synthetic authoritative fixture links nine existing unchanged non-packable Parties runtime source files from root-declared `references/Hexalith.Parties` at `b87ca40b3bf3d75aed56c7e891c2f5b431e263ae`. This explicitly test-only source fixture runs the real `PartyIdentityAuthority`, `PartyIdentityQueryService`, source/history folds, and custody checks; it is not a published Parties host package. Its mediator routes to those services after exact-scope proof verification and never fabricates identity evidence.
+
+Release consumes all external packable Hexalith libraries through centrally pinned packages, including Platform.Identity. Debug uses the root-declared sibling projects. The standalone SDK consumer compiles outside this repository with only package references, independently of the Parties source fixture. `scripts/build-story414-sdk-candidate.sh` packs nine EventStore packages and the separate Platform.Identity candidate into the isolated ignored `.artifacts/story-4-14/feed`; `scripts/verify-story414-sdk-candidate.sh` exercises the package-only host/persistence surface. These local artifacts are not upstream publication. A fresh checkout must build them before Release restore until an upstream release is published and explicitly pinned.
+
+## Implemented behavior
+
+EventStore durably retains same-position conflicts and nonzero owner-sequence gaps in the same tenant/family epoch CAS as the SDK journal. Repeated attempts converge on the original evidence identity; accepted family contents and checkpoints remain unchanged. Reads and status expose unresolved degradation after restart. A gap clears only when its exact rejected envelope and required owner sequence have successfully folded after the missing prefix arrives. Contradictory lower owner ordinals remain conflicts. Works honors degradation on both the generation read and the later epoch status, returning unavailable list/detail metadata without serving unreliable results.
+
+Explicit repair requires a newer covering, promoted, drained authoritative rebuild and `ResolveDeliveryConflictsAsync`; promotion or abort alone never clears the audit. Count capacity reserves a permanent unresolved overflow identity, and serialized state reserves 8 KiB within the 512 KiB epoch bound for emergency evidence. Compatible old state already consuming that reserve reports degraded SDK readiness even if additional conflict evidence cannot fit; Works maps that degraded state to unavailable query results. Overflow requires an explicit scope restore/offboarding rather than falsely declaring repair. Strict persisted validation rejects malformed repair operation identifiers, gap audit, or overflow identity/epoch/resolution fields, making corrupt state fail closed.
+
+Platform adds opt-in JWT service readers matched by authenticated issuer, subject, client, authentication type, and valid lifetime, together with the explicit ReaderSources allowlist. It preserves tenant/RBAC, payload digest and exact signed scope, and requires current active canonical actor registry evidence for the new current-human JWT operation. Existing Dapr organization queries with no expected actor and historical attribution for a currently inactive actor keep their earlier semantics. Empty/mismatched/expired/untrusted reader configuration denies. The real Parties service remains responsible for source classification, binding lifetime, current policy and custody.
+
+Protected synthetic HTTP tests now traverse real JWT authentication, canonical EventStore QueriesController, Platform admission/signing and registry proof, the published Parties client, exact-scope proof verification, authoritative Parties source folding and custody. Only the credential issuer, complete event streams, current registry and custody data are synthetic. Unsafe or unavailable authority denies before any Works state access. Payload privilege hints never enlarge own Assigned plus tenant Queued results.
+
+## Verification commands and results
+
+The final Release build, package-only proof, broad non-Aspire integration and architecture runs use SDK candidate `.8` and Platform `.3`. The table distinguishes those runs from retained earlier source and `.5`/`.7` candidate evidence. The final delta partitions SDK HTTP resilience by Dapr target; it does not change the pure Works unit/property logic or Platform admission implementation. Historical results are scoped to that unchanged code and are not relabeled as `.8` executions. Final package identities and all ten cached archives match feed SHA-256 in `2026-10-14-remediation-final8-candidate-provenance.json`; the parent independently reconfirmed those hashes. The pack script refuses immutable candidate overwrite and uses explicit isolated source mapping for Platform restore.
+
+| Gate | Run provenance | Command (repository root unless noted) | Result |
+| --- | --- | --- | --- |
+| EventStore projection, client and metadata circuit | Final producer source including `.8` resilience selection | in EventStore: Client.Tests DLL with SharedProjection, EventStoreGatewayClient, AdminOperationalIndexHostedService and AdminMetadataCircuitIsolation filters | 166 passed; real missing-target circuit isolation included |
+| EventStore dispatcher/transport/discovery | Retained producer source before the final resilience delta | selected DomainFencedSharedProjectionIntegrationTests, SharedRebuildDispatcherTests, DomainProjectionDispatch and workload transport tests | 142 passed |
+| EventStore named routing | Retained producer source before the final resilience delta | Server.Tests named coordinator filter, excluding unrelated large stress case | 31 passed |
+| Platform identity | Retained `.5` SDK candidate, unchanged admission code | in Platform: Identity.Tests DLL after build against the isolated candidate/feed | 146 passed |
+| Package-only consumer | Final `.8` | `scripts/verify-story414-sdk-candidate.sh` | passed; persisted accepted contents/checkpoint and restart conflict degradation |
+| Release graph | Final `.8` / `.3` | serial `dotnet restore Hexalith.Works.slnx -p:Configuration=Release -p:NuGetAudit=false --force-evaluate`; `dotnet build Hexalith.Works.slnx -c Release --no-restore -warnaserror -m:1 -nr:false -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0` | clean, zero warnings/errors |
+| Filtered context lanes | Retained `.7` / `.2`; all named cases also executed in final `.8` broad XML | protected/context and SDK/canonical sequencing/topology filters | 175 and 38 passed |
+| Broad integration without live AppHost lanes | Final `.8` / `.3` | IntegrationTests DLL excluding WorksCommandPipelineSmokeTests, WorksCascadeRecoveryPipelineSmokeTests, WorksReminderRecoveryPipelineSmokeTests and WorksMtlsAuthorizationSmokeTests | 620 passed; complete per-case XML retained |
+| Live recovery, cascade and mTLS | Final `.8` / `.3` | IntegrationTests DLL selecting the three live classes and excluding the separate steady fact | 21 passed with zero skips, including four live facts and 17 probe/prerequisite cases |
+| Command and steady scheduled resume | Final `.8` / `.3` | IntegrationTests DLL selecting the actual CreateWorkItem terminal-status and suspend-time scheduled-resume methods | 2 passed with zero skips |
+| Unit | Retained `.5` candidate; unchanged pure Works code | UnitTests test DLL, `-noLogo` | 568 passed |
+| Architecture | Final `.8` / `.3` | ArchitectureTests test DLL, `-noLogo` | 268 passed |
+| Property | Retained `.5` candidate; unchanged pure Works code | PropertyTests test DLL, `-noLogo` | 3 passed |
+| Dapr/Redis + rollback | Final `.8` / `.3` | `WORKS_SDK_RESULT_DIRECTORY=... tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh` | persisted SDK projection 19 passed and isolated complete restore/replay 1 passed, zero skips; both final XML retained |
+| Source Debug integration graph | Retained source graph before the final metadata resilience delta | serial Debug IntegrationTests restore/build with `--no-restore -m:1 -nr:false -p:MinVerVersionOverride=1.0.0` | passed; final producer build separately compiles changed ServiceDefaults |
+
+The newer SDK validates serialized snapshot state. The two canonical sequencing fixture snapshots now carry the persisted JsonElement representation, preserving their state/sequence assertions instead of passing in-memory CLR state the reader deliberately rejects.
+
+## Broad hosting diagnostic and continuity fix
+
+The initial exact-target baseline `timeout 60s aspire start --non-interactive --apphost src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj` exited 124; subsequent describe found no running Works host. This did not establish a healthy baseline.
+
+An unfiltered IntegrationTests run later timed out, and the targeted live diagnostic found a concrete new candidate runtime failure, not merely an infrastructure timeout. Works exited 134 with:
+
+> System.InvalidOperationException: Domain-service internal credentials are not configured: APP_API_TOKEN must be configured. Authentication:JwtBearer requires exactly one of Authority or SigningKey to be configured.
+
+The stack starts in `EventStoreDomainServiceSecurityStartupValidator.StartingAsync`. The operations resource had not started because it waited for Works; admin had not started because it waited for operations. EventStore's separate operational-index probes to absent sample/tenants produced HTTP 500/HttpRequestException warnings; those were not the Works startup exception.
+
+The development AppHost now uses the existing SDK `WithGeneratedEventStoreAppChannelToken` seam to share a unique secret parameter between each application and its own Dapr sidecar. Every child explicitly inherits the AppHost environment. The local symmetric JWT issuer/validator contract is one secret Aspire parameter shared by EventStore, admin and Works, with an explicit workload issuer identity and HS256. The SDK continues to enforce app-channel token, signed assertion, receiver audience, caller, operation and resource binding. Live test harnesses explicitly supply their existing synthetic signing key; ordinary local runs generate one per run or accept the existing secret configuration override. No payload or Dapr caller header manufactures workload identity.
+
+The first successful startup probe then exposed the old recovery client's unauthenticated call to human-only `/api/v1/streams/read` (HTTP 401 from `WorkItemSuspendedReminderHandler` through `PendingDateAwaitStreamReader`). The SDK now supplies reusable `AddEventStoreGatewayWorkloadTransport` composition over its existing assertion-source/issuer seam, plus a default-off client transport option. Works opts in at its recovery host edge. Existing command/stream calls use the supported workload endpoints with exact operation/audience/tenant/domain grants; unavailable authority fails closed. Reminder/cascade domain behavior, execution model and deterministic command identity remain unchanged.
+
+Discovery now distinguishes `OrdinaryProjectionTypes` from complete named/rebuild inventory. Works declares ordinary delivery disabled in legacy mode and enabled in SDK mode. The Gateway falls back to the existing legacy writer when the ordinary subset is empty, while shared-rebuild registration and lifecycle remain available. Capability changes alter the catalog fingerprint; historical all-route fingerprints remain compatible. Existing compiled fingerprint and catalog-constructor signatures remain forwarding overloads. Producer routing regression passes 31/31 and transport/discovery/domain regressions pass 142/142. Works tests assert both mode inventories and shared rebuild availability.
+
+The restart-index lane then identified a second concrete failure: no legacy `/project` call occurred because the earlier metadata discovery call was denied by Works' Dapr ACL with HTTP 403. The AppHost now grants only EventStore's exact POST `/admin/operational-index-metadata` path, in addition to its existing protected operational routes. Exact ACL topology assertions pass. Post-fix logs showed metadata HTTP 200 and legacy `/project` HTTP 200 for older outbox tenants, but the new overdue-test tenant still lacked its pending index. Its Gateway trace showed `Polly.CircuitBreaker.BrokenCircuitException` before HTTP send: advisory probes to absent inherited sample/tenants modules had opened the default HTTP pipeline shared with ordinary delivery. Named clients alone did not isolate `ConfigureHttpClientDefaults` resilience. The producer ServiceDefaults now selects the existing standard pipeline by authority and trusted Dapr target in `/v1.0/invoke/{appId}/method/...`, with ordinary HTTP authority fallback. Retry/circuit limits and the global signed-workload filter remain intact. A real factory/Polly regression opens the missing-target circuit and proves Works metadata and ordinary legacy delivery still succeed; all 166 selected producer tests pass. Unique SDK `.8` and Platform `.3` artifacts contain this correction; the durable-index/restart assertions passed against those packages.
+
+Topology inspection verifies all four unique app/sidecar tokens, secret marking and shared validator key; 19/19 tests pass. The live diagnostic harness retains bounded startup output and supports an optional bounded startup timeout, leaving its default unchanged.
+
+Final `.8`/`.3` recovery/mTLS/cascade suite passed all 21 cases with zero skips in 1017.5 seconds. The live facts include overdue recovery across three genuine AppHost starts (366.1 seconds), future reminder re-registration and later scheduler firing (348.6 seconds), interrupted cascade/restart convergence (201.9 seconds), and mTLS authorized EventStore/denied admin caller (100.7 seconds); the remaining 17 cases validate prerequisite/probe behavior. The current-tenant route and reconciliation trace is retained in `2026-10-14-remediation-final8-live-route-proof.json`; sanitized all-app healthy state is retained separately. Final `.8`/`.3` command submission and steady scheduled-resume facts also passed 2/2 with zero skips in 249.5 seconds. Together the three split integration runs execute 643 distinct passing cases (620 + 21 + 2); this is not a claim of one unfiltered invocation. Their earlier `.5`/`.7` results remain historical only.
+
+The exact AppHost is disposed after verification. Parent acceptance/matrix audit is recorded in [matrix-audit-upstream-remediation-2026-10-14.md](matrix-audit-upstream-remediation-2026-10-14.md) and its companion JSON. Required review and the final workflow transition remain with the parent.
+
+Per-case final consumer XML is retained as `2026-10-14-remediation-final8-nonaspire.xml.gz` (620 cases), plus final `.8` recovery, command/steady, Redis projection and rollback XML, and historical filtered context/topology/steady XML. `2026-10-14-remediation-log-hashes.json` contains compressed and uncompressed SHA-256 for every retained log/XML archive. The raw Aspire resource environment is excluded from evidence; sanitized health only is retained.
+
+## Local package SHA-256
+
+- `Hexalith.EventStore.Admin.Abstractions.3.120.1-story414.20261014.8.nupkg`: `1262d4118edfff4c042be2f42b6247809ff4e7668d5eab5ac495bc9a63112d98`
+- `Hexalith.EventStore.Aspire.3.120.1-story414.20261014.8.nupkg`: `a35c555c97f413fc117ab409cfb6ceaf835a92ec8ed85ce97b088d5f8607b338`
+- `Hexalith.EventStore.Client.3.120.1-story414.20261014.8.nupkg`: `f99a878df6041bc85644bf7fdbd0ccb3836f7ad1afb261f0d31e4c67158054fa`
+- `Hexalith.EventStore.Contracts.3.120.1-story414.20261014.8.nupkg`: `7fac8de6e9a07f350a6a55c6836b590462e11d735a2128a5f4fa246f96eb2065`
+- `Hexalith.EventStore.DomainService.3.120.1-story414.20261014.8.nupkg`: `9e78a81a116dd1707d8ee9d5415b285eb79770f0dfbb4a920e716363e92e0178`
+- `Hexalith.EventStore.Gateway.3.120.1-story414.20261014.8.nupkg`: `b1dd2c2bcfd4c5e830018392564e1655e5bfdfb728b86e336d057ebf920a8b82`
+- `Hexalith.EventStore.Server.3.120.1-story414.20261014.8.nupkg`: `04d98d5f894f14f689c7db4309a628bc70c19fd11d801956334911b1ea5ca4b6`
+- `Hexalith.EventStore.ServiceDefaults.3.120.1-story414.20261014.8.nupkg`: `9b7956886620c517004bce76f07097e66cff073fbe958816ed9210d7b2dfb5fe`
+- `Hexalith.EventStore.Testing.3.120.1-story414.20261014.8.nupkg`: `a5ed08dd868e8be834ad0ee4caaf91707e88874d5c4320f700d60af95071a73e`
+- `Hexalith.Platform.Identity.1.0.0-story414.20261014.3.nupkg`: `62b2b7ecece873bb21b48ed7964211f5d070105df0b04798b9e3d6bc2a0cbafc`
+
+## Remaining gates
+
+Upstream package publication and a subsequent published pin are still required for independent delivery. Production SDK activation, real service-reader/custody provisioning, Platform/AD-28 admission, and a deployed fleet/source-archive complete restore remain outside this synthetic story proof and gated by Story 4.16. The legacy writer remains the default. No host was removed and no v2 in-place downgrade is claimed.

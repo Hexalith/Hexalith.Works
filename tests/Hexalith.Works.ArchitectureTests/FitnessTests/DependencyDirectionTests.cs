@@ -515,6 +515,7 @@ public sealed class DependencyDirectionTests
         string root = RepositoryRoot.Locate();
         string eventStoreRoot = RepositoryRoot.DependencyRoot("Hexalith.EventStore");
         string partiesRoot = RepositoryRoot.DependencyRoot("Hexalith.Parties");
+        string platformRoot = RepositoryRoot.DependencyRoot("Hexalith.Platform");
         string polymorphicSerializationsRoot = RepositoryRoot.DependencyRoot("Hexalith.PolymorphicSerializations");
         var expectations = new[]
         {
@@ -556,12 +557,14 @@ public sealed class DependencyDirectionTests
                 {
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Admin.Abstractions", "Hexalith.EventStore.Admin.Abstractions.csproj"),
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Testing", "Hexalith.EventStore.Testing.csproj"),
+                    Path.Combine(platformRoot, "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj"),
                 },
                 ReleaseProjects: Array.Empty<string>(),
                 ReleasePackages: new[]
                 {
                     "Hexalith.EventStore.Admin.Abstractions",
                     "Hexalith.EventStore.Testing",
+                    "Hexalith.Platform.Identity",
                 }),
         };
 
@@ -597,6 +600,31 @@ public sealed class DependencyDirectionTests
         AssertSharedCatalogOwnsRepositoryHexalithVersions(root);
     }
 
+    [Fact]
+    public void PlatformTestEdgePropagatesEffectiveSdkModeWithoutChangingSdkSiblingModes()
+    {
+        string root = RepositoryRoot.Locate();
+        string platform = Path.Combine(RepositoryRoot.DependencyRoot("Hexalith.Platform"), "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj");
+        string gateway = Path.GetFullPath(Path.Combine(RepositoryRoot.DependencyRoot("Hexalith.EventStore"), "src", "Hexalith.EventStore.Gateway", "Hexalith.EventStore.Gateway.csproj"));
+        var debug = EvaluateProject(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"), "Debug");
+        var edge = debug.ItemsOfType("ProjectReference").Single(item => item.CanonicalPath == Path.GetFullPath(platform));
+        edge.ProjectReferenceGlobalProperties.ContainsKey("UseHexalithProjectReferences").ShouldBeFalse();
+        MsBuildProjectEvaluation.TryEvaluate(platform, edge.ProjectReferenceGlobalProperties,
+            out MsBuildProjectSnapshot? child, out string diagnostic).ShouldBeTrue(diagnostic);
+        child!.PropertyValue("UseHexalithProjectReferences").ShouldBe("true");
+        child.ItemsOfType("ProjectReference").Select(item => item.CanonicalPath).ShouldContain(gateway);
+        child.ItemsOfType("PackageReference").Select(item => item.Identity).ShouldNotContain("Hexalith.EventStore.Gateway");
+        // The SDK repository's own sibling policy remains local; the edge selects its source without
+        // globally forcing source Commons alongside the SDK's existing package consumers.
+        edge.ProjectReferenceGlobalProperties.ContainsKey("UseHexalithProjectReferences").ShouldBeFalse();
+        var release = EvaluateProject(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"), "Release");
+        release.ItemsOfType("ProjectReference").ShouldNotContain(item => item.CanonicalPath == Path.GetFullPath(platform));
+        release.ItemsOfType("PackageReference").ShouldContain(item => item.Identity == "Hexalith.Platform.Identity");
+        var packagedChild = EvaluateProject(platform, "Release");
+        packagedChild.ItemsOfType("ProjectReference").ShouldBeEmpty();
+        packagedChild.ItemsOfType("PackageReference").ShouldContain(item => item.Identity == "Hexalith.EventStore.Gateway");
+    }
+
     /// <summary>
     /// Verifies every evaluated Hexalith package version in the actual Works project set originates from the
     /// shared Builds catalog. Fixture-only checks would not catch a local <c>PackageVersion</c> override in this
@@ -609,16 +637,23 @@ public sealed class DependencyDirectionTests
             "Props",
             "Directory.Packages.props"));
         string[] projectFiles = RepositoryWorksProjectFiles(root);
+        string integrationProject = Path.GetFullPath(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"));
+        string localCandidateCatalog = Path.GetFullPath(Path.Combine(root, "Directory.Packages.props"));
 
         string[] violations = [.. projectFiles
             .SelectMany(project => new[] { EvaluateProject(project, "Debug"), EvaluateProject(project, "Release") })
             .SelectMany(snapshot => snapshot.ItemsOfType("PackageVersion")
                 .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
                 .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog))
+                // The approved Story 4.14 source/candidate authority fixture has no shared Builds package pin yet.
+                // Permit only its test-only Platform package from the repository's central candidate catalog.
+                .Where(item => !(string.Equals(item.Identity, "Hexalith.Platform.Identity", StringComparison.Ordinal)
+                    && MsBuildProjectEvaluation.PathComparer.Equals(snapshot.ProjectPath, integrationProject)
+                    && MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, localCandidateCatalog)))
                 .Select(item => $"{Path.GetRelativePath(root, snapshot.ProjectPath)} receives {item.Identity} from {item.DefiningProjectPath}."))];
 
         violations.ShouldBeEmpty(
-            "Every external Hexalith package version used by a Works project must originate in the shared Builds catalog.");
+            "External Hexalith versions must originate in Builds, except the explicit test-only Story 4.14 Platform candidate.");
     }
 
     /// <summary>
@@ -833,7 +868,7 @@ public sealed class DependencyDirectionTests
 
     /// <summary>Gets the evaluated external Hexalith module roots, normalized to canonical full paths.</summary>
     private static IEnumerable<string> ExternalModuleRoots(MsBuildProjectSnapshot snapshot)
-        => new[] { "HexalithEventStoreRoot", "HexalithPartiesRoot", "HexalithPolymorphicSerializationsRoot", "HexalithTenantsRoot" }
+        => new[] { "HexalithEventStoreRoot", "HexalithPartiesRoot", "HexalithPlatformRoot", "HexalithPolymorphicSerializationsRoot", "HexalithTenantsRoot" }
             .Select(snapshot.PropertyValue)
             .Where(value => !string.IsNullOrWhiteSpace(value))
             .Select(value => Path.GetFullPath(value.Replace('\\', Path.DirectorySeparatorChar)))

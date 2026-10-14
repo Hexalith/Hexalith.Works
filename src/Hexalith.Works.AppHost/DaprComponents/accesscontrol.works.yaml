@@ -40,6 +40,9 @@ spec:
           - name: /replay-state
             httpVerb: ['POST']
             action: allow
+          - name: /admin/operational-index-metadata
+            httpVerb: ['POST']
+            action: allow
       - appId: eventstore-operations
         defaultAction: deny
         trustDomain: "public"

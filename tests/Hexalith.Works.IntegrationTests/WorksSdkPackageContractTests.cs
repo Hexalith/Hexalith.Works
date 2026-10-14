@@ -14,13 +14,14 @@ public sealed class WorksSdkPackageContractTests
 {
 #if !DEBUG
     [Fact]
-    public void ReleaseConsumerLoadsTheFrozenPublishedContracts()
+    public void ReleaseConsumerLoadsPinnedCandidateAndPublishedPartiesContracts()
     {
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(
             Path.Combine(AppContext.BaseDirectory, "Hexalith.Works.IntegrationTests.deps.json")));
         JsonElement libraries = dependencies.RootElement.GetProperty("libraries");
-        foreach (string dependency in new[] { "Hexalith.EventStore.DomainService/3.120.0",
-            "Hexalith.EventStore.Client/3.120.0", "Hexalith.Parties.Client/1.2.1" })
+        foreach (string dependency in new[] { "Hexalith.EventStore.DomainService/3.120.1-story414.20261014.10",
+            "Hexalith.EventStore.Client/3.120.1-story414.20261014.10", "Hexalith.Parties.Client/1.2.1",
+            "Hexalith.Platform.Identity/1.0.0-story414.20261014.5" })
         {
             libraries.TryGetProperty(dependency, out JsonElement package).ShouldBeTrue();
             package.GetProperty("type").GetString().ShouldBe("package");

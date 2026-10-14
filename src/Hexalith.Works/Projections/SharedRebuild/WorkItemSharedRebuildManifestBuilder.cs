@@ -197,10 +197,7 @@ internal static class WorkItemSharedRebuildManifestBuilder
 
             foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories.OrderBy(static item => item.AggregateId, StringComparer.Ordinal))
             {
-                generationOperations.Add(ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimeHistoryKey(history.AggregateId),
-                    WorksRuntimeDocument.From(history),
-                    ReadModelBatchConcurrency.LastWrite));
+                generationOperations.AddRange(WorkItemRuntimeHistoryStore.CreateOperations(history));
                 generationOperations.Add(ReadModelBatchOperation.Write(
                     WorksReadModelKeys.RuntimeParkingKey(history.AggregateId),
                     WorksRuntimeDocument.From(new WorkItemProjectionParking()),

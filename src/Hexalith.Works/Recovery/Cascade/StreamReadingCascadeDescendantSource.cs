@@ -141,7 +141,8 @@ public sealed class StreamReadingCascadeDescendantSource(
             WorksReadModelKeys.StateStoreName, tenantId, WorkCommandSubmission.WorkDomain,
             WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);
         string[] keys = [WorksReadModelKeys.RuntimeQueueKey,
-            .. children.Select(child => WorksReadModelKeys.RuntimeRollUpKey(child.WorkItemId.Value))];
+            .. children.Select(child => WorksReadModelKeys.RuntimeRollUpKey(child.WorkItemId.Value)),
+            .. children.Select(child => WorksReadModelKeys.RuntimeParkingKey(child.WorkItemId.Value))];
         SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> related = await _coordinator
             .ReadManyAsync<WorksRuntimeDocument>(scope, keys, cancellationToken).ConfigureAwait(false);
         if (!related.IsAvailable || related.Value is null
@@ -150,6 +151,11 @@ public sealed class StreamReadingCascadeDescendantSource(
         {
             throw new InvalidOperationException("The Works SDK cascade generation is unavailable.");
         }
+
+        SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken).ConfigureAwait(false);
+        if (related.IsDegraded || related.IsStale || status.IsDegraded || status.IsOffboarded
+            || status.ActiveGeneration != related.Generation)
+            return [.. children.Select(child => child with { IsTerminal = false })];
 
         WorksWhatsNextTenantIndex index = queue.As<WorksWhatsNextTenantIndex>();
         if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
@@ -162,15 +168,17 @@ public sealed class StreamReadingCascadeDescendantSource(
             string id = child.WorkItemId.Value;
             if (!index.MemberWorkItemIds.Contains(id, StringComparer.Ordinal)
                 || !related.Value.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(id), out WorksRuntimeDocument? document)
-                || document is null)
+                || document is null
+                || !related.Value.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(id), out WorksRuntimeDocument? parking)
+                || parking is null || parking.As<WorkItemProjectionParking>().Parked)
             {
-                return child;
+                return child with { IsTerminal = false };
             }
 
             WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
             return child with
             {
-                IsTerminal = MatchesIdentity(rollUp, tenantId, id) && IsTerminal(rollUp),
+                IsTerminal = MatchesIdentity(rollUp, tenantId, id) && !rollUp.Degraded && IsTerminal(rollUp),
             };
         })];
     }

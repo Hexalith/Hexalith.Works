@@ -1,0 +1,25 @@
+# Story 4.14 approved upstream remediation
+
+The user answered "yes" to: "May I fix those technical modules and revise the EventStore 3.120.0 pin?" This approves EventStore/Platform source fixes, Works adoption, and isolated package-candidate validation. It supersedes the earlier planning statement that no producer edits were planned and the old package pin. It does not approve public publication, Git mutations, production admission, or broader migration work. Continue the existing implementation handoff directly; do not invoke/render the build skill recursively or dispatch another implementation subagent. The parent runs acceptance audit and review afterward.
+
+## Recorded starting state
+
+- Works HEAD: `de94386f170245802c39626ebffcca5d33b0ea18`; original story baseline remains `8708bb935c4306c42d7453b761e203682aad5919`.
+- EventStore HEAD: `21b34c01ec919769cfba9cfe0d47e50886b57ded`; source is clean, main is behind its locally known remote by two commits. Do not fetch, pull, switch, or update its pointer.
+- Platform HEAD: `2594b89cb2efed226e6f24e5e3a7cdf4d993b5a8`; source is clean.
+- Current Works spec edits and continuation evidence belong to this run and must be preserved.
+- Read owning repository guidance/configuration and ordinary architecture documentation before edits. Never discover or load a skill under `references/`; use only the permitted root/global skills. Never initialize nested submodules.
+
+## Required implementation
+
+EventStore owns conflict persistence and generation selection. Published 3.120.0 rejects a different digest at a journal/receipt position before Works fold, leaving no conflicting disposition and reporting Current after restart. Correct the producer's existing fenced transaction: retain tenant/family/source/position and conflicting identity durably, preserve accepted family/checkpoint, make repeat conflicts idempotent, and expose query-visible degraded/unavailable readiness across restart. Cover pending and already-receipted positions, redelivery, rebuild/repair, and failures without introducing a second writer or silently clearing unresolved evidence. Prefer extending existing epoch state/contract over a separate durable catalog. The public existing API can grow compatibly; do not weaken source identity validation. Replace the Works characterization that expects Current/no parking with acceptance assertions against the fixed SDK. Both list and detail reads must honor the producer readiness.
+
+Platform currently admits authoritative identity readers only through `VerifiedWorkload` using the DaprInternal principal, while canonical gateway authorization requires JWT. Add a supported opt-in JWT service-reader admission composition, keeping the existing Dapr writer/provisioning rules. Match independently authenticated service identity to explicit trusted configuration (including issuer/subject and service identity claims as appropriate); arbitrary human sub, payload actor/Party/role, forwarded header, or an unverified identity cannot enroll a reader. Preserve ReaderSources defaults, tenant/RBAC checks, current actor registry evidence and exact IdentityAdmissionScope signature. Negative tests must cover absent/untrusted/expired credentials, scope/actor mismatch, disabled reader, and inactive current actor. Prove Works protected Executor ingress through the real admission implementation and published Parties client against authoritative synthetic registry/binding/custody fixtures. Synthetic fixture injection may supply authoritative source data, but may not bypass authentication/admission/signature verification.
+
+## Validation and package provenance
+
+Use the Hexalith narrow fallback ladder. Try the exact Works AppHost baseline, recording failure without disturbing unrelated resources. Run producer and Platform focused tests, the context-named Works integration classes, and persisted Dapr/Redis plus complete isolated restore/replay proof after adoption. Tests are meaningful acceptance checks; no passing characterization substitutes for the required behavior.
+
+Choose the corrected package identity from actual local version/build configuration. Isolated local packing to a unique prerelease feed is authorized for package-consumer validation; preserve normal dependency modes and do not overwrite cached public 3.120.0 packages or invent a published release. Pin an actually available corrected public version only if it already includes the required implementation; otherwise record the exact local candidate version, content hashes and remaining upstream publication gate honestly. Complete and verify all source/candidate work before identifying publication as the final remaining step. Do not stop merely because public publication is not authorized.
+
+Prior evidence and exact blockers: [implementation-continuation-2026-10-14.md](implementation-continuation-2026-10-14.md). New authoritative implementation/evidence supersedes the older limits only where tests prove closure. Retain legacy-default hosting, sole SDK writer, original baseline, and all production/AD-28 gates.

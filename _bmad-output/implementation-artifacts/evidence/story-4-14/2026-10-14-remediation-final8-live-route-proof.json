@@ -1,0 +1,267 @@
+{
+  "tenant": "tenant-recovery-overdue-2cf15503",
+  "purpose": "Current overdue-tenant legacy folds and metadata succeed while absent modules retain separate failing circuits. The passing .8 recovery smoke XML proves durable-index discovery and three-startup exact-once convergence; retained trace includes first restart resume and later zero-reissue reconciliation.",
+  "records": [
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/admin/operational-index-metadata - 200 - application/json;+charset=utf-8 21.5879ms"
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 67.5910ms"
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 15.3785ms"
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemCreated for tenant tenant-recovery-overdue-2cf15503, work item work-overdue-04a17899fa73, correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73 was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-overdue-04a17899fa73 for tenant tenant-recovery-overdue-2cf15503 (correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73) from 1 events; whatsNextChanged=False."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 10.8624ms"
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemAssigned for tenant tenant-recovery-overdue-2cf15503, work item work-overdue-04a17899fa73, correlation df9ccfd2-3251-4f6f-b166-62060f7adb35 was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-overdue-04a17899fa73 for tenant tenant-recovery-overdue-2cf15503 (correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73) from 2 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 12.9031ms"
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemClaimed for tenant tenant-recovery-overdue-2cf15503, work item work-overdue-04a17899fa73, correlation eba73c66-b807-4001-8349-6760e9251be1 was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-overdue-04a17899fa73 for tenant tenant-recovery-overdue-2cf15503 (correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73) from 3 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 11.5213ms"
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-overdue-04a17899fa73 for tenant tenant-recovery-overdue-2cf15503 (correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73) from 4 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 18.9062ms"
+    },
+    {
+      "resource": "works",
+      "message": "Scheduled date-resume reminder work-date-resume-ebb5678f6637790ee73b2b0eb28aadee for work item work-overdue-04a17899fa73 in tenant tenant-recovery-overdue-2cf15503."
+    },
+    {
+      "resource": "works",
+      "message": "Scheduled date-resume reminder work-date-resume-ebb5678f6637790ee73b2b0eb28aadee for work item work-overdue-04a17899fa73 in tenant tenant-recovery-overdue-2cf15503."
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemCreated for tenant tenant-recovery-overdue-2cf15503, work item work-second-pass-probe-d3e12493a272, correlation 3db53b3f-da24-48c1-a278-b051230bdf0b was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-second-pass-probe-d3e12493a272 for tenant tenant-recovery-overdue-2cf15503 (correlation 3db53b3f-da24-48c1-a278-b051230bdf0b) from 1 events; whatsNextChanged=False."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 11.1935ms"
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemAssigned for tenant tenant-recovery-overdue-2cf15503, work item work-second-pass-probe-d3e12493a272, correlation 2330b7cb-88f3-4d15-80cc-fab34d12de84 was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-second-pass-probe-d3e12493a272 for tenant tenant-recovery-overdue-2cf15503 (correlation 3db53b3f-da24-48c1-a278-b051230bdf0b) from 2 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 13.5401ms"
+    },
+    {
+      "resource": "works",
+      "message": "Works domain event Hexalith.Works.Contracts.Events.WorkItemClaimed for tenant tenant-recovery-overdue-2cf15503, work item work-second-pass-probe-d3e12493a272, correlation e0f07d5e-28b5-4dc0-9436-8dcfe89ec066 was skipped. ReasonCode=no-registered-handler."
+    },
+    {
+      "resource": "works",
+      "message": "Projected work item work-second-pass-probe-d3e12493a272 for tenant tenant-recovery-overdue-2cf15503 (correlation 3db53b3f-da24-48c1-a278-b051230bdf0b) from 3 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works",
+      "message": "Request finished HTTP/1.1 POST http://localhost:41905/project - 200 - application/json;+charset=utf-8 11.4385ms"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 1079.8577ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1002.6962ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 2002.8552ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 2002.802ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 1004.4496ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1003.031ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 2002.1809ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1003.4628ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 1003.9329ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 1003.6249ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1002.3572ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 1002.8546ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1001.9113ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 25.0668ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 72.3027ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/sample/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '0', Execution Time: 2001.9329ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/sample"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 18.2284ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 13.7347ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 15.6479ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 13.8796ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 21.4216ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/tenants/Standard-Retry', Operation Key: '', Result: '500', Handled: 'True', Attempt: '3', Execution Time: 1001.4872ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/tenants"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 14.4039ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 17.0055ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "gateway",
+      "message": "Execution attempt. Source: '-standard/http://localhost:3501/v1.0/invoke/works/Standard-Retry', Operation Key: '', Result: '200', Handled: 'False', Attempt: '0', Execution Time: 14.1412ms",
+      "pipelineInstance": "http://localhost:3501/v1.0/invoke/works"
+    },
+    {
+      "resource": "works-restart",
+      "message": "Projected work item work-overdue-04a17899fa73 for tenant tenant-recovery-overdue-2cf15503 (correlation 6d9d2a75-1f33-4bcc-82c1-fb563254bf73) from 5 events; whatsNextChanged=True."
+    },
+    {
+      "resource": "works-restart",
+      "message": "Issued date-resume for work item work-overdue-04a17899fa73 in tenant tenant-recovery-overdue-2cf15503 (reminder work-date-resume-ebb5678f6637790ee73b2b0eb28aadee, correlation date-resume-work-date-resume-ebb5678f6637790ee73b2b0eb28aadee)."
+    },
+    {
+      "resource": "works-restart",
+      "message": "Scheduled date-resume reminder work-date-resume-e91885c4d82b45d5f01dcbf1f61e8c72 for work item work-second-pass-probe-d3e12493a272 in tenant tenant-recovery-overdue-2cf15503."
+    },
+    {
+      "resource": "works-restart",
+      "message": "Scheduled date-resume reminder work-date-resume-e91885c4d82b45d5f01dcbf1f61e8c72 for work item work-second-pass-probe-d3e12493a272 in tenant tenant-recovery-overdue-2cf15503."
+    },
+    {
+      "resource": "works-restart",
+      "message": "Reconciled pending date awaits for tenant tenant-recovery-overdue-2cf15503: 1 reissued, 1 rescheduled."
+    },
+    {
+      "resource": "works-later-restart",
+      "message": "Scheduled date-resume reminder work-date-resume-e91885c4d82b45d5f01dcbf1f61e8c72 for work item work-second-pass-probe-d3e12493a272 in tenant tenant-recovery-overdue-2cf15503."
+    },
+    {
+      "resource": "works-later-restart",
+      "message": "Reconciled pending date awaits for tenant tenant-recovery-overdue-2cf15503: 0 reissued, 1 rescheduled."
+    },
+    {
+      "resource": "works-later-restart",
+      "message": "Scheduled date-resume reminder work-date-resume-9b5ef31493d3a57ac3ca1187b1fcda6a for work item work-future-42eb94eeb063 in tenant tenant-recovery-future-9d2a7ef5."
+    },
+    {
+      "resource": "works-later-restart",
+      "message": "Reconciled pending date awaits for tenant tenant-recovery-future-9d2a7ef5: 0 reissued, 1 rescheduled."
+    }
+  ]
+}

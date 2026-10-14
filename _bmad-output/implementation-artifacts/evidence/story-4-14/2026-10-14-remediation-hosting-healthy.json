@@ -1,0 +1,34 @@
+[
+  {
+    "name": "eventstore-admin-etrwvuew",
+    "displayName": "eventstore-admin",
+    "resourceType": "Project",
+    "state": "Running",
+    "healthStatus": "Healthy",
+    "startTimestamp": "2026-10-14T08:29:56.14+00:00"
+  },
+  {
+    "name": "eventstore-operations-rmxsgfba",
+    "displayName": "eventstore-operations",
+    "resourceType": "Project",
+    "state": "Running",
+    "healthStatus": "Healthy",
+    "startTimestamp": "2026-10-14T08:29:52.9+00:00"
+  },
+  {
+    "name": "eventstore-rmrjqfrj",
+    "displayName": "eventstore",
+    "resourceType": "Project",
+    "state": "Running",
+    "healthStatus": "Healthy",
+    "startTimestamp": "2026-10-14T08:28:39.05+00:00"
+  },
+  {
+    "name": "works-qksqmgze",
+    "displayName": "works",
+    "resourceType": "Project",
+    "state": "Running",
+    "healthStatus": "Healthy",
+    "startTimestamp": "2026-10-14T08:29:51.47+00:00"
+  }
+]

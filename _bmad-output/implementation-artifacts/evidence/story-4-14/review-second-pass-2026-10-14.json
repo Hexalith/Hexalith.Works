@@ -1,0 +1,109 @@
+{
+  "diff": "/tmp/works414-review2-82daxwij.diff",
+  "findings": [
+    {
+      "id": "R2-B1",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Mixed catalog fingerprints. Metadata hashes the ordinary subset, while authoritative ordinary/reconciliation/full-rebuild and streamed-rebuild validation still use the three-argument all-route overload. A mixed catalog is rejected before its enabled fold; use the advertised capability subset consistently and test all receiving paths."
+    },
+    {
+      "id": "R2-B2",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Disabled receiving route. DispatchCoreAsync selects named handlers without OrdinaryDeliveryEnabled. The catalog-registry overload admits the complete inventory, so a disabled handler can execute despite ordinary discovery excluding it; gate ordinary dispatch while retaining rebuild admission."
+    },
+    {
+      "id": "R2-B3",
+      "verdict": "high",
+      "route": "patch",
+      "evidence": "Cross-identity reader privileges. VerifiedJwtReader binds lifetime/identity claims to one authenticated identity, but AdmitAsync passes the original principal to ClaimsTenantValidator and ClaimsRbacValidator, both of which aggregate claims. An unrelated identity can supply tenant/admin privileges; authorize only the selected JWT reader identity."
+    },
+    {
+      "id": "R2-B4",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Repeated recoverable gap evidence. RecordDeliveryConflictAsync includes AcceptedDigest in deduplication, and JournalAsync hashes the advancing accepted owner sequence. Retrying one future source/position/digest while its prefix advances creates redundant durable gap entries and can exhaust the audit; deduplicate the same rejected gap identity without conflating distinct payloads."
+    },
+    {
+      "id": "R2-B5",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Token body deadline. ResponseHeadersRead completes the HttpClient timeout at headers; subsequent reads have only caller cancellation while the singleton gate is held. A stalled body can indefinitely block later acquisition; apply the configured bounded deadline through the complete body and release the gate on timeout."
+    },
+    {
+      "id": "R2-B6",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Rollback fixture sidecar identity. The fixed-port health probe runs before process-liveness checking and never verifies app-id. An occupied Dapr port may select a foreign sidecar for the projection lane; allocate isolated endpoints and verify metadata identity before either lane."
+    },
+    {
+      "id": "R2-B7",
+      "verdict": "medium",
+      "route": "defer",
+      "evidence": "carried B9: Local candidate delivery gate. The unchanged clean CI restore cannot retrieve ignored private SDK/Platform identities. The approved remediation explicitly retains upstream publication and public-pin delivery as a separate unresolved gate; no public publication or merge/release readiness is authorized/claimed."
+    },
+    {
+      "id": "R2-B8",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Package proof cache isolation. verify-story414-sdk-candidate.sh creates a temporary project but retains the shared global package cache. Cached private identities can mask a missing/different current candidate feed; isolate restored packages and compare intended candidate archive hashes."
+    },
+    {
+      "id": "R2-B9",
+      "verdict": "maybe-false",
+      "route": "defer",
+      "evidence": "Scaling latency remains unverified (medium if substantiated). The fold visibly reloads all histories and compares all proposed documents, so round trips grow with membership. The review provides no latency-bearing run, reachable persisted boundary fixture, or measured delivery failure; retain a benchmark task to establish operational latency at admitted context/document limits before changing fold architecture."
+    },
+    {
+      "id": "R2-B10",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Pure-fold detail degradation. GetWorkItem creates metadata from epoch stale state only and ignores the persisted rollUp.Degraded/diagnostics. A refused source contribution can be presented Current; propagate the existing domain degradation without changing accepted model contents."
+    },
+    {
+      "id": "R2-V1",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Pre-verified regression gap: paged history length/digest integrity lacks a valid-JSON, same-length corruption case. Removing the digest comparison leaves positive growth/inline tests passing; exercise ordinary delivery against the corrupted persisted page and assert no accepted family/applied checkpoint rewrite."
+    },
+    {
+      "id": "R2-V2",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Pre-verified regression gap: authority tests only reuse an immediate 300-second token. An indefinitely cached token mutation survives them; exercise short-lived expiry/replacement and rejected renewal without reusing expired bearer."
+    },
+    {
+      "id": "R2-V3",
+      "verdict": "medium",
+      "route": "patch; grouped R2-B1",
+      "evidence": "Mixed catalog fingerprint omission independently identified in ordinary, reconciliation, full rebuild and streamed validation. The advertised four-argument hash differs from the receiving historical overload when one route is rebuild-only."
+    },
+    {
+      "id": "R2-E1",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Decimal roll-up capacity. BuildEpoch reaches RemainingBuckets.Add with independently valid decimal.MaxValue and 1 same-unit contributions; OverflowException escapes both the Works InvalidOperation catch and SDK bounded fold handling. The reviewer reproduced pending=1/failures=0/parked=0/degraded=false. Map demonstrated numeric representation overflow to durable non-poison capacity with accepted state retained."
+    },
+    {
+      "id": "R2-E2",
+      "verdict": "medium",
+      "route": "patch; grouped R2-B10",
+      "evidence": "Pure-fold degradation in both queries. Created/Queued then wrong-unit ProgressReported persists rollUp.Degraded=true while list and detail return Current/IsDegraded=false in the executable review reproduction. Pin/check relevant roll-ups and report their existing degradation/diagnostics truthfully."
+    }
+  ],
+  "review_complete": true,
+  "patches_pending": false,
+  "deferred_ledger_written": true,
+  "frozen_check": {
+    "baseline": "8708bb935c4306c42d7453b761e203682aad5919",
+    "approved_always_only": true,
+    "current_block_sha256": "4144b5d3294e88cd0a7cff2198e825ac82997c495db64c1a6c8fb8c9868f88ca"
+  },
+  "deferred_entries": [
+    "B9 / carried R2-B7: authorized upstream public publication and public pin gate",
+    "R2-B9: medium unverified capacity latency benchmark"
+  ],
+  "patch_outcome": "All 13 patch finding members addressed and final relevant verification passed; two deferred entries retained.",
+  "final_acceptance_audit": "parent-final-acceptance-audit-2026-10-14.json"
+}

@@ -174,10 +174,8 @@ public sealed class RuntimeAdapterGovernanceTests
         program.ShouldContain("AddHexalithEventStoreSecurity", Case.Sensitive, "The AppHost must initialize local security via the shared EventStore Aspire helper.");
         program.ShouldContain("AddEventStoreDomainModule", Case.Sensitive, "The AppHost must attach the Works domain service via the platform helper.");
         program.ShouldContain("WithJwtBearerSecurity(security)", Case.Sensitive, "EventStore, Admin.Server, and Works must receive the shared JWT bearer security configuration when security is enabled.");
-        // The helper's signature gained an explicit client id plus user-name/password parameters, so the pin is
-        // on the call, not on its former single-argument shape.
-        program.ShouldContain("WithEventStoreClientCredentials(", Case.Sensitive, "The Works recovery runtime must receive EventStore client credentials when Keycloak-backed security is enabled.");
-        program.ShouldContain("HexalithEventStoreSecurityOptions.DefaultEventStoreClientId", Case.Sensitive, "Client-credential acquisition must use the shared EventStore client id, not a hand-written literal.");
+        program.ShouldContain("WithEventStoreClientCredentials(security)", Case.Sensitive,
+            "The shared helper must bind its own EventStore client id and realm-bound secret parameters.");
 
         // No hand-rolled, duplicated Dapr component wiring — the helper owns state store / pub-sub creation.
         program.ShouldNotContain("AddDaprStateStore", Case.Insensitive, "The AppHost must not hand-roll a Dapr state store; AddHexalithEventStore owns it.");

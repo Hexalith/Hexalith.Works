@@ -163,7 +163,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
 
             SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
                 .ConfigureAwait(false);
-            if (status.IsOffboarded || status.ActiveGeneration != read.Generation)
+            if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
             {
                 return SdkUnavailable(read.Generation, true);
             }
@@ -217,7 +217,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                 return SdkUnavailable(read.Generation, stale);
             }
 
-            return Found(rollUp, metadata);
+            return Found(rollUp, SdkMetadata(read.Generation, stale, rollUp));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -229,12 +229,17 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         }
     }
 
-    private static QueryResponseMetadata SdkMetadata(long generation, bool stale)
-        => new(IsStale: stale, IsDegraded: stale,
-            ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture))
+    private static QueryResponseMetadata SdkMetadata(long generation, bool stale, WorkItemRollUp? rollUp = null)
+        => new(IsStale: stale, IsDegraded: stale || rollUp?.Degraded == true || rollUp?.ProjectionDiagnostics.Count > 0,
+            ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            WarningCodes: rollUp is not null && (rollUp.Degraded || rollUp.ProjectionDiagnostics.Count > 0)
+                ? ["works-rollup-degraded", .. rollUp.ProjectionDiagnostics.Select(item => "works-rollup-refused:" + item.EventType)
+                    .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)] : null)
         {
             Provenance = QueryResponseProvenance.ProjectionBacked,
-            Lifecycle = stale ? ProjectionLifecycleState.Stale : ProjectionLifecycleState.Current,
+            Lifecycle = stale ? ProjectionLifecycleState.Stale
+                : rollUp is not null && (rollUp.Degraded || rollUp.ProjectionDiagnostics.Count > 0)
+                    ? ProjectionLifecycleState.Degraded : ProjectionLifecycleState.Current,
         };
 
     private static QueryResult SdkUnavailable(long generation, bool stale)

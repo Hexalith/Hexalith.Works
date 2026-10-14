@@ -1,0 +1,258 @@
+{
+  "2026-10-14-remediation-eventstore-build.log.gz": {
+    "sha256": "c5be7fbabb6f2b4613de231bc4b41c29ddaa8bfa42793e76175bfec612347d1d",
+    "uncompressedSha256": "cf919682f8168bc89b514e5e923ea2e4187ac6052a5d798c8e762ca3685d4924"
+  },
+  "2026-10-14-remediation-eventstore-projections.log.gz": {
+    "sha256": "9f5452dd3adeb2bb19f7266536ffa4490635898873e3607e3f5ca7412e47242d",
+    "uncompressedSha256": "95fa9dd91110f319ae173f1457f88668bb15beb465cf3c9083d8bd2340097166"
+  },
+  "2026-10-14-remediation-domainservice-build.log.gz": {
+    "sha256": "feaf0925617b7cf873ce7bfa05786bad4b140f59c251f82571572762f93c2673",
+    "uncompressedSha256": "6ecbb80980512c5a3018fe1fd466035c7fd6e6d72505243e6825c807550555e5"
+  },
+  "2026-10-14-remediation-domainservice-tests.log.gz": {
+    "sha256": "07eaf3e4608fd24c57e663e4cc3f433a2229170735738842dabd6e985436660a",
+    "uncompressedSha256": "d5bff4296d027d8e1bf59b02bf255c8e9809019eb4d17cb02e3bc92b3dc74309"
+  },
+  "2026-10-14-remediation-platform-build.log.gz": {
+    "sha256": "c91b6ee039c55db9193b42b1ff43a7e125d26ddcf2611ba20aba79c539b7ca88",
+    "uncompressedSha256": "9e3cdee1b4097aa35aacba6bcbd8cb10b9f378cdf5c3f3841288adf630476788"
+  },
+  "2026-10-14-remediation-platform-tests.log.gz": {
+    "sha256": "39229d4ee3f5259a407acdda99f4048e2a5671f00b5490194819feb8b8515d96",
+    "uncompressedSha256": "0c4e5e2e753c5789eda8674c58450f9f18a0866464fcfe5008f8e9948d315407"
+  },
+  "2026-10-14-remediation-final-pack.log.gz": {
+    "sha256": "c75ec9b39b6f943008a79e358c06e90b48bbb68695c0dacab21e702e764be43e",
+    "uncompressedSha256": "9c925153f0db2eea34646feeb960589315c5da5b123b873d7f07800c9312407f"
+  },
+  "2026-10-14-remediation-platform-pack.log.gz": {
+    "sha256": "67b1b160650ca3d7dc4dc6f744769655143f4ffd332f8ffd5c4382261dbdb45c",
+    "uncompressedSha256": "41a8191727d53a9fb1fa7e429f1389d0c7ccbff50d2b056003f5fbdf09e1908e"
+  },
+  "2026-10-14-remediation-package-consumer.log.gz": {
+    "sha256": "dd581841d172030b8dd3112293d9083075aae939999bf5b864c4cbd9abae3b65",
+    "uncompressedSha256": "3ffd4afb41355aa9b6ee286b221b753ef28e7b66bcfdbd52048ee45c0fc6b63d"
+  },
+  "2026-10-14-remediation-works-restore.log.gz": {
+    "sha256": "0cdbb11865ce5eed45e25c42281805c23eb76837aa2f21a9d9dfaa19611d0b25",
+    "uncompressedSha256": "4a6b68e5f8ee9ec12ffd4d10dfd4f485fe8bd0c873378bf6bc47b29ec7039355"
+  },
+  "2026-10-14-remediation-solution-build.log.gz": {
+    "sha256": "bf08ed0963d8554f618d59820225efdf746159fe1577d8e8a02bcff1dae6b261",
+    "uncompressedSha256": "159aa8ceb94e7747a13229edafc7ed888fe903f7754a8ce31422e1ae23ce32c9"
+  },
+  "2026-10-14-remediation-context-tests.log.gz": {
+    "sha256": "523a311cad8fcaac3659ed1bef7da6cb1ba963cb7204af741927df19700e6747",
+    "uncompressedSha256": "003a4f4d1f32a32de2ec246c0033c234ba0b7777939c9b89b4052124d2f0bd5d"
+  },
+  "2026-10-14-remediation-nonaspire-integration.log.gz": {
+    "sha256": "d59bd188966b0518f6bcb811f19e6df6edd000ca12c483354dca460c41334bbc",
+    "uncompressedSha256": "b81e0ab130a1ef910c0f8c5561da8cb873c707ad9ac7a849e9aa466e409f266b"
+  },
+  "2026-10-14-remediation-unit-tests.log.gz": {
+    "sha256": "f14f1e3154fefe140ac26cb33f7b457319a7a00d9b2e4ff896d482716c665b09",
+    "uncompressedSha256": "9cce1051c528a220eff2fe48c4c825ea3f20e79beafb317afa8c45a94d7676af"
+  },
+  "2026-10-14-remediation-architecture-tests.log.gz": {
+    "sha256": "574625ab2309b7805717956c00e58145e9bdaa82800f4511a02d9ae89476bcad",
+    "uncompressedSha256": "2d723af3b56e22b6cebd19bc3bc8ceb8c907bb45ae9e128efaf65f5605f73e82"
+  },
+  "2026-10-14-remediation-property-tests.log.gz": {
+    "sha256": "97f314edc32278d7aea9174f87791ebb636836e5c9b0ef4a9ff04e8475844495",
+    "uncompressedSha256": "550762e79fe050f2fea94dca9a33761a9f74622511a52e5f2e6ab725cf75b86b"
+  },
+  "2026-10-14-remediation-dapr-redis.log.gz": {
+    "sha256": "5c2eb88fe228e1abd4e90df3bf094f09a2a5db97a36c664b0c2a132a7e2f2cd2",
+    "uncompressedSha256": "b7eff66a3a7319ba137c93e627188f59184a20ee0801603b24303af382fc2577"
+  },
+  "2026-10-14-remediation-debug-restore.log.gz": {
+    "sha256": "5573e4139f8f8e42de169c236ee2e042c89391a8df45ec1fb60b461b754b90d7",
+    "uncompressedSha256": "c6fe9ade4770911226ed0372d8bf153574d4d648038cb8ad6dba0b08effe6c5b"
+  },
+  "2026-10-14-remediation-debug-build.log.gz": {
+    "sha256": "7b8f0bbc0455d2c425357dcdb84d1d10a810a5d6d22d6eef0f4cbe9d84b04f82",
+    "uncompressedSha256": "9bf0431b3e82145de30585b1a2492ee6ae997c1ff19bac702d20195a768d40c5"
+  },
+  "2026-10-14-remediation-aspire-diagnostics-final.log.gz": {
+    "sha256": "16e0f554987a8ca037d87dc7e92acabe292f3dc29b2572270b4d8f1bfad20ff7",
+    "uncompressedSha256": "372de4777a5f60f6800449a6d68b62f498bc0076c816732a54d6d7e23d737ed2"
+  },
+  "2026-10-14-remediation-aspire-works-follow.log.gz": {
+    "sha256": "83005089d80fd1807525122d558b94ecf7147a65119030b466fb2cd06149f7d6",
+    "uncompressedSha256": "19de5e41d876482bc83a60972d0475678c4045c5422c561550cf6947b0ef7237"
+  },
+  "2026-10-14-remediation-aspire-eventstore-operations-follow.log.gz": {
+    "sha256": "6d57fcc9b212df6449f81ae5b91e7d7444e921164e4aba5830b8cf0116215b48",
+    "uncompressedSha256": "7d9536604b663cc9e8428373964a53ab6691ccaf991950ea49bf1321a34cb18b"
+  },
+  "2026-10-14-remediation-aspire-eventstore-admin-follow.log.gz": {
+    "sha256": "14e60c6780f631d2a0956adaf6f2f9c85c79b059cff7943926da5e81aea6013d",
+    "uncompressedSha256": "48386f307fb0f328fd5dafa0e76112a834c90ae037911e211eae5d76dd23ea51"
+  },
+  "2026-10-14-remediation-hosting-fix-build.log.gz": {
+    "sha256": "4bfbf6c88e17f82aa00f9f8cd218464f4a52dd325a7149d8086b16ba82a78185",
+    "uncompressedSha256": "c30ba30e4ada6b1b66fbc7aea41a84c177fda21aab670fe5f548a4440f48994c"
+  },
+  "2026-10-14-remediation-hosting-topology.log.gz": {
+    "sha256": "8b8c31633bc19cac17177d0f60c4c53f2fb06ad282a45a90c487594407d40dae",
+    "uncompressedSha256": "40f188c510ab43c75d4909df89fce43e4cc9060459e028b8c9a69c6ac15fda4f"
+  },
+  "2026-10-14-remediation-hosting-command-smoke.log.gz": {
+    "sha256": "ef80d9f2dceefb4f1245addef8e0a6a66ccc3d25d01f0167468e027b7d7837d2",
+    "uncompressedSha256": "88cd858eb6c7986923f81ecac5aa2b48d1b614697c6c14049b987cce2ea98b5b"
+  },
+  "2026-10-14-remediation-final-context.xml.gz": {
+    "sha256": "fde85ec683c283725c78cf5667fae2fdf738422014f630e5103f9eb891110e5a",
+    "uncompressedSha256": "a62e9dff060001e8746a12839ca94342cbf3e231d6cfab36e6be2db2e1686e7b"
+  },
+  "2026-10-14-remediation-final-topology.xml.gz": {
+    "sha256": "9ea48c1beb521bc5fdcd8a01546387292a64db67b972e79691b3d970dd0b22f3",
+    "uncompressedSha256": "73b17581a66646c6b59ebebc2aedda636346cc941ced86fb49f01bf8eaba1836"
+  },
+  "2026-10-14-remediation-final-nonaspire.xml.gz": {
+    "sha256": "2cbc8881876d8386e0bb3e19f0fb4061af0ec9b4a0e2102168649608832c1617",
+    "uncompressedSha256": "9a972010cfa60fa5c3cefbb0b5146944451b3ac98cfc886c73e3888d83e9794c"
+  },
+  "2026-10-14-remediation-final-steady-smoke.xml.gz": {
+    "sha256": "37a71e80f1073d28c502de36280479fb04108e4ec9fe9303b3bb40b5c7b5c46b",
+    "uncompressedSha256": "19175f6d1af8a92b05a03cc4e9f08125d83b95bdd10e178b6cd392cee57c745e"
+  },
+  "2026-10-14-remediation-final-redis-projections.xml.gz": {
+    "sha256": "17ecc939602cd1c5bbab2a23a03fa1f4373f93acbecdfacd2b43e24f253d7729",
+    "uncompressedSha256": "1892b353eddf013b1fa1913a2ec9fdef9d3a20bc22a60e813c2d517dfd328c05"
+  },
+  "2026-10-14-remediation-final-redis-rollback.xml.gz": {
+    "sha256": "845311fc75c0081d90097b04c7d0084d9337dd711faff9c948c4110d9fe931d3",
+    "uncompressedSha256": "24ff7b6fc26eba6502d4700bf0b97b2084be20e95a4a1b621aec2e28fe5eacb4"
+  },
+  "2026-10-14-remediation-final-source-domainservice.xml.gz": {
+    "sha256": "d6bc7483b4f6186c2f90bb4713f886612eddc688b5a709f2d520929edff459d2",
+    "uncompressedSha256": "ff0299e2c2c1f633aba5531acc5b6c75ae0f76ca528e24d2a8973aa045736747"
+  },
+  "2026-10-14-remediation-final-source-routing.xml.gz": {
+    "sha256": "e6c3d83c9768f1783eaad841c3ab4cabae1ac24380eb019464be892dda107e82",
+    "uncompressedSha256": "adb95e9c174747ce342f9f3536cbf6dae2254af5946d511a8abafcf484170a42"
+  },
+  "2026-10-14-remediation-final-context.log.gz": {
+    "sha256": "91f5dd83b5516409a75e272964e7d1441e8f30ff07f7f3a09e31d3d265cd7f66",
+    "uncompressedSha256": "a34e02e794b025e1d3e034844be80b5c47db5df498d8d8f6f88666b18fd958bf"
+  },
+  "2026-10-14-remediation-final-topology.log.gz": {
+    "sha256": "75ac78aa079f4fd5435ffd887eabf99c8579adc8348826c89c1e84115efc42d9",
+    "uncompressedSha256": "e0e49939c0dd150797cc4f1ad5e0e21ac1c0bb92d490c715fd19913c9711869c"
+  },
+  "2026-10-14-remediation-final-nonaspire.log.gz": {
+    "sha256": "4cbe4d6428a18b01c562ba1f3991731918910b1ad240c66a404dcad5a45b25fc",
+    "uncompressedSha256": "a2c3c2ca49ce88aa3d9f6c14595bc1d7ed5c0defdb0c4612eef5c95d9249e989"
+  },
+  "2026-10-14-remediation-final-steady-smoke.log.gz": {
+    "sha256": "479526aa335ce5207f8b19f477eb91c6c5c0ca14cb0eb4f45614de71156f2f0d",
+    "uncompressedSha256": "1212f8dd2eaccb94c515e4202e6bd467f08ba009c5404dbcd5bcc7e2b94a27a9"
+  },
+  "2026-10-14-remediation-final-redis.log.gz": {
+    "sha256": "23c5bfdb833c2460fc498648d87b8d4169df7939abd6adc4a160f81b6904001e",
+    "uncompressedSha256": "9434145673d5ebb61778514acf5523931f0004703920dc909f1635f5b9e259b7"
+  },
+  "2026-10-14-remediation-final-source-domainservice.log.gz": {
+    "sha256": "7edd3b76604b2c8bed92f70ab2acf613d4155b3441742108ce0a1e39bc528780",
+    "uncompressedSha256": "655b133cb61695b6359664f2515955ab45a0d726690e31de84b81665c91fa02c"
+  },
+  "2026-10-14-remediation-final-source-routing.log.gz": {
+    "sha256": "6db3fe3c7a5599978d15a08d60e3593a2ed27c53972ab9addbafc45c081a39a6",
+    "uncompressedSha256": "b6e15d23e227cb374f4917a16b452e24bd64ccdfd3f5ce6017c98c5495cf65f8"
+  },
+  "2026-10-14-remediation-final-package-proof.log.gz": {
+    "sha256": "dd581841d172030b8dd3112293d9083075aae939999bf5b864c4cbd9abae3b65",
+    "uncompressedSha256": "3ffd4afb41355aa9b6ee286b221b753ef28e7b66bcfdbd52048ee45c0fc6b63d"
+  },
+  "2026-10-14-remediation-final-restore.log.gz": {
+    "sha256": "481aa4dac201bc9e3bbb655ddbf89961435bdd8c8897d99c8cf5c50af645286d",
+    "uncompressedSha256": "0bdc703cd35dee987b34dc2b05930d17a5de4837a7bb8cab218c84a124556662"
+  },
+  "2026-10-14-remediation-final-build.log.gz": {
+    "sha256": "7a40603b5a4a5d02b83e0080748a89a441f4e5dca3e5c25122790f3da4ef3162",
+    "uncompressedSha256": "e63aee2b1eeece4f99352b987a43a50a2edc930cffe7158e4f263989026d4c3a"
+  },
+  "2026-10-14-remediation-final-debug-build.log.gz": {
+    "sha256": "6c317ba8c73ebee872c757298e1e12385a69a39218a1d95eab38c0444c86b83c",
+    "uncompressedSha256": "079c062a0330d08c9532f9b22273af2fc12a28deb0b19cea89c7ae4bbaffc773"
+  },
+  "2026-10-14-remediation-final-debug-restore.log.gz": {
+    "sha256": "3c37c748a85e770067b1bb3ac3364721eb9d6d439bd7a74b3550420f3f828dcb",
+    "uncompressedSha256": "91f105a2cc6e0a7052c3c10b5eee67c0025041ab3ce6681534fe37c77141c24e"
+  },
+  "2026-10-14-remediation-final8-client-build.log.gz": {
+    "sha256": "9967b4b88c4d93387d1dba8519d5825ed1ce3db95dff23da29877cdf51119e41",
+    "uncompressedSha256": "5920a1781a3539744f80670439c4f0e2879b5baf4c5d482ea83cd5d331b56357"
+  },
+  "2026-10-14-remediation-final8-client.log.gz": {
+    "sha256": "4420a5caaa3e66ce334fbf75b5f092b65d74935eaf02bef3c21b5b7e0f18221a",
+    "uncompressedSha256": "a931a6b34f42fa0629a3cc95df10ff3bb4c638b444a4976f467fb190bc148c65"
+  },
+  "2026-10-14-remediation-final8-client.xml.gz": {
+    "sha256": "0d9dcbcc953e737308a6925fc6bc7352e284ab1193191b43209c5667217e8cfc",
+    "uncompressedSha256": "ec2b835b3aa8bee1fb411c4f4441da58acf2d04d0c2911809f6beb9fd9331a7d"
+  },
+  "2026-10-14-remediation-final8-pack.log.gz": {
+    "sha256": "8db02a55e759d5857a2f42e2ff7985e7111428756993a4d7c6181255e079dd0e",
+    "uncompressedSha256": "41aa6d29ac1d949a120746d23de80ad4c2478348d23ee17dbd2f04ad65b979ab"
+  },
+  "2026-10-14-remediation-final8-restore.log.gz": {
+    "sha256": "6cd8f19f2e6f358f7b54c9bf68e88bff1fa8797318506cdf5d2e191dd89cfad8",
+    "uncompressedSha256": "6b27b69da72b0d80d9522eb3916c406ffadac24e9143523cc0d2c1faa6c3e0c5"
+  },
+  "2026-10-14-remediation-final8-build.log.gz": {
+    "sha256": "d1659f9f8c361e5181f6af10cefb1277d3c8a6470ec3f222c1c49244ca0c4c3a",
+    "uncompressedSha256": "76f6e2e0bee31e276ed45a40a4980c3370aa2eb33b24bd2516849e30903ac632"
+  },
+  "2026-10-14-remediation-final8-package-proof.log.gz": {
+    "sha256": "dd581841d172030b8dd3112293d9083075aae939999bf5b864c4cbd9abae3b65",
+    "uncompressedSha256": "3ffd4afb41355aa9b6ee286b221b753ef28e7b66bcfdbd52048ee45c0fc6b63d"
+  },
+  "2026-10-14-remediation-final8-nonaspire.log.gz": {
+    "sha256": "cbccef3a84b6de94bdb31d2d981422b8d1fac095d3b72e60b6554b23881af696",
+    "uncompressedSha256": "c8a42712b0e1c35e1f57a3895f2ec7f9ab1b7b7c78da1bf1b9406a66df9c3c1e"
+  },
+  "2026-10-14-remediation-final8-nonaspire.xml.gz": {
+    "sha256": "e521da2cb0fdb6c3fbec7d42ac7c1dfab302ebead436fff18bce8dea6a5d32c8",
+    "uncompressedSha256": "81239fa3b30c6fbe8c1427c20cdfbe7f3b6e0499a083d181a766c48d0c995645"
+  },
+  "2026-10-14-remediation-final8-architecture.log.gz": {
+    "sha256": "b28c7d4b3eef553a275f3575c2a3c8a3c667c976788e98dc414cf71d045af130",
+    "uncompressedSha256": "da5c07c7e2f4f49a65a6e57e0e00a9ae41671ac34a6fe69b00796b79d386215f"
+  },
+  "2026-10-14-remediation-final8-architecture.xml.gz": {
+    "sha256": "468cd3c6e1236a0463a6458c7533c6f66d49c9ceb1eac096b6f56d99555db736",
+    "uncompressedSha256": "78d6156b0de1e911db88d298cd621b4364d061fffbf24e0b88e56e0386c3b1e8"
+  },
+  "2026-10-14-remediation-final8-recovery-smoke.log.gz": {
+    "sha256": "880fc70556030c6160787fc1e675570a77c096e9d918a95642df8c454536ad5c",
+    "uncompressedSha256": "5da2a2e8c73718e0d687f60e3c85a9ba68570a1d9c6ed3ba111b81f68cdab85d"
+  },
+  "2026-10-14-remediation-final8-recovery-smoke.xml.gz": {
+    "sha256": "8965178b891b156c3c9d11048ccfda3bc1f0b86c5ed97b5626e89532bb1f0ed6",
+    "uncompressedSha256": "401822747f1d56eae3c6dd962c49a0b370cc6f2fd40a3a880a3c377158183497"
+  },
+  "2026-10-14-remediation-final8-redis.log.gz": {
+    "sha256": "ba5b6edcaab2174f9272d84f44bbf3700f426052f44ecd992ab5ced032fab774",
+    "uncompressedSha256": "147aa32b9547d9a1a8a432247e8bf9fee32baa61f77f8e7a06096b70d89d29f4"
+  },
+  "2026-10-14-remediation-final8-redis-projections.xml.gz": {
+    "sha256": "b6a70fe289b186c27462f270da3dbb82c45a32bb15cd4a6ffafa56b1ec077f4f",
+    "uncompressedSha256": "7412ee1000944ae5d6e2b3db919985cd1af76d62617a6bef020ba0ccfc9c93f1"
+  },
+  "2026-10-14-remediation-final8-redis-rollback.xml.gz": {
+    "sha256": "7967d7b4cfd6e45f2a9f77a684387b1565097d0b23b88db16be8e5bd4d4ce79a",
+    "uncompressedSha256": "05dbf25f5678fc2e48e6221fc7c45b382369660f8f277a8e7acca6373fca3433"
+  },
+  "2026-10-14-remediation-final8-command-steady-smoke.log.gz": {
+    "sha256": "5e29ecb81cdc9b0eff653463f2084b0617a71ce2f33ab5a22f4cb7ac90658177",
+    "uncompressedSha256": "9edacaac608089c2f6600ad9aa99cd77988bef1b3eb6342e66dc392101b3be6a"
+  },
+  "2026-10-14-remediation-final8-command-steady-smoke.xml.gz": {
+    "sha256": "f12bd0463c5e43768f23a752f12f9c5d1769c5fc96a5db2459b8caaeb9d745b6",
+    "uncompressedSha256": "9c9de935345ebcc0b15d9f5e24f30992bd4440094e4762080a4163065eefd45c"
+  }
+}

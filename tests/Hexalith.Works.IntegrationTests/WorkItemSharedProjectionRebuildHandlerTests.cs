@@ -1,5 +1,6 @@
 using System.Text.Json;
 
+using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Projections;
@@ -799,10 +800,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
     private static DomainSharedProjectionRebuildIdentity Identity(string tenantId, string operationId)
     {
-        string fingerprint = ProjectionRouteCatalogFingerprint.Compute(
-            "works-test",
-            "v1",
-            [new ProjectionDispatchRoute("work", WorkItemSharedProjectionRebuildHandler.ProjectionTypeName)]);
+        // Rebuild-only Works routes advertise an empty ordinary subset. Consume the real advertised
+        // fingerprint so every reconciliation assertion exercises the supported legacy admission contract.
+        string fingerprint = AdminOperationalIndexMetadata.Create(new DiscoveryResult([], []), ["work"], [],
+            [new WorkItemSharedProjectionRebuildHandler()], "works-test", "v1", new ProjectionDispatchOptions(), ["work"])
+            .CatalogFingerprint!;
         return new DomainSharedProjectionRebuildIdentity(
             tenantId,
             "work",

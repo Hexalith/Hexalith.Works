@@ -166,9 +166,11 @@ public sealed class EnvelopeCanonicalSequencingTests
         var snapshotState = new WorkItemState();
         ApplyByConvention(snapshotState, rejectionResult.Events.Single().ShouldBeAssignableTo<IRejectionEvent>());
         SerializeState(snapshotState).ShouldBe(rejectionReplay.StateJson);
+        // Persisted snapshots carry folded JSON, as required by the corrected SDK reader.
+        JsonElement snapshotDocument = JsonSerializer.SerializeToElement(snapshotState, JsonOptions);
         var rejectionPositionSnapshot = new SnapshotRecord(
             SequenceNumber: 1,
-            State: snapshotState,
+            State: snapshotDocument,
             CreatedAt: SnapshotCreatedAt,
             Domain: Domain,
             AggregateId: Item.Value,
@@ -178,7 +180,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         snapshotBacked.Events.ShouldBeEmpty();
         snapshotBacked.LastSnapshotSequence.ShouldBe(1);
         snapshotBacked.CurrentSequence.ShouldBe(1);
-        snapshotBacked.SnapshotState.ShouldBeSameAs(snapshotState);
+        snapshotBacked.SnapshotState.ShouldBeOfType<JsonElement>().GetRawText().ShouldBe(snapshotDocument.GetRawText());
 
         var acceptedCommand = new CreateWorkItem(Tenant, Item, "Create through a rejection-position snapshot");
         DomainResult createResult = await ProcessAsync(
@@ -207,7 +209,7 @@ public sealed class EnvelopeCanonicalSequencingTests
         // flips the outcome from rejection to success.
         var createPositionSnapshot = new SnapshotRecord(
             SequenceNumber: 2,
-            State: PopulatedState(),
+            State: JsonSerializer.SerializeToElement(PopulatedState(), JsonOptions),
             CreatedAt: SnapshotCreatedAt,
             Domain: Domain,
             AggregateId: Item.Value,

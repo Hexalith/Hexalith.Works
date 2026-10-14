@@ -2,9 +2,10 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Story 4.14 consumes the published producer and identity contracts at these exact versions. -->
-    <HexalithEventStoreVersion>3.120.0</HexalithEventStoreVersion>
+    <!-- Story 4.14 local corrected SDK candidate; not an upstream published release. Parties remains published. -->
+    <HexalithEventStoreVersion>3.120.1-story414.20261014.10</HexalithEventStoreVersion>
     <HexalithPartiesVersion>1.2.1</HexalithPartiesVersion>
+    <HexalithPlatformIdentityVersion>1.0.0-story414.20261014.5</HexalithPlatformIdentityVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
@@ -12,4 +13,7 @@
   <Import Project="$(Hexalith1BuildPackageProps)" Condition="Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith2BuildPackageProps)" Condition="Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
+  <ItemGroup>
+    <PackageVersion Include="Hexalith.Platform.Identity" Version="$(HexalithPlatformIdentityVersion)" Condition="'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'" />
+  </ItemGroup>
 </Project>

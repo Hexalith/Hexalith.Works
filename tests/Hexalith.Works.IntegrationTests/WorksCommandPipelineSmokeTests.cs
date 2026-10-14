@@ -35,7 +35,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// (<c>WorksAppHostTopologyTests</c>), and the deterministic adapter convergence is proven by
 /// <c>WorkItemProjectionQueryAdapterTests</c>.</para>
 /// <para>Auth uses the EventStore EnableKeycloak=false symmetric-key dev path; the signing key matches the
-/// EventStore <c>appsettings.Development.json</c> dev key.</para>
+/// explicit synthetic key supplied to this test's AppHost.</para>
 /// </remarks>
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksCommandPipelineSmokeTests
@@ -63,7 +63,8 @@ public sealed class WorksCommandPipelineSmokeTests
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
-                ["--EnableKeycloak=false", "--environment=Development", "--DcpPublisher:RandomizePorts=false"],
+                ["--EnableKeycloak=false", "--environment=Development", "--DcpPublisher:RandomizePorts=false",
+                    $"--Works:Authentication:DevSigningKey={DevSigningKey}"],
                 startupCts.Token)
             .ConfigureAwait(true);
 

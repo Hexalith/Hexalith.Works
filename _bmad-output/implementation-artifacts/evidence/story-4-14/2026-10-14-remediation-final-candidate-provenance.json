@@ -1,0 +1,102 @@
+[
+  {
+    "id": "Hexalith.EventStore.Admin.Abstractions",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "ae45c1493299dd90e4f470de1a6880d4e5fa32be752bfb682ae1354e5e85dc5d",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Aspire",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "12a6e2985f5bcc8cd3c91efe8625635ddeccc625f7c04e3a99e34da24592eae5",
+    "sdk_dependencies": {},
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Client",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "ddbea2da45aa9457e8f4c2d23259efce3c22fa2396adaea027b3185cfb580949",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Contracts",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "be105779f820e1234dacd7ed93013adab6042a05f1edb07f67c7e9ab1059da40",
+    "sdk_dependencies": {},
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.DomainService",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "a47c4690d22be7f8f8950b11a9d9cb9f6a460a992c05f2dde64063bd9035b6bb",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Client": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Gateway",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "d9ee88a5544187bd77c4b69d60e145033f0a1848164fe2d4a9f806e8741e67fe",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Admin.Abstractions": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Server": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Server",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "6542da87c40fe9118f2c102ef5f15d6402398f66cae6312ef884b7df5396ba47",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Client": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.DomainService": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.ServiceDefaults",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "55840e07dbb14b4bd11902b287276944ba95f6c17d974d2ad2f4d47fffa559c8",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.EventStore.Testing",
+    "version": "3.120.1-story414.20261014.7",
+    "sha256": "a13e1b8880ad5f35b49c51184ce4d94fd2eb26ea988133921bc1fab9253cbaec",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Client": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Server": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  },
+  {
+    "id": "Hexalith.Platform.Identity",
+    "version": "1.0.0-story414.20261014.2",
+    "sha256": "44d9692fe1a0be8d619623b7680628372fb33a4b51041b383699700a9f765ee3",
+    "sdk_dependencies": {
+      "Hexalith.EventStore.Gateway": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Admin.Abstractions": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Client": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Contracts": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.DomainService": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.Server": "3.120.1-story414.20261014.7",
+      "Hexalith.EventStore.ServiceDefaults": "3.120.1-story414.20261014.7"
+    },
+    "cache_matches": true
+  }
+]

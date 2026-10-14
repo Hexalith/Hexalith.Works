@@ -1,0 +1,135 @@
+[
+  {
+    "id": "B1",
+    "verdict": "high",
+    "route": "bad_spec",
+    "finding": "Catch-up mutation count",
+    "evidence": "BuildEpoch emits 3+3n writes; SDK CatchUpAsync caps the result at 128 before preparation. Both reviewers reproduced item 42 leaving the journal pending; healthy tenant growth can block all later deliveries."
+  },
+  {
+    "id": "B2",
+    "verdict": "high",
+    "route": "bad_spec",
+    "finding": "Lifetime context capacity",
+    "evidence": "FoldCatchUpAsync serializes every tenant history against the 1 MiB rebuild-candidate budget and converts overflow to poison parking. Healthy lifetime growth reaches it and authoritative replay retains the same history, so the capacity policy must avoid silently losing legitimate updates."
+  },
+  {
+    "id": "B3",
+    "verdict": "high",
+    "route": "bad_spec",
+    "finding": "Undiscoverable first parking",
+    "evidence": "FoldFailure writes only the item parking key; queue membership comes only from successful BuildEpoch histories. Detail returns NotFound before inspecting that parking and list enumerates membership only, so later healthy delivery can hide the original unresolved evidence."
+  },
+  {
+    "id": "B4",
+    "verdict": "medium",
+    "route": "patch",
+    "finding": "Successful gap retry stays degraded",
+    "evidence": "CatchUpAsync initializes failureStatus from head.Failure and persists it after success. The newly added resolution predicate requires head.Failure is null, so an exact rejected gap delivery can checkpoint successfully without resolving its audit."
+  },
+  {
+    "id": "B5",
+    "verdict": "medium",
+    "route": "patch",
+    "finding": "Capture freshness",
+    "evidence": "This story extended single-read freshness to Building but omitted Capturing; ReadMany also omits Capturing. BeginAsync durably reserves that phase before chunk completion, while status already reports it building, so interrupted capture falsely reports fresh SDK reads."
+  },
+  {
+    "id": "B6",
+    "verdict": "high",
+    "route": "patch",
+    "finding": "Reminder readiness",
+    "evidence": "ScanTenantAsync checks only IsAvailable on both SDK reads and can return an empty successful scan from a durably conflicted family. The existing incomplete-scan path must propagate this demonstrated degraded state."
+  },
+  {
+    "id": "B7",
+    "verdict": "high",
+    "route": "bad_spec",
+    "finding": "Cascade terminal evidence",
+    "evidence": "PinSdkTerminalsAsync reads no parking documents and ignores IsDegraded. A retained terminal roll-up can suppress a child in the persisted cascade checkpoint despite unresolved family or per-item evidence; pin parking and retain conservative behavior."
+  },
+  {
+    "id": "B8",
+    "verdict": "medium",
+    "route": "bad_spec",
+    "finding": "Authority recovery composition",
+    "evidence": "WorksRecoveryExtensions always selects resource-bound workload transport. DomainServiceGatewayWorkloadAssertionSource always requests bindings and JwtWorkloadAssertionIssuer returns null for authority mode; the Keycloak branch therefore cannot use its existing configured gateway credentials. Preserve the supported legacy authority transport without weakening workload authentication."
+  },
+  {
+    "id": "B9",
+    "verdict": "medium",
+    "route": "defer",
+    "finding": "Local candidate delivery gate",
+    "evidence": "The normal CI reusable workflow restores without generating the ignored local candidate feed, so a clean runner cannot restore these private identities. This is an explicitly accepted temporary delivery limitation in the approved remediation: upstream publication and the subsequent public pin update remain required before merge/release. No public publication or broader Builds-module edits are authorized; retain this unresolved external delivery gate."
+  },
+  {
+    "id": "B10",
+    "verdict": "low",
+    "route": "reject",
+    "finding": "Partial candidate packing",
+    "evidence": "The script publishes packages incrementally then refuses existing identities on retry. A failed partial build requires a fresh candidate identity/feed, which is the documented immutable-candidate policy; atomic publication/resumption adds complexity to an occasional local validation interruption."
+  },
+  {
+    "id": "E1",
+    "verdict": "high",
+    "route": "bad_spec; grouped B1",
+    "finding": "Catch-up mutation count",
+    "evidence": "Independent review reproduced the same 42nd-item failure from 129 mutations versus the SDK 128 cap. Preserve this outcome with B1 rather than treating the duplicate as a separate fix."
+  },
+  {
+    "id": "E2",
+    "verdict": "high",
+    "route": "bad_spec; grouped B2",
+    "finding": "Single history mutation capacity",
+    "evidence": "The reported guard is a proposed guard, not current code. The outcome is real: a history can exceed the SDK 256 KiB per-mutation bound below the Works 1 MiB tenant bound, and PartitionMutations then throws outside the fold-failure parking boundary, blocking the tenant journal."
+  },
+  {
+    "id": "E3",
+    "verdict": "medium",
+    "route": "patch; grouped B4",
+    "finding": "Successful gap retry stays degraded",
+    "evidence": "Independent executable reproduction ends with no pending delivery, an advanced checkpoint and unresolved gap evidence. The retained historical failure is what prevents the new exact-delivery resolution predicate."
+  },
+  {
+    "id": "E4",
+    "verdict": "high",
+    "route": "bad_spec",
+    "finding": "Legacy rebuild fingerprint",
+    "evidence": "Metadata.CreateCore hashes the empty ordinary-delivery subset in legacy mode, but DomainSharedProjectionRebuildDispatcher.ResolveHandler recomputes the old all-route fingerprint. A rebuild using the advertised valid catalog is rejected UnsupportedCapability; ordinary capability and rebuild route admission must use the same fingerprint."
+  },
+  {
+    "id": "E5",
+    "verdict": "medium",
+    "route": "patch; grouped B5",
+    "finding": "Capture freshness",
+    "evidence": "The durable Capturing phase is omitted from both SDK read predicates, despite being included by GetStatusAsync.IsBuilding. This is the same freshness defect as B5."
+  },
+  {
+    "id": "V1",
+    "verdict": "medium",
+    "route": "patch",
+    "finding": "Shared-client circuit partition test",
+    "evidence": "Pre-verified verification gap: the regression currently exercises differently named metadata clients and the unnamed delivery client. Add failing and healthy Dapr targets through one client name and authority so removal of target partitioning is detected."
+  },
+  {
+    "id": "V2",
+    "verdict": "medium",
+    "route": "patch",
+    "finding": "Ordinary capability fingerprint test",
+    "evidence": "Pre-verified verification gap: existing checks calculate expected fingerprints using the same implementation or omit ordinary subsets. Assert that changing only the ordinary subset with an old fingerprint is rejected and recomputing it restores admission."
+  },
+  {
+    "id": "P1",
+    "verdict": "medium",
+    "route": "patch",
+    "finding": "Transitive Debug source mode",
+    "evidence": "The new Platform project edge omits mode propagation; Platform Debug evaluation defaults UseHexalithProjectReferences=false and resolves EventStore.Gateway as a package. Pass the selected mode explicitly and verify the effective child graph."
+  },
+  {
+    "id": "P3",
+    "verdict": "high",
+    "route": "patch",
+    "finding": "Capacity retries contaminate poison retry counter",
+    "evidence": "Capacity stores head.Failure up to1000 with ReasonCode capacity. The ordinary fold-failure branch unconditionally adds1 to that count; it can park prematurely or persist1001, violating ValidateState. Separate retry reasons and test the transition."
+  }
+]

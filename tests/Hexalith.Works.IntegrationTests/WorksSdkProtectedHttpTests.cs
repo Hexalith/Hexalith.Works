@@ -531,6 +531,57 @@ public sealed class WorksSdkProtectedHttpTests
         foreignOrigin.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("disabled-reader")]
+    [InlineData("untrusted-reader")]
+    [InlineData("inactive-actor")]
+    [InlineData("expired")]
+    [InlineData("missing")]
+    [InlineData("binding-actor")]
+    [InlineData("expired-binding")]
+    [InlineData("unsafe-custody")]
+    [InlineData("unavailable-custody")]
+    public async Task ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(string? failure)
+    {
+        var authority = new WorksSdkPlatformAuthorityFixture(Tenant, Actor, Issuer, SigningKey, CurrentIdentity);
+        await using WebApplication parties = authority.Build(failure);
+        await parties.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var persisted = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(persisted, persisted);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        IReadModelStore forbiddenStore = Substitute.For<IReadModelStore>();
+        IReadModelStore store = failure is null ? persisted : forbiddenStore;
+        string[] settings = failure == "missing" ? [] : [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer(failure == "expired")}"];
+        await using WebApplication app = BuildProtectedHost(store, Address(parties), failure is null ? coordinator : null, settings);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        forbiddenStore.ClearReceivedCalls();
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
+        {
+            using HttpResponseMessage response = await client.SendAsync(Request("/query", ExecutorQuery() with { QueryType = queryType },
+                channel: true, assertion: Assertion("domain-service:query")), TestContext.Current.CancellationToken).ConfigureAwait(true);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            QueryResult result = (await response.Content.ReadFromJsonAsync<QueryResult>(cancellationToken: TestContext.Current.CancellationToken)
+                .ConfigureAwait(true)).ShouldNotBeNull();
+            result.Success.ShouldBe(failure is null);
+            if (failure is null)
+            {
+                result.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
+                if (queryType == WhatsNextQueryHandler.WhatsNextQueryType)
+                    result.GetPayload().EnumerateArray().Select(item => item.GetProperty("workItemId").GetProperty("value").GetString())
+                        .ShouldBe(["mine", "queue"]);
+                else result.GetPayload().GetProperty("found").GetBoolean().ShouldBeTrue();
+            }
+            else result.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        }
+        authority.VerifiedQueries.ShouldBe(failure is null or "binding-actor" or "expired-binding" or "unsafe-custody" or "unavailable-custody" ? 2 : 0);
+        forbiddenStore.ReceivedCalls().ShouldBeEmpty();
+        var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        (await coordinator.GetCheckpointAsync(projection.CreateScope(Tenant), "mine", TestContext.Current.CancellationToken)
+            .ConfigureAwait(true))!.Position.ShouldBe(2);
+    }
+
     private static HttpRequestMessage Request(string route, object query, bool channel = false, string? assertion = null, string? bearer = null)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, route)
@@ -631,7 +682,11 @@ public sealed class WorksSdkProtectedHttpTests
         {
             Issuer = Issuer,
             Audience = "parties-identity-reader",
-            Claims = new Dictionary<string, object> { ["sub"] = "works-identity-reader" },
+            Claims = new Dictionary<string, object>
+            {
+                ["sub"] = "works-identity-reader", ["azp"] = "works",
+                ["eventstore:tenant"] = Tenant, ["eventstore:domain"] = "party", ["eventstore:permission"] = "query:read",
+            },
             IssuedAt = now.AddMinutes(-2),
             NotBefore = now.AddMinutes(-2),
             Expires = expired ? now.AddMinutes(-1) : now.AddMinutes(5),

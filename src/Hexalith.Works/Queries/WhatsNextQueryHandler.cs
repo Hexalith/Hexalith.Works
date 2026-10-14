@@ -150,7 +150,8 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             string[] parkingKeys = [.. initialIndex.MemberWorkItemIds.Select(WorksReadModelKeys.RuntimeParkingKey)];
             SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await _coordinator
                 .ReadManyAsync<WorksRuntimeDocument>(scope,
-                    [WorksReadModelKeys.RuntimeQueueKey, .. parkingKeys], cancellationToken)
+                    [WorksReadModelKeys.RuntimeQueueKey, .. parkingKeys,
+                        .. initialIndex.MemberWorkItemIds.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
                 .ConfigureAwait(false);
             if (!read.IsAvailable || read.Value is null
                 || !read.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queueDocument)
@@ -161,7 +162,7 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
 
             SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
                 .ConfigureAwait(false);
-            if (status.IsOffboarded || status.ActiveGeneration != read.Generation)
+            if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
             {
                 return Unavailable(read.Generation, true);
             }
@@ -206,10 +207,21 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
                     || item.Status == WorkItemStatus.Queued
                     || item.Status == WorkItemStatus.Assigned
                         && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
+            var rollUps = new List<WorkItemRollUp>();
+            foreach (WhatsNextItem item in items)
+            {
+                if (!read.Value.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value), out WorksRuntimeDocument? document)
+                    || document is null) return Unavailable(read.Generation, stale);
+                WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
+                if (rollUp.TenantId?.Value != query.TenantId || rollUp.WorkItemId?.Value != item.WorkItemId.Value
+                    || rollUp.Status != item.Status || rollUp.LatestAcceptedSourceSequence != item.LatestAcceptedSourceSequence)
+                    return Unavailable(read.Generation, stale);
+                rollUps.Add(rollUp);
+            }
             return QueryResult.FromPayload(
                 JsonSerializer.SerializeToElement(items, s_jsonOptions),
                 WorksReadModelKeys.WhatsNextProjectionType,
-                Metadata(read.Generation, stale, parked.Count > 0));
+                Metadata(read.Generation, stale, parked.Count > 0, rollUps));
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -221,15 +233,23 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
         }
     }
 
-    private static QueryResponseMetadata Metadata(long generation, bool stale, bool parked)
-        => new(IsStale: stale, IsDegraded: stale || parked,
+    private static QueryResponseMetadata Metadata(long generation, bool stale, bool parked, IReadOnlyList<WorkItemRollUp> rollUps)
+    {
+        bool degraded = parked || rollUps.Any(model => model.Degraded || model.ProjectionDiagnostics.Count > 0);
+        string[] warnings = [.. (parked ? new[] { "works-runtime-parked" } : Array.Empty<string>()),
+            .. (degraded && rollUps.Any(model => model.Degraded || model.ProjectionDiagnostics.Count > 0)
+                ? new[] { "works-rollup-degraded" } : Array.Empty<string>()),
+            .. rollUps.SelectMany(model => model.ProjectionDiagnostics).Select(item => "works-rollup-refused:" + item.EventType)
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+        return new(IsStale: stale, IsDegraded: stale || degraded,
             ProjectionVersion: generation.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            WarningCodes: parked ? ["works-runtime-parked"] : null)
+            WarningCodes: warnings.Length == 0 ? null : warnings)
         {
             Provenance = QueryResponseProvenance.ProjectionBacked,
             Lifecycle = stale ? ProjectionLifecycleState.Stale
-                : parked ? ProjectionLifecycleState.Degraded : ProjectionLifecycleState.Current,
+                : degraded ? ProjectionLifecycleState.Degraded : ProjectionLifecycleState.Current,
         };
+    }
 
     private static QueryResult Unavailable(long generation, bool stale)
         => QueryResult.Failure(

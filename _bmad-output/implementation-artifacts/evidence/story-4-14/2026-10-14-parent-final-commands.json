@@ -1,0 +1,114 @@
+[
+  {
+    "label": "restore",
+    "command": [
+      "dotnet",
+      "restore",
+      "Hexalith.Works.slnx",
+      "-p:Configuration=Release",
+      "-p:NuGetAudit=false",
+      "--force-evaluate",
+      "-m:1",
+      "-nr:false"
+    ],
+    "exit_code": 0,
+    "seconds": 1.55,
+    "log": "/tmp/story414-final-r2-restore.log"
+  },
+  {
+    "label": "build",
+    "command": [
+      "dotnet",
+      "build",
+      "Hexalith.Works.slnx",
+      "-c",
+      "Release",
+      "--no-restore",
+      "-warnaserror",
+      "-m:1",
+      "-nr:false",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 5.06,
+    "log": "/tmp/story414-final-r2-build.log"
+  },
+  {
+    "label": "nonaspire-invalid-filter",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-noLogo",
+      "-notClass",
+      "Hexalith.Works.IntegrationTests.WorksCommandPipelineSmokeTests",
+      "-notClass",
+      "Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests",
+      "-notClass",
+      "Hexalith.Works.IntegrationTests.WorksCascadeRecoveryPipelineSmokeTests",
+      "-notClass",
+      "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests",
+      "-result-xml",
+      "/tmp/story414-final-r2-nonaspire.xml"
+    ],
+    "exit_code": 3,
+    "seconds": 0.15,
+    "log": "/tmp/story414-final-r2-invalid-filter.log",
+    "result": "Runner rejected -notClass before discovery; no tests executed; superseded by valid -class- invocation."
+  },
+  {
+    "label": "nonaspire",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-noLogo",
+      "-class-",
+      "Hexalith.Works.IntegrationTests.WorksCommandPipelineSmokeTests",
+      "-class-",
+      "Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests",
+      "-class-",
+      "Hexalith.Works.IntegrationTests.WorksCascadeRecoveryPipelineSmokeTests",
+      "-class-",
+      "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests",
+      "-result-xml",
+      "/tmp/story414-final-r2-nonaspire.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 9.28,
+    "log": "/tmp/story414-final-r2-nonaspire.log"
+  },
+  {
+    "label": "architecture",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story414-final-r2-architecture.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 8.21,
+    "log": "/tmp/story414-final-r2-architecture.log"
+  },
+  {
+    "label": "client",
+    "command": "dotnet references/Hexalith.EventStore/tests/Hexalith.EventStore.Client.Tests/bin/Release/net10.0/Hexalith.EventStore.Client.Tests.dll -noLogo -class *SharedProjection* -class *AdminMetadataCircuitIsolationTests -class *AdminOperationalIndexHostedServiceTests -class *EventStoreGatewayClientTests -result-xml /tmp/story414-final-r2-client.xml",
+    "exit_code": 0
+  },
+  {
+    "label": "domain",
+    "command": "dotnet references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Release/net10.0/Hexalith.EventStore.DomainService.Tests.dll -noLogo -class *DomainProjectionDispatcher* -class *SharedProjectionRebuild* -class *GatewayAuthorityTransportTests -class *GatewayWorkloadTransportTests -class *MixedProjectionCatalogTests -result-xml /tmp/story414-final-r2-domain.xml",
+    "exit_code": 0
+  },
+  {
+    "label": "command-steady",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -noLogo -method Hexalith.Works.IntegrationTests.WorksCommandPipelineSmokeTests.CreateWorkItem_command_persists_then_publishes_to_a_terminal_status -method Hexalith.Works.IntegrationTests.WorksReminderRecoveryPipelineSmokeTests.Suspend_time_registration_resumes_the_item_when_the_scheduler_fires -result-xml /tmp/story414-final-r2-command-steady.xml",
+    "exit_code": 0
+  },
+  {
+    "label": "domain-invalid-filter",
+    "command": "DomainService.Tests runner with -class *Gateway*TransportTests",
+    "exit_code": 3,
+    "result": "Runner rejected interior wildcard before discovery; no tests executed; superseded by the explicit valid filters."
+  }
+]

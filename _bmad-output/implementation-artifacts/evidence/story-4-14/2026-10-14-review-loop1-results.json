@@ -1,0 +1,50 @@
+{
+  "producer-client": {
+    "total": 177,
+    "passed": 177,
+    "failed": 0,
+    "skipped": 0
+  },
+  "producer-domain": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0
+  },
+  "source-consumer": {
+    "total": 56,
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0
+  },
+  "package-consumer": {
+    "total": 630,
+    "passed": 630,
+    "failed": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "total": 269,
+    "passed": 269,
+    "failed": 0,
+    "skipped": 0
+  },
+  "live-command-steady": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0
+  },
+  "redis-projections": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "skipped": 0
+  },
+  "redis-rollback": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0
+  }
+}

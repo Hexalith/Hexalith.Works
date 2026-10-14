@@ -1,0 +1,110 @@
+{
+  "2026-10-14-review-second-pass-domain-build.log.gz": {
+    "sha256": "7b1c18f8cb7ac01d39fd643fbf7e2055369a19bf7fdf8cb0e277a6270a1e405a",
+    "uncompressedSha256": "d9089d2653b4c904802320d0dbb971ab39b2888109893eb8b5bb22a93b72ad54",
+    "source": "/tmp/story414-r2-domain-build.log",
+    "rawBytes": 1580
+  },
+  "2026-10-14-review-second-pass-domain.log.gz": {
+    "sha256": "7c5a0426e747941d2553579061a2fbd8b2a08210f398545b679a875195105cd5",
+    "uncompressedSha256": "043c1d04116a7de96662907b30bbd8b8dbda8eaf153b54c3ca5da3b32c3a4ca4",
+    "source": "/tmp/story414-r2-domain.log",
+    "rawBytes": 550
+  },
+  "2026-10-14-review-second-pass-domain.xml.gz": {
+    "sha256": "33e15c93c7ec0abe6b40cf0ccb12f2b132c0e71a024385ee4ae737b080596115",
+    "uncompressedSha256": "f2f6656e0e7dde1db101963dfdc9c802f0af81b027ff48492cc8b77247af666f",
+    "source": "/tmp/story414-r2-domain.xml",
+    "rawBytes": 34923
+  },
+  "2026-10-14-review-second-pass-client-build.log.gz": {
+    "sha256": "6c1cb3a6646fb2a12cc0da1cb7d2c6eadfd972c976f7be555bc8beae706acf1a",
+    "uncompressedSha256": "ae5078976cf42dab9dc91ffe4644b1b8c574d97b2bd80d87b376bf4b2e988610",
+    "source": "/tmp/story414-r2-client-build.log",
+    "rawBytes": 2885
+  },
+  "2026-10-14-review-second-pass-client.log.gz": {
+    "sha256": "5bc98d1f1ec7c74aa7f3253a3e9a7d6197f07cabed16fc58ce57489726080080",
+    "uncompressedSha256": "e45ca6c75dafb73fa88fcc5a4c32e93c6f389c070498f06e96382af6a633fe7d",
+    "source": "/tmp/story414-r2-client.log",
+    "rawBytes": 515
+  },
+  "2026-10-14-review-second-pass-client.xml.gz": {
+    "sha256": "7428b75a7c8618e6bbf0302cb0d349731d05b707b9e5c41b85090777af6b78cc",
+    "uncompressedSha256": "05d71cc6108c04bf99dd327eba1d77223654f4b86652c840bef39b596c9155ac",
+    "source": "/tmp/story414-r2-client.xml",
+    "rawBytes": 15120
+  },
+  "2026-10-14-review-second-pass-platform-build.log.gz": {
+    "sha256": "c21cf5fa217cb0934417ed1597fb74b92de5bc1b7c41201c3d63505d72d0fce8",
+    "uncompressedSha256": "bfbe3ac3e88e7fbd3b315081985e37b9f5a477f06265712dff7243b26b01e50c",
+    "source": "/tmp/story414-r2-platform-build.log",
+    "rawBytes": 845
+  },
+  "2026-10-14-review-second-pass-platform.log.gz": {
+    "sha256": "4423b6841b9355ec33ca421cc20a68c962accea80e2d5d19bf29ebe729e09ea8",
+    "uncompressedSha256": "2b3d9da4f1b641175c22d55cae262e01046c09ccba9b62f5ded82f73719d02da",
+    "source": "/tmp/story414-r2-platform.log",
+    "rawBytes": 515
+  },
+  "2026-10-14-review-second-pass-platform.xml.gz": {
+    "sha256": "5ebedda7f733d6c146cd22aebae1b4fe1e3eb3cf1810b940541782dd72939521",
+    "uncompressedSha256": "35ac6fd638c2017f21a0cdcdfa93bd8f741ce1fbee994c0fd91620f5c24cf422",
+    "source": "/tmp/story414-r2-platform.xml",
+    "rawBytes": 15367
+  },
+  "2026-10-14-review-second-pass-works-source-build.log.gz": {
+    "sha256": "09b4de772833e5ef10d411e22c20d40a43f99aa1baa2b02ca72f6401d0a22879",
+    "uncompressedSha256": "715de57b7d6b0dc88a09679cf1432c829c5f29ab7ef1b416ead66dd9c7ad5ecd",
+    "source": "/tmp/story414-r2-works-source-build.log",
+    "rawBytes": 4447
+  },
+  "2026-10-14-review-second-pass-works-source.log.gz": {
+    "sha256": "02e5adef6c5360a937c5dc30a7b3bb93cb5475f67d2b6fbea79c08fc2c8c94a0",
+    "uncompressedSha256": "e3be7a2d93a135db26b246eea40148690e6e821233f544f1ecf0af123fcd208e",
+    "source": "/tmp/story414-r2-works-source.log",
+    "rawBytes": 1656
+  },
+  "2026-10-14-review-second-pass-works-source.xml.gz": {
+    "sha256": "46f59d32e31156fb873e3c3a712f08732612169a48ee0f00e8adc6bae7d92ca4",
+    "uncompressedSha256": "9a3e78f50dab18701c8d267899a1f4f5f995195c8685827873cfc6be77ba45a4",
+    "source": "/tmp/story414-r2-works-source.xml",
+    "rawBytes": 44755
+  },
+  "2026-10-14-review-second-pass-pack.log.gz": {
+    "sha256": "551879913535bc27ecb075d28cd0a0fcc653c3fd64258fe2f0dcc3df2c4105c7",
+    "uncompressedSha256": "92a90104e30d8997127c7ed58e7992f3dd855d32a610913dd67b23d82bb61e47",
+    "source": "/tmp/story414-r2-pack.log",
+    "rawBytes": 12588
+  },
+  "2026-10-14-review-second-pass-package-proof.log.gz": {
+    "sha256": "b3d8a31dfed614b7ff4d6be67795d5cbb0e29c2de6a72d3c811f18110550ee27",
+    "uncompressedSha256": "e5cc3f54a271e35d722880c2a9f09b42186b7acbea5fef79a8a34c80bc560a76",
+    "source": "/tmp/story414-r2-package-proof.log",
+    "rawBytes": 1643
+  },
+  "2026-10-14-review-second-pass-shell-syntax.log.gz": {
+    "sha256": "9acec82604683c4651536d1e6658ccf5dffde044adced0ccaf1185a6dbff66f2",
+    "uncompressedSha256": "45939a79ee298221c49c1fda60929e3993675c1fb2ac87af025cd023c2eb5b50",
+    "source": "/tmp/story414-r2-shell-syntax.log",
+    "rawBytes": 40
+  },
+  "2026-10-14-review-second-pass-redis.log.gz": {
+    "sha256": "10d727dd96e72f6498ad8305128a740d79c593629d9266b51d203086d67abf95",
+    "uncompressedSha256": "6d0712ea9b74b32258d4d2c0691873b22e804d91bd626ac1495e90bb9d56101f",
+    "source": "/tmp/story414-r2-redis.log",
+    "rawBytes": 3485
+  },
+  "2026-10-14-review-second-pass-redis-projections.xml.gz": {
+    "sha256": "55ca22c4806d453964f2fb7a96171f5ac6a5031150de7c43aa7b52d5bed4ffa0",
+    "uncompressedSha256": "464f2602626ada5a32e2ef2b6e8298a754ce0fb4dd134b8337c591263a60def2",
+    "source": "/tmp/story414-r2-redis/projections.xml",
+    "rawBytes": 18879
+  },
+  "2026-10-14-review-second-pass-redis-rollback.xml.gz": {
+    "sha256": "e9610e7dc08b1942c0d45d0a2207372b751bbf3dcadfb3167b4df2b9506177dc",
+    "uncompressedSha256": "f64b430f5bc495234d6c69bb6c7365d332dd083a2098e70392497a69c4ccddd8",
+    "source": "/tmp/story414-r2-redis/rollback.xml",
+    "rawBytes": 1875
+  }
+}

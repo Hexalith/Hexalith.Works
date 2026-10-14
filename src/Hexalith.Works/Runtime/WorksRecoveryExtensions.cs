@@ -1,4 +1,5 @@
 using Hexalith.EventStore.Client.Registration;
+using Hexalith.EventStore.DomainService;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Reminders;
@@ -38,9 +39,9 @@ public static class WorksRecoveryExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         // The command path back into the EventStore gateway that Story 4.5 proved (POST /api/v1/commands).
-        // In the AppHost, route all gateway traffic through the local Dapr sidecar. EventStore then receives
-        // the sidecar-authenticated dapr-caller-app-id=works identity and applies its explicit internal-caller
-        // allow-list. The direct address remains a fallback for hosts that compose recovery without Dapr.
+        // In the AppHost, route gateway traffic through the local Dapr sidecar and the SDK's workload-only
+        // transport. Independently configured signed assertions bind each request to its tenant and work domain;
+        // Dapr's attribution header alone never grants access. The direct address remains available to other hosts.
         string? daprHttpEndpoint = configuration["DAPR_HTTP_ENDPOINT"];
         IHttpClientBuilder gatewayClient = services.AddEventStoreGatewayClient(options =>
         {
@@ -58,6 +59,10 @@ public static class WorksRecoveryExtensions
 
             options.BaseAddress = gatewayBaseAddress;
         });
+        if (!string.IsNullOrWhiteSpace(configuration["EventStore:Authentication:Authority"]))
+            _ = gatewayClient.AddEventStoreGatewayAuthorityTransport(configuration);
+        else
+            _ = gatewayClient.AddEventStoreGatewayWorkloadTransport(WorkCommandSubmission.WorkDomain);
         if (!string.IsNullOrWhiteSpace(daprHttpEndpoint))
         {
             _ = gatewayClient.AddEventStoreDaprServiceInvocation(

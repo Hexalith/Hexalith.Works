@@ -36,6 +36,9 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
     public bool EpochEnabled => _useSdkDelivery;
 
     /// <inheritdoc/>
+    public bool OrdinaryDeliveryEnabled => EpochEnabled;
+
+    /// <inheritdoc/>
     public string OrdinaryWriterId => "works-runtime-v3-writer";
 
     /// <inheritdoc/>
@@ -171,17 +174,14 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
 
         if (index?.MemberWorkItemIds.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount)
         {
-            throw FoldFailure(delivery, request.AggregateId, request.Events[0].SequenceNumber);
+            throw new SharedProjectionCapacityExceededException();
         }
 
         var histories = new List<WorkItemSharedRebuildAggregateHistory>();
         foreach (string member in index?.MemberWorkItemIds ?? [])
         {
-            ReadModelEntry<WorksRuntimeDocument> entry = await coordinator
-                .ReadGenerationAsync<WorksRuntimeDocument>(scope, generation, WorksReadModelKeys.RuntimeHistoryKey(member), cancellationToken)
-                .ConfigureAwait(false);
-            WorkItemSharedRebuildAggregateHistory history = entry.Value?.As<WorkItemSharedRebuildAggregateHistory>()
-                ?? throw new InvalidOperationException("The selected Works runtime generation is missing source context.");
+            WorkItemSharedRebuildAggregateHistory history = await WorkItemRuntimeHistoryStore.ReadAsync(
+                coordinator, scope, generation, member, cancellationToken).ConfigureAwait(false);
             if (!string.Equals(history.AggregateId, member, StringComparison.Ordinal))
             {
                 throw new InvalidOperationException("The selected Works runtime history has a foreign identity.");
@@ -217,10 +217,9 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
         }
 
         if (histories.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount
-            || JsonSerializer.SerializeToUtf8Bytes(new WorkItemSharedRebuildCandidateState(histories), s_json).Length
-                > ProjectionDispatchOptions.DefaultMaxSharedRebuildCandidateBytes)
+            || histories.Sum(history => (long)WorkItemRuntimeHistoryStore.Serialize(history).Length) > WorkItemRuntimeHistoryStore.MaxTenantBytes)
         {
-            throw FoldFailure(delivery, request.AggregateId, incoming.SequenceNumber);
+            throw new SharedProjectionCapacityExceededException();
         }
 
         try
@@ -252,9 +251,29 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
                 }
             }
 
-            return [.. operations.Select(operation => retainedParking.TryGetValue(operation.Key, out WorksRuntimeDocument? parking)
-                ? ReadModelBatchOperation.Write(operation.Key, parking, ReadModelBatchConcurrency.LastWrite)
-                : operation)];
+            var changed = new List<ReadModelBatchOperation>();
+            foreach (ReadModelBatchOperation proposed in operations)
+            {
+                ReadModelBatchOperation operation = retainedParking.TryGetValue(proposed.Key, out WorksRuntimeDocument? parking)
+                    ? ReadModelBatchOperation.Write(proposed.Key, parking, ReadModelBatchConcurrency.LastWrite) : proposed;
+                WorksRuntimeDocument? previous = (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope,
+                    generation, operation.Key, cancellationToken).ConfigureAwait(false)).Value;
+                if (previous is null || !ReadModelBatchOperation.Write(operation.Key, previous,
+                    ReadModelBatchConcurrency.LastWrite).CanonicalValue.Span.SequenceEqual(operation.CanonicalValue.Span))
+                    changed.Add(operation);
+            }
+            if (changed.Count > 128 || changed.Any(operation => operation.CanonicalValue.Length
+                + System.Text.Encoding.UTF8.GetByteCount(operation.Key) + 2048 > 256 * 1024))
+                throw new SharedProjectionCapacityExceededException();
+            return changed;
+        }
+        catch (SharedProjectionCapacityExceededException)
+        {
+            throw;
+        }
+        catch (OverflowException)
+        {
+            throw new SharedProjectionCapacityExceededException();
         }
         catch (InvalidOperationException)
         {

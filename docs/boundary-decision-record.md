@@ -355,3 +355,10 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   additionally require capture-through-Commit delivery quiescence/fencing.
 - Sources: `epics.md` FR-2/FR-21/FR-22/FR-23, NFR-5/NFR-11, SM-C1/SM-C2; `architecture.md` AR-18
   (ports realization), AR-19 (boundary decision record), Architectural Boundaries, Deferred Decisions.
+
+
+### Story 4.14 approved technical-module remediation — 2026-10-14
+
+EventStore owns durable delivery-conflict evidence, selected-generation readiness, evidence capacity, and explicit repair through its fenced epoch state; Works adds no quarantine writer or durable catalog. Platform owns opt-in independently authenticated JWT service-reader admission and exact signed query scope, preserving current actor registry, tenant/RBAC, and legacy Dapr semantics. Parties owns the authoritative source fold, current human binding, finite policy and custody checks; Works consumes the published Parties client at its host edge.
+
+The corrected EventStore pin is local candidate `3.120.1-story414.20261014.10`, with isolated package-only consumer proof and retained hashes. Test-only Platform.Identity uses local candidate `1.0.0-story414.20261014.5` in Release and its sibling project in Debug. No public release is claimed. The synthetic authority test links existing non-packable Parties runtime source unchanged and keeps published client/Contracts `1.2.1`; it does not provision a real authority. The legacy-default writer and complete pre-cutover restore/replay remain required until the independent Story 4.16 and AD-28 gates are satisfied. See [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md) for configuration and evidence limits.

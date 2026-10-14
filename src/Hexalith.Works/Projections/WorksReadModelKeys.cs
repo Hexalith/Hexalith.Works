@@ -34,6 +34,9 @@ internal static class WorksReadModelKeys
     /// <summary>Builds a logical per-item source-context key inside a runtime generation.</summary>
     public static string RuntimeHistoryKey(string workItemId) => $"works-runtime-v3:history:{workItemId}";
 
+    /// <summary>Builds one bounded logical source-context page key inside the selected generation.</summary>
+    public static string RuntimeHistoryPageKey(string workItemId, int ordinal) => $"works-runtime-v3:history:{workItemId}:page:{ordinal}";
+
     /// <summary>Builds a logical per-item parking key inside a runtime generation.</summary>
     public static string RuntimeParkingKey(string workItemId) => $"works-runtime-v3:parking:{workItemId}";
 

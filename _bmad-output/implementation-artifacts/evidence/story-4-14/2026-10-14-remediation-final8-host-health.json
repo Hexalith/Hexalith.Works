@@ -1,0 +1,168 @@
+{
+  "observedUtc": "2026-10-14T09:25:48.657311+00:00",
+  "apphost": "src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
+  "resources": [
+    {
+      "name": "dapr-placement-mtls-yvdtjcjr",
+      "resourceType": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-scheduler-mtls-rbsvhtkj",
+      "resourceType": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-sentry-eksauqxp",
+      "resourceType": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-app-api-token",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-dapr",
+      "resourceType": "DaprSidecar",
+      "state": null,
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-admin-dapr-cli-jmnvaamq",
+      "resourceType": "Executable",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-rebuilder-ccbhacrw",
+      "resourceType": "Executable",
+      "state": "NotStarted",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-admin-xkqqeegw",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-app-api-token",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-dapr",
+      "resourceType": "DaprSidecar",
+      "state": null,
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-dapr-cli-xanngnww",
+      "resourceType": "Executable",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-jmenjkkr",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-app-api-token",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-bykdpmfx",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-dapr",
+      "resourceType": "DaprSidecar",
+      "state": null,
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-operations-dapr-cli-hchrubnd",
+      "resourceType": "Executable",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-rebuilder-spnumzjy",
+      "resourceType": "Executable",
+      "state": "NotStarted",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-rebuilder-tsuasakq",
+      "resourceType": "Executable",
+      "state": "NotStarted",
+      "healthStatus": null
+    },
+    {
+      "name": "pubsub",
+      "resourceType": "DaprComponent",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "resiliency",
+      "resourceType": "DaprComponent",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "statestore",
+      "resourceType": "DaprComponent",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-app-api-token",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-dapr",
+      "resourceType": "DaprSidecar",
+      "state": null,
+      "healthStatus": null
+    },
+    {
+      "name": "works-dapr-cli-kzbdcamy",
+      "resourceType": "Executable",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-local-jwt-signing-key",
+      "resourceType": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-rebuilder-nmhprqnn",
+      "resourceType": "Executable",
+      "state": "NotStarted",
+      "healthStatus": null
+    },
+    {
+      "name": "works-tgsgvwhg",
+      "resourceType": "Project",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    }
+  ]
+}

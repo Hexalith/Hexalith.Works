@@ -28,7 +28,23 @@
     <PackageReference Include="Hexalith.EventStore.Admin.Abstractions" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Testing\Hexalith.EventStore.Testing.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.Testing" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
+    <!-- Exercises real Platform admission with synthetic authoritative source fixtures. -->
+    <ProjectReference Include="$(HexalithPlatformRoot)\src\Hexalith.Platform.Identity\Hexalith.Platform.Identity.csproj" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
+    <PackageReference Include="Hexalith.Platform.Identity" Condition="'$(UseHexalithProjectReferences)' != 'true'" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exact existing Parties authority runtime source, test-only; public Parties.Client/Contracts stay pinned packages. -->
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/IPartyIdentityAuthority.cs" Link="PartiesAuthority/IPartyIdentityAuthority.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityAuthority.cs" Link="PartiesAuthority/PartyIdentityAuthority.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityAdmissionResult.cs" Link="PartiesAuthority/PartyIdentityAdmissionResult.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityOptions.cs" Link="PartiesAuthority/PartyIdentityOptions.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryService.cs" Link="PartiesAuthority/PartyIdentityQueryService.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentitySourceFold.cs" Link="PartiesAuthority/PartyIdentitySourceFold.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryDeadline.cs" Link="PartiesAuthority/PartyIdentityQueryDeadline.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/RetainedHumanActorHistoryFold.cs" Link="PartiesAuthority/RetainedHumanActorHistoryFold.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/RetainedHumanActorBinding.cs" Link="PartiesAuthority/RetainedHumanActorBinding.cs" />
   </ItemGroup>
 
   <ItemGroup>
