@@ -46,7 +46,7 @@ The full discipline (what goes where, the two-tier flow from session log to MEMO
 
 - Bare paths (e.g. `references/guide.md`) resolve from the skill root.
 - `{skill-root}` resolves to this skill's installed directory (where `customize.toml` lives).
-- `{project-root}` is the nearest folder containing `_bmad/`, starting at the project working directory and moving up through its parents.
+- `{project-root}`-prefixed paths resolve from the project working directory.
 - `{skill-name}` resolves to the skill directory's basename.
 - Your sanctum lives at `{project-root}/_bmad/memory/{skillName}/`.
 
