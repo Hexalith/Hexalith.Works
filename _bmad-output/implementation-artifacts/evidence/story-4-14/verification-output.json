@@ -1,0 +1,58 @@
+{
+  "verified_on": "2026-10-13",
+  "story_status": "in-progress",
+  "repository_head": "fdc3c2e89e6c079309bdf3b81c8854b418ca1a4e",
+  "baseline_commit": "8708bb935c4306c42d7453b761e203682aad5919",
+  "outputs": [
+    {
+      "file": "integration-build.log.gz",
+      "uncompressed_sha256": "cab3a746770ba2e69f4103728889154b7d35b217b7b4c2d4c97d27e2e86152ac",
+      "bytes": 76
+    },
+    {
+      "file": "solution-build.log.gz",
+      "uncompressed_sha256": "392f98d0e2b96a06b5a1bbd7289dd446fdf460549d377e86f828503d0577a73d",
+      "bytes": 76
+    },
+    {
+      "file": "focused-tests.log.gz",
+      "uncompressed_sha256": "c972be2bf06172af4575bb7942a9a396a78959b623120ef0e2695567068e8bac",
+      "bytes": 782
+    },
+    {
+      "file": "http-tests.log.gz",
+      "uncompressed_sha256": "29c123375ab97063896b87a8fc421fa582a39e58bc11f7d127855904c0f82db6",
+      "bytes": 399
+    },
+    {
+      "file": "live-restore.log.gz",
+      "uncompressed_sha256": "5a64ddcbaf3210a503c9782736193e7370fdf29249e54c58bcf4724580f949d0",
+      "bytes": 2615
+    }
+  ],
+  "test_results": {
+    "focused": {
+      "total": 172,
+      "failed": 0,
+      "skipped": 0,
+      "not_run": 0
+    },
+    "live_sdk_projection": {
+      "total": 15,
+      "failed": 0,
+      "skipped": 0,
+      "not_run": 0
+    },
+    "isolated_restore_replay": {
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "not_run": 0
+    }
+  },
+  "frozen_package_dependencies": {
+    "Hexalith.EventStore.DomainService/3.120.0": "package",
+    "Hexalith.EventStore.Client/3.120.0": "package",
+    "Hexalith.Parties.Client/1.2.1": "package"
+  }
+}

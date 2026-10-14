@@ -147,7 +147,7 @@ internal static class WorksHost
             _ = app.UseAuthentication();
             _ = app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "/query")
+                if (string.Equals(context.Request.Path.Value?.TrimEnd('/'), "/query", StringComparison.OrdinalIgnoreCase))
                 {
                     WorksQueryOptions queryOptions = context.RequestServices.GetRequiredService<IOptions<WorksQueryOptions>>().Value;
                     string? caller = context.User.FindFirst(EventStoreWorkloadAuthenticationDefaults.WorkloadClaimType)?.Value;

@@ -227,10 +227,34 @@ public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedP
         {
             var identity = new DomainSharedProjectionRebuildIdentity(
                 request.TenantId, Domain, ProjectionType, "ordinary-catch-up", "ordinary-catch-up");
-            return WorkItemSharedRebuildManifestBuilder.BuildEpoch(
+            IReadOnlyList<ReadModelBatchOperation> operations = WorkItemSharedRebuildManifestBuilder.BuildEpoch(
                 identity,
                 new WorkItemSharedRebuildCandidateState(histories),
                 cancellationToken).Operations;
+
+            // A complete authoritative rebuild may clear parking. Ordinary delivery only has one
+            // envelope, so refolding the family must retain every aggregate's durable recovery disposition.
+            var retainedParking = new Dictionary<string, WorksRuntimeDocument>(StringComparer.Ordinal);
+            foreach (WorkItemSharedRebuildAggregateHistory history in histories)
+            {
+                string key = WorksReadModelKeys.RuntimeParkingKey(history.AggregateId);
+                ReadModelEntry<WorksRuntimeDocument> parking = await coordinator
+                    .ReadGenerationAsync<WorksRuntimeDocument>(scope, generation, key, cancellationToken)
+                    .ConfigureAwait(false);
+                if (parking.Value is not null)
+                {
+                    _ = parking.Value.As<WorkItemProjectionParking>();
+                    retainedParking.Add(key, parking.Value);
+                }
+                else if (index?.MemberWorkItemIds.Contains(history.AggregateId, StringComparer.Ordinal) == true)
+                {
+                    throw new InvalidOperationException("The selected Works runtime generation is missing parking context.");
+                }
+            }
+
+            return [.. operations.Select(operation => retainedParking.TryGetValue(operation.Key, out WorksRuntimeDocument? parking)
+                ? ReadModelBatchOperation.Write(operation.Key, parking, ReadModelBatchConcurrency.LastWrite)
+                : operation)];
         }
         catch (InvalidOperationException)
         {

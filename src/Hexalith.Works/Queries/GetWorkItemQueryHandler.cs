@@ -182,14 +182,15 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                 return NotFound(tenantId, workItemId, metadata);
             }
 
+            WhatsNextItem? authorizedItem = null;
             if (!authority.AllWork
                 && (!index.Items.TryGetValue(query.AggregateId, out WhatsNextItem? item)
-                    || WhatsNextQueryAuthorization.Filter(query.TenantId, item, candidate =>
+                    || (authorizedItem = WhatsNextQueryAuthorization.Filter(query.TenantId, item, candidate =>
                         string.Equals(candidate.WorkItemId?.Value, query.AggregateId, StringComparison.Ordinal)
                         && (candidate.Status == WorkItemStatus.Queued
                             || candidate.Status == WorkItemStatus.Assigned
                                 && string.Equals(candidate.ExecutorBinding?.PartyId?.Value, authority.PartyId,
-                                    StringComparison.Ordinal))) is null))
+                                    StringComparison.Ordinal)))) is null))
             {
                 return NotFound(tenantId, workItemId, metadata);
             }
@@ -208,9 +209,15 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             }
 
             WorkItemRollUp rollUp = rollUpDocument.As<WorkItemRollUp>();
-            return MatchesIdentity(rollUp, query.TenantId, query.AggregateId)
-                ? Found(rollUp, metadata)
-                : NotFound(tenantId, workItemId, metadata);
+            if (!MatchesIdentity(rollUp, query.TenantId, query.AggregateId)
+                || authorizedItem is not null
+                    && (rollUp.Status != authorizedItem.Status
+                        || rollUp.LatestAcceptedSourceSequence != authorizedItem.LatestAcceptedSourceSequence))
+            {
+                return SdkUnavailable(read.Generation, stale);
+            }
+
+            return Found(rollUp, metadata);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
