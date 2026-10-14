@@ -25,6 +25,7 @@ public sealed class SubmoduleLayoutTests
             "references/Hexalith.Conversations",
             "references/Hexalith.EventStore",
             "references/Hexalith.FrontComposer",
+            "references/Hexalith.McpCli",
             "references/Hexalith.Parties",
             "references/Hexalith.Platform",
             "references/Hexalith.PolymorphicSerializations",
