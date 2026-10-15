@@ -10,6 +10,9 @@ using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using NSubstitute;
 
 using Shouldly;
 
@@ -126,6 +129,33 @@ public sealed class WorksRecoveryGatewayRoutingTests
         capture.Paths.ShouldBe(["/api/v1/commands", "/api/v1/streams/read"]);
         capture.Headers.ShouldNotBeNull()["Authorization"].ShouldBe(["Bearer authority-token"]);
         capture.Headers["dapr-app-id"].ShouldBe(["eventstore"]);
+        capture.Headers.ShouldNotContainKey("X-Hexalith-Workload-Assertion");
+    }
+
+    /// <summary>Without an authority the workload transport signs every real command and stream call.</summary>
+    [Fact]
+    public async Task RecoveryWorkloadModeSignsRealCommandAndStreamCalls()
+    {
+        var capture = new CapturingHandler();
+        using ServiceProvider provider = BuildProvider(new Dictionary<string, string?>
+        {
+            ["DAPR_HTTP_ENDPOINT"] = "http://127.0.0.1:3500",
+            ["Authentication:WorkloadIssuer:Workload"] = "works",
+            ["Authentication:JwtBearer:Issuer"] = "works-routing-test-issuer",
+            ["Authentication:JwtBearer:Audience"] = "hexalith-eventstore",
+            ["Authentication:JwtBearer:SigningKey"] = "works-routing-test-signing-key-with-32-bytes-minimum",
+            ["Authentication:JwtBearer:AllowedAlgorithms:0"] = "HS256",
+        }, capture);
+        IEventStoreGatewayClient client = provider.GetRequiredService<IEventStoreGatewayClient>();
+        _ = await client.SubmitCommandAsync(new SubmitCommandRequest("message", "tenant-a", "work", "item", "ResumeWorkItem",
+            JsonSerializer.SerializeToElement(new { })), TestContext.Current.CancellationToken);
+        string[] commandAssertion = capture.Headers.ShouldNotBeNull()["X-Hexalith-Workload-Assertion"];
+        _ = await client.ReadStreamAsync(new StreamReadRequest("tenant-a", "work", "item"), TestContext.Current.CancellationToken);
+        string[] streamAssertion = capture.Headers["X-Hexalith-Workload-Assertion"];
+        commandAssertion.Single().ShouldNotBeNullOrWhiteSpace();
+        streamAssertion.Single().ShouldNotBeNullOrWhiteSpace();
+        streamAssertion.ShouldNotBe(commandAssertion);
+        capture.Headers.ShouldNotContainKey("Authorization");
     }
 
     private static ServiceProvider BuildProvider(Dictionary<string, string?> settings, CapturingHandler capturing, HttpMessageHandler? tokenHandler = null)
@@ -136,6 +166,11 @@ public sealed class WorksRecoveryGatewayRoutingTests
 
         var services = new ServiceCollection();
         _ = services.AddLogging();
+        // The workload assertion issuer's symmetric signing mode is admitted outside Production only.
+        IHostEnvironment environment = Substitute.For<IHostEnvironment>();
+        environment.EnvironmentName.Returns(Environments.Development);
+        _ = services.AddSingleton(environment);
+        _ = services.AddSingleton<IConfiguration>(configuration);
         _ = services.AddWorksReminderAndCascadeRecovery(configuration);
 
         // Terminate the gateway client's handler chain locally so the Dapr routing handler still runs but no
@@ -166,7 +201,7 @@ public sealed class WorksRecoveryGatewayRoutingTests
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted)
             {
                 Content = Paths[^1].Contains("commands", StringComparison.Ordinal)
-                    ? JsonContent.Create(new SubmitCommandResponse("correlation"))
+                    ? JsonContent.Create(new SubmitCommandResponse("correlation", MessageId: "message"))
                     : JsonContent.Create(new StreamReadPage("tenant-a", "work", "item", [], new(0, null, null, 0, 0, false, null))),
             });
         }

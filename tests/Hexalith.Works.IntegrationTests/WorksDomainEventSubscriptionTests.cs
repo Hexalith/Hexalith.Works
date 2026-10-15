@@ -125,7 +125,9 @@ public sealed class WorksDomainEventSubscriptionTests
                     .GetRequiredService<IOptions<ReadModelBatchOptions>>()
                     .Value;
                 batchOptions.MaxOperations.ShouldBe(
-                    (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 4) + 3);
+                    // Three fixed documents, three per aggregate, one history page per aggregate, plus the
+                    // pages beyond one that the 16 MiB tenant ceiling admits at 64 KiB per page.
+                    (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 4) + 3 + 256);
                 batchOptions.MaxCanonicalManifestBytes.ShouldBe(
                     8 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes);
             }

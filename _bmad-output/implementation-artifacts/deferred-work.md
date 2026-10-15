@@ -1416,3 +1416,22 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
   summary: Benchmark ordinary projection delivery near admitted history/document limits and establish whether full-family read amplification requires optimization (medium, unverified).
   evidence: R2-B9 traces sequential loading of member histories, parking, and proposed documents, but no latency-bearing boundary run or measured delivery failure establishes operational harm. A representative persisted-capacity fixture with measured store latency, delivery duration and throughput would settle the claim.
+
+## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-14)
+
+- `FoldCatchUpAsync` failure classification: history/parking reads sit outside the `try` (raw exception, possible unbounded retry) and a foreign member's missing parking or a sequence gap parks the incoming healthy aggregate (medium, unverified). Settle by reading `DomainProjectionDispatcher` handling of non-`SharedProjectionFoldFailureException` throws and the intended parking attribution.
+- `AddEventStoreReadModelStore` `MaxOperations = 4N+3` may be too small for multi-page histories (medium, unverified). Settle with a 128-aggregate multi-page rebuild fixture.
+- `FoldCatchUpAsync` derives its scope from payload `TenantId` (high, unverified). Settle by confirming the SDK dispatcher binds the payload tenant to the journal scope.
+
+## Deferred from: code review chunk 2 of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-15)
+
+- The three chunk-1 entries above are settled (2026-10-15): failure classification is intended fail-closed; `MaxOperations` was patched to 3 + 4N + 256; the payload-tenant scope is bound by the SDK dispatcher. See the spec's Review Findings.
+- Env-gated durable tests (`Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled`, `Complete_isolated_keyspace_restore_removes_sdk_epoch_then_legacy_replay_recovers_queue`) return silently when their Dapr/Redis endpoints are unset; `Assert.Skip` reports `FAIL_SKIP` under the fail-on-skip policy. Needs a lane/trait split or a CI step for `run-sdk-rollback-restore.sh` (medium).
+- AppHost drops the configured `works-client-username/password` in favour of generated `security-eventstore-client-*` parameters; the topology test lost its value assertion. Confirm intent (medium, unverified).
+- Denial-before-state-access tests do not observe coordinator reads and lack a positive control (medium, unverified).
+- Hard-coded `Hexalith.Platform.Identity` catalog exemption and candidate version pins under `#if !DEBUG` (low).
+
+## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-15, pass 3)
+
+- `MaxOperations` (40,259) is only checked by a test that restates the formula; add a plan-count test over a few aggregates with forced multi-page histories asserting count ≤ `WorksRebuildOperationBound.MaxOperations` (medium).
+- Unverified (medium if true): the 40,259-operation ceiling may exceed `MaxCanonicalManifestBytes` (8 × default) first; settle by sizing the canonical manifest of a maximal epoch plan.

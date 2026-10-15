@@ -10,6 +10,7 @@ using Hexalith.Parties.Client.Abstractions;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Queries;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery.ChildCompletion;
@@ -62,11 +63,13 @@ internal static class WorksHost
         // Neither is the first ceiling a large rebuild meets: the accumulating candidate state is checked
         // against ProjectionDispatchOptions.MaxSharedRebuildCandidateBytes (1 MiB by default, never raised
         // here) on every accumulate, long before any manifest is built. All three are fail-closed — an
-        // oversized rebuild is refused whole before staging, never promoted in part.
+        // oversized rebuild is refused whole before staging, never promoted in part. The epoch plan emits three
+        // fixed documents plus, per aggregate, a history manifest, its pages, a parking marker and a roll-up, so
+        // the bound also allows the history pages beyond one per aggregate (see WorksRebuildOperationBound).
         builder.Services.AddDaprClient();
         _ = builder.Services.AddEventStoreReadModelStore(static options =>
         {
-            options.MaxOperations = (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount * 4) + 3;
+            options.MaxOperations = WorksRebuildOperationBound.MaxOperations;
             options.MaxCanonicalManifestBytes = 8 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes;
         });
 
@@ -111,7 +114,12 @@ internal static class WorksHost
         bool useSdkDelivery = builder.Configuration.GetValue<bool>("Works:Projection:UseSdkDelivery");
         if (useSdkDelivery)
         {
-            _ = builder.Services.AddHttpContextAccessor();
+            _ = builder.Services.AddOptions<WorksQueryOptions>()
+                .Validate(options => Uri.TryCreate(
+                        options.PartiesGatewayBaseAddress ?? builder.Configuration["EventStore:CommandGateway:BaseAddress"],
+                        UriKind.Absolute, out _),
+                    "SDK queries require an absolute Parties gateway base address.")
+                .ValidateOnStart();
             _ = builder.Services.AddTransient<WorksPartiesGatewayAuthorizationHandler>();
             _ = builder.Services.AddHttpClient<IPartiesIdentityClient, HttpPartiesIdentityClient>((services, client) =>
                 {

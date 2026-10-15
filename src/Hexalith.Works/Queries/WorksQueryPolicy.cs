@@ -5,6 +5,8 @@ using Hexalith.Parties.Client.Abstractions;
 using Hexalith.Parties.Contracts.Queries;
 using Hexalith.Parties.Contracts.ValueObjects;
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Queries;
@@ -12,8 +14,10 @@ namespace Hexalith.Works.Queries;
 /// <summary>Verifies current Executor binding or an explicitly permitted coordinator workload.</summary>
 public sealed class WorksQueryPolicy(
     IPartiesIdentityClient parties,
-    IOptions<WorksQueryOptions> options)
+    IOptions<WorksQueryOptions> options,
+    ILogger<WorksQueryPolicy>? logger = null)
 {
+    private readonly ILogger<WorksQueryPolicy> _logger = logger ?? NullLogger<WorksQueryPolicy>.Instance;
     private readonly IPartiesIdentityClient _parties = parties ?? throw new ArgumentNullException(nameof(parties));
     private readonly WorksQueryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
 
@@ -61,8 +65,9 @@ public sealed class WorksQueryPolicy(
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            _logger.LogWarning(exception, "Parties identity resolution failed for tenant {TenantId}; denying the query.", query.TenantId);
             return new WorksQueryAuthority(false, false, null);
         }
     }
