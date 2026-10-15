@@ -608,15 +608,14 @@ public sealed class DependencyDirectionTests
         string gateway = Path.GetFullPath(Path.Combine(RepositoryRoot.DependencyRoot("Hexalith.EventStore"), "src", "Hexalith.EventStore.Gateway", "Hexalith.EventStore.Gateway.csproj"));
         var debug = EvaluateProject(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"), "Debug");
         var edge = debug.ItemsOfType("ProjectReference").Single(item => item.CanonicalPath == Path.GetFullPath(platform));
+        // The SDK repository's own sibling policy remains local: the edge selects its source without globally
+        // forcing source Commons alongside the SDK's existing package consumers.
         edge.ProjectReferenceGlobalProperties.ContainsKey("UseHexalithProjectReferences").ShouldBeFalse();
         MsBuildProjectEvaluation.TryEvaluate(platform, edge.ProjectReferenceGlobalProperties,
             out MsBuildProjectSnapshot? child, out string diagnostic).ShouldBeTrue(diagnostic);
         child!.PropertyValue("UseHexalithProjectReferences").ShouldBe("true");
         child.ItemsOfType("ProjectReference").Select(item => item.CanonicalPath).ShouldContain(gateway);
         child.ItemsOfType("PackageReference").Select(item => item.Identity).ShouldNotContain("Hexalith.EventStore.Gateway");
-        // The SDK repository's own sibling policy remains local; the edge selects its source without
-        // globally forcing source Commons alongside the SDK's existing package consumers.
-        edge.ProjectReferenceGlobalProperties.ContainsKey("UseHexalithProjectReferences").ShouldBeFalse();
         var release = EvaluateProject(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"), "Release");
         release.ItemsOfType("ProjectReference").ShouldNotContain(item => item.CanonicalPath == Path.GetFullPath(platform));
         release.ItemsOfType("PackageReference").ShouldContain(item => item.Identity == "Hexalith.Platform.Identity");

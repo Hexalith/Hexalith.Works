@@ -10,6 +10,9 @@ using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
+using NSubstitute;
 
 using Shouldly;
 
@@ -126,6 +129,7 @@ public sealed class WorksRecoveryGatewayRoutingTests
         capture.Paths.ShouldBe(["/api/v1/commands", "/api/v1/streams/read"]);
         capture.Headers.ShouldNotBeNull()["Authorization"].ShouldBe(["Bearer authority-token"]);
         capture.Headers["dapr-app-id"].ShouldBe(["eventstore"]);
+        capture.Headers.ShouldNotContainKey("X-Hexalith-Workload-Assertion");
     }
 
     /// <summary>Without an authority the workload transport signs every real command and stream call.</summary>
@@ -162,6 +166,11 @@ public sealed class WorksRecoveryGatewayRoutingTests
 
         var services = new ServiceCollection();
         _ = services.AddLogging();
+        // The workload assertion issuer's symmetric signing mode is admitted outside Production only.
+        IHostEnvironment environment = Substitute.For<IHostEnvironment>();
+        environment.EnvironmentName.Returns(Environments.Development);
+        _ = services.AddSingleton(environment);
+        _ = services.AddSingleton<IConfiguration>(configuration);
         _ = services.AddWorksReminderAndCascadeRecovery(configuration);
 
         // Terminate the gateway client's handler chain locally so the Dapr routing handler still runs but no
@@ -192,7 +201,7 @@ public sealed class WorksRecoveryGatewayRoutingTests
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.Accepted)
             {
                 Content = Paths[^1].Contains("commands", StringComparison.Ordinal)
-                    ? JsonContent.Create(new SubmitCommandResponse("correlation"))
+                    ? JsonContent.Create(new SubmitCommandResponse("correlation", MessageId: "message"))
                     : JsonContent.Create(new StreamReadPage("tenant-a", "work", "item", [], new(0, null, null, 0, 0, false, null))),
             });
         }

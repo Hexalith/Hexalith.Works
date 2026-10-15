@@ -738,19 +738,42 @@ public sealed class WorksSdkProtectedHttpTests
         });
     }
 
+    /// <summary>Without a configured service bearer the Parties transport fails closed before any request is sent.</summary>
+    [Fact]
+    public async Task Parties_gateway_handler_rejects_requests_without_a_service_bearer()
+    {
+        var inner = new CountingHandler();
+        using var client = new HttpClient(new WorksPartiesGatewayAuthorizationHandler { InnerHandler = inner })
+        {
+            BaseAddress = new Uri("http://parties.invalid"),
+        };
+
+        _ = await Should.ThrowAsync<InvalidOperationException>(() => client.GetAsync("/probe"));
+        inner.Calls.ShouldBe(0);
+    }
+
+    private sealed class CountingHandler : HttpMessageHandler
+    {
+        internal int Calls { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Calls++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+    }
+
     private static HttpClient PartiesClient(string address, string? bearer)
     {
-        var context = new DefaultHttpContext();
+        var handler = new WorksPartiesGatewayAuthorizationHandler { InnerHandler = new HttpClientHandler() };
+        var client = new HttpClient(handler) { BaseAddress = new Uri(address) };
         if (bearer is not null)
         {
-            context.Request.Headers.Authorization = $"Bearer {bearer}";
+            // Mirrors WorksHost: the configured service bearer is the only credential ever sent to Parties.
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
         }
 
-        var handler = new WorksPartiesGatewayAuthorizationHandler(new HttpContextAccessor { HttpContext = context })
-        {
-            InnerHandler = new HttpClientHandler(),
-        };
-        return new HttpClient(handler) { BaseAddress = new Uri(address) };
+        return client;
     }
 
     private static string Address(WebApplication app)
