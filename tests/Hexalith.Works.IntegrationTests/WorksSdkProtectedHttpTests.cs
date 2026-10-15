@@ -531,6 +531,49 @@ public sealed class WorksSdkProtectedHttpTests
         foreignOrigin.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    [Fact]
+    public async Task Event_delivery_and_actor_callbacks_require_the_sidecar_channel()
+    {
+        await using WebApplication app = WorksHost.Build(
+            [
+                "--environment=Development",
+                "--Logging:LogLevel:Default=Error",
+                "--Works:Recovery:RunReconciliationOnStartup=false",
+                $"--{DaprAppChannelToken.ConfigurationKey}={ChannelToken}",
+                $"--EventStore:DomainService:AppId={AppId}",
+                $"--Authentication:JwtBearer:Issuer={Issuer}",
+                "--Authentication:JwtBearer:Audience=hexalith-eventstore",
+                $"--Authentication:JwtBearer:SigningKey={SigningKey}",
+                $"--Authentication:JwtBearer:AllowedAlgorithms:0={SecurityAlgorithms.HmacSha256}",
+                "--Authentication:JwtBearer:RequireHttpsMetadata=false",
+            ], webHost => webHost.UseUrls("http://127.0.0.1:0"));
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        string address = app.Services.GetRequiredService<IServer>().Features
+            .Get<IServerAddressesFeature>().ShouldNotBeNull().Addresses.Single();
+        using var client = new HttpClient { BaseAddress = new Uri(address) };
+
+        foreach ((HttpMethod method, string route) in new[] { (HttpMethod.Post, "/work/events"), (HttpMethod.Get, "/dapr/config") })
+        {
+            using var missing = new HttpRequestMessage(method, route);
+            using HttpResponseMessage missingResponse = await client.SendAsync(missing,
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            missingResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, route);
+
+            using var wrong = new HttpRequestMessage(method, route);
+            wrong.Headers.Add(DaprAppChannelToken.HeaderName, "not-the-channel-token");
+            using HttpResponseMessage wrongResponse = await client.SendAsync(wrong,
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            wrongResponse.StatusCode.ShouldBe(HttpStatusCode.Unauthorized, route);
+
+            using var valid = new HttpRequestMessage(method, route);
+            valid.Headers.Add(DaprAppChannelToken.HeaderName, ChannelToken);
+            using HttpResponseMessage validResponse = await client.SendAsync(valid,
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            validResponse.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized, route);
+            validResponse.StatusCode.ShouldNotBe(HttpStatusCode.Forbidden, route);
+        }
+    }
+
     [Theory]
     [InlineData(null)]
     [InlineData("disabled-reader")]

@@ -1,11 +1,5 @@
 # Works Boundary Decision Record
 
-## Story 4.14 runtime projection boundary
-
-EventStore `3.120.0` owns generation fencing, persistence, checkpointing, and selected reads for the opt-in `works-runtime-v3` family. Works owns domain folds, runtime document content, and query authorization. Parties.Client `1.2.1` supplies the current Party binding verdict for Executor reads; Works does not equate a user or actor identifier with a Party identifier. One startup mode selects one projection writer and matching readers. The pre-cutover keys and host remain available for complete store-and-fleet restore; no production activation is part of this decision. See [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md) for the configuration and restore sequence.
-
-The host can configure an independent Parties gateway service bearer through the published client's injected HttpClient. Protected SDK ingress, current synthetic Party binding, scoped results, and missing/rejected/expired credential denial are executable consumer proofs. Real Platform trusted-reader admission remains open. Same-position SDK identity conflicts also require a producer-owned durable disposition and readiness signal; Works cannot create a second projection writer to compensate for the frozen coordinator's missing hook.
-
 **Status:** Accepted — Epic 1 (Story 1.4).
 **Tracks:** FR-21 (reference siblings, never copy them), FR-22 (expose module ports as
 abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realization), AR-19
@@ -356,8 +350,9 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
 - Sources: `epics.md` FR-2/FR-21/FR-22/FR-23, NFR-5/NFR-11, SM-C1/SM-C2; `architecture.md` AR-18
   (ports realization), AR-19 (boundary decision record), Architectural Boundaries, Deferred Decisions.
 
+### Story 4.14 runtime projection boundary and technical-module remediation — 2026-10-14
 
-### Story 4.14 approved technical-module remediation — 2026-10-14
+EventStore owns generation fencing, persistence, checkpointing and selected reads for the opt-in `works-runtime-v3` family; Works owns domain folds, runtime document content and query authorization. Parties.Client `1.2.1` supplies the current Party binding verdict for Executor reads; Works does not equate a user or actor identifier with a Party identifier. One startup mode selects one projection writer and matching readers. The pre-cutover keys and host remain available for complete store-and-fleet restore; no production activation is part of this decision.
 
 EventStore owns durable delivery-conflict evidence, selected-generation readiness, evidence capacity, and explicit repair through its fenced epoch state; Works adds no quarantine writer or durable catalog. Platform owns opt-in independently authenticated JWT service-reader admission and exact signed query scope, preserving current actor registry, tenant/RBAC, and legacy Dapr semantics. Parties owns the authoritative source fold, current human binding, finite policy and custody checks; Works consumes the published Parties client at its host edge.
 

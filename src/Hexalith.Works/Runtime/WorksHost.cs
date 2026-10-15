@@ -111,7 +111,12 @@ internal static class WorksHost
         bool useSdkDelivery = builder.Configuration.GetValue<bool>("Works:Projection:UseSdkDelivery");
         if (useSdkDelivery)
         {
-            _ = builder.Services.AddHttpContextAccessor();
+            _ = builder.Services.AddOptions<WorksQueryOptions>()
+                .Validate(options => Uri.TryCreate(
+                        options.PartiesGatewayBaseAddress ?? builder.Configuration["EventStore:CommandGateway:BaseAddress"],
+                        UriKind.Absolute, out _),
+                    "SDK queries require an absolute Parties gateway base address.")
+                .ValidateOnStart();
             _ = builder.Services.AddTransient<WorksPartiesGatewayAuthorizationHandler>();
             _ = builder.Services.AddHttpClient<IPartiesIdentityClient, HttpPartiesIdentityClient>((services, client) =>
                 {

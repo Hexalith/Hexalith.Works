@@ -128,6 +128,32 @@ public sealed class WorksRecoveryGatewayRoutingTests
         capture.Headers["dapr-app-id"].ShouldBe(["eventstore"]);
     }
 
+    /// <summary>Without an authority the workload transport signs every real command and stream call.</summary>
+    [Fact]
+    public async Task RecoveryWorkloadModeSignsRealCommandAndStreamCalls()
+    {
+        var capture = new CapturingHandler();
+        using ServiceProvider provider = BuildProvider(new Dictionary<string, string?>
+        {
+            ["DAPR_HTTP_ENDPOINT"] = "http://127.0.0.1:3500",
+            ["Authentication:WorkloadIssuer:Workload"] = "works",
+            ["Authentication:JwtBearer:Issuer"] = "works-routing-test-issuer",
+            ["Authentication:JwtBearer:Audience"] = "hexalith-eventstore",
+            ["Authentication:JwtBearer:SigningKey"] = "works-routing-test-signing-key-with-32-bytes-minimum",
+            ["Authentication:JwtBearer:AllowedAlgorithms:0"] = "HS256",
+        }, capture);
+        IEventStoreGatewayClient client = provider.GetRequiredService<IEventStoreGatewayClient>();
+        _ = await client.SubmitCommandAsync(new SubmitCommandRequest("message", "tenant-a", "work", "item", "ResumeWorkItem",
+            JsonSerializer.SerializeToElement(new { })), TestContext.Current.CancellationToken);
+        string[] commandAssertion = capture.Headers.ShouldNotBeNull()["X-Hexalith-Workload-Assertion"];
+        _ = await client.ReadStreamAsync(new StreamReadRequest("tenant-a", "work", "item"), TestContext.Current.CancellationToken);
+        string[] streamAssertion = capture.Headers["X-Hexalith-Workload-Assertion"];
+        commandAssertion.Single().ShouldNotBeNullOrWhiteSpace();
+        streamAssertion.Single().ShouldNotBeNullOrWhiteSpace();
+        streamAssertion.ShouldNotBe(commandAssertion);
+        capture.Headers.ShouldNotContainKey("Authorization");
+    }
+
     private static ServiceProvider BuildProvider(Dictionary<string, string?> settings, CapturingHandler capturing, HttpMessageHandler? tokenHandler = null)
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()

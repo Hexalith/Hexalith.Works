@@ -1416,3 +1416,9 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
   summary: Benchmark ordinary projection delivery near admitted history/document limits and establish whether full-family read amplification requires optimization (medium, unverified).
   evidence: R2-B9 traces sequential loading of member histories, parking, and proposed documents, but no latency-bearing boundary run or measured delivery failure establishes operational harm. A representative persisted-capacity fixture with measured store latency, delivery duration and throughput would settle the claim.
+
+## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-14)
+
+- `FoldCatchUpAsync` failure classification: history/parking reads sit outside the `try` (raw exception, possible unbounded retry) and a foreign member's missing parking or a sequence gap parks the incoming healthy aggregate (medium, unverified). Settle by reading `DomainProjectionDispatcher` handling of non-`SharedProjectionFoldFailureException` throws and the intended parking attribution.
+- `AddEventStoreReadModelStore` `MaxOperations = 4N+3` may be too small for multi-page histories (medium, unverified). Settle with a 128-aggregate multi-page rebuild fixture.
+- `FoldCatchUpAsync` derives its scope from payload `TenantId` (high, unverified). Settle by confirming the SDK dispatcher binds the payload tenant to the journal scope.
