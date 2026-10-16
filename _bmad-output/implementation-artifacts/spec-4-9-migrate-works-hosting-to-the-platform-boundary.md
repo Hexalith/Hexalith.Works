@@ -62,7 +62,7 @@ context:
 
 ## Implementation Notes
 
-Cutover is blocked as of 2026-10-15. Sprint tracking marks Stories 4.10–4.14 done, but Stories 4.15 and 4.16 remain in backlog; both prerequisite specs are still draft with every execution task unchecked. The required `/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh` is absent, as is `references/Hexalith.Platform/eng/verify-works-host.sh` in the root-declared Platform checkout. The AD-20 R1–R11 parity and rollback gate therefore cannot run, and the prerequisite acceptance requirement is unsatisfied.
+Cutover is blocked as of 2026-10-16. Sprint tracking marks Stories 4.10–4.14 done, Story 4.15 in progress, and Story 4.16 in backlog. The 4.15 spec is now in progress with its execution tasks checked, but it is not yet accepted; the 4.16 spec remains draft with all three execution tasks unchecked. The required `/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh` is absent, as is `references/Hexalith.Platform/eng/verify-works-host.sh` in the root-declared Platform checkout. The AD-20 R1–R11 parity and rollback gate therefore cannot run, and the prerequisite acceptance requirement is unsatisfied.
 
 The frozen migration gate requires retaining the Works host in this state. No cutover or host removal was performed. The executable composition, AppHost, ServiceDefaults, solution registrations, Aspire configuration, SDK pins, integration dependencies, and existing transitional-host fitness assertions remain unchanged. All execution tasks remain open. Resume this story after 4.15 and 4.16 are accepted and the complete Platform producer/consumer, persisted-state, security, rebuild-through-Commit, restart/redelivery, and rollback evidence is available. See the [2026-09-23 evidence archive](story-4-9-pre-cutover-evidence.md) for historical partial implementation and checks.
 
@@ -74,10 +74,10 @@ The frozen migration gate requires retaining the Works host in this state. No cu
 
 ## Verification
 
-**2026-10-15 prerequisite audit:**
+**2026-10-16 prerequisite audit:**
 
-- `rg -n '^  4-(9|10|11|12|13|14|15|16)-' _bmad-output/implementation-artifacts/sprint-status.yaml` — exit 0; 4.10–4.14 are `done`, 4.15–4.16 are `backlog`, and 4.9 remains `in-progress`.
-- `rg -n '^status:|^- \[[ x]\]' _bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md _bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md` — exit 0; both specs are `draft` with all execution tasks unchecked.
+- `rg -n '^  4-(9|10|11|12|13|14|15|16)-' _bmad-output/implementation-artifacts/sprint-status.yaml` — exit 0; 4.10–4.14 are `done`, 4.15 is `in-progress`, 4.16 is `backlog`, and 4.9 remains `in-progress`.
+- `rg -n '^status:|^- \[[ x]\]' _bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md _bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md` — exit 0; 4.15 is `in-progress` with its eight execution tasks checked; 4.16 is `draft` with all three execution tasks unchecked. Checked implementation tasks do not establish prerequisite acceptance or Platform parity.
 - `/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh` — exit 127: `/bin/bash: line 1: /home/administrator/projects/hexalith/platform/eng/verify-works-host.sh: No such file or directory`.
 - `references/Hexalith.Platform/eng/verify-works-host.sh` — exit 127: `/bin/bash: line 1: references/Hexalith.Platform/eng/verify-works-host.sh: No such file or directory`.
 
