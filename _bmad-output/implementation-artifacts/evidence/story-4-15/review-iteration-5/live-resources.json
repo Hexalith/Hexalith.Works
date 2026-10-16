@@ -1,0 +1,88 @@
+{
+  "scope": "Exact Works AppHost during final .9 enabled runtime",
+  "appHostPath": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
+  "rawPath": "/tmp/story415-review5-live-resources.json",
+  "rawSha256": "5f25ce523b496d47bc8abd61e209287301b19b5cf848d24e3c92f0942580ab04",
+  "resources": [
+    {
+      "name": "dapr-placement-mtls-kfbtjdrj",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-scheduler-mtls-jgbfamyj",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-sentry-vmykpgtg",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-app-api-token",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-dapr-cli-xbxtwzxq",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-eeknyext",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-app-api-token",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-dapr-cli-umehmehz",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-hqnknvjs",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-app-api-token",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-dapr-cli-afuxvewa",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-zguxwccq",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-app-api-token",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-atdggatu",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-dapr-cli-zjfffpkv",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-local-jwt-signing-key",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    }
+  ]
+}

@@ -12,6 +12,7 @@ using Hexalith.Works.Contracts.Extensions;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Queries;
+using Hexalith.Works.Recovery;
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Reminders;
@@ -84,14 +85,18 @@ internal static class WorksHost
         });
         _ = builder.Services.AddDaprEventStoreDomainEventMarkerStore();
         _ = builder.Services.AddSingleton<WorksDomainEventProcessor>();
-        _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCancelled, WorkItemCancelledCascadeHandler>();
-        _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemExpired, WorkItemExpiredCascadeHandler>();
-        _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCompleted, WorkItemCompletedResumeHandler>();
+        bool useSdkRecovery = builder.Configuration.GetValue<bool>("Works:Recovery:UseSdkRuntime");
+        if (!useSdkRecovery)
+        {
+            _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCancelled, WorkItemCancelledCascadeHandler>();
+            _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemExpired, WorkItemExpiredCascadeHandler>();
+            _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemCompleted, WorkItemCompletedResumeHandler>();
 
-        // Story 4.8, AC #1: registering a durable date reminder at suspend time is the steady-state trigger — a
-        // date-suspended item resumes when the date fires without a host restart. Derived from the folded
-        // current pending set (DD-1), idempotent under the subscription's at-least-once redelivery.
-        _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemSuspended, WorkItemSuspendedReminderHandler>();
+            // Story 4.8, AC #1: registering a durable date reminder at suspend time is the steady-state trigger — a
+            // date-suspended item resumes when the date fires without a host restart. Derived from the folded
+            // current pending set (DD-1), idempotent under the subscription's at-least-once redelivery.
+            _ = builder.Services.AddEventStoreDomainEventHandler<WorkItemSuspended, WorkItemSuspendedReminderHandler>();
+        }
 
         // Story 4.6 recovery edge: date-resume reminder reconciliation and terminal-cascade dispatch/checkpoint/
         // replay. The Dapr actor reminders, gateway command path, stores, and clock all live here at the host
@@ -142,9 +147,10 @@ internal static class WorksHost
             _ = builder.Services.AddScoped<WorksQueryPolicy>();
         }
 
-        _ = builder.Services.AddWorksDateReminderActors();
+        if (!useSdkRecovery) _ = builder.Services.AddWorksDateReminderActors();
         _ = builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
         configureServices?.Invoke(builder.Services);
+        builder.Services.ValidateWorksRecoveryComposition(builder.Configuration);
 
         WebApplication app = builder.Build();
 
@@ -206,10 +212,11 @@ internal static class WorksHost
         // The host-owned case-insensitive JSON route must be present before SDK activation. Canonical activation
         // observes it, preserves it, and supplies CloudEvents plus the single Dapr subscription-discovery endpoint.
         _ = app.MapWorksDomainEvents();
+        if (useSdkRecovery) app.MapWorksProcessDisposition();
         _ = app.UseEventStoreDomainService();
 
         // Map the Dapr actor-runtime endpoints so the date-resume reminder actor receives reminder callbacks.
-        _ = app.MapActorsHandlers().RequireEventStoreSidecarChannel();
+        if (!useSdkRecovery) _ = app.MapActorsHandlers().RequireEventStoreSidecarChannel();
 
         return app;
     }

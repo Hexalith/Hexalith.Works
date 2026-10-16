@@ -1,0 +1,270 @@
+[
+  {
+    "path": "/tmp/story415-i3-client-build.log",
+    "sha256": "788286d21ecbb5977b96490766e7fb9401e67dd7ac149f3fc266abe448f05279",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-client.log",
+    "sha256": "40d99777cdf0adab86e7b3d9356fac5f0991169b4860569196b4795381f2a84a",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.Client.Tests  Total: 32, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.430s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-debug-build.log",
+    "sha256": "233351a85d2f1b2d169b505e895ad9d0f2eb7b9daf58364feb0cb77b8f6c521e",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-debug-final-build.log",
+    "sha256": "683850ca2465feefaab1640858257fbdccf1b11d85e52a78ea3d97d5beda7bfd",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-debug-final-integration.log",
+    "sha256": "4ed303fd13bb0cd7ef511a9208f3ed007f8cb59cfb3509f57398276b82aa16ad",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.Works.IntegrationTests  Total: 701, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 8.691s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-debug-integration.log",
+    "sha256": "c63a2f7ebdf5cab8ada56ebb68760645f68558fce97588471bfab89afb93c2ab",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "[FATAL ERROR] System.IO.FileNotFoundException"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-final-live-state.jsonl-admission.log",
+    "sha256": "ae01c4dcd978a823b16b820ffdc1044b2e5a0fc61ecbc482852463a65d536fb7",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-release-build.log",
+    "sha256": "8c8242f04021aa3531527daf0906a9e9a750674fb9883809b1370004aa4f7b99",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-release-integration.log",
+    "sha256": "5d84ede0fadad3764a0e3d51563d788bf226e5f26df3eb2d0aeac48c4e2c39b0",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests.ReleaseConsumerLoadsPinnedCandidateAndPublishedPartiesContracts [FAIL]",
+      "Hexalith.Works.IntegrationTests  Total: 700, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 9.961s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-all.log",
+    "sha256": "7fe046ae6712d499c94475a489c8926e326c2c016d42bbed1ad03cdf20601d93",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.DomainService.Tests.DomainModuleAuthoringGuardrailTests.TenantsDomainService_DoesNotReferenceGeneratedApiHostOrDeclarePerMessageControllers [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests  Total: 957, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 106.276s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-build-2.log",
+    "sha256": "e5de97c3d9e1f2a5cde8d51988afaef7cc0408d609d7d08ed6bdae1bb55fe6ae",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/TrustedEffectOriginTests.cs(149,14): error CS0121: The call is ambiguous between the following methods or properties: 'NSubstitute.SubstituteExtensions.Returns<T>(T, System.Func<NSubstitute.Core.CallInfo, T>, params System.Func<NSubstitute.Core.CallInfo, T>[])' and 'NSubstitute.SubstituteExtensions.Returns<T>(System.Threading.Tasks.Task<T>, System.Func<NSubstitute.Core.CallInfo, T>, params System.Func<NSubstitute.Core.CallInfo, T>[])' [/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj]",
+      "Build FAILED.",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/TrustedEffectOriginTests.cs(149,14): error CS0121: The call is ambiguous between the following methods or properties: 'NSubstitute.SubstituteExtensions.Returns<T>(T, System.Func<NSubstitute.Core.CallInfo, T>, params System.Func<NSubstitute.Core.CallInfo, T>[])' and 'NSubstitute.SubstituteExtensions.Returns<T>(System.Threading.Tasks.Task<T>, System.Func<NSubstitute.Core.CallInfo, T>, params System.Func<NSubstitute.Core.CallInfo, T>[])' [/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj]"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-build-3.log",
+    "sha256": "01b70c7c9fc1b0723528e885c08803277f0b317079f1bb9ee5d85c2d0416b426",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-build-4.log",
+    "sha256": "7e6ab4900308499f616f64f6df6f789d559394b2b9222a58ff30e37aad355249",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-build-final.log",
+    "sha256": "0eefd2ef15c371d0eec8fc33c16b1f334e60486c28e1f2808a99105424cf701f",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-build-preliminary.log",
+    "sha256": "87232ba07a57b3920e27c48cf40999091d7c6bfce6369f699ff82a91097cfb1b",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-focus-2.log",
+    "sha256": "e541d170f6a884a239bd2b8592e5a888fa04b146ee06fc3df407441607916ff5",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.DomainService.Tests  Total: 0"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-focus-3.log",
+    "sha256": "51c1ecc633b3db51098a485bbb255be9a8151d59c2ec4cf3ef59f05ae296c5d1",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.InvalidRegistryEmitsStructuredScanFailure [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.FailedCandidateEmitsStructuredReasonAndType(failClosed: True) [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.Processes.ProcessRunnerEdgeTests.EmptyHeadQuarantinesAuthenticPendingPlanAfterCancellation [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests  Total: 319, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 8.144s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-focus-final.log",
+    "sha256": "aaeecb4e73ee2b4bf28ce78791b09cb8d61f85cce0035846db1258538eab94e7",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.DomainService.Tests.Processes.ProcessRunnerEdgeTests.EmptyHeadQuarantinesAuthenticPendingPlanAfterCancellation [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests  Total: 320, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 8.020s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-sdk-focus-preliminary.log",
+    "sha256": "3187d13514d2c32c901cb4a148a3d8e035c0e03bda575cd041789fcd68458db3",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.InvalidRegistryEmitsStructuredScanFailure [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.CorruptCandidatesDoNotInvokeRegistrarAndPassContinues [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderDiagnosticsTests.MalformedCandidateIdentifierIsNotLogged(invalidTuple: False) [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.HostedPassUsesEffectiveReconciliationDelay(fullIndex: True, sourceUnavailable: True, nullFold: False, longerRetryDelay: False) [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.HostedPassUsesEffectiveReconciliationDelay(fullIndex: False, sourceUnavailable: False, nullFold: True, longerRetryDelay: False) [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderCoordinatorTests.RetryingWorkWaitsOutBackoffAcrossPasses [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests.ReminderReconcilerTests.EmptyDiscoveryIndexCompletesPass [FAIL]",
+      "Hexalith.EventStore.DomainService.Tests  Total: 273, Errors: 0, Failed: 7, Skipped: 0, Not Run: 0, Time: 1.155s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-security-all.log",
+    "sha256": "010071ca8e442c163155f87e33025c540606fb7de85941d4da21eeb3c2e954f2",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.EventStore.Server.Tests.Actors.TrustedEffectReceiptTests.OrdinaryCommandIsAcceptedWhileOnlyDeletionFenceExists [FAIL]",
+      "Hexalith.EventStore.Server.Tests  Total: 85, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 1.206s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-security-build-final.log",
+    "sha256": "09b59ccfac3aaea9a4a5ad0b2c1ed3264489155424781a1550ae759990139d8a",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-security-build-preliminary.log",
+    "sha256": "645debf5e84afe63221110361d9d9f6a02ae54231b62dbd73fa8987590eecb04",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs(24,48): error CS1061: 'TrustedEffectSubmission' does not contain a definition for 'Payload' and no accessible extension method 'Payload' accepting a first argument of type 'TrustedEffectSubmission' could be found (are you missing a using directive or an assembly reference?) [/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj]",
+      "Build FAILED.",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs(24,48): error CS1061: 'TrustedEffectSubmission' does not contain a definition for 'Payload' and no accessible extension method 'Payload' accepting a first argument of type 'TrustedEffectSubmission' could be found (are you missing a using directive or an assembly reference?) [/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj]"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-works-abi-after-restore.log",
+    "sha256": "a9ae2419f3f73ca2bafb35830a8f274b2adae89741d157f96560543415fa0049",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-abi-complete.log",
+    "sha256": "3abbe9f0032dbe1ae603fde2170c8567b0572bbec11a5c40ecac2dc91615e339",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-abi-final-selected.log",
+    "sha256": "0d133d8ffb2ed8da8af83736f55a7f3dfb9fea0c481f7fb659b988cca896f5ea",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-abi-final.log",
+    "sha256": "b2dc3ffce070252814ef310e210247d94afca96905513e19f139c50314fb299a",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-abi.log",
+    "sha256": "cf3dab97d60c15b75dfefe8d1dba6bcc956f7f9c54aac983b8b6e2584587d7ef",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "/tmp/tmp.oFPppzCB5D/consumer/Program.cs(21,95): error CS1061: 'Obligation' does not contain a definition for 'Value' and no accessible extension method 'Value' accepting a first argument of type 'Obligation' could be found (are you missing a using directive or an assembly reference?) [/tmp/tmp.oFPppzCB5D/consumer/Consumer.csproj]",
+      "Build FAILED.",
+      "/tmp/tmp.oFPppzCB5D/consumer/Program.cs(21,95): error CS1061: 'Obligation' does not contain a definition for 'Value' and no accessible extension method 'Value' accepting a first argument of type 'Obligation' could be found (are you missing a using directive or an assembly reference?) [/tmp/tmp.oFPppzCB5D/consumer/Consumer.csproj]"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-works-build-2.log",
+    "sha256": "8c9373c08cdaaaf942ab0b1d9a15c06e4d0b48f0a46f2d881bb2cc54411a300e",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-build-3.log",
+    "sha256": "e2509b3219c5472e8e3401de0b6437c89ca8187aca6cd4c30ba9fd48999ba551",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs(307,63): error CS1061: 'StreamReadRequest' does not contain a definition for 'TenantId' and no accessible extension method 'TenantId' accepting a first argument of type 'StreamReadRequest' could be found (are you missing a using directive or an assembly reference?) [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "Build FAILED.",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs(307,63): error CS1061: 'StreamReadRequest' does not contain a definition for 'TenantId' and no accessible extension method 'TenantId' accepting a first argument of type 'StreamReadRequest' could be found (are you missing a using directive or an assembly reference?) [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-works-build-4.log",
+    "sha256": "ba5f871a30bff8aabe9dd16dfa2c3ac79d6fbe7b2b4d872c360235b284946828",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": []
+  },
+  {
+    "path": "/tmp/story415-i3-works-build-preliminary.log",
+    "sha256": "be03b42c7f5e44bea08126abfabbc30f0f7bec29d6b2a296d6417bcf06256938",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,17): error CS0122: 'TrustedEffectOriginDenialRecord' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,72): error CS0122: 'TrustedEffectOriginDenialRecord' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,119): error CS0122: 'DomainServiceTrustedEffectOrigin' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(722,23): error CS0122: 'TrustedEffectOriginDenialRecord.ReasonCode' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "Build FAILED.",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,17): error CS0122: 'TrustedEffectOriginDenialRecord' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,72): error CS0122: 'TrustedEffectOriginDenialRecord' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(720,119): error CS0122: 'DomainServiceTrustedEffectOrigin' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs(722,23): error CS0122: 'TrustedEffectOriginDenialRecord.ReasonCode' is inaccessible due to its protection level [/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj]"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-works-focus-2.log",
+    "sha256": "7a529e86747afe420bcff121fd8f04853196dacdbdfffa1685c99c559b19b4cd",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.Works.IntegrationTests  Total: 92, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6.147s"
+    ]
+  },
+  {
+    "path": "/tmp/story415-i3-works-focus-preliminary.log",
+    "sha256": "7479861e2a5b3dc0107d24d23684aa07f6857c9d7fe0ad9b2471753d3537d7e3",
+    "classification": "Preliminary or narrower run; not final proof. Includes corrected experiment failures and earlier passing checks.",
+    "summary": [
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"missing-origin\") [FAIL]",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"purpose\") [FAIL]",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"workload\") [FAIL]",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"kind\") [FAIL]",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"digest\") [FAIL]",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \"target\") [FAIL]",
+      "Hexalith.Works.IntegrationTests  Total: 78, Errors: 0, Failed: 6, Skipped: 0, Not Run: 0, Time: 6.122s"
+    ]
+  }
+]

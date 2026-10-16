@@ -1,0 +1,6 @@
+Command: cd references/Hexalith.EventStore && dotnet build tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj --configuration Debug -m:1 -p:UseHexalithProjectReferences=true -p:NuGetAudit=false -p:HexalithEventStoreVersion=3.122.0-story415.20261015.4
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:11.52

@@ -1,0 +1,45 @@
+{
+  "review_iteration": 2,
+  "frozen_intent_sha256": "b7b47c466ea3c026d600bfa75bd65c436bd2daf9225a4c9cff273cec3b263bdc",
+  "preservation_bundles": [
+    {
+      "repository": "/home/administrator/projects/hexalith/works",
+      "patch": "/tmp/story415-iteration2-keep-works-qa0r8f8o.patch",
+      "sha256": "3fbd19b42bad4615fa4b1e0737d620882972474e86a2b5c0e8fcf20bf1c5679e",
+      "file_count": 62
+    },
+    {
+      "repository": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "patch": "/tmp/story415-iteration2-keep-eventstore-8ax5jgqo.patch",
+      "sha256": "4036c92ff49d7cf3a0023ae24db98f583e6c301f73bf81dc8fba750067812e0a",
+      "file_count": 43
+    }
+  ],
+  "retained_evidence": [
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-1/results-manifest.json",
+      "sha256": "ed82be76da9c88ef9a2bb4ed098a48554bd0e3cc72549f3e50fcdc5a591c08c6"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-1/runtime-manifest.json",
+      "sha256": "b4c94c9fd5e55058c4ddec01df4ec1a67834f86769c11279196e9983fea61078"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-1/producer-provenance.json",
+      "sha256": "a3df7619e442d6a434c73a96cf385cad0971e7c36f52702ce2b748f9477a7007"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-1/consumer-files.json",
+      "sha256": "371f2af8ad9c2d4c19352900cc9b6460cba0e993c3f7681abaa03c1c4a5b410d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-15/planning.md",
+      "sha256": "a779d4999f7c545cc5a2e2dfde4262d34d62c55a219483ce73ae595be6bd8889"
+    }
+  ],
+  "verification_probes": {
+    "incomplete_flag_loss": "/tmp/story415-edge-catalog-jf65ujaw/Probe.csproj",
+    "publication_starvation": "/tmp/story415-edge-starvation-yvihxnww/Probe.csproj",
+    "retained_payload_corruption": "/tmp/story415-plan-integrity-28059ie1/Probe.csproj"
+  }
+}

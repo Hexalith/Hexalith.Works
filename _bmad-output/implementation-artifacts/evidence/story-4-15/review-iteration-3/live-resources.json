@@ -1,0 +1,82 @@
+[
+  {
+    "name": "dapr-placement-mtls",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "dapr-scheduler-mtls",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "dapr-sentry",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-admin-app-api-token",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-admin-dapr-cli",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-admin",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-app-api-token",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-dapr-cli",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-operations-app-api-token",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-operations-dapr-cli",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore-operations",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "eventstore",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "works-app-api-token",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "works-dapr-cli",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "works-local-jwt-signing-key",
+    "state": "Running",
+    "health": "Healthy"
+  },
+  {
+    "name": "works",
+    "state": "Running",
+    "health": "Healthy"
+  }
+]

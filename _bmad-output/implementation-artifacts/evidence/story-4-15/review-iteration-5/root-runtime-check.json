@@ -1,0 +1,19 @@
+{
+  "assertions": "All ten callback, expiry/cancellation target-commit, canonical creation-gap, receipt-replay, no-op and complete eleven-source coverage phases passed independent assertions.",
+  "phaseCount": 10,
+  "redactedFields": 17,
+  "raw": [
+    {
+      "path": "/tmp/story415-review5-live.log",
+      "sha256": "6956552852f854ca84ef04293b39814234ea960f4ff3eef2c47df51cb902028f"
+    },
+    {
+      "path": "/tmp/story415-review5-live-state.jsonl",
+      "sha256": "610b3e677ed058f212579213c770ea157033a31734cb7da130d8c28c4eba71ea"
+    },
+    {
+      "path": "/tmp/story415-review5-live-resources.json",
+      "sha256": "5f25ce523b496d47bc8abd61e209287301b19b5cf848d24e3c92f0942580ab04"
+    }
+  ]
+}

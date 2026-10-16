@@ -1,0 +1,53 @@
+{
+  "scope": "pre-.9 source Debug; not .8 or .9 package acceptance",
+  "rawStates": {
+    "path": "/tmp/story415-review4-patches-live-state.jsonl",
+    "sha256": "0a237e63688d20f8feebf011c79ea36265b646f94c7d66cb7b3289de8b481a4c"
+  },
+  "binaryInputs": [
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "sha256": "749826ed95a2a245933de22c40eeaef924b07d87abe8bdd935df1e2028b8bb11"
+    },
+    {
+      "path": "src/Hexalith.Works/bin/Debug/net10.0/Hexalith.Works.dll",
+      "sha256": "f9fbec5877c2ed9092fa28f207cfda1a0aeb8a7a6f74adefe29a89cd3375496d"
+    },
+    {
+      "path": "src/Hexalith.Works/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll",
+      "sha256": "e2eec4a03ec592bbe4ec5860115020a68fc24788916447a60571d9581ca8f8ce"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore/bin/Debug/net10.0/Hexalith.EventStore.dll",
+      "sha256": "fa9589f993957ae07b310723c53e370efc08024235abefca1f6c0f0f9d4482fb"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore/bin/Debug/net10.0/Hexalith.EventStore.Server.dll",
+      "sha256": "44b65ffe390fb33ca5e6a5104317b331d9c48c7cef6b9f03535dcbbe67f8f83b"
+    },
+    {
+      "path": "references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll",
+      "sha256": "09a35cc9198875988208213af87c9dec91b123ea89df488fcaa8854842ee1ccb"
+    },
+    {
+      "path": "references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests.dll",
+      "sha256": "d1d8ffe821ed344cbffa8ae26b7e97b4d29887a91caad9463beec6ebcc31d026"
+    },
+    {
+      "path": "references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.dll",
+      "sha256": "0811a0e7549a20f74936c3195f540b8d6cb89bcee371ce1dc52a825a710641fe"
+    },
+    {
+      "path": "references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll",
+      "sha256": "b3b45f612408a183426957533c735701048f972e9174af1921361b661eb5cfe4"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.dll",
+      "sha256": "f9fbec5877c2ed9092fa28f207cfda1a0aeb8a7a6f74adefe29a89cd3375496d"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+      "sha256": "b4699e38801de01c7a651fc4e8215af138fcf6f01525e3613e3d05cd18bce4dd"
+    }
+  ]
+}

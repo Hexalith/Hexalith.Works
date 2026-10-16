@@ -1,6 +1,11 @@
 using Hexalith.EventStore.Client.Registration;
+using Hexalith.EventStore.Client.Effects;
+using Hexalith.EventStore.Client.Processes;
+using Hexalith.EventStore.Client.Reminders;
+using Hexalith.EventStore.Contracts.Effects;
 using Hexalith.EventStore.DomainService;
 using Hexalith.Works.Recovery.Cascade;
+using Hexalith.Works.Recovery;
 using Hexalith.Works.Recovery.ChildCompletion;
 using Hexalith.Works.Reminders;
 
@@ -11,11 +16,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Hexalith.Works.Runtime;
 
 /// <summary>
-/// Host-edge composition for the Story 4.6 reminder and reactor recovery runtime. Everything registered here
-/// lives only in the runnable Works host (<c>src/Hexalith.Works</c>): the EventStore command gateway client,
-/// the date-resume reminder reconciler + its hosted startup pass, and the terminal-cascade dispatcher with
-/// its checkpoint store. The pure kernel (Contracts/Server/Projections/Reactor) takes none of these
-/// dependencies (fitness-asserted).
+/// Selects the legacy-default or exclusive SDK reminder/process runtime at the runnable Works host edge.
+/// EventStore owns SDK mechanics; Works supplies read-only domain adapters and current delegation.
+/// The pure kernel (Contracts/Server/Projections/Reactor) takes none of these runtime dependencies.
 /// </summary>
 public static class WorksRecoveryExtensions
 {
@@ -32,9 +35,13 @@ public static class WorksRecoveryExtensions
         _ = services.AddOptions<WorksRecoveryOptions>()
             .Bind(configuration.GetSection(WorksRecoveryOptions.SectionName))
             .Validate(static options => options.EffectiveMaxStreamPagesPerAggregate > 0, "MaxStreamPagesPerAggregate must be greater than zero (the deprecated MaxStreamPagesPerTenant alias binds to the same budget).")
+            .Validate(static options => options.MaxContextBytes is >= 1024 and <= 16 * 1024 * 1024, "MaxContextBytes must be 1 KiB..16 MiB.")
+            .Validate(static options => options.ContextReadTimeout >= TimeSpan.FromMilliseconds(100) && options.ContextReadTimeout <= TimeSpan.FromSeconds(30), "ContextReadTimeout must be 100 ms..30 seconds.")
             .Validate(static options => options.ReminderReconciliationMaxAttempts > 0, "ReminderReconciliationMaxAttempts must be greater than zero.")
             .Validate(static options => options.ReminderReconciliationRetryDelayMilliseconds >= 0, "ReminderReconciliationRetryDelayMilliseconds cannot be negative.")
             .Validate(static options => options.CascadeCheckpointIndexStaleAfterHours > 0, "CascadeCheckpointIndexStaleAfterHours must be greater than zero.")
+            .Validate(_ => !configuration.GetValue<bool>("Works:Recovery:UseSdkRuntime") || HasExclusiveSdkComposition(services, configuration),
+                "SDK recovery requires SDK projection delivery and exclusive final runtime composition.")
             .ValidateOnStart();
         services.TryAddSingleton(TimeProvider.System);
 
@@ -43,22 +50,19 @@ public static class WorksRecoveryExtensions
         // transport. Independently configured signed assertions bind each request to its tenant and work domain;
         // Dapr's attribution header alone never grants access. The direct address remains available to other hosts.
         string? daprHttpEndpoint = configuration["DAPR_HTTP_ENDPOINT"];
-        IHttpClientBuilder gatewayClient = services.AddEventStoreGatewayClient(options =>
+        string? baseAddress = configuration["EventStore:CommandGateway:BaseAddress"];
+        (string effectiveAddress, string effectiveAddressSource) = !string.IsNullOrWhiteSpace(daprHttpEndpoint)
+            ? (daprHttpEndpoint, "DAPR_HTTP_ENDPOINT")
+            : string.IsNullOrWhiteSpace(baseAddress)
+                ? ("http://eventstore", "EventStore:CommandGateway:BaseAddress default")
+                : (baseAddress, "EventStore:CommandGateway:BaseAddress");
+        if (!Uri.TryCreate(effectiveAddress, UriKind.Absolute, out Uri? gatewayBaseAddress))
         {
-            string? baseAddress = configuration["EventStore:CommandGateway:BaseAddress"];
-            (string effectiveAddress, string effectiveAddressSource) = !string.IsNullOrWhiteSpace(daprHttpEndpoint)
-                ? (daprHttpEndpoint, "DAPR_HTTP_ENDPOINT")
-                : string.IsNullOrWhiteSpace(baseAddress)
-                    ? ("http://eventstore", "EventStore:CommandGateway:BaseAddress default")
-                    : (baseAddress, "EventStore:CommandGateway:BaseAddress");
-            if (!Uri.TryCreate(effectiveAddress, UriKind.Absolute, out Uri? gatewayBaseAddress))
-            {
-                throw new InvalidOperationException(
-                    $"Configuration value '{effectiveAddressSource}' is not a valid absolute URI: '{effectiveAddress}'.");
-            }
+            throw new InvalidOperationException(
+                $"Configuration value '{effectiveAddressSource}' is not a valid absolute URI: '{effectiveAddress}'.");
+        }
 
-            options.BaseAddress = gatewayBaseAddress;
-        });
+        IHttpClientBuilder gatewayClient = services.AddEventStoreGatewayClient(options => options.BaseAddress = gatewayBaseAddress);
         if (!string.IsNullOrWhiteSpace(configuration["EventStore:Authentication:Authority"]))
             _ = gatewayClient.AddEventStoreGatewayAuthorityTransport(configuration);
         else
@@ -71,6 +75,40 @@ public static class WorksRecoveryExtensions
         }
 
         services.TryAddSingleton<IWorkCommandSubmitter, EventStoreGatewayWorkCommandSubmitter>();
+
+        if (configuration.GetValue<bool>("Works:Recovery:UseSdkRuntime"))
+        {
+            if (!HasExclusiveSdkComposition(services, configuration))
+                throw new InvalidOperationException("SDK recovery requires SDK projection delivery and exclusive runtime registration.");
+            _ = services.AddHostedService<WorksRecoveryCompositionGuard>();
+            services.TryAddScoped<WorksSourceStreamReader>();
+            services.TryAddScoped<WorksReminderEventHandler>();
+            services.TryAddScoped<WorksProcessSourceCatalog>();
+            services.TryAddScoped<IReminderTargetCatalog>(provider => provider.GetRequiredService<WorksProcessSourceCatalog>());
+            services.TryAddScoped<IProcessDelegationProvider, WorksProcessDelegationProvider>();
+            services.TryAddSingleton<IProcessDispositionAuthorizer, WorksProcessDispositionAuthorizer>();
+            services.TryAddSingleton<IProcessDispositionAuditSink, WorksProcessDispositionAuditSink>();
+            IHttpClientBuilder effects = services.AddHttpClient<ITrustedEffectSubmitter, HttpTrustedEffectSubmitter>(client =>
+                client.BaseAddress = gatewayBaseAddress);
+            _ = effects.AddEventStoreTrustedEffectWorkloadAssertion();
+            if (!string.IsNullOrWhiteSpace(daprHttpEndpoint))
+                _ = effects.AddEventStoreDaprServiceInvocation("eventstore", configuration["DAPR_API_TOKEN"]);
+            _ = services.AddEventStoreReminders<WorksReminderIntentSource>(options =>
+            {
+                if (string.IsNullOrWhiteSpace(options.ActorTypeName)) options.ActorTypeName = "WorksSdkReminderActor";
+                options.Workload = WorksEffectPurposes.Workload;
+                options.Purposes[EffectKindCatalog.DateResume] = WorksEffectPurposes.ForKind(EffectKindCatalog.DateResume);
+                options.Purposes[EffectKindCatalog.Expiry] = WorksEffectPurposes.ForKind(EffectKindCatalog.Expiry);
+            });
+            _ = services.AddEventStoreProcesses<WorksProcessSourceCatalog, WorksProcessTranslator>(options =>
+            {
+                // This finite Works profile supports five direct children. Explicit configuration
+                // is preserved and the SDK validates its coupled operation/quantum/freshness limits.
+                if (configuration["EventStore:Processes:MaxEffectsPerEnvelope"] is null) options.MaxEffectsPerEnvelope = 5;
+                if (configuration["EventStore:Processes:SourceServiceQuantum"] is null) options.SourceServiceQuantum = TimeSpan.FromSeconds(15);
+            });
+            return services;
+        }
 
         // Date-reminder reconciliation-on-recovery. Story 4.8: discovery is the durable pending-date-await index
         // (registry + per-tenant index maintained by the /project dispatcher) re-folded per aggregate — never the
@@ -95,10 +133,29 @@ public static class WorksRecoveryExtensions
         return services;
     }
 
+    /// <summary>Validates the final service graph before any hosted recovery writer is instantiated.</summary>
+    internal static void ValidateWorksRecoveryComposition(this IServiceCollection services, IConfiguration configuration)
+    {
+        if (configuration.GetValue<bool>("Works:Recovery:UseSdkRuntime") && !HasExclusiveSdkComposition(services, configuration))
+            throw new InvalidOperationException("SDK recovery requires SDK projection delivery and exclusive runtime registration.");
+    }
+
+    private static bool HasExclusiveSdkComposition(IServiceCollection services, IConfiguration configuration)
+        => configuration.GetValue<bool>("Works:Projection:UseSdkDelivery")
+            && !services.Any(service => service.ServiceType == typeof(WorksLegacyReminderActorRegistration)
+                || service.ServiceType == typeof(IDateReminderScheduler)
+                || service.ServiceType == typeof(CascadeDispatcher)
+                || service.ImplementationType == typeof(ReminderReconciliationService)
+                || service.ImplementationType == typeof(CascadeRecoveryService)
+                || service.ImplementationInstance is ReminderReconciliationService or CascadeRecoveryService
+                || service.ServiceType == typeof(DateReminderReconciler)
+                || service.ServiceType == typeof(CascadeRecoveryReconciler));
+
     /// <summary>Registers the Dapr date-resume reminder actor on the Works host's actor runtime.</summary>
     public static IServiceCollection AddWorksDateReminderActors(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<WorksLegacyReminderActorRegistration>();
         services.AddActors(options => options.Actors.RegisterActor<DateReminderActor>());
         return services;
     }

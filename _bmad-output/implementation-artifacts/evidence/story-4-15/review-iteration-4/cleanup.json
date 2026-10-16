@@ -1,0 +1,18 @@
+{
+  "appHosts": [],
+  "ownedSyntheticRedisContainers": [],
+  "commands": [
+    "aspire ps --format Json --non-interactive",
+    "docker ps --format '{{.Names}}' --filter name=works-sdk415- --filter name=works-sdk-rollback-"
+  ],
+  "raw": [
+    {
+      "path": "/tmp/story415-iteration4-cleanup-apphosts.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "/tmp/story415-iteration4-cleanup-containers.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

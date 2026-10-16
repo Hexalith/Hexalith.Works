@@ -1,0 +1,80 @@
+[
+  {
+    "label": "final-five-child-and-noop-replay",
+    "classification": "final",
+    "originalPath": "/tmp/story415-remediation-live.log",
+    "sha256": "3b8f0291eb96bd2a0def1f1a5730bbefc637cf81e114ebe024d12b400083b26a"
+  },
+  {
+    "label": "final-five-child-and-noop-replay",
+    "classification": "final",
+    "originalPath": "/tmp/story415-remediation-live-state.jsonl",
+    "sha256": "3a92846e490b5454bf694e960e4411670991a97b011f9c24f32a294a02c65966"
+  },
+  {
+    "label": "final-five-child-and-noop-replay",
+    "classification": "final",
+    "originalPath": "/tmp/story415-remediation-live-state.jsonl-admission.log",
+    "sha256": "3fd4b8f3d2c2acbfc2fc20f4b2c36edda4ffb974943350502f60ab45c797837f"
+  },
+  {
+    "label": "retained-final-callback",
+    "classification": "retained-green",
+    "originalPath": "/tmp/story415-remediation-live-before-five-child.log",
+    "sha256": "2fe5d5d5ccc4be6e5ba29fbf99a85df0f5c894e425cde115b9cc4b05dcd7e12c"
+  },
+  {
+    "label": "retained-final-callback",
+    "classification": "retained-green",
+    "originalPath": "/tmp/story415-remediation-live-before-five-child-state.jsonl",
+    "sha256": "36cf0448ba252513688a19ccb66b7386196dfc39704cd8957dd9d107804bc435"
+  },
+  {
+    "label": "preliminary-five-child-503",
+    "classification": "preliminary-failure",
+    "originalPath": "/tmp/story415-remediation-live-five-child-transient-503.log",
+    "sha256": "2778199b69f3fcad087f67fd47d174a9dbb39e7a2717822ac73666bb2b26cc1a"
+  },
+  {
+    "label": "preliminary-five-child-503",
+    "classification": "preliminary-failure",
+    "originalPath": "/tmp/story415-remediation-live-five-child-transient-503-state.jsonl",
+    "sha256": "2e4f8ea91cea013a6e06cb9ffb89ce9a60855c9178f480b58508d5bd9caf49f5"
+  },
+  {
+    "label": "preliminary-five-child-short-retry-503",
+    "classification": "preliminary-failure",
+    "originalPath": "/tmp/story415-remediation-live-five-child-retry-503.log",
+    "sha256": "dcdc76e9576e475456a5be246946e8781351292d3ef2883fb258881a4e8efd5c"
+  },
+  {
+    "label": "preliminary-five-child-short-retry-503",
+    "classification": "preliminary-failure",
+    "originalPath": "/tmp/story415-remediation-live-five-child-retry-503-state.jsonl",
+    "sha256": "7876cae4469f5c510682876d1fe67c132d6ca7fd99b46f3f1c033d9e6b894b83"
+  },
+  {
+    "label": "cancelled-short-retry-diagnostic-run",
+    "classification": "cancelled",
+    "originalPath": "/tmp/story415-remediation-live-cancelled-before-backoff.log",
+    "sha256": "71cc70bb76738d49289d97d8af744cbb622c436606499cc19531fc86e42ed67b"
+  },
+  {
+    "label": "first-503-admission-summary",
+    "classification": "sanitized-diagnostic",
+    "originalPath": "/tmp/story415-remediation-live-admission-summary.json",
+    "sha256": "2046224e8829e16aa66aa6016c2ba227a36dac9b1da1b18dd6314e837e38f58e"
+  },
+  {
+    "label": "persisted-states.json",
+    "classification": "sanitized-evidence",
+    "path": "persisted-states.json",
+    "sha256": "d09e953f8be833cb36e5b4dc194314c8b1c0d4537d14145deb62ea5c2119f866"
+  },
+  {
+    "label": "admission-diagnostic.json",
+    "classification": "sanitized-evidence",
+    "path": "admission-diagnostic.json",
+    "sha256": "2046224e8829e16aa66aa6016c2ba227a36dac9b1da1b18dd6314e837e38f58e"
+  }
+]

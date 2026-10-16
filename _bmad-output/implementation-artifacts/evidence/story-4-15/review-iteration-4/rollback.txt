@@ -1,0 +1,7 @@
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 27, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 5.661s
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.635s

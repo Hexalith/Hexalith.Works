@@ -1,0 +1,4 @@
+Command: cd references/Hexalith.EventStore && HEXALITH_TENANTS_DOMAIN_ROOT=/home/administrator/projects/hexalith/works/references/Hexalith.Tenants/src/Hexalith.Tenants dotnet tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll
+
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.EventStore.DomainService.Tests  Total: 927, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 107.245s

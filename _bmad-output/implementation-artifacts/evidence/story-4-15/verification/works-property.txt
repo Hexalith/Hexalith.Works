@@ -1,0 +1,10 @@
+xUnit.net v3 In-Process Runner v4.0.2+0c7aa4991f (64-bit .NET 10.0.12)
+  Discovering: Hexalith.Works.PropertyTests
+  Discovered:  Hexalith.Works.PropertyTests
+  Starting:    Hexalith.Works.PropertyTests
+Ok, passed 100 tests.
+Ok, passed 100 tests.
+Ok, passed 100 tests.
+  Finished:    Hexalith.Works.PropertyTests (ID = 'be705c3ab969b33477b428d6a113ef306a1083db9b50fe80c30e89c0e9bc4f27')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.PropertyTests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.205s

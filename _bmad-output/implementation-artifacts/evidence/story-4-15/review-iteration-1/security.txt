@@ -1,0 +1,4 @@
+Command: cd references/Hexalith.EventStore && dotnet tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests.dll -class 'Hexalith.EventStore.Server.Tests.Actors.TrustedEffect*' -class 'Hexalith.EventStore.Server.Tests.Commands.TrustedEffect*' -class Hexalith.EventStore.Server.Tests.Controllers.TrustedEffectsControllerTests
+
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.EventStore.Server.Tests  Total: 67, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.541s

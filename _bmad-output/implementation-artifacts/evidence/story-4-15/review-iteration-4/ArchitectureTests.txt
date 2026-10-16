@@ -1,0 +1,2 @@
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.ArchitectureTests  Total: 269, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6.636s

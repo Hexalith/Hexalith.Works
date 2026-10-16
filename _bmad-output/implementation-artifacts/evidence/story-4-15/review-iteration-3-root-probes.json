@@ -1,0 +1,17 @@
+[
+  {
+    "probe": "stale-catalog-completion",
+    "command": "dotnet run --project /tmp/story415-catalog-stale-cas-probe/Probe.csproj -p:NuGetAudit=false",
+    "exit_code": 0,
+    "output": "After newer failure interrupted old completion CAS: Complete=True, IsIncomplete=False",
+    "source_sha256": "8e5cfeca79ca1661fbd423a76b32c0ecdd77d11b07fd41daed0ba0e062931f38"
+  },
+  {
+    "probe": "empty-source-with-authentic-plan",
+    "command": "dotnet run --project /tmp/story415-edge-probe-1fd4tzr4/Probe.csproj --configuration Release -p:NuGetAudit=false",
+    "exit_code": 0,
+    "output": "After cancellation: pendingPlan=True, failureSequence=null, status=Incomplete\nEmpty source: status=Active, pendingPlan=True, submissions=0",
+    "note": "An unused test-assembly reference warning was emitted; the probe compiled and executed against the runtime SDK assemblies.",
+    "source_sha256": "1d4cd78b6df14f8f714092500104dabf4b9ae75db2f33f64507d72bf6304bece"
+  }
+]

@@ -1,0 +1,8 @@
+[
+  {
+    "originalOutput": "/tmp/story415-review4-patches-works-build.log",
+    "sha256": "0433c267be501a144eacba4160fbe17c858cb896110b0ba4a3bc1e542a9dde99",
+    "exitCode": 1,
+    "reason": "Test fault filter initially used Kind instead of EffectIdentity.EffectKind; corrected before the passing build/tests."
+  }
+]

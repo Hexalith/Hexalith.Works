@@ -67,4 +67,30 @@ public sealed class WorkItemSerializationRegistrationTests
             roundTripped.ShouldBe(payload); // record value-equality over every reported field.
         }
     }
+    /// <summary>Additive witnesses survive the actual polymorphic transport for all six changed durable records.</summary>
+    [Fact]
+    public void ExpiryFieldsRoundTripThroughPolymorphicDomainCatalog()
+    {
+        var tenant = new Hexalith.Works.Contracts.ValueObjects.TenantId("tenant-abi");
+        var item = new Hexalith.Works.Contracts.ValueObjects.WorkItemId("item-abi");
+        DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
+        var witness = new Hexalith.Works.Contracts.ValueObjects.WorkItemExpirySchedule(due,
+            Hexalith.EventStore.Contracts.Reminders.ReminderIdentityCodec.ComputeScheduleToken(tenant.Value, item.Value, due, 1), 1);
+        var schedule = new Hexalith.Works.Contracts.ValueObjects.WorkItemSchedule();
+        Polymorphic[] payloads = [
+            new Hexalith.Works.Contracts.Commands.CreateWorkItem(tenant, item, "proof", Expiry: witness),
+            new Hexalith.Works.Contracts.Commands.RescheduleWorkItem(tenant, item, schedule, Expiry: witness),
+            new Hexalith.Works.Contracts.Commands.ExpireWorkItem(tenant, item, witness),
+            new Hexalith.Works.Contracts.Events.WorkItemCreated(item.Value, 1, tenant, item, new("proof"), Expiry: witness),
+            new Hexalith.Works.Contracts.Events.WorkItemRescheduled(item.Value, 2, tenant, item, schedule, Expiry: witness),
+            new Hexalith.Works.Contracts.Events.WorkItemExpired(item.Value, 3, tenant, item, witness),
+        ];
+        foreach (Polymorphic payload in payloads)
+        {
+            string json = JsonSerializer.Serialize<Polymorphic>(payload, PolymorphicHelper.DefaultJsonSerializerOptions);
+            json.ShouldContain(witness.ScheduleToken);
+            JsonSerializer.Deserialize<Polymorphic>(json, PolymorphicHelper.DefaultJsonSerializerOptions).ShouldBe(payload);
+        }
+    }
+
 }

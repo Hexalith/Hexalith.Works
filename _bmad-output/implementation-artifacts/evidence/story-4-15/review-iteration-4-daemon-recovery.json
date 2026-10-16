@@ -1,0 +1,35 @@
+{
+  "interruption": "Daemon restarted; all previous collaboration agents are gone. Resume implementation iteration 4 without repeating restoration.",
+  "partialSnapshot": "/tmp/story415-iteration4-restart-11s199i4",
+  "owned7FilesRestored": 132,
+  "changedExistingFiles": 3,
+  "newPartialSdkFile": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionDiscoveryReadAdmission.cs",
+  "files": [
+    {
+      "path": "src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs",
+      "sha256": "9d11ca8b5b656a431b6c69557affebd23f2771199a2ec69edeceebfaea67d577"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionControlIndexWriter.cs",
+      "sha256": "39a3e933b476bc72e5eac1a790e7883c67403e64d457c21628f44f2c8ef38e5f"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs",
+      "sha256": "970b36c1a8e079a0be8dde75e70e0ebbe939f60f690144fcf00b9b72072a5096"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionDiscoveryReadAdmission.cs",
+      "sha256": "fd85ee1733506c703fee5348e5e1d774e7753621272ca3e997ec5d09f672a702"
+    }
+  ],
+  "localArchiveVersions": {
+    "3.122.0-story415.20261015.6": 9,
+    "3.122.0-story415.20261015.1": 9,
+    "3.122.0-story415.20261015.7": 9,
+    "3.122.0-story415.20261015.5": 9,
+    "3.122.0-story415.20261015.3": 9,
+    "3.122.0-story415.20261015.2": 9,
+    "3.122.0-story415.20261015.4": 9
+  },
+  "reviewLoopIteration": 4
+}

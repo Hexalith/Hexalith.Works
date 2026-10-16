@@ -1,0 +1,3 @@
+Expected pre-correction failures: both ambiguous pairs collapse evidence.
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.EventStore.DomainService.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 0.196s

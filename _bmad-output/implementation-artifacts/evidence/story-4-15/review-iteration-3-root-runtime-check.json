@@ -1,0 +1,13 @@
+{
+  "assertions": "All seven phases match approved callback, five-child receipt, no-op replay and final complete-coverage invariants.",
+  "artifacts": [
+    {
+      "path": "/tmp/story415-i3-final-live.log",
+      "sha256": "3f05c086e0263f1d22aaa679897131f9b8e16983c453d2f9a3edc5369f35e9ac"
+    },
+    {
+      "path": "/tmp/story415-i3-final-live-state.jsonl",
+      "sha256": "7c28a0daa9358be62705e863145dcccca8d51c306dcc3b80c2fe4ac9c19cf369"
+    }
+  ]
+}

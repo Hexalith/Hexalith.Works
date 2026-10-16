@@ -1,0 +1,20 @@
+[
+  {
+    "command": "aspire ps --format Json",
+    "result": "[]",
+    "originalOutput": "/tmp/story415-i3-cleanup-apphosts.json",
+    "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+  },
+  {
+    "command": "docker ps --format '{{.Names}}' --filter name=works-sdk415",
+    "result": "",
+    "originalOutput": "/tmp/story415-i3-cleanup-live-containers.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": "docker ps --format '{{.Names}}' --filter name=works-sdk-rollback",
+    "result": "",
+    "originalOutput": "/tmp/story415-i3-cleanup-rollback-containers.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

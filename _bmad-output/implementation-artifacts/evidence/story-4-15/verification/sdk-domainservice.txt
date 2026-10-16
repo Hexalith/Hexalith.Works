@@ -1,0 +1,2 @@
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.EventStore.DomainService.Tests  Total: 921, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 106.608s

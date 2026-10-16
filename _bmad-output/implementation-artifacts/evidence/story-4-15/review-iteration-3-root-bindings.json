@@ -1,0 +1,16 @@
+{
+  "checked": {
+    "final logs": 25,
+    "preliminary logs": 33,
+    "runtime artifacts": 3,
+    "cleanup logs": 3,
+    "selected archives": 9,
+    "producer files": 64,
+    "consumer files": 68,
+    "historical archives": 54
+  },
+  "total": 259,
+  "mismatches": [],
+  "frozen_unchanged": true,
+  "dependency_graphs": "nine source projects in Debug; nine .7 packages in Release"
+}

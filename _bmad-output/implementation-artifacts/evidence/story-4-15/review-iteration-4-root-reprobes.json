@@ -1,0 +1,50 @@
+{
+  "command": "dotnet run --project /tmp/story415-iteration4-root-reprobe-uz0fr0sr/Probe.csproj -p:NuGetAudit=false",
+  "exitCode": 0,
+  "bindings": [
+    {
+      "path": "/tmp/story415-iteration4-root-reprobe-uz0fr0sr/Program.cs",
+      "sha256": "8d6a7d181990cda41c6cf85c9704dc7ba3384b1029d21ecc9e4fbd6eafac2dfa"
+    },
+    {
+      "path": "/tmp/story415-iteration4-root-reprobe-uz0fr0sr/Probe.csproj",
+      "sha256": "51d127a92f82aa32b0e07bd3447e0ba4ebb2e1035129dcd3e7e8927cd147b384"
+    },
+    {
+      "path": "/tmp/story415-iteration4-root-reprobe.log",
+      "sha256": "b0828ed8d89476232ac76b3b984a7f093b77e1f4ba0f753fddcde8d1ff29a7c8"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.dll",
+      "sha256": "06d61ad44eeddfb97283a844c03e7440063e10be3a8ef5df1c46f5c4886cc1f6"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.Contracts.dll",
+      "sha256": "1ad239d0cb93c412185fffa17436f4eaee86c0e26d1fd36c583d73b2675c3dc5"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.EventStore.Client.dll",
+      "sha256": "287337c5c6e5ebc9a491d42f99683d7f53544caa87d4cd0d1850e6545478b9cc"
+    }
+  ],
+  "selectedReleaseLibraries": {
+    "Hexalith.EventStore.Admin.Abstractions/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Aspire/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Client/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Contracts/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.DomainService/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Gateway/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Server/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.ServiceDefaults/3.122.0-story415.20261016.8": "package",
+    "Hexalith.EventStore.Testing/3.122.0-story415.20261016.8": "package"
+  },
+  "checks": [
+    "atomic invalid family rejection",
+    "healthy later family beside noncooperative epoch",
+    "17 scans retain one tombstone worker and healthy membership",
+    "unrelated contextual read remains admitted",
+    "malformed required obligation rejected",
+    "decreasing persisted expiry rejected",
+    "legacy hosted instance rejected"
+  ]
+}

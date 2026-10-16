@@ -1,0 +1,17 @@
+# Targeted post-review patches — pre-.9 source proof
+
+All eight requested corrections are implemented. This evidence covers corrected source Debug inputs before the next local producer is packed. It is **not .8 package acceptance or .9 selected-artifact acceptance**. The nine .8 archives and pins were preserved during this patch pass; root owns fresh .9 selection and full verification.
+
+- Recovery rejects empty normalized suspension sets, foreign qualified event names and missing/non-boolean committed Requeue fields. Durable invalid evidence and valid singular suspension, explicit true/false, actual full-name and short-name compatibility are covered without tightening legacy readers.
+- Restored reminder entries reject non-null whitespace SourceMessageIds. Quarantine survives reconstruction; historical null and valid committed IDs remain accepted.
+- The bounded live fixture reuses its existing rescheduled parent and expiry child. The child retains an actual persisted future schedule witness, while delegated CascadeExpire emits a witnessless expiry under the distinct `works.cascade-expire` purpose. The first receipt response is lost at parent checkpoint 3 with one retained effect; restart replays a Success receipt, reaches checkpoint 4 with no plan, and retains exactly one child expiry event. Existing cancellation, creation-gap, no-op resume and complete eleven-source coverage remain passing in the same edited method.
+- An admitted trusted effect now executes the actor's due qualified-snapshot path and persists SnapshotRecord sequence 11 with its accepted event, metadata and target receipt in the same batch; exact replay appends nothing.
+- Reminder handoff/ExpireWorkItem prose reflects current mappings, actor name and witnessed signal. The pack helper reports actual checkout/working-tree provenance instead of an unsupported published-base claim, retaining immutable-archive refusal.
+
+Only affected tests ran: 22 decoder cases, 6 reminder cases, 13 folded-snapshot migration cases, and the one edited live fixture (425.359 seconds). All pass with zero skips. The three required test-project builds pass with zero warnings/errors. Shell syntax and expected immutable .8 refusal pass. No broad suites or packing ran.
+
+[Results](results-manifest.json) retain exact commands, raw log paths/hashes and safe summaries. [Preliminary evidence](preliminary-manifest.json) retains the test fault-filter compile correction before the passing build. [Source inputs](source-inputs.json) bind 139 source/configuration/documentation inputs. [Runtime inputs](runtime-manifest.json) bind raw live states and eleven binary/graph inputs; [the input archive](input-archive.json) preserves their exact bytes after root builds .9. All archived input hashes were independently rechecked.
+
+[Persisted states](persisted-states.json) contain all nine targeted fixture phases, with payload/assertion/credential/JWT fields redacted case-insensitively. Exact raw log/state files remain at `/tmp/story415-review4-patches-live.log` and `/tmp/story415-review4-patches-live-state.jsonl`. [Preserved archives](preserved-archives.json) verify all nine .8 archives unchanged. [Cleanup](cleanup.json) confirms no running AppHost or owned synthetic Redis container. CRLF-aware diff checks pass in both repositories.
+
+No requested patch remains incomplete or depends on retaining the .8 pins. Fresh .9 selected-artifact verification remains with root.

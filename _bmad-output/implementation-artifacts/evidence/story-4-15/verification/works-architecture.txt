@@ -1,0 +1,7 @@
+xUnit.net v3 In-Process Runner v4.0.2+0c7aa4991f (64-bit .NET 10.0.12)
+  Discovering: Hexalith.Works.ArchitectureTests
+  Discovered:  Hexalith.Works.ArchitectureTests
+  Starting:    Hexalith.Works.ArchitectureTests
+  Finished:    Hexalith.Works.ArchitectureTests (ID = '64d43132537c0ec5710abae319230571d542a8d4fbc3f9bb477c689fd912d437')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.ArchitectureTests  Total: 269, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9.339s

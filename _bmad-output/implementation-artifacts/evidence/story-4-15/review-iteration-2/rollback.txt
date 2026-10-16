@@ -1,0 +1,8 @@
+Command: WORKS_SDK_RESULT_DIRECTORY=/tmp/story415-iteration2-rollback-results bash tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:03.01
+   Hexalith.Works.IntegrationTests  Total: 27, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 5.736s
+   Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.637s

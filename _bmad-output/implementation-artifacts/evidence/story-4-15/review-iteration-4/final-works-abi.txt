@@ -1,0 +1,7 @@
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Unchanged baseline Works Contracts binary passed all six constructors/deconstructions and historical payload hashes.

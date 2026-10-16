@@ -1,0 +1,13 @@
+{
+  "html_url": "https://github.com/Hexalith/Hexalith.EventStore/compare/6394d0500e6e277b8975cb397c9f0389f9a16929...1dac529c4690910c89d4090784a7d46cb9433a9d",
+  "status": "ahead",
+  "ahead_by": 2,
+  "behind_by": 0,
+  "total_commits": 2,
+  "baseCommit": "6394d0500e6e277b8975cb397c9f0389f9a16929",
+  "headCommit": "1dac529c4690910c89d4090784a7d46cb9433a9d",
+  "commits": [
+    "e74408c46e70750a7767091be87d1107ba8d66c4",
+    "1dac529c4690910c89d4090784a7d46cb9433a9d"
+  ]
+}

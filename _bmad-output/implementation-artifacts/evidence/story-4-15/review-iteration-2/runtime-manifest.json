@@ -1,0 +1,17 @@
+[
+  {
+    "classification": "final-source-graph",
+    "originalPath": "/tmp/story415-iteration2-final-live-state.jsonl",
+    "sha256": "e86867502e1e4a8f54950f2a7fd7b2b74095a47b63766d73765367e17a4942d3"
+  },
+  {
+    "classification": "final-source-graph",
+    "originalPath": "/tmp/story415-iteration2-final-live-state.jsonl-admission.log",
+    "sha256": "89d00b8395175937be60d99700eb608b99f44338ce8169342058d1a5db53e253"
+  },
+  {
+    "classification": "final-source-graph",
+    "originalPath": "/tmp/story415-iteration2-final-live.log",
+    "sha256": "8908efd375ab0440474d5712b414b9f4110e21845e2d7713a9cb4761b8a3536e"
+  }
+]

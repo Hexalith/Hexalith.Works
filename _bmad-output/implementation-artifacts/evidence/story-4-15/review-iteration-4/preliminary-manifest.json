@@ -1,0 +1,74 @@
+[
+  {
+    "originalOutput": "/tmp/story415-iteration4-build-debug-focused.log",
+    "sha256": "fc2e1ec9e7a16171045ccd9611e4035970c53e8b09e562d597e788c4ba872157",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-build-debug-focused2.log",
+    "sha256": "05d4cb7582356c99d51314aa5d4f6218f9433c462e1862fabe44bbcfb7007912",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-build-debug-focused3.log",
+    "sha256": "e7fcc54e4850790c59a2f1a5838e74feeb250ea47672973565ce27a5769d6dcf",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-build-debug-newregressions.log",
+    "sha256": "94f9aeda40d6d5762f42da39de9e50293916d211a839df9d64f37c40e297ffd3",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-build-debug-preliminary.log",
+    "sha256": "5da8ff0fa3713f34c83d804f4962e0bc3edaee0f0df7bf9c64b5559aade1e807",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-focused-final.log",
+    "sha256": "a81c580b17162a9c61506474e94e93dcdeae2102a7513c8f2f0227deb7776fb0",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-focused-preliminary.log",
+    "sha256": "46bda33431bc2e34205312edd50f2cb09959cafe2915c9adb7ee6042a36687ca",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-focused2-preliminary.log",
+    "sha256": "cf6fdae87fe546abe2d9b3e8afec0e60fe04869f263f3ed8e1880c28de8079de",
+    "label": "preliminary focused/build evidence; final selected-artifact gates recorded separately"
+  },
+  {
+    "gate": "debug-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -t:Rebuild -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-iteration4-debug-build.log",
+    "sha256": "9ee36b7082c35de04a26c0cc675b90da26ec98f34d996e3db4f6c6f2587ca4f7",
+    "exitCode": 0,
+    "seconds": 10.591,
+    "label": "preliminary; superseded by final selected-artifact run after test-only environment registration correction",
+    "sanitizedSummary": "debug-build-preliminary.txt"
+  },
+  {
+    "gate": "debug-integration",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-iteration4-debug-integration.log",
+    "sha256": "ce2f9c5978052c18119098407d368b9f249e9d5b4accd94a6d2f3e08116b478a",
+    "exitCode": 1,
+    "seconds": 12.024,
+    "label": "preliminary; superseded by final selected-artifact run after test-only environment registration correction",
+    "sanitizedSummary": "debug-integration-preliminary.txt"
+  },
+  {
+    "gate": "rollback",
+    "command": "WORKS_SDK_RESULT_DIRECTORY=/tmp/story415-iteration4-rollback-results bash tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-iteration4-rollback.log",
+    "sha256": "773a05ad84c0723bd8b6566bd4279bc77156f05b43f9164c598e6eaf31a2d44b",
+    "exitCode": 1,
+    "seconds": 2.461,
+    "label": "preliminary; unchanged no-restore Release script was invoked after Debug builds overwrote shared assets; no restore assertions ran"
+  }
+]

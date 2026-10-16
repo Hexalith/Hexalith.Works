@@ -1,0 +1,4 @@
+Command: WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-remediation-live-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart'
+
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 353.143s

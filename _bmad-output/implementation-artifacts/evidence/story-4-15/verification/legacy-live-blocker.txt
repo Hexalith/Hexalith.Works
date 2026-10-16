@@ -1,0 +1,8 @@
+xUnit.net v3 In-Process Runner v4.0.2+0c7aa4991f (64-bit .NET 10.0.12)
+  Discovering: Hexalith.Works.IntegrationTests
+  Discovered:  Hexalith.Works.IntegrationTests
+  Starting:    Hexalith.Works.IntegrationTests
+  Finished:    Hexalith.Works.IntegrationTests (ID = '0c414918071bac5faabdd9d36a4277806964016bbf1945c06e69371eb6b7da73')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 21, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 762.139s
+Known preserved startup failure: WorksReminderRecoveryPipelineSmokeTests.Recovery_re_registers_a_still_future_await_that_later_fires; 600-second AppHost startup budget expired before Works/operations/admin were ready. Dapr control plane healthy.

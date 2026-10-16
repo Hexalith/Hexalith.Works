@@ -1,0 +1,114 @@
+{
+  "appHost": "src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
+  "command": "aspire describe --apphost src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj --format Json",
+  "resources": [
+    {
+      "name": "dapr-placement-mtls",
+      "type": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-scheduler-mtls",
+      "type": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "dapr-sentry",
+      "type": "Container",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-app-api-token",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-dapr-cli",
+      "type": "Executable",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-admin",
+      "type": "Project",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-app-api-token",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore",
+      "type": "Project",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-dapr-cli",
+      "type": "Executable",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-operations-app-api-token",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-dapr-cli",
+      "type": "Executable",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "eventstore-operations",
+      "type": "Project",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "security-eventstore-client-password",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "security-eventstore-client-username",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "security",
+      "type": "Container",
+      "state": "Starting",
+      "healthStatus": null
+    },
+    {
+      "name": "works-app-api-token",
+      "type": "Parameter",
+      "state": "Running",
+      "healthStatus": "Healthy"
+    },
+    {
+      "name": "works-dapr-cli",
+      "type": "Executable",
+      "state": "Waiting",
+      "healthStatus": null
+    },
+    {
+      "name": "works",
+      "type": "Project",
+      "state": "Waiting",
+      "healthStatus": null
+    }
+  ]
+}

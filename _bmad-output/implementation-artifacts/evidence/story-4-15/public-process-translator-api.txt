@@ -1,0 +1,11 @@
+# Hexalith.EventStore.Client.Processes.IProcessTranslator
+
+Fully decodes each state-affecting envelope and derives deterministic effects without external I/O.
+
+Package: Hexalith.EventStore.Client | Version: 3.122.0 | TFM: net10.0 | Library: lib/net10.0/Hexalith.EventStore.Client.dll | Source: NuGet
+
+## Methods
+
+| Name | Digest | Signature | Description |
+| ---- | ------ | --------- | ----------- |
+| TranslateAsync | `4517bcee7a` | `public abstract System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Hexalith.EventStore.Contracts.Processes.ProcessEffect>> TranslateAsync(Hexalith.EventStore.Client.Processes.ProcessSource source, Hexalith.EventStore.Contracts.Streams.StreamReadEvent streamEvent, System.Threading.CancellationToken cancellationToken = default)` | Decodes one envelope and returns every effect in stable ordinal order. |

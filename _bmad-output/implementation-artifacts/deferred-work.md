@@ -1435,3 +1435,14 @@ These four items were reconfirmed on the current production code. They do not op
 
 - `MaxOperations` (40,259) is only checked by a test that restates the formula; add a plan-count test over a few aggregates with forced multi-page histories asserting count ≤ `WorksRebuildOperationBound.MaxOperations` (medium).
 - Unverified (medium if true): the 40,259-operation ceiling may exceed `MaxCanonicalManifestBytes` (8 × default) first; settle by sizing the canonical manifest of a maximal epoch plan.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Benchmark Works recovery catalog enumeration at supported large candidate populations (medium, unverified).
+  evidence: Review BH6 found full membership reread/sort per keyset page, but no measured allowed population exceeds the SDK deadline; run a representative multi-tenant capacity benchmark with configured freshness and discovery limits to settle the claim.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Pre-existing SDK ProcessReadDeadline can exceed its deadline while synchronously invoking a provider cancellation callback (medium).
+  evidence: Iteration 5 BH5-6; the timeout catch still calls work.Cancel synchronously, exactly as in SDK baseline 6394d0500e6e277b8975cb397c9f0389f9a16929. Add a deterministic callback-blocking race regression, then make cancellation nonblocking while retaining source/slot lifetime through actual completion.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Pre-existing shared control-index read validation accepts persisted registries exceeding writer tenant, receipt or byte bounds (medium).
+  evidence: Iteration 5 BH5-7; unchanged SharedProjectionControlIndexWriter.ValidateState in SDK baseline 6394d0500e6e277b8975cb397c9f0389f9a16929 omits the writer's 64-tenant, 256-receipt and 32-KiB ceilings. Verify over-limit corruption is rejected by strict and partial readers before tenant acquisition, preserving valid historical indexes and offboarding.

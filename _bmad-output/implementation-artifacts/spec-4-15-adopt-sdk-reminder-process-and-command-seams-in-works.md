@@ -2,52 +2,213 @@
 title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
-status: 'draft'
+updated: '2026-10-16'
+status: 'done'
+baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
+review_loop_iteration: 4
 context:
-  - '_bmad-output/implementation-artifacts/epic-4-context.md'
-  - '_bmad-output/planning-artifacts/architecture.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/planning.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/review-remediation.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-2-remediation.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-3-remediation.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-4-remediation.md'
+  - '_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-4-recovery.md'
 ---
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
 ## Intent
 
-**Problem:** Works still owns generic reminder, process recovery, and command-submission machinery, so AD-20 R6–R8/R11 cannot be proved through published SDK seams.
+**Problem:** Works owns date scheduling, startup-only recovery, and ordinary internal submissions. Expiry lacks durable witnesses; Reactor identities use payload sequences instead of envelope positions.
 
-**Approach:** Pin Stories 4.11–4.13 producer versions, retain Works' pure Reactor and typed intent translations, and move registration, process execution, recovery, and trusted submissions through the SDK. Platform parity belongs to Story 4.16.
+**Approach:** Drive Works intents and pure Reactor translations through SDK reconciliation, checkpointing, and trusted receipts. Prove synthetic R6–R8/R11 behavior; preserve transitional hosting for 4.16.
 
 ## Boundaries & Constraints
 
-- Keep the Works AppHost usable until the Platform gate passes. Works retains domain policies, exact await matching, and pure cascade/child/date/expiry translations; SDK owns generic runtime mechanics.
-- AD-25 schedule witnesses and AD-26 EffectIds are durable and deterministic. AD-27 requires strict exclusive stream paging, periodic recovery, quarantine, and degraded readiness while unresolved work exists.
-- Every internal submission carries authenticated tenant, workload, delegation purpose, and causation. No payload-supplied actor or cross-tenant source is authoritative.
+**Always:** Use published EventStore 3.122.0 as the verified base; preserve 4.14 fixes and source-Debug/package-Release modes. SDK owns mechanics, codecs, receipts, quarantine and periodic recovery. Works owns authoritative contextual reads, exact await matching and clock-free decisions. Persist upstream-resolved UTC expiry and deterministic schedule witnesses additively. Scheduled expiry must match its witness; authenticated cascade expiry remains a separate delegated purpose. Use envelope positions and immutable kind/ordinal for effects. Validate tenant, workload, purpose, causation and digest before mutation/disclosure. Require receipts before checkpoints and durable unresolved evidence before acknowledging failure.
+
+**Never:** Infer TTL/timezone policy, replace receipts with gateway status, skip undecodable evidence, fork persistence, enable two runtime writers, or admit real data. Preserve protected ingress, 4.14 readers and complete restore rollback. Publication, production authority/policy, host removal and Platform parity remain separate gates.
+
+**Scope decision (2026-10-15):** Include the minimal EventStore adapter-contract/retry correction and verify fresh local candidates in this story. Public publication remains a separate gate; local artifacts must never be described as published producers. The user additionally approved authenticated trusted-effect origin handoff, bound to tenant, target, purpose, causation and payload digest, plus its security tests in the local producer candidate.
 
 ## I/O & Edge-Case Matrix
 
 | Scenario | Expected behavior |
 | --- | --- |
-| Date or expiry reminder redelivered | One accepted transition or stable no-op; stale witness has no effect. |
-| Cascade or child-resume crash | Persisted checkpoint/effect evidence drives one logical outcome after restart. |
-| Corrupt or foreign source page | Quarantine and degraded readiness; no checkpoint skip. |
-| Wrong origin, purpose, or effect digest | Denial/conflict before target mutation or disclosure. |
+| Duplicate/lost firing, restart, same-date re-suspension | One logical current effect; periodic discovery; distinct suspension identity. |
+| Reschedule/stale expiry | Persisted current witness governs; stale signal cannot expire work. |
+| Cascade/child-resume crash after target commit | Receipt replay precedes checkpoint; no second logical mutation. |
+| Page boundary/corrupt or foreign evidence | No skipped envelope; durable unresolved state and degraded readiness. |
+| Related-read outage/denied submission | Retryable outage; audited denial/conflict without mutation or disclosure. |
+
+</frozen-after-approval>
 
 ## Code Map
 
-- `src/Hexalith.Works/Reminders/`, `src/Hexalith.Works/Recovery/`, `src/Hexalith.Works/Reactor/` — current translations and generic runtime code to separate.
-- `src/Hexalith.Works/Runtime/WorksHost.cs` — current registration and routes.
-- `tests/Hexalith.Works.IntegrationTests/` — reminder, cascade, child-resume, command, and recovery baselines.
+Host paths below are relative to `src/Hexalith.Works/`; context expands exact SDK and test paths.
+
+- `Runtime/WorksRecoveryExtensions.cs`, `Runtime/WorksHost.cs` — replace active registrations exclusively; preserve legacy mode.
+- `Reminders/`, `Recovery/` — retain authoritative domain folds; replace active bespoke mechanics with SDK adapters.
+- `src/Hexalith.Works.Reactor/` — preserve pure translators; envelope provenance comes from SDK.
+- `src/Hexalith.Works.Contracts/`, `src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs` — additive expiry witnesses and validation.
 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] Pin named published EventStore producer versions from Stories 4.11–4.13 and adapt Works typed reminders, periodic recovery, and Reactor process translations to documented SDK interfaces.
-- [ ] Replace Works-owned generic submission/checkpoint/reminder machinery with SDK calls while preserving deterministic effect IDs, schedule witnesses, and the transitional host.
-- [ ] Prove persisted date/expiry, cascade, child-resume, restart, lost firing, page boundary, quarantine/readiness, replay, and unauthorized submission outcomes.
+- [x] `references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Processes/`, `references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs` — clarify read-only adapters, add the typed retryable-read exception, and test outage retry versus corruption before adoption; propagate and verify authenticated trusted-effect origin at the domain-service boundary with negative security tests. Support immutable per-intent reminder ordinals so multiple date witnesses from one committed suspension cannot collide; preserve the existing default ordinal and identities. Exact supporting paths are in context.
+- [x] `Directory.Packages.props`, `Directory.Build.props` — select verified producers and record hashes; replace obsolete EventStore candidate reliance while keeping Platform test-candidate provenance explicit.
+- [x] `src/Hexalith.Works.Contracts/{Commands,Events,State}/`, `src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs`, `WorkItemEventStoreAggregate.cs` — persist resolved expiry/token/revision through create/reschedule/replay; validate scheduled witness and delegated cascade origin without caller privilege or clock reads; preserve historical payloads.
+- [x] `Reminders/WorksReminderIntentSource.cs`, `WorksReminderEventHandler.cs` — implement SDK intent/convergence adapters; refold all current date/expiry witnesses with committed source coordinates.
+- [x] `Recovery/WorksProcessSourceCatalog.cs`, `WorksProcessTranslator.cs` — keyset-discover sources through durable membership, validate related streams, invoke pure cascade/child-resume translations and emit stable effects; preserve discovery across restart.
+- [x] `Runtime/WorksRecoveryExtensions.cs`, `Runtime/WorksHost.cs`, `Runtime/Events/` — compose SDK reminders/processes, fresh bound delegation, trusted submission, protected callbacks, audited disposition and readiness; replace active legacy services exclusively; malformed delivery cannot erase unresolved work.
+- [x] `tests/Hexalith.Works.UnitTests/`, `tests/Hexalith.Works.IntegrationTests/`, `tests/Hexalith.Works.ArchitectureTests/` — cover every matrix row, serialization, sequence divergence, retry taxonomy, single active runtime and SDK ownership; extend named persisted fixtures in context.
+- [x] `docs/sdk-reminder-process-adoption.md`, `docs/boundary-decision-record.md`, `docs/eventstore-api-surface-constraints.md` — record producers, commands, durable end states, rollback and remaining gates.
 
 **Acceptance Criteria:**
-- Given a committed Works event, when the SDK reminder/process/submission paths run or restart, then the same domain decisions converge with one logical effect and durable evidence.
-- Given lost firings, corrupt stream evidence, or a stale witness, when reconciliation runs, then unresolved work stays discoverable and no wrong transition is acknowledged.
-- Given invalid origin, tenant, purpose, or digest, when an effect is submitted, then target state is unchanged and the disposition is auditable.
+- Given committed Works facts, when SDK processing repeats across restart and target-commit/checkpoint failure, then persisted state, receipts and checkpoints converge once logically.
+- Given unresolved work, when periodic recovery or authenticated disposition runs, then discovery/readiness remain truthful and healthy recovery uses the same validator.
+- Given forbidden origin, tenant, purpose or altered semantics, when an effect is submitted/replayed, then accepted target state and receipt confidentiality are preserved with audited disposition.
+
+## Implementation Notes
+
+- Final post-review audit: all eight direct patches are resolved in immutable local candidate `.9`. [Selected-artifact evidence](evidence/story-4-15/review-iteration-5/implementation.md) records 27 unique passing gates: SDK 962, trusted security 85, snapshots 13, client 37, source Debug/package Release integration 751 each, unit/property/architecture 576/3/269, enabled runtime 2, complete restore 27+1 and normalized contract checks 2, with zero skips. Independently asserted all ten persisted runtime phases, including cascade expiry against an existing child witness and receipt replay. Verified 405 current/archived-input bindings, seventeen redacted fields, all-nine source/package graphs, historical archive immutability, cleanup and unchanged frozen intent. The three recorded deferred SDK concerns remain separate work; no further in-scope finding remains.
+
+- Review iteration 4 implementation audit: all eight tasks and five approved matrix rows are complete in immutable local candidate `.8`. [Final evidence](evidence/story-4-15/review-iteration-4/implementation.md) records SDK/security/client 957/85/37, source Debug/package Release integration 741 each, unit/property/architecture 576/3/269, enabled runtime 2 and complete restore 27+1, all passing with zero skips. Read the preserved full implementation and complete 1264-line .7-to-current delta; independently verified 252 source/archive/log/graph/runtime/cleanup bindings, all eight persisted phases, thirteen redacted payload fields, corrected original failure probes, unchanged frozen intent and exact preserved user Story 4.9 diff. Every matrix row has executed passing coverage. Independent review follows.
+
+- Review iteration 3 implementation audit: all eight tasks and five approved matrix rows are complete in immutable local candidate `.7`. [Final evidence](evidence/story-4-15/review-iteration-3/implementation.md) records SDK 957, security 85, client 37, Debug/Release integration 701 each, final remediation 12 each, unit/property/architecture 576/3/269, enabled runtime 2 and complete restore 27+1, all passing with zero skips. Read the full preserved implementation plus the complete .6-to-.7 delta and final test-only correction; independently verified all 259 log/runtime/archive/source/cleanup bindings, both dependency graphs, all seven persisted runtime phases, unchanged frozen intent and preserved user Story 4.9 diff. Every matrix row has executed passing coverage; independent review follows.
+
+- Review iteration 2 implementation audit: all eight tasks and five approved matrix rows are complete in immutable local candidate `.6`. [Final evidence](evidence/story-4-15/review-iteration-2/implementation.md) records SDK 949, security 67, source Debug/package Release integration 692 each, unit/property/architecture 573/3/269, enabled runtime 2 and complete restore 27+1, all passing with zero skips. Independently verified 19 gate logs, three final runtime artifacts, nine preliminary logs, 18 selected/historical archives, 53 producer and 62 consumer file hashes. Read the .4-to-final implementation delta and final persisted states; independently reproduced corrected failure probes and verified both dependency graphs. Every required matrix row has executed passing coverage; independent review follows.
+
+- Review iteration 1 implementation audit: all required corrections are complete in immutable local candidate `.4`. [Corrected-state evidence](evidence/story-4-15/review-iteration-1/implementation.md) records passing Debug/Release, security, package, callback, five-child/no-op restart and complete-restore gates. Independently verified 18 result logs, 13 runtime artifacts, 62 consumer files, nine archives and 43 producer-file hashes. All five approved matrix rows have executed passing coverage; independent review follows.
+
+- Historical iteration 0 implementation and matrix audit: [retained evidence](evidence/story-4-15/implementation.md) maps all five matrix rows to executed, passing tests. Verified 16 raw-result hashes, nine selected `.3` package archives and 30 producer-file hashes independently. SDK evidence-field framing was corrected after diff audit, with historical digest goldens and fresh consumer/live proof. Independent review follows.
+
+- SDK reminder recovery previously discovered only already-registered targets. To meet the approved periodic/lost-firing recovery behavior, add an optional read-only SDK reminder target catalog, populated from existing Works SDK family membership and run by SDK reconciliation. Cover lost initial convergence and expiry-only sources; do not add a Works-owned periodic writer.
+
+## Spec Change Log
+
+- 2026-10-16, review iteration 4: BH4-1/BH4-2/BH4-4/BH4-5/BH4-6/BH4-7 and EC4-1 exposed incomplete design for slow tenant-family isolation, repeated abandoned discovery admission, required event shape, actual hosted-service composition, canonical related-child creation gaps and persisted expiry transitions. [Iteration 4 remediation](evidence/story-4-15/review-iteration-4-remediation.md) defines these corrections and verified .7 KEEP bundles, retaining lower membership/byte-boundary/ABI/test corrections. Avoid healthy-tenant starvation, repeated one-key worker exhaustion, malformed no-op checkpointing, hidden legacy writers, permanently quarantined legitimate child-creation gaps and rolled-back persisted expiry witnesses. Preserve every earlier positive proof, immutable archive, source/package graph and synthetic boundary; frozen intent is unchanged.
+
+- 2026-10-15, review iteration 3: BH3-2/BH3-3/BH3-4/BH3-6 exposed incomplete design for adapter denial audit, tenant-tombstone availability, stale discovery writes and fair indexed/initial reminder service. [Iteration 3 remediation](evidence/story-4-15/review-iteration-3-remediation.md) defines these corrections and verified .6 KEEP bundles; direct ABI, corruption, composition and test corrections remain required. Avoid global tenant starvation, old completion overwriting newer failures, indexed work starving initial discovery and unaudited adapter denials. Preserve every earlier change-log constraint, source/package graph, positive proof, immutable archive and synthetic-only boundary. Frozen intent is unchanged.
+
+- 2026-10-15, review iteration 2: BH2-2/BH2-3/BH2-5/BH2-8 and EC2-1/EC2-2 exposed incomplete reminder discovery scheduling, failure retention, capacity progress, readiness and origin-denial auditing design. [Iteration 2 remediation](evidence/story-4-15/review-iteration-2-remediation.md) records corrections and verified .4 KEEP bundles. Avoid terminal-candidate livelock, cross-tenant publication starvation, lost partial-sweep evidence, stale healthy status and unaudited origin denials; also restore reminder ABI, bind retained effects and close the two direct adapter test gaps. Preserve every prior change-log constraint, positive behavior, synthetic scope and immutable producer identity; frozen intent is unchanged.
+
+- 2026-10-15, review iteration 1: BH2/BH5/BH7/BH9 exposed insufficient non-frozen design for capacity boundaries, mixed-tenant discovery, no-op receipt replay and bounded contextual reads. [Review remediation](evidence/story-4-15/review-remediation.md) specifies the corrections and KEEP instructions. Avoid global discovery starvation, event-only reconstruction of no-op receipts, unbounded context acquisition and undocumented coupled limits. Preserve all verified expiry/origin/codec/rollback behavior and archived implementation bundles during re-derivation; frozen intent is unchanged.
+
+- 2026-10-15: During implementation, verified that trusted-effect admission did not reach the domain service. The user explicitly approved adding authenticated origin handoff and security tests to the local producer candidate. Publication remains a separate gate.
+- 2026-10-15: Recorded additive reminder ordinal support as an implementation correction required by the approved immutable-kind/ordinal and all-current-witness requirements; retain default-zero identity compatibility.
+
+## Review Triage Log
+
+### Iteration 1
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH1 | medium | patch | `ReminderCoordinator.ValidateIntent` emits `source-message-invalid`, while `IsValidPersistedQuarantine` omits it. Reload converts valid evidence into another malformed record and repeated convergence grows quarantine. |
+| BH2 | medium | bad_spec | The reachable five-child cascade exceeds SDK default `MaxEffectsPerEnvelope=4` and quarantines before submission. The non-frozen design must explicitly document the supported coupled capacity settings and prove both configured fan-out and durable over-capacity behavior; do not invent an unbounded limit. |
+| BH3 | medium | patch | The gateway already fences unsupported metadata through `LegacyEventReadGuard`, but accepts positive stored payload versions. The new typed Works decoder ignores `PayloadVersion` and can interpret an undeclared version as V1; validate supported versions before effects or decoded no-ops. |
+| BH4 | medium | patch | The contextual reader and SDK accept `JSON` case-insensitively, but `WorksProcessTranslator` rejects it with an ordinal comparison. A supported envelope is quarantined; use the same encoding comparison. |
+| BH5 | high | bad_spec | One degraded family makes the new catalog throw before returning any healthy member, blocking previously unregistered healthy-tenant work after lost callbacks. Offboarding itself normally removes control membership, but identity-conflict/parking degradation demonstrates the cross-tenant starvation; retain unresolved SDK evidence while allowing healthy discovery. |
+| BH6 | maybe-false | defer | The implementation rescans and sorts retained membership for each page, but no measurement establishes a supported population that exceeds its deadline. Treat potential latency as medium, unverified; benchmark configured candidate populations and page deadlines to settle it. |
+| BH7 | high | bad_spec | A competing ordinary resume can consume the exact await before trusted submission, which then commits a no-op receipt without an event. After response loss the causation-based reconstruction returns no effects and advances without replaying that receipt, violating the approved receipt/checkpoint invariant. |
+| BH8 | false | reject | A scheduler witness is intentionally the target/kind/due/revision tuple and cannot name two distinct intents. `SameWitness` and witness-collision quarantine enforce that closed codec contract; the SDK guide explicitly documents changed ordinal with retained witness as collision, and Works deduplicates identical date conditions. Distinct supported Works date witnesses already have different due instants or committed revisions. |
+| BH9 | medium | bad_spec | The new contextual reader retains every payload and decoded object across up to 1000 pages without a cumulative byte limit. Reminder source calls await it directly without a whole-read deadline, so a permitted large or slow stream can consume excessive memory or monopolize convergence; require bounded acquisition with retained unresolved outcomes. |
+| BH10 | medium | patch | Ordinary transport treats blank addresses as absent, but the new trusted client uses null-coalescing and can construct an empty URI. Reuse one validated effective address and cover blank Dapr/gateway settings. |
+| EC1 | medium | patch | Independently confirms BH1: `source-message-invalid` is produced by current code but rejected by persisted reason validation, causing repeat quarantine growth. |
+| VG1 | medium | patch | Pre-verified coverage gap: the SDK callback test pre-seeds quarantine and substitutes the registrar, while the live fixture suppresses callbacks. Add real successful callback convergence with periodic recovery disabled and assert persisted reminder witness plus process membership. |
+| VG2 | medium | patch | Pre-verified coverage gap: existing negative projection tests instantiate legacy sources, not the new catalog. Reconstruct the new catalog after identity-conflict and parking evidence and assert retryable rejection and retained degradation. |
+
+BH1 and EC1 share one missing persisted-reason case; all other surviving findings have distinct roots. BH6 is deferred pending a concrete capacity benchmark. No frozen-intent gap was found. BH2/BH5/BH7/BH9 require a non-frozen design correction and one implementation loopback; patch findings remain recorded for the re-derived implementation.
+
+### Iteration 2
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH2-1 | medium | patch | The baseline `ReminderIntent` has eleven positional parameters; the new thirteen-parameter record removes the old CLR constructor and eleven-value `Deconstruct`. Existing compiled callers fail and existing source deconstruction stops compiling. Preserve the old positional shape and make the two already-added fields non-positional properties. |
+| BH2-2 | high | bad_spec | Discovery ensures every target before convergence. With capacity one, an earlier terminal target fills the index, the later active target fails publication, and subsequent convergence removes the terminal target. Repeating from the unchanged page repeats this reachable livelock indefinitely. |
+| BH2-3 | medium | bad_spec | `ReminderReconciler` performs up to 256 sequential catalog reads with a thirty-second deadline before converging any previously indexed target. Slow successful pages can delay lost-firing recovery for over two hours; bound and fairly schedule discovery relative to existing work. |
+| BH2-4 | false | reject | The only cursor writer derives keys from validated `ProcessSource` tuples and validates ordering before persistence. No supported path produces the malformed cursor described. An externally corrupted control document fails closed and degrades readiness; automatically resetting corruption would add an unproved recovery policy. |
+| BH2-5 | high | bad_spec | `BeginPass` only returns a version; health reads the previous host-local completion flags. After a healthy pass, the new persisted unfinished catalog marker and a blocked read/write leave readiness Healthy until the entire pass returns. Represent pending discovery in readiness before waiting. |
+| BH2-6 | false | reject | AD-13 and the pure resume handler admit an exact member of the current await set. A date signal for the same reached instant remains a matching current condition after re-suspension; it carries no expiry authority. Distinct suspension identities and receipt replay already prevent duplicate logical effects. A new target-side suspension-generation requirement would change the adopted exact-condition semantics, and the claimed invalid mutation is not demonstrated. |
+| BH2-7 | low | reject | An exact authenticated EventStore transport identity with malformed codec fields can cause an argument exception and HTTP 500. Admission still fails before domain work, and the admitted producer validates those fields before creating this request. This uncommon malformed authenticated request has negligible availability impact; adding new normalization branches is rejected under the low-finding rule. |
+| BH2-8 | medium | bad_spec | New origin-binding failures return a bare 403 with no boundary audit record. Supported origin-negative requests are deliberately exercised at this boundary, so server-side admission audits and eventual producer receipts do not account for direct denied invocations. Add a safe SDK-owned audit path and prove denial precedes mutation/disclosure. |
+| BH2-9 | false | reject | The canonical gateway calls `TryMakeReplayEventReadableAsync` on every envelope before mapping the page. `EventStorePayloadProtectionMetadataCarrier` converts unknown protection versions to `ProviderOpaque`, and the controller returns an unreadable error instead of a page. The cited malformed nonterminal envelope cannot reach the Works translator through its supported canonical reader. |
+| BH2-10 | medium | patch | An independent restart probe changed only a persisted pending effect payload from byte 1 to 9 while retaining the source and source hash. The runner submitted byte 9 with fresh delegation and advanced checkpoint 1. Bind the retained effect list as well as the source in the existing private evidence digest and quarantine alteration before submission. |
+| EC2-1 | medium | bad_spec | Independently executed probe: an incomplete first page followed by a later-page read failure persists `IsIncomplete=false`; restarting at the retained cursor then records a complete healthy sweep without revisiting the omitted scope. The catch path loses the accumulated incompleteness. |
+| EC2-2 | high | bad_spec | Independently executed probe: three passes with an earlier tenant's unavailable/full candidate index produce zero healthy-tenant candidates. A single publication exception exits the whole page and never reaches later healthy targets; retain failure evidence while allowing healthy progress and eventual retry. |
+| EC2-3 | medium | bad_spec | The same interrupted-page probe confirms that the catch path overwrites the durable incomplete claim. Restart reaches a false complete state; this is the same lost accumulated flag reported separately by EC2-1. |
+| VG2-1 | medium | patch | Pre-verified gap: current adapter fixtures exercise cancellation and the live expiry fixture has no children. No test executes the new expired-parent mapping to cascade-expiry effects; add a direct expired-parent mapping assertion including kind, command, targets and absence of a scheduled witness. |
+| VG2-2 | medium | patch | Pre-verified gap: current foreign-source tests reject the source tenant before reciprocal relationship validation. Add individually valid scoped streams with wrong child-parent and missing reciprocal child-spawn evidence, asserting durable quarantine, unchanged checkpoint, no plan and no effects. |
+
+EC2-1 and EC2-3 share the lost accumulated incompleteness root; each other surviving finding has a distinct root. BH2-2/BH2-3/BH2-5/BH2-8 and EC2-1/EC2-2 require a non-frozen design correction. No frozen intent gap was found. The lower patch findings are retained for re-derivation; there are no new deferred entries.
+
+### Iteration 3
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH3-1 | medium | patch | Six Works command/event records append positional expiry fields, replacing their baseline constructors and deconstruction signatures. Optional defaults preserve source calls but not compiled consumers. Restore the existing CLR shapes while preserving additive JSON and polymorphic round-trips, as already done for SDK reminders. |
+| BH3-2 | medium | bad_spec | The real Works HTTP cases for purpose, workload, kind and absent origin reach aggregate `UnauthorizedAccessException` after successful binding (or without an origin). The SDK endpoint returns 403, but only binding failures call the new audit writer. The audit design must cover these demonstrated adapter authorization denials exactly once, before acknowledgment. |
+| BH3-3 | high | bad_spec | `GetControlIndexTenantsAsync` calls SDK `ReadTenantsAsync`, whose sequential tombstone reads throw globally before the new catalog's per-family catch. A tenant-local unavailable tombstone therefore still blocks every healthy tenant. Add a generic SDK partial-availability read without bypassing offboarding or exposing unvalidated membership. |
+| BH3-4 | medium | bad_spec | Independent CAS probe inserted a newer incomplete failure between an old completion read/write. `ReminderIntentIndex.UpdateAsync` retried against the newer ETag and persisted `Complete=true, IsIncomplete=false`. Cancellation is not checked in its loop, so an abandoned provider can do the same. Fence discovery progress and completion against newer owners/transitions; generic merge retry cannot validate an old sweep proof. |
+| BH3-5 | medium | patch | The reminder fold overwrites prior expiry values and returns on terminal history before checking witness validity. The canonical reader decodes these typed payloads but cannot verify domain schedule tokens, so a corrupt non-null persisted witness can be masked by later history. Validate encountered witnesses through the existing domain validator and retain the same SDK unresolved failure behavior. |
+| BH3-6 | medium | bad_spec | Indexed convergence is directly awaited before any catalog service, and the Dapr invoker forwards no caller deadline to the actor turn. A blocked registrar or a large permitted index delays initial target discovery despite the new catalog budget. Both indexed recovery and initial discovery need bounded, fair progress with durable continuation and truthful completeness. |
+| BH3-7 | high | patch | `WorksHost` invokes its supported `configureServices` callback after the registration-time exclusivity guard. The callback can add legacy writers to an SDK graph and escape validation. Validate final composition/startup before any writer starts; cover both registration orders. |
+| BH3-8 | low | patch | The new trusted-invocation test helper forwards only command/state/token, discarding requested post-command state and snapshot profile. This makes trusted snapshot tests observe the wrong invocation contract. Forward the existing corresponding overload and assert the origin and snapshot arguments. |
+| BH3-9 | medium | patch | The deadline tests require two real-time 60 ms calls to begin inside 100 ms and assume detached provider cleanup finishes after a fixed 50 ms delay. Legitimate scheduler delay can fail CI with correct production behavior. Preserve the deadline/admission assertions using observable completion or bounded eventual admission, without arbitrary scheduling assumptions. |
+| BH3-10 | low | patch | The documentation says project-reference metadata forwarding was rejected, but `Directory.Build.props` still contains its `AdditionalProperties` version hint. Clarify that the hint does not fix NuGet restore promotion and that the source-only Contracts exemption is the accepted graph correction. |
+| EC3-1 | low | reject | carried from BH2-7: the same malformed identity codec call under an exact authenticated EventStore principal throws before the authorization branch. The admitted producer cannot create that malformed tuple, mutation remains denied, and the uncommon malformed authenticated request has negligible availability impact. Additional normalization branches remain rejected under the low-finding rule. |
+| EC3-2 | high | patch | Independently reran the authentic cancellation probe: planning persists sequence 1 at checkpoint 0 with no failure sequence; after the source head disappears, restart reports Active while retaining the unresolved plan and submitting nothing. The empty-page branch must retain an unresolved/quarantined outcome whenever a pending plan exists. |
+| VG3-1 | medium | patch | Pre-verified regression gap: successful revision 1-to-2 rescheduling and stale expiry-command tests do not execute equal/decreasing revision or dropping an existing witness. Add negative reschedule cases proving no rescheduled event or witness mutation. |
+| VG3-O1 | low | reject | carried from BH2-7: this repeats EC3-1's malformed authenticated identity/codec server-error claim at the unchanged validation condition. Preserve the prior low/reject verdict and route; no new mutation or receipt disclosure occurs. |
+
+All surviving findings have distinct roots. BH3-2/BH3-3/BH3-4/BH3-6 require a non-frozen design correction; the lower patch findings are retained for re-derivation. The malformed codec findings carry the prior verdict without another patch or deferral. No new frozen-intent gap or deferred entry was found.
+
+### Iteration 4
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH4-1 | high | bad_spec | Independent canonical catalog probe blocked the first tenant's epoch read and observed zero healthy-later-family reads before the outer deadline. Tenant-local epoch and generation acquisition require bounded isolation while retaining incomplete discovery. |
+| BH4-2 | high | bad_spec | Independent probe repeated one noncooperative tombstone across seventeen scans: provider invocations grew to sixteen, healthy membership disappeared and an unrelated immediate authoritative read was refused. Fence repeated logical work and isolate finite discovery admission through actual completion. |
+| BH4-3 | medium | patch | A current membership list containing item-a, item-a, item-b passes shape validation; merging with sources.Add releases item-a before the duplicate throws. Validate the complete unique family batch before merging any member. |
+| BH4-4 | medium | bad_spec | A serialized WorkItemCreated with valid source identity and null required Obligation decodes and produces a no-op plan. Recovery-only required-shape validation must precede translation or checkpointing without tightening protected legacy readers. |
+| BH4-5 | high | bad_spec | A real legacy ReminderReconciliationService registered as an IHostedService instance bypasses ImplementationType checks and is accepted in SDK composition. Validate actual resolved supported hosted writers before any StartAsync, including legal instance/factory registrations. |
+| BH4-6 | medium | bad_spec | SpawnChild commits parent relationship facts before separate child creation; the canonical StreamsController returns 404 MissingStream, which the reader does not classify as transient. The expected related-child creation gap therefore quarantines instead of reaching the existing typed retry branch; restrict retry to that demonstrated related read. |
+| BH4-7 | medium | bad_spec | Independent probe supplied individually valid expiry tokens at created revision 2 followed by rescheduled revision 1; the fold emitted revision 1. Validate increasing, non-dropping persisted transitions and matching non-null expiry evidence before no-op checkpointing. |
+| BH4-8 | medium | patch | MaxContextBytes bounds retained context, while the actual SDK HTTP client may first materialize a separately capped response (default 16 MiB). Clarify both finite allowances and prove context overflow and transport overflow through the real client without lowering shared consumer limits. |
+| BH4-9 | medium | patch | The Works ABI script copies an existing Release Contracts DLL without building or binding current source, so stale compatible output can pass despite a source ABI break. Build the selected current Contracts before substitution into the unchanged baseline consumer. |
+| BH4-10 | medium | patch | The saturation fixture consumes all sixteen process-wide authoritative read slots but has no nonparallel collection, while the root xUnit configuration leaves parallelism enabled. Isolate that fixture with the existing collection mechanism and retain production refusal/release assertions. |
+| EC4-1 | high | bad_spec | Independently confirms BH4-1: one hanging family acquisition prevents later healthy families from being discovered before the enclosing catalog deadline; tenant-local bounding is required. |
+| EC4-2 | low | reject | carried from BH2-7/EC3-1: the same malformed codec under an exact authenticated EventStore principal throws before authorization. The admitted producer cannot create that tuple, mutation remains denied, and additional normalization branches remain rejected for this uncommon negligible-impact case. |
+| VG4-1 | medium | patch | Pre-verified gap: reminder intent tests assert only non-null SourceMessageId and the live issuer accepts the supplied value. Add exact equality to distinct committed envelope MessageIds for date and expiry intents, including reschedule and same-date re-suspension. |
+| VG4-O1 | low | reject | carried from BH2-7/EC3-1: this repeats the unchanged malformed authenticated codec failure; preserve the prior low/reject verdict without another patch or deferral. |
+
+BH4-1 and EC4-1 share one slow-family acquisition root; every other surviving finding has a distinct root. BH4-1/BH4-2/BH4-4/BH4-5/BH4-6/BH4-7 require non-frozen design corrections, with lower direct corrections retained for re-derivation. No frozen-intent ambiguity or new deferred entry was found. The saved per-finding decisions were restored after the daemon restart; this does not increment review_loop_iteration.
+
+### Iteration 5
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH5-1 | maybe-false | defer | carried from BH6: the catalog still rescans and sorts retained membership before applying each cursor. This again claims cumulative latency can exceed the page deadline; no executed supported-population measurement is filed. Preserve the existing medium/unverified benchmark route without another patch or ledger entry. |
+| BH5-2 | false | reject | carried from BH2-6: the unchanged resume adapter supplies an exact member of the current await set, as AD-13 requires. Same-date re-suspension can admit that current condition without granting expiry authority; adding a target suspension-generation rule would change the adopted semantics. |
+| BH5-3 | medium | patch | HasAwaitSet accepts any JSON array and the new decoder accepts an empty normalized await set. The existing aggregate explicitly rejects zero conditions, so malformed suspension evidence can otherwise become an acknowledged no-op and release no reminder. Add the demonstrated nonempty check in the recovery-only validator. |
+| BH5-4 | medium | patch | The recovery-only decoder delegates to namespace-stripping lookup; a foreign fully qualified type ending in WorkItemCancelled selects the Works payload and translation. EventPersister and the canonical stream page preserve full names, so recovery must accept the actual closed Works full name or its supported short name, rejecting foreign qualifiers before effects. |
+| BH5-5 | medium | patch | Fresh intent validation rejects a non-null whitespace SourceMessageId, but persisted entry validation omits the new field entirely. Restored malformed causation can remain structurally admitted instead of receiving stored-entry-invalid quarantine. Mirror the existing optional-field rule and prove reconstructed retention. |
+| BH5-6 | medium | defer | ProcessReadDeadline synchronously calls work.Cancel on the timeout path; provider cancellation callbacks can block that call if it wins the timer race. The exact synchronous-cancellation behavior exists in SDK baseline commit 6394d05 before this story; record the pre-existing bounded-deadline defect for a blocking-callback regression and nonblocking cancellation/lifetime repair. |
+| BH5-7 | medium | defer | ValidateState checks registry shape but not the writer's 64-tenant/256-receipt/32-KiB limits. Oversized persisted corruption is accepted by both old and new readers. The validation method and writer-only bounds are unchanged from SDK baseline 6394d05; record this pre-existing control-index validation defect, rather than expanding this adoption patch into shared-reader policy. |
+| BH5-8 | medium | patch | The new live proof persists cancellation receipts/checkpoints; cascade expiry is separately verified by the translator and authenticated HTTP boundary with an existing child witness. No persisted expiry-cascade restart combines those distinct purpose/witness inputs with receipt-before-checkpoint. Extend the existing bounded synthetic fixture to detect a regression at that composition. |
+| BH5-9 | low | patch | The SDK typed-reminder handoff still names WorkItemReminderActor and predicts a Works startup failure already corrected by this adoption; ExpireWorkItem also retains a stale scheduled-signal scope sentence. These are direct prose corrections to match the implemented actor, protected mapping and witnessed expiry. |
+| BH5-10 | medium | patch | The new pack helper claims published-3.122.0 provenance after checking only a candidate suffix. Running it against another checkout would emit the same unsupported claim. Report actual checkout/source provenance or validate the claimed base before making that statement; the existing verified .8 archives remain immutable. |
+| EC5-1 | medium | patch | WorkItemRejected has a required bool Requeue, but missing JSON defaults to false and the new recovery decoder accepts it through its default arm. The reminder fold treats that false value as terminal, while process translation acknowledges a no-op. Require the committed discriminator's presence/type in recovery only, preserving explicit true/false historical payloads. |
+| EC5-2 | low | reject | carried from BH2-7/EC4-2: malformed identity codec input under an exact authenticated EventStore principal fails before audit. Producer validation prevents this tuple, mutation remains denied, and added normalization complexity remains rejected for the same uncommon negligible-impact request. |
+| VG5-1 | medium | patch | Pre-verified coverage gap: the new trusted invoker helper test invokes only a substitute; ordinary snapshot migration and live receipt tests do not verify a trusted actor's qualified SnapshotRecord. Add trusted actor execution when a snapshot is due, asserting persisted snapshot content, accepted event and receipt together. |
+
+Every finding was classified before grouping. Each surviving finding has a distinct root; the empty collection and missing scalar concern separate checks at the same decoder. There is no new intent gap or design loopback, so review_loop_iteration stays 4. Apply the eight direct patches through the existing implementation agent, preserve every immutable candidate and positive proof, then verify the corrected candidate. Append only the two newly identified pre-existing SDK issues to the ledger; do not append the carried BH6 benchmark again.
+
+Iteration 5 resolution: all eight direct patches were audited against the source diff and verified in fresh local `.9`; the targeted pre-.9 inputs are preserved separately. The final evidence above covers selected packages, compatibility, both dependency modes, real runtime/receipts, complete restore and cleanup. Carried rejections/benchmark retain their previous routes and the two newly deferred pre-existing issues are recorded once.
 
 ## Verification
 
-- Record producer versions, Works consumer build, persisted restart/replay/negative-security commands, and R6–R8/R11 evidence for Story 4.16.
+- Start/inspect the unchanged AppHost before code changes using Aspire orchestration guidance.
+- Build Debug source and Release package consumers; run test projects individually, using built xUnit assemblies with single-dash filters for focused checks.
+- Extend enabled Redis/Dapr reminder/cascade fixtures; assert persisted witnesses, receipts, checkpoints, quarantine/readiness across restart, lost firing, replay and negative security. Record exact commands/results and broad blockers separately.

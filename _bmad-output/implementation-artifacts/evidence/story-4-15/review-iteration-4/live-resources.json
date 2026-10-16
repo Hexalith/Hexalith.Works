@@ -1,0 +1,98 @@
+[
+  {
+    "name": "dapr-placement-mtls-gnksdwtb",
+    "displayName": "dapr-placement-mtls",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "dapr-scheduler-mtls-dxhqxqhp",
+    "displayName": "dapr-scheduler-mtls",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "dapr-sentry-ptxbvptj",
+    "displayName": "dapr-sentry",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-admin-app-api-token",
+    "displayName": "eventstore-admin-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-admin-dapr-cli-fmczbweu",
+    "displayName": "eventstore-admin-dapr-cli",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-admin-kvfrkzdz",
+    "displayName": "eventstore-admin",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-app-api-token",
+    "displayName": "eventstore-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-dapr-cli-hzqzxntz",
+    "displayName": "eventstore-dapr-cli",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-dvjqbqct",
+    "displayName": "eventstore",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-operations-app-api-token",
+    "displayName": "eventstore-operations-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-operations-arakvjpr",
+    "displayName": "eventstore-operations",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "eventstore-operations-dapr-cli-yjuebwbh",
+    "displayName": "eventstore-operations-dapr-cli",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "works-app-api-token",
+    "displayName": "works-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "works-ccfrrnuk",
+    "displayName": "works",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "works-dapr-cli-huybabpq",
+    "displayName": "works-dapr-cli",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "name": "works-local-jwt-signing-key",
+    "displayName": "works-local-jwt-signing-key",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  }
+]

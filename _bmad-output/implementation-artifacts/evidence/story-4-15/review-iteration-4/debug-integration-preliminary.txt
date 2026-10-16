@@ -1,0 +1,2 @@
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 741, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 11.779s

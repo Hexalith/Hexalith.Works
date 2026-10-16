@@ -203,7 +203,8 @@ internal static class WorksAppHostTestReadiness
     /// </summary>
     public static async Task WaitForWorksActorRuntimeAsync(
         HttpClient sidecarClient,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string actorTypeName = nameof(DateReminderActor))
     {
         ArgumentNullException.ThrowIfNull(sidecarClient);
 
@@ -250,8 +251,8 @@ internal static class WorksAppHostTestReadiness
 
                     bool actorAdvertised = root.TryGetProperty("actors", out JsonElement actors)
                         && actors.ValueKind == JsonValueKind.Array
-                        && actors.EnumerateArray().Any(static actor => actor.TryGetProperty("type", out JsonElement type)
-                            && string.Equals(type.GetString(), nameof(DateReminderActor), StringComparison.Ordinal));
+                        && actors.EnumerateArray().Any(actor => actor.TryGetProperty("type", out JsonElement type)
+                            && string.Equals(type.GetString(), actorTypeName, StringComparison.Ordinal));
                     bool actorRuntimeReady = root.TryGetProperty("actorRuntime", out JsonElement actorRuntime)
                         && actorRuntime.TryGetProperty("runtimeStatus", out JsonElement runtimeStatus)
                         && string.Equals(runtimeStatus.GetString(), "RUNNING", StringComparison.Ordinal)
@@ -291,7 +292,7 @@ internal static class WorksAppHostTestReadiness
 
         throw new TimeoutException(
             "[startup/readiness] Works Dapr sidecar did not advertise a compatible, scheduler/placement-connected "
-            + $"{nameof(DateReminderActor)} host within 60 seconds. {lastDiagnostic}");
+            + $"{actorTypeName} host within 60 seconds. {lastDiagnostic}");
     }
 
     /// <summary>

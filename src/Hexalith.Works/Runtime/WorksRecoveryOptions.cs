@@ -16,6 +16,9 @@ public sealed class WorksRecoveryOptions
     /// <summary>The configuration section these options bind from.</summary>
     public const string SectionName = "Works:Recovery";
 
+    /// <summary>Opts into SDK reminder/process mechanics together; SDK projection delivery is required.</summary>
+    public bool UseSdkRuntime { get; init; }
+
     /// <summary>Whether the startup reconciliation pass runs. Defaults to enabled.</summary>
     public bool RunReconciliationOnStartup { get; init; } = true;
 
@@ -43,6 +46,12 @@ public sealed class WorksRecoveryOptions
     /// <see cref="MaxStreamPagesPerAggregate"/>.
     /// </summary>
     public int EffectiveMaxStreamPagesPerAggregate => MaxStreamPagesPerTenant ?? MaxStreamPagesPerAggregate;
+
+    /// <summary>Maximum cumulative encoded evidence retained by one complete contextual stream read (default 4 MiB).</summary>
+    public int MaxContextBytes { get; init; } = 4 * 1024 * 1024;
+
+    /// <summary>Whole contextual stream-read deadline, including all pages and decoding (default 500 ms).</summary>
+    public TimeSpan ContextReadTimeout { get; init; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>The maximum number of startup reminder-reconciliation attempts after an incomplete scan.</summary>
     public int ReminderReconciliationMaxAttempts { get; init; } = 5;

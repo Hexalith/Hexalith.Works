@@ -1,11 +1,15 @@
 using Hexalith.Commons.UniqueIds;
+using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Events;
+using Hexalith.EventStore.DomainService;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Runtime.Events;
 
@@ -36,6 +40,23 @@ internal sealed class WorksDomainEventProcessor
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(envelope);
+
+        using (IServiceScope sdkScope = _serviceScopeFactory.CreateScope())
+        {
+            if (sdkScope.ServiceProvider.GetService<IOptions<WorksRecoveryOptions>>()?.Value.UseSdkRuntime == true)
+            {
+                if (envelope.Domain != "work" || !ValidateEnvelopeAfterAcquisition(envelope)
+                    || WorksReadModelKeys.IsReservedTenantId(envelope.TenantId))
+                    return EventStoreDomainEventProcessingResult.RetryableInProgress;
+                var source = new ProcessSource(envelope.TenantId, "work", envelope.AggregateId);
+                source.Validate();
+                await sdkScope.ServiceProvider.GetRequiredService<ProcessCheckpointStore>()
+                    .EnsureCandidateAsync(source, cancellationToken: cancellationToken).ConfigureAwait(false);
+                _ = await sdkScope.ServiceProvider.GetRequiredService<WorksReminderEventHandler>().HandleAsync(
+                    envelope, cancellationToken).ConfigureAwait(false);
+                return EventStoreDomainEventProcessingResult.Processed;
+            }
+        }
 
         if (!string.Equals(envelope.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal))
         {

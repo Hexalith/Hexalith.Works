@@ -1,0 +1,116 @@
+[
+  {
+    "phase": "cascade-target-commit-before-checkpoint",
+    "state": {
+      "committedEffect": "37BRX9ZKGX4FX768KPVKD8D61SC4DYF34K27AFKXC8DPNWWYC5W0",
+      "childCancelled": 1,
+      "checkpoint": {
+        "Source": {
+          "Tenant": "sdk415-5bd48c606e",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-parent-5bd48c606e"
+        },
+        "Checkpoint": 2,
+        "Status": 2,
+        "Attempts": 1,
+        "FailureSequence": 3,
+        "ReasonCode": "effect-unknown",
+        "ObservedUnresolved": true
+      }
+    }
+  },
+  {
+    "phase": "cascade-restart-receipt-and-checkpoint",
+    "state": {
+      "committedEffect": "37BRX9ZKGX4FX768KPVKD8D61SC4DYF34K27AFKXC8DPNWWYC5W0",
+      "checkpoint": {
+        "Source": {
+          "Tenant": "sdk415-5bd48c606e",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-parent-5bd48c606e"
+        },
+        "Checkpoint": 3,
+        "Status": 0,
+        "Attempts": 0,
+        "FailureSequence": null,
+        "ReasonCode": null,
+        "ObservedUnresolved": false
+      },
+      "receipt": {
+        "semanticDigest": "ACP8THN5C4V9GFTQV7KC2RC4VCTAT54SQF4AGMW26XEBXABR0Q30",
+        "disposition": 0,
+        "workload": "works",
+        "purpose": "works.cascade-cancel",
+        "causationId": "01M50D2Q6TFPF4X0FTV9C1MT9P",
+        "effectId": "37BRX9ZKGX4FX768KPVKD8D61SC4DYF34K27AFKXC8DPNWWYC5W0",
+        "identity": {
+          "effectKind": "works.cascade-cancel.v1",
+          "targetDomain": "work",
+          "targetAggregate": "work-sdk415-child-5bd48c606e",
+          "ordinal": 0,
+          "tenant": "sdk415-5bd48c606e",
+          "sourceDomain": "work",
+          "sourceAggregate": "work-sdk415-parent-5bd48c606e",
+          "sourceEnvelopeSequence": 3
+        }
+      }
+    }
+  },
+  {
+    "phase": "child-resume-target-commit-before-checkpoint",
+    "state": {
+      "resumedEffect": "RC0Z23Y3BT4MG2XFD53CNM2J60CCKVDBH4QZ04K5V6P3PGHMJ8H0",
+      "parentResumed": 1,
+      "checkpoint": {
+        "Source": {
+          "Tenant": "sdk415-5bd48c606e",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-completed-child-5bd48c606e"
+        },
+        "Checkpoint": 3,
+        "Status": 2,
+        "Attempts": 1,
+        "FailureSequence": 4,
+        "ReasonCode": "effect-unknown",
+        "ObservedUnresolved": true
+      }
+    }
+  },
+  {
+    "phase": "child-resume-restart-receipt-and-checkpoint",
+    "state": {
+      "resumedEffect": "RC0Z23Y3BT4MG2XFD53CNM2J60CCKVDBH4QZ04K5V6P3PGHMJ8H0",
+      "checkpoint": {
+        "Source": {
+          "Tenant": "sdk415-5bd48c606e",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-completed-child-5bd48c606e"
+        },
+        "Checkpoint": 4,
+        "Status": 0,
+        "Attempts": 0,
+        "FailureSequence": null,
+        "ReasonCode": null,
+        "ObservedUnresolved": false
+      },
+      "receipt": {
+        "semanticDigest": "ZXYT1D543RMDFZTAWG8V0KEVKFMNS0KA3V7HWMNK535FBPEEM8HG",
+        "disposition": 0,
+        "workload": "works",
+        "purpose": "works.child-completion-resume",
+        "causationId": "01M50D5DEE6ZWN0QGRKTB89Z7H",
+        "effectId": "RC0Z23Y3BT4MG2XFD53CNM2J60CCKVDBH4QZ04K5V6P3PGHMJ8H0",
+        "identity": {
+          "targetDomain": "work",
+          "targetAggregate": "work-sdk415-await-parent-5bd48c606e",
+          "ordinal": 0,
+          "tenant": "sdk415-5bd48c606e",
+          "sourceDomain": "work",
+          "sourceAggregate": "work-sdk415-completed-child-5bd48c606e",
+          "sourceEnvelopeSequence": 4,
+          "effectKind": "works.child-completion-resume.v1"
+        }
+      }
+    }
+  }
+]

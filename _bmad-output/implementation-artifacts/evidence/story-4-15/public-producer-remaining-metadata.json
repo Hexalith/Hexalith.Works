@@ -1,0 +1,56 @@
+[
+  {
+    "package": "Hexalith.EventStore.Admin.Abstractions",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Aspire",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Gateway",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Server",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.ServiceDefaults",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Testing",
+    "version": "3.122.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  }
+]

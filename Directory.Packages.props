@@ -2,8 +2,8 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Story 4.14 local corrected SDK candidate; not an upstream published release. Parties remains published. -->
-    <HexalithEventStoreVersion>3.120.1-story414.20261014.10</HexalithEventStoreVersion>
+    <!-- Story 4.15 local SDK candidate based on published 3.122.0; never a published producer. -->
+    <HexalithEventStoreVersion>3.122.0-story415.20261016.9</HexalithEventStoreVersion>
     <HexalithPartiesVersion>1.2.1</HexalithPartiesVersion>
     <HexalithPlatformIdentityVersion>1.0.0-story414.20261014.5</HexalithPlatformIdentityVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
@@ -13,6 +13,12 @@
   <Import Project="$(Hexalith1BuildPackageProps)" Condition="Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith2BuildPackageProps)" Condition="Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
+  <!-- Source Contracts already enters through explicit project edges. Pinning a newer package here
+       promotes that transitive package over the source project when sibling release metadata trails.
+       Keep all other transitive pins (including security dependencies) and every Release pin intact. -->
+  <ItemGroup Condition="'$(UseHexalithProjectReferences)' == 'true'">
+    <PackageVersion Remove="Hexalith.EventStore.Contracts" />
+  </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Hexalith.Platform.Identity" Version="$(HexalithPlatformIdentityVersion)" Condition="'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'" />
   </ItemGroup>

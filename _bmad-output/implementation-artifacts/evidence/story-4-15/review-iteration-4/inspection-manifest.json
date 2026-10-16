@@ -1,0 +1,18 @@
+{
+  "label": "Fresh post-restart current-workspace inspection of .7 plus partial iteration-4 changes; not unchanged HEAD baseline and not final runtime acceptance",
+  "previousUnchangedBaseline": "../review-iteration-3/implementation.md",
+  "files": [
+    {
+      "originalOutput": "/tmp/story415-iteration4-resume-aspire-start.log",
+      "sha256": "01e790c221d500b30a01f1eee188b85520c0594d8f8db4487480e412e4bfccab"
+    },
+    {
+      "originalOutput": "/tmp/story415-iteration4-resume-aspire-describe.json",
+      "sha256": "cf22515cac37dd0396d4c484aef51fd4286db0f895b1fecdf18158e5aa6e72d7"
+    },
+    {
+      "originalOutput": "/tmp/story415-iteration4-resume-aspire-stop.log",
+      "sha256": "559a2e36cb11532a5951f007ee0f01dbc961e85b8ae0778bf99291d183121b56"
+    }
+  ]
+}

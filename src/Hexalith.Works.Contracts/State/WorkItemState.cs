@@ -36,6 +36,9 @@ public sealed class WorkItemState
 
     public WorkItemSchedule? Schedule { get; private set; }
 
+    /// <summary>Gets the persisted upstream-resolved expiry witness, absent on historical schedules.</summary>
+    public WorkItemExpirySchedule? Expiry { get; private set; }
+
     public ParentWorkItemReference? Parent { get; private set; }
 
     public ExecutorBinding? ExecutorBinding { get; private set; }
@@ -111,6 +114,7 @@ public sealed class WorkItemState
         Sequence = e.Sequence;
         InitialEffort = e.InitialEffort;
         Schedule = e.Schedule;
+        Expiry = e.Expiry;
         Parent = e.Parent;
         ExecutorBinding = e.ExecutorBinding;
         ConversationCorrelationId = e.ConversationCorrelationId;
@@ -204,6 +208,7 @@ public sealed class WorkItemState
     {
         ArgumentNullException.ThrowIfNull(e);
         Schedule = e.Schedule;
+        Expiry = e.Expiry;
         Sequence = e.Sequence;
     }
 

@@ -1,0 +1,56 @@
+[
+  {
+    "label": "initial-mixed-debug-graph",
+    "classification": "preliminary-green-mixed-graph",
+    "path": "/tmp/story415-iteration2-debug-build.log",
+    "sha256": "c402c3eeee1e38076f60005238563ce064223afe9087c6a610cf8cd2e33495c3"
+  },
+  {
+    "label": "initial-mixed-debug-graph",
+    "classification": "preliminary-green-mixed-graph",
+    "path": "/tmp/story415-iteration2-debug-integration.log",
+    "sha256": "b65f23d5a66fd716d6854c14f391a69109e29d9bb2281da3a1e15fce1425b151"
+  },
+  {
+    "label": "initial-mixed-debug-graph",
+    "classification": "preliminary-green-mixed-graph",
+    "path": "/tmp/story415-iteration2-live.log",
+    "sha256": "042f64a5213fcb3806c4b8f750d673425046f06a6d4564818062c442ae6b5d17"
+  },
+  {
+    "label": "initial-mixed-debug-graph",
+    "classification": "preliminary-green-mixed-graph",
+    "path": "/tmp/story415-iteration2-live-state.jsonl",
+    "sha256": "f9e222e5164ad4bdb65f19c04ec9f7bb0d9e7057f59e002288b6ecdfdb1d918e"
+  },
+  {
+    "label": "disable-all-transitive-pinning",
+    "classification": "preliminary-failed-experiment",
+    "path": "/tmp/story415-iteration2-debug-source-build.log",
+    "sha256": "708296b08dbdf48694a8fcd9bfc7a7b3914e78674d0afc89c94c326c44e6d219"
+  },
+  {
+    "label": "disable-all-transitive-pinning",
+    "classification": "preliminary-failed-experiment",
+    "path": "/tmp/story415-iteration2-debug-source-integration.log",
+    "sha256": "d39583ad8e2604805e7a7b0c156f14ff6ea2f723b2f1ed904bbac2a40c79625b"
+  },
+  {
+    "label": "project-reference-version-forwarding",
+    "classification": "preliminary-failed-experiment",
+    "path": "/tmp/story415-iteration2-debug-source-final-build.log",
+    "sha256": "4e5bbabe8c41705bb46a207ceabf1ece32b97537266750ae369e582fa1855c2d"
+  },
+  {
+    "label": "project-reference-version-forwarding",
+    "classification": "preliminary-failed-experiment",
+    "path": "/tmp/story415-iteration2-debug-source-final-integration.log",
+    "sha256": "02a43b7a339192f7b6f9c6d163325213bc2744780c373573b62e3e01f70906ee"
+  },
+  {
+    "label": "pre-final-budget-candidate-5",
+    "classification": "historical-candidate",
+    "path": "/tmp/story415-iteration2-pack.log",
+    "sha256": "642e135ad59d1f46e2c10b31d1f7173fbcf67426149c7a22ad4c74800673dbd2"
+  }
+]

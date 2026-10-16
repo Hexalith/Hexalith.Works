@@ -1,0 +1,3 @@
+Command: bash scripts/build-story415-sdk-candidate.sh
+
+Local candidate based on published 3.122.0 only. No public package was published.

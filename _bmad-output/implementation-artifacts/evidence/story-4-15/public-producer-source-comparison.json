@@ -1,0 +1,16 @@
+{
+  "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d",
+  "url": "https://codeload.github.com/Hexalith/Hexalith.EventStore/tar.gz/1dac529c4690910c89d4090784a7d46cb9433a9d",
+  "archiveSha256": "7d00dac9d3511cd906e72b4630a390a88c2c68985644d66f9aded637b7b39003",
+  "comparedFiles": 1812,
+  "identicalFiles": 1811,
+  "differences": [
+    {
+      "path": "src/Hexalith.EventStore.DomainService/GatewayAuthorityAccessTokenProvider.cs",
+      "status": "different",
+      "publicSha256": "a07b92a77dd52e87f0dca39afd9a93f5547c096487b6be759eb2ca07e9cf70fa",
+      "localSha256": "d115300125ba4ce2e5c261ec49d5fa47760ef4f4c95bb6381ba1f87f87195611"
+    }
+  ],
+  "localCommit": "6394d0500e6e277b8975cb397c9f0389f9a16929"
+}

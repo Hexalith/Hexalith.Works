@@ -1,0 +1,41 @@
+{
+  "label": "Nine preserved .8 archives; none was packed from the post-review source patches",
+  "archives": [
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "622c1f6660383c6ad0d3026c613e970d21beb228eecd422e9ce7329797c1a84f"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "6d3ce13dd4f75e8da7b8755e940894b17ad88420295b0a26ff6cd997271f5da0"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "7e5f3382fb946636c190e8cee82b04bf309a7ed0a69a7724d1c36e3a0f7104a4"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "144934823709d1e985b816e7066e9cef50787a332bba73ca7bcbd1d73f8b3536"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "a9682cbc52c459ad0ce38938e5080a43fd1b86f96e027056ffd3cbba225b5bd4"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "7fe7d3a815e72a519c19ad78a13004243e899fe8f96027d01270ddac3879a802"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "bbbe5f6b7adf3c35d191231f2283d19ffae109f4963b14200dbb78bc8725caeb"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "685fb480a2fca9a745fe65415b3e99710d3665eb2ea3d9c622217babe21fdc78"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "f00ab17f25244c97c2205377bc9467434f1e709935c601c1a2e4a53564f1b979"
+    }
+  ]
+}

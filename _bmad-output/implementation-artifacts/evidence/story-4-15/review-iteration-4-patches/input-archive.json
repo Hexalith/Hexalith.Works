@@ -1,0 +1,9 @@
+{
+  "scope": "Preserved pre-.9 source/test inputs; archive remains available after root builds .9",
+  "baselineWorksCommit": "8679d7d700925a870e9931b3c43c745c063e459b",
+  "baselineSdkCommit": "6394d0500e6e277b8975cb397c9f0389f9a16929",
+  "path": "/tmp/story415-review4-patches-inputs.tar.gz",
+  "sha256": "ffdc28779c1ab6515bf79c17eefba744ed2d8d593f27d9e3f307912ee5cc98ff",
+  "sourceFileCount": 139,
+  "binaryInputCount": 11
+}

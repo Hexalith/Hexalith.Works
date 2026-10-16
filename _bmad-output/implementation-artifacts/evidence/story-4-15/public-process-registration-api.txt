@@ -1,0 +1,9 @@
+# Hexalith.EventStore.DomainService.EventStoreProcessServiceCollectionExtensions
+
+Package: Hexalith.EventStore.DomainService | Version: 3.122.0 | TFM: net10.0 | Library: lib/net10.0/Hexalith.EventStore.DomainService.dll | Source: NuGet
+
+## Methods
+
+| Name | Digest | Signature |
+| ---- | ------ | --------- |
+| AddEventStoreProcesses | `25cd45921f` | `public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddEventStoreProcesses<TCatalog, TTranslator>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Hexalith.EventStore.DomainService.EventStoreProcessOptions>? configure = null) where TCatalog : class, Hexalith.EventStore.Client.Processes.IProcessSourceCatalog where TTranslator : class, Hexalith.EventStore.Client.Processes.IProcessTranslator` |

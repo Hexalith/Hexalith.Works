@@ -1,0 +1,1 @@
+Hexalith.EventStore.Server.Tests  Total: 85, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.979s

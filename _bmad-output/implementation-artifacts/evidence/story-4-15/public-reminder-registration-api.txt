@@ -1,0 +1,9 @@
+# Hexalith.EventStore.DomainService.EventStoreReminderServiceCollectionExtensions
+
+Package: Hexalith.EventStore.DomainService | Version: 3.122.0 | TFM: net10.0 | Library: lib/net10.0/Hexalith.EventStore.DomainService.dll | Source: NuGet
+
+## Methods
+
+| Name | Digest | Signature |
+| ---- | ------ | --------- |
+| AddEventStoreReminders | `b97c927aab` | `public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddEventStoreReminders<TIntentSource>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Hexalith.EventStore.DomainService.EventStoreReminderOptions>? configure = null) where TIntentSource : class, Hexalith.EventStore.Client.Reminders.IReminderIntentSource` |

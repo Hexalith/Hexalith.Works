@@ -1,0 +1,15 @@
+{
+  "command": "dotnet run --project /tmp/review415-blind-probe/Probe.csproj -p:NuGetAudit=false",
+  "exitCode": 0,
+  "probeSource": "/tmp/review415-blind-probe/Program.cs",
+  "probeSourceSha256": "8ca35859974be842ee0feec339e60cc9c47fea0d0f6b6b8ed26b617b0c9cafe9",
+  "assemblies": "Selected .7 Release assemblies at root verification time",
+  "observed": [
+    "Duplicate invalid family released item-a with incomplete=true",
+    "Blocked first tenant: healthy epoch reads=0",
+    "Seventeen scans: tombstone calls rose to 16; healthy members disappeared; unrelated immediate stream read refused",
+    "Null required Obligation translated as effects=0",
+    "Persisted expiry revision 2-to-1 emitted actionable revision 1",
+    "Final SDK composition accepted a legacy IHostedService instance"
+  ]
+}

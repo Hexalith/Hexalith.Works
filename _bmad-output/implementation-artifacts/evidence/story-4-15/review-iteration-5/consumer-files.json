@@ -1,0 +1,294 @@
+[
+  {
+    "path": "Directory.Build.props",
+    "sha256": "63bc0f56469521b82831ba0cd692c933c77804a7b8274ccc93491cc6bae14d4e"
+  },
+  {
+    "path": "Directory.Packages.props",
+    "sha256": "c80de257d43c68f3a1ff28590cbb4903e87b0981be787a946c16a56c497b4dc6"
+  },
+  {
+    "path": "docs/boundary-decision-record.md",
+    "sha256": "34a7e7d350fd5a2f5702c01304c99bf88944a21ecadd62950c2401d93b097c98"
+  },
+  {
+    "path": "docs/eventstore-api-surface-constraints.md",
+    "sha256": "13ee41461c25cd56772ba2a0be4626f99543ea98e7fdbebdf5a91836252da669"
+  },
+  {
+    "path": "docs/sdk-reminder-process-adoption.md",
+    "sha256": "c9c521d36f66f309267e49756edf4db72bc52f88ee030a33e80e21f1308e2160"
+  },
+  {
+    "path": "scripts/build-story415-sdk-candidate.sh",
+    "sha256": "817a3d35c755d494d195fdc8dcea9c4b2850c2b59454b092cb6b80dc406ad152"
+  },
+  {
+    "path": "scripts/verify-story415-sdk-candidate.sh",
+    "sha256": "f8a3a5cbaf8292ae57a26732b271a2c5b423cc1dbae9a7d81e6c24c09c51cf1d"
+  },
+  {
+    "path": "scripts/verify-story415-works-contract-abi.sh",
+    "sha256": "dfebebc417654a3e5b8cccfa2d4ecfd5497d24bf3d324502942d17e776bb5c8d"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Commands/CreateWorkItem.cs",
+    "sha256": "129d101baa6144c929af79826cbe3a77a2449d3bc7e1f5c1250078d589faf7f7"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Commands/ExpireWorkItem.cs",
+    "sha256": "cbfff5fb91961051a96e20b2a432e25df8594e0db26652371aa9da6331cdbf01"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Commands/RescheduleWorkItem.cs",
+    "sha256": "079b10a4d25646c4f108a29f212c726b8ed59b6fc946fc62169d13edfde84b75"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Events/WorkItemCreated.cs",
+    "sha256": "1c97db8d116467758d8b001dc645c3291c0aab359828f67d8dd8477c598e291f"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Events/WorkItemExpired.cs",
+    "sha256": "14416d7cb60424f5dd4cd34212973f32200487466bd60cd46432861e5e262216"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/Events/WorkItemRescheduled.cs",
+    "sha256": "c8fbe0547c381035083960dbeb2d1446f1d1cd1c1aaade30ee3dcd5aaeb6f28e"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/State/WorkItemState.cs",
+    "sha256": "70a1e633cfa7b81d7f1f3917b7d17160ff3b4f9984aa94015c98a320868d2487"
+  },
+  {
+    "path": "src/Hexalith.Works.Contracts/ValueObjects/WorkItemExpirySchedule.cs",
+    "sha256": "81c154458f24213d6a605469609a18a508bb9c824c1a11264d70f9db511c1ce4"
+  },
+  {
+    "path": "src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs",
+    "sha256": "c67814a68ab49e04ad46ddbcf47a4c030018f3c4da67f6fe4b1874854b8fcf4a"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksCommittedEvent.cs",
+    "sha256": "6a4f490b76803020023b1c7f2605807995e4b3c98927161d76f5e7320b45bd41"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksEffectPurposes.cs",
+    "sha256": "84c1884177f37c39d4645045edd71b8a66d1849cd5249e400499a8255ad31b7f"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksExpiryEvidence.cs",
+    "sha256": "0d65cb53d7527fcf805f5c27969c3427b80e63ae3c91234c02db0ba21ef84f3b"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessDelegationProvider.cs",
+    "sha256": "05a8e7ed4152897c868193c885474aa5c593fdd648d937045426a00e3d0276c1"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessDispositionAuditSink.cs",
+    "sha256": "f24bc489fc97a76a7b05c3adcda2aecac210c862720d1149fbebbe72ce7f1cef"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessDispositionAuthorizer.cs",
+    "sha256": "e1eb4b160f7176d1b59c873ff827c5021ab2cb36aaf7236889120b16395d5de5"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs",
+    "sha256": "05984b003c8b9efdf93bfce8b8b620935f5d199fa84be530b94f5a89e57485e2"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessDispositionRequest.cs",
+    "sha256": "2c01106c464ddf4cca4c873e1e95d725fe66c6a8dcc39c291984469224579ec8"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs",
+    "sha256": "9d11ca8b5b656a431b6c69557affebd23f2771199a2ec69edeceebfaea67d577"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksProcessTranslator.cs",
+    "sha256": "e3a19f59ac28e09ec4afdd026fd96265a82b2133c3df9de82df4aa8ff0debd3a"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksRecoveryEventDecoder.cs",
+    "sha256": "b7d78d9151f6e37ec22383e541f65d677555b4f8555427ad252b3df3ea82272b"
+  },
+  {
+    "path": "src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs",
+    "sha256": "ff184b4c92aa435aadb53e837a469796926b88686306c71b2036690266ca05e3"
+  },
+  {
+    "path": "src/Hexalith.Works/Reminders/WorksReminderEventHandler.cs",
+    "sha256": "cd2830003a73e9c1b7b6aebcdc1d2e1eaf7c74917e2037438ba284fdbc477c05"
+  },
+  {
+    "path": "src/Hexalith.Works/Reminders/WorksReminderIntentSource.cs",
+    "sha256": "83e934e03b114cc31f63eaa8bf14316042bf1072f21d61da818736c0fae4e590"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs",
+    "sha256": "82147b7f8ba18567f92340b9f41ecbac6865ac71a62009fa448820cb46198c15"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/WorksHost.cs",
+    "sha256": "404841fab78e925ba72ba081c6a6b4cac9d61a68424dd614fa531565a2031bb1"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/WorksLegacyReminderActorRegistration.cs",
+    "sha256": "0703c6b51a6b725c3ccdc8e079c643fd18a83666443334eb0c3fb98224ddd880"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/WorksRecoveryCompositionGuard.cs",
+    "sha256": "87e46a0940a3b55b5f34cb0c97b8f741089699ecb06725b67732defae9b5573c"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs",
+    "sha256": "80c66bb35e5ad6c9dbd70e27619ee27c85eb1147777064a70a9b3dd1583d85e8"
+  },
+  {
+    "path": "src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs",
+    "sha256": "86fa783d2f01e1e830b3ce468495b888f6e14d1b8620aecd242cf72b574fffc0"
+  },
+  {
+    "path": "src/Hexalith.Works/WorkItemEventStoreAggregate.cs",
+    "sha256": "13d18eda7141818456991669c49eb276b88f76fcf01b011bb44817d35d7af003"
+  },
+  {
+    "path": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs",
+    "sha256": "f4562c67ad5055b4564921389701410e309d3ee8b7e9fce55e89886a16e3ae91"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/DiscoveryBlockedReadModelStore.cs",
+    "sha256": "8658b5ab6466d274a5749ff2f2b6829a485366c0f629bbc0d2aa43556a6c700b"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/OriginAuditUnavailableReadModelStore.cs",
+    "sha256": "344d44727227a1b07446c74bb81750a1fdde7ecd39f65a0c58b647f6f272f3ba"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/StartupHook.cs",
+    "sha256": "1d59fff1643cc4b11abddced2e6388376863171cce3a4dfc27282be9f88df93a"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/TombstoneUnavailableReadModelStore.cs",
+    "sha256": "0245f2e526d5c0e487af8b812e432fb62549a6c7dc8d0303e530e60892df281c"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorkItemSerializationRegistrationTests.cs",
+    "sha256": "9093ab4790650c176a83c8412b4f465b3c894234d496b61dc7187f442cf5e3d2"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs",
+    "sha256": "f06d8ec38e8999642edc6a8a64b800d1f3dc9424bdff0ea90795b5660945a620"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs",
+    "sha256": "43b1fc14522a62004d0e472db2519ccfe686fa26371f4da43bb1fd2ea70cc751"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkHttpEvidenceHandler.cs",
+    "sha256": "85e4efa593a939ddc727f7fbb061f4e42c44489f554ddd094ee4ada78c38c1ac"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs",
+    "sha256": "2fff3b898bca3ff7570375747a170addb33211a778df8023efd18b0c90cb6acd"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkIteration4Tests.cs",
+    "sha256": "ceada1ab25487a49508c12b436cf5edd3647400c96ae43a1adad58d1f09c3b5a"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs",
+    "sha256": "9d0631150bfcc18221c764458bbb2eae1159a9aade40b5552d2071bcefb84e03"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryTests.cs",
+    "sha256": "b99182a3ad18fbddf39827d73e81f892e721188c8400468361831168039b3dd9"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditDocument.cs",
+    "sha256": "7a0a71f1fb8612e87276c2607a53a5f09bc556032afefe5e6d130d3aa72b3455"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditSink.cs",
+    "sha256": "692b1a008c63c65fc65d743176936017be74a1674e4e6c89e68c78e434869c2a"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofDelegationProvider.cs",
+    "sha256": "90fb8949d76e66d0445b482d721aad28466c939514aa3f58b4d315692d1670ca"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofDiagnostics.cs",
+    "sha256": "9e89ec726852174fb42d62c71c7d32326081b7170106d4d1c57cfe12b2874e69"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofFaultState.cs",
+    "sha256": "571149d5dedad2718b23bd48419295cb429c8bdbc4a4ae730229bedb1c0c12c4"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs",
+    "sha256": "d0128b5c2d2c6ea4661141a3109cc7e376b72095359627a8c17a7457956efe5e"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofIntentRegistry.cs",
+    "sha256": "b7767e8fff68ef9322a4aa56ef6cfed2218d159dcce1dc05cf4b9e8c71720234"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataFilter.cs",
+    "sha256": "5086013839a995d84e198d3b6ad95588881c2667ba92ae89792db4913f989e3a"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataHandler.cs",
+    "sha256": "a3dd96ef8ab21d6435012b5a2df397ffbfb2a2b0aa7c2cb3d9d6fafa11259098"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofOrdinaryRetryHandler.cs",
+    "sha256": "d11f116040b3617c0a486b47484416e1e86145f35ed9bce7a322a11baea056ef"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs",
+    "sha256": "f32ac7c7324478228c9cede93fd5e73b11cb5788deac089c8780316d08b636a3"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseFilter.cs",
+    "sha256": "539350d150c434909b384422e631dd03bc0dde10b13db0e931a965ce67ea19d6"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseHandler.cs",
+    "sha256": "305935414bb4c6fa17f643ea5966ccf99a600e8c7eba73011afe5257c86c3a33"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRetentionGate.cs",
+    "sha256": "07aae46d1aae6115158603adf126bcfe47506c1f66521f0d68273581d082a3e5"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofWakeupFilter.cs",
+    "sha256": "752e1b1d44e0debc6ae68c1cbaf07c85b39bd22f2f3ae0966fe3a21102373d28"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs",
+    "sha256": "00e5aae381694b00c407c49d124557bfa1a3421d605869fd1d2ebbea6337121f"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "sha256": "b786e699d1deeefcf47833368e8df1126a1eebbe1fa93bd7a32eb106a35ad247"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+    "sha256": "a29077dc9450c7f29b89767c1d80d7baecd5bd73abb17897a281837b2968badf"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs",
+    "sha256": "73695ac863b37f10f9a7534844abcf947a099e47c3a6e81a57058d0226e283bc"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRemediationTests.cs",
+    "sha256": "c6a4852fed9566abc7746bcf6989e74ba78d853dceef0e1cc57016e4e31af639"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs",
+    "sha256": "68c907ce69b4fea8c26d4b97b15c3f504e8b32271019967a13487f0d70667183"
+  },
+  {
+    "path": "tests/Hexalith.Works.UnitTests/WorkItemExpiryWitnessTests.cs",
+    "sha256": "ae0ba281088269cbb16e2f1b9bca7b764b9285dae7095da85c0024139bc11e12"
+  }
+]

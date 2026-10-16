@@ -170,6 +170,8 @@ public sealed class ScaffoldGovernanceTests
             .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.ServiceDefaults", "Extensions.cs"), StringComparison.Ordinal))
             .Where(path => !IsOwnedReminderRecoveryLocation(root, path))
+            // Story 4.15 permits the pure Contracts schedule-token codec, never scheduling/runtime.
+            .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.Contracts", "ValueObjects", "WorkItemExpirySchedule.cs"), StringComparison.Ordinal))
             .Where(path => File.ReadAllText(path).Contains("Reminder", StringComparison.OrdinalIgnoreCase))];
 
         filesWithMisplacedReminderBehavior.ShouldBeEmpty("Story 4.6 reminder/recovery code is allowed only in the runnable host/AppHost edge, not in Contracts, Server, Projections, Reactor, or ServiceDefaults.");

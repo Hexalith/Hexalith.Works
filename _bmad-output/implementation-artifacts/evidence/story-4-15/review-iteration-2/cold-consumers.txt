@@ -1,0 +1,23 @@
+Command: bash scripts/verify-story415-sdk-candidate.sh
+
+Isolated package-only host consumer: persisted accepted contents/checkpoint and restart-safe conflict readiness passed.
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.43
+Passed isolated upstream public Contracts consumer at 3.122.0-story415.20261015.6
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.51
+Passed isolated upstream public Client consumer at 3.122.0-story415.20261015.6
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.57
+Passed isolated upstream public DomainService consumer at 3.122.0-story415.20261015.6
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:01.09
+Unchanged published-contract binary passed candidate constructor/deconstruction and historical identity/serialization hash compatibility.

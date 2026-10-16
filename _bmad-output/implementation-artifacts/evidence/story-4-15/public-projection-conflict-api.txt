@@ -1,0 +1,11 @@
+# Hexalith.EventStore.Client.Projections.SharedProjectionEpochCoordinator
+
+Durable, generation-selected fence for one tenant's shared projection family. All admitted ordinary writers journal through this coordinator before acknowledgement; readers use ReadAsync rather than the underlying raw state keys.
+
+Package: Hexalith.EventStore.Client | Version: 3.122.0 | TFM: net10.0 | Library: lib/net10.0/Hexalith.EventStore.Client.dll | Source: NuGet
+
+## Methods
+
+| Name | Digest | Signature | Description |
+| ---- | ------ | --------- | ----------- |
+| ResolveDeliveryConflictsAsync | `5b17871965` | `public System.Threading.Tasks.Task ResolveDeliveryConflictsAsync(Hexalith.EventStore.Client.Projections.SharedProjectionScope scope, string operationId, System.Threading.CancellationToken cancellationToken = default)` | Explicitly resolves retained identity conflicts after a newer authoritative rebuild covers every affected source position, has been promoted, and has fully drained. Promotion or abort alone never clears the evidence. Resolved identities remain durable for idempotent rejected redelivery. |

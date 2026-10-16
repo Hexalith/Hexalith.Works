@@ -1,0 +1,22 @@
+[
+  {
+    "category": "Hexalith.EventStore.RateLimiting",
+    "message": "Rate limit exceeded: CorrelationId=01M50HMG706KTYKDKRJZ7AHTQ1, TenantId=sidecar:verified, ConsumerId=sidecar:verified, SourceIP=127.0.0.1",
+    "exceptionFirstLine": ""
+  },
+  {
+    "category": "Hexalith.EventStore.RateLimiting",
+    "message": "Rate limit exceeded: CorrelationId=01M50HMGJFA7G9FE780223KV62, TenantId=sidecar:verified, ConsumerId=sidecar:verified, SourceIP=127.0.0.1",
+    "exceptionFirstLine": ""
+  },
+  {
+    "category": "Hexalith.EventStore.Server.Commands.CommandRouter",
+    "message": "Actor invocation failed: CorrelationId=2ce41f98-ee62-4a67-bfec-36abc4d3b153, CausationId=2ce41f98-ee62-4a67-bfec-36abc4d3b153, TenantId=sdk415-fe5f381c27, Domain=work, AggregateId=work-sdk415-await-parent-fe5f381c27, CommandType=SuspendWorkItem, ActorId=sdk415-fe5f381c27:work:work-sdk415-await-parent-fe5f381c27, Stage=ActorInvocationFailed",
+    "exceptionFirstLine": "Dapr.DaprApiException: error invoke actor method: error from actor service: (429) {\"type\":\"https://hexalith.io/problems/rate-limit-exceeded\",\"title\":\"Too Many Requests\",\"status\":429,\"detail\":\"Rate limit exceeded. Please retry after the specified interval.\",\"instance\":\"/actors/AggregateActor/sdk415-fe5f381c27:work:work-sdk415-await-parent-fe5f381c27/method/ProcessCommandAsync\",\"correlationId\":\"01M50HMGJFA7G9FE780223KV62\",\"tenantId\":\"sidecar:verified\",\"consumerId\":\"sidecar:verified\"}"
+  },
+  {
+    "category": "Hexalith.EventStore.ErrorHandling.DaprSidecarUnavailableHandler",
+    "message": "DAPR sidecar unavailable: SecurityEvent=DaprSidecarUnavailable, CorrelationId=01M50HMGJCQPBY72ERWBV8WAT7",
+    "exceptionFirstLine": "Dapr.DaprApiException: error invoke actor method: error from actor service: (429) {\"type\":\"https://hexalith.io/problems/rate-limit-exceeded\",\"title\":\"Too Many Requests\",\"status\":429,\"detail\":\"Rate limit exceeded. Please retry after the specified interval.\",\"instance\":\"/actors/AggregateActor/sdk415-fe5f381c27:work:work-sdk415-await-parent-fe5f381c27/method/ProcessCommandAsync\",\"correlationId\":\"01M50HMGJFA7G9FE780223KV62\",\"tenantId\":\"sidecar:verified\",\"consumerId\":\"sidecar:verified\"}"
+  }
+]

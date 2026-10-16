@@ -1,0 +1,16 @@
+[
+  {
+    "repository": "/home/administrator/projects/hexalith/works",
+    "baseline": "8679d7d700925a870e9931b3c43c745c063e459b",
+    "patch": "/tmp/story415-iteration3-keep-works-1q1g7e5a.patch",
+    "sha256": "4c749f1d916b5c6579727f3b2cfcd849b6eea6e4f2fc886d965428489c507200",
+    "fileCount": 62
+  },
+  {
+    "repository": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "baseline": "6394d0500e6e277b8975cb397c9f0389f9a16929",
+    "patch": "/tmp/story415-iteration3-keep-eventstore-dxx74ag7.patch",
+    "sha256": "caadb71f9299ea87f8b074be25a6284ffbccdda66a3257c824ca6b8a53accb3f",
+    "fileCount": 53
+  }
+]

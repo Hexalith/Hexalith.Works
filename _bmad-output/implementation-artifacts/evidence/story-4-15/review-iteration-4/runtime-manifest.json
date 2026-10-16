@@ -1,0 +1,14 @@
+[
+  {
+    "originalOutput": "/tmp/story415-iteration4-live.log",
+    "sha256": "bbd38f805c76d931f9f701ca1d5f922ed5baa4393cd87a1e87f05e27a1a4dc62"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-live-state.jsonl",
+    "sha256": "563f58c415296f1dc46dcb0477997c61f616aea68d97f72d6ccd8dc6be310429"
+  },
+  {
+    "originalOutput": "/tmp/story415-iteration4-live-resources.json",
+    "sha256": "37f04de6df4ef8d5815cab7ca86f36b74855529eeaa2fca769006cb5c96cc3dc"
+  }
+]

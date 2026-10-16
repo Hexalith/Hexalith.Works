@@ -1,0 +1,4 @@
+Isolated package-only host consumer: persisted accepted contents/checkpoint and restart-safe conflict readiness passed.
+Passed isolated upstream public Contracts consumer at 3.122.0-story415.20261015.3
+Passed isolated upstream public Client consumer at 3.122.0-story415.20261015.3
+Passed isolated upstream public DomainService consumer at 3.122.0-story415.20261015.3

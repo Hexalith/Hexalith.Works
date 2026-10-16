@@ -2,11 +2,14 @@ using Hexalith.EventStore.Client.Aggregates;
 using Hexalith.EventStore.Client.Attributes;
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Results;
+using Hexalith.EventStore.Client.Effects;
+using Hexalith.EventStore.Contracts.Effects;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.State;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Runtime;
+using Hexalith.Works.Recovery;
 
 using KernelAggregate = Hexalith.Works.Server.Aggregates.WorkItemAggregate;
 
@@ -33,6 +36,7 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     public static DomainResult Handle(CreateWorkItem command, WorkItemState? state, CommandEnvelope envelope)
     {
         RefuseReservedTenant(command, static value => value.TenantId, envelope);
+        if (command.Expiry is not null) ValidateWitnessAddress(command.TenantId, command.WorkItemId, envelope);
         return KernelAggregate.Handle(command, state);
     }
 
@@ -103,6 +107,7 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     public static DomainResult Handle(RescheduleWorkItem command, WorkItemState? state, CommandEnvelope envelope)
     {
         RefuseReservedTenant(command, static value => value.TenantId, envelope);
+        if (command.Expiry is not null) ValidateWitnessAddress(command.TenantId, command.WorkItemId, envelope);
         return KernelAggregate.Handle(command, state);
     }
 
@@ -138,7 +143,30 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     public static DomainResult Handle(ExpireWorkItem command, WorkItemState? state, CommandEnvelope envelope)
     {
         RefuseReservedTenant(command, static value => value.TenantId, envelope);
+        TrustedEffectOrigin? origin = TrustedEffectOriginScope.Current;
+        if (origin is not null || state?.Expiry is not null || command.ExpiryWitness is not null)
+            ValidateWitnessAddress(command.TenantId, command.WorkItemId, envelope);
+        if (origin is not null)
+        {
+            if (origin.Workload != WorksEffectPurposes.Workload
+                || origin.Purpose != WorksEffectPurposes.ForKind(origin.Identity.EffectKind))
+                throw new UnauthorizedAccessException("Works expiry delegated origin is denied.");
+            if (origin.Identity.EffectKind == EffectKindCatalog.CascadeExpire)
+                return KernelAggregate.HandleDelegatedCascadeExpiry(command, state);
+            if (origin.Identity.EffectKind != EffectKindCatalog.Expiry || command.ExpiryWitness is null)
+                throw new UnauthorizedAccessException("Works scheduled expiry requires its authenticated witness.");
+        }
+        else if (state?.Expiry is not null || command.ExpiryWitness is not null)
+        {
+            throw new UnauthorizedAccessException("Works witnessed expiry requires authenticated effect origin.");
+        }
         return KernelAggregate.Handle(command, state);
+    }
+
+    private static void ValidateWitnessAddress(TenantId tenant, WorkItemId item, CommandEnvelope envelope)
+    {
+        if (envelope.TenantId != tenant.Value || envelope.Domain != "work" || envelope.AggregateId != item.Value)
+            throw new InvalidOperationException("Witnessed payload identity differs from its addressed stream.");
     }
 
     /// <summary>
@@ -155,5 +183,26 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
         ArgumentNullException.ThrowIfNull(envelope);
         WorksReadModelKeys.ThrowIfReservedTenantId(tenantId(command)?.Value);
         WorksReadModelKeys.ThrowIfReservedTenantId(envelope.TenantId?.ToLowerInvariant());
+        if (TrustedEffectOriginScope.Current is { } origin)
+        {
+            bool allowed = (command, origin.Identity.EffectKind) switch
+            {
+                (ResumeWorkItem, EffectKindCatalog.DateResume or EffectKindCatalog.ChildCompletionResume) => true,
+                (CancelWorkItem, EffectKindCatalog.CascadeCancel) => true,
+                (ExpireWorkItem, EffectKindCatalog.Expiry or EffectKindCatalog.CascadeExpire) => true,
+                _ => false,
+            };
+            if (!allowed || origin.Workload != WorksEffectPurposes.Workload
+                || origin.Purpose != WorksEffectPurposes.ForKind(origin.Identity.EffectKind))
+                throw new UnauthorizedAccessException("Works effect command or delegated origin is denied.");
+            WorkItemId item = command switch
+            {
+                ResumeWorkItem resume => resume.WorkItemId,
+                CancelWorkItem cancel => cancel.WorkItemId,
+                ExpireWorkItem expire => expire.WorkItemId,
+                _ => throw new UnauthorizedAccessException("Works effect command is denied."),
+            };
+            ValidateWitnessAddress(tenantId(command)!, item, envelope);
+        }
     }
 }

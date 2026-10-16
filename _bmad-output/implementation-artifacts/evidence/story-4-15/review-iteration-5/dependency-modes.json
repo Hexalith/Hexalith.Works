@@ -1,0 +1,32 @@
+{
+  "Debug": {
+    "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+    "sha256": "9632c4b7288ad1c35790562c066edf1eb71df10094e1c115c507110b4b156d90",
+    "sdkLibraries": {
+      "Hexalith.EventStore.Admin.Abstractions/3.120.0": "project",
+      "Hexalith.EventStore.Aspire/3.120.0": "project",
+      "Hexalith.EventStore.Client/3.120.0": "project",
+      "Hexalith.EventStore.Contracts/3.120.0": "project",
+      "Hexalith.EventStore.DomainService/3.120.0": "project",
+      "Hexalith.EventStore.Gateway/3.120.0": "project",
+      "Hexalith.EventStore.Server/3.120.0": "project",
+      "Hexalith.EventStore.ServiceDefaults/3.120.0": "project",
+      "Hexalith.EventStore.Testing/3.120.0": "project"
+    }
+  },
+  "Release": {
+    "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+    "sha256": "a8c210391a20a85be099e723407ac9a071ad82c8fccfb73bfdcb6dcbfe7d1123",
+    "sdkLibraries": {
+      "Hexalith.EventStore.Admin.Abstractions/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Aspire/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Client/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Contracts/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.DomainService/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Gateway/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Server/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.ServiceDefaults/3.122.0-story415.20261016.9": "package",
+      "Hexalith.EventStore.Testing/3.122.0-story415.20261016.9": "package"
+    }
+  }
+}

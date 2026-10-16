@@ -1,0 +1,1 @@
+Hexalith.EventStore.DomainService.Tests  Total: 957, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 108.982s

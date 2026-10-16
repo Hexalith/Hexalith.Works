@@ -1,0 +1,2 @@
+git -c core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol diff --check: exit 0
+git -C references/Hexalith.EventStore -c core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol diff --check: exit 0

@@ -24,6 +24,11 @@ public static class WorkItemAggregate
             return Reject(command.TenantId, command.WorkItemId, from, nameof(CreateWorkItem));
         }
 
+        if (command.Expiry is not null && !command.Expiry.IsValidFor(command.TenantId, command.WorkItemId))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(CreateWorkItem));
+        }
+
         if (string.IsNullOrWhiteSpace(command.Obligation))
         {
             return DomainResult.Rejection([
@@ -63,7 +68,8 @@ public static class WorkItemAggregate
             command.Schedule,
             command.Parent,
             command.ExecutorBinding,
-            command.ConversationCorrelationId);
+            command.ConversationCorrelationId,
+            command.Expiry);
 
         return DomainResult.Success([created]);
     }
@@ -367,6 +373,11 @@ public static class WorkItemAggregate
             return Reject(command.TenantId, command.WorkItemId, from, nameof(RescheduleWorkItem));
         }
 
+        if (!WorkItemExpirySchedule.IsValidReplacement(state?.Expiry, command.Expiry, command.TenantId, command.WorkItemId))
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(RescheduleWorkItem));
+        }
+
         return DomainResult.Success([
             new WorkItemRescheduled(
                 command.WorkItemId.Value,
@@ -374,7 +385,8 @@ public static class WorkItemAggregate
                 command.TenantId,
                 command.WorkItemId,
                 command.Schedule,
-                command.Note),
+                command.Note,
+                command.Expiry),
         ]);
     }
 
@@ -461,13 +473,40 @@ public static class WorkItemAggregate
         ArgumentNullException.ThrowIfNull(command.WorkItemId);
 
         WorkItemStatus from = CurrentStatus(state);
+        if (command.ExpiryWitness is not null && (state?.Expiry != command.ExpiryWitness
+                || !command.ExpiryWitness.IsValidFor(command.TenantId, command.WorkItemId))
+            || state?.Expiry is not null && command.ExpiryWitness is null)
+        {
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(ExpireWorkItem));
+        }
+
+        LifecycleOutcome outcome = WorkItemLifecycle.Decide(from, LifecycleAct.Expire);
+        return outcome.Decision switch
+        {
+            LifecycleDecision.Accept => DomainResult.Success([
+                new WorkItemExpired(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId, command.ExpiryWitness)]),
+            LifecycleDecision.NoOp => DomainResult.NoOp(),
+            _ => Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Expire)),
+        };
+    }
+
+    /// <summary>Handles a separately authenticated cascade purpose; adapters must establish delegated origin first.</summary>
+    public static DomainResult HandleDelegatedCascadeExpiry(ExpireWorkItem command, WorkItemState? state)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        ArgumentNullException.ThrowIfNull(command.TenantId);
+        ArgumentNullException.ThrowIfNull(command.WorkItemId);
+        EnsureEstablishedIdentityMatches(command.TenantId, command.WorkItemId, state);
+        WorkItemStatus from = CurrentStatus(state);
+        if (command.ExpiryWitness is not null)
+            return Reject(command.TenantId, command.WorkItemId, from, nameof(ExpireWorkItem));
         LifecycleOutcome outcome = WorkItemLifecycle.Decide(from, LifecycleAct.Expire);
         return outcome.Decision switch
         {
             LifecycleDecision.Accept => DomainResult.Success([
                 new WorkItemExpired(command.WorkItemId.Value, NextSequence(state), command.TenantId, command.WorkItemId)]),
             LifecycleDecision.NoOp => DomainResult.NoOp(),
-            _ => Reject(command.TenantId, command.WorkItemId, from, nameof(LifecycleAct.Expire)),
+            _ => Reject(command.TenantId, command.WorkItemId, from, nameof(ExpireWorkItem)),
         };
     }
 

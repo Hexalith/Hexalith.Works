@@ -1,0 +1,245 @@
+[
+  {
+    "gate": "sdk-build",
+    "command": "dotnet build tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-sdk-build.log",
+    "sha256": "3ab8a9c9c9447f5a1bc6ea52ecc47ea3f5560a6b8028e17449860e497e4f0a1b",
+    "exitCode": 0,
+    "seconds": 5.41
+  },
+  {
+    "gate": "sdk-all",
+    "command": "HEXALITH_TENANTS_DOMAIN_ROOT=/home/administrator/projects/hexalith/works/references/Hexalith.Tenants/src/Hexalith.Tenants dotnet tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-sdk-all.log",
+    "sha256": "c7c6b1839e9a592056f4a93697fd93d5b9531af797c6ecfb11d00822c616b09e",
+    "exitCode": 0,
+    "seconds": 111.633
+  },
+  {
+    "gate": "security-build",
+    "command": "dotnet build tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-security-build.log",
+    "sha256": "c2200655001471b1393d255065585297cd77a559884d88375e1474200a4f1eb7",
+    "exitCode": 0,
+    "seconds": 7.549
+  },
+  {
+    "gate": "security",
+    "command": "dotnet tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests.dll -class '*TrustedEffect*'",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-security.log",
+    "sha256": "56587be659529115c28d0da950bd6784198d6d01b31e590e810a698e243b2826",
+    "exitCode": 0,
+    "seconds": 1.406
+  },
+  {
+    "gate": "trusted-snapshots",
+    "command": "dotnet tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests.dll -class '*AggregateActorFoldedSnapshotMigrationTests'",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-trusted-snapshots.log",
+    "sha256": "934af2af4c687014e9c5ec3af57730ed5c3e2f3b6ad97dab0c8bc1cb62997e26",
+    "exitCode": 0,
+    "seconds": 0.716
+  },
+  {
+    "gate": "client-build",
+    "command": "dotnet build tests/Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.csproj --configuration Debug -m:1 -p:UseHexalithProjectReferences=true -p:UseNuGetDeps=false -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-client-build.log",
+    "sha256": "d307d36aad762b077670c936b9a36e8a85657055d15bbac4abebfd746baaba1d",
+    "exitCode": 0,
+    "seconds": 7.792
+  },
+  {
+    "gate": "client",
+    "command": "dotnet tests/Hexalith.EventStore.Client.Tests/bin/Debug/net10.0/Hexalith.EventStore.Client.Tests.dll -class '*SharedProjectionControlIndexTests' -class '*SharedProjectionEpochCoordinatorTests'",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "originalOutput": "/tmp/story415-review5-client.log",
+    "sha256": "98cb42a3c0642b0dc2b994cb1afb165fc44a6364be772e84ddbd5a72c3d055f1",
+    "exitCode": 0,
+    "seconds": 0.572
+  },
+  {
+    "gate": "pack",
+    "command": "bash scripts/build-story415-sdk-candidate.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-pack.log",
+    "sha256": "a47e3a009bdc546d248b1a8b14b83f99b5ceb92463cd5546d52e7203aa1395b0",
+    "exitCode": 0,
+    "seconds": 16.445
+  },
+  {
+    "gate": "cold-consumers",
+    "command": "bash scripts/verify-story415-sdk-candidate.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-cold-consumers.log",
+    "sha256": "b752e8d28639b2959b3c6de25bb7db28be8e9b75ec4925d11fd7c0c3734fe92b",
+    "exitCode": 0,
+    "seconds": 12.394
+  },
+  {
+    "gate": "works-abi",
+    "command": "bash scripts/verify-story415-works-contract-abi.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-works-abi.log",
+    "sha256": "215cf2c6ce811ace004faf9139d3cc74a307b61c3692ef6d47d61b36bfdc7c33",
+    "exitCode": 0,
+    "seconds": 2.503
+  },
+  {
+    "gate": "debug-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -t:Rebuild -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-debug-build-final.log",
+    "sha256": "f6dd7677400bb8594d19add365d951dd09a60486600651c161d649675de59210",
+    "exitCode": 0,
+    "seconds": 10.327
+  },
+  {
+    "gate": "debug-integration",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-debug-integration-final.log",
+    "sha256": "b33eb48e79e7fb47b62fa32330c7caf0ccb7e54040eb5860c7b2cad86b86c7ff",
+    "exitCode": 0,
+    "seconds": 11.693
+  },
+  {
+    "gate": "release-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -t:Rebuild -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-release-build-final.log",
+    "sha256": "4f1b4a6d09e9cee8d81760755ad81d26185dbfb81c58ccbe21c78f544fc73a6d",
+    "exitCode": 0,
+    "seconds": 4.245
+  },
+  {
+    "gate": "release-integration",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-release-integration-final.log",
+    "sha256": "8cf68128cde4a258abd7605a035bcdf1f884ee34141736dd428ec1b3abf63160",
+    "exitCode": 0,
+    "seconds": 11.025
+  },
+  {
+    "gate": "UnitTests-build",
+    "command": "dotnet build tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-UnitTests-build.log",
+    "sha256": "91b9d3c6dd330b909af8f470bc34105fc1cfa6244c41e67737e64f695e1a03ba",
+    "exitCode": 0,
+    "seconds": 2.13
+  },
+  {
+    "gate": "UnitTests",
+    "command": "dotnet tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-UnitTests.log",
+    "sha256": "72e413d59b516313a70bb9f39592df56f01b89595aaccdb779f886b7425d3975",
+    "exitCode": 0,
+    "seconds": 0.417
+  },
+  {
+    "gate": "PropertyTests-build",
+    "command": "dotnet build tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-PropertyTests-build.log",
+    "sha256": "a5f6dedb8b03a8b4e13d403c9c0bb044e8563b7eb8c0fd336ce7823b9e1862d3",
+    "exitCode": 0,
+    "seconds": 1.906
+  },
+  {
+    "gate": "PropertyTests",
+    "command": "dotnet tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-PropertyTests.log",
+    "sha256": "b61e68da47d259681c79c5057ca3c3056463d7bda4bf3b0c76f4b9233c1e92e4",
+    "exitCode": 0,
+    "seconds": 0.365
+  },
+  {
+    "gate": "ArchitectureTests-build",
+    "command": "dotnet build tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-ArchitectureTests-build.log",
+    "sha256": "99770f4ce431932e8beda8957d77f43c6fd90a9cb6ab3338c39fae53e96c1000",
+    "exitCode": 0,
+    "seconds": 1.922
+  },
+  {
+    "gate": "ArchitectureTests",
+    "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-ArchitectureTests.log",
+    "sha256": "14be4f91873794e5df953ad3af54615774968052a97b80e12b29ce2afaf0b93a",
+    "exitCode": 0,
+    "seconds": 6.944
+  },
+  {
+    "gate": "live",
+    "command": "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-review5-live-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-live.log",
+    "sha256": "6956552852f854ca84ef04293b39814234ea960f4ff3eef2c47df51cb902028f",
+    "exitCode": 0,
+    "seconds": 460.676
+  },
+  {
+    "gate": "restore-release-assets",
+    "command": "dotnet restore tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -p:Configuration=Release -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-restore-release-assets-final.log",
+    "sha256": "3a67348c92cab6754fb3e115987d5946421081c9b7b88e07e0b3b277e6626c06",
+    "exitCode": 0,
+    "seconds": 1.24
+  },
+  {
+    "gate": "rollback",
+    "command": "WORKS_SDK_RESULT_DIRECTORY=/tmp/story415-review5-rollback-final-results bash tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-rollback-final.log",
+    "sha256": "b6c7c9a9062f25afd9b96637a165679872cc361204a8c1f9c359cc2f9baba4c6",
+    "exitCode": 0,
+    "seconds": 10.376
+  },
+  {
+    "gate": "final-debug-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -t:Rebuild -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-final-debug-build.log",
+    "sha256": "6325f1875d6e7960d06138614b1fd028db383fca587fd458dde86f41f5e74bc2",
+    "exitCode": 0,
+    "seconds": 10.439
+  },
+  {
+    "gate": "final-debug-contracts",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkPackageContractTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-final-debug-contracts.log",
+    "sha256": "e43be9894ac8382572565a1b0c7ecb741afd6a06015c80c18fe89e52a56a42b8",
+    "exitCode": 0,
+    "seconds": 0.285
+  },
+  {
+    "gate": "final-release-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:NuGetAudit=false",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-final-release-build.log",
+    "sha256": "df013e82333e19ef158e00e0759f35037464e93c7f6d376e8912efd18f19474b",
+    "exitCode": 0,
+    "seconds": 4.046
+  },
+  {
+    "gate": "final-works-abi",
+    "command": "bash scripts/verify-story415-works-contract-abi.sh",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "originalOutput": "/tmp/story415-review5-final-works-abi.log",
+    "sha256": "c2ac65cd79c0af1355003d26ce6a54b52b26800b3f2121f040785b09ed4ec1a3",
+    "exitCode": 0,
+    "seconds": 2.249
+  }
+]

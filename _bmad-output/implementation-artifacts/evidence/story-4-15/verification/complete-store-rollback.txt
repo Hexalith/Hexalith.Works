@@ -1,0 +1,12 @@
+  Discovering: Hexalith.Works.IntegrationTests
+  Discovered:  Hexalith.Works.IntegrationTests
+  Starting:    Hexalith.Works.IntegrationTests
+  Finished:    Hexalith.Works.IntegrationTests (ID = '22acfe9cd42ed4ca81a33b27fee2ea8852b3f0dc2d48390538712bee12fe75d2')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 27, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6.414s
+  Discovering: Hexalith.Works.IntegrationTests
+  Discovered:  Hexalith.Works.IntegrationTests
+  Starting:    Hexalith.Works.IntegrationTests
+  Finished:    Hexalith.Works.IntegrationTests (ID = '22acfe9cd42ed4ca81a33b27fee2ea8852b3f0dc2d48390538712bee12fe75d2')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1.157s

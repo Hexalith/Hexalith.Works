@@ -1,0 +1,90 @@
+[
+  {
+    "gate": "sdk-build",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "command": "dotnet build tests/Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "originalOutput": "/tmp/story415-review4-patches-sdk-build.log",
+    "sha256": "4539062f23e054bf31349f908e4186e41038772277dd7018034d06b68a5995f3",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "sdk-build.txt"
+  },
+  {
+    "gate": "reminder",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "command": "dotnet tests/Hexalith.EventStore.DomainService.Tests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.Tests.dll -method '*PersistedSourceMessageValidationSurvivesReconstruction' -method '*InvalidSourceMessageQuarantineIsStableAcrossConvergenceAndRestart'",
+    "originalOutput": "/tmp/story415-review4-patches-reminder-tests.log",
+    "sha256": "284125487f5f202fc60c85d451c076f71546008147fa4ac13ece70e622588f9e",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "reminder.txt"
+  },
+  {
+    "gate": "actor-build",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "command": "dotnet build tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "originalOutput": "/tmp/story415-review4-patches-actor-build.log",
+    "sha256": "9d96aa6ad699d258c9bec24a49d63a723b6074b76197704931bdb97b449c3508",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "actor-build.txt"
+  },
+  {
+    "gate": "snapshot",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "command": "dotnet tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests.dll -class '*AggregateActorFoldedSnapshotMigrationTests'",
+    "originalOutput": "/tmp/story415-review4-patches-snapshot-tests.log",
+    "sha256": "3b91d65bf476668d801e31fdf7635b36aae5cd01a691ed86200316aabe9bcdff",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "snapshot.txt"
+  },
+  {
+    "gate": "works-build",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false",
+    "originalOutput": "/tmp/story415-review4-patches-works-build-final.log",
+    "sha256": "b9f5af53b761bd0018d1ad5a4fc5ae1b29a3c1281fdc3eda6b7fa0d35bfd2f32",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "works-build.txt"
+  },
+  {
+    "gate": "decoder",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*MalformedRequiredShapeIsDurableInvalidEvidence' -method '*RecoveryEventTypeNamesAreClosed' -method '*HistoricalCommittedDiscriminatorsRemainReadable'",
+    "originalOutput": "/tmp/story415-review4-patches-decoder-tests.log",
+    "sha256": "9596d5cbcad1e0b3393b8193295067aba709e8a0d6b5b7a2d682589f96a9afc9",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "decoder.txt"
+  },
+  {
+    "gate": "live",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-review4-patches-live-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart'",
+    "originalOutput": "/tmp/story415-review4-patches-live.log",
+    "sha256": "00385c64d9de81276741a3ba874dca7655be757acff1d63d90526f9020c8e132",
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "summary": "live.txt"
+  },
+  {
+    "gate": "immutable-refusal",
+    "scope": "pre-.9 targeted source proof",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "bash scripts/build-story415-sdk-candidate.sh",
+    "originalOutput": "/tmp/story415-review4-patches-immutable-refusal.log",
+    "sha256": "4c398652cf30426c5312e2572ba4ddb6080e6e56c92da1cfee6f150fe690e6c8",
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "summary": "immutable-refusal.txt"
+  }
+]

@@ -121,7 +121,9 @@ internal static class WorksAppHostSmokeHarness
     /// </summary>
     public static async Task WithAppHostAsync(
         CancellationToken cancellationToken,
-        Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body)
+        Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body,
+        Action<IDistributedApplicationTestingBuilder>? configure = null,
+        string actorTypeName = nameof(DateReminderActor))
     {
         ArgumentNullException.ThrowIfNull(body);
 
@@ -154,6 +156,18 @@ internal static class WorksAppHostSmokeHarness
                 startupCts.Token)
             .ConfigureAwait(true);
 
+        // Explicit legacy diagnostic fixture: bound only advisory startup metadata, preserving all
+        // production authentication and legacy reminder/process registrations.
+        if (configure is null && Environment.GetEnvironmentVariable("WORKS_APPHOST_BOUND_METADATA_STARTUP") == "1")
+        {
+            string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;
+            builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore"))
+                .WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
+                .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
+                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
+                .WithEnvironment("Version", "3.122.0-story415.20261016.9");
+        }
+        configure?.Invoke(builder);
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication? app = null;
         Exception? primaryException = null;
@@ -205,7 +219,7 @@ internal static class WorksAppHostSmokeHarness
                 .ConfigureAwait(true);
             using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
             await WorksAppHostTestReadiness
-                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token)
+                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token, actorTypeName)
                 .ConfigureAwait(true);
             try
             {

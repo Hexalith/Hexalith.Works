@@ -1,0 +1,4 @@
+0 Warning(s)
+0 Error(s)
+Hexalith.Works.IntegrationTests  Total: 27, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 5.288s
+Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.629s

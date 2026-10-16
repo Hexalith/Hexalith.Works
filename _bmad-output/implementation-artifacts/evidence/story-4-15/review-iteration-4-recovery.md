@@ -1,0 +1,16 @@
+# Iteration 4 continuation after daemon restart
+
+The daemon restarted during sequential implementation and the implementation subagent no longer exists. Continue the same iteration 4; do not increment the review counter, re-render/re-enter bmad-build, or launch subagents. All previous frontmatter contexts still apply except their one-time restoration actions, which have already completed.
+
+**Do not restore or reverse any KEEP bundle again.** Root checked the live workspace after restart: all 132 .7 owned files were restored, 129 still match their preserved .7 hashes, and only the following partial iteration-4 work has changed. Preserve and inspect it rather than replaying earlier restoration:
+
+- Works `Recovery/WorksProcessSourceCatalog.cs`: bounded batches of family discovery reads and atomic member uniqueness validation.
+- SDK `Client/Projections/SharedProjectionControlIndexWriter.cs`: discovery-specific admission for registry/tombstone acquisition.
+- SDK `Client/Projections/SharedProjectionEpochCoordinator.cs`: additive `ReadDiscoveryAsync<TValue>` for one bounded scoped epoch/generation acquisition.
+- SDK `Client/Projections/SharedProjectionDiscoveryReadAdmission.cs`: new partial keyed discovery admission, separate from ordinary contextual workers, retaining slot/key through actual provider completion.
+
+These partial edits are not a completion or test claim. Compile, inspect, correct and finish them along with every remaining requirement in `review-iteration-4-remediation.md`. Root saved their exact bytes and a .7-to-partial diff at `/tmp/story415-iteration4-restart-11s199i4`; `review-iteration-4-daemon-recovery.json` records hashes and current archive identities. The full positive .7 source snapshot remains `/tmp/story415-iteration4-before-fo6r02md`, with `/tmp/story415-iteration4-before-path.txt` pointing to it. The existing `/tmp/story415-iteration4-delta.py` is a read-only diff helper; root owns final task/matrix/diff and independent review audits.
+
+The original implementation agent said it would perform baseline Aspire inspection before restoration. Root has no new iteration-4 runtime evidence after the interruption. Inspect exact owned workspace AppHost/resource state using Aspire orchestration rules before proceeding, preserve any existing inspection logs, and clean up or resume only owned resources if needed. Do not start duplicate hosts or touch the unrelated standalone EventStore checkout. Do not undo partial work merely to repeat a baseline inspection; if its logs are unavailable, report that honestly and distinguish previous identical-baseline inspection from fresh final runtime proof.
+
+Current package selection is still immutable local .7; only .1 through .7 archives exist, nine each. No .8 candidate has been packed. All .7 runtime, package and verification evidence remains historical positive proof; the fresh corrected producer and all applicable final gates are still required. Keep builds sequential and give root the requested bounded-read/composition/validation design milestone before packing. Preserve user Story 4.9, sprint/planning, ledger, frozen intent and all prior archives/evidence. No staging, commit, push, publication, deployment or real-data work is authorized.

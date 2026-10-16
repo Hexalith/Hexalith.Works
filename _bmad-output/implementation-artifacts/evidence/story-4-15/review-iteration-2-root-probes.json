@@ -1,0 +1,26 @@
+[
+  {
+    "probe": "interrupted-catalog",
+    "command": "dotnet run --project /tmp/story415-edge-catalog-jf65ujaw/Probe.csproj",
+    "exit_code": 0,
+    "output": "first pass incomplete=1\nafter page failure: Complete=False, IsIncomplete=True, cursor=tenant-z|widget|late\nresumed pass incomplete=1\nafter remaining page: Complete=False, IsIncomplete=True\n",
+    "project_sha256": "952a136c6903c950b1c3426bc61b2031c367cfa507591dc9b68d1cd8494e1b04",
+    "source_sha256": "1cd5da836d85b668b05598ad6b0627edf9553c92706dbb5c73a5d4f10096f363"
+  },
+  {
+    "probe": "cross-tenant-progress",
+    "command": "dotnet run --project /tmp/story415-edge-starvation-yvihxnww/Probe.csproj",
+    "exit_code": 0,
+    "output": "pass=0, incomplete=2, healthy candidates=1\npass=1, incomplete=3, healthy candidates=1\npass=2, incomplete=3, healthy candidates=1\n",
+    "project_sha256": "952a136c6903c950b1c3426bc61b2031c367cfa507591dc9b68d1cd8494e1b04",
+    "source_sha256": "a3d284574209ae8bb30ea4be99bb5371ef11053432e82dad14779679180d0f23"
+  },
+  {
+    "probe": "retained-plan-corruption",
+    "command": "dotnet run --project /tmp/story415-plan-integrity-28059ie1/Probe.csproj",
+    "exit_code": 0,
+    "output": "before alteration=Retrying\nafter alteration=Quarantined, submittedByte=, checkpoint=0\n",
+    "project_sha256": "952a136c6903c950b1c3426bc61b2031c367cfa507591dc9b68d1cd8494e1b04",
+    "source_sha256": "382eda52eb981f539800db52a988380cdda2b2aa80f1416750f285de79e30e3e"
+  }
+]

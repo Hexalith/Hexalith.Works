@@ -1,0 +1,19 @@
+Command: bash scripts/verify-story415-sdk-candidate.sh
+
+Isolated package-only host consumer: persisted accepted contents/checkpoint and restart-safe conflict readiness passed.
+{"isolatedPackageProof": [{"feedSha256": "63e3d717ca2e3543bddfae8e01eceb46eee8fe19bda91085394e3be3c545f268", "identity": "Hexalith.EventStore.Client/3.122.0-story415.20261015.4", "isolatedCacheSha256": "63e3d717ca2e3543bddfae8e01eceb46eee8fe19bda91085394e3be3c545f268"}, {"feedSha256": "a5fdec9d09735cf2c014af32baf6e88462b2df09edea6fb8b27048586fc9d578", "identity": "Hexalith.EventStore.Contracts/3.122.0-story415.20261015.4", "isolatedCacheSha256": "a5fdec9d09735cf2c014af32baf6e88462b2df09edea6fb8b27048586fc9d578"}, {"feedSha256": "1cb819314d18f0268e96e6504e6cd5ef33b64a41d367fabcba848178b5a5ae88", "identity": "Hexalith.EventStore.DomainService/3.122.0-story415.20261015.4", "isolatedCacheSha256": "1cb819314d18f0268e96e6504e6cd5ef33b64a41d367fabcba848178b5a5ae88"}, {"feedSha256": "6bbaa8bdb4afea2c446c07f1c8d68495478617f6252ed719b30a7bce90b64331", "identity": "Hexalith.EventStore.Server/3.122.0-story415.20261015.4", "isolatedCacheSha256": "6bbaa8bdb4afea2c446c07f1c8d68495478617f6252ed719b30a7bce90b64331"}, {"feedSha256": "e7e7771adff80ffb390969b7dac34a2eaf0210571227bb80e933b4764878f9ef", "identity": "Hexalith.EventStore.ServiceDefaults/3.122.0-story415.20261015.4", "isolatedCacheSha256": "e7e7771adff80ffb390969b7dac34a2eaf0210571227bb80e933b4764878f9ef"}, {"feedSha256": "20cb52604c8da35279d0ca34ee9735757c98acdb6c68fa753ba69de99af836ef", "identity": "Hexalith.EventStore.Testing/3.122.0-story415.20261015.4", "isolatedCacheSha256": "20cb52604c8da35279d0ca34ee9735757c98acdb6c68fa753ba69de99af836ef"}]}
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.39
+Passed isolated upstream public Contracts consumer at 3.122.0-story415.20261015.4
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.53
+Passed isolated upstream public Client consumer at 3.122.0-story415.20261015.4
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:00.61
+Passed isolated upstream public DomainService consumer at 3.122.0-story415.20261015.4

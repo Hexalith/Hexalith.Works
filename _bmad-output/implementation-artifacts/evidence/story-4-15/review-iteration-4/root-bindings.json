@@ -1,0 +1,1279 @@
+{
+  "checkedBindings": 252,
+  "mismatches": 0,
+  "groups": {
+    "selected-archives": 9,
+    "producer-source": 65,
+    "consumer-source": 73,
+    "historical-archive": 63,
+    "results-manifest.json": 24,
+    "preliminary-manifest.json": 11,
+    "runtime-manifest.json": 3,
+    "cleanup": 2,
+    "graph-Debug": 1,
+    "graph-Release": 1
+  },
+  "redactedPayloadFields": 13,
+  "bindings": [
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "622c1f6660383c6ad0d3026c613e970d21beb228eecd422e9ce7329797c1a84f"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "6d3ce13dd4f75e8da7b8755e940894b17ad88420295b0a26ff6cd997271f5da0"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "7e5f3382fb946636c190e8cee82b04bf309a7ed0a69a7724d1c36e3a0f7104a4"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "144934823709d1e985b816e7066e9cef50787a332bba73ca7bcbd1d73f8b3536"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "a9682cbc52c459ad0ce38938e5080a43fd1b86f96e027056ffd3cbba225b5bd4"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "7fe7d3a815e72a519c19ad78a13004243e899fe8f96027d01270ddac3879a802"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "bbbe5f6b7adf3c35d191231f2283d19ffae109f4963b14200dbb78bc8725caeb"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "685fb480a2fca9a745fe65415b3e99710d3665eb2ea3d9c622217babe21fdc78"
+    },
+    {
+      "group": "selected-archives",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261016.8.nupkg",
+      "sha256": "f00ab17f25244c97c2205377bc9467434f1e709935c601c1a2e4a53564f1b979"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/docs/guides/checkpointed-processes.md",
+      "sha256": "34c7eb70fb7fdffead26e49836c5cb6fbbe3ab28674f74f722386ac2dffd3920"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/docs/guides/trusted-effects.md",
+      "sha256": "e1fcb03362ef8c0a57f9c5f57adba65491173454ab47c782f084103bcd475762"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/docs/guides/typed-reminders.md",
+      "sha256": "17478f3bd1be8e8079b9e2b0d3e44849b6b066a79b5259a5919f4962ec914f8d"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/scripts/validate-consumer-package-references.py",
+      "sha256": "2796854b9af9034290eae2a24c84e3e6391d2fa0d1a77dfa1f82b33e5fe5d37c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Effects/TrustedEffectOriginScope.cs",
+      "sha256": "bc4b702aa3f6c4651224e0aed0ec2d0741a9e0484cb68f0168b781c24b2af0ca"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Processes/IProcessTranslator.cs",
+      "sha256": "e6205ad1e592c28f275bba120fac2840af9d08e3834ab4d7863c29d2fcc3b43b"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Processes/ProcessEvidenceUnavailableException.cs",
+      "sha256": "3ba61453f7c47cf8dc4ad4efc75558ec21aa691640b13934d56a507448927025"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Processes/ProcessSourcePage.cs",
+      "sha256": "59ee1d8bf92e7864891e0a54c7d7674a5c943800d7ece29a2473e10cbcf87d48"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionControlIndexReadResult.cs",
+      "sha256": "12c54fff85d725e83ffbe698b3079a27ceee628e36c924c23e49d26304a071ff"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionControlIndexWriter.cs",
+      "sha256": "39a3e933b476bc72e5eac1a790e7883c67403e64d457c21628f44f2c8ef38e5f"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionDiscoveryReadAdmission.cs",
+      "sha256": "fd85ee1733506c703fee5348e5e1d774e7753621272ca3e997ec5d09f672a702"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs",
+      "sha256": "970b36c1a8e079a0be8dde75e70e0ebbe939f60f690144fcf00b9b72072a5096"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Reminders/IReminderTargetCatalog.cs",
+      "sha256": "64bd38dd73554dbfe36b036a8a580cb74a0c26809625b7a292fd050f7088a24b"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Streams/AuthoritativeStreamReadAdmissionException.cs",
+      "sha256": "e4a1175e6a382cb89f0c646e87e2c88a0e26526796cb80ddb92912d7d3e7ca85"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Streams/AuthoritativeStreamReadDeadline.cs",
+      "sha256": "cfb6e340cce168ee1db129e02baf25e306ae4f32dd60a6dedf55bf3da537d095"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Commands/DomainServiceRequest.cs",
+      "sha256": "163bd4744b8d4ae72d5b006b288bfacf00ea3912bc827fb84f547ed134220f65"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Effects/TrustedEffectOrigin.cs",
+      "sha256": "f474352c15b36c974a45fc0f7da441ad3787d14a6a83e12c1bf2e90cdf611f38"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Reminders/ReminderIntent.cs",
+      "sha256": "b6b609c6e2a1a9e722c483325acdfdeae74bd3981c562b6cbc7560cb39675186"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs",
+      "sha256": "7396aa38b66579a2285e478c624d768d8b1ab14cbb82f73f3f7e581c3dc8ea35"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainServiceRequestRouter.cs",
+      "sha256": "66c3fe402f1ffad2a021a43109cdf085f437cf3bdce0d1f63ffb6132062011e9"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainServiceTrustedEffectAuditUnavailableException.cs",
+      "sha256": "f66cddbfa8f70b03fd8935c07047788ce504793e02f09909b6cb36d2a7646522"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainServiceTrustedEffectOrigin.cs",
+      "sha256": "58da2692510e56d92c43eaebff94b456ed06e65382c5d8d3837198f669ea8c08"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreDomainServiceExtensions.cs",
+      "sha256": "bb47f5f79c0a810433a1a1153889616b0615c9b8ef0f599991985888bcf7e64a"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs",
+      "sha256": "fffca79129520b50047c8a7ae023c9797947a314bbd3315c27bba48b933e5bf0"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreReminderOptions.cs",
+      "sha256": "68f9db51f809db8438446542c26ce84a5d975307e6f0e9ece4eddd8121a3fcf8"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessEnvelopePlan.cs",
+      "sha256": "d4f6a48eb171897a87a787cb142cd2ec7d8b82f656601b37a5dd533884ee0831"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReadDeadline.cs",
+      "sha256": "51434307ddcc0241e3f19e8e3194947910a487a6f2df2885b5a1658cfd7655fb"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReconciler.cs",
+      "sha256": "f37c2bf82bd3e550120112c4943837c76f7cb6b290f3796e1f7830130e153473"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessSourceState.cs",
+      "sha256": "75ad18506a9df62fc4c375138b12d6ed5d85890a8b3160d3af61fb34c3c7722b"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCatalogDiscoveryState.cs",
+      "sha256": "c909322e334e7bd913d952ce24bf0f60a947f9a140b8bcb7f28e68d2d9b047ff"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs",
+      "sha256": "5c2bf13b0dd0b4e8676bdb1ab16024a37ca5484a63e36b95890b6aa660f1de46"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderEntry.cs",
+      "sha256": "95d0b96aa99e7604ef6088806a1be24659f3ff57994501d04ca6114052c6052c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderIntentIndex.cs",
+      "sha256": "81b9299db7458fb7f4bfd67538135684e8ea7790cc0e42de673733107a4b7fd7"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReadinessHealthCheck.cs",
+      "sha256": "f6a4790fd676ad250bb62ecd312f329a72b4b03c8e398107414b657e02c9665d"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs",
+      "sha256": "efc7aade0063725f066b88c4c184051bd5213847db974f541dfebeccee34ac17"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderRuntimeSnapshot.cs",
+      "sha256": "7c0515f13437f9a1208fada8d6897db0b5753611f7c81a8aa106af72b105a6a1"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderRuntimeStatus.cs",
+      "sha256": "5f1aa0b0c4cb699d54d541743e81706de815b5c4c3a9fba398bbf29622f24941"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/TrustedEffectOriginDenialRecord.cs",
+      "sha256": "c0e889819cf6161358154f2b378c1189f104df597545e42223c62ff15cf9dda2"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Server/Actors/AggregateActor.cs",
+      "sha256": "49b627d780b594b37f07eafc5a8cdada1165e74a134465aa0e31502f5fb07586"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Server/DomainServices/DaprDomainServiceInvoker.cs",
+      "sha256": "bceb21a64e6ab2cbb1cdef8bd7174ecbcd7c828da30230009ea35a4901bcdbf7"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Server/DomainServices/IDomainServiceInvoker.cs",
+      "sha256": "f1d0249801952d703ac52d1a265c6efaf5cf38ffc1b7d82e133bea4895bc604b"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore.Testing/Fakes/FakeDomainServiceInvoker.cs",
+      "sha256": "dd730e533da1c7216a3352cc005eb8f8e14ae79d3306205637e8ce0448af21e5"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Client.Tests/Projections/SharedProjectionControlIndexTests.cs",
+      "sha256": "12732726bda0ea360dc6b3928defa858b13ea79c5b07e0950effc411326a9ba2"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/DomainModuleAuthoringGuardrailTests.cs",
+      "sha256": "ec12cda35f4b1e2d692d163ac5379cc5af37d2bcb560883c83b1d58ef2d071e6"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/DomainServiceTrustBoundaryTests.cs",
+      "sha256": "d8f38378c7f8de28d2061ea2d9b64bae691253695ade6cd751ba86ff3d9d5da9"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/EventStoreReminderCompositionTests.cs",
+      "sha256": "e1bc78d0feb96e491240ed70889afcc29242bebf43e728c1ff59d0ec889a3875"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Fixtures/DispositionFailingReadModelStore.cs",
+      "sha256": "b47bde40bd005b59800a3ac002cd3b56c7bd153d5b3fd516d8cf35045b24833c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/CheckpointedProcessRunnerTests.cs",
+      "sha256": "b563d06a2150fcb8e50e3047c24baa569ebafa7637692154473e0af3dd91b180"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessEvidenceUnavailableTests.cs",
+      "sha256": "f472e5bb771b8133edf0610dfd95eb4732f7537fee152b736a8c509afb7cae8a"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessPublicationTests.cs",
+      "sha256": "db618c733f3889af83ff88bf737d28978bd132ca2ab3282b35f113f101e699f2"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessRecoveryTests.cs",
+      "sha256": "f8c51399fde91f0a890e7630e69cd44212083307b7da5549d9a74b985991ef7c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessRunnerEdgeTests.cs",
+      "sha256": "2260537c98b55958a672f41e5cf0411e445902e76dc3671a0f40a56588cee8ca"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessSweepRenewalTests.cs",
+      "sha256": "e9fbf5d345b6ab990c237959dc464b2b7680ef18270e90cec7018b5b959537f8"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs",
+      "sha256": "b14afbbc942c5a7d0b9154c9061f0d36796af4fe128a47ca13e8d1000812b7c9"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs",
+      "sha256": "a9dc5f1f8e38fdff3d7e1a0d8aca68310f1943775f1a7ea8ec5e2d20da8d864c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderDiscoveryOwnershipTests.cs",
+      "sha256": "0fba831c018f40a140d727484dc1a0a3dcb2221ec8dc67b6cd9ec7a38f9d2f9c"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderEvidenceFramingTests.cs",
+      "sha256": "0babf9dcd7f3be9c8efb1e2611a1d7bb63045a61ebd0296f6fbbb53da8ce8405"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderOrdinalTests.cs",
+      "sha256": "0223d98788dd02df8be8b7c157656417c852dc2c5d2c1d7b573e4a7b4f440260"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderReconcilerTests.cs",
+      "sha256": "f91996d4487815ca545861c910edce93519ef71482f4810949c80066cd98d888"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/ReminderTargetCatalogTests.cs",
+      "sha256": "04a11b0abfeb2f3522c5cb92f1181876cae6e351a1c59a5c5a70d5c9a7392875"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/TrustedEffectOriginTests.cs",
+      "sha256": "adb80aba83431380148d5e02d40aa02b26fb90f3da87de3aaad94412c8ed3d7f"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.DomainService.Tests/VersionedProjectionDispatchTests.cs",
+      "sha256": "4c48ade3284c9d04eb3a393c1dbb9bbbadce447670b88d0b3a884a98b8050469"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/AggregateActorTestHelper.cs",
+      "sha256": "67a1dedd0a16447a38ad492afdf469323d45ee361e817136f71dd0cc707c4468"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectJointOffboardingTests.cs",
+      "sha256": "19af364744d109bb0c08bccfb08bd690eba52eb9bcc5f8c1f7ad6c66a02b81d5"
+    },
+    {
+      "group": "producer-source",
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs",
+      "sha256": "dfe052b38b353537c5e6184dbd17ebc7d03dec8c3bf2ff97a21d1224215a2741"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/Directory.Build.props",
+      "sha256": "357e7682b372c6826dd1fb9081e28d8c781c5763f6a2a0f1587d9a9bff4bfe97"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+      "sha256": "093af86b37ec468eb4cb856fa41daff5cd12800ef6e4fdd51d5b7ffcf225073a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/docs/boundary-decision-record.md",
+      "sha256": "04bb150f8c284170f51c17ddd7f62357f1321bc119889711e5294f6602ffdf08"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/docs/eventstore-api-surface-constraints.md",
+      "sha256": "26c33a97c75f00bd3d7d6a63af028b4283f60407f7f6813f30fb4ff222481633"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/docs/sdk-reminder-process-adoption.md",
+      "sha256": "41f77aacf131a2b54f3608d36c6b238697376a8ca39a1fba4b58d138d6367a1f"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/scripts/build-story415-sdk-candidate.sh",
+      "sha256": "abcc43fafac885ae4def550c1780a4954fb51e1687875286c9f8765de9721497"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/scripts/verify-story415-sdk-candidate.sh",
+      "sha256": "f8a3a5cbaf8292ae57a26732b271a2c5b423cc1dbae9a7d81e6c24c09c51cf1d"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/scripts/verify-story415-works-contract-abi.sh",
+      "sha256": "dfebebc417654a3e5b8cccfa2d4ecfd5497d24bf3d324502942d17e776bb5c8d"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Commands/CreateWorkItem.cs",
+      "sha256": "129d101baa6144c929af79826cbe3a77a2449d3bc7e1f5c1250078d589faf7f7"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Commands/ExpireWorkItem.cs",
+      "sha256": "7eb58ccea9b318de2b45a193248fd201a51e969a383fab051d9cc482462f6e42"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Commands/RescheduleWorkItem.cs",
+      "sha256": "079b10a4d25646c4f108a29f212c726b8ed59b6fc946fc62169d13edfde84b75"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Events/WorkItemCreated.cs",
+      "sha256": "1c97db8d116467758d8b001dc645c3291c0aab359828f67d8dd8477c598e291f"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Events/WorkItemExpired.cs",
+      "sha256": "14416d7cb60424f5dd4cd34212973f32200487466bd60cd46432861e5e262216"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Events/WorkItemRescheduled.cs",
+      "sha256": "c8fbe0547c381035083960dbeb2d1446f1d1cd1c1aaade30ee3dcd5aaeb6f28e"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/State/WorkItemState.cs",
+      "sha256": "70a1e633cfa7b81d7f1f3917b7d17160ff3b4f9984aa94015c98a320868d2487"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/ValueObjects/WorkItemExpirySchedule.cs",
+      "sha256": "81c154458f24213d6a605469609a18a508bb9c824c1a11264d70f9db511c1ce4"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs",
+      "sha256": "c67814a68ab49e04ad46ddbcf47a4c030018f3c4da67f6fe4b1874854b8fcf4a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksCommittedEvent.cs",
+      "sha256": "6a4f490b76803020023b1c7f2605807995e4b3c98927161d76f5e7320b45bd41"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksEffectPurposes.cs",
+      "sha256": "84c1884177f37c39d4645045edd71b8a66d1849cd5249e400499a8255ad31b7f"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksExpiryEvidence.cs",
+      "sha256": "0d65cb53d7527fcf805f5c27969c3427b80e63ae3c91234c02db0ba21ef84f3b"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessDelegationProvider.cs",
+      "sha256": "05a8e7ed4152897c868193c885474aa5c593fdd648d937045426a00e3d0276c1"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessDispositionAuditSink.cs",
+      "sha256": "f24bc489fc97a76a7b05c3adcda2aecac210c862720d1149fbebbe72ce7f1cef"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessDispositionAuthorizer.cs",
+      "sha256": "e1eb4b160f7176d1b59c873ff827c5021ab2cb36aaf7236889120b16395d5de5"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs",
+      "sha256": "05984b003c8b9efdf93bfce8b8b620935f5d199fa84be530b94f5a89e57485e2"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessDispositionRequest.cs",
+      "sha256": "2c01106c464ddf4cca4c873e1e95d725fe66c6a8dcc39c291984469224579ec8"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs",
+      "sha256": "9d11ca8b5b656a431b6c69557affebd23f2771199a2ec69edeceebfaea67d577"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksProcessTranslator.cs",
+      "sha256": "e3a19f59ac28e09ec4afdd026fd96265a82b2133c3df9de82df4aa8ff0debd3a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksRecoveryEventDecoder.cs",
+      "sha256": "6c9fdd634c08d3f2e19e6ae887a8f37f80d7ba6de462246e1d54c2e542ec8886"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs",
+      "sha256": "ff184b4c92aa435aadb53e837a469796926b88686306c71b2036690266ca05e3"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Reminders/WorksReminderEventHandler.cs",
+      "sha256": "cd2830003a73e9c1b7b6aebcdc1d2e1eaf7c74917e2037438ba284fdbc477c05"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Reminders/WorksReminderIntentSource.cs",
+      "sha256": "83e934e03b114cc31f63eaa8bf14316042bf1072f21d61da818736c0fae4e590"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs",
+      "sha256": "82147b7f8ba18567f92340b9f41ecbac6865ac71a62009fa448820cb46198c15"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/WorksHost.cs",
+      "sha256": "404841fab78e925ba72ba081c6a6b4cac9d61a68424dd614fa531565a2031bb1"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/WorksLegacyReminderActorRegistration.cs",
+      "sha256": "0703c6b51a6b725c3ccdc8e079c643fd18a83666443334eb0c3fb98224ddd880"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/WorksRecoveryCompositionGuard.cs",
+      "sha256": "87e46a0940a3b55b5f34cb0c97b8f741089699ecb06725b67732defae9b5573c"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs",
+      "sha256": "80c66bb35e5ad6c9dbd70e27619ee27c85eb1147777064a70a9b3dd1583d85e8"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs",
+      "sha256": "86fa783d2f01e1e830b3ce468495b888f6e14d1b8620aecd242cf72b574fffc0"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/WorkItemEventStoreAggregate.cs",
+      "sha256": "13d18eda7141818456991669c49eb276b88f76fcf01b011bb44817d35d7af003"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs",
+      "sha256": "f4562c67ad5055b4564921389701410e309d3ee8b7e9fce55e89886a16e3ae91"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/DiscoveryBlockedReadModelStore.cs",
+      "sha256": "8658b5ab6466d274a5749ff2f2b6829a485366c0f629bbc0d2aa43556a6c700b"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/OriginAuditUnavailableReadModelStore.cs",
+      "sha256": "344d44727227a1b07446c74bb81750a1fdde7ecd39f65a0c58b647f6f272f3ba"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/StartupHook.cs",
+      "sha256": "1d59fff1643cc4b11abddced2e6388376863171cce3a4dfc27282be9f88df93a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/TombstoneUnavailableReadModelStore.cs",
+      "sha256": "0245f2e526d5c0e487af8b812e432fb62549a6c7dc8d0303e530e60892df281c"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorkItemSerializationRegistrationTests.cs",
+      "sha256": "9093ab4790650c176a83c8412b4f465b3c894234d496b61dc7187f442cf5e3d2"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs",
+      "sha256": "73ebf64687434105a9b4e1a9856f8abe5347146a7d0c52cbb398304ee700f2c0"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs",
+      "sha256": "43b1fc14522a62004d0e472db2519ccfe686fa26371f4da43bb1fd2ea70cc751"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkHttpEvidenceHandler.cs",
+      "sha256": "85e4efa593a939ddc727f7fbb061f4e42c44489f554ddd094ee4ada78c38c1ac"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs",
+      "sha256": "2fff3b898bca3ff7570375747a170addb33211a778df8023efd18b0c90cb6acd"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkIteration4Tests.cs",
+      "sha256": "df227eb7c8c78910f1e15f1641406c6d14ed025ebc79efcc469e5a9ded76bead"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs",
+      "sha256": "63bd22f6e0d6e06114aa5d81f0704fcf8c880b5ee99a5152d30d1b6635c1c4b1"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryTests.cs",
+      "sha256": "b99182a3ad18fbddf39827d73e81f892e721188c8400468361831168039b3dd9"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditDocument.cs",
+      "sha256": "7a0a71f1fb8612e87276c2607a53a5f09bc556032afefe5e6d130d3aa72b3455"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditSink.cs",
+      "sha256": "692b1a008c63c65fc65d743176936017be74a1674e4e6c89e68c78e434869c2a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofDelegationProvider.cs",
+      "sha256": "90fb8949d76e66d0445b482d721aad28466c939514aa3f58b4d315692d1670ca"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofDiagnostics.cs",
+      "sha256": "9e89ec726852174fb42d62c71c7d32326081b7170106d4d1c57cfe12b2874e69"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofFaultState.cs",
+      "sha256": "8a7c8579da27cf67236e529dadf52d04ed93ed2835f1820cc15bebf08e2d51a5"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs",
+      "sha256": "d0128b5c2d2c6ea4661141a3109cc7e376b72095359627a8c17a7457956efe5e"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofIntentRegistry.cs",
+      "sha256": "b7767e8fff68ef9322a4aa56ef6cfed2218d159dcce1dc05cf4b9e8c71720234"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataFilter.cs",
+      "sha256": "5086013839a995d84e198d3b6ad95588881c2667ba92ae89792db4913f989e3a"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataHandler.cs",
+      "sha256": "a3dd96ef8ab21d6435012b5a2df397ffbfb2a2b0aa7c2cb3d9d6fafa11259098"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofOrdinaryRetryHandler.cs",
+      "sha256": "d11f116040b3617c0a486b47484416e1e86145f35ed9bce7a322a11baea056ef"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs",
+      "sha256": "f32ac7c7324478228c9cede93fd5e73b11cb5788deac089c8780316d08b636a3"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseFilter.cs",
+      "sha256": "539350d150c434909b384422e631dd03bc0dde10b13db0e931a965ce67ea19d6"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseHandler.cs",
+      "sha256": "ce406e43997ff767d06b0f27ec1b115e9f94b2846458f21cfd14df335d390715"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofRetentionGate.cs",
+      "sha256": "07aae46d1aae6115158603adf126bcfe47506c1f66521f0d68273581d082a3e5"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProofWakeupFilter.cs",
+      "sha256": "752e1b1d44e0debc6ae68c1cbaf07c85b39bd22f2f3ae0966fe3a21102373d28"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs",
+      "sha256": "00e5aae381694b00c407c49d124557bfa1a3421d605869fd1d2ebbea6337121f"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+      "sha256": "b786e699d1deeefcf47833368e8df1126a1eebbe1fa93bd7a32eb106a35ad247"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+      "sha256": "9677fb13a22c241da261566aad6ddbb54107e8a87b9caf2848e70518e1d7900d"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs",
+      "sha256": "73695ac863b37f10f9a7534844abcf947a099e47c3a6e81a57058d0226e283bc"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRemediationTests.cs",
+      "sha256": "c6a4852fed9566abc7746bcf6989e74ba78d853dceef0e1cc57016e4e31af639"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs",
+      "sha256": "68c907ce69b4fea8c26d4b97b15c3f504e8b32271019967a13487f0d70667183"
+    },
+    {
+      "group": "consumer-source",
+      "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/WorkItemExpiryWitnessTests.cs",
+      "sha256": "ae0ba281088269cbb16e2f1b9bca7b764b9285dae7095da85c0024139bc11e12"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "f84b99c564a712298ac97c2c75f80c370f299f80eff9ea2562b22ad88a7872f2"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "1348615161b48f4c5e519c11ce9f3d6001ff92b87ad06e5939fc52f61eab9be9"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "138c1dd72da31d7266eb2a0ae68b232d97401d6b425606a46f85c2399ad3d624"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "c2dff93538bd852c2dad8b0a271db634b94043cb1147a22693931d9aa9dbd001"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "57bc8637ca1a74c12920af409df31ea6453dfe6e2b2682f13b6f114e363eca9b"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "76afe5b2ee5f473aa4866c124f052d11f913472d7394715c5a63f7ac1d306ed2"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "3a3448c2ffeb101e89f94798ef7b9127b735f16072419b3199a8e9eb5754c1b3"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "7e87b0ba3be03a914391385b88f3e312ec6c5e0b93ea0abba1c5ebc33d7f483b"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "76afa9d52cc05a935ef27841c122781778dba526111fe9476215a72186f08cd3"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "9f6dff039bca671adbd25c340e12edf3af6bdd1953dc19475609c7fe1e9e9b85"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "c07eb4f8d988d73243d0514612770054379c16120e913218c2325f47dd2501b1"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "def4dfe031cf8345b3342021a02068d5519220657ae2696bba4d7eb56abedf25"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "af168fe8a6570c97f0f7a895737c533602842765727a87054f1e040b1e2526b3"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "56e264c878de187f942b424227740316ba3fe9badc5f245d9d54b3f376335104"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "0ddb8af20908f2d0fe97661bca2c3e6c2c60ffeb08b3a60b8791e6931b663ec6"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "63e3d717ca2e3543bddfae8e01eceb46eee8fe19bda91085394e3be3c545f268"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "0b84f567ca6fb90a8fc4b3a4837ac52efa2de8809632f9cde1ed3f570ca7f28e"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "5901993053d4353fcbda59228ee1a2e77da7235e1891d70a2dea1cf59521de21"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "ff06ea6d876f69fbb156b2568fae345ec2f1c5bb10aa0018b7135292b8d0a9ad"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "4d0af7ed38fe466165c672578da2e1621eb6d2ea6d2d7fc8a2b6de5e345caa45"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "f6cc4166fcdc7eccdc6a63953f2dcc3c428fa68df6b2a6f9c05e749e9d1c4f97"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "a5fdec9d09735cf2c014af32baf6e88462b2df09edea6fb8b27048586fc9d578"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "5916da438aa3df3d007f92b9f2d1816965fc8792de9fde15ad2a263e2fb571d6"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "8b613f35ac7745aa8607357c5763acb383c9910713282e092275da31e6f943b8"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "bc908b275d088105bb178bde6caf1c28e6cd5ae3ac5b3308e97b70dd5f9b861c"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "36a6ad0a0b2ebed55bdaa5be5a76146aaf343d7caaf53939172e769f09345d12"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "f44ee31d826a9c26b58eba8d41279b43355c4459df0625f54af2e4972667b400"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "1cb819314d18f0268e96e6504e6cd5ef33b64a41d367fabcba848178b5a5ae88"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "8bc7016f23c9f9ed8d50e7f4b69381e60892f78c200a8282574151de4fc715d2"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "6bc188eab4466a4ef20830855e56e5f0220407d8acaaf7c8cda7e20ea690182d"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "f50d9405d16a60e798d832d8f95a6b5ee4f8f92a125da07a21e7c58954c2cca2"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "5d73f3e032a2bb18c681464b479deff1efbf64bc7d557a4e663fea6876f7e603"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "f87b75348e58b3c1b3341f27a57be8b7e0c06c8ef5441cf181bef866a1d9e8eb"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "fb753beab3a38f380362bf36a381819b7d7c1ffb546e8b4f8f95e34252a0c04c"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "77c1f1884739ec0bcf932134f1ed19ffa6dba02a82ce3041544f0e91353c01fe"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "5cf41cfc39d402d3793731684a975a7ddc0e2749457d1e747389ad631baafe55"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "3655d0dedacd08e41f3553c23e207b03d4053b61c00957e183162f4881e7e86f"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "ea5ccd15c0aa64cccba16af682dd2eb71aa90950567e89ef5d8c7113839bf3cb"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "aa91cccd2daec631f8fcb91cd642d3f6a01bf76e1d429bee718910e759d06940"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "6bbaa8bdb4afea2c446c07f1c8d68495478617f6252ed719b30a7bce90b64331"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "fbdbe46910c99ea35762893804c2abe797e96069ca97105707892ed3a22d7316"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "aab984e108bea1c0a10f9364cb332dc8d2c2714b964e37dd5d82200396e77cce"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "ed4d3d0ec35e355ed0056b2f1499ad4f2a51aaf397da00a6c3bbe406c5e5feb8"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "a30213c2f1fdfcc21a6a0267276278c52bc10cc3a32a4a57e56ca28dfb14b15a"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "140398d62ea365444bfc3b6790471186edd79375c65726a44165e11e5ea3e4cc"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "e7e7771adff80ffb390969b7dac34a2eaf0210571227bb80e933b4764878f9ef"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "652790e650fb4302c7bb4023b468616ef73fe66e2548507858ca03f4c649652e"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "e249fbb0c30eea3e8b949e950273647bfc42166950ed11daed89c7b6c69e7165"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.1.nupkg",
+      "sha256": "d2668033f04da54b1d3e530ccf5019ab3640a9aafb3952f31201e05da512f6b7"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.2.nupkg",
+      "sha256": "3dd74e9955c702d6d20bb103b947090507d18228f280cc72a8f11028fa5c2778"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.3.nupkg",
+      "sha256": "ceeb41ea1ac03ebc1157bbe844c5640e6f885d131d11fe3657a58458a9e66c05"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.4.nupkg",
+      "sha256": "20cb52604c8da35279d0ca34ee9735757c98acdb6c68fa753ba69de99af836ef"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.5.nupkg",
+      "sha256": "668420de892532c162fdb6eb544529e1156ef36546be0deda3e952819907f388"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.6.nupkg",
+      "sha256": "efe9764941e75032e221f2d95456799b8f38d06fd945267e0cdd448c266e51ee"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "6df5b5a52c58a3c1f922812598da11b5af5b718f53b1be4dddd8db865b51d363"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "310f687bb4359c77d7deacf70b6a1d9b6a8b87df5ed5d3eacf8d9d5602e7bd77"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "e342d1724f4fe152267f49be0abb21dc3a9238061bfcf04e0be6de8626b8e2d5"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "835ec8986750f3a5cff0bfb097c04ea5f355b29a695dee7bd62903d2421eba59"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "80fc026525182b4eb7223ea489fa436e94661af093903636499612ff075fd77c"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "54d36d61823c2c5fa7217f47b62aeaa41bce881e494c3bd63a41047a4f9d5a02"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "be26f23d5f0a566eb4299e1829e46d07ba600974a1d5e9f048c710bbbffa63a1"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "f73223604cd11e1e3cd7de9b3730d901a14d764a254c097e62b793e0c2931918"
+    },
+    {
+      "group": "historical-archive",
+      "path": "/home/administrator/projects/hexalith/works/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261015.7.nupkg",
+      "sha256": "052becfbf1b582e7fb456a084f8b1bbc9e14aafe8b83331c366ab0f297a58b9c"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-sdk-build.log",
+      "sha256": "8ee1f651673aba372477daf4c69c66998888c7153e1b159a85274bf57273ebf5"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-sdk-all.log",
+      "sha256": "a2710453977e6b9b2f52018f522c20761c7a2fadc473f55c05d281e32b76d62a"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-security-build.log",
+      "sha256": "a857272349f2cdb6ef3fa577ac22da24d9c4cfcb584fe0f7e962b435ebc46e81"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-security.log",
+      "sha256": "4ed50358a725ac1ec77e9f418e43a93846e5bad1368953a0b6c88cbba94b0b3f"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-client-build.log",
+      "sha256": "2cdc0b8165858b36b945012768ea89c21e308b8f3fe43d8463895666fce79b0d"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-client.log",
+      "sha256": "743841d6752d70016b1ee84fb64dd5d19066d143ef1a533579ca2545b411edc5"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-pack.log",
+      "sha256": "4b925b0333dea7ebd4e7a761c3b13b1c584c373f6264ad12c8f32014e08afcb2"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-cold-consumers.log",
+      "sha256": "586de59250b565da9497cebd75257cb90504c8c2908dc8b63f58d5982739d8ec"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-works-abi.log",
+      "sha256": "f6e50b44bd2ce1a434678913d5ace83e82d8ab7c02f4b1360dc4eb1f86d37557"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-debug-build-final.log",
+      "sha256": "7593bd99b68c71ebdd48bb4a77ab0ba8d3169876cb38bded2b84186c2a1eff7f"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-debug-integration-final.log",
+      "sha256": "febe2b02ae71c91787df474c71d9cc9cdff7516071c9515b797e9b9234bfdb08"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-release-build-final.log",
+      "sha256": "5d9c53a0bad208083ef66e895630c81cda80a2a93c7fe32d2971ac28a13567d8"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-release-integration-final.log",
+      "sha256": "3d0b0b8577256f7639054bc59719a3992ab7feb3df12479e793d9520edca4338"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-UnitTests-build.log",
+      "sha256": "c862927fad431c5237bdc5ee3f6d05e576e82be437a21624408e279896190f93"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-UnitTests.log",
+      "sha256": "9b06335efe6ac5bf88f1d6af1ee76566c52dd2670f58d442876a99924563a0ce"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-PropertyTests-build.log",
+      "sha256": "a1a004228fcc1152505c4a8950a206faabdbbebef8f793d36ecdd4e0df0d25a6"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-PropertyTests.log",
+      "sha256": "049b3bee6bf43ac895708f4ca97f00f6b8f968fba679774abe8b732cb1760e2c"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-ArchitectureTests-build.log",
+      "sha256": "75c1d0b125be61a3a802829db67bfa912c2d35fe75cf9f1e29a24fc89bcd29f5"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-ArchitectureTests.log",
+      "sha256": "431a7b2873a15435ce7375d35a67c7793f8c55803ca96a66557909e7389ba9bd"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-live.log",
+      "sha256": "bbd38f805c76d931f9f701ca1d5f922ed5baa4393cd87a1e87f05e27a1a4dc62"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-restore-release-assets-final.log",
+      "sha256": "b8af9e2a9bb7978c5cbb5b474808ce25b37ce951f3d223147f9c4726560108c9"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-rollback-final.log",
+      "sha256": "19a9109acfa85c04383a9a9ad7b86d9d1400a9541311f3f7db816585e31ec321"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-final-release-build.log",
+      "sha256": "4839037f4ae3437ae83efb44fa46039f45d86123b83db6c95038e090dc254b0b"
+    },
+    {
+      "group": "results-manifest.json",
+      "path": "/tmp/story415-iteration4-final-works-abi.log",
+      "sha256": "8f73db558a950663caaa5178ea93954f1ef19ec33f4bad78fdfc73dcabd98663"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-build-debug-focused.log",
+      "sha256": "fc2e1ec9e7a16171045ccd9611e4035970c53e8b09e562d597e788c4ba872157"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-build-debug-focused2.log",
+      "sha256": "05d4cb7582356c99d51314aa5d4f6218f9433c462e1862fabe44bbcfb7007912"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-build-debug-focused3.log",
+      "sha256": "e7fcc54e4850790c59a2f1a5838e74feeb250ea47672973565ce27a5769d6dcf"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-build-debug-newregressions.log",
+      "sha256": "94f9aeda40d6d5762f42da39de9e50293916d211a839df9d64f37c40e297ffd3"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-build-debug-preliminary.log",
+      "sha256": "5da8ff0fa3713f34c83d804f4962e0bc3edaee0f0df7bf9c64b5559aade1e807"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-focused-final.log",
+      "sha256": "a81c580b17162a9c61506474e94e93dcdeae2102a7513c8f2f0227deb7776fb0"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-focused-preliminary.log",
+      "sha256": "46bda33431bc2e34205312edd50f2cb09959cafe2915c9adb7ee6042a36687ca"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-focused2-preliminary.log",
+      "sha256": "cf6fdae87fe546abe2d9b3e8afec0e60fe04869f263f3ed8e1880c28de8079de"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-debug-build.log",
+      "sha256": "9ee36b7082c35de04a26c0cc675b90da26ec98f34d996e3db4f6c6f2587ca4f7"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-debug-integration.log",
+      "sha256": "ce2f9c5978052c18119098407d368b9f249e9d5b4accd94a6d2f3e08116b478a"
+    },
+    {
+      "group": "preliminary-manifest.json",
+      "path": "/tmp/story415-iteration4-rollback.log",
+      "sha256": "773a05ad84c0723bd8b6566bd4279bc77156f05b43f9164c598e6eaf31a2d44b"
+    },
+    {
+      "group": "runtime-manifest.json",
+      "path": "/tmp/story415-iteration4-live.log",
+      "sha256": "bbd38f805c76d931f9f701ca1d5f922ed5baa4393cd87a1e87f05e27a1a4dc62"
+    },
+    {
+      "group": "runtime-manifest.json",
+      "path": "/tmp/story415-iteration4-live-state.jsonl",
+      "sha256": "563f58c415296f1dc46dcb0477997c61f616aea68d97f72d6ccd8dc6be310429"
+    },
+    {
+      "group": "runtime-manifest.json",
+      "path": "/tmp/story415-iteration4-live-resources.json",
+      "sha256": "37f04de6df4ef8d5815cab7ca86f36b74855529eeaa2fca769006cb5c96cc3dc"
+    },
+    {
+      "group": "cleanup",
+      "path": "/tmp/story415-iteration4-cleanup-apphosts.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "group": "cleanup",
+      "path": "/tmp/story415-iteration4-cleanup-containers.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "group": "graph-Debug",
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+      "sha256": "74cfe16a1fd0870037b5b6dc0c3c95ed4cd2aaf1a85daba156c62ab19b612aa8"
+    },
+    {
+      "group": "graph-Release",
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+      "sha256": "a154691111538e0484baded4921e653a7e179b247323d4c617d189a81c3dd302"
+    }
+  ]
+}

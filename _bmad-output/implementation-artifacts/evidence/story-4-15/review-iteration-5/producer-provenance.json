@@ -1,0 +1,313 @@
+{
+  "publishedBase": "3.122.0",
+  "publishedBaseSource": "1dac529c4690910c89d4090784a7d46cb9433a9d",
+  "checkedOutProducerBase": "6394d0500e6e277b8975cb397c9f0389f9a16929",
+  "selectedLocalCandidate": "3.122.0-story415.20261016.9",
+  "published": false,
+  "platformTestCandidate": "1.0.0-story414.20261014.5",
+  "partiesPublishedVersion": "1.2.1",
+  "archives": [
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "d5f274937f070ffc9f81e30abfa05142c4df505b6a5633d27694bef2d13228ab"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "feccdf78e7a6f50213ba4d84fc8c62dddab1dba5fbcc40e3b129fd76d1a5192b"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "9d590d3e41bcf57754e6ab636e34aff63464ddaaef0b6e3bd997faa5988188fa"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "b07c4a5cbdb81542df413d162003b593b84d38756c59fdeb31b81d4695375836"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "7372220e293857dd35a63b32262b770f49e8f7336dc4b7ed045ceec3d53f9eb2"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "0a2d45cbbba60949c8dbd3ea90ddc4cacd0d448dc5d3bbb6598a8749cc7e7140"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "a2a8b5460e27db85808017d6fb67417158ff4ff82a01942b01b80d0f78bbe8c3"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "b76da95a8ef788126ecc6a1d269bf0b4c69457a7fa2d4b4f7d8c7b3cc5087097"
+    },
+    {
+      "archive": ".artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261016.9.nupkg",
+      "sha256": "54cbf696d24f1a08b97619ad6c30a03b41b2b57a4e8a2c4b1ba82fefd1e0dcc3"
+    }
+  ],
+  "producerChangedFiles": [
+    {
+      "path": "docs/guides/checkpointed-processes.md",
+      "sha256": "34c7eb70fb7fdffead26e49836c5cb6fbbe3ab28674f74f722386ac2dffd3920"
+    },
+    {
+      "path": "docs/guides/trusted-effects.md",
+      "sha256": "e1fcb03362ef8c0a57f9c5f57adba65491173454ab47c782f084103bcd475762"
+    },
+    {
+      "path": "docs/guides/typed-reminders.md",
+      "sha256": "083fd525cc9fbd73424147f0e582e93d3fc2968c21b1293c8ace6be0b1161349"
+    },
+    {
+      "path": "scripts/validate-consumer-package-references.py",
+      "sha256": "2796854b9af9034290eae2a24c84e3e6391d2fa0d1a77dfa1f82b33e5fe5d37c"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Effects/TrustedEffectOriginScope.cs",
+      "sha256": "bc4b702aa3f6c4651224e0aed0ec2d0741a9e0484cb68f0168b781c24b2af0ca"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Processes/IProcessTranslator.cs",
+      "sha256": "e6205ad1e592c28f275bba120fac2840af9d08e3834ab4d7863c29d2fcc3b43b"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Processes/ProcessEvidenceUnavailableException.cs",
+      "sha256": "3ba61453f7c47cf8dc4ad4efc75558ec21aa691640b13934d56a507448927025"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Processes/ProcessSourcePage.cs",
+      "sha256": "59ee1d8bf92e7864891e0a54c7d7674a5c943800d7ece29a2473e10cbcf87d48"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Projections/SharedProjectionControlIndexReadResult.cs",
+      "sha256": "12c54fff85d725e83ffbe698b3079a27ceee628e36c924c23e49d26304a071ff"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Projections/SharedProjectionControlIndexWriter.cs",
+      "sha256": "39a3e933b476bc72e5eac1a790e7883c67403e64d457c21628f44f2c8ef38e5f"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Projections/SharedProjectionDiscoveryReadAdmission.cs",
+      "sha256": "fd85ee1733506c703fee5348e5e1d774e7753621272ca3e997ec5d09f672a702"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs",
+      "sha256": "970b36c1a8e079a0be8dde75e70e0ebbe939f60f690144fcf00b9b72072a5096"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Reminders/IReminderTargetCatalog.cs",
+      "sha256": "64bd38dd73554dbfe36b036a8a580cb74a0c26809625b7a292fd050f7088a24b"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Streams/AuthoritativeStreamReadAdmissionException.cs",
+      "sha256": "e4a1175e6a382cb89f0c646e87e2c88a0e26526796cb80ddb92912d7d3e7ca85"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Client/Streams/AuthoritativeStreamReadDeadline.cs",
+      "sha256": "cfb6e340cce168ee1db129e02baf25e306ae4f32dd60a6dedf55bf3da537d095"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Contracts/Commands/DomainServiceRequest.cs",
+      "sha256": "163bd4744b8d4ae72d5b006b288bfacf00ea3912bc827fb84f547ed134220f65"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Contracts/Effects/TrustedEffectOrigin.cs",
+      "sha256": "f474352c15b36c974a45fc0f7da441ad3787d14a6a83e12c1bf2e90cdf611f38"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Contracts/Reminders/ReminderIntent.cs",
+      "sha256": "b6b609c6e2a1a9e722c483325acdfdeae74bd3981c562b6cbc7560cb39675186"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs",
+      "sha256": "7396aa38b66579a2285e478c624d768d8b1ab14cbb82f73f3f7e581c3dc8ea35"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/DomainServiceRequestRouter.cs",
+      "sha256": "66c3fe402f1ffad2a021a43109cdf085f437cf3bdce0d1f63ffb6132062011e9"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/DomainServiceTrustedEffectAuditUnavailableException.cs",
+      "sha256": "f66cddbfa8f70b03fd8935c07047788ce504793e02f09909b6cb36d2a7646522"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/DomainServiceTrustedEffectOrigin.cs",
+      "sha256": "58da2692510e56d92c43eaebff94b456ed06e65382c5d8d3837198f669ea8c08"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/EventStoreDomainServiceExtensions.cs",
+      "sha256": "bb47f5f79c0a810433a1a1153889616b0615c9b8ef0f599991985888bcf7e64a"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs",
+      "sha256": "fffca79129520b50047c8a7ae023c9797947a314bbd3315c27bba48b933e5bf0"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/EventStoreReminderOptions.cs",
+      "sha256": "68f9db51f809db8438446542c26ce84a5d975307e6f0e9ece4eddd8121a3fcf8"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ProcessEnvelopePlan.cs",
+      "sha256": "d4f6a48eb171897a87a787cb142cd2ec7d8b82f656601b37a5dd533884ee0831"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ProcessReadDeadline.cs",
+      "sha256": "51434307ddcc0241e3f19e8e3194947910a487a6f2df2885b5a1658cfd7655fb"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ProcessReconciler.cs",
+      "sha256": "f37c2bf82bd3e550120112c4943837c76f7cb6b290f3796e1f7830130e153473"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ProcessSourceState.cs",
+      "sha256": "75ad18506a9df62fc4c375138b12d6ed5d85890a8b3160d3af61fb34c3c7722b"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderCatalogDiscoveryState.cs",
+      "sha256": "c909322e334e7bd913d952ce24bf0f60a947f9a140b8bcb7f28e68d2d9b047ff"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs",
+      "sha256": "63c735e862a856349aa312a052c3962fd9339ba3384c92f90c4322ccc4d9a908"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderEntry.cs",
+      "sha256": "95d0b96aa99e7604ef6088806a1be24659f3ff57994501d04ca6114052c6052c"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderIntentIndex.cs",
+      "sha256": "81b9299db7458fb7f4bfd67538135684e8ea7790cc0e42de673733107a4b7fd7"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderReadinessHealthCheck.cs",
+      "sha256": "f6a4790fd676ad250bb62ecd312f329a72b4b03c8e398107414b657e02c9665d"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderReconciler.cs",
+      "sha256": "efc7aade0063725f066b88c4c184051bd5213847db974f541dfebeccee34ac17"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderRuntimeSnapshot.cs",
+      "sha256": "7c0515f13437f9a1208fada8d6897db0b5753611f7c81a8aa106af72b105a6a1"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/ReminderRuntimeStatus.cs",
+      "sha256": "5f1aa0b0c4cb699d54d541743e81706de815b5c4c3a9fba398bbf29622f24941"
+    },
+    {
+      "path": "src/Hexalith.EventStore.DomainService/TrustedEffectOriginDenialRecord.cs",
+      "sha256": "c0e889819cf6161358154f2b378c1189f104df597545e42223c62ff15cf9dda2"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Server/Actors/AggregateActor.cs",
+      "sha256": "49b627d780b594b37f07eafc5a8cdada1165e74a134465aa0e31502f5fb07586"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Server/DomainServices/DaprDomainServiceInvoker.cs",
+      "sha256": "bceb21a64e6ab2cbb1cdef8bd7174ecbcd7c828da30230009ea35a4901bcdbf7"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Server/DomainServices/IDomainServiceInvoker.cs",
+      "sha256": "f1d0249801952d703ac52d1a265c6efaf5cf38ffc1b7d82e133bea4895bc604b"
+    },
+    {
+      "path": "src/Hexalith.EventStore.Testing/Fakes/FakeDomainServiceInvoker.cs",
+      "sha256": "dd730e533da1c7216a3352cc005eb8f8e14ae79d3306205637e8ce0448af21e5"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Client.Tests/Projections/SharedProjectionControlIndexTests.cs",
+      "sha256": "12732726bda0ea360dc6b3928defa858b13ea79c5b07e0950effc411326a9ba2"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/DomainModuleAuthoringGuardrailTests.cs",
+      "sha256": "ec12cda35f4b1e2d692d163ac5379cc5af37d2bcb560883c83b1d58ef2d071e6"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/DomainServiceTrustBoundaryTests.cs",
+      "sha256": "d8f38378c7f8de28d2061ea2d9b64bae691253695ade6cd751ba86ff3d9d5da9"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/EventStoreReminderCompositionTests.cs",
+      "sha256": "e1bc78d0feb96e491240ed70889afcc29242bebf43e728c1ff59d0ec889a3875"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Fixtures/DispositionFailingReadModelStore.cs",
+      "sha256": "b47bde40bd005b59800a3ac002cd3b56c7bd153d5b3fd516d8cf35045b24833c"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/CheckpointedProcessRunnerTests.cs",
+      "sha256": "b563d06a2150fcb8e50e3047c24baa569ebafa7637692154473e0af3dd91b180"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessEvidenceUnavailableTests.cs",
+      "sha256": "f472e5bb771b8133edf0610dfd95eb4732f7537fee152b736a8c509afb7cae8a"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessPublicationTests.cs",
+      "sha256": "db618c733f3889af83ff88bf737d28978bd132ca2ab3282b35f113f101e699f2"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessRecoveryTests.cs",
+      "sha256": "f8c51399fde91f0a890e7630e69cd44212083307b7da5549d9a74b985991ef7c"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessRunnerEdgeTests.cs",
+      "sha256": "2260537c98b55958a672f41e5cf0411e445902e76dc3671a0f40a56588cee8ca"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/Processes/ProcessSweepRenewalTests.cs",
+      "sha256": "e9fbf5d345b6ab990c237959dc464b2b7680ef18270e90cec7018b5b959537f8"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderCoordinatorTests.cs",
+      "sha256": "287eb216d340624f9737f573995335e9864510ab0f5528aba92af124709c24d2"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderDiagnosticsTests.cs",
+      "sha256": "a9dc5f1f8e38fdff3d7e1a0d8aca68310f1943775f1a7ea8ec5e2d20da8d864c"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderDiscoveryOwnershipTests.cs",
+      "sha256": "0fba831c018f40a140d727484dc1a0a3dcb2221ec8dc67b6cd9ec7a38f9d2f9c"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderEvidenceFramingTests.cs",
+      "sha256": "0babf9dcd7f3be9c8efb1e2611a1d7bb63045a61ebd0296f6fbbb53da8ce8405"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderOrdinalTests.cs",
+      "sha256": "0223d98788dd02df8be8b7c157656417c852dc2c5d2c1d7b573e4a7b4f440260"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderReconcilerTests.cs",
+      "sha256": "f91996d4487815ca545861c910edce93519ef71482f4810949c80066cd98d888"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/ReminderTargetCatalogTests.cs",
+      "sha256": "04a11b0abfeb2f3522c5cb92f1181876cae6e351a1c59a5c5a70d5c9a7392875"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/TrustedEffectOriginTests.cs",
+      "sha256": "adb80aba83431380148d5e02d40aa02b26fb90f3da87de3aaad94412c8ed3d7f"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.DomainService.Tests/VersionedProjectionDispatchTests.cs",
+      "sha256": "4c48ade3284c9d04eb3a393c1dbb9bbbadce447670b88d0b3a884a98b8050469"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Server.Tests/Actors/AggregateActorFoldedSnapshotMigrationTests.cs",
+      "sha256": "52e6432f8e46de165123f6f5fc310b9196d16da5c67467f0fec586f4ef9c781a"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Server.Tests/Actors/AggregateActorTestHelper.cs",
+      "sha256": "67a1dedd0a16447a38ad492afdf469323d45ee361e817136f71dd0cc707c4468"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectJointOffboardingTests.cs",
+      "sha256": "19af364744d109bb0c08bccfb08bd690eba52eb9bcc5f8c1f7ad6c66a02b81d5"
+    },
+    {
+      "path": "tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs",
+      "sha256": "dfe052b38b353537c5e6184dbd17ebc7d03dec8c3bf2ff97a21d1224215a2741"
+    }
+  ]
+}

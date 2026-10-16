@@ -1,0 +1,102 @@
+[
+  {
+    "name": "sdk-domainservice",
+    "sourceLog": "/tmp/story415-sdk-domainservice-framing.log",
+    "sourceSha256": "8c207d32ba76d00b836771ae78da399ec36747964bcd7cbb47ff705cfd51a221",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/sdk-domainservice.txt"
+  },
+  {
+    "name": "sdk-trusted-effects",
+    "sourceLog": "/tmp/story415-sdk-target-final.log",
+    "sourceSha256": "d7d6b1a8858e78b4b6f63e29c9c71c481cd28e656a9736c0887d31ef43b38670",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/sdk-trusted-effects.txt"
+  },
+  {
+    "name": "works-unit",
+    "sourceLog": "/tmp/story415-unit-final.log",
+    "sourceSha256": "7ccca542ad0a262bac2eb0c2576440ceb9c508b194536010b5ae0049ea0b4cf2",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-unit.txt"
+  },
+  {
+    "name": "works-property",
+    "sourceLog": "/tmp/story415-property-final2.log",
+    "sourceSha256": "0a96e62da389f22b5e027045a94926370b81ab895d82091de2a8d8e6798a6d93",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-property.txt"
+  },
+  {
+    "name": "works-architecture",
+    "sourceLog": "/tmp/story415-architecture-final2.log",
+    "sourceSha256": "250303ed227cefcc740b97ba011bdf83ada7f163b41c660d7386bd9a7c6100ac",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-architecture.txt"
+  },
+  {
+    "name": "works-sdk-live",
+    "sourceLog": "/tmp/story415-live-sdk-framing.log",
+    "sourceSha256": "1563ca919b574eddfe2c0b27529964a6e7bccecb0d5349df9360534645b08190",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-sdk-live.txt"
+  },
+  {
+    "name": "complete-store-rollback",
+    "sourceLog": "/tmp/story415-rollback-final.log",
+    "sourceSha256": "911a358779414825dbabfdec6d066e8b262f5e190e46718b706234d7109f69f8",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/complete-store-rollback.txt"
+  },
+  {
+    "name": "package-consumers",
+    "sourceLog": "/tmp/story415-package-framing.log",
+    "sourceSha256": "52efede1133c7c15bdfc126630419bf239811ce90c7d2cac7e6d7b13bfd7f11d",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/package-consumers.txt"
+  },
+  {
+    "name": "legacy-live-blocker",
+    "sourceLog": "/tmp/story415-live-legacy.log",
+    "sourceSha256": "d046224203b513fb804da9dcb22bdddde0b8383177649f7ca59ab62c91708d51",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/legacy-live-blocker.txt"
+  },
+  {
+    "name": "works-integration-debug",
+    "sourceLog": "/tmp/story415-integration-framing.log",
+    "sourceSha256": "ffcfb98d44d19dfff3afceea857b6d83b9d0b447f6729733f4e52ce06d393bda",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-integration-debug.txt"
+  },
+  {
+    "name": "works-integration-release",
+    "sourceLog": "/tmp/story415-release-framing.log",
+    "sourceSha256": "2aa28d20d0a0eacb2ed2bbb02ff405d0721ad2b6981ac88701a24c224e60b5c8",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/works-integration-release.txt"
+  },
+  {
+    "name": "legacy-live-isolated",
+    "sourceLog": "/tmp/story415-legacy-isolated.log",
+    "sourceSha256": "25d8b2be40cd9182f11ce1ea08bb0e05f229e71217aa2a7c0252cb9721c50097",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/legacy-live-isolated.txt"
+  },
+  {
+    "name": "sdk-evidence-framing-red",
+    "sourceLog": "/tmp/story415-sdk-framing-red.log",
+    "sourceSha256": "634a8be2474f5221c46f232d53ff35897e89a1d14a66418174a624b285aca308",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/sdk-evidence-framing-red.txt",
+    "interpretation": "Expected pre-correction failures: both ambiguous pairs collapse evidence."
+  },
+  {
+    "name": "sdk-evidence-framing-historical",
+    "sourceLog": "/tmp/story415-sdk-framing-baseline.log",
+    "sourceSha256": "18f3ad65809d82c0e8ff09b13f8769e84016f48534798f27c496630abce34582",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/sdk-evidence-framing-historical.txt",
+    "interpretation": "Pre-correction historical zero/null digest goldens."
+  },
+  {
+    "name": "sdk-evidence-framing",
+    "sourceLog": "/tmp/story415-sdk-framing.log",
+    "sourceSha256": "3a70fc55238741397a27f50c37b417ea9dd9e16129d0c08d0a90b1308e156389",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/sdk-evidence-framing.txt",
+    "interpretation": "Final corrected runtime: ambiguous pairs remain distinct; historical hashes unchanged."
+  },
+  {
+    "name": "works-sdk-persisted-state",
+    "sourceLog": "/tmp/story415-live-sdk-framing-state.jsonl",
+    "sourceSha256": "97dbbe2f6428491de4b91fe89145b4b0cde51a8e3c6bc2a01087b70370de2d57",
+    "sanitizedResult": "_bmad-output/implementation-artifacts/evidence/story-4-15/verification/persisted-states.json",
+    "interpretation": "Allowlisted durable checkpoint coordinates and receipt bindings; no payload, lease, fence, token, key or environment data retained."
+  }
+]

@@ -2,7 +2,7 @@
 title: 'Migrate Works Hosting to the Platform Boundary'
 type: 'feature'
 created: '2026-09-22'
-status: 'ready-for-dev'
+status: 'in-progress'
 baseline_commit: '18e94d388ab0abd8be363b361d0b2fee762359e7'
 route: 'dispatch'
 review_loop_iteration: 0
@@ -62,7 +62,9 @@ context:
 
 ## Implementation Notes
 
-Cutover gate remains open as of 2026-09-26: Story 4.10 is done, Story 4.13 is in progress, and Stories 4.11, 4.12, and 4.14–4.16 remain in backlog. Platform has no `eng/verify-works-host.sh`, so the AD-20 R1–R11 parity and rollback gate cannot run. Retain Works hosting until these prerequisites are accepted. See the [2026-09-23 evidence archive](story-4-9-pre-cutover-evidence.md) for the earlier partial implementation and checks.
+Cutover is blocked as of 2026-10-15. Sprint tracking marks Stories 4.10–4.14 done, but Stories 4.15 and 4.16 remain in backlog; both prerequisite specs are still draft with every execution task unchecked. The required `/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh` is absent, as is `references/Hexalith.Platform/eng/verify-works-host.sh` in the root-declared Platform checkout. The AD-20 R1–R11 parity and rollback gate therefore cannot run, and the prerequisite acceptance requirement is unsatisfied.
+
+The frozen migration gate requires retaining the Works host in this state. No cutover or host removal was performed. The executable composition, AppHost, ServiceDefaults, solution registrations, Aspire configuration, SDK pins, integration dependencies, and existing transitional-host fitness assertions remain unchanged. All execution tasks remain open. Resume this story after 4.15 and 4.16 are accepted and the complete Platform producer/consumer, persisted-state, security, rebuild-through-Commit, restart/redelivery, and rollback evidence is available. See the [2026-09-23 evidence archive](story-4-9-pre-cutover-evidence.md) for historical partial implementation and checks.
 
 ## Spec Change Log
 
@@ -71,6 +73,15 @@ Cutover gate remains open as of 2026-09-26: Story 4.10 is done, Story 4.13 is in
 ## Review Triage Log
 
 ## Verification
+
+**2026-10-15 prerequisite audit:**
+
+- `rg -n '^  4-(9|10|11|12|13|14|15|16)-' _bmad-output/implementation-artifacts/sprint-status.yaml` — exit 0; 4.10–4.14 are `done`, 4.15–4.16 are `backlog`, and 4.9 remains `in-progress`.
+- `rg -n '^status:|^- \[[ x]\]' _bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md _bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md` — exit 0; both specs are `draft` with all execution tasks unchecked.
+- `/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh` — exit 127: `/bin/bash: line 1: /home/administrator/projects/hexalith/platform/eng/verify-works-host.sh: No such file or directory`.
+- `references/Hexalith.Platform/eng/verify-works-host.sh` — exit 127: `/bin/bash: line 1: references/Hexalith.Platform/eng/verify-works-host.sh: No such file or directory`.
+
+No cutover checks or live parity lanes ran: the prerequisite gate failed before implementation. The commands below remain required after cutover; no passing result is claimed for this attempt.
 
 **Commands:**
 - `dotnet restore Hexalith.Works.slnx -p:Configuration=Debug -p:UseHexalithProjectReferences=true -m:1` and `dotnet build Hexalith.Works.slnx -c Debug --no-restore -p:UseHexalithProjectReferences=true -m:1` — local source-backed build after cutover.

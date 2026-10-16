@@ -1,3 +1,13 @@
+using System.Security.Cryptography;
+using Hexalith.EventStore.Client.Processes;
+using Hexalith.EventStore.Contracts.Commands;
+using Hexalith.EventStore.Contracts.Effects;
+using Hexalith.EventStore.Contracts.Reminders;
+using Hexalith.EventStore.Contracts.Results;
+using Hexalith.EventStore.DomainService;
+using Hexalith.Works.Contracts.Commands;
+using Hexalith.Works.Contracts.State;
+using Hexalith.Works.Recovery;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -647,6 +657,112 @@ public sealed class WorksSdkProtectedHttpTests
         }
 
         return request;
+    }
+
+    [Theory]
+    [InlineData("scheduled")]
+    [InlineData("cascade")]
+    [InlineData("stale")]
+    [InlineData("missing-origin")]
+    [InlineData("audit-outage")]
+    [InlineData("purpose")]
+    [InlineData("workload")]
+    [InlineData("kind")]
+    [InlineData("digest")]
+    [InlineData("target")]
+    [InlineData("caller")]
+    public async Task ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(string scenario)
+    {
+        var store = new InMemoryReadModelStore();
+        await using WebApplication app = BuildProtectedHost(scenario == "audit-outage" ? new OriginAuditUnavailableReadModelStore(store) : store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId("expiry-origin");
+        DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
+        WorkItemExpirySchedule Witness(long revision) => new(due,
+            ReminderIdentityCodec.ComputeScheduleToken(Tenant, item.Value, due, revision), revision);
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("origin proof"), Expiry: Witness(2)));
+        var command = new ExpireWorkItem(tenant, item, scenario == "cascade" ? null : Witness(scenario == "stale" ? 1 : 2));
+        byte[] payload = JsonSerializer.SerializeToUtf8Bytes(command);
+        string kind = scenario == "cascade" ? EffectKindCatalog.CascadeExpire : scenario == "kind" ? EffectKindCatalog.DateResume : EffectKindCatalog.Expiry;
+        var identity = new EffectIdentity(Tenant, "work", "source-origin", 9, kind, "work", item.Value, 0);
+        string message = EffectIdentityCodec.ComputeMessageId(identity);
+        string workload = scenario == "workload" ? "other-worker" : "works";
+        var envelope = new CommandEnvelope(message, Tenant, "work", item.Value, nameof(ExpireWorkItem),
+            payload, message, "committed-source", workload, new() { ["trusted-purpose"] = "works.cascade-expire" });
+        var request = new DomainServiceRequest(envelope, state)
+        {
+            TrustedEffectOrigin = scenario == "missing-origin" ? null : new TrustedEffectOrigin(identity, workload,
+                scenario is "purpose" or "audit-outage" ? "wrong-purpose" : WorksEffectPurposes.ForKind(kind), "committed-source", nameof(ExpireWorkItem),
+                EffectIdentityCodec.RenderDigest(SHA256.HashData(payload))),
+        };
+        if (scenario == "digest") request = request with { Command = envelope with { Payload = [123] } };
+        if (scenario == "target") request = request with { Command = envelope with { AggregateId = "foreign-target" } };
+        using HttpResponseMessage response = await client.SendAsync(Request("/process", request, channel: true,
+            assertion: Assertion("domain-service:process", scenario == "caller" ? "foreign-caller" : "eventstore")),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        if (scenario is "scheduled" or "cascade" or "stale")
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            DomainServiceWireResult result = (await response.Content.ReadFromJsonAsync<DomainServiceWireResult>(
+                cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true))!;
+            result.IsRejection.ShouldBe(scenario == "stale");
+            result.Events.Any(value => value.EventTypeName.EndsWith(nameof(WorkItemExpired), StringComparison.Ordinal)).ShouldBe(scenario != "stale");
+        }
+        else if (scenario == "audit-outage")
+        {
+            response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
+            response.Headers.RetryAfter!.Delta.ShouldBe(TimeSpan.FromSeconds(1));
+            (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+            store.Snapshot<object>("statestore", "eventstore:trusted-effect-origin:v1:denials").ShouldBeNull();
+        }
+        else
+        {
+            response.StatusCode.ShouldBe(scenario == "caller" ? HttpStatusCode.Unauthorized : HttpStatusCode.Forbidden);
+            if (scenario != "caller")
+            {
+                (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+                Dictionary<string, JsonElement> audit = store.Snapshot<Dictionary<string, JsonElement>>("statestore", "eventstore:trusted-effect-origin:v1:denials")!;
+                audit.ShouldNotBeNull()["count"].GetInt64().ShouldBe(1);
+                audit["reasonCode"].GetString().ShouldBe(scenario is "purpose" or "workload" or "kind" or "missing-origin"
+                    ? "adapter-authorization-denied" : "origin-binding-denied");
+                string safe = JsonSerializer.Serialize(audit);
+                safe.ShouldNotContain("committed-source");
+                safe.ShouldNotContain("expiry-origin");
+                safe.ShouldNotContain(SigningKey);
+            }
+        }
+        state.Status.ShouldBe(WorkItemStatus.Created);
+    }
+
+    [Fact]
+    public async Task ProcessDispositionIngressRequiresProtectedTransportAndCurrentAuthority()
+    {
+        var store = new InMemoryReadModelStore();
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        var source = new ProcessSource(Tenant, "work", "existing-source");
+        ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
+        await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+        (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+        foreach ((bool channel, string? assertion, HttpStatusCode status) in new[]
+        {
+            (false, (string?)null, HttpStatusCode.Unauthorized),
+            (true, Assertion("domain-service:query"), HttpStatusCode.Forbidden),
+            (true, Assertion("domain-service:process"), HttpStatusCode.Forbidden),
+        })
+        {
+            using HttpResponseMessage denied = await client.SendAsync(Request("/work/processes/revalidate",
+                new WorksProcessDispositionRequest(source, "synthetic revalidation"), channel, assertion),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            denied.StatusCode.ShouldBe(status);
+            (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+        }
     }
 
     private static WebApplication BuildProtectedHost(IReadModelStore store, string partiesAddress,
