@@ -288,7 +288,7 @@ public sealed class WorksSdkRecoveryCompositionTests
             source.Tenant, "UnknownWorksFact", 2, DateTimeOffset.UnixEpoch, "synthetic-correlation", "json", [123])
             { Domain = invalidMetadata ? "foreign" : "work" };
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(envelope, TestContext.Current.CancellationToken);
-        result.ShouldBe(invalidMetadata ? EventStoreDomainEventProcessingResult.RetryableInProgress : EventStoreDomainEventProcessingResult.Processed);
+        result.ShouldBe(invalidMetadata ? EventStoreDomainEventProcessingResult.FailedInvalidPayload : EventStoreDomainEventProcessingResult.Processed);
         (await checkpoints.GetAsync(source, TestContext.Current.CancellationToken)).ShouldBe(before);
         markers.ReceivedCalls().ShouldBeEmpty();
     }

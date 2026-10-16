@@ -738,6 +738,86 @@ public sealed class WorksSdkProtectedHttpTests
         state.Status.ShouldBe(WorkItemStatus.Created);
     }
 
+    [Theory]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.OK, false)]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false)]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.OK, true)]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false)]
+    public async Task DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(
+        string commandType, string kind, bool withWitness, HttpStatusCode expectedStatus, bool expectedRejection)
+    {
+        var store = new InMemoryReadModelStore();
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId("origin-matrix");
+        DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
+        var witness = new WorkItemExpirySchedule(due, ReminderIdentityCodec.ComputeScheduleToken(Tenant, item.Value, due, 2), 2);
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("matrix proof")));
+        byte[] payload = commandType switch
+        {
+            nameof(CancelWorkItem) => JsonSerializer.SerializeToUtf8Bytes(new CancelWorkItem(tenant, item)),
+            nameof(ResumeWorkItem) => JsonSerializer.SerializeToUtf8Bytes(new ResumeWorkItem(tenant, item)),
+            _ => JsonSerializer.SerializeToUtf8Bytes(new ExpireWorkItem(tenant, item, withWitness ? witness : null)),
+        };
+        var identity = new EffectIdentity(Tenant, "work", "source-matrix", 9, kind, "work", item.Value, 0);
+        string message = EffectIdentityCodec.ComputeMessageId(identity);
+        var envelope = new CommandEnvelope(message, Tenant, "work", item.Value, commandType,
+            payload, message, "committed-source", "works", new() { ["trusted-purpose"] = WorksEffectPurposes.ForKind(kind) });
+        var request = new DomainServiceRequest(envelope, state)
+        {
+            TrustedEffectOrigin = new TrustedEffectOrigin(identity, "works", WorksEffectPurposes.ForKind(kind), "committed-source",
+                commandType, EffectIdentityCodec.RenderDigest(SHA256.HashData(payload))),
+        };
+        using HttpResponseMessage response = await client.SendAsync(Request("/process", request, channel: true,
+            assertion: Assertion("domain-service:process", "eventstore")), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        response.StatusCode.ShouldBe(expectedStatus);
+        if (expectedStatus == HttpStatusCode.OK)
+        {
+            DomainServiceWireResult result = (await response.Content.ReadFromJsonAsync<DomainServiceWireResult>(
+                cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true))!;
+            result.IsRejection.ShouldBe(expectedRejection);
+            result.Events.Any(value => value.EventTypeName.EndsWith(nameof(WorkItemCancelled), StringComparison.Ordinal))
+                .ShouldBe(commandType == nameof(CancelWorkItem));
+        }
+        else
+        {
+            (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+        }
+
+        state.Status.ShouldBe(WorkItemStatus.Created);
+    }
+
+    /// <summary>An expiry-bearing create or reschedule must address the stream its envelope names.</summary>
+    [Theory]
+    [InlineData(nameof(CreateWorkItem), "tenant")]
+    [InlineData(nameof(CreateWorkItem), "domain")]
+    [InlineData(nameof(CreateWorkItem), "aggregate")]
+    [InlineData(nameof(RescheduleWorkItem), "tenant")]
+    [InlineData(nameof(RescheduleWorkItem), "domain")]
+    [InlineData(nameof(RescheduleWorkItem), "aggregate")]
+    public void WitnessedCreateAndRescheduleRejectForeignEnvelopeAddress(string commandType, string foreign)
+    {
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId("address-matrix");
+        DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
+        var witness = new WorkItemExpirySchedule(due, ReminderIdentityCodec.ComputeScheduleToken(Tenant, item.Value, due, 1), 1);
+        CommandEnvelope envelope = new("01ARZ3NDEKTSV4RRFFQ69G5FAV", foreign == "tenant" ? "foreign-tenant" : Tenant,
+            foreign == "domain" ? "foreign" : "work", foreign == "aggregate" ? "foreign-item" : item.Value, commandType,
+            [123], "01ARZ3NDEKTSV4RRFFQ69G5FAV", null, "test-user", null);
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("address proof")));
+
+        _ = Should.Throw<InvalidOperationException>(() => commandType == nameof(CreateWorkItem)
+            ? WorkItemEventStoreAggregate.Handle(new CreateWorkItem(tenant, item, "address proof", Expiry: witness), null, envelope)
+            : WorkItemEventStoreAggregate.Handle(new RescheduleWorkItem(tenant, item, new WorkItemSchedule(), Expiry: witness), state, envelope));
+    }
+
     [Fact]
     public async Task ProcessDispositionIngressRequiresProtectedTransportAndCurrentAuthority()
     {

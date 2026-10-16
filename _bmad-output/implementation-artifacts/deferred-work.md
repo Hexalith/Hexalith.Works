@@ -1446,3 +1446,15 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Pre-existing shared control-index read validation accepts persisted registries exceeding writer tenant, receipt or byte bounds (medium).
   evidence: Iteration 5 BH5-7; unchanged SharedProjectionControlIndexWriter.ValidateState in SDK baseline 6394d0500e6e277b8975cb397c9f0389f9a16929 omits the writer's 64-tenant, 256-receipt and 32-KiB ceilings. Verify over-limit corruption is rejected by strict and partial readers before tenant acquisition, preserving valid historical indexes and offboarding.
+
+## Deferred from: code review of spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works (2026-10-16, chunk A)
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: ReminderConvergenceResult is discarded by WorksDomainEventProcessor before returning Processed (medium, unverified).
+  evidence: Settle by reading SDK IReminderRegistrar.ConvergeAsync/ReminderConvergenceResult: if it can report incomplete without throwing, return RetryableInProgress.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: ValidateWitnessAddress compares envelope.TenantId ordinally while IsValidFor lowercases the tenant (medium, unverified).
+  evidence: Settle by checking whether the gateway already normalizes envelope tenant case.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: WorksReminderIntentSource validates only the final expiry witness (medium, unverified). RESOLVED in chunk B review 2026-10-16: WorksSourceStreamReader applies WorksExpiryEvidence to every committed envelope, so the claim holds.
+  evidence: Settle by confirming WorksSourceStreamReader (chunk B) validates every encountered witness before later history replaces it.

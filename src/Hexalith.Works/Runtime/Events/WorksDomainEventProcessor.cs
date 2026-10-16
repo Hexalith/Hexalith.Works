@@ -45,9 +45,26 @@ internal sealed class WorksDomainEventProcessor
         {
             if (sdkScope.ServiceProvider.GetService<IOptions<WorksRecoveryOptions>>()?.Value.UseSdkRuntime == true)
             {
-                if (envelope.Domain != "work" || !ValidateEnvelopeAfterAcquisition(envelope)
-                    || WorksReadModelKeys.IsReservedTenantId(envelope.TenantId))
-                    return EventStoreDomainEventProcessingResult.RetryableInProgress;
+                // Permanently invalid deliveries are terminal, as in the legacy path. The SDK branch touches no marker
+                // or checkpoint here, and periodic reconciliation refolds from the canonical stream, so nothing is lost.
+                if (envelope.Domain != "work")
+                {
+                    WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-domain");
+                    return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+                }
+
+                if (!ValidateEnvelopeAfterAcquisition(envelope))
+                {
+                    WorksDomainEventLog.InvalidEnvelope(_logger, "invalid-envelope-metadata");
+                    return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+                }
+
+                if (WorksReadModelKeys.IsReservedTenantId(envelope.TenantId))
+                {
+                    WorksDomainEventLog.ReservedTenant(_logger, envelope.MessageId, "reserved-tenant-id");
+                    return EventStoreDomainEventProcessingResult.FailedInvalidPayload;
+                }
+
                 var source = new ProcessSource(envelope.TenantId, "work", envelope.AggregateId);
                 source.Validate();
                 await sdkScope.ServiceProvider.GetRequiredService<ProcessCheckpointStore>()

@@ -212,3 +212,42 @@ Iteration 5 resolution: all eight direct patches were audited against the source
 - Start/inspect the unchanged AppHost before code changes using Aspire orchestration guidance.
 - Build Debug source and Release package consumers; run test projects individually, using built xUnit assemblies with single-dash filters for focused checks.
 - Extend enabled Redis/Dapr reminder/cascade fixtures; assert persisted witnesses, receipts, checkpoints, quarantine/readiness across restart, lost firing, replay and negative security. Record exact commands/results and broad blockers separately.
+
+### Review Findings
+
+Code review 2026-10-16, chunk A (Contracts, Server aggregate, WorkItemEventStoreAggregate, Runtime, Reminders, props, docs). Diff snapshot base 8679d7d (work since committed as c6ef556). Chunks B (Recovery/*), C and D (tests) not yet reviewed.
+
+- [x] [Review][Decision] (resolved: option b, terminal FailedInvalidPayload + legacy log) SDK-branch delivery returns RetryableInProgress for foreign-domain / invalid-metadata / reserved-tenant envelopes — legacy path acks these as FailedInvalidPayload terminal skips; SDK path redelivers a permanently malformed envelope forever with no log or durable evidence. WorksRecoveryCompositionTests.MalformedDeliveryCannotEraseSdkUnresolvedState asserts the retry, so it may be deliberate. Options: (a) keep retry, add a log + bounded retry/parking; (b) return FailedInvalidPayload with the legacy log (safe because the SDK branch never marks completion/erases state). [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:42-45] (medium; blind-hunter+edge-case-hunter+acceptance-auditor+verification-gap)
+- [x] [Review][Patch] No deterministic test pins the six-record ABI-preservation guarantee (legacy constructors + Deconstruct arity; no Expiry/ExpiryWitness property when null); only the unwired scripts/verify-story415-works-contract-abi.sh checks it [src/Hexalith.Works.Contracts/Commands/*.cs, Events/*.cs] (medium; verification-gap)
+- [x] [Review][Patch] Authenticated-origin matrix untested outside the skip-gated live lane: Resume/Cancel origin cells, CascadeExpire with witness (must reject), Expiry origin with null witness (must throw), Create/Reschedule with Expiry and foreign tenant/aggregate/domain envelope [src/Hexalith.Works/WorkItemEventStoreAggregate.cs:139-207] (medium; verification-gap)
+- [x] [Review][Patch] Line-ending churn: docs/boundary-decision-record.md is now mixed CRLF/LF (374+/359- vs 15 real additions) and WorksRecoveryOptions.cs is rewritten (76+/67- vs 9 real additions); restore the original CRLF endings [docs/boundary-decision-record.md, src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs] (low; blind-hunter+acceptance-auditor)
+- [x] [Review][Patch] Boundary decision record is internally contradictory: the 4.14 section still names pin 3.120.1-story414.20261014.10 while Directory.Packages.props and the 4.15 sections pin 3.122.0-story415.20261016.9 [docs/boundary-decision-record.md] (low; blind-hunter+acceptance-auditor)
+- [x] [Review][Defer] ReminderConvergenceResult discarded before returning Processed [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:49] — deferred: unverified (medium if true); settle by reading ReminderConvergenceResult / ConvergeAsync in the SDK to see whether it can report incomplete without throwing
+- [x] [Review][Defer] Envelope tenant compared ordinally in ValidateWitnessAddress while IsValidFor and the reserved-tenant check lowercase [src/Hexalith.Works/WorkItemEventStoreAggregate.cs:168] — deferred: unverified (medium if true); settle by checking whether the gateway normalizes envelope.TenantId to the command tenant's case
+- [x] [Review][Defer] WorksReminderIntentSource validates only the final expiry witness; docs claim every encountered witness is validated [src/Hexalith.Works/Reminders/WorksReminderIntentSource.cs] — deferred: unverified (medium if true); settle by confirming WorksSourceStreamReader (chunk B) validates intermediate witnesses
+
+#### Rejected
+
+- false: "SDK mode never maps actor handlers" — the SDK XML doc says a host maps them only if it wants to itself; UseEventStoreDomainService/AddEventStoreReminders maps them by default and double-mapping makes routes ambiguous (WorksHost.cs:219 deliberately skips).
+- false: "Apply drops the witness on a null-Expiry reschedule" — the command path rejects witness-dropping, so replay of own events cannot hit it (WorkItemState.cs:211).
+- false: "witnessless Expire on terminal item should be NoOp" — a scheduled expiry always carries its witness; a witnessless one against an item holding Expiry is a bypass attempt and rejection is intended (WorkItemAggregate.cs:476-479).
+- false: reschedule with null Expiry rejected is a defect — intended by IsValidReplacement (witness may only be replaced by a higher revision).
+- low/rejected: ValidateWitnessAddress throws InvalidOperationException instead of UnauthorizedAccessException (forged-body only, no mutation; iteration 3/4 triage rejected malformed authenticated-origin cases).
+- low/rejected: Instant!.Value null, null-guard variants, duplicate-correlation ordering, redundant ValidateWitnessAddress, braceless ifs, keyed-descriptor ImplementationType, composition-guard depth, eager gateway-URI resolution, options/config dual source, empty-string profile overrides, version literal in two props files, missing-feed NU1102 hint, NU1010 guard, ADOPTION doc config table — cosmetic or unlikely, fix adds guards/complexity.
+
+#### Chunk B review (Recovery/*), 2026-10-16
+
+Diff 8679d7d..c6ef556 for src/Hexalith.Works/Recovery (581 lines). Chunks C and D (tests) not yet reviewed.
+
+- [ ] [Review][Patch] Default-deny disposition authority is not verified end to end: the existing hosted test sends no bearer, so ProcessDispositionService throws at its unauthenticated check before WorksProcessDispositionAuthorizer runs; neither WorksProcessDispositionAuthorizer (always false) nor WorksProcessDispositionAuditSink (always throws) is referenced by any test. Add tests that the real classes deny/fail closed, plus a hosted authenticated request asserting 403 and unchanged ProcessSourceState [src/Hexalith.Works/Recovery/WorksProcessDispositionAuthorizer.cs, WorksProcessDispositionAuditSink.cs] (medium; verification-gap)
+- [ ] [Review][Patch] WorksProcessDelegationProvider fail-closed branches (null authority, blank token, unknown kind) and the WorksEffectPurposes.ForKind literals are untested; every runner test substitutes the provider, and a swapped purpose mapping would stay consistent with the aggregate's own ForKind check [src/Hexalith.Works/Recovery/WorksProcessDelegationProvider.cs:109-120, WorksEffectPurposes.cs:13-21] (medium; verification-gap)
+- [x] [Review][Defer] (resolved) Chunk A deferred item "WorksReminderIntentSource validates only the final witness": WorksSourceStreamReader applies WorksExpiryEvidence to every committed envelope in order, so every witness is validated; the intent source inherits this when it reads through the reader.
+
+#### Chunk B rejected
+
+- low/rejected: reader null-payload and over-budget throw the retryable ProcessEvidenceUnavailableException (docs: unavailable evidence retries then parks via the runner, visibly degraded; not endless).
+- low/rejected: disposition endpoint does not map the default sink's InvalidOperationException (reachable only if a host overrides the authorizer but not the sink; still fails closed with no state change).
+- low/rejected: catalog sources.Add duplicate across batches, silent catch(Exception) without logging, and per-page rereads (duplicate tenants are SDK-validated; paging cost already deferred in an earlier iteration; logging needs a new dependency).
+- false: IsTerminal hard-coded false on cascade descendants (documented intent: all direct targets get the same intent and the aggregate returns a receipt for terminal targets).
+- false: more than five children quarantine (documented supported profile, MaxEffectsPerEnvelope=5, triaged as BH2).
+- low/rejected: ChildResume folds the parent's head state (a child completes once; a stale head only yields no resume or an idempotent resume), comparison of committed vs supplied event omits correlation/protection metadata (same stream read), decoder default-accept for unlisted event types (identity validated by WorksEventIdentity.Matches; BH4-4 closed shape), TimeProvider/magic-number/null-guard/exception-class nits.
