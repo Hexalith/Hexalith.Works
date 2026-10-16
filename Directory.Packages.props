@@ -4,7 +4,7 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <!-- Release restores published EventStore 3.123.0. Platform.Identity has no public package, so tests use its sibling project. -->
     <HexalithEventStoreVersion>3.123.0</HexalithEventStoreVersion>
-    <HexalithPartiesVersion>1.2.1</HexalithPartiesVersion>
+    <HexalithPartiesVersion>1.4.0</HexalithPartiesVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
