@@ -141,9 +141,12 @@ public sealed class ScaffoldGovernanceTests
     public void P0_NestedSubmodulesRemainUninitialized()
     {
         string root = RepositoryRoot.Locate();
+        string referencesRoot = Path.Combine(root, "references") + Path.DirectorySeparatorChar;
         string[] nestedGitMarkers = Directory.GetFileSystemEntries(root, ".git", SearchOption.AllDirectories)
-            .Where(path => !string.Equals(path, Path.Combine(root, ".git"), StringComparison.Ordinal))
-            .Where(path => path.Split(Path.DirectorySeparatorChar).Count(segment => segment.StartsWith("Hexalith.", StringComparison.Ordinal)) > 1)
+            .Where(path => path.StartsWith(referencesRoot, StringComparison.Ordinal))
+            .Where(path => Path.GetRelativePath(referencesRoot, path)
+                .Split(Path.DirectorySeparatorChar)
+                .Count(segment => segment.StartsWith("Hexalith.", StringComparison.Ordinal)) > 1)
             .ToArray();
 
         nestedGitMarkers.ShouldBeEmpty("Nested submodules inside root submodules must remain uninitialized; never run recursive submodule commands for this repository.");
