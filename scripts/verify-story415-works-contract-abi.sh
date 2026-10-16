@@ -4,7 +4,7 @@ repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
 # Compile the selected current source first; stale Release output cannot stand in for this proof.
-dotnet build "$repository_root/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" --configuration Release -p:NuGetAudit=false
+dotnet build "$repository_root/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" --configuration Release -p:NuGetAudit=false -p:CopyLocalLockFileAssemblies=true
 python3 - "$repository_root" "$fixture" <<'PY'
 import io, pathlib, re, subprocess, sys, tarfile
 root, fixture = map(pathlib.Path, sys.argv[1:])
@@ -53,6 +53,9 @@ CS
 dotnet build "$fixture/consumer/Consumer.csproj" --configuration Release -p:NuGetAudit=false
 dotnet "$fixture/consumer/bin/Release/net10.0/Consumer.dll" > "$fixture/baseline.txt"
 cp "$repository_root/src/Hexalith.Works.Contracts/bin/Release/net10.0/Hexalith.Works.Contracts.dll" "$fixture/consumer/bin/Release/net10.0/Hexalith.Works.Contracts.dll"
+# The selected Works assembly references the selected SDK assembly version. Supply that current
+# dependency too; the baseline consumer binary and its original ABI calls remain unchanged.
+cp "$repository_root/src/Hexalith.Works.Contracts/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll" "$fixture/consumer/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll"
 dotnet "$fixture/consumer/bin/Release/net10.0/Consumer.dll" > "$fixture/current.txt"
 cmp "$fixture/baseline.txt" "$fixture/current.txt"
 cat "$fixture/current.txt"

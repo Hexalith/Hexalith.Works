@@ -1,4 +1,8 @@
 using System.Security.Cryptography;
+using System.Security.Claims;
+using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Client.Effects;
+using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.EventStore.Contracts.Effects;
@@ -873,6 +877,144 @@ public sealed class WorksSdkProtectedHttpTests
         }
         authenticatedPrincipalObserved.ShouldBeTrue();
         await observedAuthorizer.Received(1).AuthorizeAsync(Arg.Any<System.Security.Claims.ClaimsPrincipal>(), source, Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>Authorized HTTP disposition durably audits before mutation, preserves the checkpoint, and reuses SDK evidence validation.</summary>
+    [Theory]
+    [InlineData(false, HttpStatusCode.NoContent)]
+    [InlineData(true, HttpStatusCode.Accepted)]
+    public async Task AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation(bool retainOwner, HttpStatusCode expected)
+    {
+        const string auditKey = "story415:http-disposition-audit";
+        const string reason = "synthetic evidence repair";
+        var store = new InMemoryReadModelStore();
+        var source = new ProcessSource(Tenant, "work", "authorized-disposition");
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(source.Aggregate);
+        StreamReadPage committed = Story48Streams.Page(Tenant, source.Aggregate,
+            new WorkItemCreated(source.Aggregate, 1, tenant, item, new Obligation("HTTP recovery")),
+            new WorkItemCancelled(source.Aggregate, 2, tenant, item));
+        bool repaired = false;
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            StreamReadRequest request = call.Arg<StreamReadRequest>();
+            StreamReadPage page = repaired ? committed : committed with
+            { Events = [committed.Events[0], committed.Events[1] with { EventTypeName = "UnknownWorksFact" }] };
+            StreamReadEvent[] tail = [.. page.Events.Where(fact => fact.SequenceNumber > request.FromSequence)];
+            return page with { Events = tail, Metadata = page.Metadata with
+            { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber } };
+        });
+        var authorizer = Substitute.For<IProcessDispositionAuthorizer>();
+        authorizer.AuthorizeAsync(Arg.Any<ClaimsPrincipal>(), source, Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var principal = call.Arg<ClaimsPrincipal>();
+            principal.Identity.ShouldNotBeNull().IsAuthenticated.ShouldBeTrue();
+            principal.FindFirst(ClaimTypes.NameIdentifier).ShouldNotBeNull().Value.ShouldBe("workload:eventstore");
+            return true;
+        });
+        string expectedSource = "";
+        string? expectedSweepETag = null;
+        int auditCount = 0;
+        int auditedWrites = 0;
+        var audit = Substitute.For<IProcessDispositionAuditSink>();
+        audit.RecordAsync(Arg.Any<ClaimsPrincipal>(), source, reason, Arg.Any<CancellationToken>()).Returns(async call =>
+        {
+            CancellationToken cancellationToken = call.Arg<CancellationToken>();
+            JsonSerializer.Serialize((await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source),
+                cancellationToken).ConfigureAwait(true)).Value).ShouldBe(expectedSource);
+            (await store.GetAsync<ProcessSweepState>("statestore", ProcessStateKeys.Sweep, cancellationToken)
+                .ConfigureAwait(true)).ETag.ShouldBe(expectedSweepETag);
+            string actor = call.Arg<ClaimsPrincipal>().FindFirst(ClaimTypes.NameIdentifier).ShouldNotBeNull().Value;
+            _ = await ReadModelWritePolicy.UpdateAsync<List<Dictionary<string, string>>>(store, "statestore", auditKey,
+                prior => [.. prior ?? [], new() { ["actor"] = actor, ["tenant"] = source.Tenant,
+                    ["domain"] = source.Domain, ["aggregate"] = source.Aggregate, ["reason"] = reason }],
+                cancellationToken: cancellationToken).ConfigureAwait(true);
+            auditCount++;
+            store.ConcurrentWriteBeforeTrySave = () =>
+            {
+                List<Dictionary<string, string>> durable = store.Snapshot<List<Dictionary<string, string>>>("statestore", auditKey)!;
+                durable.Count.ShouldBe(auditCount);
+                durable[^1]["actor"].ShouldBe("workload:eventstore");
+                durable[^1]["aggregate"].ShouldBe(source.Aggregate);
+                durable[^1]["reason"].ShouldBe(reason);
+                auditedWrites++;
+            };
+        });
+        ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"],
+            configure: services =>
+            {
+                services.RemoveAll<IProcessDispositionAuthorizer>();
+                services.AddSingleton(authorizer);
+                services.RemoveAll<IProcessDispositionAuditSink>();
+                services.AddSingleton(audit);
+                services.RemoveAll<IEventStoreGatewayClient>();
+                services.AddSingleton(gateway);
+                services.RemoveAll<ITrustedEffectSubmitter>();
+                services.AddSingleton(submitter);
+            });
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
+        await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+        ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
+        owned = await checkpoints.UpdateOwnedAsync(owned, state => state with
+        { Checkpoint = 1, Status = ProcessSourceStatus.Quarantined, Attempts = 2, FailureSequence = 2, ReasonCode = "invalid-evidence" },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        if (!retainOwner) await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        ProcessSourceState before = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        async Task<HttpResponseMessage> RevalidateAsync()
+        {
+            store.ConcurrentWriteBeforeTrySave = null;
+            expectedSource = JsonSerializer.Serialize(await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true));
+            expectedSweepETag = (await store.GetAsync<ProcessSweepState>("statestore", ProcessStateKeys.Sweep,
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).ETag;
+            return await client.SendAsync(Request("/work/processes/revalidate", new WorksProcessDispositionRequest(source, reason),
+                channel: true, assertion: Assertion("domain-service:process")), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+        using HttpResponseMessage response = await RevalidateAsync().ConfigureAwait(true);
+        response.StatusCode.ShouldBe(expected);
+        ProcessSourceState after = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        after.Checkpoint.ShouldBe(1);
+        ProcessPendingDisposition pending = (await app.Services.GetRequiredService<ProcessSweepStore>()
+            .GetAsync(TestContext.Current.CancellationToken).ConfigureAwait(true)).Pending[ProcessStateKeys.SourceId(source)];
+        pending.Applied.ShouldBe(!retainOwner);
+        if (retainOwner)
+        {
+            after.ShouldBe(before);
+            pending.ClaimToken.ShouldBeNull();
+            await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            _ = await app.Services.GetRequiredService<ProcessReconciler>().RunPassAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+        else
+        {
+            after.Status.ShouldBe(ProcessSourceStatus.Revalidating);
+            after.FailureSequence.ShouldBeNull();
+            after.ReasonCode.ShouldBeNull();
+            after.Attempts.ShouldBe(0);
+        }
+        await using AsyncServiceScope scope = app.Services.CreateAsyncScope();
+        CheckpointedProcessRunner runner = scope.ServiceProvider.GetRequiredService<CheckpointedProcessRunner>();
+        ProcessRunResult invalid = await runner.RunAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        invalid.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        invalid.Checkpoint.ShouldBe(1);
+        (await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true)).ReasonCode.ShouldBe("invalid-evidence");
+        repaired = true;
+        (await runner.RunAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true)).Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        using HttpResponseMessage retry = await RevalidateAsync().ConfigureAwait(true);
+        retry.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true)).Checkpoint.ShouldBe(1);
+        ProcessRunResult recovered = await runner.RunAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        recovered.Status.ShouldBe(ProcessSourceStatus.Active);
+        recovered.Checkpoint.ShouldBe(2);
+        ProcessSourceState persisted = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        persisted.Checkpoint.ShouldBe(2);
+        persisted.ReasonCode.ShouldBeNull();
+        store.Snapshot<List<Dictionary<string, string>>>("statestore", auditKey).ShouldNotBeNull().Count.ShouldBe(2);
+        auditedWrites.ShouldBeGreaterThan(0);
+        submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
     private static WebApplication BuildProtectedHost(IReadModelStore store, string partiesAddress,

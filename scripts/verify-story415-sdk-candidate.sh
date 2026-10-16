@@ -21,8 +21,19 @@ cat >"$fixture/Consumer.csproj" <<PROJECT
   </ItemGroup>
 </Project>
 PROJECT
-cat >"$fixture/NuGet.Config" <<CONFIG
-<configuration><packageSources><clear /><add key="candidate" value="$repository_root/.artifacts/story-4-15/feed" /><add key="nuget.org" value="https://api.nuget.org/v3/index.json" /></packageSources><fallbackPackageFolders><clear /></fallbackPackageFolders><packageSourceMapping><packageSource key="candidate"><package pattern="Hexalith.EventStore.*" /></packageSource><packageSource key="nuget.org"><package pattern="*" /></packageSource></packageSourceMapping></configuration>
+python3 - "$repository_root" "$fixture/NuGet.Config" <<'CONFIG'
+import pathlib, sys
+import xml.etree.ElementTree as ET
+configuration = ET.Element('configuration')
+sources = ET.SubElement(configuration, 'packageSources')
+ET.SubElement(sources, 'clear')
+ET.SubElement(sources, 'add', key='candidate', value=str(pathlib.Path(sys.argv[1]) / '.artifacts/story-4-15/feed'))
+ET.SubElement(sources, 'add', key='nuget.org', value='https://api.nuget.org/v3/index.json')
+ET.SubElement(ET.SubElement(configuration, 'fallbackPackageFolders'), 'clear')
+mapping = ET.SubElement(configuration, 'packageSourceMapping')
+ET.SubElement(ET.SubElement(mapping, 'packageSource', key='candidate'), 'package', pattern='Hexalith.EventStore.*')
+ET.SubElement(ET.SubElement(mapping, 'packageSource', key='nuget.org'), 'package', pattern='*')
+ET.ElementTree(configuration).write(sys.argv[2], encoding='utf-8', xml_declaration=True)
 CONFIG
 cat >"$fixture/Program.cs" <<'CS'
 using Hexalith.EventStore.Client.Projections;

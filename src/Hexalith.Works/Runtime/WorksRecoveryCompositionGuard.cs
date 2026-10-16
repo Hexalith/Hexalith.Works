@@ -1,8 +1,11 @@
+using Dapr.Actors.Runtime;
+
 using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Runtime;
 
@@ -12,6 +15,9 @@ internal sealed class WorksRecoveryCompositionGuard(IServiceProvider services) :
     /// <inheritdoc/>
     public Task StartingAsync(CancellationToken cancellationToken)
     {
+        if (services.GetRequiredService<IOptions<ActorRuntimeOptions>>().Value.Actors
+            .Any(actor => actor.Type.ImplementationType == typeof(DateReminderActor)))
+            throw new InvalidOperationException("SDK recovery requires exclusive final actor writer composition.");
         if (services.GetServices<IHostedService>().Any(service => service is ReminderReconciliationService or CascadeRecoveryService))
             throw new InvalidOperationException("SDK recovery requires exclusive final hosted writer composition.");
         return Task.CompletedTask;

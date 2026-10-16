@@ -402,6 +402,19 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             await File.AppendAllTextAsync(path, JsonSerializer.Serialize(new { phase, state }) + Environment.NewLine, token).ConfigureAwait(false);
     }
 
+    /// <summary>Accepts unchanged policy lines or the exact optional component-watch opt-out without normalizing YAML indentation.</summary>
+    /// <param name="committed">The committed Dapr configuration lines.</param>
+    /// <param name="copy">The candidate fixture configuration lines.</param>
+    /// <returns>Whether the copy preserves every committed line and changes only the permitted feature block.</returns>
+    internal static bool IsProtectedDaprConfigCopy(string[] committed, string[] copy)
+    {
+        if (copy.SequenceEqual(committed, StringComparer.Ordinal)) return true;
+        int spec = Array.IndexOf(committed, "spec:");
+        if (spec < 0) return false;
+        string[] permitted = [.. committed.Take(spec + 1), "  features:", "    - name: HotReload", "      enabled: false", .. committed.Skip(spec + 1)];
+        return copy.SequenceEqual(permitted, StringComparer.Ordinal);
+    }
+
     private static void Configure(IDistributedApplicationTestingBuilder builder, string key, string digestKey, string componentPath)
     {
         // An opt-in process-local configuration copy can disable component file watching when the shared
@@ -419,10 +432,9 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 string committed = options.Config.ShouldNotBeNull("The sidecar has no committed Dapr configuration to replace.");
                 string config = Path.Combine(configDirectory, Path.GetFileName(committed));
                 File.Exists(config).ShouldBeTrue($"Missing Dapr configuration copy '{config}'.");
-                // The copy may only add the HotReload opt-out; every committed ACL/mTLS line must be preserved.
-                string[] allowedAdditions = ["features:", "- name: HotReload", "enabled: false"];
-                static string[] Lines(string path) => [.. File.ReadAllLines(path).Select(line => line.Trim()).Where(line => line.Length > 0)];
-                Lines(config).Where(line => !allowedAdditions.Contains(line)).ShouldBe(Lines(committed),
+                // YAML indentation determines whether the ACL remains under spec. Preserve every original
+                // line exactly and admit only the correctly indented HotReload block immediately after spec.
+                IsProtectedDaprConfigCopy(File.ReadAllLines(committed), File.ReadAllLines(config)).ShouldBeTrue(
                     $"'{config}' differs from the committed '{committed}' beyond the HotReload opt-out.");
                 sidecar.Annotations.Remove(annotation);
                 sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(options with { Config = config }));
@@ -458,7 +470,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:01:00")
                     .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
             else
-                target.WithEnvironment("Version", "3.122.0-story415.20261016.9")
+                target.WithEnvironment("Version", "3.123.0")
                     .WithEnvironment("EventStore__IdempotencyAdmission__Enabled", "true")
                     .WithEnvironment("EventStore__IdempotencyAdmission__ActiveDigestKeyVersion", "story415")
                     .WithEnvironment("EventStore__IdempotencyAdmission__DigestKeys__story415", digestKey);

@@ -1,0 +1,11 @@
+{
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Gateway.3.122.0-story415.20261016.10.nupkg": "931184c32a994fd54f93d8971f3f3ffbc5c3ed5e9d4d4ed33bd10af2fb95d136",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.0-story415.20261016.10.nupkg": "080915b2e94d0bacdf1bd32f7364809d25fc1e1b52d5638c4826d0573026180f",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.0-story415.20261016.10.nupkg": "8a832d8988938ebd7c3056ffc2524bdef34b4d1365a8766d3f047dcf393c67cb",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.0-story415.20261016.10.nupkg": "853eff5b5a8b294734166e0d43a64736492e2caebd42de3626e31f08306ca999",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Admin.Abstractions.3.122.0-story415.20261016.10.nupkg": "6e9033478b2c5fc62adba572d410f32ddd52dba75bf363b4fd6404934e8a62af",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.0-story415.20261016.10.nupkg": "f4a6e85b58f3b7feb65849326f1b6875c84d6208bcaeaa953bfb634479b4174e",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Aspire.3.122.0-story415.20261016.10.nupkg": "c78734360b8a014663146d841a203016d5aeeb93908fe1b4855ce0d371883f41",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.0-story415.20261016.10.nupkg": "e4936336fd6dae6ced15577b9dd3bae9fcd52bbf0d6c1ed6a008059169a23274",
+  ".artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.0-story415.20261016.10.nupkg": "bc45db9b29ecd1215fd1cd3e2304fa0da244666f9324c681222ab83e0308a4e1"
+}

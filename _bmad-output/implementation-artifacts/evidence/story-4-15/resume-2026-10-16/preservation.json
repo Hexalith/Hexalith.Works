@@ -1,0 +1,10 @@
+{
+  "preserved_user_files": {
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs": "22510a6c28c6d6669ec639b972dbc6b15cdc9cf649dd46b2bd41e88a717b22a4",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "d718f3d8055fd91a132d837d76d128428752b8f8ce8c3d568feecf2e0a1c06ce"
+  },
+  "frozen_intent_sha256": "7f3e79ec86b3ccd803b7511b55ccbcc12243cc7ccfef6071fc8eba29ebc8e307",
+  "status": "in-progress",
+  "public_base": "3.122.0",
+  "selected_local_candidate": "3.122.1-story415.20261016.10"
+}

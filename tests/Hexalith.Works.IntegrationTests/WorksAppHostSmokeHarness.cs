@@ -94,13 +94,26 @@ internal static class WorksAppHostSmokeHarness
         try
         {
             ResourceLoggerService logs = app.Services.GetRequiredService<ResourceLoggerService>();
-            foreach (string resource in new[] { "works", "eventstore-operations", "eventstore-admin" })
+            foreach (string resource in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls", "eventstore", "works", "eventstore-operations", "eventstore-admin" })
             {
                 var lines = new List<LogLine>();
-                string resourceId = app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? current)
-                    ? current.ResourceId : resource;
-                await foreach (IReadOnlyList<LogLine> batch in logs.GetAllAsync(resourceId)
-                    .WithCancellation(budget.Token).ConfigureAwait(false)) lines.AddRange(batch);
+                using var resourceBudget = CancellationTokenSource.CreateLinkedTokenSource(budget.Token);
+                resourceBudget.CancelAfter(TimeSpan.FromMilliseconds(500));
+                try
+                {
+                    string resourceId = app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? current)
+                        ? current.ResourceId : resource;
+                    await foreach (IReadOnlyList<LogLine> batch in logs.GetAllAsync(resourceId)
+                        .WithCancellation(resourceBudget.Token).ConfigureAwait(false)) lines.AddRange(batch);
+                }
+                catch (OperationCanceledException) when (resourceBudget.IsCancellationRequested)
+                {
+                    // Capture the backlog already observed; a live stream cannot consume another resource's slice.
+                }
+                catch (Exception exception)
+                {
+                    _ = output.AppendLine().Append(resource).Append(" log read failed: ").AppendLine(exception.GetType().Name);
+                }
                 _ = output.AppendLine().Append(resource).AppendLine(" startup output:");
                 foreach (LogLine line in lines.TakeLast(40))
                     _ = output.AppendLine(line.Content.Length > 4000 ? line.Content[..4000] : line.Content);
@@ -165,7 +178,7 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
                 .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
-                .WithEnvironment("Version", "3.122.0-story415.20261016.9");
+                .WithEnvironment("Version", "3.123.0");
         }
         configure?.Invoke(builder);
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);

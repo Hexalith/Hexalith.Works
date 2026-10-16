@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Compile-time consumer check for the published SDK and Parties seams.</summary>
+/// <summary>Consumer checks for the selected local SDK candidate, source mode and published Parties seams.</summary>
 public sealed class WorksSdkPackageContractTests
 {
 #if DEBUG
@@ -32,13 +32,21 @@ public sealed class WorksSdkPackageContractTests
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(
             Path.Combine(AppContext.BaseDirectory, "Hexalith.Works.IntegrationTests.deps.json")));
         JsonElement libraries = dependencies.RootElement.GetProperty("libraries");
-        foreach (string dependency in new[] { "Hexalith.EventStore.DomainService/3.122.0-story415.20261016.9",
-            "Hexalith.EventStore.Client/3.122.0-story415.20261016.9", "Hexalith.Parties.Client/1.2.1",
-            "Hexalith.Platform.Identity/1.0.0-story414.20261014.5" })
+        JsonProperty[] sdk = [.. libraries.EnumerateObject().Where(library => library.Name.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))];
+        sdk.Length.ShouldBeGreaterThanOrEqualTo(9);
+        sdk.ShouldContain(library => library.Name.StartsWith("Hexalith.EventStore.Contracts/", StringComparison.Ordinal));
+        foreach (JsonProperty library in sdk)
         {
-            libraries.TryGetProperty(dependency, out JsonElement package).ShouldBeTrue();
-            package.GetProperty("type").GetString().ShouldBe("package");
+            library.Name.ShouldEndWith("/3.123.0");
+            library.Value.GetProperty("type").GetString().ShouldBe("package");
         }
+
+        libraries.TryGetProperty("Hexalith.Parties.Client/1.2.1", out JsonElement parties).ShouldBeTrue();
+        parties.GetProperty("type").GetString().ShouldBe("package");
+
+        JsonProperty platform = libraries.EnumerateObject().Where(
+            library => library.Name.StartsWith("Hexalith.Platform.Identity/", StringComparison.Ordinal)).ShouldHaveSingleItem();
+        platform.Value.GetProperty("type").GetString().ShouldBe("project");
     }
 #endif
 

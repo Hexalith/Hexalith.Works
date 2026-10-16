@@ -1,0 +1,30 @@
+[
+  {
+    "original": "src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.yaml",
+    "temporary": "/tmp/story415-resume-20261016-re7solpv/dapr-configs/accesscontrol.yaml",
+    "originalSha256": "c75ad4d34745e267c1b152985c7424131e96169e1740ff452a34c30ea8dfd2e0",
+    "temporarySha256": "4400afd3a470c9f7c0e318706913ccd97120055b9d2410a19ff2a58f4b6e323e",
+    "onlyChange": "spec.features HotReload=false"
+  },
+  {
+    "original": "src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.works.yaml",
+    "temporary": "/tmp/story415-resume-20261016-re7solpv/dapr-configs/accesscontrol.works.yaml",
+    "originalSha256": "cf4f2f7668440e5243b2be45b0d906477bd861a26ecce9042c1eae7129f50313",
+    "temporarySha256": "73debb95d2a4c2ecc9d74452dd390e34e339296e572e8c83209ee4682557d59a",
+    "onlyChange": "spec.features HotReload=false"
+  },
+  {
+    "original": "src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.eventstore-admin.yaml",
+    "temporary": "/tmp/story415-resume-20261016-re7solpv/dapr-configs/accesscontrol.eventstore-admin.yaml",
+    "originalSha256": "63cbe00ff495c361ff9bf105e7aee37c36b10f2fea9911b8985e3f8b307e3f03",
+    "temporarySha256": "d7976ae3c3f75decb9aa0fb762d1e3f697011aa1ec038d077bddd6796bc3e548",
+    "onlyChange": "spec.features HotReload=false"
+  },
+  {
+    "original": "src/Hexalith.Works.AppHost/DaprComponents/accesscontrol.eventstore-operations.yaml",
+    "temporary": "/tmp/story415-resume-20261016-re7solpv/dapr-configs/accesscontrol.eventstore-operations.yaml",
+    "originalSha256": "157c01878405f7e29d418b3225b84ff4fedc17929533455746d83fb8ea275963",
+    "temporarySha256": "72e8f9499609051651eb2ad9f59987e3c19a6fd6070bcacd3a8b5a520dc1a6bd",
+    "onlyChange": "spec.features HotReload=false"
+  }
+]

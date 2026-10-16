@@ -39,8 +39,7 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
-    <!-- Isolated local corrected SDK candidate; the separately versioned Platform test candidate stays explicit. -->
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.122.0-story415.20261016.9</HexalithEventStoreVersion>
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.123.0</HexalithEventStoreVersion>
     <WorksSdkCandidateFeed>$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
     <WorksPlatformCandidateFeed>$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
     <RestoreAdditionalProjectSources Condition="Exists('$(WorksPlatformCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksPlatformCandidateFeed)</RestoreAdditionalProjectSources>

@@ -559,12 +559,14 @@ public sealed class DependencyDirectionTests
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Testing", "Hexalith.EventStore.Testing.csproj"),
                     Path.Combine(platformRoot, "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj"),
                 },
-                ReleaseProjects: Array.Empty<string>(),
+                ReleaseProjects: new[]
+                {
+                    Path.Combine(platformRoot, "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj"),
+                },
                 ReleasePackages: new[]
                 {
                     "Hexalith.EventStore.Admin.Abstractions",
                     "Hexalith.EventStore.Testing",
-                    "Hexalith.Platform.Identity",
                 }),
         };
 
@@ -639,8 +641,8 @@ public sealed class DependencyDirectionTests
         child.ItemsOfType("ProjectReference").Select(item => item.CanonicalPath).ShouldContain(gateway);
         child.ItemsOfType("PackageReference").Select(item => item.Identity).ShouldNotContain("Hexalith.EventStore.Gateway");
         var release = EvaluateProject(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"), "Release");
-        release.ItemsOfType("ProjectReference").ShouldNotContain(item => item.CanonicalPath == Path.GetFullPath(platform));
-        release.ItemsOfType("PackageReference").ShouldContain(item => item.Identity == "Hexalith.Platform.Identity");
+        release.ItemsOfType("ProjectReference").ShouldContain(item => item.CanonicalPath == Path.GetFullPath(platform));
+        release.ItemsOfType("PackageReference").ShouldNotContain(item => item.Identity == "Hexalith.Platform.Identity");
         var packagedChild = EvaluateProject(platform, "Release");
         packagedChild.ItemsOfType("ProjectReference").ShouldBeEmpty();
         packagedChild.ItemsOfType("PackageReference").ShouldContain(item => item.Identity == "Hexalith.EventStore.Gateway");

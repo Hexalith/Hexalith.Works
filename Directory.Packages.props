@@ -2,10 +2,9 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Story 4.15 local SDK candidate based on published 3.122.0; never a published producer. -->
-    <HexalithEventStoreVersion>3.122.0-story415.20261016.9</HexalithEventStoreVersion>
+    <!-- Release restores published EventStore 3.123.0. Platform.Identity has no public package, so tests use its sibling project. -->
+    <HexalithEventStoreVersion>3.123.0</HexalithEventStoreVersion>
     <HexalithPartiesVersion>1.2.1</HexalithPartiesVersion>
-    <HexalithPlatformIdentityVersion>1.0.0-story414.20261014.5</HexalithPlatformIdentityVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
@@ -18,8 +17,5 @@
        Keep all other transitive pins (including security dependencies) and every Release pin intact. -->
   <ItemGroup Condition="'$(UseHexalithProjectReferences)' == 'true'">
     <PackageVersion Remove="Hexalith.EventStore.Contracts" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageVersion Include="Hexalith.Platform.Identity" Version="$(HexalithPlatformIdentityVersion)" Condition="'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'" />
   </ItemGroup>
 </Project>

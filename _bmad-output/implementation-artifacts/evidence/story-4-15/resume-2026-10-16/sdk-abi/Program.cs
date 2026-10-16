@@ -1,0 +1,10 @@
+using System.Security.Cryptography;
+using System.Text.Json;
+using Hexalith.EventStore.Contracts.Reminders;
+using Hexalith.EventStore.Contracts.Effects;
+var intent = new ReminderIntent("tenant-a", "widget", "item-1", new DateTimeOffset(2026,10,1,9,30,0,TimeSpan.Zero), EffectKindCatalog.DateResume, "widget.resume.v1", [1], "widget", "item-1", 1, 1);
+var (tenant, domain, item, due, kind, type, payload, sourceDomain, sourceAggregate, sequence, revision) = intent;
+if (tenant != "tenant-a" || domain != "widget" || item != "item-1" || due.Offset != TimeSpan.Zero || kind != EffectKindCatalog.DateResume || type != "widget.resume.v1" || payload[0] != 1 || sourceDomain != "widget" || sourceAggregate != "item-1" || sequence != 1 || revision != 1) throw new Exception("Baseline reminder ABI values changed");
+Console.WriteLine(ReminderIdentityCodec.ComputeActorId(intent));
+Console.WriteLine(ReminderIdentityCodec.ComputeReminderName(intent));
+Console.WriteLine(Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(intent))));

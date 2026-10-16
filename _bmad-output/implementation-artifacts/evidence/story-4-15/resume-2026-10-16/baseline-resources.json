@@ -1,0 +1,112 @@
+[
+  {
+    "displayName": "dapr-placement-mtls",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "dapr-scheduler-mtls",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "dapr-sentry",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "eventstore-admin-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "eventstore-admin-dapr-cli",
+    "state": "Waiting",
+    "waitingFor": [
+      "eventstore-operations",
+      "security"
+    ]
+  },
+  {
+    "displayName": "eventstore-admin",
+    "state": "Waiting",
+    "waitingFor": [
+      "eventstore-operations",
+      "security"
+    ]
+  },
+  {
+    "displayName": "eventstore-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "eventstore-dapr-cli",
+    "state": "Waiting",
+    "waitingFor": [
+      "security"
+    ]
+  },
+  {
+    "displayName": "eventstore",
+    "state": "Waiting",
+    "waitingFor": [
+      "security"
+    ]
+  },
+  {
+    "displayName": "eventstore-operations-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "eventstore-operations-dapr-cli",
+    "state": "Waiting",
+    "waitingFor": [
+      "works"
+    ]
+  },
+  {
+    "displayName": "eventstore-operations",
+    "state": "Waiting",
+    "waitingFor": [
+      "works"
+    ]
+  },
+  {
+    "displayName": "security-eventstore-client-password",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "security-eventstore-client-username",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "security",
+    "state": "Running",
+    "healthStatus": "Unhealthy"
+  },
+  {
+    "displayName": "works-app-api-token",
+    "state": "Running",
+    "healthStatus": "Healthy"
+  },
+  {
+    "displayName": "works-dapr-cli",
+    "state": "Waiting",
+    "waitingFor": [
+      "eventstore",
+      "security"
+    ]
+  },
+  {
+    "displayName": "works",
+    "state": "Waiting",
+    "waitingFor": [
+      "eventstore",
+      "security"
+    ]
+  }
+]

@@ -1,0 +1,5 @@
+{
+  "references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/AggregateActorTestHelper.cs": "ec937659f4aa6f5f43f05286cfcc148ad5025917c484441ed981b3612e0a625c",
+  "references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectReceiptTests.cs": "1c674fe040b4e6f0c6afeb47696580b6d0d393d2fd19ee4d71ffd8816d7b94c7",
+  "references/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Actors/TrustedEffectJointOffboardingTests.cs": "612e574348a95c89ae49320a7fb6f531b680016c433de551980a265d3794375a"
+}

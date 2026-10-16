@@ -1,0 +1,128 @@
+[
+  {
+    "package": "Hexalith.EventStore.Contracts",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.292172+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/3.122.0/hexalith.eventstore.contracts.3.122.0.nupkg",
+    "archive_sha256": "5dda152c6d061fdae4052e60a24a75c9e33a1eeda1576e31fa890d3a746da70c",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Client",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.439010+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/3.122.0/hexalith.eventstore.client.3.122.0.nupkg",
+    "archive_sha256": "686aee2d7cb2c69e2678601452aebac7a3d57d2bb1177a0872db24e11f12554d",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.DomainService",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.584633+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/3.122.0/hexalith.eventstore.domainservice.3.122.0.nupkg",
+    "archive_sha256": "1f7d854f3be941fea822cb87185542f4c968dc3cd831ae3918dee55d9ce89fc8",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.ServiceDefaults",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.726777+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/3.122.0/hexalith.eventstore.servicedefaults.3.122.0.nupkg",
+    "archive_sha256": "3b9a39c83c430fb28a3907a118a80bf3504f9bc058685e033cc98972dd6b8d0a",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Aspire",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.879156+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/3.122.0/hexalith.eventstore.aspire.3.122.0.nupkg",
+    "archive_sha256": "98b08ea72bcdd10c86a03a4e1bd4f1919706bd8f18e9b8ef48faad040a846c74",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Admin.Abstractions",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.021423+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/3.122.0/hexalith.eventstore.admin.abstractions.3.122.0.nupkg",
+    "archive_sha256": "73493c838f0c0047da9c58be7a217e0883f8881be68aebf663be342c3ca90687",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Server",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.176877+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/3.122.0/hexalith.eventstore.server.3.122.0.nupkg",
+    "archive_sha256": "265ffcea4c807e55754984cd494e9920dfb00e2a0fe12b7b55f9bb6735cc5a51",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Testing",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.319085+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/3.122.0/hexalith.eventstore.testing.3.122.0.nupkg",
+    "archive_sha256": "bf827e386c7a062e9bc820997045557a0e1d908c151c678d9fcff884c548eb84",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  },
+  {
+    "package": "Hexalith.EventStore.Gateway",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.467440+00:00",
+    "archive_url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/3.122.0/hexalith.eventstore.gateway.3.122.0.nupkg",
+    "archive_sha256": "8325a17232264e32afca1780d5303b6891c7499c9f3b265a7070e572dbed9680",
+    "source_repository": {
+      "type": "git",
+      "url": "https://github.com/Hexalith/Hexalith.EventStore",
+      "commit": "1dac529c4690910c89d4090784a7d46cb9433a9d"
+    }
+  }
+]

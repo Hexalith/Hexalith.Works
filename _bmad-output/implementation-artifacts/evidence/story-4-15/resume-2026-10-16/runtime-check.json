@@ -1,0 +1,22 @@
+{
+  "raw": "/tmp/story415-resume-20261016-re7solpv/live-state.jsonl",
+  "sha256": "6c612c69dc6b429febf2c38f48db47a55a8bcc7dd39989306a278e19ef382969",
+  "phases": [
+    "successful-callback-no-periodic-recovery",
+    "cascade-expiry-target-commit-before-checkpoint",
+    "cascade-expiry-restart-receipt-and-checkpoint",
+    "canonical-related-child-creation-gap",
+    "cascade-target-commit-before-checkpoint",
+    "five-child-persisted-target-receipts",
+    "cascade-restart-receipt-and-checkpoint",
+    "child-resume-noop-receipt-before-checkpoint",
+    "complete-supported-process-coverage",
+    "child-resume-noop-restart-receipt-and-checkpoint"
+  ],
+  "passed": true,
+  "redactedFields": {
+    "CommandPayload": 7,
+    "resultPayload": 8
+  },
+  "redactedCount": 15
+}

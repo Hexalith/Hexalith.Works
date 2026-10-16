@@ -1,0 +1,86 @@
+{
+  "unit": {
+    "total": 589,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/unit-tests.xml",
+    "sha256": "b2737eaf195f599648e998dc8904818e382a4d9a37603f6c44eb1ff4340a0f5c"
+  },
+  "architecture": {
+    "total": 270,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/architecture-tests.xml",
+    "sha256": "e64c9a25dba74735ca36dc08f48e08576d9e5a379ed729a96a5ee9de720f3cf4"
+  },
+  "property": {
+    "total": 3,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/property-tests.xml",
+    "sha256": "f62fbb7c23ddd9b1ce77ebd7188ab075698783e0af2f746868d63bf5e66f7d6a"
+  },
+  "source-debug-integration": {
+    "total": 786,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/post-guard-debug-tests.xml",
+    "sha256": "cb115e7b7146b5062b4c0835e4dcc4b42b46fa0747aa75d6cf53dc59c36d159e"
+  },
+  "package-release-integration": {
+    "total": 786,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/post-guard-release-tests.xml",
+    "sha256": "896a13decff8fdcaa03fa17ce1f167d8b20c3c4e49209e1262beab7889528a35"
+  },
+  "sdk-domainservice": {
+    "total": 974,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/sdk-domainservice-corrected-tests.xml",
+    "sha256": "bdde969c79e2151866afc5763faf1d2ec1edd3d0123e8856652fe3fecb228475"
+  },
+  "sdk-trusted-security-snapshot": {
+    "total": 105,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/sdk-trusted-security-corrected-tests.xml",
+    "sha256": "62c22e002001f3bc7adf51fac6bdaa18ce2cbbf20e476306616d32babcec4c8f"
+  },
+  "sdk-client-projections": {
+    "total": 37,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/sdk-client-tests.xml",
+    "sha256": "afa674f2b4800ea142fba7032dfccef46bf371a0c4fd03829b0fed8dcf3475ed"
+  },
+  "live-runtime-pre-guard": {
+    "total": 2,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/live-sdk-runtime.xml",
+    "sha256": "d25a6e41c7bae30095380c970b6c631e525c76adf11cb2a5eb5d2cc6d5f174b4"
+  },
+  "post-guard-actual-copies": {
+    "total": 8,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/post-guard-actual-copy-tests.xml",
+    "sha256": "d2f3fd79617154f53863935d8c76bb5e5ce8576de30440408fc9128700f85839"
+  },
+  "complete-store-projections": {
+    "total": 27,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/complete-restore/projections.xml",
+    "sha256": "3ec9869595d44f21945bb9537df022759f1fc894bd6dc17e5597e8094076c7e1"
+  },
+  "complete-store-rollback": {
+    "total": 1,
+    "failed": 0,
+    "skipped": 0,
+    "xml": "/tmp/story415-resume-20261016-re7solpv/complete-restore/rollback.xml",
+    "sha256": "136bc32d93135fbb9b1898fd147d3525a0f4af512be1624fdcab9b90d05ab79f"
+  }
+}

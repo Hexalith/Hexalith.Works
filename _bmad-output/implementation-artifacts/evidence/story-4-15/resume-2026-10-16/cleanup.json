@@ -1,0 +1,39 @@
+[
+  {
+    "command": [
+      "aspire",
+      "ps",
+      "--format",
+      "Json"
+    ],
+    "exitCode": 0,
+    "stdout": "[]\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "docker",
+      "ps",
+      "--format",
+      "{{.Names}}",
+      "--filter",
+      "name=works-sdk415"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "docker",
+      "ps",
+      "--format",
+      "{{.Names}}",
+      "--filter",
+      "name=works-sdk-rollback"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "Debug": {
+    "deps": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+    "depsSha256": "8ad7517de73b39b90f610408091a5b9256659cb097dae9b4a8bbb971b04c2579",
+    "libraries": {
+      "Hexalith.EventStore.Admin.Abstractions/3.122.0": "project",
+      "Hexalith.EventStore.Aspire/3.122.0": "project",
+      "Hexalith.EventStore.Client/3.122.0": "project",
+      "Hexalith.EventStore.Contracts/3.122.0": "project",
+      "Hexalith.EventStore.DomainService/3.122.0": "project",
+      "Hexalith.EventStore.Gateway/3.122.0": "project",
+      "Hexalith.EventStore.Server/3.122.0": "project",
+      "Hexalith.EventStore.ServiceDefaults/3.122.0": "project",
+      "Hexalith.EventStore.Testing/3.122.0": "project",
+      "Hexalith.Parties.Client/1.0.0": "project",
+      "Hexalith.Parties.Contracts/1.0.0": "project",
+      "Hexalith.Platform.Identity/1.0.0": "project"
+    }
+  },
+  "Release": {
+    "deps": "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.deps.json",
+    "depsSha256": "c7ace5124e08e852edc8cd83c66123ef0dc35149c9725a8aa97a6f9577c846cf",
+    "libraries": {
+      "Hexalith.EventStore.Admin.Abstractions/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Aspire/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Client/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Contracts/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.DomainService/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Gateway/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Server/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.ServiceDefaults/3.122.1-story415.20261016.10": "package",
+      "Hexalith.EventStore.Testing/3.122.1-story415.20261016.10": "package",
+      "Hexalith.Parties.Client/1.2.1": "package",
+      "Hexalith.Parties.Contracts/1.2.1": "package",
+      "Hexalith.Platform.Identity/1.0.0": "project"
+    }
+  }
+}

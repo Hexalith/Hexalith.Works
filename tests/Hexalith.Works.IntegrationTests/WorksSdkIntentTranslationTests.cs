@@ -2,6 +2,7 @@ using System.Text.Json;
 
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Processes;
+using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.Contracts.Effects;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Processes;
@@ -73,6 +74,51 @@ public sealed class WorksSdkIntentTranslationTests
         rescheduled.Single(intent => intent.Kind == EffectKindCatalog.Expiry).SourceSequence.ShouldBe(5);
         rescheduled.Single(intent => intent.Kind == EffectKindCatalog.Expiry).ScheduleRevision.ShouldBe(2);
         rescheduled.Single(intent => intent.Kind == EffectKindCatalog.DateResume).SourceMessageId.ShouldBe("committed-second-suspension");
+    }
+
+    /// <summary>Only date awaits become resume reminders; other await kinds cannot replace the independent expiry witness.</summary>
+    [Fact]
+    public async Task MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry()
+    {
+        const string item = "mixed-await-item";
+        var tenant = new TenantId(Tenant);
+        var id = new WorkItemId(item);
+        AwaitCondition date = AwaitCondition.DateReached(s_due);
+        var expiry = new WorkItemExpirySchedule(s_due.AddDays(1),
+            ReminderIdentityCodec.ComputeScheduleToken(Tenant, item, s_due.AddDays(1), 1), 1);
+        StreamReadPage page = Story48Streams.Page(Tenant, item,
+            new WorkItemCreated(item, 1, tenant, id, new Obligation("mixed awaits"), Expiry: expiry),
+            new WorkItemSuspended(item, 2, tenant, id,
+                [AwaitCondition.ChildCompleted(new WorkItemId("child")), date, AwaitCondition.ExternalSignal("external-proof")]));
+        page = page with { Events = [page.Events[0] with { MessageId = "mixed-create" },
+            page.Events[1] with { MessageId = "mixed-suspension" }] };
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
+        var source = new WorksReminderIntentSource(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+
+        IReadOnlyList<ReminderIntent> intents = await source.GetCurrentIntentsAsync(new ReminderTarget(Tenant, "work", item),
+            TestContext.Current.CancellationToken);
+        intents.Count.ShouldBe(2);
+        ReminderIntent resume = intents.Single(intent => intent.Kind == EffectKindCatalog.DateResume);
+        resume.DueUtc.ShouldBe(s_due);
+        resume.Ordinal.ShouldBe(0);
+        resume.SourceSequence.ShouldBe(2);
+        resume.ScheduleRevision.ShouldBe(2);
+        resume.SourceMessageId.ShouldBe("mixed-suspension");
+        ReminderCommand translated = source.TranslateDueIntent(resume);
+        translated.CommandType.ShouldBe(nameof(ResumeWorkItem));
+        ResumeWorkItem command = JsonSerializer.Deserialize<ResumeWorkItem>(translated.Payload)!;
+        command.TenantId.ShouldBe(tenant);
+        command.WorkItemId.ShouldBe(id);
+        command.AwaitCondition.ShouldBe(date);
+        ReminderIntent expires = intents.Single(intent => intent.Kind == EffectKindCatalog.Expiry);
+        expires.DueUtc.ShouldBe(expiry.EffectiveExpiryUtc);
+        expires.SourceSequence.ShouldBe(1);
+        expires.SourceMessageId.ShouldBe("mixed-create");
+        expires.ScheduleRevision.ShouldBe(1);
+        ReminderCommand translatedExpiry = source.TranslateDueIntent(expires);
+        translatedExpiry.CommandType.ShouldBe(nameof(ExpireWorkItem));
+        JsonSerializer.Deserialize<ExpireWorkItem>(translatedExpiry.Payload)!.ExpiryWitness.ShouldBe(expiry);
     }
 
     /// <summary>Current translation requires the exact await; the SDK retained plan owns receipt replay after consumption.</summary>

@@ -1,0 +1,243 @@
+{
+  "results": [
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=1.0.0"
+      ],
+      "exit_code": 1,
+      "seconds": 22.23,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-debug-build.log",
+      "sha256": "d4523dbe96c987f6e2a9d1b69de33e12f476e7d25221c4def4e3a1994a4fc5ec",
+      "gate": "review-fixes-debug-build"
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=1.0.0"
+      ],
+      "exit_code": 0,
+      "seconds": 6.85,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-debug-build-corrected.log",
+      "sha256": "ed5176c38fb70d2490e0149bd691c076e86fcc07dc5c3de7892328cd8db45b7f",
+      "gate": "review-fixes-debug-build-corrected"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "-class",
+        "*WorksSdkRecoveryCompositionTests",
+        "-class",
+        "*WorksSdkProtectedHttpTests",
+        "-class",
+        "*WorksSdkIntentTranslationTests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story415-resume-20261016-re7solpv/review-fixes-focused-debug.xml"
+      ],
+      "exit_code": 0,
+      "seconds": 14.59,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-focused-debug.log",
+      "sha256": "31961de746485883e99523a54cf6618a21dff4a039260b66ce36820114462032",
+      "gate": "review-fixes-focused-debug"
+    },
+    {
+      "command": [
+        "bash",
+        "/tmp/story415-resume-20261016-re7solpv/checkout & \"double-quote\" and 'single-quote'/scripts/verify-story415-sdk-candidate.sh"
+      ],
+      "exit_code": 1,
+      "seconds": 1.89,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-candidate-special-path.log",
+      "sha256": "066ab93f8ab69d439c2c4c6ebc532cb91a5dc3260f49fb3abb3ecacd1611947f",
+      "gate": "review-fixes-candidate-special-path"
+    },
+    {
+      "command": [
+        "bash",
+        "/tmp/story415-resume-20261016-re7solpv/isolated checkout & \"double-quote\" and 'single-quote'/scripts/verify-story415-sdk-candidate.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 15.68,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-candidate-isolated-special-path.log",
+      "sha256": "dd2a482143c1d7a3ab8865e1e60ff4f7495b6dbfcc1c96ce036a8493aed5f487",
+      "gate": "review-fixes-candidate-isolated-special-path"
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=1.0.0",
+        "-p:HexalithEventStoreVersion=3.122.1-story415.20261016.10"
+      ],
+      "exit_code": 1,
+      "seconds": 0.56,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-date-filter-mutant-build.log",
+      "sha256": "47d5094e568ba1e2d9f50bf3cc0c6c2a01fe99ff4114a3310497a0b03500ea1c",
+      "gate": "review-fixes-date-filter-mutant-build"
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=1.0.0",
+        "-p:HexalithEventStoreVersion=3.122.1-story415.20261016.10"
+      ],
+      "exit_code": 0,
+      "seconds": 13.21,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-date-filter-mutant-build-corrected.log",
+      "sha256": "d97fe468387899238953ce3773698aca677b3a16735878c2afa1be262e037014",
+      "gate": "review-fixes-date-filter-mutant-build-corrected"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "-method",
+        "*MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story415-resume-20261016-re7solpv/review-fixes-date-filter-mutant.xml"
+      ],
+      "exit_code": 1,
+      "seconds": 0.51,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-date-filter-mutant-test.log",
+      "sha256": "f3da15a7677043c6ba3b8e246b9673434f9adcfd3751bf0e150bcf169db9a350",
+      "gate": "review-fixes-date-filter-mutant-test",
+      "expectedFailure": true
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=1.0.0",
+        "-p:HexalithEventStoreVersion=3.122.1-story415.20261016.10"
+      ],
+      "exit_code": 0,
+      "seconds": 7.22,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-restored-debug-build.log",
+      "sha256": "90cbe595c3a82ba9c5aabecd2c72322b3c138505b9d68ef44424c157171e3aaf",
+      "gate": "review-fixes-restored-debug-build"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "-method",
+        "*MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story415-resume-20261016-re7solpv/review-fixes-restored-date-filter.xml"
+      ],
+      "exit_code": 0,
+      "seconds": 0.49,
+      "log": "/tmp/story415-resume-20261016-re7solpv/review-fixes-restored-date-filter-test.log",
+      "sha256": "59a91416c0ffcb1369f53ae5a81fed329b7db5ef9b2ca47de3bde9c9bc131b2d",
+      "gate": "review-fixes-restored-date-filter-test"
+    }
+  ],
+  "files": [
+    {
+      "path": "src/Hexalith.Works/Runtime/WorksRecoveryCompositionGuard.cs",
+      "sha256": "5f8bcab446c094244c4bdbea1f4bc5600dea39a291387bed7299073f46434202"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+      "sha256": "3d5eca19d18cf57583465d4ab004028bc4ad8e12e0d30aaa88d2603d2dade3a4"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs",
+      "sha256": "65ab627847a760f727d6c4e439b6d275e30bb3ba6d9fa2c7bce0a016f72ef7ff"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs",
+      "sha256": "66542daae3b6795baff61ae6edb7e58a7a2f61ec9a09ed38aaeb40a9f0d10dcc"
+    },
+    {
+      "path": "docs/sdk-reminder-process-adoption.md",
+      "sha256": "0236029df3deac21bce2a497d4228d85239be771ed8dc76d56f50fa2124709de"
+    },
+    {
+      "path": "scripts/verify-story415-sdk-candidate.sh",
+      "sha256": "65eba0140c856024a4dc81d1e2c42b21acadc88d35745c1e42a1f56f873a2f04"
+    }
+  ],
+  "xml": [
+    {
+      "path": "/tmp/story415-resume-20261016-re7solpv/review-fixes-focused-debug.xml",
+      "sha256": "c467e85d69178bf47958183b51fec84c527bd7ab56ff4d4720db5081dc576813",
+      "counts": {
+        "total": "101",
+        "passed": "101",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0"
+      }
+    },
+    {
+      "path": "/tmp/story415-resume-20261016-re7solpv/review-fixes-date-filter-mutant.xml",
+      "sha256": "9dcdad8e62a6bc1535c188e5b930164e6c2a6b5dadcc905ff26ee2cfc0f63c9a",
+      "counts": {
+        "total": "1",
+        "passed": "0",
+        "failed": "1",
+        "skipped": "0",
+        "not-run": "0"
+      }
+    },
+    {
+      "path": "/tmp/story415-resume-20261016-re7solpv/review-fixes-restored-date-filter.xml",
+      "sha256": "800846797c0942b9128fdbea2d48de2b7f7dd35c4d4cd617839ec7fcdc92f787",
+      "counts": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0"
+      }
+    }
+  ],
+  "specialPath": {
+    "checkoutPath": "/tmp/story415-resume-20261016-re7solpv/isolated checkout & \"double-quote\" and 'single-quote'",
+    "candidateVersion": "3.122.1-story415.20261016.10",
+    "helperSha256": "65eba0140c856024a4dc81d1e2c42b21acadc88d35745c1e42a1f56f873a2f04",
+    "fixture": "Isolated verification checkout containing exact helper plus temporary version selection; read-only links to producer validation code and immutable candidate archives. Root producer selection unchanged."
+  },
+  "mutation": {
+    "mutation": "Remove only DateReached filter",
+    "source": "src/Hexalith.Works/Reminders/WorksReminderIntentSource.cs",
+    "restoredSha256": "83e934e03b114cc31f63eaa8bf14316042bf1072f21d61da818736c0fae4e590",
+    "mutationTestExecuted": true,
+    "mutationTestExitCode": 1,
+    "concurrentRootProducerSelection": "Preserved; explicit .10 verification metadata and source Debug restore."
+  }
+}

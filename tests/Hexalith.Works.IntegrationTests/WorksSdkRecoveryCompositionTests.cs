@@ -1,3 +1,5 @@
+using Dapr.Actors.Runtime;
+
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Reminders;
 using Hexalith.EventStore.DomainService;
@@ -253,6 +255,32 @@ public sealed class WorksSdkRecoveryCompositionTests
             services.AddWorksDateReminderActors();
             Should.Throw<InvalidOperationException>(() => services.ValidateWorksRecoveryComposition(configuration));
         }
+    }
+
+    /// <summary>Direct Dapr registration, including a renamed actor, cannot bypass the wrapper marker in either order.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DirectLegacyActorRegistrationIsRefusedBeforeAnyStart(bool legacyFirst)
+    {
+        var builder = Host.CreateApplicationBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        { ["Works:Recovery:UseSdkRuntime"] = "true", ["Works:Projection:UseSdkDelivery"] = "true" });
+        IHostedService sentinel = Substitute.For<IHostedService>();
+        builder.Services.AddSingleton(sentinel);
+        if (legacyFirst) builder.Services.AddActors(options => options.Actors.RegisterActor<DateReminderActor>("renamed-legacy"));
+        builder.Services.AddWorksReminderAndCascadeRecovery(builder.Configuration);
+        if (!legacyFirst) builder.Services.AddActors(options => options.Actors.RegisterActor<DateReminderActor>("renamed-legacy"));
+        foreach (ServiceDescriptor descriptor in builder.Services.Where(service => service.ServiceType == typeof(IHostedService)
+            && service.ImplementationInstance != sentinel && service.ImplementationType != typeof(WorksRecoveryCompositionGuard)).ToArray())
+            builder.Services.Remove(descriptor);
+        using IHost host = builder.Build();
+        host.Services.GetRequiredService<IOptions<ActorRuntimeOptions>>().Value.Actors
+            .ShouldContain(actor => actor.Type.ImplementationType == typeof(DateReminderActor));
+        host.Services.GetRequiredService<IWorkCommandSubmitter>().ShouldNotBeNull();
+        var refusal = await Should.ThrowAsync<InvalidOperationException>(() => host.StartAsync(TestContext.Current.CancellationToken));
+        refusal.Message.ShouldBe("SDK recovery requires exclusive final actor writer composition.");
+        await sentinel.DidNotReceive().StartAsync(Arg.Any<CancellationToken>());
     }
 
     /// <summary>Malformed callbacks cannot acquire legacy markers or erase an already durable SDK quarantine.</summary>

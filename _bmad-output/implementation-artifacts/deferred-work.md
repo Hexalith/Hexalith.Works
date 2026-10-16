@@ -1462,3 +1462,7 @@ These four items were reconfirmed on the current production code. They do not op
 ## Deferred from: code review of spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works (2026-10-16)
 
 - `PackageVersion Remove` for Hexalith.EventStore.Contracts is gated on UseHexalithProjectReferences only (Directory.Packages.props:16-21); medium if true, unverified. Settle by a Debug restore with HexalithEventStoreFromSource=false and checking for NU1010.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: "Supply published corrected EventStore producers or an approved exact-artifact CI feed before Story 4.16 public-producer acceptance."
+  evidence: "RB6-6: the baseline already selected unpublished Story 4.14 candidates; the latest public EventStore 3.122.0 lacks IReminderTargetCatalog. Local .10 package/source/live proofs pass, but ignored local feeds are absent on clean CI runners. Publication remains a separate frozen-intent gate."

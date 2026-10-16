@@ -1,0 +1,16 @@
+{
+  "raw": "/tmp/story415-resume-20261016-re7solpv/live-state.jsonl",
+  "sha256": "6c612c69dc6b429febf2c38f48db47a55a8bcc7dd39989306a278e19ef382969",
+  "assertions": {
+    "callback persists membership and one witness": true,
+    "expiry commit precedes checkpoint": true,
+    "expiry receipt replay then checkpoint": true,
+    "canonical gap retains evidence without sibling mutation": true,
+    "cascade target commit retains five-effect plan": true,
+    "five single cancellations with five success receipts": true,
+    "cascade receipt replay advances and clears plan": true,
+    "one resume and pending no-op receipt": true,
+    "no-op receipt replay before checkpoint": true,
+    "eleven sources complete without unresolved work": true
+  }
+}

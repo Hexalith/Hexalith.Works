@@ -1,0 +1,77 @@
+{
+  "reviewDiff": "/tmp/story415-review-layers-h1dbu0oz.diff",
+  "layers": [
+    "blind-hunter",
+    "edge-case-hunter",
+    "verification-gap"
+  ],
+  "edgeFindings": [],
+  "findings": [
+    {
+      "id": "RB6-1",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "Witness-bearing commands can be accepted in the retained legacy profile, which intentionally has no SDK expiry writer. New witnessed-expiry behavior is documented and admitted only by the synthetic SDK profile; production admission is explicitly excluded by frozen intent. A profile-aware command guard adds host policy for unsupported transitional-profile use, with no demonstrated failure in an admitted scenario. The carried full-store rollback rule remains unchanged."
+    },
+    {
+      "id": "RB6-2",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Direct AddActors/RegisterActor<DateReminderActor> bypasses the wrapper marker and the hosted-service type check. DateReminderActor needs only IWorkCommandSubmitter and ILogger, both available in SDK mode, and retained Dapr reminders can therefore activate an ordinary writer. Extend the existing resolved startup composition guard to reject the actual registered legacy actor type, and verify both registration orders plus ordinary SDK startup."
+    },
+    {
+      "id": "RB6-3",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "SDK wakeups use only their validated target to discover/refold canonical evidence; callback MessageId, payload format and payload bytes are not persisted as effect evidence. Malformed canonical identities fail ProcessSource.Validate before membership persistence. Supported SDK producers emit canonical identities; additional callback-only syntax guards address uncommon authenticated malformed traffic and add branches without an observed wrong effect or lost unresolved state."
+    },
+    {
+      "id": "RB6-4",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "carried from the chunk A re-review rejected ReminderConvergenceResult finding: the result contains counts and SDK convergence retains unresolved/quarantined evidence durably. Readiness and periodic recovery expose it; Processed acknowledges the wakeup, not successful effect completion. Keep the existing verdict/route without another patch or deferral."
+    },
+    {
+      "id": "RB6-5",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "The Works HTTP tests prove denial with the real default authorizer, and direct ProcessDispositionService tests prove successful audited recovery, but no positive HTTP case pins the new route wiring and its 204/202 mapping. Add authenticated authorized HTTP cases with durable audit-before-mutation, checkpoint preservation and matching revalidation behavior."
+    },
+    {
+      "id": "RB6-6",
+      "verdict": "medium",
+      "route": "defer",
+      "evidence": "A clean runner cannot restore the unpublished local candidate without its feed. This limitation already exists at baseline 8679d7d700925a870e9931b3c43c745c063e459b, which selects unpublished Story 4.14 SDK and Platform candidates. Frozen intent expressly separates publication; current isolated package gates supply the exact archives. Record the pre-existing public-artifact/CI prerequisite before Platform acceptance; do not call this local candidate published."
+    },
+    {
+      "id": "RB6-7",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "A partial pack is intentionally not reusable: the helper refuses any occupied identity and explicitly directs selection of a fresh version, preserving immutable artifacts. An interrupted local pack can cost a fresh candidate suffix but cannot silently pass the nine-package consumers. Atomic feed publication would add staging/recovery mechanics for this uncommon developer-only interruption."
+    },
+    {
+      "id": "RB6-8",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "The supported workflow executes pack operations sequentially against stable production inputs, and the selected candidate has independently verified before/after bindings for all 1945 production files plus build configuration and all archives. No inconsistent selected artifact is demonstrated. Making the manual helper independently safe against concurrent external source edits would add snapshot/guard machinery beyond the supported ordered build; current provenance does not claim a locked working tree."
+    },
+    {
+      "id": "RB6-9",
+      "verdict": "low",
+      "route": "patch",
+      "evidence": "The ABI helper uses the full canonical baseline revision but does not document that its tree must exist locally. Add the exact history prerequisite to the verification documentation so shallow/source-only checkouts do not discover it after a build."
+    },
+    {
+      "id": "RB6-10",
+      "verdict": "low",
+      "route": "patch",
+      "evidence": "The candidate consumer helper interpolates repository_root into NuGet.Config XML attributes without escaping. A valid checkout path with ampersands or quotes produces malformed XML. Generate that configuration using an XML writer and verify the helper through a special-character checkout path."
+    },
+    {
+      "id": "RV6-1",
+      "verdict": "medium",
+      "route": "patch",
+      "evidence": "Pre-verified regression gap: new SDK reminder filtering is covered by date-only suspensions but not a heterogeneous DateReached/ChildCompleted/ExternalSignal suspension. Add a mixed-await case asserting the sole date intent and exact resume condition alongside the independent expiry intent. Removing the filter must fail that regression."
+    }
+  ]
+}

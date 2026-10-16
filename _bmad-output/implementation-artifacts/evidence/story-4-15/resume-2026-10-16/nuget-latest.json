@@ -1,0 +1,65 @@
+[
+  {
+    "package": "Hexalith.EventStore.Contracts",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.292172+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Client",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.439010+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.DomainService",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.584633+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.ServiceDefaults",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.726777+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Aspire",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:27.879156+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Admin.Abstractions",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.021423+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Server",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.176877+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Testing",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.319085+00:00"
+  },
+  {
+    "package": "Hexalith.EventStore.Gateway",
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/index.json",
+    "latest": "3.122.0",
+    "latest_stable": "3.122.0",
+    "checked_utc": "2026-10-16T13:16:28.467440+00:00"
+  }
+]
