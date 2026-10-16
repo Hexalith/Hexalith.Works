@@ -255,7 +255,8 @@ internal static class MsBuildProjectEvaluation
             definingProjectPath,
             referenceOutputAssembly,
             outputItemType,
-            projectReferenceGlobalProperties);
+            projectReferenceGlobalProperties,
+            item.GetMetadataValue("Version"));
     }
 
     private static string EffectiveDefiningProjectPath(ProjectItem item, string itemType)

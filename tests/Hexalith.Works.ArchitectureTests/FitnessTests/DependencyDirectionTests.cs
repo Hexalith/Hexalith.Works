@@ -600,6 +600,28 @@ public sealed class DependencyDirectionTests
         AssertSharedCatalogOwnsRepositoryHexalithVersions(root);
     }
 
+    /// <summary>Source Contracts avoids package promotion while Release retains the same selected SDK candidate.</summary>
+    [Fact]
+    public void P0_EventStoreContractsCentralPinMatchesSelectedDependencyMode()
+    {
+        string root = RepositoryRoot.Locate();
+        string VersionIn(string file) => System.Xml.Linq.XDocument.Load(Path.Combine(root, file))
+            .Descendants("HexalithEventStoreVersion").ShouldHaveSingleItem().Value;
+        string candidate = VersionIn("Directory.Packages.props");
+        candidate.ShouldNotBeNullOrWhiteSpace();
+        VersionIn("Directory.Build.props").ShouldBe(candidate);
+
+        foreach (string project in new[] { "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj",
+            "src/Hexalith.Works/Hexalith.Works.csproj", "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" })
+        {
+            MsBuildProjectSnapshot debug = EvaluateProject(Path.Combine(root, project), "Debug");
+            debug.ItemsOfType("PackageVersion").ShouldNotContain(item => item.Identity == "Hexalith.EventStore.Contracts");
+            MsBuildProjectSnapshot release = EvaluateProject(Path.Combine(root, project), "Release");
+            release.ItemsOfType("PackageVersion").Where(item => item.Identity == "Hexalith.EventStore.Contracts")
+                .ShouldHaveSingleItem().Version.ShouldBe(candidate);
+        }
+    }
+
     [Fact]
     public void PlatformTestEdgePropagatesEffectiveSdkModeWithoutChangingSdkSiblingModes()
     {

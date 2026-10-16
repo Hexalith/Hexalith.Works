@@ -404,6 +404,30 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
 
     private static void Configure(IDistributedApplicationTestingBuilder builder, string key, string digestKey, string componentPath)
     {
+        // An opt-in process-local configuration copy can disable component file watching when the shared
+        // host has exhausted inotify. The fixture never changes its committed ACL, mTLS, or Dapr resources.
+        if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY") is { Length: > 0 } configDirectory)
+        {
+            configDirectory = Path.GetFullPath(configDirectory);
+            IDaprSidecarResource[] sidecars = [.. builder.Resources.OfType<ProjectResource>()
+                .SelectMany(project => project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation => annotation.Sidecar))];
+            sidecars.ShouldNotBeEmpty();
+            foreach (IDaprSidecarResource sidecar in sidecars)
+            {
+                sidecar.TryGetLastAnnotation<DaprSidecarOptionsAnnotation>(out var annotation).ShouldBeTrue();
+                DaprSidecarOptions options = annotation.ShouldNotBeNull().Options;
+                string committed = options.Config.ShouldNotBeNull("The sidecar has no committed Dapr configuration to replace.");
+                string config = Path.Combine(configDirectory, Path.GetFileName(committed));
+                File.Exists(config).ShouldBeTrue($"Missing Dapr configuration copy '{config}'.");
+                // The copy may only add the HotReload opt-out; every committed ACL/mTLS line must be preserved.
+                string[] allowedAdditions = ["features:", "- name: HotReload", "enabled: false"];
+                static string[] Lines(string path) => [.. File.ReadAllLines(path).Select(line => line.Trim()).Where(line => line.Length > 0)];
+                Lines(config).Where(line => !allowedAdditions.Contains(line)).ShouldBe(Lines(committed),
+                    $"'{config}' differs from the committed '{committed}' beyond the HotReload opt-out.");
+                sidecar.Annotations.Remove(annotation);
+                sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(options with { Config = config }));
+            }
+        }
         foreach (DaprComponentResource component in builder.Resources.OfType<DaprComponentResource>())
         {
             if (component.Options?.LocalPath is not { } original || component.Name is not ("statestore" or "pubsub")) continue;

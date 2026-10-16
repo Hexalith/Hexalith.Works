@@ -1,0 +1,39 @@
+[
+  {
+    "phase": "successful-callback-no-periodic-recovery",
+    "state": {
+      "source": {
+        "Tenant": "sdk415-callback-493ebabf9d",
+        "Domain": "work",
+        "Aggregate": "work-sdk415-callback-493ebabf9d"
+      },
+      "witness": {
+        "tenant": "sdk415-callback-493ebabf9d",
+        "domain": "work",
+        "aggregate": "work-sdk415-callback-493ebabf9d",
+        "version": 2,
+        "entries": [
+          {
+            "reminderName": "expiry-wrs-0PDFDHQYGJXKH7BN2CVHH0MB2ABZH0ADA865GWS0Z8XQS9276JNG",
+            "scheduleToken": "wrs-0PDFDHQYGJXKH7BN2CVHH0MB2ABZH0ADA865GWS0Z8XQS9276JNG",
+            "kind": "works.expiry.v1",
+            "dueUtc": "2026-10-16T12:22:48.0929223+00:00",
+            "scheduleRevision": 1,
+            "sourceDomain": "work",
+            "sourceAggregate": "work-sdk415-callback-493ebabf9d",
+            "sourceSequence": 1,
+            "payloadType": "ExpireWorkItem",
+            "payloadDigest": "WESXMY536TBHEKQK09AYW8QDD22PZ3ZFGMRABP22Q150KE4N0N9G",
+            "status": "Armed",
+            "attempts": 0,
+            "lastReasonCode": null,
+            "updatedAt": "2026-10-16T11:22:49.0911492+00:00",
+            "sourceMessageId": "01M5276JAMD3YJA9HAQZE1Y25F"
+          }
+        ],
+        "quarantine": []
+      },
+      "processCandidate": true
+    }
+  }
+]

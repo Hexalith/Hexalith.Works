@@ -257,9 +257,11 @@ public sealed class WorksSdkRecoveryCompositionTests
 
     /// <summary>Malformed callbacks cannot acquire legacy markers or erase an already durable SDK quarantine.</summary>
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task MalformedDeliveryCannotEraseSdkUnresolvedState(bool invalidMetadata)
+    [InlineData("valid")]
+    [InlineData("foreign-domain")]
+    [InlineData("invalid-envelope-metadata")]
+    [InlineData("reserved-tenant")]
+    public async Task MalformedDeliveryCannotEraseSdkUnresolvedState(string scenario)
     {
         var store = new InMemoryReadModelStore();
         var checkpoints = new ProcessCheckpointStore(store, Options.Create(new EventStoreProcessOptions()), TimeProvider.System);
@@ -272,6 +274,7 @@ public sealed class WorksSdkRecoveryCompositionTests
         }, TestContext.Current.CancellationToken);
         await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken);
         ProcessSourceState before = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken);
+        int storedKeys = store.Count;
         IReminderRegistrar registrar = Substitute.For<IReminderRegistrar>();
         registrar.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>())
             .Returns(new ReminderConvergenceResult(0, 0, 0, 1, 0));
@@ -285,12 +288,15 @@ public sealed class WorksSdkRecoveryCompositionTests
         var processor = new WorksDomainEventProcessor(provider.GetRequiredService<IServiceScopeFactory>(), markers,
             NullLogger<WorksDomainEventProcessor>.Instance);
         var envelope = new EventStoreDomainEventEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAV", source.Aggregate,
-            source.Tenant, "UnknownWorksFact", 2, DateTimeOffset.UnixEpoch, "synthetic-correlation", "json", [123])
-            { Domain = invalidMetadata ? "foreign" : "work" };
+            scenario == "reserved-tenant" ? "tenants" : source.Tenant, "UnknownWorksFact", 2, DateTimeOffset.UnixEpoch,
+            scenario == "invalid-envelope-metadata" ? " " : "synthetic-correlation", "json", [123])
+            { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
         EventStoreDomainEventProcessingResult result = await processor.ProcessAsync(envelope, TestContext.Current.CancellationToken);
-        result.ShouldBe(invalidMetadata ? EventStoreDomainEventProcessingResult.FailedInvalidPayload : EventStoreDomainEventProcessingResult.Processed);
+        result.ShouldBe(scenario == "valid" ? EventStoreDomainEventProcessingResult.Processed : EventStoreDomainEventProcessingResult.FailedInvalidPayload);
         (await checkpoints.GetAsync(source, TestContext.Current.CancellationToken)).ShouldBe(before);
+        store.Count.ShouldBe(storedKeys);
         markers.ReceivedCalls().ShouldBeEmpty();
+        if (scenario != "valid") registrar.ReceivedCalls().ShouldBeEmpty();
     }
 
 }

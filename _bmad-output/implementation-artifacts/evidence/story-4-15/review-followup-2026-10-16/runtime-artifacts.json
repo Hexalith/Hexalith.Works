@@ -1,0 +1,25 @@
+{
+  "artifacts": [
+    {
+      "rawPath": "/tmp/story415-open-review-live-final-state.jsonl",
+      "sha256": "d000ad212599e77f61731a30225e34bb19caeea27861b42a1782f7db27abb819"
+    },
+    {
+      "rawPath": "/tmp/story415-open-review-live-polling-sidecar.log",
+      "sha256": "f3ed2d080921426cad04a4b6206a7434ac9bbc47d50d388ae063df04a1223048"
+    },
+    {
+      "rawPath": "/tmp/story415-open-review-live-final-resources.json",
+      "sha256": "934ede3626ae2e9a40636c4f1f92aea618ca7c0ffdce32ce21509772d3510c1b"
+    },
+    {
+      "rawPath": "/tmp/story415-open-review-inotify.json",
+      "sha256": "56f3dc3f234de69144a56395df90f8d7c07f63cf6b6e28f3e89ed7b04061d7e4"
+    }
+  ],
+  "redactedFields": [],
+  "freshPassingPhases": [
+    "successful-callback-no-periodic-recovery"
+  ],
+  "freshRestartCascadePassing": false
+}

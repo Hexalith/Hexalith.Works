@@ -1,0 +1,13 @@
+{
+  "head": "db866cc9de2709b1a81371b326d0a4588e22c4a6",
+  "baselineCommit": "8679d7d700925a870e9931b3c43c745c063e459b",
+  "fullDiff": "/tmp/story415-final-all-oyf5iqvu.diff",
+  "followupDiff": "/tmp/story415-followup-300mdlop.diff",
+  "verifiedFreshLogs": 20,
+  "verifiedTemporaryConfigPairs": 4,
+  "immutableSelectedArchives": 9,
+  "frozenIntentByteIdentical": true,
+  "openReviewPatches": 0,
+  "status": "in-progress",
+  "workflowGate": "Step 03 matrix verification remains incomplete: current-source restart/cascade live test did not reach its body because dapr-sentry exited with code 1. Historical .9 restart proof remains separate; do not advance to completed review or done."
+}

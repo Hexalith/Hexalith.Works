@@ -1,0 +1,78 @@
+{
+  "Debug": [
+    {
+      "name": "Hexalith.EventStore.Admin.Abstractions/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Aspire/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Client/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Contracts/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.DomainService/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Gateway/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Server/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.ServiceDefaults/3.122.0",
+      "type": "project"
+    },
+    {
+      "name": "Hexalith.EventStore.Testing/3.122.0",
+      "type": "project"
+    }
+  ],
+  "Release": [
+    {
+      "name": "Hexalith.EventStore.Admin.Abstractions/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Aspire/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Client/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Contracts/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.DomainService/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Gateway/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Server/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.ServiceDefaults/3.122.0-story415.20261016.9",
+      "type": "package"
+    },
+    {
+      "name": "Hexalith.EventStore.Testing/3.122.0-story415.20261016.9",
+      "type": "package"
+    }
+  ]
+}

@@ -822,31 +822,61 @@ public sealed class WorksSdkProtectedHttpTests
     public async Task ProcessDispositionIngressRequiresProtectedTransportAndCurrentAuthority()
     {
         var store = new InMemoryReadModelStore();
+        bool authenticatedPrincipalObserved = false;
+        var defaultAuthorizer = new WorksProcessDispositionAuthorizer();
+        var observedAuthorizer = Substitute.For<IProcessDispositionAuthorizer>();
+        observedAuthorizer.AuthorizeAsync(Arg.Any<System.Security.Claims.ClaimsPrincipal>(), Arg.Any<ProcessSource>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            var principal = call.Arg<System.Security.Claims.ClaimsPrincipal>();
+            authenticatedPrincipalObserved = principal.Identity?.IsAuthenticated == true;
+            return defaultAuthorizer.AuthorizeAsync(principal, call.Arg<ProcessSource>(), call.Arg<CancellationToken>());
+        });
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
-            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"],
+            configure: services =>
+            {
+                services.RemoveAll<IProcessDispositionAuthorizer>();
+                services.AddSingleton(observedAuthorizer);
+            });
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
         var source = new ProcessSource(Tenant, "work", "existing-source");
         ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
+        app.Services.GetRequiredService<IProcessDispositionAuditSink>().ShouldBeOfType<WorksProcessDispositionAuditSink>();
         await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
-        (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
-        foreach ((bool channel, string? assertion, HttpStatusCode status) in new[]
+        ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
+        owned = await checkpoints.UpdateOwnedAsync(owned, state => state with
         {
-            (false, (string?)null, HttpStatusCode.Unauthorized),
-            (true, Assertion("domain-service:query"), HttpStatusCode.Forbidden),
-            (true, Assertion("domain-service:process"), HttpStatusCode.Forbidden),
+            Checkpoint = 1, Status = ProcessSourceStatus.Quarantined, FailureSequence = 2, ReasonCode = "invalid-evidence",
+        }, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var before = await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        string bearer = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = Issuer, Audience = "hexalith-eventstore", Expires = DateTime.UtcNow.AddMinutes(5),
+            Claims = new Dictionary<string, object> { ["sub"] = "synthetic-operator" },
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)), SecurityAlgorithms.HmacSha256),
+        });
+        foreach ((bool channel, string? assertion, string? credential, HttpStatusCode status) in new[]
+        {
+            (false, (string?)null, (string?)null, HttpStatusCode.Unauthorized),
+            (true, Assertion("domain-service:query"), (string?)null, HttpStatusCode.Forbidden),
+            (true, Assertion("domain-service:process"), (string?)null, HttpStatusCode.Forbidden),
+            (true, Assertion("domain-service:process"), bearer, HttpStatusCode.Unauthorized),
         })
         {
             using HttpResponseMessage denied = await client.SendAsync(Request("/work/processes/revalidate",
-                new WorksProcessDispositionRequest(source, "synthetic revalidation"), channel, assertion),
+                new WorksProcessDispositionRequest(source, "synthetic revalidation"), channel, assertion, credential),
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
             denied.StatusCode.ShouldBe(status);
-            (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+            (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(before);
         }
+        authenticatedPrincipalObserved.ShouldBeTrue();
+        await observedAuthorizer.Received(1).AuthorizeAsync(Arg.Any<System.Security.Claims.ClaimsPrincipal>(), source, Arg.Any<CancellationToken>());
     }
 
     private static WebApplication BuildProtectedHost(IReadModelStore store, string partiesAddress,
-        SharedProjectionEpochCoordinator? coordinator = null, string[]? settings = null)
+        SharedProjectionEpochCoordinator? coordinator = null, string[]? settings = null, Action<IServiceCollection>? configure = null)
         => WorksHost.Build([
             "--environment=Development",
             "--Logging:LogLevel:Default=Error",
@@ -875,6 +905,7 @@ public sealed class WorksSdkProtectedHttpTests
                 services.RemoveAll<SharedProjectionEpochCoordinator>();
                 services.AddSingleton(coordinator);
             }
+            configure?.Invoke(services);
         });
 
     private static WebApplication BuildPartiesGateway(Func<SubmitQueryRequest, HttpContext, IResult> query)

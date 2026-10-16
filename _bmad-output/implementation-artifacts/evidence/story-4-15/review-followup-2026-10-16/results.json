@@ -1,0 +1,182 @@
+[
+  {
+    "gate": "preliminary-debug-no-restore",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-build.log",
+    "sha256": "a12223555099eafd6296a261835d82971d66b8e3c218d8e6f385625f84b6b643",
+    "exitCode": 1,
+    "summary": null
+  },
+  {
+    "gate": "debug-restored-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-build-restored.log",
+    "sha256": "2537ed55fc6f49fa872b7531a40245f745670f8cbe9c78e53188a1cdd3aa5f30",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "preliminary-focused",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkProcessAuthorityTests' -class '*WorksSdkRecoveryCompositionTests' -class '*WorksSdkProtectedHttpTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-focused.log",
+    "sha256": "63d985adca1fd87e9e5857c108f156ab76b9e2b58cfe75080e81099a0b316fe6",
+    "exitCode": 1,
+    "summary": "Total: 105, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 9.378s"
+  },
+  {
+    "gate": "debug-final-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-final-build.log",
+    "sha256": "b2e55870ac9d43f2988a7268eb57b66d7b9a77ee5405da96920dc3b9dda7b1ac",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "debug-focused",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkProcessAuthorityTests' -class '*WorksSdkRecoveryCompositionTests' -class '*WorksSdkProtectedHttpTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-final-focused.log",
+    "sha256": "f56930fcdab16f65aee0e5c21b5ea5a05831ce9a1620127b705668da47596a72",
+    "exitCode": 0,
+    "summary": "Total: 105, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9.283s"
+  },
+  {
+    "gate": "architecture-build",
+    "command": "dotnet build tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-architecture-build.log",
+    "sha256": "a71a3c9ce1bca1a39a5b6200917d9cd2b87541a5cd45636d682a2694a65b64d9",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "architecture",
+    "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-architecture.log",
+    "sha256": "b6398899e4579d7720e403fc83dec92e304a5ccde09f9470cc078bcc8d795277",
+    "exitCode": 0,
+    "summary": "Total: 270, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13.375s"
+  },
+  {
+    "gate": "unit-build",
+    "command": "dotnet build tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-unit-build.log",
+    "sha256": "73c7a35c798a724aae21a53e677c39cb943a5890cb0de4eb0217a9cb956c8773",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "unit",
+    "command": "dotnet tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-unit.log",
+    "sha256": "96ce18ffcdbe92f3b04a968123c19402b532aee46c34b2fc1f0dae3370637bd3",
+    "exitCode": 0,
+    "summary": "Total: 589, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.519s"
+  },
+  {
+    "gate": "debug-integration",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-debug-all.log",
+    "sha256": "6e22dec660d0aeb0294cc30a09645775edb86bad405cb969bcf717ee8341da64",
+    "exitCode": 0,
+    "summary": "Total: 778, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 20.402s"
+  },
+  {
+    "gate": "release-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-release-build.log",
+    "sha256": "1306c6addd6f93ed1f83d0b5819a2e947449fa6f3e677566ab85e9ae88ef236e",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "release-integration",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests'",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-integration-release-all.log",
+    "sha256": "4b5114b26a917f794877ebe0d5128405c4162651889482bd250aa538e5a6d2ae",
+    "exitCode": 0,
+    "summary": "Total: 778, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 33.849s"
+  },
+  {
+    "gate": "debug-live-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-live-debug-build.log",
+    "sha256": "a0fd73154607451bcb0ff6bb7abdce8279440c5a0fa096f1621c03f2828ccbbb",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "live-initial",
+    "command": "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-open-review-live-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-live.log",
+    "sha256": "efb2ab69fca70002f7b7b8d068e3abe4fd42db3b0d29728ffa49479d19c059cf",
+    "exitCode": 1,
+    "summary": "Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 117.498s"
+  },
+  {
+    "gate": "live-polling",
+    "command": "DOTNET_USE_POLLING_FILE_WATCHER=1 WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-open-review-live-polling-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-live-polling.log",
+    "sha256": "55c53367a64228dc098001412c9a9ae9de7e007c31d722c8e9fc2afa8c2ed9e4",
+    "exitCode": 1,
+    "summary": "Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 206.268s"
+  },
+  {
+    "gate": "property-existing-assembly",
+    "command": "dotnet tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-property.log",
+    "sha256": "befaccb1a5a24536073eedf720c29f148b510c8203ab084464112fee7b331225",
+    "exitCode": 0,
+    "summary": "Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.246s"
+  },
+  {
+    "gate": "debug-final-fixture-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-live-final-build.log",
+    "sha256": "1ea22531d818260c73acbefcd2f14cd661612ea9e589ee097711613b184774c2",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "live-final",
+    "command": "DOTNET_USE_POLLING_FILE_WATCHER=1 WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-open-review-dapr-configs WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-open-review-live-final-state.jsonl WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=150 dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-live-final.log",
+    "sha256": "d6d0fdb86a21bdcdb5f704e37170ac1a465e5fc9a3888bfff4edc6ed734de400",
+    "exitCode": 1,
+    "summary": "Total: 2, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 45.948s"
+  },
+  {
+    "gate": "release-final-fixture-build",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-final-release-build.log",
+    "sha256": "d2f6bf1a16867313b108a72bb513a2c1c8d7c7e7f94bbe876bf48388286ee0ad",
+    "exitCode": 0,
+    "summary": "Build succeeded"
+  },
+  {
+    "gate": "final-sentry-log",
+    "command": "aspire logs dapr-sentry --apphost src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj --tail 30",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "rawOutput": "/tmp/story415-open-review-final-sentry-log-attempt.log",
+    "sha256": "3bed7f7212241279967ecbceea9445396f027b88cbf7a90208bef4cdc0f91a33",
+    "exitCode": 0,
+    "summary": null
+  }
+]

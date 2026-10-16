@@ -1,0 +1,34 @@
+[
+  {
+    "path": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs",
+    "sha256": "49c23b98c0f14588e2acd694408f14e72f66fb4debb315bc7ab6df0ffde4b387"
+  },
+  {
+    "path": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildEvaluatedItem.cs",
+    "sha256": "be1d73a8cdd84adbaed6ec6b72d2dc4ef8ca8fe1a95b0dc93bb9ad6365af9607"
+  },
+  {
+    "path": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs",
+    "sha256": "40c3a3efa3971059f9f186937eab697259bce18e10176f23646434333341f5f6"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs",
+    "sha256": "9ee861e5fe042735e34980fd5eea18b05bcf39336247e6e9cdd13ae816675616"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "sha256": "528f60c9751e07c2e920015e6f6a6937cd1db120654b279894c4c00e1dfc5738"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+    "sha256": "42c2d990c940b60a77925e47ebd44ad2328fb690e5ee6367d031761990dce017"
+  },
+  {
+    "path": "tests/Hexalith.Works.UnitTests/WorkItemExpiryWitnessTests.cs",
+    "sha256": "f5349ca730577661670c3c35cd00f8a696e430368157ef9576e5120154527325"
+  },
+  {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessAuthorityTests.cs",
+    "sha256": "325e00c74f05b376b1da61a97dbee3c0497c90cb831bf6726a1b97522492e80e"
+  }
+]

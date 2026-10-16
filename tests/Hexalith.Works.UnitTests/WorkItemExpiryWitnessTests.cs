@@ -44,6 +44,30 @@ public sealed class WorkItemExpiryWitnessTests
         state.Status.ShouldBe(WorkItemStatus.Expired);
     }
 
+    /// <summary>Mixed-case caller tenants normalize before the SDK's canonical lowercase schedule codec.</summary>
+    [Fact]
+    public void MixedCaseTenantCreatesReplaysAndExpiresWithCanonicalWitness()
+    {
+        var tenant = new TenantId("Tenant-Expiry");
+        tenant.Value.ShouldBe("tenant-expiry");
+        Should.Throw<ArgumentException>(() => ReminderIdentityCodec.ComputeScheduleToken("Tenant-Expiry", s_item.Value, s_due, 1));
+        var witness = new WorkItemExpirySchedule(s_due,
+            ReminderIdentityCodec.ComputeScheduleToken("tenant-expiry", s_item.Value, s_due, 1), 1);
+        witness.IsValidFor(tenant, s_item).ShouldBeTrue();
+        WorkItemCreated created = (WorkItemCreated)WorkItemAggregate.Handle(
+            new CreateWorkItem(tenant, s_item, "mixed-case proof", Expiry: witness), null).Events.Single();
+        var state = new WorkItemState();
+        state.Apply(JsonSerializer.Deserialize<WorkItemCreated>(JsonSerializer.Serialize(created))!);
+        state.TenantId.ShouldBe(tenant);
+        state.Expiry.ShouldBe(witness);
+        WorkItemExpired expired = (WorkItemExpired)WorkItemAggregate.Handle(
+            new ExpireWorkItem(new TenantId("TENANT-EXPIRY"), s_item, witness), state).Events.Single();
+        expired.ExpiryWitness.ShouldBe(witness);
+        state.Apply(JsonSerializer.Deserialize<WorkItemExpired>(JsonSerializer.Serialize(expired))!);
+        state.Status.ShouldBe(WorkItemStatus.Expired);
+        state.Expiry.ShouldBe(witness);
+    }
+
     /// <summary>A wrong token or identity cannot introduce a witnessed schedule.</summary>
     [Theory]
     [InlineData("token")]

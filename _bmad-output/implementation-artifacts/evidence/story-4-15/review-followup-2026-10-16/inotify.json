@@ -1,0 +1,485 @@
+{
+  "descriptorTotalsMayDoubleCountInheritedDescriptors": true,
+  "processes": [
+    {
+      "pid": 3895,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 142316,
+      "worksCommand": false
+    },
+    {
+      "pid": 3916,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 142310,
+      "worksCommand": false
+    },
+    {
+      "pid": 6789,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 47033,
+      "worksCommand": false
+    },
+    {
+      "pid": 85446,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 47033,
+      "worksCommand": false
+    },
+    {
+      "pid": 90790,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 47033,
+      "worksCommand": false
+    },
+    {
+      "pid": 88056,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 32462,
+      "worksCommand": false
+    },
+    {
+      "pid": 94317,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 32462,
+      "worksCommand": false
+    },
+    {
+      "pid": 16440,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 32278,
+      "worksCommand": false
+    },
+    {
+      "pid": 31663,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 29402,
+      "worksCommand": false
+    },
+    {
+      "pid": 56160,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 29402,
+      "worksCommand": false
+    },
+    {
+      "pid": 16346,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 29029,
+      "worksCommand": false
+    },
+    {
+      "pid": 14024,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 28363,
+      "worksCommand": false
+    },
+    {
+      "pid": 26381,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 27862,
+      "worksCommand": false
+    },
+    {
+      "pid": 56811,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 27862,
+      "worksCommand": false
+    },
+    {
+      "pid": 16095,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 27829,
+      "worksCommand": false
+    },
+    {
+      "pid": 84777,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 27767,
+      "worksCommand": false
+    },
+    {
+      "pid": 16556,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 27766,
+      "worksCommand": false
+    },
+    {
+      "pid": 37086,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 23846,
+      "worksCommand": false
+    },
+    {
+      "pid": 40492,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 23846,
+      "worksCommand": false
+    },
+    {
+      "pid": 48638,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 22803,
+      "worksCommand": false
+    },
+    {
+      "pid": 49758,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 22803,
+      "worksCommand": false
+    },
+    {
+      "pid": 62622,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 22803,
+      "worksCommand": false
+    },
+    {
+      "pid": 16177,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 17533,
+      "worksCommand": false
+    },
+    {
+      "pid": 38365,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 17533,
+      "worksCommand": false
+    },
+    {
+      "pid": 14003,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 15156,
+      "worksCommand": false
+    },
+    {
+      "pid": 56050,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 14937,
+      "worksCommand": false
+    },
+    {
+      "pid": 56315,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 13762,
+      "worksCommand": false
+    },
+    {
+      "pid": 15958,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 12984,
+      "worksCommand": false
+    },
+    {
+      "pid": 95449,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 12937,
+      "worksCommand": false
+    },
+    {
+      "pid": 44010,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 11683,
+      "worksCommand": false
+    },
+    {
+      "pid": 26694,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 11046,
+      "worksCommand": false
+    },
+    {
+      "pid": 10495,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 9652,
+      "worksCommand": false
+    },
+    {
+      "pid": 7808,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 9128,
+      "worksCommand": false
+    },
+    {
+      "pid": 5983,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 2983,
+      "worksCommand": false
+    },
+    {
+      "pid": 18194,
+      "process": "codex",
+      "inotifyDescriptors": 1,
+      "watchEntries": 2380,
+      "worksCommand": false
+    },
+    {
+      "pid": 80554,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 1761,
+      "worksCommand": false
+    },
+    {
+      "pid": 31857,
+      "process": "fluentui-mcp",
+      "inotifyDescriptors": 1,
+      "watchEntries": 436,
+      "worksCommand": false
+    },
+    {
+      "pid": 328,
+      "process": "codex",
+      "inotifyDescriptors": 1,
+      "watchEntries": 110,
+      "worksCommand": false
+    },
+    {
+      "pid": 5958,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 33,
+      "worksCommand": false
+    },
+    {
+      "pid": 25077,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 25,
+      "worksCommand": false
+    },
+    {
+      "pid": 11918,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 13249,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14044,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14227,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14606,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14681,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14684,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 14819,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 15410,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 15760,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 75016,
+      "process": "agy",
+      "inotifyDescriptors": 6,
+      "watchEntries": 8,
+      "worksCommand": false
+    },
+    {
+      "pid": 15577,
+      "process": "agy",
+      "inotifyDescriptors": 5,
+      "watchEntries": 7,
+      "worksCommand": false
+    },
+    {
+      "pid": 12355,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 5,
+      "worksCommand": false
+    },
+    {
+      "pid": 12571,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 5,
+      "worksCommand": false
+    },
+    {
+      "pid": 14890,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 5,
+      "worksCommand": false
+    },
+    {
+      "pid": 15464,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 5,
+      "worksCommand": false
+    },
+    {
+      "pid": 2074,
+      "process": "dbus-daemon",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 11722,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 13752,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 15305,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 15514,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 15658,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 39954,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 49450,
+      "process": "claude",
+      "inotifyDescriptors": 1,
+      "watchEntries": 4,
+      "worksCommand": false
+    },
+    {
+      "pid": 39153,
+      "process": "daprd",
+      "inotifyDescriptors": 1,
+      "watchEntries": 2,
+      "worksCommand": true
+    },
+    {
+      "pid": 12114,
+      "process": "MainThread",
+      "inotifyDescriptors": 1,
+      "watchEntries": 1,
+      "worksCommand": false
+    },
+    {
+      "pid": 14378,
+      "process": "MainThread",
+      "inotifyDescriptors": 1,
+      "watchEntries": 1,
+      "worksCommand": false
+    },
+    {
+      "pid": 80427,
+      "process": "dbus-daemon",
+      "inotifyDescriptors": 1,
+      "watchEntries": 1,
+      "worksCommand": false
+    }
+  ],
+  "totals": {
+    "descriptors": 137,
+    "watchEntries": 1048541
+  }
+}
