@@ -32,6 +32,11 @@ internal sealed class WorksPlatformAuditFaultStore(IReadModelStore inner) : IRea
     {
         if (key.StartsWith("platform:works:process-disposition-audit:", StringComparison.Ordinal)
             && (await inner.GetAsync<WorksPlatformAuditFault>(storeName, FaultKey, cancellationToken).ConfigureAwait(false)).Value?.Unavailable == true)
+        {
+            _ = await ReadModelWritePolicy.UpdateAsync<WorksPlatformAuditFault>(inner, storeName, FaultKey,
+                current => current! with { ObservedOutages = Math.Min(256, current.ObservedOutages + 1) },
+                maxAttempts: 8, cancellationToken: cancellationToken).ConfigureAwait(false);
             throw new IOException("Synthetic durable audit provider outage.");
+        }
     }
 }

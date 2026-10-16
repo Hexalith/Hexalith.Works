@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/tmp/story416-prep11/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+    "-result-xml",
+    "/tmp/story416-projection-prep11.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "environment": {
+    "WORKS_PLATFORM_APPHOST_ASSEMBLY": "/tmp/story416-verifier-run2/host/bin/release/apphost.dll",
+    "WORKS_PLATFORM_APPHOST_SHA256": "371283b98edb29fc411021d0317098f8826ff864dedb8f752fe4c0dafac85fbe",
+    "WORKS_PLATFORM_ROOT": "/home/administrator/projects/hexalith/platform",
+    "WORKS_PLATFORM_WORKS_ROOT": "/home/administrator/projects/hexalith/works",
+    "Platform__Works__SourceRoot": "/home/administrator/projects/hexalith/works",
+    "Version": "3.123.0",
+    "MinVerVersionOverride": "3.123.0",
+    "WORKS_PLATFORM_HOST_EVIDENCE": "/tmp/story416-projection-prep11-starts.jsonl",
+    "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story416-projection-prep11-states.jsonl",
+    "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180"
+  }
+}

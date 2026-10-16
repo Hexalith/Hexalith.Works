@@ -54,6 +54,14 @@
       "result": "2 passed, 0 failed, 0 skipped; actual OpenTelemetry HTTP/protobuf export and malformed/oversized request refusal",
       "xml": "story416-collector-tests.xml",
       "log": "story416-collector-tests.log"
+    },
+    {
+      "command": "dotnet /tmp/story416-final-consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll -class '*WorksPlatformTelemetryCollectorTests' -class '*WorksPlatformIdentityFixtureTests' -result-xml /tmp/story416-root-cheap.xml",
+      "cwd": "/home/administrator/projects/hexalith/works",
+      "exitCode": 0,
+      "result": "3passed,0failed,0skipped; required3methods independently checked",
+      "xml": "story416-root-cheap.xml",
+      "log": "story416-root-cheap.log"
     }
   ],
   "files": {
@@ -66,7 +74,9 @@
     "story416-collector-check-build-retry.log": "d49576967b78b51a1b7a41ed812a4bf3b3beea92856ea9f62ee5ca0a544103d5",
     "story416-runtime-platform-release-tests.log": "2fbfdd78e2e4696c3608a7a30410dd9810aa3c9a361a1cdc558e9cd2b2d8fb32",
     "story416-runtime-platform-release-tests.xml": "9788a87511cfb87145a5bac093b7ecf2b2c28cdd776ff6aabddfd518d71de61c",
-    "story416-runtime-release-build.log": "b6bba6093968cd87460e45ad56ef1e0b14d985a9cdd114c7ea564cdfc1a0a178"
+    "story416-runtime-release-build.log": "b6bba6093968cd87460e45ad56ef1e0b14d985a9cdd114c7ea564cdfc1a0a178",
+    "story416-root-cheap.xml": "05ea683bed88d077d597d1b9f2944e826f7f4fadc12e3c710b8c275036e87539",
+    "story416-root-cheap.log": "0390bcbf377b65959a15905af9dff7a21da72fcb19d385bc6e753c1189fe1996"
   },
   "sources": {
     "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryTelemetrySnapshot.cs": "16c3499eec4f5686dba550ad57cf41184ecb38b9664bcac36c9313934729d08a",
@@ -85,7 +95,11 @@
     "P/tests/Hexalith.Platform.Works.Tests/HostingEnvironment.cs": "78e0103533fd02534a0509dc5ccaab11174e38672b0ea40c1a5447b6bb5a24df",
     "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs": "84c2e0642fba754528849b7f16b4d53ca1b144d2c8db32c172e435c55631e17e",
     "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollectorTests.cs": "b41b8a185c5efd1e9dca70e992c32086f604ee0eab390131c210a97d4a6fdde9",
-    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformMetricPoint.cs": "7dbd648d050cfc14052363f4731a24011cb4d4b0a6c9dffcf3936602834d0321"
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformMetricPoint.cs": "7dbd648d050cfc14052363f4731a24011cb4d4b0a6c9dffcf3936602834d0321",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs": "7c6392201cc942bfdb50ead0a97aa66dd6cff35f61dfbf95f972cba3c884cee8",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixture.cs": "842a25bf6a2cc9d64f0606807cb66678bee848efb6f51e4c286c8e162dded915",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs": "cd8e16a1eb6ba6333942a1f48e4a1e6cde046855f2033e6b5858d44ce11b27a3",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs": "a26c78649f5ab17a66aee6b94798a3ed2e52a766ddd831625f6767d1df9b5644"
   },
   "wireSchemaSources": [
     "https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/metrics/v1/metrics.proto",

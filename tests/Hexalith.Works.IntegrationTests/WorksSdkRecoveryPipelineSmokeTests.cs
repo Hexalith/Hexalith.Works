@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
@@ -87,6 +88,15 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 await WaitAsync(() => Task.FromResult(telemetry.Points.Any(point => point.Name == "eventstore.domain.recovery.alert" && point.Value == 1)), token).ConfigureAwait(false);
                 telemetry.Failures.ShouldBeEmpty();
                 await EvidenceAsync("disabled-recovery-otlp-alert-export", telemetry.Points, token).ConfigureAwait(false);
+#if WORKS_PLATFORM_PARITY
+                // Persist the already published source through the SDK before testing protected HTTP disposition.
+                ProcessSourceState owner = (await checkpoints.AcquireAsync(source, token).ConfigureAwait(false)).ShouldNotBeNull();
+                await checkpoints.ReleaseAsync(owner, token).ConfigureAwait(false);
+                await EvidenceAsync("callback-protected-scoped-disposition-audit-before-mutation",
+                    await WorksPlatformOperationsChecks.VerifyAsync(app, store, source, token).ConfigureAwait(false), token).ConfigureAwait(false);
+#endif
+                await EvidenceAsync("platform-named-conflict-durable-quarantine-with-unchanged-family",
+                    await WorksPlatformProjectionChecks.VerifyQuarantineAsync(app, client, store, tenant, item, token).ConfigureAwait(false), token).ConfigureAwait(false);
             }
         }, builder =>
         {
@@ -123,6 +133,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         WorksPlatformTelemetryCollector telemetry = WorksAppHostSelection.IsPlatform
             ? await WorksPlatformTelemetryCollector.StartAsync(ct).ConfigureAwait(true) : new WorksPlatformTelemetryCollector();
         await using var telemetryCleanup = telemetry.ConfigureAwait(false);
+        if (WorksAppHostSelection.IsPlatform)
+            await isolation.CaptureAuthorityAsync(key, digestKey, ct).ConfigureAwait(true);
         string? committedEffect = null;
         string? resumedEffect = null;
         string resumeParent = "work-sdk415-await-parent-" + suffix;
@@ -462,13 +474,19 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             IReadOnlyDictionary<string, string> runtimeHashes = binaries.Hashes;
             IReadOnlyDictionary<string, string> fleet = await isolation.CaptureFleetAsync(ct).ConfigureAwait(true);
             await EvidenceAsync("complete-platform-fleet-snapshot", new { fleet, runtimeHashes, schedulerVolume = isolation.SchedulerVolumeName }, ct).ConfigureAwait(true);
+            key = string.Empty;
+            digestKey = string.Empty;
             await isolation.RestoreFleetAsync(ct).ConfigureAwait(true);
+            (key, digestKey) = await isolation.ReadRestoredAuthorityAsync(ct).ConfigureAwait(true);
+            rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(key), out _);
             binaries.Restore();
             WorksPlatformRollbackChecks.RuntimeBinaryHashes().OrderBy(pair => pair.Key).ShouldBe(runtimeHashes.OrderBy(pair => pair.Key));
             await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
             {
                 WorksPlatformRollbackChecks.RuntimeBinaryHashes().OrderBy(pair => pair.Key).ShouldBe(runtimeHashes.OrderBy(pair => pair.Key));
-                object convergence = await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, token).ConfigureAwait(false);
+                await isolation.VerifyRestoredConfigurationAsync(token).ConfigureAwait(false);
+                object convergence = await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, token, restored: true).ConfigureAwait(false);
+                (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, dateItem, token).ConfigureAwait(false)).ShouldBe(1);
                 (await CountAsync(client, tenant, childId, nameof(WorkItemCancelled), token).ConfigureAwait(false)).ShouldBe(1);
                 (await CountAsync(client, tenant, expiryItem, nameof(WorkItemExpired), token).ConfigureAwait(false)).ShouldBe(1);
                 await EvidenceAsync("complete-restore-retained-host-query-and-receipt-replay", new
@@ -524,6 +542,31 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 builder.CreateResourceBuilder(gateway.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar).WithReference(configStore);
             }
         }
+        if (WorksAppHostSelection.IsPlatform)
+        {
+            WorksPlatformAppChannelTokens.Configure(builder, componentPath);
+            string policyDirectory = Path.Combine(Path.GetDirectoryName(componentPath)!, "receiver-policies");
+            Directory.CreateDirectory(policyDirectory);
+            foreach (IDaprSidecarResource sidecar in builder.Resources.OfType<ProjectResource>()
+                .SelectMany(project => project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation => annotation.Sidecar)))
+            {
+                DaprSidecarOptionsAnnotation annotation = sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+                string policy = Path.Combine(policyDirectory, Path.GetFileName(annotation.Options.Config!));
+                if (!File.Exists(policy)) File.Copy(annotation.Options.Config!, policy);
+                string[] resourcePaths = [.. annotation.Options.ResourcesPaths.Select(original =>
+                {
+                    string destination = Path.Combine(policyDirectory, Path.GetFileName(original));
+                    if (!Directory.Exists(destination))
+                    {
+                        Directory.CreateDirectory(destination);
+                        foreach (string file in Directory.EnumerateFiles(original)) File.Copy(file, Path.Combine(destination, Path.GetFileName(file)));
+                    }
+                    return destination;
+                })];
+                sidecar.Annotations.Remove(annotation);
+                sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(annotation.Options with { Config = policy, ResourcesPaths = resourcePaths.ToImmutableHashSet(StringComparer.Ordinal) }));
+            }
+        }
         // An opt-in process-local configuration copy can disable component file watching when the shared
         // host has exhausted inotify. The fixture never changes its committed ACL, mTLS, or Dapr resources.
         if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY") is { Length: > 0 } configDirectory)
@@ -567,21 +610,25 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         // published proof consumer; MinVer otherwise derives the preceding repository tag.
         if (WorksAppHostSelection.IsPlatform)
             foreach (ProjectResource sourceProject in builder.Resources.OfType<ProjectResource>())
-                builder.CreateResourceBuilder(sourceProject).WithEnvironment("MinVerVersionOverride", "3.123.0");
+                builder.CreateResourceBuilder(sourceProject).WithEnvironment("MinVerVersionOverride", "3.124.0")
+                    .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
+                    .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development");
         string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;
-        foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "eventstore"))
+        foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "works-ha" or "eventstore"))
         {
             IResourceBuilder<ProjectResource> target = builder.CreateResourceBuilder(resource);
             target.WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
                 .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
-                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name)
+                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name == "eventstore" ? "eventstore" : "works")
                 .WithEnvironment("WORKS_SDK_PROOF_KEY", key);
-            if (resource.Name == "works")
+            if (resource.Name != "eventstore")
             {
                 if (WorksAppHostSelection.IsPlatform)
                 {
                     target.WithEnvironment("WORKS_PLATFORM_PARITY", "1")
                         .WithEnvironment("WORKS_PLATFORM_RECOVERY_GRANTS", JsonSerializer.Serialize(recoveryGrants))
+
+                        .WithEnvironment("EventStore__Processes__DiscoveryPageSize", "3")
                         .WithEnvironment("Works__Query__PermittedCoordinatorWorkloads__0", "eventstore")
                         .WithEnvironment("Authentication__Workload__AllowedCallers__0", "eventstore")
                         .WithEnvironment("Authentication__Workload__AllowedCallers__1", "eventstore-admin");
@@ -596,17 +643,26 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
                     .WithEnvironment("EventStore__Processes__RetryLimit", "10")
                     .WithEnvironment("EventStore__Processes__SupportedCandidateCount", "11")
-                    .WithEnvironment("EventStore__Processes__DiscoveryPageSize", "3")
+
                     .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:02")
                     .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
                     .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:01:00")
                     .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
             }
             else
-                target.WithEnvironment("Version", "3.123.0")
+            {
+                if (WorksAppHostSelection.IsPlatform)
+                    // Eleven sources and internal actor RPCs use authenticated sidecar partitions.
+                    // Keep the explicit synthetic load finite while retaining both SDK limiters.
+                    target.WithEnvironment("EventStore__RateLimiting__PermitLimit", "8192")
+                        .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimit", "8192")
+                        .WithEnvironment("EventStore__RateLimiting__TenantPermitLimits__anonymous", "8192")
+                        .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimits__anonymous", "8192");
+                target.WithEnvironment("Version", "3.124.0")
                     .WithEnvironment("EventStore__IdempotencyAdmission__Enabled", "true")
                     .WithEnvironment("EventStore__IdempotencyAdmission__ActiveDigestKeyVersion", "story415")
                     .WithEnvironment("EventStore__IdempotencyAdmission__DigestKeys__story415", digestKey);
+            }
         }
     }
 
@@ -625,6 +681,17 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     }
 
     private static async Task<int> CountAsync(HttpClient client, string tenant, string item, string type, CancellationToken token)
+    {
+        int count = -1;
+        await WaitAsync(async () =>
+        {
+            count = await ReadCountAttemptAsync(client, tenant, item, type, token).ConfigureAwait(false);
+            return count >= 0;
+        }, token).ConfigureAwait(false);
+        return count;
+    }
+
+    private static async Task<int> ReadCountAttemptAsync(HttpClient client, string tenant, string item, string type, CancellationToken token)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/streams/read")
         {

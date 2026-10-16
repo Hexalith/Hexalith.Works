@@ -1,0 +1,39 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; no public release acceptance",
+  "command": [
+    "/tmp/story416-candidate-consumer-v3/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+    "-result-xml",
+    "/tmp/story416-candidate-historical5.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "environment": {
+    "WORKS_PLATFORM_APPHOST_ASSEMBLY": "/tmp/story416-candidate-host-public-hosting/bin/debug/apphost.dll",
+    "WORKS_PLATFORM_ROOT": "/home/administrator/projects/hexalith/platform",
+    "WORKS_PLATFORM_WORKS_ROOT": "/home/administrator/projects/hexalith/works",
+    "Platform__Works__SourceRoot": "/home/administrator/projects/hexalith/works",
+    "Version": "3.123.1-story416-gateway",
+    "PackageVersion": "3.123.1-story416-gateway",
+    "FileVersion": "3.123.1.0",
+    "InformationalVersion": "3.123.1-story416-gateway",
+    "MinVerVersionOverride": "3.123.1-story416-gateway",
+    "HexalithEventStoreVersion": "3.123.1-story416-gateway",
+    "HexalithEventStoreRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "UseHexalithProjectReferences": "true",
+    "UseNuGetDeps": "false",
+    "HexalithAspireHostingDaprVersion": "13.6.1-beta.935",
+    "PlatformWorksRuntimeRoot": "/home/administrator/projects/hexalith/platform",
+    "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180",
+    "ArtifactsPath": "/tmp/story416-candidate-consumer-v3",
+    "UseArtifactsOutput": "true",
+    "WORKS_PLATFORM_RUNTIME_ARTIFACTS": "/tmp/story416-candidate-consumer-v3",
+    "WORKS_PLATFORM_APPHOST_SHA256": "11c30e548de3329d6fdebe61fcf8ecc7a9197e2947aced0d9df757ed07dd8839",
+    "WORKS_PLATFORM_HOST_EVIDENCE": "/tmp/story416-candidate-historical5-starts.jsonl",
+    "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story416-candidate-historical5-states.jsonl"
+  },
+  "fixtureOverlay": "/tmp/story416-candidate-fixture-overlay-v5b-refresh.json",
+  "runtimePrebuilds": "/tmp/story416-candidate-runtime-isolated-v5-prebuilds.json",
+  "platformHostBuild": "/tmp/story416-candidate-host-appchannel-build-retry-command.json"
+}

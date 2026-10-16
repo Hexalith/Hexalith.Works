@@ -1,0 +1,147 @@
+{
+  "counts": {
+    "total": "5683",
+    "passed": "5658",
+    "failed": "0",
+    "skipped": "25",
+    "errors": "0",
+    "time": "1060.346"
+  },
+  "command": [
+    "tests/Hexalith.EventStore.Server.Tests/bin/Debug/net10.0/Hexalith.EventStore.Server.Tests",
+    "-noLogo",
+    "-result-xml",
+    "/tmp/story416-sdk-gateway-full-correct-layout.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+  "rawLog": "/tmp/story416-sdk-gateway-full-correct-layout.log",
+  "rawXml": "/tmp/story416-sdk-gateway-full-correct-layout.xml",
+  "nonpassing": [
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_PublishesAtMostOnce",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainAnyClassifiedFailure_ActivityFailureReasonTagDoesNotContainRawExceptionMessage",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainMissingEventInRange_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainPublishFailed_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_DecrementsPendingCounterAtMostOnce",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_UnregistersReminderAtMostOnce",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainEventCountMismatch_DoesNotDecrementPendingCommandCount",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainEventCountMismatch_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_IdentityIndexCorruption_EmitsTrackerCorruptIdentityIndexReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_TrackerCorruption_AdvancesNextDueToPreventTightRetryStorm",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_TrackerCorruption_BoundedRetryWithinSameTick",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_ScopeIndexCorruption_EmitsTrackerCorruptScopeIndexReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_InvalidCharset_LogsProjectInvalidCharsetReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_PersistedCheckpointAheadOfAggregateStream_EmitsCheckpointDriftReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_PersistedCheckpointAheadOfAggregateStream_DoesNotRegressCheckpoint",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_HttpTimeoutWhileHostStillRunning_LogsProjectTimeoutAndDoesNotThrow",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_AnyClassifiedFailure_DoesNotLogEventPayload",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_EmptyProjectionType_LogsProjectInvalidProjectionTypeReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_TwoOverlappingCallsForSameActorId_AreSerializedByKeyedSemaphore",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_Upstream5xx_LogsProjectUpstream5xxReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_NullState_LogsProjectInvalidStateReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_Upstream4xx_LogsProjectUpstream4xxReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_HostTokenCancelled_PropagatesOperationCanceledException",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_UnsupportedContentType_LogsProjectUnsupportedContentTypeReasonCode",
+      "result": "Skip",
+      "message": ""
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_MalformedJson_LogsProjectMalformedJsonReasonCode",
+      "result": "Skip",
+      "message": ""
+    }
+  ],
+  "provenance": "Unpublished modified source compiled before explicit candidate metadata correction; archived metadata remains3.123.0, not a public archive."
+}

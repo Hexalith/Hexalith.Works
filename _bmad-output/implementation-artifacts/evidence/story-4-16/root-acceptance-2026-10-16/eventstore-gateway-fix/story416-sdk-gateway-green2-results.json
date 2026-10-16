@@ -1,0 +1,248 @@
+{
+  "counts": {
+    "total": "59",
+    "passed": "59",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "7.051"
+  },
+  "tests": [
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.OwningOutbox_BulkScanChargesEveryRawShardAndOccupiedEntryBeforeSelectingOneDueItem",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.NewEnsure_FencesStaleCompletionAndDeferral",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.FrozenLegacyIntent_RejectsOversizedReferencesWithoutPersistingThem",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.FrozenLegacyIntent_PersistsAcrossRestartAndNewAppendWithoutCompletingNewerActivation",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.OwningOutbox_ChargesExactRawLedgerReadsAndEveryFailedConditionalWrite",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests.FrozenLegacyIntent_RejectsRetargetingAndAlreadyBoundCandidateChanges",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderPublicationAfterIntentRetainsOriginalWithoutReleasedWrite",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_OneFinalizationDeadlineRetainsCommittedOriginalWorkUntilRecovery",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_IndependentWorkersRespectOriginalIntentClaimAndExpiredWorkerCannotRepublish(expireFirstClaim: False)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_IndependentWorkersRespectOriginalIntentClaimAndExpiredWorkerCannotRepublish(expireFirstClaim: True)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_AppendDuringStageRetainsFrozenHeadAndNewerActivationThenDeliversNextHead",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_TerminalNamedFailureDiscardsCandidatePreservesReasonAndReleasesEveryLifecycle",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_ActorProvenErasedEmptyStreamDeletesSelectedNamedRows",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ValidationFailureExportsBoundedUnknownRouteWithoutPayloadOrExceptionLogging",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_OverOwnerLimitFailsBeforeHistoryPreparationOrPublication",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_GuardedScopeRemainsFencedWhenCatalogDescriptorIsAbsent",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"writer\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"transient\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"intent\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"guarded\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"guarded-under-lease\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"writer-under-lease\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceCannotDowngradeOwnedOrChangedWork(boundary: \\\"newer-under-lease\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.NamedDelivery_UnchangedHeadRetriesIndependentlyWithoutRebindingLegacyIntent(namedCompleted: False)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.NamedDelivery_UnchangedHeadRetriesIndependentlyWithoutRebindingLegacyIntent(namedCompleted: True)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_InterruptedOriginalWorkResumesWithoutAnotherPreparationOrLogicalPublication(boundary: \\\"stage\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_InterruptedOriginalWorkResumesWithoutAnotherPreparationOrLogicalPublication(boundary: \\\"promote\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_InterruptedOriginalWorkResumesWithoutAnotherPreparationOrLogicalPublication(boundary: \\\"release\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_InterruptedOriginalWorkResumesWithoutAnotherPreparationOrLogicalPublication(boundary: \\\"cancel\\\")",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_PromotionFenceReleaseFailure_RemainsRunningAndRetryCompletesCleanup",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_MoreThanTwoPages_PersistsOracleEquivalentActorDetailIndexVersionsAndCheckpoints",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_UnactivatedWriterRetainsCompatibleScopedCheckpointProtocol",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_NoSourceAnchorUsesCanonicalReplayWithoutManufacturingGuardEvidence",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_RepeatedCompletedTriggerReadsExactSelectedProofWithoutAnotherPublication",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.NamedDelivery_AdvancedHeadProgressesWhileUnsuccessfulLegacyReplayKeepsItsOriginalLease",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_AnchorAbsentPrefixMutationDuringPromotionRetainsOldCheckpointAndPendingOriginalWork",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_ExactBoundaryAndBoundedTarget_PersistOracleEquivalentState(eventCount: 3, toPosition: null)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_ExactBoundaryAndBoundedTarget_PersistOracleEquivalentState(eventCount: 7, toPosition: 5)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_CanceledAfterFirstPage_PreservesEveryLiveSurfaceAndClearsLifecycle",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ChangedStoredPrefixAfterStagePreservesCandidatePendingWorkAndOldCompletion",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_InterruptedStorePromotion_PreservesLiveViewAndSameOperationRetryConverges",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_ResumeFromPersistedProgress_ReplaysCompletePrefixAndConverges",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceBeforeActivationUsesReleasedWriterAndOwningScopedCheckpoint(productionNamedCoordinator: False)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceBeforeActivationUsesReleasedWriterAndOwningScopedCheckpoint(productionNamedCoordinator: True)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ReleasedCompletedRowWithExistingActorSettlesReadOnlyThenNextHeadUsesBoundedReplay",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_NotificationFailureSettlesPublicationWithOnlyBoundedUnknownRouteOutcome",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_EmptyStream_PreservesExistingLiveStateAndCompletesWithoutProjectionWrite",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_OriginalPromotionReceiptResolvesLostResponseWithoutRepreparing",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_PausedBeforeLeaseCannotRegressNewOperatorSelectionAndRebuildDoesNotAdvanceDeliveryCheckpoint",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ProductionActorsReplayCompletePrefixOnceAndPersistScopedCompletion(head: 0)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ProductionActorsReplayCompletePrefixOnceAndPersistScopedCompletion(head: 256)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ProductionActorsReplayCompletePrefixOnceAndPersistScopedCompletion(head: 257)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ProductionActorsReplayCompletePrefixOnceAndPersistScopedCompletion(head: 771)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_ProductionActorsReplayCompletePrefixOnceAndPersistScopedCompletion(head: 10000)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_CompletedRowWithFailedOutboxCleanupRetainsProofAndReportsPendingRecovery(failActivationRemoval: False)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.LegacyFallback_CompletedRowWithFailedOutboxCleanupRetainsProofAndReportsPendingRecovery(failActivationRemoval: True)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceSettlesActivationOnlyAfterNamedWorkIsDurable(schedulingFails: False)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.OrdinaryDelivery_OlderSourceSettlesActivationOnlyAfterNamedWorkIsDurable(schedulingFails: True)",
+      "result": "Pass"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.Rebuild_HandlerPreparationFailure_PreservesEveryLiveSurfaceAndRemainsResumable",
+      "result": "Pass"
+    }
+  ]
+}

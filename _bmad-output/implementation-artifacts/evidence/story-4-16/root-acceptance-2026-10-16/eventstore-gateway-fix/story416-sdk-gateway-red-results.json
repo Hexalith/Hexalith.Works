@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "errors": "0",
+    "time": "0.559"
+  },
+  "tests": [
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.NamedDelivery_AdvancedHeadProgressesWhileUnsuccessfulLegacyReplayKeepsItsOriginalLease",
+      "result": "Fail"
+    }
+  ]
+}

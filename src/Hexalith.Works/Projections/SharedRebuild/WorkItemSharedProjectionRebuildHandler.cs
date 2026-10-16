@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Hexalith.Works.Projections.SharedRebuild;
 
 /// <summary>Reconciles the complete authoritative Works tenant inventory as one shared roll-up projection.</summary>
-public sealed class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedProjectionEpochHandler
+public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedProjectionPartitionedRebuildHandler
 {
     /// <summary>The named internal shared-projection route.</summary>
     public const string ProjectionTypeName = "works-shared-rollup";

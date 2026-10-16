@@ -1,0 +1,37 @@
+[
+  {
+    "activationId": "3519f33fa20a014334227f53622e2cc05d39184910385a946e2205d6bd02718a",
+    "tenantId": "sdk415-history-12029601db",
+    "domain": "work",
+    "aggregateId": "mine-12029601db",
+    "revision": 2,
+    "attempt": 47,
+    "nextDueUtc": "2026-10-16T17:13:37.0921266+00:00",
+    "legacyDelivery": {
+      "operationId": "01M52V5N7JXGEZZE3W1R4HEPTM",
+      "appId": "works",
+      "serviceVersion": "v1",
+      "headSequence": 1,
+      "headMessageId": "01M52V5N26C9QBVKHF300KNCQJ",
+      "projectionType": null,
+      "sourceFingerprint": "a686f4a0579bcc5b89fddd093bcbe1bff5522f8449f6f71960bef9d526c613c7",
+      "candidateFingerprint": null,
+      "invocationToken": "01M52V5N63RBGQASNFR521HS5N",
+      "leaseExpiresAtUtc": "2026-10-16T17:16:50.2588147+00:00",
+      "deliveryFencingToken": null,
+      "frozenActivationRevision": 1,
+      "sourceProof": {
+        "codecVersion": 1,
+        "tenantId": "sdk415-history-12029601db",
+        "domain": "work",
+        "aggregateId": "mine-12029601db",
+        "sourceIncarnation": "01M52V5N25M5W88FKNZBC8RZRK",
+        "headSequence": 1,
+        "headMessageId": "01M52V5N26C9QBVKHF300KNCQJ",
+        "cumulativeDigest": "20fb9d9e089cade90f2464f72e48d0e6fb483cd089d6d887cdc8b8a1168824ba",
+        "retainedFloor": 1,
+        "erased": false
+      }
+    }
+  }
+]

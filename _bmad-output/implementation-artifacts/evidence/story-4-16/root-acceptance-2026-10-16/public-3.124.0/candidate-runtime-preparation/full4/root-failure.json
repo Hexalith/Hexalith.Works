@@ -1,0 +1,26 @@
+{
+  "scope": "UNPUBLISHED latest-source candidate failed recovery drill; no restore acceptance",
+  "checkedUtc": "2026-10-16T20:25:52.731377+00:00",
+  "command": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full4 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+  "exitCode": 1,
+  "testResult": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "errors": "0",
+    "time": "516.542"
+  },
+  "durablePhasesReached": 13,
+  "actualPlatformStarts": 4,
+  "actualMappedDebugEntryHashesVerified": true,
+  "failure": "Initial SnapshotAsync before any rebuild: authoritative history5 events; projected history4. No fleet snapshot/restore qualified.",
+  "nextChange": "Bounded natural exact owner/global convergence, captured-prefix validation/append recapture, and initial baseline evidence; no repair dispatch. Requires fresh full5 execution.",
+  "filesSha256": {
+    "story416-candidate-3124-full4.xml": "a6e85225f2e5a2813c2c4739dc56935a5b71be2d4c6d8dc71a376db40382505e",
+    "story416-candidate-3124-full4-root-maps.json": "60a6d75fac3d783b36c2482b69b3fea33f3fda2abf00d176e7a5158b44d5b0c0",
+    "story416-candidate-3124-full4-starts.jsonl": "a59fd129a72e500eb6cfa6a67e71bf09f55617d704ae8aa3b1c0439456102ceb",
+    "story416-candidate-3124-full4-states.jsonl": "f54a8f2d0251d879c431cc142562890218e433142579fafa8033a5c01a4c4f8d",
+    "story416-candidate-3124-full4-command.json": "0eb9c5aa92dfe96f073dafc8a4a13fa8a1685051253d98deb49c9f6c70b9c9a8"
+  }
+}

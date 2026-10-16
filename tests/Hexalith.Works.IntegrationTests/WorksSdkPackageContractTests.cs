@@ -27,7 +27,7 @@ public sealed class WorksSdkPackageContractTests
     }
 #else
     [Fact]
-    public void ReleaseConsumerLoadsPinnedCandidateAndPublishedPartiesContracts()
+    public void ReleaseConsumerLoadsPublishedSdkAndPartiesContracts()
     {
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(
             Path.Combine(AppContext.BaseDirectory, "Hexalith.Works.IntegrationTests.deps.json")));
@@ -37,11 +37,11 @@ public sealed class WorksSdkPackageContractTests
         sdk.ShouldContain(library => library.Name.StartsWith("Hexalith.EventStore.Contracts/", StringComparison.Ordinal));
         foreach (JsonProperty library in sdk)
         {
-            library.Name.ShouldEndWith("/3.123.0");
+            library.Name.ShouldEndWith("/3.124.0");
             library.Value.GetProperty("type").GetString().ShouldBe("package");
         }
 
-        libraries.TryGetProperty("Hexalith.Parties.Client/1.2.1", out JsonElement parties).ShouldBeTrue();
+        libraries.TryGetProperty("Hexalith.Parties.Client/1.4.0", out JsonElement parties).ShouldBeTrue();
         parties.GetProperty("type").GetString().ShouldBe("package");
 
         JsonProperty platform = libraries.EnumerateObject().Where(

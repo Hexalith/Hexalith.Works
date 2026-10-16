@@ -1,0 +1,14 @@
+{
+  "command": [
+    "python3",
+    "_bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/check-public-runtime-source.py",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--platform-root",
+    "/home/administrator/projects/hexalith/platform"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 1,
+  "result": "Runtime SDK differs from published producer f78916d9534a72ba1515d97cfd51408e6eb809f1: src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs",
+  "meaning": "Prepared producer correction is unpublished. Runtime source cannot be claimed as the public 3.123.0 producer."
+}

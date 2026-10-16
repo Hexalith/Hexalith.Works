@@ -1,0 +1,23 @@
+{
+  "scope": "Latest public Release source-path and fleet-configuration qualification guard; not live parity acceptance",
+  "buildCommand": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Release --artifacts-path /home/administrator/projects/hexalith/works/artifacts/story416-root-config-3124 -m:1 -p:NuGetAudit=false -p:Version=3.124.0 -p:MinVerVersionOverride=3.124.0 -p:HexalithEventStoreVersion=3.124.0 -p:UseHexalithProjectReferences=false -p:UseNuGetDeps=true -p:HexalithAspireHostingDaprVersion=13.6.1-beta.935 -p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+  "buildExitCode": 0,
+  "warningCount": 0,
+  "errorCount": 0,
+  "testCommand": "artifacts/story416-root-config-3124/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksPlatformSelectedSdkPathsTests -result-xml /tmp/story416-config-guard.xml",
+  "testExitCode": 0,
+  "passed": 16,
+  "failed": 0,
+  "skipped": 0,
+  "seconds": 0.199,
+  "coverage": {
+    "selectedSdkPaths": 7,
+    "matchingConfiguration": 2,
+    "mismatchedOrMissingConfigurationRefusal": 7
+  },
+  "filesSha256": {
+    "configuration-guard.xml": "2f279e4b71557949b1b0e9e613d3f0f2a0c26dc683e0d48a5224cda87fb0c67d",
+    "configuration-guard-build.log": "f1905f55f192f08002233231d09c59916c7d92cac5acf705b93d736e21f3b19c",
+    "configuration-guard.log": "875a38dca1eb3e86f79be59e2c5b2e07e1d641ff9d5c4391516d34b2bce3c967"
+  }
+}

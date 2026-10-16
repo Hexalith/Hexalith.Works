@@ -1,0 +1,25 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; supporting fix qualification only, not public release or complete 4.16 acceptance",
+  "actualPlatformHost": true,
+  "testResult": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 138.885
+  },
+  "independentRootAudit": {
+    "twoCompleteRebuilds": true,
+    "concurrentSourceHead": 4,
+    "concurrentGlobalPosition": 14,
+    "automaticCatchUpAfterCommit": true,
+    "pureFoldFamilyDigestMatches": true,
+    "manualDiagnosticDispatchOccurred": false
+  },
+  "filesSha256": {
+    "story416-candidate-projection1.xml": "88b5956855e09dcee720b872a0632fb1390ce07fcd9b474a2f36b602d5267c57",
+    "story416-candidate-projection1-command.json": "5436a9ed18c8e2e35e0bb05898a992b9913b4acc9c846be4b79e64d099b0e814",
+    "story416-candidate-projection1-runtime-metadata.json": "efe6092cecf9c86247c22c9e1f4af3f9a5c3abf5ed88c8568ea817249a6bcaf8",
+    "story416-candidate-projection1-states.jsonl": "7c56844b239a6dce9e0748b378449e62c0ddd0208e52bc5a8613f6b17be5e61b",
+    "story416-candidate-projection1-starts.jsonl": "311c8a68cffe14b13b668cd3b3af0154daec2ae197fee7ae33e6325f829a7e96"
+  }
+}

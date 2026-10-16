@@ -1,0 +1,50 @@
+{
+  "checkedUtc": "2026-10-16T20:56:14.598681+00:00",
+  "packages": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Admin.Abstractions",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Gateway",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/index.json",
+      "latestStable": "3.124.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Aspire",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+      "latestStable": "3.124.0"
+    }
+  ]
+}

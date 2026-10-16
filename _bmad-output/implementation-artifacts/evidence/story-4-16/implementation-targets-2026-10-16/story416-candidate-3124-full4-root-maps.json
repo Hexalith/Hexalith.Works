@@ -1,0 +1,102 @@
+{
+  "scope": "Independent /proc mapped assembly check, unpublished candidate supporting evidence only",
+  "checkedUtc": "2026-10-16T20:09:55.500618+00:00",
+  "expectedResources": [
+    "eventstore",
+    "eventstore-admin",
+    "works",
+    "eventstore-operations"
+  ],
+  "mappedResources": 4,
+  "allFourExpectedEntriesMatch": true,
+  "processes": [
+    {
+      "pid": 31424,
+      "process": "Hexalith.Works.",
+      "entryMappings": [],
+      "sdkMappings": [
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.EventStore.Aspire.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.EventStore.Client.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.EventStore.Contracts.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.EventStore.DomainService.dll"
+      ],
+      "allMappedPathsAreDebug": true
+    },
+    {
+      "pid": 39159,
+      "process": "Hexalith.EventS",
+      "entryMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Operations.dll",
+          "sha256": "3b1a764e138bcc13716a4c847fd61855a676f3fab5bf3d05791299e47060b71f",
+          "matchesRecordedEntry": true
+        }
+      ],
+      "sdkMappings": [
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Operations.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.ServiceDefaults.dll"
+      ],
+      "allMappedPathsAreDebug": true
+    },
+    {
+      "pid": 39535,
+      "process": "Hexalith.EventS",
+      "entryMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.dll",
+          "sha256": "5a03ef3643d050e43c3de321a70d23ec4e5094df32499d43d2197490d815bb38",
+          "matchesRecordedEntry": true
+        }
+      ],
+      "sdkMappings": [
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Admin.Abstractions.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Client.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Contracts.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.DomainService.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Gateway.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Server.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.ServiceDefaults.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.dll"
+      ],
+      "allMappedPathsAreDebug": true
+    },
+    {
+      "pid": 40618,
+      "process": "Hexalith.Works",
+      "entryMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.Works.dll",
+          "sha256": "e16623b86fd8f7915da10a6020cad9d27e4d4d920ee7c302386d8ecc23f5c4a5",
+          "matchesRecordedEntry": true
+        }
+      ],
+      "sdkMappings": [
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.EventStore.Server.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.Client.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.Contracts.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.DomainService.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.ServiceDefaults.dll"
+      ],
+      "allMappedPathsAreDebug": true
+    },
+    {
+      "pid": 42323,
+      "process": "Hexalith.EventS",
+      "entryMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.Host.dll",
+          "sha256": "f3943382e1c25d2a4ce47b7112719ea68824eed515f7e94a4c9a8fa54402b631",
+          "matchesRecordedEntry": true
+        }
+      ],
+      "sdkMappings": [
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Abstractions.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.Host.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Contracts.dll",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.ServiceDefaults.dll"
+      ],
+      "allMappedPathsAreDebug": true
+    }
+  ]
+}

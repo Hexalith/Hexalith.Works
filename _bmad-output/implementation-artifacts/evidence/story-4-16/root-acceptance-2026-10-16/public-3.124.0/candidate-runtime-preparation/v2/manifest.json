@@ -1,0 +1,16 @@
+{
+  "scope": "Unpublished V2 runtime preparation only; original full6 input receipts preserved",
+  "filesSha256": {
+    "story416-latest-candidate-v2-runtime.json": "e33c0db6c4205e8c4fc6486fa8a735ecf1cd9b3e7c8431f21c4bb255bc2e4755",
+    "story416-latest-candidate-v2-metadata.json": "24ad4e1b7d19648cea2459ca9436380308fdf64c1cf3692caec7f4c72fb5bb4a",
+    "story416-candidate-3124-consumer-producer-v2-prepare.json": "43a012f8f4077251aca00ecb9e25f57f329283d32c98f9962098d8ea99d56449",
+    "story416-latest-candidate-v2-runtime-0.log": "9998af45b783f339f83d18a9d6ca6d3b4da94d29435d12d9334366faf63517d4",
+    "story416-latest-candidate-v2-runtime-1.log": "6f3314c772b85aca0beea06d0fd3011b1cb2f9a45ba074f5a0908e4fa4c2cabd",
+    "story416-latest-candidate-v2-runtime-2.log": "d8d26b27e6d3d11122b4b13563e0d7497a85d13110c0053f6f7da8e410062d72",
+    "story416-latest-candidate-v2-runtime-3.log": "332b4ed318326cde0eb602bf6310ef9ba430c729448101dc37e147b62567999d",
+    "story416-latest-candidate-v2-runtime-4.log": "1a11b71124d0e125445de614a1714a92f60538486428312cf0c3d255b752906f",
+    "story416-candidate-3124-consumer-producer-v2-build-0.log": "dc23518ab67ec7b68339af537b1696667840a4137cebd00431bcf158bb6d8ad8",
+    "story416-candidate-3124-host-debug-v2-command.json": "3f65f9978e6a737a7412540074d7d644af59b59093a38a87d707004cd092ab11",
+    "story416-candidate-3124-host-debug-v2-build.log": "87688bac975d034a7d837d60618dceb612b6ce0a1449fe7412addaaa06b7b90b"
+  }
+}

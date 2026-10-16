@@ -1,0 +1,70 @@
+{
+  "scope": "FAILED unpublished candidate V2 full recovery; no complete restore acceptance",
+  "checkedUtc": "2026-10-16T20:59:57.131048+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full6 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 1,
+  "testResult": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "errors": "0",
+    "time": "560.690"
+  },
+  "qualifies": false,
+  "durablePhasesReached": 18,
+  "actualPlatformStarts": 4,
+  "passingSupportingObservations": {
+    "naturalConvergence": {
+      "naturalCatchUp": true,
+      "polls": 1,
+      "recapturedHeads": 0,
+      "elapsedMilliseconds": 116,
+      "sourceCount": 11,
+      "allExactOwnerAndGlobalHeadsMatch": true
+    },
+    "twoSharedRebuilds": {
+      "before": {
+        "Generation": 0,
+        "Digest": "204285dc6ae0586ec1c77e3d06ec3c1527880e948f6e01f507a8889d2c126a8a"
+      },
+      "after": {
+        "Generation": 1,
+        "Digest": "204285dc6ae0586ec1c77e3d06ec3c1527880e948f6e01f507a8889d2c126a8a"
+      },
+      "concurrentDelivery": {
+        "command": "LinkConversation",
+        "committedSourceHead": 7,
+        "committedGlobalPosition": 39,
+        "before": {
+          "Generation": 1,
+          "Digest": "204285dc6ae0586ec1c77e3d06ec3c1527880e948f6e01f507a8889d2c126a8a"
+        },
+        "after": {
+          "Generation": 2,
+          "Digest": "f14cc57ea1b6c5fb95568fe10bbbe28de748f98bd7c4dee4a710e81d11881c92"
+        },
+        "expectedDigest": "f14cc57ea1b6c5fb95568fe10bbbe28de748f98bd7c4dee4a710e81d11881c92",
+        "actualNewDeliveryDuringCapture": true,
+        "oldGenerationStayedReadable": true,
+        "automaticCatchUpAfterCommit": true,
+        "redeliveryLogicalCount": 1
+      }
+    },
+    "snapshot": {
+      "redisKeyCount": 678,
+      "fleetInventoryEntries": 16,
+      "runtimeBinaryInventoryEntries": 1211
+    }
+  },
+  "failure": "RestoreFleetAsync line229: A restored synthetic value differs from its backup. Retained fleet was not started; no complete rollback qualifies.",
+  "filesSha256": {
+    "story416-candidate-3124-full6.xml": "1f960e01de4a69d2885fba62cea0c13d3a13498f863495fe7138e5dd40d54435",
+    "story416-candidate-3124-full6-command.json": "f40f988ee6827745524ad7649b4191fd0c1ad49b2d722b389657b52413e541e0",
+    "story416-candidate-3124-full6-starts.jsonl": "a2e2213cbd368dcbae938ae914de02e5dd20deb7428cdb8661fcb7933619ca4f",
+    "story416-candidate-3124-full6-states.jsonl": "132892f1f0d2c6a0c5a80eef222d330aa36b200f0e9f28fcee2594aee0677b73",
+    "story416-candidate-3124-full6-root-maps-205015.json": "1466dff81ef31ce2c8c7c916b03d8a7e1ca2fef2f5c94109d3de0011380c9d50",
+    "story416-candidate-3124-full6-root-maps-205057.json": "f2a709b6553e57ab6ff99c69f4b2c95dd7e03b084d03e77234f308dfacba1b0d"
+  }
+}

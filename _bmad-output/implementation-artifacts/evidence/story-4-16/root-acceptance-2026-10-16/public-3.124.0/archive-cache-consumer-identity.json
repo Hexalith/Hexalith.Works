@@ -1,0 +1,143 @@
+{
+  "scope": "Independent public3.124 archive/cache/Release-consumer byte identity; not live parity acceptance",
+  "checkedUtc": "2026-10-16T20:34:15.779828+00:00",
+  "consumer": "/home/administrator/projects/hexalith/works/artifacts/story416-root-config-3124/bin/Hexalith.Works.IntegrationTests/release",
+  "packages": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "publicArchiveSha256": "3eba6febc7ee3bf06a25b46c5cd770ce869f1a631e4a93683f7f15ab97ecb635",
+      "cachedArchiveSha256": "3eba6febc7ee3bf06a25b46c5cd770ce869f1a631e4a93683f7f15ab97ecb635",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Contracts.dll",
+          "archiveSha256": "067b27b8f865340bf5633204e01b1cb7710017d9b7551eb5f667ab9b2d2da1e0",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "publicArchiveSha256": "a4c5b8aa7a5d2a165f90a45a33de2f479157ffff1aed1ea51d2c037e7d400736",
+      "cachedArchiveSha256": "a4c5b8aa7a5d2a165f90a45a33de2f479157ffff1aed1ea51d2c037e7d400736",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Client.dll",
+          "archiveSha256": "c17fe1d05477308e5ff61d9dc6a7c5fac686c310e923190f07ec0130ac8a49d5",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "publicArchiveSha256": "9729128546171703d22b50ab8ba6722dfb00b9d2960172a469ee48882dcb37d5",
+      "cachedArchiveSha256": "9729128546171703d22b50ab8ba6722dfb00b9d2960172a469ee48882dcb37d5",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+          "archiveSha256": "027c20158d304462906f3ab75579173bce296eb92257f23b7a054ab4ac4f2b6a",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "publicArchiveSha256": "b189a3f54b62e583044450acbf53a62f65ab6e524e6ce13f968d0fe71b32c741",
+      "cachedArchiveSha256": "b189a3f54b62e583044450acbf53a62f65ab6e524e6ce13f968d0fe71b32c741",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.DomainService.dll",
+          "archiveSha256": "9f1e0a9bf525b210c5965ba65467ed802ee8ce2ff96253d19f05268b8dd0f49a",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "publicArchiveSha256": "66374a5d0d976d4dc62b12347ac309f0646a75fef5ae114eed55c73d70d5c250",
+      "cachedArchiveSha256": "66374a5d0d976d4dc62b12347ac309f0646a75fef5ae114eed55c73d70d5c250",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Server.dll",
+          "archiveSha256": "0bf0158f856e87834ad52d6c2f26ea5ae65dd1fa174c8303b49f6ce56c5f3146",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Admin.Abstractions",
+      "publicArchiveSha256": "6a65ce7be952902ade171d3d2dd92cffcc0fa52844513732d87bca75e6569218",
+      "cachedArchiveSha256": "6a65ce7be952902ade171d3d2dd92cffcc0fa52844513732d87bca75e6569218",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+          "archiveSha256": "8a42c660090cb806e12a4c9d2ff37b32235ce6bee0306610e0a3b0982b043ba5",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "publicArchiveSha256": "abc9a3e0fad744fccde1578800b9fd4a114916ffa170343587942f19a4e048ee",
+      "cachedArchiveSha256": "abc9a3e0fad744fccde1578800b9fd4a114916ffa170343587942f19a4e048ee",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Testing.dll",
+          "archiveSha256": "37de755e23547ffeaebc1ba25a37865a8b13889309926cd80adabf31a7501485",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Gateway",
+      "publicArchiveSha256": "9b16dfa238a1ca65eb5de40622c8bca0260e890535d2dc1e14479bac4dbfc72f",
+      "cachedArchiveSha256": "9b16dfa238a1ca65eb5de40622c8bca0260e890535d2dc1e14479bac4dbfc72f",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Gateway.dll",
+          "archiveSha256": "51dffc8791aee70f81f007704f57ccdaa94bb0c15a34fa6239e8ccd1b7951e32",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    },
+    {
+      "package": "Hexalith.EventStore.Aspire",
+      "publicArchiveSha256": "3c871200e08ec1a1390bdb638818f5418a3323edd548096598e083359b8fb967",
+      "cachedArchiveSha256": "3c871200e08ec1a1390bdb638818f5418a3323edd548096598e083359b8fb967",
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Aspire.dll",
+          "archiveSha256": "ed37f73f64f02a1a66a777815377fb4190cd71d19737b2a746c00f30be80716c",
+          "cacheMatchesArchive": true,
+          "consumerPresent": true,
+          "consumerMatchesArchive": true
+        }
+      ],
+      "archiveMatchesOfficialDownload": true
+    }
+  ],
+  "allOfficialArchiveAndConsumerBytesMatch": true
+}

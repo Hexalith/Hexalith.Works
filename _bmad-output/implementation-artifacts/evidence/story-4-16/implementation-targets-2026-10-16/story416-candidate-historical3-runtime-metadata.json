@@ -1,0 +1,34 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; no public release acceptance",
+  "deploymentCandidateMetadataVerified": true,
+  "artifacts": [
+    {
+      "path": "/tmp/story416-candidate-consumer-v3/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Server.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "2d500357554a6b899c29e61ac2f309bd978f734b517eb729f7e4824240e53b5f"
+    },
+    {
+      "path": "/tmp/story416-candidate-consumer-v3/bin/Hexalith.EventStore/debug/Hexalith.EventStore.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "f89d9a5434b295bc68b6a574c46c7b4084fbcd9c56722e0bcd3d60b39c19a706"
+    },
+    {
+      "path": "/tmp/story416-candidate-consumer-v3/bin/Hexalith.Works/debug/Hexalith.EventStore.DomainService.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "256cb7069d11dac5833831f16b5f7ed8bb5c927563bc3d263f9cff5a6709aa8b"
+    },
+    {
+      "path": "/tmp/story416-candidate-consumer-v3/bin/Hexalith.Works/debug/Hexalith.Works.dll",
+      "assemblyVersion": "3.0.0.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+b1c96bbacbe9cbb09f0b159057928c37b15e85d7",
+      "sha256": "653c9c90433934a3e9afdd56751f03aa653dee202129018fc5e31e2a1da1d7b5"
+    }
+  ]
+}

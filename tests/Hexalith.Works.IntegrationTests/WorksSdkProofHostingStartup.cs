@@ -47,12 +47,15 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             services.AddSingleton<WorksSdkProofIntentRegistry>();
             if (role == "works")
             {
+                if (Environment.GetEnvironmentVariable(WorksPlatformReminderCallbackProbe.ActorEnvironment) is { Length: > 0 })
+                    services.AddSingleton<IStartupFilter, WorksPlatformReminderCallbackProbe>();
 #if WORKS_PLATFORM_PARITY
                 if (Environment.GetEnvironmentVariable("WORKS_PLATFORM_PARITY") == "1")
                 {
                     ProcessSource[] grants = JsonSerializer.Deserialize<ProcessSource[]>(
                         Environment.GetEnvironmentVariable("WORKS_PLATFORM_RECOVERY_GRANTS") ?? "[]")!;
                     services.AddWorksSyntheticRecoveryRuntime(context.HostingEnvironment, grants, "eventstore-admin", "statestore");
+                    services.AddSingleton<IStartupFilter>(_ => new WorksPlatformDispositionProbe(grants));
                     services.AddSingleton<Hexalith.EventStore.Client.Processes.IProcessDispositionAuditSink>(provider =>
                         new WorksSyntheticDispositionAuditSink(new WorksPlatformAuditFaultStore(provider.GetRequiredService<Hexalith.EventStore.Client.Projections.IReadModelStore>()),
                             provider.GetRequiredService<WorksSyntheticDispositionAuthorizer>(), "statestore", provider.GetRequiredService<TimeProvider>()));

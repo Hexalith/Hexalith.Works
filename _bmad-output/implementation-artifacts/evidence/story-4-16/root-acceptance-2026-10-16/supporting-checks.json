@@ -1,0 +1,317 @@
+{
+  "scope": "supporting independent root checks; full fresh verifier and three reviews still required",
+  "ha": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": "99.074",
+    "commandFile": "story416-root-ha2-command.json"
+  },
+  "ledgerGateTests": 6,
+  "buildsPrerequisite": {
+    "configuration": "Debug",
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0,
+    "rootEdits": false
+  },
+  "files": {
+    "story416-root-ha2.xml": "ee0446c230e2e98f83fb54b55857a06b312a7d6dcf5290a7d64f9875a34358d5",
+    "story416-root-ha2.log": "6992547f05a68dc54d30ec79b01ac8808d5918aed9795d7e027f8b98453fd36d",
+    "story416-root-ha2-command.json": "597000b2d6732439250513a13fb424229af49d2f9e47f00c13adcf0b991074eb",
+    "story416-root-ha2-starts.jsonl": "56a4d6957befaee2d053597292522b5cafa963225ba0bd26f5f145f6e3af8576",
+    "story416-root-ha2-states.jsonl": "63b6a25950c93d83328e881fc36607ecad2ab0e2822becd8b9230984186bd4de",
+    "story416-root-ledger-gates.log": "ef386b9450e4a9e0702fd0d71a232e9618dac6400a98e7dbf82e7fd4deb87b9d",
+    "story416-builds-prerequisite-check.log": "5b9277a9d33f9b420256d2331cfc9351bee40f61b7fc959655b288ad7460f777",
+    "story416-root-supporting-final.log": "f4a3d3b8f545790229f340b53ab9cdac9e9595e30e99cc49d048ab93f75e627a",
+    "story416-root-supporting-final.xml": "0d7aa458788b640aff2b05431051ebf4e21a36e431c01fdffde349d53f0478db",
+    "story416-root-supporting-final2.log": "171c7a906d43bcb9b4fe2b772b9e04304ceb2fc1d80529e5b5f76c40a4674bd1",
+    "story416-root-supporting-final2.xml": "99456d0123ca42a95a013fb6433ffbf97671331b678d85b31394ad42fc9e1c64",
+    "story416-root-architecture.log": "40852b52ff32b4c1d5287aeb7079774cfd4e20be5bca11434efe1940de4a930f",
+    "story416-root-architecture.xml": "57ebd619b1949e00f2cbee4a0620a738692155530fb35b70cb3ce2a8e8b76ddd"
+  },
+  "haSource": {
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "7aa51fc2807477be967c4328dc92c095074567ad621899b96108dbb8edbaef95",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustChecks.cs": "5e65afc0ab318a86deb0d4bde445c11fefb2bf10751becb51e2b3040e8af3722"
+  },
+  "consumerAssembly": {
+    "path": "/tmp/story416-root-ha-consumer2/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll",
+    "sha256": "bb0d805dafba9b3c363a13180bcb384ff7235dfe32e3a8d3850071114cdbfb99"
+  },
+  "story416-root-supporting-final": {
+    "total": "58",
+    "passed": "50",
+    "failed": "8",
+    "skipped": "0",
+    "errors": "0",
+    "time": "1.400",
+    "name": "/tmp/story416-verifier-run2/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll"
+  },
+  "story416-root-supporting-final2": {
+    "total": "58",
+    "passed": "58",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "1.593",
+    "name": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/supporting-final-20261016t1644/Hexalith.Works.IntegrationTests.dll"
+  },
+  "story416-root-architecture": {
+    "total": "270",
+    "passed": "270",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "15.317",
+    "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll"
+  },
+  "supportingExecutionNote": "Initial 58-test invocation outside Works failed the 8 pre-existing repository-ancestor config-copy tests; byte-identical consumer copied into ignored Works artifacts and all 58 passed. No source edit to those tests. Architecture assembly was retained from accepted 4.15 and reread current source guards.",
+  "supportingCommands": [
+    [
+      "artifacts/story-4-16/supporting-final-20261016t1644/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksPlatformTelemetryCollectorTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarnessTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksSdkDaprConfigCopyTests",
+      "-result-xml",
+      "/tmp/story416-root-supporting-final2.xml"
+    ],
+    [
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-root-architecture.xml"
+    ]
+  ],
+  "supportingConsumerSha256": "517e3b8cada4a332cd4d20b8bf9459689dff51667f301d4c5d5f4a37470462f1",
+  "latestRootChecks": {
+    "architecture": {
+      "passed": 270,
+      "failed": 0,
+      "skipped": 0,
+      "xml": "story416-root-architecture-current.xml"
+    },
+    "publicConsumerSupporting": {
+      "passed": 116,
+      "failed": 0,
+      "skipped": 0,
+      "xml": "story416-supporting-prep13.xml"
+    },
+    "candidateProducerRelated": {
+      "passed": 59,
+      "failed": 0,
+      "skipped": 0,
+      "xml": "eventstore-gateway-fix/story416-sdk-gateway-explicit-candidate.xml"
+    },
+    "candidateSourceBroadSdkServer": {
+      "passed": 5658,
+      "failed": 0,
+      "skipped": 25,
+      "result": "eventstore-gateway-fix/full-server-correct-layout-results.json",
+      "qualifiesWorksAcceptance": false
+    },
+    "publicR4": {
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "result": "public-r4-failure.json"
+    },
+    "publicationGate": {
+      "exitCode": 1,
+      "command": "public-runtime-source-guard-command.json"
+    }
+  },
+  "candidateRuntimeProjection": {
+    "scope": "UNPUBLISHED SOURCE CANDIDATE; supporting fix qualification only, not public release or complete 4.16 acceptance",
+    "actualPlatformHost": true,
+    "testResult": {
+      "passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 138.885
+    },
+    "independentRootAudit": {
+      "twoCompleteRebuilds": true,
+      "concurrentSourceHead": 4,
+      "concurrentGlobalPosition": 14,
+      "automaticCatchUpAfterCommit": true,
+      "pureFoldFamilyDigestMatches": true,
+      "manualDiagnosticDispatchOccurred": false
+    },
+    "filesSha256": {
+      "story416-candidate-projection1.xml": "88b5956855e09dcee720b872a0632fb1390ce07fcd9b474a2f36b602d5267c57",
+      "story416-candidate-projection1-command.json": "5436a9ed18c8e2e35e0bb05898a992b9913b4acc9c846be4b79e64d099b0e814",
+      "story416-candidate-projection1-runtime-metadata.json": "efe6092cecf9c86247c22c9e1f4af3f9a5c3abf5ed88c8568ea817249a6bcaf8",
+      "story416-candidate-projection1-states.jsonl": "7c56844b239a6dce9e0748b378449e62c0ddd0208e52bc5a8613f6b17be5e61b",
+      "story416-candidate-projection1-starts.jsonl": "311c8a68cffe14b13b668cd3b3af0154daec2ae197fee7ae33e6325f829a7e96"
+    }
+  },
+  "queryAuthorityDeadline": {
+    "scope": "Source Debug supporting query policy verification; modified unpublished SDK source is not public 4.16 acceptance",
+    "buildCommand": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/artifacts/story-4-16/query-deadline",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "buildResult": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0,
+      "seconds": 121.52
+    },
+    "testCommand": [
+      "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests",
+      "-result-xml",
+      "/tmp/story416-query-deadline.xml"
+    ],
+    "testResult": {
+      "passed": 98,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 20.783
+    },
+    "fileSha256": {
+      "build.log": "786eef282c976b1f7a3cbb3198fdf4f6abb9bd21d0ef2c72fff271d8809fe784",
+      "tests.log": "ed5a8e9363a79155b26ab4fd1024bf44750b6f436682ab91b6c6fc1280abf9de",
+      "tests.xml": "d44cabfb34d9411aaf9f896b85e623dfca77177691f2a3bba7e1d61ab9989a6f"
+    }
+  },
+  "fixtureOwnershipAndDeadlines": {
+    "scope": "Supporting source Debug verification, not complete or published parity acceptance",
+    "build": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0,
+      "seconds": 16.24,
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Debug --artifacts-path /home/administrator/projects/hexalith/works/artifacts/story-4-16/query-deadline -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0"
+    },
+    "tests": {
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0,
+      "seconds": 4.319,
+      "classes": [
+        "WorksSdkProofRedisOwnershipTests",
+        "WorksQueryPolicyDeadlineTests"
+      ],
+      "command": "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests -class Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests -result-xml /tmp/story416-query-ownership.xml"
+    },
+    "verifierEvidenceGates": {
+      "passed": 8,
+      "command": "python3 -m unittest test_verify_works_host",
+      "cwd": "/home/administrator/projects/hexalith/platform/eng"
+    },
+    "filesSha256": {
+      "ownership-build.log": "b1955b654b648405fe0cf76bca2ac0a060ebc9d1b98a3ce41a744b898e77c9ef",
+      "ownership-tests.log": "1036be4476f6e033f6f1962e1aefaf127aab0e95305f92c3d99e5fc8b533977f",
+      "ownership-tests.xml": "95998effb920468abbb540079520d4b009aa980a575f7def54236072ba5036b2",
+      "evidence-gates.log": "2b6375b76a6204022a8c958ca2bc13e59b048b71a239d98f89434dcbcf269380"
+    }
+  },
+  "platformAppChannel": {
+    "DebugPassed": 90,
+    "ReleasePassed": 90,
+    "skipped": 0,
+    "manifest": "app-channel/manifest.json",
+    "entireHistoricalPassed": false,
+    "fullFleetRestorePassed": false
+  },
+  "candidateSupportingRegressions": {
+    "passed": 126,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 17.158,
+    "manifest": "candidate-runtime/supporting3-root-audit.json"
+  },
+  "receiverDispositionProbe": {
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 0.299,
+    "manifest": "disposition-probe/manifest.json"
+  },
+  "latestPublishedConsumer": {
+    "version": "3.124.0",
+    "producerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+    "passed": 162,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 13.262,
+    "manifest": "public-3.124.0/supporting-manifest.json",
+    "fullPlatformParityPassed": false
+  },
+  "latestCandidateProducerRelated": {
+    "version": "3.124.1-story416-gateway",
+    "passed": 59,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 2.747,
+    "manifest": "public-3.124.0/supporting-manifest.json",
+    "publicQualification": false
+  },
+  "candidateHistorical": {
+    "version": "3.123.1-story416-gateway",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 160.139,
+    "phases": 3,
+    "publicQualification": false
+  },
+  "candidateCallbackOperations": {
+    "version": "3.123.1-story416-gateway",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 164.74,
+    "manifest": "candidate-runtime/callback4-root-audit.json",
+    "publicQualification": false
+  },
+  "latestPlatformBothModes": {
+    "version": "3.124.0",
+    "debugPassed": 92,
+    "releasePassed": 92,
+    "failed": 0,
+    "skipped": 0,
+    "manifest": "public-3.124.0/platform-tests/manifest.json"
+  },
+  "producerSourceGuard": {
+    "publicRuntimeFilesMatched": 1942,
+    "unpublishedCandidateRefused": true,
+    "unitTestsPassed": 9,
+    "combinedEvidenceGateTestsPassed": 17,
+    "manifest": "public-3.124.0/producer-qualifier/manifest.json"
+  },
+  "latestPublicR4Blocker": {
+    "version": "3.124.0",
+    "producerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "seconds": 283.125,
+    "manifest": "public-3.124.0/public-r4-blocker.json",
+    "failure": "Automatic post-Commit owner/global catch-up remains3/3; expected4/14. Diagnostic-only dispatch succeeds; test remains failed."
+  }
+}

@@ -17,6 +17,9 @@ public sealed class WorksQueryPolicy(
     IOptions<WorksQueryOptions> options,
     ILogger<WorksQueryPolicy>? logger = null)
 {
+    // Leave time for a fail-closed response within the canonical five-second Dapr invocation budget.
+    private static readonly TimeSpan s_identityResolutionTimeout = TimeSpan.FromSeconds(2);
+
     private readonly ILogger<WorksQueryPolicy> _logger = logger ?? NullLogger<WorksQueryPolicy>.Instance;
     private readonly IPartiesIdentityClient _parties = parties ?? throw new ArgumentNullException(nameof(parties));
     private readonly WorksQueryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
@@ -46,12 +49,14 @@ public sealed class WorksQueryPolicy(
             return new WorksQueryAuthority(false, false, null);
         }
 
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(s_identityResolutionTimeout);
         try
         {
             var identity = await _parties.ResolvePartyIdentityAsync(
                 query.TenantId,
                 new ResolvePartyIdentity(query.TenantId, requestedPartyId!, query.OriginalActorId),
-                cancellationToken).ConfigureAwait(false);
+                deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
             return identity.Outcome == PartyIdentityOutcome.Resolved
                 && identity.Evidence is { Classification: PartyIdentityClassification.Human, IsActive: true,
                     IsRestricted: false, IsErasingOrErased: false, HumanBinding: { } binding }

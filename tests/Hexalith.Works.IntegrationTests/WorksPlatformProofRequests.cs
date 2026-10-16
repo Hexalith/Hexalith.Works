@@ -1,5 +1,6 @@
-using System.Net.Http.Json;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 
 using Hexalith.EventStore.ServiceDefaults.Authentication;
 
@@ -28,14 +29,17 @@ internal static class WorksPlatformProofRequests
 
     /// <summary>Uses the caller's actual Dapr sidecar; receiver app-channel tokens remain independently enforced.</summary>
     internal static async Task<HttpResponseMessage> PostAsync(HttpClient callerSidecar, string receiver, string route,
-        object body, string assertion, CancellationToken cancellationToken)
+        object body, string assertion, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? probeHeaders = null)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post,
             "v1.0/invoke/" + Uri.EscapeDataString(receiver) + "/method/" + route.TrimStart('/'))
         {
-            Content = JsonContent.Create(body),
+            Content = new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(body, JsonSerializerOptions.Web)),
         };
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         request.Headers.TryAddWithoutValidation(EventStoreWorkloadAuthenticationDefaults.AssertionHeaderName, assertion);
+        if (probeHeaders is not null)
+            foreach ((string name, string value) in probeHeaders) request.Headers.TryAddWithoutValidation(name, value);
         return await callerSidecar.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 }

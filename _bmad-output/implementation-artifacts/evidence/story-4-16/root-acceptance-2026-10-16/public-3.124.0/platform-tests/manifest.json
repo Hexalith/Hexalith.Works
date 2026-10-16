@@ -1,0 +1,88 @@
+{
+  "scope": "Fresh Platform Works unit/model checks at public3.124 target; live parity and full restore still pending",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "dependencyModes": {
+    "debug": "exact public0737 SDK runtime source",
+    "release": "public3.124 NuGetpackages"
+  },
+  "checks": {
+    "debug": {
+      "buildExit": 0,
+      "buildWarnings": 0,
+      "buildErrors": 0,
+      "testExit": 0,
+      "tests": {
+        "total": "92",
+        "passed": "92",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "5.278"
+      },
+      "buildCommand": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj",
+        "-c",
+        "Debug",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/platform/artifacts/story416-root-public3124-debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:Version=3.124.0",
+        "-p:MinVerVersionOverride=3.124.0",
+        "-p:HexalithEventStoreVersion=3.124.0",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source"
+      ],
+      "testCommand": [
+        "artifacts/story416-root-public3124-debug/bin/Hexalith.Platform.Works.Tests/debug/Hexalith.Platform.Works.Tests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story416-platform3124-debug.xml"
+      ]
+    },
+    "release": {
+      "buildExit": 0,
+      "buildWarnings": 0,
+      "buildErrors": 0,
+      "testExit": 0,
+      "tests": {
+        "total": "92",
+        "passed": "92",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "5.286"
+      },
+      "buildCommand": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj",
+        "-c",
+        "Release",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/platform/artifacts/story416-root-public3124-release",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:Version=3.124.0",
+        "-p:MinVerVersionOverride=3.124.0",
+        "-p:HexalithEventStoreVersion=3.124.0",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source"
+      ],
+      "testCommand": [
+        "artifacts/story416-root-public3124-release/bin/Hexalith.Platform.Works.Tests/release/Hexalith.Platform.Works.Tests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story416-platform3124-release.xml"
+      ]
+    }
+  },
+  "filesSha256": {
+    "debug-build.log": "43731e26f8005200478a249daf5cb4cf1c4f74c114b93b3f72f605d285141b7b",
+    "debug.xml": "e27cd1b171dfb325f530ea705440b57fa6c68322acc771304061714fb3ef5d42",
+    "release.log": "2a851a5e41d5f9a72d35f0955f9312a056fc93fafccf5e51e00017d5958407ba",
+    "debug.log": "d160cede63cf9b0fe4ed5da58c51ec852454949317565077f68800009cc5f8f9",
+    "release-build.log": "53d288257f73e3cfd8c8e36046a85a0a35e396cf8093021f3a3057f94efa1b90",
+    "release.xml": "73e4c69d74ae987522bc36ff899f6a0d99c678335d02e3df78ff3878ca79aba1"
+  }
+}

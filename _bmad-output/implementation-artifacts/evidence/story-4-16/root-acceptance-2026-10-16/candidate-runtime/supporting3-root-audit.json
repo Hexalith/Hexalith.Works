@@ -1,0 +1,22 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; supporting regressions only; no full/public acceptance",
+  "actualClasses": [
+    "Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests",
+    "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests",
+    "Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests",
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests",
+    "Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests",
+    "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests"
+  ],
+  "passed": 126,
+  "failed": 0,
+  "skipped": 0,
+  "seconds": 17.158,
+  "fiveIsolatedRuntimePrebuildsPassed": true,
+  "ownedArtifactsPath": "/tmp/story416-candidate-consumer-v3",
+  "filesSha256": {
+    "story416-candidate-runtime-isolated-prebuilds.json": "2109c8db9f578c0218824e3a1843eeca077cb3b7f0bfa5231cb07d4268044ad4",
+    "story416-candidate-supporting3.xml": "6932998370927d0f5a5e7c3ce0c1a140c6570cdb24a08585287b5cd78777d6dd",
+    "story416-candidate-supporting3.log": "422fbdac2ed9ceb900c2a43e33c453a8d13c6ac3882a42d6a76c2528d917ee25"
+  }
+}

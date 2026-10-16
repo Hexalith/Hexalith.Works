@@ -1,0 +1,44 @@
+{
+  "scope": "Source Debug supporting query policy verification; modified unpublished SDK source is not public 4.16 acceptance",
+  "buildCommand": [
+    "dotnet",
+    "build",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "-c",
+    "Debug",
+    "--artifacts-path",
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/query-deadline",
+    "-m:1",
+    "-p:NuGetAudit=false",
+    "-p:MinVerVersionOverride=1.0.0"
+  ],
+  "buildResult": {
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0,
+    "seconds": 121.52
+  },
+  "testCommand": [
+    "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests",
+    "-result-xml",
+    "/tmp/story416-query-deadline.xml"
+  ],
+  "testResult": {
+    "passed": 98,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 20.783
+  },
+  "fileSha256": {
+    "build.log": "786eef282c976b1f7a3cbb3198fdf4f6abb9bd21d0ef2c72fff271d8809fe784",
+    "tests.log": "ed5a8e9363a79155b26ab4fd1024bf44750b6f436682ab91b6c6fc1280abf9de",
+    "tests.xml": "d44cabfb34d9411aaf9f896b85e623dfca77177691f2a3bba7e1d61ab9989a6f"
+  }
+}

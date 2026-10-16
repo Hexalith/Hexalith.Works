@@ -1,0 +1,21 @@
+{
+  "scope": "Independent actual mapped binaries; unpublished latest-source candidate supporting evidence only",
+  "checkedUtc": "2026-10-16T20:50:15.714522+00:00",
+  "status": "inconclusive-partial-or-between-starts",
+  "readinessRecordCount": 1,
+  "expectedResources": [
+    "eventstore",
+    "eventstore-admin",
+    "works",
+    "eventstore-operations"
+  ],
+  "allFourExpectedEntriesMatch": false,
+  "processes": [
+    {
+      "pid": 64679,
+      "process": "Hexalith.Works.",
+      "entryMappings": [],
+      "allMappedPathsAreDebug": true
+    }
+  ]
+}

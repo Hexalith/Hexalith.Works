@@ -1,0 +1,22 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE ONLY",
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "command": [
+    "/tmp/story416-candidate-consumer-v3/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests",
+    "-result-xml",
+    "/tmp/story416-candidate-supporting3.xml"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "scope": "Snapshot of only the root documentation edits, captured before the other owner added further observation API members. Concurrent functional work is preserved.",
+  "files": [
+    {
+      "path": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/src/libraries/Hexalith.Builds.Tooling/Runtime/CompositionRuntimeArtifactVerifier.cs",
+      "beforeSha256": "140e268d24fbf116907095cad1222a33afc686693c2e1853037d68b153f12c03",
+      "afterSha256": "8571574370818400ba93f576c63b767f0f2dec5edef864847070f72383155e63",
+      "codeSha256": "8ced2007bd831c4c47245ead7089c7a84e83941a6accf2e633dbfc6ac16105f6",
+      "sameFunctionalCode": true
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/src/libraries/Hexalith.Builds.Tooling/Runtime/CompositionTestObservation.cs",
+      "beforeSha256": "56be3db2314b27908fbdf6d9ca807ae4c7ec5e95bf7523cee5a9fbc2dc5261f6",
+      "afterSha256": "ac7fcc3e5a532d3a1fdce4ea992a706d30f944157e72c6654ce86e3a5193cdaa",
+      "codeSha256": "2ea4f6adf85473d61810d2c1fb2234949b6583585ea6881ba39d8199db373481",
+      "sameFunctionalCode": true
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/src/libraries/Hexalith.Builds.Tooling/Runtime/ICompositionTestObservationProvider.cs",
+      "beforeSha256": "e067736c47b62cdd8b758144d2fa40e36364e744f12f828966ccbbb75dab2c4a",
+      "afterSha256": "cdc4dc070656c91fc41faadc12ccd626b290e08c71dc57fd71790212ea03a537",
+      "codeSha256": "914269245c69e2ba28f0088c517719258fe814eed55db38e911b3b68a8420781",
+      "sameFunctionalCode": true
+    }
+  ],
+  "capturedAt": "2026-10-16T18:04:22.965921+00:00"
+}

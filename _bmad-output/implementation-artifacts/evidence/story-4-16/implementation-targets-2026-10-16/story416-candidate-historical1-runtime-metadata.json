@@ -1,0 +1,34 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; no public release acceptance",
+  "actualChildCandidateMetadataVerified": false,
+  "lastObserved": [
+    {
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore/bin/Debug/net10.0/Hexalith.EventStore.Server.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "7a533779319e01096cdbbe916989a4c694327907e60eb5d6903e3e09a36b996c"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/src/Hexalith.EventStore/bin/Debug/net10.0/Hexalith.EventStore.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "63355a4a296201d8e2acc4c82b60d9990a7f1d3c382092c8067c5229c5502979"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll",
+      "assemblyVersion": "3.123.1.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+      "sha256": "8b8c3a773bd585b31e8c4febfb0130e41bf63482dcf2b27968d6126651536aca"
+    },
+    {
+      "path": "/home/administrator/projects/hexalith/works/src/Hexalith.Works/bin/Debug/net10.0/Hexalith.Works.dll",
+      "assemblyVersion": "3.0.0.0",
+      "fileVersion": "3.123.1.0",
+      "informationalVersion": "3.123.1-story416-gateway+b1c96bbacbe9cbb09f0b159057928c37b15e85d7",
+      "sha256": "6413bc19e8e467495a757d9ccf6ff0e902447fc948cbfbcece93976d71f1a9d3"
+    }
+  ]
+}

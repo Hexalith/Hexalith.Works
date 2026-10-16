@@ -1,0 +1,21 @@
+{
+  "scope": "Approved Agents preservation contract only; independent complete Works acceptance still required",
+  "checkedUtc": "2026-10-16T20:10:18.546777+00:00",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "full": {
+    "command": "bash eng/verify-agents-host.sh",
+    "exitCode": 1,
+    "result": "DependencyNotAvailable: EXT-HOST-1",
+    "pythonTestsPassed": 9
+  },
+  "localScaffold": {
+    "command": "bash eng/verify-agents-host.sh --mode LocalScaffold --artifacts-path /tmp/story416-agents3124-scaffold",
+    "exitCode": 0,
+    "result": "LocalScaffold build succeeded. Full EXT-HOST-1 qualification remains unavailable.",
+    "pythonTestsPassed": 9
+  },
+  "filesSha256": {
+    "scaffold.log": "beeab8e6a3944c6a32c725cc49bde722097a2b6e8660e45756067c7e7c45b602",
+    "full.log": "47386ff7e0fe550e6ca3c251c9b66f39d09650d9d4f1f584413adaa4ec05fc7f"
+  }
+}

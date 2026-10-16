@@ -1,0 +1,105 @@
+{
+  "producerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+  "sourceUrl": "https://codeload.github.com/Hexalith/Hexalith.EventStore/tar.gz/0737c0befce5338e294a789092a0e223e8264a04",
+  "tarSha256": "50dd1f2b0e982ed648b29f4a9339c3a8974c6e5209913043c1d8eb39f085cccd",
+  "publicGatewaySha256": "0b90d5dfd124fa0412ae2508f13061c313c4d43591c12441130d01568b403530",
+  "localGatewaySha256": "c9307868b330405e20757acc793df6893b60ad346f8779064411b6e72cabf75c",
+  "runtimeDifferences": {
+    "src/Hexalith.EventStore.Aspire/HexalithEventStoreExtensions.cs": {
+      "public": "454cd8854ec5c3ad7f785500acf5228cdef03ef3231c1f57f1ad9a57d2658b9f",
+      "local": "f3837434e15eca5ec9b8b3c10121086e846681c7abf3f09dfc3d114179c5ef94"
+    },
+    "src/Hexalith.EventStore.Client/Projections/ReadModelBatchManifestCodec.cs": {
+      "public": "fc7b73ab20968acb0fd011d799c316cf3885b0c68d9d8e5922c507d5c32865be",
+      "local": "9e69c3c889344ae71ec708c0b46891c08ec15b6f6b0310001ace2b0d6421d5fc"
+    },
+    "src/Hexalith.EventStore.Client/Projections/ReadModelOwnerSelectionMetadata.cs": {
+      "public": "8f73cbbbc65328d68d26219b1fe6a221906693955531e8083298ee2937976586",
+      "local": "fc023f9e26a66eca95bb66c68b163a6d5b231794a6cda164583d9b891e850f1d"
+    },
+    "src/Hexalith.EventStore.DomainService/DomainProjectionGuardedReplay.cs": {
+      "public": "47b7bcaf74cde3c6c31d4408231fe6280ed2b408345fa6525e714850f71d537f",
+      "local": "6be4198178a4370b9713ea0835713c21b2f13bd92918c5426ae7ff476505602a"
+    },
+    "src/Hexalith.EventStore.DomainService/EventStoreDomainEventsEndpointExtensions.cs": {
+      "public": "77eacc434bc56bceec2cb817ae62babbdf90bd66fce07effb96d2c4c4b634403",
+      "local": "4273c3ad34ef8b433f0b2c05fa331fa6eaf1b9732ba6c50538c94894e9644759"
+    },
+    "src/Hexalith.EventStore.DomainService/EventStoreDomainServiceExtensions.cs": {
+      "public": "ef48209e325aab6cb2d6cb707be3a0161c26e4d6c3d8cfd1effe6359fd193273",
+      "local": "32b174125f31533e41665a6c256e7da6313cf4a40d7559ff8a3984e860c4c899"
+    },
+    "src/Hexalith.EventStore.Gateway/Hexalith.EventStore.Gateway.csproj": {
+      "public": "4b10fc3d5fb1fb79e73eba7e580f755f64fab8bde7cd84c180af379c8ccdaee5",
+      "local": "d9af1bf0f723c756c5a92295312dd5066159ed319aacdf8c07fd49d0c9b34b45"
+    },
+    "src/Hexalith.EventStore.Server/Actors/AggregateActor.SourceProof.cs": {
+      "public": "0aa059594e5ef302c0bf432fa650bddb025274ecd4dd1a97783e187d312da0f8",
+      "local": "47800f6fff49199a68e7f25a709057d85debeaa4b0f0c106e45d170eccac7cf1"
+    },
+    "src/Hexalith.EventStore.Server/Actors/AggregateActor.SourceProofBootstrap.cs": {
+      "public": "4f6173e47dffe500fc67d7410062c6a5883742f1bf58f346cdbb4e5b9a8e7ecb",
+      "local": "88d9640b409682874e9b1e1ac3d980bd28e0260378b1b926fb8843ab5434c973"
+    },
+    "src/Hexalith.EventStore.Server/Actors/SourceActorStateBodySize.cs": {
+      "public": "03c4f43b49832f27dea9ade11849ad57c5c519fafb977d9baba3eb7e19cbd641",
+      "local": null
+    },
+    "src/Hexalith.EventStore.Server/Configuration/ProjectionChangeNotifierOptions.cs": {
+      "public": "f11d6945192aa187acdd9d70f01746daee0c2e37f71e74b4041f53cf0610e166",
+      "local": "400cf0d1a2e9d65bc2c0ef6a1b0887301f8ca52dba5df8f8af31dafd4a8e362f"
+    },
+    "src/Hexalith.EventStore.Server/Projections/DaprProjectionDeliveryStateStore.cs": {
+      "public": "fbd1d085152586c4e6b394b9857facc5c2d796b4a6f09545c75135c2e406c5ea",
+      "local": "8e4069d12fc6af2cfd94399457f81d80a26a002db6df04b68b5560f241e8ca4c"
+    },
+    "src/Hexalith.EventStore.Server/Projections/DaprProjectionSourceGuardTransport.cs": {
+      "public": "94877c5314fe1c1b772ee5392a5b02c36bd021834bb7a565bf26efc28ddfb6a6",
+      "local": "85855305ae94fffb24c3ad7e2c4dacfed817f12a5144a42cc655c9d26f06e5e8"
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionDeliveryRetryWorker.cs": {
+      "public": "a83ac5c7331ee1ccb6913f4f7ae2f34cdf5fc71a56155f6389d54b4da0ebe1bd",
+      "local": "90c98c6441e646eacbd65e9b566e2eac1d870fcdf6119e648a5fdac7faafdda6"
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionDeliveryStateBody.cs": {
+      "public": "317738f7b08ef3d1603013ab99b935c6d384201510f0c605ddd35af4c229f4e1",
+      "local": null
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionSourceGuardDelivery.cs": {
+      "public": "73361d1981ed90f2c9298427cc6d69c4b620b1eb69cda98b8b00900543161081",
+      "local": "52a03e414ace915f062753c0e7cc476ea9960447ec9436491bca1b11b64d5df5"
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionSourceGuardFinalizationBudget.cs": {
+      "public": "2eee83e19788a969ab5ba904d775c5ba5b2a7096057b201601e04394128f7842",
+      "local": null
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionSourceGuardFinalizer.cs": {
+      "public": "2ee3f92ed147439371abac3866b16c969743602ab56b48cf27677c5b28017344",
+      "local": "8d1cbdd964ef8682be40f9038e854fa3098c59bb857be109c22bcd1c409f91f9"
+    },
+    "src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs": {
+      "public": "0b90d5dfd124fa0412ae2508f13061c313c4d43591c12441130d01568b403530",
+      "local": "c9307868b330405e20757acc793df6893b60ad346f8779064411b6e72cabf75c"
+    },
+    "src/Hexalith.EventStore/Configuration/DaprRateLimitConfigSync.cs": {
+      "public": "9e14934014b417892c1c387b39a4c28640c79b1209294a15854fcaa295da33fb",
+      "local": "a1481d9e89c50cea1c8630dc1681d894aaa85c36bdaf92f359efe73f7c427664"
+    },
+    "src/Hexalith.EventStore/Controllers/AdminProjectionRebuildController.SourceProof.cs": {
+      "public": "040a0ee7fc4b59a89140413a063e38f3132ed93ec1f40185a7324b5226b46883",
+      "local": "9433092bb3ff43f4ddc01b3d9334f890ca58caca09b0aad4d1ebcab9c9eb6056"
+    },
+    "src/Hexalith.EventStore/Controllers/ProjectionNotificationController.cs": {
+      "public": "8153078bbd0db73769b488f9e2a0ee450652a5bbddff4376f04cd91d8f6972e0",
+      "local": "fb8f241a2eb18cec895579cc37a374ab2f654ff042702a9e800d3f1d6b09b541"
+    },
+    "src/Hexalith.EventStore/Controllers/ProjectionNotificationTopicAttribute.cs": {
+      "public": "dc2d46618d47af22d65bb1b624837566e57a4694c24353edfa9c1951e3e46595",
+      "local": null
+    },
+    "src/Hexalith.EventStore/Program.cs": {
+      "public": "8ed01dad3b63aa0429f551d1ed51ef4510bfa73c885ae4a4971bd8eccdcde1c0",
+      "local": "6fd90015c2b55ebedf31fec6e728e8a8820ad46e7b951fab0c7df224e681cad2"
+    }
+  }
+}

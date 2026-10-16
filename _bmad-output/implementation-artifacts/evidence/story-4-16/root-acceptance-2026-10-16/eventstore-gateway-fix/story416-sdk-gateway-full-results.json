@@ -1,0 +1,117 @@
+{
+  "counts": {
+    "total": "5683",
+    "passed": "5086",
+    "failed": "572",
+    "skipped": "25",
+    "errors": "0",
+    "time": "120.695"
+  },
+  "tests": [
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainPublishFailed_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainEventCountMismatch_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_PublishesAtMostOnce",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainEventCountMismatch_DoesNotDecrementPendingCommandCount",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_UnregistersReminderAtMostOnce",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainAnyClassifiedFailure_ActivityFailureReasonTagDoesNotContainRawExceptionMessage",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainMissingEventInRange_ActivityFailureReasonTagIsStableReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Actors.Dw1DrainHardeningAtddTests.DrainReminder_FiredTwiceForSameCorrelationId_DecrementsPendingCounterAtMostOnce",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_TrackerCorruption_BoundedRetryWithinSameTick",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_TrackerCorruption_AdvancesNextDueToPreventTightRetryStorm",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_IdentityIndexCorruption_EmitsTrackerCorruptIdentityIndexReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1PollerCorruptionAtddTests.PollOnceAsync_ScopeIndexCorruption_EmitsTrackerCorruptScopeIndexReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_AnyClassifiedFailure_DoesNotLogEventPayload",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_HostTokenCancelled_PropagatesOperationCanceledException",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_EmptyProjectionType_LogsProjectInvalidProjectionTypeReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_PersistedCheckpointAheadOfAggregateStream_DoesNotRegressCheckpoint",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_Upstream5xx_LogsProjectUpstream5xxReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_Upstream4xx_LogsProjectUpstream4xxReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_TwoOverlappingCallsForSameActorId_AreSerializedByKeyedSemaphore",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_HttpTimeoutWhileHostStillRunning_LogsProjectTimeoutAndDoesNotThrow",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_InvalidCharset_LogsProjectInvalidCharsetReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_UnsupportedContentType_LogsProjectUnsupportedContentTypeReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_PersistedCheckpointAheadOfAggregateStream_EmitsCheckpointDriftReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_MalformedJson_LogsProjectMalformedJsonReasonCode",
+      "result": "Skip"
+    },
+    {
+      "name": "Hexalith.EventStore.Server.Tests.Projections.Dw1ProjectionDeliveryAtddTests.DeliverProjection_NullState_LogsProjectInvalidStateReasonCode",
+      "result": "Skip"
+    }
+  ],
+  "failureCategories": {
+    "System.IO.DirectoryNotFoundException": 560,
+    "Shouldly.ShouldAssertException": 11,
+    "System.InvalidOperationException": 1
+  }
+}

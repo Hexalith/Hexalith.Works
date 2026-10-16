@@ -1,0 +1,51 @@
+{
+  "scope": "Supporting Platform composition verification; full parity/restore and published SDK correction remain incomplete",
+  "change": "Use public SDK generated secret app-channel token for every receiver and own sidecar; Development no longer admits a tokenless direct port for those receivers",
+  "publicApiCommand": "dnx dotnet-inspect -y -- member HexalithEventStoreAppChannelExtensions --package Hexalith.EventStore.Aspire@3.123.0 -m WithGeneratedEventStoreAppChannelToken -n 15",
+  "Debug": {
+    "passed": 90,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 5.282,
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "buildSeconds": 42.85,
+    "artifacts": "/home/administrator/projects/hexalith/platform/artifacts/story416-root-appchannel-build"
+  },
+  "Release": {
+    "passed": 90,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 21.401,
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "buildSeconds": 57.52,
+    "artifacts": "/home/administrator/projects/hexalith/platform/artifacts/story416-root-appchannel-release"
+  },
+  "liveHistorical4Security": {
+    "wrongCaller": 401,
+    "wrongPort": 401,
+    "forbiddenPublish": 403,
+    "unchangedFamily": true,
+    "entireTestPassed": false,
+    "nextFailure": "Concurrent claim helper expected202 but gateway returned422; typed domain rejection handling being corrected"
+  },
+  "sourceSha256": {
+    "src/Hexalith.Platform.Composition/WorksPreviewModel.cs": "c6edd39053454dc4b8eb347f25edac8c85bb3d43e1f2e82067c56fab0a3ea8b8",
+    "tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs": "588eba7949fde8459e012b2c132379914dfdd0f8fda94511be1d4869df90fcc9"
+  },
+  "filesSha256": {
+    "public-sdk-api.log": "bf3f9302a627f82b6ae3893c2f0a3a0415a250a7398fef1ba6d23ea5e2875be1",
+    "platform-debug-build.log": "cf45ff35e8ef5a4f78d7ee23500e2dbc72750fb240c140b3e9f73b2bc479f836",
+    "platform-debug.xml": "25545d98de4a65a69f254254f7ac3f849adab1a8ae896592b22ed489cb167c66",
+    "platform-debug.log": "eac658404e298e93fb5daef7c31e6c621e535d96bb8b1c85c21594ba8efc784b",
+    "platform-release-build.log": "8a270856e94b5328d9784a17c09a54d638263757d26298777a65248ffda43f25",
+    "platform-release.xml": "551df95a7efc1cd8a5ee5ab85946bff12d4d5ff63e9dc4f273759cd934811515",
+    "platform-release.log": "069d7aa86d11cef5024a1efef71335d70a8a280cc970fd95f5314b6354667621"
+  },
+  "initialFailures": {
+    "concurrentToolingStyleErrors": "resolved by external owner; root changed no Tooling functional code",
+    "outsideRootTestLayout": "original54cases had13 source-ancestor lookup failures; exact bytes moved under source root, then rebuilt there",
+    "resourceEnumeration": "token helper adds ParameterResources; fixed resource snapshot before iteration"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "scope": "PUBLIC3.124.0 qualification preparation; exact unmodified producer0737c0befce5338e294a789092a0e223e8264a04 runtime source",
+  "runtimeSdkRoot": "/tmp/story416-sdk-3.124-public-source",
+  "commands": [
+    {
+      "cwd": "/home/administrator/projects/hexalith/platform",
+      "command": [
+        "dotnet",
+        "build",
+        "./apphost.cs",
+        "-c",
+        "Release",
+        "--artifacts-path",
+        "/tmp/story416-public-3124-host",
+        "-p:AspireUseCliBundle=true",
+        "-p:NuGetAudit=false",
+        "-p:UseHexalithProjectReferences=false",
+        "-p:UseNuGetDeps=true",
+        "-p:HexalithAspireHostingDaprVersion=13.6.1-beta.935",
+        "-p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source",
+        "-p:HexalithEventStoreVersion=3.124.0",
+        "-p:Version=3.124.0",
+        "-p:MinVerVersionOverride=3.124.0"
+      ],
+      "log": "/tmp/story416-public-3124-prepare-0.log",
+      "exitCode": 1
+    }
+  ]
+}

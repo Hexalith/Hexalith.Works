@@ -1,0 +1,98 @@
+{
+  "scope": "Refreshed current Platform Works source Debug/package Release checks after external story1.8 commit; not live parity acceptance",
+  "checkedUtc": "2026-10-16T21:09:36.230511+00:00",
+  "platformHead": "0bff3149ce74ed8eb787c5a443149b38821c54fb",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "checks": {
+    "debug": {
+      "buildExit": 0,
+      "buildWarnings": 0,
+      "buildErrors": 0,
+      "testExit": 0,
+      "tests": {
+        "total": "92",
+        "passed": "92",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "5.253"
+      },
+      "buildCommand": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj",
+        "-c",
+        "Debug",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/platform/artifacts/story416-root-public3124-debug",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:Version=3.124.0",
+        "-p:MinVerVersionOverride=3.124.0",
+        "-p:HexalithEventStoreVersion=3.124.0",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source"
+      ],
+      "testCommand": [
+        "artifacts/story416-root-public3124-debug/bin/Hexalith.Platform.Works.Tests/debug/Hexalith.Platform.Works.Tests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story416-platform3124-current-debug.xml"
+      ]
+    },
+    "release": {
+      "buildExit": 0,
+      "buildWarnings": 0,
+      "buildErrors": 0,
+      "testExit": 0,
+      "tests": {
+        "total": "92",
+        "passed": "92",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "5.263"
+      },
+      "buildCommand": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj",
+        "-c",
+        "Release",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/platform/artifacts/story416-root-public3124-release",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:Version=3.124.0",
+        "-p:MinVerVersionOverride=3.124.0",
+        "-p:HexalithEventStoreVersion=3.124.0",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source"
+      ],
+      "testCommand": [
+        "artifacts/story416-root-public3124-release/bin/Hexalith.Platform.Works.Tests/release/Hexalith.Platform.Works.Tests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story416-platform3124-current-release.xml"
+      ]
+    }
+  },
+  "sourceAtCompletion": {
+    "tests/Hexalith.Platform.Works.Tests/HostingEnvironment.cs": "78e0103533fd02534a0509dc5ccaab11174e38672b0ea40c1a5447b6bb5a24df",
+    "tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeMemoryStore.cs": "ef2e72b46f1394e6684a2d2f7b030cdfef4ac4374231d6742c8d8cf46c0640fb",
+    "tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTests.cs": "0e1e99f844d99ae05958227221dbca3c582c0889e9e0050feb704890c4f271d5",
+    "tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTimeProvider.cs": "94291761103ea8673223568969e4a2f26cbfc24fede8a66c0bd957bc1cc2d926",
+    "tests/Hexalith.Platform.Works.Tests/SdkReadinessHealthCheckTests.cs": "79f6cfca8ee66534b490f3e5ec7e5deb8e73743e169175c727461edae377599d",
+    "tests/Hexalith.Platform.Works.Tests/WorksDaprPolicyTests.cs": "950afc6af6619b033733ac82de43cb11c0627e4d79dcbb51c3c8b26b6f4c4d9f",
+    "tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs": "63a1228763c71bc9f67f69968e4cf305eb7fea48a0b91f07a082976de272894d",
+    "tests/Hexalith.Platform.Works.Tests/WorksProductionProfileTests.cs": "addbf2f4d046c12e9ffab8b7033799a10f2e669908540174e966c34663d5d42f"
+  },
+  "hostInputHashesStillMatch": 453,
+  "hostPreparationReference": "../../candidate-runtime-preparation/v2/story416-candidate-3124-host-debug-v2-command.json",
+  "filesSha256": {
+    "story416-platform3124-current-debug.xml": "24629e5f984f6fafa0aac86b0c8d4585fb48cdb3757254c92fb411de78fc4baa",
+    "story416-platform3124-current-debug.log": "6b991678af2103eedc79e5930e19ef75058f76e8d162ad1373aa4d83650469bb",
+    "story416-platform3124-current-debug-build.log": "d9c2b704b7f818bcf3d3777045ca6c761d69899937d869dafad00bae238f447c",
+    "story416-platform3124-current-release.xml": "b824d279d0b3a398dea679ca3418aa2f9e18e9f239cf287aa9e581bc2f16a6eb",
+    "story416-platform3124-current-release.log": "757b0b0e8eec2ba123299f2da29dfd8ce596e8b32e4f7e795a9dd3a582d460f8",
+    "story416-platform3124-current-release-build.log": "56e0f77dea95232cf9cb60cfb2e49fa9ec50cc75669cb83fc3772a7e65a88b84"
+  }
+}

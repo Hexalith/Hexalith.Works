@@ -1,0 +1,44 @@
+{
+  "scope": "FAILED unpublished candidate V1 full recovery; no rebuild or restore acceptance",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full5 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+  "exitCode": 1,
+  "testResult": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "time": "653.789"
+  },
+  "qualifies": false,
+  "manualDispatchOccurred": false,
+  "polls": 930,
+  "recapturedHeads": 0,
+  "laggingSources": {
+    "work-sdk415-child-7cf1f19149-1": {
+      "expectedOwnerSequence": 2,
+      "expectedGlobalPosition": 25,
+      "observedOwnerSequence": 1,
+      "observedGlobalPosition": 15
+    },
+    "work-sdk415-date-7cf1f19149": {
+      "expectedOwnerSequence": 5,
+      "expectedGlobalPosition": 11,
+      "observedOwnerSequence": 4,
+      "observedGlobalPosition": 10
+    },
+    "work-sdk415-rescheduled-7cf1f19149": {
+      "expectedOwnerSequence": 4,
+      "expectedGlobalPosition": 5,
+      "observedOwnerSequence": 3,
+      "observedGlobalPosition": 3
+    }
+  },
+  "rootCause": "Trusted effect ingress did not register the target projection activation; the actor suppresses in-turn projection delivery. Prepared V2 correction awaits write-ahead activation and nudges post-turn.",
+  "filesSha256": {
+    "story416-candidate-3124-full5-starts.jsonl": "482627bf65b305492afdf199f186fa9243fbd13f336912ca90b496c47de7d078",
+    "story416-candidate-3124-full5.xml": "d14c103cc05fd822a393f07ff8012ad03c5cea614314f7e2b81ed7a35e89e3a1",
+    "story416-candidate-3124-full5-root-maps-203147.json": "14b7716a601e5b8c252c2cde16659775547675dc175d573bd764ba5b383fe6d2",
+    "story416-candidate-3124-full5-command.json": "775477d833864e863ca790a5656804c8e66f0d8295a200266cb14187edc6fe1c",
+    "story416-candidate-3124-full5-states.jsonl": "3b2aa1dd26753d4288c1bdb791b356fa849e566bb56f6b1db18523a1c92b3d6d"
+  }
+}

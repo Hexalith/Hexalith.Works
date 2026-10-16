@@ -68,7 +68,7 @@ public sealed class WorksSdkProjectionQueryTests
     }
 
     [Fact]
-    public async Task Sdk_host_maps_one_named_projection_route_despite_legacy_project_conflict_route()
+    public async Task Sdk_host_maps_one_named_projection_route_and_the_canonical_legacy_fallback()
     {
         await using WebApplication app = WorksHost.Build(
             ["--Works:Projection:UseSdkDelivery=true",
@@ -254,7 +254,7 @@ public sealed class WorksSdkProjectionQueryTests
             new IdentityHistoryCustodyEvidence("policy", "party-actor-history-v1", observedAt.AddDays(1),
                 1, "custody", true, true, true));
         parties.ResolvePartyIdentityAsync(Tenant, Arg.Any<Hexalith.Parties.Contracts.Queries.ResolvePartyIdentity>(),
-                TestContext.Current.CancellationToken)
+                Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new PartyIdentityResult(PartyIdentityOutcome.Resolved,
                 new PartyIdentityEvidence(1, Tenant, "party-mine", PartyIdentityClassification.Human,
                     true, false, false, 2, observedAt, "observation", binding))));
@@ -428,7 +428,7 @@ public sealed class WorksSdkProjectionQueryTests
             new IdentityHistoryCustodyEvidence("policy", "party-actor-history-v1", observedAt.AddDays(1),
                 1, "custody", true, true, true));
         parties.ResolvePartyIdentityAsync(Arg.Any<string>(), Arg.Any<Hexalith.Parties.Contracts.Queries.ResolvePartyIdentity>(),
-                TestContext.Current.CancellationToken)
+                Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new PartyIdentityResult(PartyIdentityOutcome.Resolved,
                 new PartyIdentityEvidence(1, Tenant, "party-mine", PartyIdentityClassification.Human,
                     true, false, false, 2, observedAt, "observation", binding))));

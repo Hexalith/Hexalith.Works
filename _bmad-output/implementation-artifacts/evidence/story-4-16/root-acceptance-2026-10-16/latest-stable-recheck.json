@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-10-16T18:08:48.466279+00:00",
+  "packages": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Admin.Abstractions",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Gateway",
+      "latestStable": "3.123.0"
+    },
+    {
+      "package": "Hexalith.EventStore.Aspire",
+      "latestStable": "3.123.0"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "scope": "Actual disposable Redis7.4 restore regression; supporting evidence, not complete Platform rollback acceptance",
+  "checkedUtc": "2026-10-16T21:07:04.198514+00:00",
+  "buildCommand": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Release --artifacts-path /home/administrator/projects/hexalith/works/artifacts/story416-root-config-3124 -m:1 -p:NuGetAudit=false -p:Version=3.124.0 -p:MinVerVersionOverride=3.124.0 -p:HexalithEventStoreVersion=3.124.0 -p:UseHexalithProjectReferences=false -p:UseNuGetDeps=true -p:HexalithAspireHostingDaprVersion=13.6.1-beta.935 -p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+  "buildExitCode": 0,
+  "warningCount": 0,
+  "errorCount": 0,
+  "testCommand": "artifacts/story416-root-config-3124/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests -result-xml /tmp/story416-redis-restore.xml",
+  "testExitCode": 0,
+  "testResult": {
+    "total": "15",
+    "passed": "15",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "55.449"
+  },
+  "cases": {
+    "successfulRoundTrip": 1,
+    "mutationRefusals": 14,
+    "roundTripIncludes": [
+      "1024 binary hash fields and future absolute hash-field deadline",
+      "1024 set members",
+      "exact binary string and lexical integer-string bytes",
+      "ordered list and tied-score/binary sorted-set members",
+      "stream data, consumer group and pending delivery",
+      "absolute key expiry and persistent key distinction",
+      "complete key inventory and post-snapshot sentinel removal",
+      "exact configuration, authority and channel-token bindings plus Unix file mode",
+      "offline empty owned Scheduler volume"
+    ]
+  },
+  "sourceSha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs": "997dcdbabe0c9fcdef73eb97439766b8cfa0aab55801e89d9af1fdda90865578",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "c22cfd11aa33e38af701bc9bbec672762884838da5fe7d4c08b4867e8519c8e7"
+  },
+  "filesSha256": {
+    "story416-redis-restore.xml": "ed6b5b5176bfb3b89430ac5267de3b6dc096c1434f0639ecb5fc7bccd29deb05",
+    "story416-redis-restore.log": "5c9dfaf74c1735c6f50fef2a7e7f997702a55c4aa9ea177ed92d60ba083ae5dc",
+    "story416-redis-restore-build.log": "7ad38690f51224284cf2cb741e2e173fc334c2713cdfd4b907553a2abccc910e",
+    "story416-redis-restore-reproduction-v2.json": "53ecf3c22a99e534494205cc5279c225150b444873e3ce0a6e4c01c9b9047c05"
+  },
+  "primaryHashFieldDeadlineDocumentation": "https://redis.io/docs/latest/commands/hpexpiretime/"
+}

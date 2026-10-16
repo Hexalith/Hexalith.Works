@@ -1,0 +1,42 @@
+{
+  "scope": "PUBLIC3.124.0 qualification preparation; no parity acceptance without complete fresh ledger",
+  "command": [
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/public-3.124.0/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+    "-result-xml",
+    "/tmp/story416-public-3124-projection1.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "environment": {
+    "WORKS_PLATFORM_APPHOST_ASSEMBLY": "/tmp/story416-public-3124-host/bin/release/apphost.dll",
+    "WORKS_PLATFORM_APPHOST_SHA256": "2b746ad32073892c6010406992c92e21160154c260bc9039767898f3663a2383",
+    "WORKS_PLATFORM_ROOT": "/home/administrator/projects/hexalith/platform",
+    "WORKS_PLATFORM_WORKS_ROOT": "/home/administrator/projects/hexalith/works",
+    "Platform__Works__SourceRoot": "/home/administrator/projects/hexalith/works",
+    "Platform__Works__EventStoreSourceRoot": "/tmp/story416-sdk-3.124-public-source",
+    "WORKS_PLATFORM_SDK_SOURCE_ROOT": "/tmp/story416-sdk-3.124-public-source",
+    "Platform__Identity__Enabled": "false",
+    "Version": "3.124.0",
+    "MinVerVersionOverride": "3.124.0",
+    "HexalithEventStoreVersion": "3.124.0",
+    "HexalithEventStoreRoot": "/tmp/story416-sdk-3.124-public-source",
+    "UseHexalithProjectReferences": "false",
+    "UseNuGetDeps": "true",
+    "HexalithAspireHostingDaprVersion": "13.6.1-beta.935",
+    "PlatformWorksRuntimeRoot": "/home/administrator/projects/hexalith/platform",
+    "ArtifactsPath": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/public-3.124.0",
+    "UseArtifactsOutput": "true",
+    "WORKS_PLATFORM_RUNTIME_ARTIFACTS": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/public-3.124.0",
+    "WORKS_PLATFORM_HOST_EVIDENCE": "/tmp/story416-public-3124-projection1-starts.jsonl",
+    "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story416-public-3124-projection1-states.jsonl",
+    "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180"
+  },
+  "runtimeSource": {
+    "root": "/tmp/story416-sdk-3.124-public-source",
+    "producerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+    "inventory": "_bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/public-3.124.0/runtime-source-inventory.json"
+  },
+  "preparation": "/tmp/story416-public-3124-prepare.json"
+}

@@ -48,8 +48,14 @@ internal static class WorksPlatformRecoveryChecks
         // Publish successors first, then the root link, then its matching tail. A concurrent reader
         // can only observe bounded incomplete evidence until the complete linked inventory is durable.
         for (int index = pages.Length - 1; index >= 0; index--)
-            await store.SaveAsync("statestore", ProcessStateKeys.Candidates(tenant, index), pages[index], cancellationToken).ConfigureAwait(false);
-        await store.SaveAsync("statestore", ProcessStateKeys.CandidatesTail(tenant), new ProcessIndexTail(1, pages.Length - 1), cancellationToken).ConfigureAwait(false);
+        {
+            ProcessIndexPage<ProcessSource> page = pages[index];
+            _ = await ReadModelWritePolicy.UpdateAsync<ProcessIndexPage<ProcessSource>>(store, "statestore",
+                ProcessStateKeys.Candidates(tenant, index), _ => page,
+                maxAttempts: 8, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        _ = await ReadModelWritePolicy.UpdateAsync<ProcessIndexTail>(store, "statestore", ProcessStateKeys.CandidatesTail(tenant),
+            _ => new ProcessIndexTail(1, pages.Length - 1), maxAttempts: 8, cancellationToken: cancellationToken).ConfigureAwait(false);
         return new { expectedSources = expected.Count, pages };
     }
 

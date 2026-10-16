@@ -503,7 +503,7 @@ public sealed class WorksSdkProtectedHttpTests
         QueryEnvelope query = new("tenant-sdk", "work", "work-sdk", WhatsNextQueryHandler.WhatsNextQueryType,
             [], "corr-http", "untrusted-user", null, false, null, null, "eventstore", false, null, null);
 
-        foreach (string route in new[] { "/query", "/project/v2" })
+        foreach (string route in new[] { "/query", "/project/v2", "/project" })
         {
             using HttpResponseMessage missing = await client.SendAsync(Request(route, query),
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -534,10 +534,13 @@ public sealed class WorksSdkProtectedHttpTests
         validNamed.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized);
         validNamed.StatusCode.ShouldNotBe(HttpStatusCode.Forbidden);
 
-        using HttpResponseMessage legacyConflict = await client.SendAsync(Request("/project", query,
+        // The canonical SDK has no legacy handler in named-delivery mode. Its 404 closes the
+        // gateway's legacy intent, so subsequent commands can advance the named projection.
+        using HttpResponseMessage legacyUnavailable = await client.SendAsync(Request("/project",
+            new ProjectionRequest("tenant-sdk", "work", "work-sdk", []),
             channel: true, assertion: Assertion("domain-service:project")),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
-        legacyConflict.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+        legacyUnavailable.StatusCode.ShouldBe(HttpStatusCode.NotFound);
 
         using HttpResponseMessage foreignOrigin = await client.SendAsync(Request("/query", query,
             channel: true, assertion: Assertion("domain-service:query", "other-caller")),

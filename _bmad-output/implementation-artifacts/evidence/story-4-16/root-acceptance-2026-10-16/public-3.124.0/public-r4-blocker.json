@@ -1,0 +1,54 @@
+{
+  "scope": "Actual released3.124 Platform failure, zero skips; diagnostic mutation does not qualify automatic catch-up",
+  "producerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+  "command": [
+    "python3",
+    "/tmp/story416-run-public-3124.py",
+    "/tmp/story416-public-3124-projection3",
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 1,
+  "tests": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "errors": "0",
+    "time": "283.125"
+  },
+  "independentRootAudit": {
+    "actualPlatformStart": true,
+    "twoCompleteRebuildsReached": true,
+    "cutoverEpoch": 2,
+    "selectedGeneration": 2,
+    "pendingDelivery": 0,
+    "beforeOwnerSequence": 3,
+    "beforeGlobalPosition": 3,
+    "expectedOwnerSequence": 4,
+    "expectedGlobalPosition": 14,
+    "diagnosticOnlyNamedDispatchCompleted": true,
+    "diagnosticAfterOwnerSequence": 4,
+    "diagnosticAfterGlobalPosition": 14,
+    "qualifies": false
+  },
+  "preparedCandidateSourceAdmission": {
+    "command": [
+      "python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/public-3.124.0/check-public-runtime-source.py",
+      "--platform-root",
+      "/home/administrator/projects/hexalith/platform",
+      "--sdk-root",
+      "/tmp/story416-sdk-3.124-source"
+    ],
+    "exitCode": 1,
+    "result": "Runtime SDK differs from published producer 0737c0befce5338e294a789092a0e223e8264a04: src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs"
+  },
+  "filesSha256": {
+    "story416-public-3124-projection3-states.jsonl": "65161e657d9ec28e3fcbd9d38944cfc194888e0d8cbe1b5ef07f32f467a534b5",
+    "story416-public-3124-projection3.log": "90d3fa3a058b30dbd716f949c5dac311f7d70754da1375cb9132167263a0a272",
+    "story416-public-3124-projection3.xml": "59573ac17f3535212454e87c1c17edd1a1f25cda55f11cbf988e3897460ac7ff",
+    "story416-public-3124-projection3-command.json": "5b1a3ffbee8d2533ad17f8c7d2255759826c7d1a21f740eaf50d322aecf6efdf",
+    "story416-public-3124-projection3-starts.jsonl": "f39a6e94db339d992bafd0d80c21138fc905bac7166b1b834be1b24fd0c93ba8"
+  }
+}

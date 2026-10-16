@@ -203,11 +203,6 @@ internal static class WorksHost
             return Results.Ok(await dispatcher.DispatchAsync(request, cancellationToken).ConfigureAwait(false));
             }).RequireEventStoreDomainServicePolicy("/project");
         }
-        else
-        {
-            _ = app.MapPost("/project", static () => Results.Conflict())
-                .RequireEventStoreDomainServicePolicy("/project");
-        }
 
         // The host-owned case-insensitive JSON route must be present before SDK activation. Canonical activation
         // observes it, preserves it, and supplies CloudEvents plus the single Dapr subscription-discovery endpoint.

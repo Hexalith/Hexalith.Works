@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/public-3.124.0/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksPlatformDispositionProbeTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksPlatformSelectedSdkPathsTests",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests",
+    "-result-xml",
+    "/tmp/story416-public-3124-supporting.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "scope": "PUBLIC3.124.0 Release supporting regressions; no live parity acceptance"
+}

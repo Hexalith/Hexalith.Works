@@ -1,0 +1,53 @@
+{
+  "scope": "Independent root supporting audit of unpublished3.123.1 candidate, not public3.124 qualification",
+  "refusals": {
+    "wrongPurpose": {
+      "callerStatus": 403,
+      "receiverStatus": 403,
+      "kind": "wrong-purpose",
+      "nonceMatches": true,
+      "observedCount": 3
+    },
+    "wrongTenant": {
+      "callerStatus": 500,
+      "receiverStatus": 403,
+      "kind": "wrong-tenant",
+      "nonceMatches": true,
+      "observedCount": 1
+    },
+    "wrongAggregate": {
+      "callerStatus": 500,
+      "receiverStatus": 403,
+      "kind": "wrong-aggregate",
+      "nonceMatches": true,
+      "observedCount": 1
+    },
+    "auditOutage": {
+      "callerStatus": 500,
+      "receiverStatus": 500,
+      "kind": "audit-outage",
+      "nonceMatches": true,
+      "observedCount": 1
+    }
+  },
+  "acceptedCallerStatus": 204,
+  "beforeGeneration": 0,
+  "afterGeneration": 2,
+  "providerOutageAttempts": 1,
+  "circuitRefusals": 208,
+  "auditAttempts": 1,
+  "phases": [
+    "periodic-writers-disabled-readiness-degraded",
+    "successful-callback-no-periodic-recovery",
+    "disabled-recovery-otlp-alert-export",
+    "callback-protected-scoped-disposition-audit-before-mutation",
+    "platform-named-conflict-durable-quarantine-with-unchanged-family"
+  ],
+  "fileSha256": {
+    "story416-candidate-callback4-starts.jsonl": "d1312b388703f8d4c52158bbb872a4824ceffe5a5ca66fd2123cff19bfabdc94",
+    "story416-candidate-callback4-command.json": "89cc850916e47789d4ae767970505c55b756562328b9fe29a5447cb5f0c62d7e",
+    "story416-candidate-callback4.log": "8f1a2f8dcd8cafb1a9463ab5e7784d1e79a333ca7d20014d6071b997fcd1f4c6",
+    "story416-candidate-callback4.xml": "27ed6c62ac8c8fbfd7f73225c035fbd3d9e8c213c43749dd5f7a9c729b101bae",
+    "story416-candidate-callback4-states.jsonl": "520c36129b652a312c81f24484d8a120372bf1d7a56fdcb7066079223baabb9a"
+  }
+}

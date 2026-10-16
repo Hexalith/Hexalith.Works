@@ -1,0 +1,32 @@
+{
+  "scope": "UNPUBLISHED latest-source candidate only; public acceptance remains separate",
+  "baseProducer": "0737c0befce5338e294a789092a0e223e8264a04",
+  "candidateVersion": "3.124.1-story416-gateway",
+  "runtimeBuilds": 5,
+  "buildFailures": 0,
+  "sourceFixtureChanged": false,
+  "globalAssemblyVersionOverride": false,
+  "patch": "../producer-correction.patch",
+  "patchSha256": "4531b7ac37ae03134a8dbbc9402d669dd45430086748e12587bf30862a3f0a4d",
+  "filesSha256": {
+    "story416-root-latest-candidate-runtime-1.log": "6a24a2b7fafa169825ec0e03362c33a1b1b5bb0808cf48a66829d38775dafaf6",
+    "story416-root-latest-candidate-metadata-final.json": "0fcc2e4659f2ae7fd4d79fd13243f8a6f2b4ccdb05b623e5b1e1b0f4c4155513",
+    "story416-root-latest-candidate-runtime-2.log": "fed9d3ef43b09d9b94961e146ce0523dbcc5f7edb265d1b281e7e07fb8c7c1e5",
+    "story416-root-latest-candidate-runtime-4.log": "ccd719d2ed99e04b85392f4f7f40e162ed76dfe7382ecac7c95746469fb6a859",
+    "story416-root-latest-candidate-runtime-3.log": "0f9ed61cc53c408f4dfc746e374ccde338fc958a07c60767e7ac1a67c6ad000f",
+    "story416-root-latest-candidate-prebuild.py": "97079dac6e2ace79fa54e89aed1b981424ed2d4762b5098040caa490c0a2bc35",
+    "story416-root-latest-candidate-runtime.json": "8b76375edc9716a9694cbb45e05d68965eb0e6c08d343fc7a56b2b4bf2b600ae",
+    "story416-root-latest-candidate-runtime-0.log": "c3031d8f9f88c3ca93d45fc01ad4802fc6724c7e79dfd75805edd82ab45c0ce4"
+  },
+  "patchApplicability": {
+    "command": [
+      "git",
+      "apply",
+      "--check",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/public-3.124.0/producer-correction.patch"
+    ],
+    "cwd": "/tmp/story416-sdk-3.124-public-source",
+    "exitCode": 0,
+    "mutations": false
+  }
+}

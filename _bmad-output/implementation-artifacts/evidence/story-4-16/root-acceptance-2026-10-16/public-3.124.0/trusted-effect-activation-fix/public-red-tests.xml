@@ -1,0 +1,187 @@
+<assemblies schema-version="3" id="ca7094b3-040c-4627-9a9d-8330344cf892" computer="DESKTOP-VIOG240" user="administrator" start-rtf="2026-10-16T20:44:00.9499592+00:00" finish-rtf="2026-10-16T20:44:01.1678053+00:00" timestamp="10/16/2026 22:44:01"><assembly environment="64-bit (x64) .NET 10.0.12 [collection-per-class, non-parallel]" id="f15c6573-f554-46a1-af18-14fe96f697db" name="/tmp/story416-sdk3124-red/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests.dll" run-date="2026-10-16" run-time="20:44:00" start-rtf="2026-10-16T20:44:00.9499592+00:00" test-framework="xUnit.net v3 4.0.2+0c7aa4991f" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="6" finish-rtf="2026-10-16T20:44:01.1678053+00:00" not-run="0" passed="0" skipped="0" time="0.218" time-rtf="00:00:00.2180000" total="6"><collection name="Test collection for Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests (id: 90ac9a7ddea53455e93e794f88b2fa10abf5187cac8687c8244766cbcc09f2b4)" id="89fe9cc3-ae00-482f-8d24-61e088c9ea76" failed="6" not-run="0" passed="0" skipped="0" time="0.105" time-rtf="00:00:00.1050000" total="6"><test id="35c3399b-bf33-4262-95f2-2f0f5e8942b8" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: Success, replayed: False)" result="Fail" time="0.1" time-rtf="00:00:00.1000000" start-rtf="2026-10-16T20:44:01.0355254+00:00" finish-rtf="2026-10-16T20:44:01.1493109+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="22073143-7294-4ddc-9eda-d17b1be5420e" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: Success, replayed: True)" result="Fail" time="0.004" time-rtf="00:00:00.0040000" start-rtf="2026-10-16T20:44:01.1520242+00:00" finish-rtf="2026-10-16T20:44:01.1565533+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="f351b862-f939-4404-90b5-47822e6f8750" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: Rejection, replayed: False)" result="Fail" time="0.001" time-rtf="00:00:00.0010000" start-rtf="2026-10-16T20:44:01.1566535+00:00" finish-rtf="2026-10-16T20:44:01.1580952+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="9f838d0b-908b-468a-b079-a488c62a0feb" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: Rejection, replayed: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-16T20:44:01.1581651+00:00" finish-rtf="2026-10-16T20:44:01.1589654+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="17a562d5-1a2f-4520-9619-4df0afcdfa5c" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: NoOp, replayed: False)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-16T20:44:01.1590129+00:00" finish-rtf="2026-10-16T20:44:01.1596632+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test><test id="10b2d124-4d48-4aff-a9dd-b8277fc99303" name="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(disposition: NoOp, replayed: True)" result="Fail" time="0" time-rtf="00:00:00.0000000" start-rtf="2026-10-16T20:44:01.1597145+00:00" finish-rtf="2026-10-16T20:44:01.1602995+00:00" type="Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests" method="EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery" source-file="/tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs" source-line="26"><failure exception-type="Shouldly.ShouldAssertException"><message>Shouldly.ShouldAssertException : .Returns(_ =&gt; { PendingActivation
+    should be
+True
+    but was
+False
+
+Additional Info:
+    activation must precede a trusted target commit</message><stack-trace>   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.Fixture.&lt;.ctor&gt;b__1_1(CallInfo _) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 183
+   at NSubstitute.Core.ReturnValueFromFunc`1.ReturnFor(CallInfo info)
+   at NSubstitute.Core.CallResults.ResultForCallSpec.GetResult(ICall call, ICallInfoFactory callInfoFactory)
+   at NSubstitute.Core.CallResults.TryGetResult(ICall call, Object&amp; result)
+   at NSubstitute.Routing.Handlers.ReturnConfiguredResultHandler.Handle(ICall call)
+   at NSubstitute.Routing.Route.Handle(ICall call)
+   at NSubstitute.Core.CallRouter.Route(ICall call)
+   at NSubstitute.Proxies.CastleDynamicProxy.CastleForwardingInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at NSubstitute.Proxies.CastleDynamicProxy.ProxyIdInterceptor.Intercept(IInvocation invocation)
+   at Castle.DynamicProxy.AbstractInvocation.Proceed()
+   at Castle.Proxies.ObjectProxy_1.ProcessTrustedEffectAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof)
+   at Hexalith.EventStore.Server.Commands.TrustedEffectRouter.RouteAsync(TrustedEffectSubmission submission, TrustedEffectContext context, String gatewayProof, CancellationToken cancellationToken) in /tmp/story416-sdk-3.124-regression-red/src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs:line 35
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+   at System.Runtime.CompilerServices.TaskAwaiter`1.GetResult()
+   at Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery(TrustedEffectDisposition disposition, Boolean replayed) in /tmp/story416-sdk-3.124-regression-red/tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs:line 36
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)
+--- End of stack trace from previous location ---
+   at System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw()
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task, ConfigureAwaitOptions options)</stack-trace></failure></test></collection></assembly></assemblies>

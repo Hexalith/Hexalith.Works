@@ -1,0 +1,159 @@
+{
+  "status": "prepared-unpublished-source-fix; not story4.16 acceptance",
+  "publicLatestStable": "3.123.0",
+  "publishedProducerCommit": "f78916d9534a72ba1515d97cfd51408e6eb809f1",
+  "sourceBaseline": "71b65073e4c7ef61d69b8528c3dd224b522e93f6",
+  "isolatedBuildVersion": "3.123.0 metadata on unpublished modified source; not a public archive",
+  "producerFiles": {
+    "src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs": "c9307868b330405e20757acc793df6893b60ad346f8779064411b6e72cabf75c",
+    "tests/Hexalith.EventStore.Server.Tests/Projections/ProjectionRebuildProductionPathTests.NamedLegacyIsolation.cs": "66726cb636b6e6a492e12ccc825a47895110c0904115305dd24e0a6c394692ca"
+  },
+  "results": [
+    {
+      "name": "story416-sdk-gateway-red",
+      "rawXml": "/tmp/story416-sdk-gateway-red.xml",
+      "counts": {
+        "total": "1",
+        "passed": "0",
+        "failed": "1",
+        "skipped": "0",
+        "errors": "0",
+        "time": "0.559"
+      },
+      "retainedXml": "story416-sdk-gateway-red.xml"
+    },
+    {
+      "name": "story416-sdk-gateway-green2",
+      "rawXml": "/tmp/story416-sdk-gateway-green2.xml",
+      "counts": {
+        "total": "59",
+        "passed": "59",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "7.051"
+      },
+      "retainedXml": "story416-sdk-gateway-green2.xml"
+    },
+    {
+      "name": "story416-sdk-gateway-projections",
+      "rawXml": "/tmp/story416-sdk-gateway-projections.xml",
+      "counts": {
+        "total": "791",
+        "passed": "774",
+        "failed": "0",
+        "skipped": "17",
+        "errors": "0",
+        "time": "55.318"
+      }
+    },
+    {
+      "name": "story416-sdk-gateway-full",
+      "rawXml": "/tmp/story416-sdk-gateway-full.xml",
+      "counts": {
+        "total": "5683",
+        "passed": "5086",
+        "failed": "572",
+        "skipped": "25",
+        "errors": "0",
+        "time": "120.695"
+      }
+    }
+  ],
+  "limits": [
+    "No package pin changed; no publication, Git staging, commit or push performed.",
+    "All named public producer acceptance checks remain required.",
+    "The unrelated broad server run was made with an output layout outside the repository, causing source/evidence path failures; it also includes pre-existing skipped ATDD tests. It is not a green qualification."
+  ],
+  "commands": [
+    {
+      "phase": "build-before-and-after",
+      "cwd": "/tmp/story416-sdk-gateway-isolated",
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj",
+        "-c",
+        "Debug",
+        "--artifacts-path",
+        "/tmp/story416-sdk-gateway-red",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:MinVerVersionOverride=3.123.1-story416-gateway"
+      ],
+      "afterExitCode": 0,
+      "afterWarnings": 0,
+      "afterErrors": 0
+    },
+    {
+      "phase": "unfiltered-external-layout",
+      "cwd": "/tmp/story416-sdk-gateway-isolated",
+      "argv": [
+        "/tmp/story416-sdk-gateway-red/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests",
+        "-noLogo",
+        "-result-xml",
+        "/tmp/story416-sdk-gateway-full.xml"
+      ],
+      "exitCode": 1
+    }
+  ],
+  "consumerSha256": "1d32f2df2b4adb823f355a4b325568c252c0ed75858a0361040f73dfd6ea1d5d",
+  "isolatedBuildVersionRequested": "3.123.1-story416-gateway",
+  "metadataCorrection": "MinVerVersionOverride alone did not override the centrally supplied Version. A separate explicit-version candidate rebuild is required before a candidate live diagnostic.",
+  "explicitCandidate": {
+    "informationalVersion": "3.123.1-story416-gateway",
+    "assemblyVersion": "3.123.1.0",
+    "directory": "/tmp/story416-sdk-gateway-candidate",
+    "buildLog": "/tmp/story416-sdk-gateway-candidate-build.log",
+    "files": {
+      "Hexalith.EventStore.Server": {
+        "sha256": "9fb366c1e6ea1c8cdc1b8a3944bcaab222bca9b39d834e44fd12c6d2b154cc0e"
+      },
+      "Hexalith.EventStore.Gateway": {
+        "sha256": "6de27206880e228a4b9c86c810ebba8e67278c6def818195ce9c49e10ecb2cfb"
+      },
+      "Hexalith.EventStore.Server.Tests": {
+        "sha256": "85a98bac518912197c9e0669cb431556b61649578d871014eb43d923cba19f3e"
+      }
+    },
+    "strictRegression": {
+      "xml": "story416-sdk-gateway-explicit-candidate.xml",
+      "exitCode": 0,
+      "counts": {
+        "total": "59",
+        "passed": "59",
+        "failed": "0",
+        "skipped": "0",
+        "time": "2.980"
+      }
+    },
+    "buildCommand": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.csproj",
+      "-c",
+      "Debug",
+      "--artifacts-path",
+      "/tmp/story416-sdk-gateway-candidate",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:Version=3.123.1-story416-gateway",
+      "-p:PackageVersion=3.123.1-story416-gateway",
+      "-p:AssemblyVersion=3.123.1.0",
+      "-p:FileVersion=3.123.1.0",
+      "-p:InformationalVersion=3.123.1-story416-gateway",
+      "-p:MinVerVersionOverride=3.123.1-story416-gateway"
+    ]
+  },
+  "standardLayoutBroadResult": {
+    "file": "full-server-correct-layout-results.json",
+    "counts": {
+      "total": "5683",
+      "passed": "5658",
+      "failed": "0",
+      "skipped": "25",
+      "errors": "0",
+      "time": "1060.346"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "scope": "Supporting retained host source-path compatibility; complete fleet rollback still pending",
+  "configuration": "Debug",
+  "build": {
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0,
+    "seconds": 16.03
+  },
+  "tests": {
+    "total": "7",
+    "passed": "7",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "0.130"
+  },
+  "command": "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksPlatformSelectedSdkPathsTests -result-xml /tmp/story416-selected-sdk-paths.xml",
+  "sourceSha256": {
+    "src/Hexalith.Works.AppHost/ProjectMetadataPaths.cs": "6bfca917d141a13f009b14eb15188ebdfcb6b93129eb4b15ae9a4273728b8209",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformSelectedSdkPathsTests.cs": "457dd4c1a219cf56c41df7e4b976dc4695cf2a670dd31be631fd22f917acbed0"
+  },
+  "filesSha256": {
+    "tests.log": "ee3ce52c2d1a46087ae592c591644d00766731b1f2f2c6ff9b7d62bc4bb8b8f3",
+    "build.log": "b4e153ca59137132a1ea4346e0837a26c3493aa800202bd73040d36ffdacf699",
+    "tests.xml": "0861c803282e101d7178092c6d5481feafa2e683222684ba95a86886c47aa3d2"
+  }
+}

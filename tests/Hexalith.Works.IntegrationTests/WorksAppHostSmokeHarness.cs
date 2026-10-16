@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Text;
@@ -12,6 +13,8 @@ using System.Text.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
+
+using CommunityToolkit.Aspire.Hosting.Dapr;
 
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.Works.Contracts.Commands;
@@ -34,7 +37,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 internal static class WorksAppHostSmokeHarness
 {
-    private const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
+    internal const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
 
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
@@ -65,6 +68,31 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>Both loopback address families that must be free before a fixed-port topology starts.</summary>
     private static readonly IPAddress[] ControlPlaneLoopbacks = [IPAddress.Loopback, IPAddress.IPv6Loopback];
 
+    private static object[] RuntimeModules(IDistributedApplicationTestingBuilder builder)
+    {
+        string configuration = builder.AppHostAssembly?.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
+            ?? throw new InvalidOperationException("The actual AppHost build configuration is missing.");
+        return [.. builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "eventstore" or "works" or "works-ha" or "eventstore-operations" or "eventstore-admin")
+            .Select(resource =>
+            {
+                string project = resource.GetProjectMetadata().ProjectPath;
+                string directory = WorksPlatformRuntimeArtifacts.DirectoryFor(project, configuration);
+                string entry = Path.Combine(directory, Path.GetFileNameWithoutExtension(project) + ".dll");
+                return (object)new
+                {
+                    resource = resource.Name, project, configuration, entry,
+                    entrySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(entry))),
+                    sdkAssemblies = Directory.GetFiles(directory, "Hexalith.EventStore.*.dll").Order(StringComparer.Ordinal).Select(path => new
+                    {
+                        name = Path.GetFileNameWithoutExtension(path), path,
+                        version = AssemblyName.GetAssemblyName(path).Version!.ToString(),
+                        informationalVersion = FileVersionInfo.GetVersionInfo(path).ProductVersion,
+                        sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path))),
+                    }).ToArray(),
+                };
+            })];
+    }
+
     private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder)
     {
         // Control-plane endpoints remain fixed and ownership-checked. Application and sidecar
@@ -92,6 +120,11 @@ internal static class WorksAppHostSmokeHarness
                 context.EnvironmentVariables["DAPR_GRPC_ENDPOINT"] = grpc;
                 context.EnvironmentVariables["DAPR_HTTP_PORT"] = http.Property(EndpointProperty.Port);
                 context.EnvironmentVariables["DAPR_GRPC_PORT"] = grpc.Property(EndpointProperty.Port);
+                if (project.Name == "eventstore-admin")
+                {
+                    ExecutableResource gateway = builder.Resources.OfType<ExecutableResource>().Single(resource => resource.Name == "eventstore-dapr-cli");
+                    context.EnvironmentVariables["AdminServer__EventStoreDaprHttpEndpoint"] = new EndpointReference(gateway, "http");
+                }
             });
         }
     }
@@ -128,7 +161,7 @@ internal static class WorksAppHostSmokeHarness
         try
         {
             ResourceLoggerService logs = app.Services.GetRequiredService<ResourceLoggerService>();
-            foreach (string resource in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls", "eventstore", "works", "eventstore-operations", "eventstore-admin" })
+            foreach (string resource in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls", "eventstore", "works", "works-ha", "eventstore-operations", "eventstore-admin" })
             {
                 var lines = new List<LogLine>();
                 using var resourceBudget = CancellationTokenSource.CreateLinkedTokenSource(budget.Token);
@@ -218,7 +251,7 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
                 .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
-                .WithEnvironment("Version", "3.123.0");
+                .WithEnvironment("Version", "3.124.0");
         }
         configure?.Invoke(builder);
         if (WorksAppHostSelection.IsPlatform)
@@ -232,25 +265,18 @@ internal static class WorksAppHostSmokeHarness
             scheduler.Annotations.Remove(mount);
             builder.CreateResourceBuilder(scheduler).WithVolume(schedulerVolumeName, "/var/lock");
         }
-        if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
-        {
-            string hostAssembly = builder.AppHostAssembly?.Location
-                ?? throw new InvalidOperationException("Platform proof did not capture the actual AppHost assembly.");
-            await File.AppendAllTextAsync(hostEvidence, JsonSerializer.Serialize(new
-            {
-                assembly = hostAssembly,
-                sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(hostAssembly))),
-                directory = builder.AppHostDirectory,
-                role = useRetainedHost ? "retained-rollback" : "platform-target",
-                schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
-                actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
-            }) + Environment.NewLine, startupCts.Token).ConfigureAwait(false);
-        }
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication? app = null;
         Exception? primaryException = null;
         try
         {
+            if (WorksAppHostSelection.IsPlatform)
+            {
+                _ = WorksPlatformRuntimeArtifacts.RequireMatchingConfigurations(
+                    typeof(WorksAppHostSmokeHarness).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
+                    builder.AppHostAssembly?.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
+                    typeof(Projects.Hexalith_Works_AppHost).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration);
+            }
             app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
             try
             {
@@ -312,6 +338,28 @@ internal static class WorksAppHostSmokeHarness
                 .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token,
                     WorksAppHostSelection.IsPlatform && actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName)
                 .ConfigureAwait(true);
+            if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
+            {
+                string hostAssembly = builder.AppHostAssembly?.Location
+                    ?? throw new InvalidOperationException("Platform proof did not capture the actual AppHost assembly.");
+                await File.AppendAllTextAsync(hostEvidence, JsonSerializer.Serialize(new
+                {
+                    assembly = hostAssembly,
+                    sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(hostAssembly))),
+                    directory = builder.AppHostDirectory,
+                    role = useRetainedHost ? "retained-rollback" : "platform-target",
+                    schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
+                    readinessPassed = true,
+                    runtimeModules = RuntimeModules(builder),
+                    actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
+                    sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+                        .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location) && assembly.GetName().Name!.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))
+                        .OrderBy(assembly => assembly.GetName().Name, StringComparer.Ordinal)
+                        .Select(assembly => new { name = assembly.GetName().Name, version = assembly.GetName().Version?.ToString(),
+                            path = assembly.Location, sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location))) })
+                        .ToArray(),
+                }) + Environment.NewLine, startupCts.Token).ConfigureAwait(false);
+            }
             try
             {
                 // The bounded token is a startup/readiness budget, not a lifetime budget for the acceptance

@@ -1,0 +1,32 @@
+{
+  "scope": "Supporting source Debug verification, not complete or published parity acceptance",
+  "build": {
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0,
+    "seconds": 16.24,
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Debug --artifacts-path /home/administrator/projects/hexalith/works/artifacts/story-4-16/query-deadline -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0"
+  },
+  "tests": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 4.319,
+    "classes": [
+      "WorksSdkProofRedisOwnershipTests",
+      "WorksQueryPolicyDeadlineTests"
+    ],
+    "command": "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests -class Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests -result-xml /tmp/story416-query-ownership.xml"
+  },
+  "verifierEvidenceGates": {
+    "passed": 8,
+    "command": "python3 -m unittest test_verify_works_host",
+    "cwd": "/home/administrator/projects/hexalith/platform/eng"
+  },
+  "filesSha256": {
+    "ownership-build.log": "b1955b654b648405fe0cf76bca2ac0a060ebc9d1b98a3ce41a744b898e77c9ef",
+    "ownership-tests.log": "1036be4476f6e033f6f1962e1aefaf127aab0e95305f92c3d99e5fc8b533977f",
+    "ownership-tests.xml": "95998effb920468abbb540079520d4b009aa980a575f7def54236072ba5036b2",
+    "evidence-gates.log": "2b6375b76a6204022a8c958ca2bc13e59b048b71a239d98f89434dcbcf269380"
+  }
+}

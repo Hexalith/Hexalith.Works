@@ -1,0 +1,40 @@
+[
+  {
+    "key": "eventstore||projection-activation:outbox:v1:30",
+    "item": {
+      "activationId": "aae722619f47ab9c74fae05e9b41b766b4b447a76ac213ba87cca4f49bd45385",
+      "tenantId": "sdk415-projection-04fd4d0b39",
+      "domain": "work",
+      "aggregateId": "work-sdk415-projection-04fd4d0b39-0",
+      "revision": 2,
+      "attempt": 37,
+      "nextDueUtc": "2026-10-16T17:54:35.1302343+00:00",
+      "legacyDelivery": {
+        "operationId": "01M52XF17WCEH0AXZ7Z4KK5ZGF",
+        "appId": "works",
+        "serviceVersion": "v1",
+        "headSequence": 3,
+        "headMessageId": "01M52XF15RBC649X4XBRJY2PG0",
+        "projectionType": null,
+        "sourceFingerprint": "b5cfd10cf3f3cbb7c7c2fc8a62d8ee3a28e2556e3c9d0937ad6f31e6527a72f2",
+        "candidateFingerprint": null,
+        "invocationToken": "01M52XF17JW3X8VTQ7QN3QQ4ZH",
+        "leaseExpiresAtUtc": "2026-10-16T17:56:54.620198+00:00",
+        "deliveryFencingToken": null,
+        "frozenActivationRevision": 1,
+        "sourceProof": {
+          "codecVersion": 1,
+          "tenantId": "sdk415-projection-04fd4d0b39",
+          "domain": "work",
+          "aggregateId": "work-sdk415-projection-04fd4d0b39-0",
+          "sourceIncarnation": "01M52XEZDT34SS7JR1XNQ27JN0",
+          "headSequence": 3,
+          "headMessageId": "01M52XF15RBC649X4XBRJY2PG0",
+          "cumulativeDigest": "4c997653c71947c53f8a1a5b8b45f88f259a0484911ddf3f8415f843a418a409",
+          "retainedFloor": 1,
+          "erased": false
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,58 @@
+[
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.Works.Contracts.dll",
+    "name": "Hexalith.Works.Contracts",
+    "assemblyVersion": "3.0.0.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway+b1c96bbacbe9cbb09f0b159057928c37b15e85d7",
+    "sha256": "683d2c11a3793669cda64f203375443df695240952d0f6e45829fc374e9675bc"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.Works.dll",
+    "name": "Hexalith.Works",
+    "assemblyVersion": "3.0.0.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway+b1c96bbacbe9cbb09f0b159057928c37b15e85d7",
+    "sha256": "b2a85f3a8e6eb43018679013948ffd00efc99eb12a39dfb0494dfa784669ab2b"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Server.dll",
+    "name": "Hexalith.EventStore.Server",
+    "assemblyVersion": "3.124.1.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway",
+    "sha256": "56a45de088244e4d50e14856d8a31156887b5855469274006fa0e52a5a5c9c48"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Client.dll",
+    "name": "Hexalith.EventStore.Client",
+    "assemblyVersion": "3.124.1.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway",
+    "sha256": "266c19742e9c3978bde4ba863aa49671b3ae50f2ab25fdf27ce6946643df0b67"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Operations.dll",
+    "name": "Hexalith.EventStore.Operations",
+    "assemblyVersion": "3.124.1.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway",
+    "sha256": "3b1a764e138bcc13716a4c847fd61855a676f3fab5bf3d05791299e47060b71f"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.Host.dll",
+    "name": "Hexalith.EventStore.Admin.Server.Host",
+    "assemblyVersion": "3.124.1.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway",
+    "sha256": "f3943382e1c25d2a4ce47b7112719ea68824eed515f7e94a4c9a8fa54402b631"
+  },
+  {
+    "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.AppHost/debug/Hexalith.Works.AppHost.dll",
+    "name": "Hexalith.Works.AppHost",
+    "assemblyVersion": "3.0.0.0",
+    "fileVersion": "3.124.1.0",
+    "informationalVersion": "3.124.1-story416-gateway+b1c96bbacbe9cbb09f0b159057928c37b15e85d7",
+    "sha256": "a425538f428f5070539c54bb74313a3d715f42c1659d03e787d0c73fe2ed7a86"
+  }
+]

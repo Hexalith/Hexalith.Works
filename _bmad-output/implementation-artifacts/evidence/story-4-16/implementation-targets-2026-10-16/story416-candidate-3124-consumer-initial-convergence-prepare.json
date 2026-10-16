@@ -1,0 +1,41 @@
+{
+  "scope": "UNPUBLISHED3.124.1 SOURCE DIAGNOSTIC ONLY; never public parity acceptance",
+  "runtimeSdkRoot": "/tmp/story416-sdk-3.124-source",
+  "baseProducerCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+  "commands": [
+    {
+      "cwd": "/home/administrator/projects/hexalith/works",
+      "command": [
+        "dotnet",
+        "build",
+        "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "-c",
+        "Debug",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1",
+        "-m:1",
+        "-p:NuGetAudit=false",
+        "-p:UseHexalithProjectReferences=true",
+        "-p:UseNuGetDeps=false",
+        "-p:HexalithAspireHostingDaprVersion=13.6.1-beta.935",
+        "-p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+        "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-source",
+        "-p:HexalithEventStoreVersion=3.124.1-story416-gateway",
+        "-p:Version=3.124.1-story416-gateway",
+        "-p:PackageVersion=3.124.1-story416-gateway",
+        "-p:FileVersion=3.124.1.0",
+        "-p:InformationalVersion=3.124.1-story416-gateway",
+        "-p:MinVerVersionOverride=3.124.1-story416-gateway"
+      ],
+      "log": "/tmp/story416-candidate-3124-consumer-initial-convergence-build-0.log",
+      "exitCode": 0
+    }
+  ],
+  "fixtureOverlay": {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+    "beforeSha256": "39521078035aa16a9c599527b38ab61e31508a987142b2f0cdefe75724df3492",
+    "overlaySha256": "62f7cdfaca4d915f666a31332d0cb84b42370d614157a6de9d193923602050c1",
+    "diff": "--- \n+++ \n@@ -610,7 +610,7 @@\n         // published proof consumer; MinVer otherwise derives the preceding repository tag.\r\n         if (WorksAppHostSelection.IsPlatform)\r\n             foreach (ProjectResource sourceProject in builder.Resources.OfType<ProjectResource>())\r\n-                builder.CreateResourceBuilder(sourceProject).WithEnvironment(\"MinVerVersionOverride\", \"3.124.0\")\r\n+                builder.CreateResourceBuilder(sourceProject).WithEnvironment(\"MinVerVersionOverride\", \"3.124.1-story416-gateway\")\r\n                     .WithEnvironment(\"DOTNET_ENVIRONMENT\", \"Development\")\r\n                     .WithEnvironment(\"ASPNETCORE_ENVIRONMENT\", \"Development\");\r\n         string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;\r\n@@ -658,7 +658,7 @@\n                         .WithEnvironment(\"EventStore__RateLimiting__ConsumerPermitLimit\", \"8192\")\r\n                         .WithEnvironment(\"EventStore__RateLimiting__TenantPermitLimits__anonymous\", \"8192\")\r\n                         .WithEnvironment(\"EventStore__RateLimiting__ConsumerPermitLimits__anonymous\", \"8192\");\r\n-                target.WithEnvironment(\"Version\", \"3.124.0\")\r\n+                target.WithEnvironment(\"Version\", \"3.124.1-story416-gateway\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__Enabled\", \"true\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__ActiveDigestKeyVersion\", \"story415\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__DigestKeys__story415\", digestKey);\r\n",
+    "restoredSha256": "39521078035aa16a9c599527b38ab61e31508a987142b2f0cdefe75724df3492"
+  }
+}

@@ -1,0 +1,126 @@
+<assemblies schema-version="3" id="e3f3a2db-7df3-4587-ae7e-4a8eb6933d46" computer="DESKTOP-VIOG240" user="administrator" start-rtf="2026-10-16T20:00:08.4891496+00:00" finish-rtf="2026-10-16T20:03:07.7254074+00:00" timestamp="10/16/2026 22:03:07"><assembly environment="64-bit (x64) .NET 10.0.12 [collection-per-class, parallel (collections, 14 threads)]" id="87ec62cc-3294-4b34-947a-3031ad74cee3" name="/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll" run-date="2026-10-16" run-time="20:00:08" start-rtf="2026-10-16T20:00:08.4891496+00:00" test-framework="xUnit.net v3 4.0.2+0c7aa4991f" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="1" finish-rtf="2026-10-16T20:03:07.7254074+00:00" not-run="0" passed="0" skipped="0" time="179.247" time-rtf="00:02:59.2470000" total="1"><collection name="Works AppHost live topology" id="a74d4535-007b-47d5-86b6-d57ee1ee4f75" failed="1" not-run="0" passed="0" skipped="0" time="179.113" time-rtf="00:02:59.1130000" total="1"><test id="ebfdd65f-e618-4274-9ed6-57baea445d20" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" result="Fail" time="179.113" time-rtf="00:02:59.1130000" start-rtf="2026-10-16T20:00:08.5627047+00:00" finish-rtf="2026-10-16T20:03:07.6853013+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="113"><failure exception-type="System.InvalidOperationException"><message>System.InvalidOperationException : A task was canceled.
+dapr-sentry startup output:
+2026-10-16T20:01:53.2870000Z 5b4bf4299f1276f4de72a09ff3f7bb494cba786b67203e7fdd4a56ba17404ebc
+2026-10-16T20:01:54.2120000Z 
+2026-10-16T20:01:54.2120000Z 5b4bf4299f1276f4de72a09ff3f7bb494cba786b67203e7fdd4a56ba17404ebc
+2026-10-16T20:01:54.1675987Z time=\"2026-10-16T20:01:54.167318991Z\" level=info msg=\"Starting Dapr Sentry certificate authority -- version 1.18.2 -- commit d2dd3747145e38e4d85db4714e26d7569c9c37db\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1676429Z time=\"2026-10-16T20:01:54.167408536Z\" level=info msg=\"Log level set to: info\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1681714Z time=\"2026-10-16T20:01:54.167969387Z\" level=info msg=\"Starting watch on filesystem directories: [/var/run/dapr/credentials]\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1681792Z time=\"2026-10-16T20:01:54.168029982Z\" level=info msg=\"Adding validator 'insecure'\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1681803Z time=\"2026-10-16T20:01:54.168052816Z\" level=info msg=\"Using local file system for trust bundle storage\" instance=5b4bf4299f12 scope=dapr.sentry.ca type=log ver=1.18.2
+2026-10-16T20:01:54.1695788Z time=\"2026-10-16T20:01:54.169389184Z\" level=info msg=\"Root and issuer certs found: using credentials from store\" instance=5b4bf4299f12 scope=dapr.sentry.ca type=log ver=1.18.2
+2026-10-16T20:01:54.1695913Z time=\"2026-10-16T20:01:54.169461485Z\" level=info msg=\"CA certificate key pair ready\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1695927Z time=\"2026-10-16T20:01:54.169502345Z\" level=info msg=\"OIDC HTTP server is disabled\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1696944Z time=\"2026-10-16T20:01:54.169564868Z\" level=info msg=\"Using validator 'insecure'\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1699337Z time=\"2026-10-16T20:01:54.169756738Z\" level=info msg=\"Fetching initial identity\" instance=5b4bf4299f12 scope=dapr.runtime.security type=log ver=1.18.2
+2026-10-16T20:01:54.1702859Z time=\"2026-10-16T20:01:54.170082515Z\" level=info msg=\"Security is initialized successfully\" instance=5b4bf4299f12 scope=dapr.runtime.security type=log ver=1.18.2
+2026-10-16T20:01:54.1702989Z time=\"2026-10-16T20:01:54.170167156Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-17 20:01:54 +0000 UTC, renewal at: 2026-10-17 07:54:24 +0000 UTC\" instance=5b4bf4299f12 scope=dapr.runtime.security type=log ver=1.18.2
+2026-10-16T20:01:54.1720848Z time=\"2026-10-16T20:01:54.171929382Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1720918Z time=\"2026-10-16T20:01:54.171961039Z\" level=info msg=\"metrics server started on :9090/\" instance=5b4bf4299f12 scope=dapr.sentry type=log ver=1.18.2
+2026-10-16T20:01:54.1721267Z time=\"2026-10-16T20:01:54.172042423Z\" level=info msg=\"Running gRPC server on port 50001\" instance=5b4bf4299f12 scope=dapr.sentry.server type=log ver=1.18.2
+2026-10-16T20:01:54.9900000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-sentry-uedqwbge
+
+dapr-placement-mtls log read failed: HttpOperationException
+
+dapr-placement-mtls startup output:
+2026-10-16T20:01:52.1391299Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:54.9934378Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9996069Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9996492Z Finished waiting for resource 'dapr-sentry'.
+
+dapr-scheduler-mtls log read failed: HttpOperationException
+
+dapr-scheduler-mtls startup output:
+2026-10-16T20:01:52.1391217Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:54.9934317Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9995725Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9995758Z Finished waiting for resource 'dapr-sentry'.
+
+eventstore log read failed: HttpOperationException
+
+eventstore startup output:
+2026-10-16T20:01:52.1275097Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:52.1275245Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-16T20:01:52.1275298Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-16T20:01:54.9933570Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9994817Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9994962Z Finished waiting for resource 'dapr-sentry'.
+2026-10-16T20:01:57.0164993Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-16T20:01:57.0183155Z Waiting for resource ready to execute for 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0183574Z Finished waiting for resource 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0935717Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-16T20:01:57.0969846Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.0969870Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+works log read failed: HttpOperationException
+
+works startup output:
+2026-10-16T20:01:52.1278879Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-16T20:01:52.1279004Z Waiting for resource ready to execute for 'statestore'.
+2026-10-16T20:01:52.1279039Z Finished waiting for resource 'statestore'.
+2026-10-16T20:01:52.1286489Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:52.1286748Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-16T20:01:52.1286828Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-16T20:01:54.9934223Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9995403Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9995443Z Finished waiting for resource 'dapr-sentry'.
+2026-10-16T20:01:57.0165983Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-16T20:01:57.0185020Z Waiting for resource ready to execute for 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0185078Z Finished waiting for resource 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0936484Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-16T20:01:57.0998878Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.0998901Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+works-ha startup output:
+
+eventstore-operations log read failed: HttpOperationException
+
+eventstore-operations startup output:
+2026-10-16T20:01:52.1275992Z Waiting for resource 'works' to enter the 'Running' state.
+2026-10-16T20:01:52.1280084Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-16T20:01:52.1280143Z Waiting for resource ready to execute for 'statestore'.
+2026-10-16T20:01:52.1280179Z Finished waiting for resource 'statestore'.
+2026-10-16T20:01:52.1280362Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:52.1280420Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-16T20:01:52.1280477Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-16T20:01:54.9934054Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9995739Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9996056Z Finished waiting for resource 'dapr-sentry'.
+2026-10-16T20:01:57.0165656Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-16T20:01:57.0184602Z Waiting for resource ready to execute for 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0184703Z Finished waiting for resource 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0936292Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-16T20:01:57.0989931Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.0990020Z Finished waiting for resource 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.1648259Z Finished waiting for resource 'works' to start.
+
+eventstore-admin log read failed: HttpOperationException
+
+eventstore-admin startup output:
+2026-10-16T20:01:52.1281677Z Waiting for resource 'eventstore-operations' to enter the 'Running' state.
+2026-10-16T20:01:52.1284420Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-16T20:01:52.1284602Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-16T20:01:52.1284657Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-16T20:01:54.9934193Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-16T20:01:54.9995405Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-16T20:01:54.9995436Z Finished waiting for resource 'dapr-sentry'.
+2026-10-16T20:01:57.0165957Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-16T20:01:57.0185014Z Waiting for resource ready to execute for 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0185106Z Finished waiting for resource 'dapr-placement-mtls'.
+2026-10-16T20:01:57.0936471Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-16T20:01:57.1006188Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.1006926Z Finished waiting for resource 'dapr-scheduler-mtls'.
+2026-10-16T20:01:57.1927877Z Waiting for resource 'eventstore-operations' to become healthy.
+2026-10-16T20:02:02.5016737Z Waiting for resource ready to execute for 'eventstore-operations'.
+2026-10-16T20:02:02.5017904Z Finished waiting for resource 'eventstore-operations'.
+
+---- System.Threading.Tasks.TaskCanceledException : A task was canceled.</message><stack-trace>   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 429
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 222
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 499
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 499
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.WaitAsync(Func`1 condition, CancellationToken token) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 717
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.&lt;&gt;c__DisplayClass1_0.&lt;&lt;SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart&gt;b__3&gt;d.MoveNext() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 278
+--- End of stack trace from previous location ---
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 362</stack-trace></failure></test></collection></assembly></assemblies>

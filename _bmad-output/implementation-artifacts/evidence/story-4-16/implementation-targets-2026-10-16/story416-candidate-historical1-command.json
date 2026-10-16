@@ -1,0 +1,35 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE; no public release acceptance",
+  "command": [
+    "/tmp/story416-candidate-consumer/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+    "-result-xml",
+    "/tmp/story416-candidate-historical1.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "environment": {
+    "WORKS_PLATFORM_APPHOST_ASSEMBLY": "/tmp/story416-candidate-host-public-hosting/bin/debug/apphost.dll",
+    "WORKS_PLATFORM_ROOT": "/home/administrator/projects/hexalith/platform",
+    "WORKS_PLATFORM_WORKS_ROOT": "/home/administrator/projects/hexalith/works",
+    "Platform__Works__SourceRoot": "/home/administrator/projects/hexalith/works",
+    "Version": "3.123.1-story416-gateway",
+    "PackageVersion": "3.123.1-story416-gateway",
+    "AssemblyVersion": "3.123.1.0",
+    "FileVersion": "3.123.1.0",
+    "InformationalVersion": "3.123.1-story416-gateway",
+    "MinVerVersionOverride": "3.123.1-story416-gateway",
+    "HexalithEventStoreVersion": "3.123.1-story416-gateway",
+    "HexalithEventStoreRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "UseHexalithProjectReferences": "true",
+    "UseNuGetDeps": "false",
+    "HexalithAspireHostingDaprVersion": "13.6.1-beta.935",
+    "PlatformWorksRuntimeRoot": "/home/administrator/projects/hexalith/platform",
+    "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180",
+    "WORKS_PLATFORM_APPHOST_SHA256": "c161ad91c39a31cc88997161854aabffff1f6b0bb49701159579336df2045264",
+    "WORKS_PLATFORM_HOST_EVIDENCE": "/tmp/story416-candidate-historical1-starts.jsonl",
+    "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story416-candidate-historical1-states.jsonl"
+  },
+  "fixtureOverlay": "/tmp/story416-candidate-fixture-overlay.json"
+}

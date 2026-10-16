@@ -1,0 +1,65 @@
+{
+  "scope": "Latest public Release consumer and separately identified unpublished source correction; not full4.16 acceptance",
+  "publicVersion": "3.124.0",
+  "publicProducer": "0737c0befce5338e294a789092a0e223e8264a04",
+  "consumer": {
+    "buildExit": 0,
+    "warnings": 0,
+    "errors": 0,
+    "buildSeconds": 9.07,
+    "tests": {
+      "total": "162",
+      "passed": "162",
+      "failed": "0",
+      "skipped": "0",
+      "errors": "0",
+      "time": "13.262"
+    },
+    "command": "artifacts/story-4-16/public-3.124.0/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests -class Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests -class Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests -class Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests -class Hexalith.Works.IntegrationTests.WorksPlatformDispositionProbeTests -result-xml /tmp/story416-public3124-supporting.xml"
+  },
+  "candidate": {
+    "version": "3.124.1-story416-gateway",
+    "root": "/tmp/story416-sdk-3.124-source",
+    "buildExit": 0,
+    "warnings": 0,
+    "errors": 0,
+    "buildSeconds": 13.51,
+    "tests": {
+      "total": "59",
+      "passed": "59",
+      "failed": "0",
+      "skipped": "0",
+      "errors": "0",
+      "time": "2.747"
+    },
+    "command": "/tmp/story416-sdk3124-candidate/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests -noLogo -class Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests -class Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests -result-xml /tmp/story416-sdk3124-related.xml"
+  },
+  "filesSha256": {
+    "consumer-build.log": "e5d34cc15c63955a331e683c482801af1cf0ac6ddad1c4af06a14c7b4191ed3f",
+    "consumer-supporting.log": "7093fa64581613b662f403ab79fce5343399a73b6f3cc17d45964a831a796b12",
+    "consumer-supporting.xml": "ffeddc6d5ee2912feee7c282ff02665ba4f2683bae3d3d3b83338b0daa9fd562",
+    "candidate-sdk-build.log": "f175b679fbabb4134b115bf00a21c7ae2da0477d3e16f2d536eb7eeb1a3ada9d",
+    "candidate-sdk-related.log": "31f1735d774256ac16247dffca69e58ac3d5f14f8f55f964bb16c413fdd4a618",
+    "candidate-sdk-related.xml": "f082ed8b1b7229e7d13345f6246287aec120cde11877b00a00302323815c150d"
+  },
+  "publicSourceRegressionRed": {
+    "scope": "Public3.124runtime source with the added regression test only; does not replace actual Platform R4 qualification",
+    "root": "/tmp/story416-sdk-3.124-regression-red",
+    "command": "/tmp/story416-sdk3124-red/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests -noLogo -method Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests.NamedDelivery_AdvancedHeadProgressesWhileUnsuccessfulLegacyReplayKeepsItsOriginalLease -result-xml /tmp/story416-sdk3124-red.xml",
+    "exitCode": 1,
+    "tests": {
+      "total": "1",
+      "passed": "0",
+      "failed": "1",
+      "skipped": "0",
+      "errors": "0",
+      "time": "0.371"
+    },
+    "result": "Expected advanced named head2 dispatch once; no matching call, only original head1 observed.",
+    "filesSha256": {
+      "producer-regression-red-build.log": "39ddb08c98a543b0ebc10b3f72bf416aa275ddf65a856681b510d6b33d2c9960",
+      "producer-regression-red.log": "3646f00e348b25e5b565e5003963bebf35101bbaa0def1566bd3f96d92cde73e",
+      "producer-regression-red.xml": "e731c07635482059f0d5209a24c227f630e113bb0f71c02cbf6e4b066f7f3c3e"
+    }
+  }
+}

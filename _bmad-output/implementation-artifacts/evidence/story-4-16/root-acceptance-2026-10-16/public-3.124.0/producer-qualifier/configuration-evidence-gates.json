@@ -1,0 +1,20 @@
+{
+  "scope": "Evidence gates after independent actual-configuration mismatch; not live parity acceptance",
+  "checkedUtc": "2026-10-16T20:12:36.599191+00:00",
+  "cwd": "/home/administrator/projects/hexalith/platform/eng",
+  "command": "python3 -m unittest test_verify_works_host test_verify_works_producer",
+  "exitCode": 0,
+  "passed": 18,
+  "failed": 0,
+  "sourceGuardCases": 9,
+  "evidenceGateCases": 9,
+  "compileCommand": "python3 -m py_compile verify_works_host.py verify_works_producer.py test_verify_works_host.py test_verify_works_producer.py",
+  "compileExitCode": 0,
+  "sourceFilesSha256": {
+    "verify_works_host.py": "34707329dd40fb217f1da5558cad82ab1a84a9a13296894b41f0489e88f654dc",
+    "verify_works_producer.py": "3a2ba8b201cd651c19c7f6b4a7b5011587b0033e069a4c3806e71482383300fc",
+    "test_verify_works_host.py": "abafd4bb1660bd97ff3639dda2e6648809ad8ea160410e038e57bcbcc6824ef9",
+    "test_verify_works_producer.py": "cf4efb22f3dee32462e610477eec272c4c53801ade5db52c3954f0d4864bc48f"
+  },
+  "logSha256": "aee3779356b96e82e266faec67d2853a3f3efd095094272cb26b7480c9795233"
+}

@@ -1,0 +1,60 @@
+{
+  "scope": "UNPUBLISHED latest-source candidate callback/ops supporting result only; not public release acceptance",
+  "checkedUtc": "2026-10-16T20:25:24.769736+00:00",
+  "version": "3.124.1-story416-gateway",
+  "testResult": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "158.146"
+  },
+  "phases": [
+    "periodic-writers-disabled-readiness-degraded",
+    "successful-callback-no-periodic-recovery",
+    "disabled-recovery-otlp-alert-export",
+    "callback-protected-scoped-disposition-audit-before-mutation",
+    "platform-named-conflict-durable-quarantine-with-unchanged-family"
+  ],
+  "filesSha256": {
+    "story416-candidate-3124-callback5-starts.jsonl": "564a55f04e3f802c8fc296ef1fd25db849ca337b397eacb52543baf0a8d31169",
+    "story416-candidate-3124-callback5.xml": "574a6029b185182735fe07c4584cddfecfd6e492af8222d9ad4f1c0aae3592bf",
+    "story416-candidate-3124-callback5-states.jsonl": "f39dc171ae2064ccaea1d8ec60b47c30387a3e89faab814c69454f2cf654d158",
+    "story416-candidate-3124-callback5-command.json": "de763ce35ae7e689ad0480cffddda84102eace855772594251e3b58b0cb87e1b"
+  },
+  "independentReceiverAudit": {
+    "wrongPurpose": {
+      "callerStatus": 403,
+      "receiverStatus": 403,
+      "nonceMatches": true,
+      "observationCount": 3
+    },
+    "wrongTenant": {
+      "callerStatus": 500,
+      "receiverStatus": 403,
+      "nonceMatches": true,
+      "observationCount": 1
+    },
+    "wrongAggregate": {
+      "callerStatus": 500,
+      "receiverStatus": 403,
+      "nonceMatches": true,
+      "observationCount": 1
+    },
+    "auditOutage": {
+      "callerStatus": 500,
+      "receiverStatus": 500,
+      "nonceMatches": true,
+      "observationCount": 1
+    }
+  },
+  "auditAttribution": {
+    "attemptCount": 1,
+    "workload": "eventstore-admin",
+    "actor": "synthetic-operator-416",
+    "purpose": "works.process-disposition",
+    "providerOutageAttempts": 1,
+    "acceptedCallerStatus": 204
+  }
+}

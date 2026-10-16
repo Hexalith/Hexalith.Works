@@ -1,0 +1,16 @@
+{
+  "scope": "preparatory actual Platform, public f789 runtime source snapshot; not acceptance",
+  "command": "story416-projection-prep13-command.json",
+  "xml": "story416-projection-prep13.xml",
+  "counts": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "time": "272.512"
+  },
+  "meaning": "Automatic dispatch did not advance after commit. Diagnostic direct dispatch is explicitly non-qualifying.",
+  "coldState": "story416-projection-prep13-states.jsonl",
+  "legacyIntent": "story416-projection-prep13-legacy-intent.json",
+  "producerProvenance": "story416-projection-prep13-runtime-provenance.json"
+}

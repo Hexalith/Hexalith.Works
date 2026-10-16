@@ -1,0 +1,60 @@
+{
+  "scope": "Two prepared unpublished SDK corrections against official public3.124 producer0737c0b; not public acceptance",
+  "checkedUtc": "2026-10-16T20:45:35.277351+00:00",
+  "defects": [
+    "An active failed legacy replay lease blocks later independent named heads",
+    "TrustedEffectRouter bypasses ordinary-command durable projection activation while its actor suppresses in-turn projection delivery"
+  ],
+  "behavior": "Keep the original legacy lease; independently dispatch named heads. Write target activation before a trusted effect actor call, then nudge after target+retention turns without holding the receipt response. Preserve published3-argument constructor ABI.",
+  "candidateVersion": "3.124.1-story416-gateway",
+  "sourceFilesSha256": {
+    "src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs": "c9307868b330405e20757acc793df6893b60ad346f8779064411b6e72cabf75c",
+    "tests/Hexalith.EventStore.Server.Tests/Projections/ProjectionRebuildProductionPathTests.NamedLegacyIsolation.cs": "66726cb636b6e6a492e12ccc825a47895110c0904115305dd24e0a6c394692ca",
+    "src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs": "72914b80e9b29780bee4c0d79e35cc9217c660d3e6d7daa971d40a25babc2eaa",
+    "tests/Hexalith.EventStore.Server.Tests/Commands/TrustedEffectRouterProjectionTests.cs": "f93076afebc7371be3deaf80494dc6f66b875b506a60401113305fa11f0f5946"
+  },
+  "candidateTestCommand": "/tmp/story416-sdk3124-candidate/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests -noLogo -class Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests -class Hexalith.EventStore.Server.Tests.Projections.ProjectionRebuildProductionPathTests -class Hexalith.EventStore.Server.Tests.Projections.DaprProjectionActivationOutboxTests -class Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRetentionGateTests -class Hexalith.EventStore.Server.Tests.Actors.TrustedEffectJointOffboardingTests -class Hexalith.EventStore.Server.Tests.Configuration.EventStoreServerServiceCollectionExtensionsTests -result-xml /tmp/story416-sdk3124-trusted-final.xml",
+  "candidateExitCode": 0,
+  "candidateTests": {
+    "total": "138",
+    "passed": "138",
+    "failed": "0",
+    "skipped": "0",
+    "time": "3.275"
+  },
+  "publicRedCommand": "/tmp/story416-sdk3124-red/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests -noLogo -method Hexalith.EventStore.Server.Tests.Commands.TrustedEffectRouterProjectionTests.EveryReceiptKeepsDurableTargetActivationAndPostTurnDelivery -result-xml /tmp/story416-sdk3124-trusted-red.xml",
+  "publicRedExitCode": 1,
+  "publicRedTests": {
+    "total": "6",
+    "passed": "0",
+    "failed": "6",
+    "skipped": "0",
+    "time": "0.218"
+  },
+  "publicRedResult": "All six receipt/replay cases fail: activation must precede a trusted target commit; actual PendingActivation=False. Runtime source remains unmodified official3.124.",
+  "filesSha256": {
+    "public-red-tests.log": "990e9db3691adfd33680368cc4fb7a56fbfa39936ab8dd7f3cec8bd50b154cbc",
+    "public-red-tests.xml": "b96829a59d6118bd46a9786c5de591eda310927693b9069372ed88a842cd10bd",
+    "candidate-public-source-refusal.log": "f3fc53eb1ad2e41c1b78f8d2276a46510a745a17b448cf1edc4f36b31f4ee4fb",
+    "public-red-source-qualification.json": "171905f6ea03548f7d250465ce8e2f5b18771afbc72fb11cd29808756423af3e",
+    "candidate-tests.log": "c26beb5d5b5bbc1a22d8bcd462cbaf94abf7969ff4ca864fbb885aee312896cc",
+    "public-red-build.log": "8e4ee8b6bbbe141a7e54d15554a2e5533c3bbf94fcf61c8f59ccf5c60bbf998e",
+    "candidate-tests.xml": "ff511f08a8985e1ade0a2939a431c81aff8f6fa42def9f6e82ffe929a120081b",
+    "candidate-build.log": "be8bf8843fd096962c6039a5ba07b23058be478dea24db4f46df0d0eb2e107a8"
+  },
+  "publicRedRuntimeSourceQualification": {
+    "command": "python3 _bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/public-3.124.0/check-public-runtime-source.py --platform-root /home/administrator/projects/hexalith/platform --sdk-root /tmp/story416-sdk-3.124-regression-red",
+    "exitCode": 0,
+    "result": "All1942 runtime/build files match official0737c0b producer; added tests are outside runtime inventory."
+  },
+  "candidatePublicSourceRefusal": {
+    "command": "python3 _bmad-output/implementation-artifacts/evidence/story-4-16/root-acceptance-2026-10-16/public-3.124.0/check-public-runtime-source.py --platform-root /home/administrator/projects/hexalith/platform --sdk-root /tmp/story416-sdk-3.124-source",
+    "exitCode": 1,
+    "result": "Runtime SDK differs from published producer 0737c0befce5338e294a789092a0e223e8264a04: src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs, src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs"
+  },
+  "combinedPatch": {
+    "path": "../producer-correction-v2.patch",
+    "gitApplyCheckExitCode": 0,
+    "sha256": "fcec674c7dd7884b3a998ef2d2e01e4db84676c8f4e1673a7417726ad7a7f473"
+  }
+}

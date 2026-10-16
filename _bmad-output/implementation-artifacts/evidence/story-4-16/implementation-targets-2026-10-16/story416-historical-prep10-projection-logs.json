@@ -1,0 +1,102 @@
+[
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=mine-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=21.2104, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection route not admitted: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=mine-f1e6f144b5, ProjectionType=works-runtime-v3, ReasonCode=delivery_already_completed, Stage=NamedProjectionAdmission"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=mine-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=12.0081, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=foreign-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=6.4756, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=foreign-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=6.952, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=queued-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=7.4552, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=parent-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=5.5529, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=race-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=5.7303, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection route not admitted: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=race-f1e6f144b5, ProjectionType=works-runtime-v3, ReasonCode=delivery_already_completed, Stage=NamedProjectionAdmission"
+  },
+  {
+    "file": "2b43ca16-66c4-4ca8-a83c-f02269b1b5d5_out",
+    "category": "Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator",
+    "message": "Named projection outcome reconciled: TenantId=sdk415-history-f1e6f144b5, Domain=work, AggregateId=child-f1e6f144b5, ProjectionType=works-runtime-v3, Status=Completed, DurationMs=7.0471, Stage=NamedProjectionOutcome"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request starting HTTP/1.1 POST http://localhost:41433/project - application/json;+charset=utf-8 -"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request finished HTTP/1.1 POST http://localhost:41433/project - 404 - application/problem+json 9.5880ms"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request starting HTTP/1.1 POST http://localhost:41433/project - application/json;+charset=utf-8 -"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request finished HTTP/1.1 POST http://localhost:41433/project - 404 - application/problem+json 2.5249ms"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request starting HTTP/1.1 POST http://localhost:41433/project - application/json;+charset=utf-8 -"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request finished HTTP/1.1 POST http://localhost:41433/project - 404 - application/problem+json 2.5661ms"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request starting HTTP/1.1 POST http://localhost:41433/project - application/json;+charset=utf-8 -"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request finished HTTP/1.1 POST http://localhost:41433/project - 404 - application/problem+json 1.7269ms"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request starting HTTP/1.1 POST http://localhost:41433/project - application/json;+charset=utf-8 -"
+  },
+  {
+    "file": "42a71773-a0e4-40bd-8ff5-96821fb95f12_out",
+    "category": "Microsoft.AspNetCore.Hosting.Diagnostics",
+    "message": "Request finished HTTP/1.1 POST http://localhost:41433/project - 404 - application/problem+json 1.4477ms"
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "checkedUtc": "2026-10-16T20:59:57.131048+00:00",
+  "scope": "Remaining4.16 acceptance gates; candidate successes do not qualify published parity",
+  "story415": "accepted, preserved270files",
+  "story416": "in-progress",
+  "story49": "inherited in-progress, not resumed; awaits4.16 acceptance",
+  "matrix": [
+    {
+      "scenario": "Startup/restart",
+      "result": "V2 candidate all eleven heads naturally converge; eighteen persisted phases pass, complete public ledger pending"
+    },
+    {
+      "scenario": "Historical scenarios",
+      "result": "older source candidate historical and public3.123 HA supporting passes; latest public3.124 R4 fails automatic catch-up"
+    },
+    {
+      "scenario": "Wrong origin/policy",
+      "result": "Platform92permode, receiver34, public focused162 and guard18 pass; fresh complete public live negative ledger pending"
+    },
+    {
+      "scenario": "Complete fleet rollback",
+      "result": "V2 candidate full6 failed Redis restored-value byte check after complete capture; retained host not started, rollback unaccepted"
+    }
+  ],
+  "publicBlocker": {
+    "version": "3.124.0",
+    "producer": "0737c0befce5338e294a789092a0e223e8264a04",
+    "exactCommand": "python3 /tmp/story416-run-public-3124.py /tmp/story416-public-3124-projection3 Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "failed": 1,
+    "skipped": 0,
+    "seconds": 283.125,
+    "result": "Automatic post-Commit catch-up timed out; selected generation2 owner3/global3, committed owner4/global14. One diagnostic direct named dispatch advances state and does not qualify acceptance.",
+    "evidence": "public-3.124.0/public-r4-blocker.json"
+  },
+  "remaining": [
+    "Complete source-candidate restore and remaining candidate parity checks",
+    "Published corrected producer, then complete fresh public R1-R11/restore zero-skip verifier",
+    "Three independent review lenses and remediation after all acceptance criteria pass",
+    "Final spec and sprint acceptance sync"
+  ],
+  "authority": "Approved frozen4.16 scope excludes external publication/deployment. No authorization to publish is inferred from the latest-version dependency instruction.",
+  "currentCandidateFailure": {
+    "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full6 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "exitCode": 1,
+    "failed": 1,
+    "skipped": 0,
+    "seconds": 560.69,
+    "result": "RestoreFleetAsync line229: A restored synthetic value differs from its backup. Retained fleet was not started; no complete rollback qualifies.",
+    "evidence": "public-3.124.0/candidate-runtime-preparation/full6/root-failure.json"
+  }
+}

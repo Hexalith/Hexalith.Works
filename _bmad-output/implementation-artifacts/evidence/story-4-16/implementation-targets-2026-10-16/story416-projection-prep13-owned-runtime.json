@@ -1,0 +1,9 @@
+{
+  "testPids": [
+    "63945"
+  ],
+  "kubeconfigs": [
+    "/tmp/aspire-dcpG1mmDF/kubeconfig",
+    "--tls-cert-thumbprint"
+  ]
+}

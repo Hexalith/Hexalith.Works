@@ -1,0 +1,36 @@
+{
+  "scope": "Supporting in-process proof-integrity regressions; modified unpublished source is not published parity acceptance",
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "buildCommand": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj -c Debug --artifacts-path /home/administrator/projects/hexalith/works/artifacts/story-4-16/query-deadline -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0 -p:HexalithAspireHostingDaprVersion=13.6.1-beta.935 -p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform -p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+  "buildResult": {
+    "exitCode": 0,
+    "warnings": 0,
+    "errors": 0,
+    "seconds": 9.38
+  },
+  "testCommand": "artifacts/story-4-16/query-deadline/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests -noLogo -class Hexalith.Works.IntegrationTests.WorksPlatformDispositionProbeTests -result-xml /tmp/story416-disposition-probe-final.xml",
+  "testResult": {
+    "total": "34",
+    "passed": "34",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "0.299"
+  },
+  "proofs": [
+    "Four valid kinds require exact bound authenticated claims and final receiver status",
+    "Completion observes through a new independent scope after original request scope disposal and RequestServices removal",
+    "24 mismatched request, source, authentication, claim or status cases persist no observation",
+    "Six malformed body cases persist no observation and preserve the bytes delivered to the receiver",
+    "No observation persists before response completion"
+  ],
+  "sourceSha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbe.cs": "84be8fa2953f7b883321ccd0a08dd6adfccfc70807382b184ec616ffd0b8b389",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbeTests.cs": "10406f6c5b061f6f127bc99d4bf4bed0c2780f9526d638f4c4f60ff7ce736e9a"
+  },
+  "filesSha256": {
+    "build.log": "3bf6e9cee503a4a2440eb203e9cd193ef25d57b745e5d41e157c5b3f93493459",
+    "tests.log": "466e97b98c67b66187a1aaa10735bf2c2f229573186ea4aebbf37af48b95b188",
+    "tests.xml": "664c1451eb8af4a81c18dd30cbd4ef9e1da50f81eb107ffd2fa1b5dcc593c22b"
+  }
+}

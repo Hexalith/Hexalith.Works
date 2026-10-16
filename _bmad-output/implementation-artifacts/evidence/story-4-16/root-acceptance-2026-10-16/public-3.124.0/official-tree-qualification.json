@@ -1,0 +1,26 @@
+{
+  "repositoryCommit": "0737c0befce5338e294a789092a0e223e8264a04",
+  "repositoryUrl": "https://github.com/Hexalith/Hexalith.EventStore",
+  "checkoutCommit": null,
+  "sourceInventorySha256": "6888e424cc666b5cd611f34ef9eac3ac27dd93dfe16f728be2a95629faa8d437",
+  "matchesPublishedProducer": true,
+  "qualification": "official-commit-tree-and-exact-git-blob-identities",
+  "runtimeFileCount": 1942,
+  "officialCommit": {
+    "url": "https://api.github.com/repos/Hexalith/Hexalith.EventStore/git/commits/0737c0befce5338e294a789092a0e223e8264a04",
+    "responseSha256": "121bbe767a8eb2f4495af024e85e536ea93d1ea84d71b172ee7485108e55a5b8",
+    "objectSha": "0737c0befce5338e294a789092a0e223e8264a04"
+  },
+  "officialTrees": [
+    {
+      "url": "https://api.github.com/repos/Hexalith/Hexalith.EventStore/git/trees/50016b090ebe80b7ec3ada5898f1e3f42c7f075f",
+      "responseSha256": "ca5c42d8a177572596957047ba748345efc20a79845bfe2f24c260dd7333fbf3",
+      "objectSha": "50016b090ebe80b7ec3ada5898f1e3f42c7f075f"
+    },
+    {
+      "url": "https://api.github.com/repos/Hexalith/Hexalith.EventStore/git/trees/123023efa7296e8f3a866496a5de344668200989?recursive=1",
+      "responseSha256": "62a69652f72f38cf0c8e7fe2f6fd2059850c1df7463ee31ec436aee871bcb7c6",
+      "objectSha": "123023efa7296e8f3a866496a5de344668200989"
+    }
+  ]
+}

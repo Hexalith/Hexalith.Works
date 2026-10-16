@@ -1,0 +1,24 @@
+{
+  "observed": "2026-10-16",
+  "failedRun": "/tmp/story416-historical-prep8-command.json",
+  "result": "1 failed / 0 skipped,18.881s; Sentry fatal failed to add target /var/run/dapr/credentials: no space left on device",
+  "diagnosis": {
+    "availableDiskGB": 188,
+    "availableInodes": 57185508,
+    "inotifyWatches": 1048173,
+    "inotifyWatchLimit": 1048576,
+    "inotifyInstances": 165,
+    "inotifyInstanceLimit": 8192
+  },
+  "command": [
+    "sudo",
+    "-n",
+    "sysctl",
+    "-w",
+    "fs.inotify.max_user_watches=2097152"
+  ],
+  "exitCode": 0,
+  "output": "fs.inotify.max_user_watches = 2097152",
+  "foreignProcessesStopped": false,
+  "persistence": "runtime kernel setting only; no sysctl configuration file edited"
+}

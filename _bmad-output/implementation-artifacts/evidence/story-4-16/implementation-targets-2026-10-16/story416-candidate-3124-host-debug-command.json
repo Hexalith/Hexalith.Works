@@ -1,0 +1,28 @@
+{
+  "scope": "UNPUBLISHED candidate diagnostic hosting; host Debug from official public3.124 SDK source, children separately candidate3.124.1",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "command": [
+    "dotnet",
+    "build",
+    "./apphost.cs",
+    "-c",
+    "Debug",
+    "--artifacts-path",
+    "/tmp/story416-candidate-3124-host-debug",
+    "-p:AspireUseCliBundle=true",
+    "-p:NuGetAudit=false",
+    "-p:UseHexalithProjectReferences=true",
+    "-p:UseNuGetDeps=false",
+    "-p:HexalithEventStoreRoot=/tmp/story416-sdk-3.124-public-source",
+    "-p:HexalithEventStoreVersion=3.124.0",
+    "-p:Version=3.124.0",
+    "-p:MinVerVersionOverride=3.124.0"
+  ],
+  "log": "/tmp/story416-candidate-3124-host-debug-build.log",
+  "exitCode": 0,
+  "assembly": "/tmp/story416-candidate-3124-host-debug/bin/debug/apphost.dll",
+  "assemblySha256": "fe0288233c28645d7224e40c380db3bf0f1f81a36bbf980c4bf6369280b38b43",
+  "logSha256": "cccd0be1ec3a0d584aa22db2c79e402994370f2160fce616fec569cdf33bb63c",
+  "warningDiagnostics": 0,
+  "errorDiagnostics": 0
+}

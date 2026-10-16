@@ -1,0 +1,127 @@
+{
+  "scope": "owned disposable Redis7.4 hash RESTORE serialization reproduction; no fleet data",
+  "samples": [
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    },
+    {
+      "rawDumpEqual": true,
+      "completeHashFieldsEqual": true,
+      "beforeSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed",
+      "afterSHA256": "c743136a00e14ce4a5c05fb00cbd25df95b70d3bd35f085c0088f43976079eed"
+    }
+  ],
+  "nonidenticalDumpCount": 0,
+  "semanticMismatchCount": 0
+}

@@ -1,0 +1,54 @@
+{
+  "scope": "Required consumer dependency authority update only; no Builds tool publication or historical fixture requalification claimed",
+  "file": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/Props/Directory.Packages.props",
+  "head": "6147612ab1c57fe2d32a9ffa90ecde82e6529b08",
+  "beforeWorkingFileSha256": "74593601ebe8854d3183dca1b9933f70f972ad7e02d232fdc171aa165b0cc84d",
+  "afterWorkingFileSha256": "1a9fcfe7360e4b756db11173ef9bbc4f6dc49dd983c297b7fc27d42bd7f31dcd",
+  "onlyChange": "HexalithEventStoreVersion3.123.0 ->3.124.0; normalized Git content otherwise identical",
+  "utf8BomPreserved": true,
+  "checks": [
+    {
+      "command": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "Tools/validate-central-package-versions.ps1"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds",
+      "exitCode": 0,
+      "log": "central.log",
+      "sha256": "e89791b465f4c736c51c54e5396336e73f96aabbd4a7f89d689518fc0c86fed9"
+    },
+    {
+      "command": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "Tools/validate-platform-version-catalog.ps1"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds",
+      "exitCode": 0,
+      "log": "platform-catalog.log",
+      "sha256": "9188d1b842bb6be7ee5db21e289dec239f8449ce92229a83a56376d076b68d01"
+    },
+    {
+      "command": [
+        "pwsh",
+        "-NoLogo",
+        "-NoProfile",
+        "-File",
+        "Tools/validate-package-version-exceptions.ps1",
+        "-InventoryPath",
+        "Tools/package-version-exceptions.json",
+        "-CatalogPath",
+        "Props/Directory.Packages.props"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds",
+      "exitCode": 0,
+      "log": "exceptions.log",
+      "sha256": "6ef800d670a4228bfe7d0b687ac1e1f50a178e82b7f2700a663902839dad4d49"
+    }
+  ]
+}

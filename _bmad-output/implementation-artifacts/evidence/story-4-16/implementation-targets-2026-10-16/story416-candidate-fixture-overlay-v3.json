@@ -1,0 +1,28 @@
+{
+  "scope": "UNPUBLISHED SOURCE CANDIDATE ONLY; never public acceptance",
+  "source": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+  "beforeSha256": "60e6c502a74cd2775f2e880a12ee8018ef193eb413e8a5054ea1026bad65d4cb",
+  "overlaySha256": "8a45f565f7019d4266b00016655dfd3b7c1efa5142d81fe35246b47f3ea9abcb",
+  "diff": "--- tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs\n+++ temporary-unpublished-candidate-overlay\n@@ -609,7 +609,7 @@\n         // published proof consumer; MinVer otherwise derives the preceding repository tag.\r\n         if (WorksAppHostSelection.IsPlatform)\r\n             foreach (ProjectResource sourceProject in builder.Resources.OfType<ProjectResource>())\r\n-                builder.CreateResourceBuilder(sourceProject).WithEnvironment(\"MinVerVersionOverride\", \"3.123.0\")\r\n+                builder.CreateResourceBuilder(sourceProject).WithEnvironment(\"MinVerVersionOverride\", \"3.123.1-story416-gateway\")\r\n                     .WithEnvironment(\"DOTNET_ENVIRONMENT\", \"Development\")\r\n                     .WithEnvironment(\"ASPNETCORE_ENVIRONMENT\", \"Development\");\r\n         string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;\r\n@@ -655,7 +655,7 @@\n                     // Keep this explicit synthetic load finite while retaining both SDK limiters.\r\n                     target.WithEnvironment(\"EventStore__RateLimiting__TenantPermitLimits__anonymous\", \"8192\")\r\n                         .WithEnvironment(\"EventStore__RateLimiting__ConsumerPermitLimits__anonymous\", \"8192\");\r\n-                target.WithEnvironment(\"Version\", \"3.123.0\")\r\n+                target.WithEnvironment(\"Version\", \"3.123.1-story416-gateway\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__Enabled\", \"true\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__ActiveDigestKeyVersion\", \"story415\")\r\n                     .WithEnvironment(\"EventStore__IdempotencyAdmission__DigestKeys__story415\", digestKey);\r\n",
+  "command": [
+    "dotnet",
+    "build",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "-c",
+    "Debug",
+    "--artifacts-path",
+    "/tmp/story416-candidate-consumer-v3",
+    "-m:1",
+    "-p:NuGetAudit=false",
+    "-p:HexalithAspireHostingDaprVersion=13.6.1-beta.935",
+    "-p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+    "-p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "-p:Version=3.123.1-story416-gateway",
+    "-p:PackageVersion=3.123.1-story416-gateway",
+    "-p:FileVersion=3.123.1.0",
+    "-p:InformationalVersion=3.123.1-story416-gateway",
+    "-p:MinVerVersionOverride=3.123.1-story416-gateway"
+  ],
+  "exitCode": 0,
+  "restoredSha256": "60e6c502a74cd2775f2e880a12ee8018ef193eb413e8a5054ea1026bad65d4cb"
+}
