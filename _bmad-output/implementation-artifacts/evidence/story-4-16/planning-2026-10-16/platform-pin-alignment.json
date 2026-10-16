@@ -1,0 +1,11 @@
+{
+  "file": "/home/administrator/projects/hexalith/platform/apphost.cs",
+  "beforeSha256": "1ab4aa2e9f8b434d9b93958d6cf7eb0d7b4e2dc2fe4be3bbc05a6fb2432947c7",
+  "afterSha256": "af4ae86d83c859b15d6905be02dfa787df3e8c2a455e4154ec6857f002e26a0c",
+  "selection": {
+    "Hexalith.EventStore.Aspire": "3.123.0",
+    "CommunityToolkit.Aspire.Hosting.Dapr": "13.6.1-beta.935"
+  },
+  "catalog": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/Props/Directory.Packages.props",
+  "catalogSha256": "74593601ebe8854d3183dca1b9933f70f972ad7e02d232fdc171aa165b0cc84d"
+}

@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "production": 1945,
+    "build_configuration": 7,
+    "historical_archives": 81,
+    "preliminary_archives": 9,
+    "candidate_archives": 9
+  },
+  "mismatches": [],
+  "sdkProductionUnchanged": true,
+  "publicSdkCommit": "f78916d9534a72ba1515d97cfd51408e6eb809f1",
+  "candidatePackCommit": "a2016e88f4d0da9b953fe6f4394f8b8fd4e27f72",
+  "interveningDiff": "Only three SDK test fixture files changed between the candidate pack commit and public release commit.",
+  "frozenSha256": "59953bf0d4a2c7ce6ecb5844203c2400461e8d488c59e182a0a83099a5117d51"
+}

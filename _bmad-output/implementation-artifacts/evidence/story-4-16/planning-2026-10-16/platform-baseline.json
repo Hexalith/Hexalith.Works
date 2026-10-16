@@ -1,0 +1,6 @@
+{
+  "head": "cafa3f0db528af66a03b542eb4f26fd1ef06433b",
+  "branch": "main",
+  "status": " M apphost.cs\n?? _bmad-output/implementation-artifacts/evidence/epic-4/4-27/20261016t124430z-offline-owner-evidence-production-plan/OWNERSHIP-SOURCE-FINDINGS-20261016t143546z-v2.md\n?? _bmad-output/implementation-artifacts/evidence/epic-4/4-27/20261016t124430z-offline-owner-evidence-production-plan/OWNERSHIP-SOURCE-FINDINGS-20261016t143546z.md\n?? _bmad-output/implementation-artifacts/evidence/epic-4/4-27/20261016t124430z-offline-owner-evidence-production-plan/REVIEW-OWNERSHIP-SOURCE-FINDINGS-20261016t143546z.md\n",
+  "scope": "Only two apphost.cs inline pins aligned with existing catalog; unrelated submodule changes preserved. No full parity implementation or acceptance."
+}

@@ -1,0 +1,26 @@
+{
+  "runtimeInputCount": 5398,
+  "runtimeInputMismatches": [],
+  "consumerRuntimeInputCount": 578,
+  "rawRuntimeInputs": "/tmp/story415-public-final-20261016/runtime-inputs-retry.json",
+  "rawRuntimeInputsSha256": "a8802e38b03eef5fb92ce91f7f5b7ced60305500a7a7e129c3ca977ec39a42a1",
+  "resultLogBindings": 15,
+  "matrixRows": 5,
+  "selectedPublicVersion": "3.123.0",
+  "sdkReleaseCommit": "f78916d9534a72ba1515d97cfd51408e6eb809f1",
+  "worksVerificationStartCommit": "26f6045f9a0b6443fd68263c5146f73de31cd479",
+  "worksCurrentCommit": "0298d379e3e97107d571cd4fc950f1e9dc194c9a",
+  "concurrentCommits": "External author committed/published existing work during this run; root performed no Git mutation.",
+  "specStatus": "done",
+  "sprintStatus": "done",
+  "frozenSha256": "59953bf0d4a2c7ce6ecb5844203c2400461e8d488c59e182a0a83099a5117d51",
+  "reviewPatchIdsResolved": [
+    "RB6-2",
+    "RB6-5",
+    "RB6-9",
+    "RB6-10",
+    "RV6-1"
+  ],
+  "publicationPrerequisite": "RB6-6 superseded by all nine official 3.123.0 archives; historical verdict retained.",
+  "remainingStory415Blocker": null
+}

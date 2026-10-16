@@ -549,11 +549,12 @@ public sealed class WorksCascadeRecoveryPipelineSmokeTests
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+            .CreateAsync(WorksAppHostSelection.EntryPoint(),
             [
                 "--EnableKeycloak=false",
                 $"--Works:Authentication:DevSigningKey={DevSigningKey}",
                 "--environment=Development",
+                $"--Platform:Works:Enabled={WorksAppHostSelection.IsPlatform.ToString().ToLowerInvariant()}",
                 "--DcpPublisher:RandomizePorts=false",
                 $"--Works:Recovery:CascadeTargetIntervalMilliseconds={cascadeTargetIntervalMilliseconds}",
             ],

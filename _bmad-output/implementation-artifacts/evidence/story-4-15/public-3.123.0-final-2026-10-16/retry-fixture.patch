@@ -1,0 +1,45 @@
+diff --git a/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs b/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs
+index b0e404f..16dc6f4 100644
+--- a/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs
++++ b/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs
+@@ -210,21 +210,34 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
+             await EvidenceAsync("cascade-expiry-restart-receipt-and-checkpoint", new { expiryCascadeEffect, childScheduledExpiry, expiryReceipt, replay, expiryCheckpoint, childExpired = 1 }, token).ConfigureAwait(false);
+             var tenantId = new TenantId(tenant);
+ 
+-            DateTimeOffset dateDue = DateTimeOffset.UtcNow.AddSeconds(20);
++            // Leave time for four committed commands and periodic discovery before the witness can fire.
++            DateTimeOffset dateDue = DateTimeOffset.UtcNow.AddSeconds(90);
+             await WorksAppHostSmokeHarness.ParkSuspendedOnDateAsync(client, tenant, dateItem, dateDue, token).ConfigureAwait(false);
+             string actor = ReminderIdentityCodec.ComputeActorId(tenant, dateItem);
+             string stateKey = "eventstore:reminders:v1:WorksSdkReminderActor:item:" + actor;
+             JsonObject? witness = null;
+-            await WaitAsync(async () =>
++            try
+             {
+-                witness = (await store.GetAsync<JsonObject>("statestore", stateKey, token).ConfigureAwait(false)).Value;
+-                return witness?["entries"]?.AsArray().Count > 0;
+-            }, token).ConfigureAwait(false);
++                await WaitAsync(async () =>
++                {
++                    witness = (await store.GetAsync<JsonObject>("statestore", stateKey, token).ConfigureAwait(false)).Value;
++                    return witness?["entries"]?.AsArray().Count > 0;
++                }, token).ConfigureAwait(false);
++            }
++            catch (OperationCanceledException) when (!token.IsCancellationRequested)
++            {
++                await EvidenceAsync("date-registration-timeout", new { dateDue, witness,
++                    resumed = await CountAsync(client, tenant, dateItem, nameof(WorkItemResumed), token).ConfigureAwait(false) }, token).ConfigureAwait(false);
++                await WorksSdkProofDiagnostics.CaptureAsync(app, token).ConfigureAwait(false);
++                throw;
++            }
++            dateDue.ShouldBeGreaterThan(DateTimeOffset.UtcNow, "the future reminder must be deleted before it can fire");
+             string name = witness!["entries"]![0]!["reminderName"]!.GetValue<string>();
+             using (HttpResponseMessage deleted = await sidecar.DeleteAsync(
+                 $"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{name}", token).ConfigureAwait(false))
+                 deleted.EnsureSuccessStatusCode();
+-            await WaitAsync(async () => await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, dateItem, token).ConfigureAwait(false) == 1,
++            // The bounded state poll treats SDK not-ready/unavailable reads as unresolved until a complete stream is available.
++            await WaitAsync(async () => await CountAsync(client, tenant, dateItem, nameof(WorkItemResumed), token).ConfigureAwait(false) == 1,
+                 token).ConfigureAwait(false);
+ 
+             var parent = new WorkItemId(parentId);

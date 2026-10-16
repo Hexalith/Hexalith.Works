@@ -52,7 +52,7 @@ internal static class WorksAppHostSmokeHarness
     private static readonly TimeSpan DockerProbeTerminationWait = TimeSpan.FromSeconds(5);
 
     /// <summary>The persistent Scheduler volume that must have exactly one owner at a time.</summary>
-    private const string SchedulerVolumeName = "hexalith-works-dapr-scheduler";
+    private static string SchedulerVolumeName => WorksAppHostSelection.SchedulerVolumeName;
 
     /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
     private static readonly (int Port, string Name)[] ControlPlanePorts =
@@ -65,6 +65,37 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>Both loopback address families that must be free before a fixed-port topology starts.</summary>
     private static readonly IPAddress[] ControlPlaneLoopbacks = [IPAddress.Loopback, IPAddress.IPv6Loopback];
 
+    private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder)
+    {
+        // Control-plane endpoints remain fixed and ownership-checked. Application and sidecar
+        // proxies are disposable: never route synthetic proof traffic to another local AppHost.
+        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>())
+        {
+            foreach (EndpointAnnotation endpoint in project.Annotations.OfType<EndpointAnnotation>())
+                endpoint.Port = null;
+            DaprSidecarAnnotation? dapr = project.Annotations.OfType<DaprSidecarAnnotation>().SingleOrDefault();
+            if (dapr is null) continue;
+            DaprSidecarOptionsAnnotation annotation = dapr.Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+            dapr.Sidecar.Annotations.Remove(annotation);
+            dapr.Sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(annotation.Options with
+            {
+                AppPort = null, DaprHttpPort = null, DaprGrpcPort = null,
+                DaprInternalGrpcPort = null, MetricsPort = null,
+            }));
+            string cliName = dapr.Sidecar.Name + "-cli";
+            builder.CreateResourceBuilder(project).WithEnvironment(context =>
+            {
+                ExecutableResource cli = builder.Resources.OfType<ExecutableResource>().Single(resource => resource.Name == cliName);
+                var http = new EndpointReference(cli, "http");
+                var grpc = new EndpointReference(cli, "grpc");
+                context.EnvironmentVariables["DAPR_HTTP_ENDPOINT"] = http;
+                context.EnvironmentVariables["DAPR_GRPC_ENDPOINT"] = grpc;
+                context.EnvironmentVariables["DAPR_HTTP_PORT"] = http.Property(EndpointProperty.Port);
+                context.EnvironmentVariables["DAPR_GRPC_PORT"] = grpc.Property(EndpointProperty.Port);
+            });
+        }
+    }
+
     /// <summary>
     /// Returns why this lane cannot run, or <see langword="null"/> when every prerequisite is satisfied.
     /// </summary>
@@ -72,7 +103,9 @@ internal static class WorksAppHostSmokeHarness
     {
         if (!await IsPortReachableAsync(DaprInitRedisPort, cancellationToken).ConfigureAwait(false))
         {
-            return $"the dapr-init Redis on :{DaprInitRedisPort} is not reachable. Start Docker and run `dapr init`";
+            string gap = $"the dapr-init Redis on :{DaprInitRedisPort} is not reachable. Start Docker and run `dapr init`";
+            if (WorksAppHostSelection.IsPlatform) throw new InvalidOperationException("Platform parity cannot skip: " + gap);
+            return gap;
         }
 
         try
@@ -81,6 +114,7 @@ internal static class WorksAppHostSmokeHarness
         }
         catch (Exception exception) when (exception is TimeoutException or InvalidOperationException)
         {
+            if (WorksAppHostSelection.IsPlatform) throw new InvalidOperationException("Platform parity cannot skip: " + exception.Message, exception);
             return exception.Message;
         }
 
@@ -136,7 +170,11 @@ internal static class WorksAppHostSmokeHarness
         CancellationToken cancellationToken,
         Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body,
         Action<IDistributedApplicationTestingBuilder>? configure = null,
-        string actorTypeName = nameof(DateReminderActor))
+        string actorTypeName = nameof(DateReminderActor),
+        bool expectWorksReadinessDegraded = false,
+        string? schedulerVolumeName = null,
+        string? certificateDirectory = null,
+        bool useRetainedHost = false)
     {
         ArgumentNullException.ThrowIfNull(body);
 
@@ -144,7 +182,7 @@ internal static class WorksAppHostSmokeHarness
         // every start so teardown lag from the first run cannot race the second scheduler/placement bind. Once
         // the explicit prerequisite probe has passed, a later occupied resource is a restart-boundary failure: it
         // must never turn the acceptance fact into a successful skip.
-        await WaitForControlPlaneResourcesReleasedAsync("startup boundary", cancellationToken).ConfigureAwait(false);
+        await WaitForControlPlaneResourcesReleasedAsync("startup boundary", cancellationToken, schedulerVolumeName).ConfigureAwait(false);
 
         using var startupCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         // A clean checkout now builds the runtime-only EventStore Operations project during the first live start.
@@ -156,10 +194,12 @@ internal static class WorksAppHostSmokeHarness
         startupCts.CancelAfter(TimeSpan.FromSeconds(startupSeconds));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+            .CreateAsync(useRetainedHost ? typeof(Projects.Hexalith_Works_AppHost) : WorksAppHostSelection.EntryPoint(),
                 [
                     "--EnableKeycloak=false",
                     "--environment=Development",
+                    $"--Platform:Works:Enabled={(WorksAppHostSelection.IsPlatform && !useRetainedHost).ToString().ToLowerInvariant()}",
+                    .. (certificateDirectory is null ? Array.Empty<string>() : new[] { $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}" }),
                     $"--Works:Authentication:DevSigningKey={DevSigningKey}",
                     // These acceptance facts share fixed localhost control-plane addresses and are serialized by
                     // WorksAppHostTestCollection. Preserve those ports instead of the testing builder's default
@@ -181,6 +221,31 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("Version", "3.123.0");
         }
         configure?.Invoke(builder);
+        if (WorksAppHostSelection.IsPlatform)
+            IsolateApplicationPorts(builder);
+        if (schedulerVolumeName is not null)
+        {
+            if (!schedulerVolumeName.StartsWith("works-sdk416-", StringComparison.Ordinal))
+                throw new InvalidOperationException("A proof Scheduler must use an owned synthetic volume.");
+            ContainerResource scheduler = builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-scheduler-mtls");
+            ContainerMountAnnotation mount = scheduler.Annotations.OfType<ContainerMountAnnotation>().Single(item => item.Target == "/var/lock");
+            scheduler.Annotations.Remove(mount);
+            builder.CreateResourceBuilder(scheduler).WithVolume(schedulerVolumeName, "/var/lock");
+        }
+        if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
+        {
+            string hostAssembly = builder.AppHostAssembly?.Location
+                ?? throw new InvalidOperationException("Platform proof did not capture the actual AppHost assembly.");
+            await File.AppendAllTextAsync(hostEvidence, JsonSerializer.Serialize(new
+            {
+                assembly = hostAssembly,
+                sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(hostAssembly))),
+                directory = builder.AppHostDirectory,
+                role = useRetainedHost ? "retained-rollback" : "platform-target",
+                schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
+                actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
+            }) + Environment.NewLine, startupCts.Token).ConfigureAwait(false);
+        }
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication? app = null;
         Exception? primaryException = null;
@@ -221,9 +286,21 @@ internal static class WorksAppHostSmokeHarness
             _ = await WorksAppHostTestReadiness
                 .WaitForResourceHealthyAsync(app, "eventstore", startupCts.Token, cancellationToken)
                 .ConfigureAwait(true);
-            ResourceEvent worksResource = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "works", startupCts.Token, cancellationToken)
-                .ConfigureAwait(true);
+            ResourceEvent worksResource;
+            if (expectWorksReadinessDegraded)
+            {
+                // A fault fixture deliberately disables periodic writers and must assert Degraded itself.
+                // Preserve the target readiness annotation; its status is never replaced with liveness.
+                await app.ResourceNotifications.WaitForResourceAsync("works", KnownResourceStates.Running, startupCts.Token).ConfigureAwait(true);
+                app.ResourceNotifications.TryGetCurrentState("works", out ResourceEvent? running).ShouldBeTrue();
+                worksResource = running.ShouldNotBeNull();
+            }
+            else
+            {
+                worksResource = await WorksAppHostTestReadiness
+                    .WaitForResourceHealthyAsync(app, "works", startupCts.Token, cancellationToken)
+                    .ConfigureAwait(true);
+            }
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
@@ -232,7 +309,8 @@ internal static class WorksAppHostSmokeHarness
                 .ConfigureAwait(true);
             using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
             await WorksAppHostTestReadiness
-                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token, actorTypeName)
+                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token,
+                    WorksAppHostSelection.IsPlatform && actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName)
                 .ConfigureAwait(true);
             try
             {
@@ -254,7 +332,8 @@ internal static class WorksAppHostSmokeHarness
         }
         catch (Exception exception)
         {
-            primaryException = exception;
+            primaryException = app is null ? exception : new InvalidOperationException(
+                exception.Message + await StartupLogsAsync(app).ConfigureAwait(true), exception);
         }
 
         var cleanupFailures = new List<Exception>();
@@ -287,7 +366,7 @@ internal static class WorksAppHostSmokeHarness
         {
             try
             {
-                await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token)
+                await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token, schedulerVolumeName)
                     .ConfigureAwait(true);
             }
             catch (Exception exception)
@@ -558,13 +637,14 @@ internal static class WorksAppHostSmokeHarness
     /// </summary>
     private static async Task WaitForControlPlaneResourcesReleasedAsync(
         string boundary,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? schedulerVolumeName = null)
         => await WaitForControlPlaneResourcesReleasedAsync(
             boundary,
             ControlPlaneReleaseWait,
             TimeSpan.FromSeconds(1),
             IsPortAvailableForExclusiveBind,
-            SchedulerVolumeOwnersAsync,
+            token => SchedulerVolumeOwnersAsync(token, schedulerVolumeName),
             static (delay, token) => Task.Delay(delay, token),
             cancellationToken).ConfigureAwait(false);
 
@@ -646,9 +726,9 @@ internal static class WorksAppHostSmokeHarness
         }
     }
 
-    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken, string? schedulerVolumeName = null)
     {
-        ProcessStartInfo startInfo = CreateSchedulerVolumeProbeStartInfo();
+        ProcessStartInfo startInfo = CreateSchedulerVolumeProbeStartInfo(schedulerVolumeName);
 
         ISchedulerVolumeProbe probe;
         try
@@ -854,7 +934,7 @@ internal static class WorksAppHostSmokeHarness
     }
 
     /// <summary>Builds the Docker command that includes running and stopped Scheduler-volume owners.</summary>
-    internal static ProcessStartInfo CreateSchedulerVolumeProbeStartInfo()
+    internal static ProcessStartInfo CreateSchedulerVolumeProbeStartInfo(string? schedulerVolumeName = null)
     {
         var startInfo = new ProcessStartInfo("docker")
         {
@@ -866,7 +946,7 @@ internal static class WorksAppHostSmokeHarness
         startInfo.ArgumentList.Add("ps");
         startInfo.ArgumentList.Add("--all");
         startInfo.ArgumentList.Add("--filter");
-        startInfo.ArgumentList.Add($"volume={SchedulerVolumeName}");
+        startInfo.ArgumentList.Add($"volume={schedulerVolumeName ?? SchedulerVolumeName}");
         startInfo.ArgumentList.Add("--format");
         startInfo.ArgumentList.Add("{{.ID}} {{.Names}}");
         return startInfo;

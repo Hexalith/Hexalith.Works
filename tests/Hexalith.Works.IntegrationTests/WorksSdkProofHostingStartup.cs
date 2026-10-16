@@ -1,4 +1,9 @@
 using System.Security.Cryptography;
+#if WORKS_PLATFORM_PARITY
+using System.Text.Json;
+using Hexalith.EventStore.Client.Processes;
+using Hexalith.Platform.Works.Runtime;
+#endif
 
 using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.DomainService;
@@ -7,6 +12,7 @@ using Hexalith.EventStore.Server.DomainServices;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -41,6 +47,17 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             services.AddSingleton<WorksSdkProofIntentRegistry>();
             if (role == "works")
             {
+#if WORKS_PLATFORM_PARITY
+                if (Environment.GetEnvironmentVariable("WORKS_PLATFORM_PARITY") == "1")
+                {
+                    ProcessSource[] grants = JsonSerializer.Deserialize<ProcessSource[]>(
+                        Environment.GetEnvironmentVariable("WORKS_PLATFORM_RECOVERY_GRANTS") ?? "[]")!;
+                    services.AddWorksSyntheticRecoveryRuntime(context.HostingEnvironment, grants, "eventstore-admin", "statestore");
+                    services.AddSingleton<Hexalith.EventStore.Client.Processes.IProcessDispositionAuditSink>(provider =>
+                        new WorksSyntheticDispositionAuditSink(new WorksPlatformAuditFaultStore(provider.GetRequiredService<Hexalith.EventStore.Client.Projections.IReadModelStore>()),
+                            provider.GetRequiredService<WorksSyntheticDispositionAuthorizer>(), "statestore", provider.GetRequiredService<TimeProvider>()));
+                }
+#endif
                 services.AddSingleton<IReminderDelegationTokenProvider, WorksSdkProofDelegationProvider>();
                 services.AddSingleton<Microsoft.Extensions.Http.IHttpMessageHandlerBuilderFilter, WorksSdkProofResponseFilter>();
                 if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_CALLBACKS") != "1")
@@ -71,6 +88,16 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
     }
     private static void ConfigureMetadata(IServiceCollection services)
     {
+        // Use the SDK's explicit Development response-writer seam to expose the actual
+        // aggregate and individual readiness states required by the fixture's probes.
+        services.Configure<Hexalith.EventStore.ServiceDefaults.EventStoreServiceDefaultsOptions>(options =>
+            options.DevelopmentHealthResponseWriter = static (http, report) =>
+                http.Response.WriteAsJsonAsync(new
+                {
+                    status = report.Status.ToString(),
+                    results = report.Entries.ToDictionary(entry => entry.Key,
+                        entry => new { status = entry.Value.Status.ToString(), description = entry.Value.Description }),
+                }));
         // These development sample apps are absent from the Works topology. Preserve the real
         // Works binding and named projection discovery while bounding advisory startup probes.
         services.PostConfigure<DomainServiceOptions>(options =>

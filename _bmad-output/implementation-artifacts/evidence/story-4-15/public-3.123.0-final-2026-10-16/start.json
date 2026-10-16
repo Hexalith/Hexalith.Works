@@ -1,0 +1,6 @@
+{
+  "rootHead": "26f6045f9a0b6443fd68263c5146f73de31cd479",
+  "sdkHead": "f78916d9534a72ba1515d97cfd51408e6eb809f1",
+  "rootStatus": " m references/Hexalith.Chatbot\n m references/Hexalith.EventStore\n m references/Hexalith.FrontComposer\n m references/Hexalith.Parties\n m references/Hexalith.Projects\n m references/Hexalith.Tenants\n",
+  "selected": "3.123.0"
+}

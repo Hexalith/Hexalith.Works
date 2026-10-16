@@ -1,0 +1,12 @@
+{
+  "Hexalith.EventStore.Admin.Abstractions/3.122.0": "project",
+  "Hexalith.EventStore.Aspire/3.122.0": "project",
+  "Hexalith.EventStore.Client/3.122.0": "project",
+  "Hexalith.EventStore.Contracts/3.122.0": "project",
+  "Hexalith.EventStore.DomainService/3.122.0": "project",
+  "Hexalith.EventStore.Gateway/3.122.0": "project",
+  "Hexalith.EventStore.Server/3.122.0": "project",
+  "Hexalith.EventStore.ServiceDefaults/3.122.0": "project",
+  "Hexalith.EventStore.Testing/3.122.0": "project",
+  "Hexalith.Platform.Identity/1.0.0": "project"
+}

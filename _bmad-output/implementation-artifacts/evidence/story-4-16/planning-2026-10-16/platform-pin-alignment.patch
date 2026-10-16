@@ -1,0 +1,15 @@
+diff --git a/apphost.cs b/apphost.cs
+index bd629cd..e1ff932 100644
+--- a/apphost.cs
++++ b/apphost.cs
+@@ -4,8 +4,8 @@
+ #:package Aspire.Hosting.Docker@13.6.1
+ #:package Aspire.Hosting.Redis@13.6.1
+ #:package Aspire.Hosting.Keycloak@13.6.1-preview.1.26506.6
+-#:package CommunityToolkit.Aspire.Hosting.Dapr@13.6.0-preview.1.261001-0243
+-#:package Hexalith.EventStore.Aspire@3.120.0
++#:package CommunityToolkit.Aspire.Hosting.Dapr@13.6.1-beta.935
++#:package Hexalith.EventStore.Aspire@3.123.0
+ #:project src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj
+ using Aspire.Hosting;
+ using Hexalith.Platform.Composition;

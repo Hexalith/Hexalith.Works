@@ -1,0 +1,95 @@
+{
+  "scope": "disposable synthetic Development authority; telemetry alone grants no rights",
+  "commands": [
+    {
+      "command": "dotnet build tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj --configuration Release -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0",
+      "cwd": "/home/administrator/projects/hexalith/platform",
+      "exitCode": 0,
+      "result": "0 warnings, 0 errors",
+      "log": "story416-runtime-release-build.log"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Platform.Works.Tests/bin/Release/net10.0/Hexalith.Platform.Works.Tests.dll -class '*RecoveryRuntimeTests' -xml /tmp/story416-runtime-tests.xml",
+      "cwd": "/home/administrator/projects/hexalith/platform",
+      "exitCode": 1,
+      "result": "13 passed, 1 failed, 0 skipped; fixture compared two nonpersisted initial states with different timestamps; corrected by persisting actual quarantined state before audit outage",
+      "xml": "story416-runtime-tests.xml"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Platform.Works.Tests/bin/Release/net10.0/Hexalith.Platform.Works.Tests.dll -class '*RecoveryRuntimeTests' -result-xml /tmp/story416-runtime-tests-final.xml",
+      "cwd": "/home/administrator/projects/hexalith/platform",
+      "exitCode": 0,
+      "result": "15 passed, 0 failed, 0 skipped",
+      "log": "story416-runtime-tests-final.log",
+      "xml": "story416-runtime-tests-final.xml"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Platform.Works.Tests/bin/Release/net10.0/Hexalith.Platform.Works.Tests.dll -result-xml /tmp/story416-runtime-platform-release-tests.xml",
+      "cwd": "/home/administrator/projects/hexalith/platform",
+      "exitCode": 0,
+      "result": "83 passed, 0 failed, 0 skipped",
+      "log": "story416-runtime-platform-release-tests.log",
+      "xml": "story416-runtime-platform-release-tests.xml"
+    },
+    {
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release --artifacts-path /tmp/story416-collector-check -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0 -p:HexalithAspireHostingDaprVersion=13.6.1-beta.935 -p:PlatformWorksRuntimeRoot=/home/administrator/projects/hexalith/platform",
+      "cwd": "/home/administrator/projects/hexalith/works",
+      "attempts": [
+        {
+          "exitCode": 1,
+          "log": "story416-collector-check-build.log",
+          "result": "CA2007 on async disposal in two collector tests; xUnit1030 on three direct rollback test awaits. Corrected fixture await configuration, no semantic rollback edit."
+        },
+        {
+          "exitCode": 0,
+          "log": "story416-collector-check-build-retry.log",
+          "result": "0 warnings, 0 errors"
+        }
+      ]
+    },
+    {
+      "command": "dotnet /tmp/story416-collector-check/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll -class '*WorksPlatformTelemetryCollectorTests' -result-xml /tmp/story416-collector-tests.xml",
+      "cwd": "/home/administrator/projects/hexalith/works",
+      "exitCode": 0,
+      "result": "2 passed, 0 failed, 0 skipped; actual OpenTelemetry HTTP/protobuf export and malformed/oversized request refusal",
+      "xml": "story416-collector-tests.xml",
+      "log": "story416-collector-tests.log"
+    }
+  ],
+  "files": {
+    "story416-runtime-tests-final.xml": "0324a95fc9d81eb6cf38fa16c7961c5643285c767424a3c46c4e2ffc667c9c12",
+    "story416-runtime-tests-final.log": "26a7199669e2979a9048b4e43430f0b5e422e5e86efd1d8bb535000b96bcad98",
+    "story416-collector-tests.log": "38c1accd5957c3c52a31fd540c97d949d68067a99fb70471dfbb357dad5985b1",
+    "story416-runtime-tests.xml": "46a007cffcacec13aafa2476d260610a56ce6a962489a3bc171a4a4b8d788442",
+    "story416-collector-check-build.log": "77de543c1508aee94c548e0c6bad86d7ebb332ed203ac6fbc3ff3a24ad69c7c6",
+    "story416-collector-tests.xml": "df8c2853cd1a1a5355c85267f62f04a6449e7dac6f0092236a59f8a60067421b",
+    "story416-collector-check-build-retry.log": "d49576967b78b51a1b7a41ed812a4bf3b3beea92856ea9f62ee5ca0a544103d5",
+    "story416-runtime-platform-release-tests.log": "2fbfdd78e2e4696c3608a7a30410dd9810aa3c9a361a1cdc558e9cd2b2d8fb32",
+    "story416-runtime-platform-release-tests.xml": "9788a87511cfb87145a5bac093b7ecf2b2c28cdd776ff6aabddfd518d71de61c",
+    "story416-runtime-release-build.log": "b6bba6093968cd87460e45ad56ef1e0b14d985a9cdd114c7ea564cdfc1a0a178"
+  },
+  "sources": {
+    "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryTelemetrySnapshot.cs": "16c3499eec4f5686dba550ad57cf41184ecb38b9664bcac36c9313934729d08a",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryHostingStartup.cs": "26144ed94afc8fc8e66f1088550acb2e0a38bba3975a1d5028c5ebc6950738af",
+    "P/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj": "c8e049cc04cc2827a21ca2693c2fa7ec0b4b3e37cb8ebdc1e1e7d2e3b4b3f226",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksProcessDispositionAuditRecord.cs": "1dbfaeaa3f8009f42b675c13fedc84b0ffabbf2c285d0c1822b0a212de5695cb",
+    "P/src/Hexalith.Platform.Works.Runtime/StartupHook.cs": "0fd8c812a2111b7e4916445022ef328e475b53a12f3c95f41bf7c2b93a1bb9a3",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksProcessDispositionAuditDocument.cs": "1a7c1854ebbb78ce3c6b45a9c0f68e649d8c46d565521639242c8bf73d09e164",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksSyntheticDispositionAuditSink.cs": "c71ac4e8e364d80a10f0a3cfe2eabf65e0090ac4cea3026d908918a2577187e3",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryTelemetryPublisher.cs": "38bcdf03e5bfb66d13fb6ebe5686ca87e50b7fd68fab1f255512d9de0738e018",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksSyntheticDispositionAuthorizer.cs": "8d1f816bf90f333cae5ea61c933afa19be8292ba3d310b5d471cd6861c0c93a9",
+    "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryRuntimeExtensions.cs": "4e0d9b6736f5eb602e7611bbfb17feb74f53850e8e7d13adfba85e09a47607d3",
+    "P/tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeMemoryStore.cs": "ef2e72b46f1394e6684a2d2f7b030cdfef4ac4374231d6742c8d8cf46c0640fb",
+    "P/tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTests.cs": "0e1e99f844d99ae05958227221dbca3c582c0889e9e0050feb704890c4f271d5",
+    "P/tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTimeProvider.cs": "94291761103ea8673223568969e4a2f26cbfc24fede8a66c0bd957bc1cc2d926",
+    "P/tests/Hexalith.Platform.Works.Tests/HostingEnvironment.cs": "78e0103533fd02534a0509dc5ccaab11174e38672b0ea40c1a5447b6bb5a24df",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs": "84c2e0642fba754528849b7f16b4d53ca1b144d2c8db32c172e435c55631e17e",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollectorTests.cs": "b41b8a185c5efd1e9dca70e992c32086f604ee0eab390131c210a97d4a6fdde9",
+    "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformMetricPoint.cs": "7dbd648d050cfc14052363f4731a24011cb4d4b0a6c9dffcf3936602834d0321"
+  },
+  "wireSchemaSources": [
+    "https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/metrics/v1/metrics.proto",
+    "https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/common/v1/common.proto",
+    "https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/collector/metrics/v1/metrics_service.proto"
+  ]
+}

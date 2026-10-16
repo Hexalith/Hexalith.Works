@@ -16,4 +16,10 @@ internal sealed record WorksSdkProofFaultState(bool FailNext, string? CommittedE
 
     /// <summary>Whether the real gateway returned the retained receipt on replay.</summary>
     public bool ReplayObserved { get; init; }
+
+    /// <summary>The exact immutable request retained for the compatible-fleet rollback replay, without credentials.</summary>
+    public Hexalith.EventStore.Contracts.Effects.TrustedEffectSubmission? Submission { get; init; }
+
+    /// <summary>The committed source message used as the original replay causation.</summary>
+    public string? CausationId { get; init; }
 }

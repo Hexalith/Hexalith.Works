@@ -1,0 +1,17 @@
+{
+  "raw": "/tmp/story415-public-final-20261016/live-retry-state.jsonl",
+  "sha256": "3b600f3a946dddf1409fa117be2cfe79c1374b30961e629506fe532ae890befa",
+  "assertions": {
+    "callback persists membership and one witness": true,
+    "expiry commit precedes checkpoint": true,
+    "expiry receipt replay then checkpoint": true,
+    "canonical gap retains evidence without sibling mutation": true,
+    "cascade target commit retains five-effect plan": true,
+    "five single cancellations with five success receipts": true,
+    "cascade receipt replay advances and clears plan": true,
+    "one resume and pending no-op receipt": true,
+    "no-op receipt replay before checkpoint": true,
+    "eleven sources complete without unresolved work": true
+  },
+  "phaseCount": 10
+}

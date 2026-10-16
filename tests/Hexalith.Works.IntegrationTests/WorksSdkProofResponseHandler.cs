@@ -31,7 +31,8 @@ internal sealed class WorksSdkProofResponseHandler(IReadModelStore store) : Dele
                 || fault.Value.EffectKind == submission!.Submission.Identity.EffectKind))
             {
                 if (receipt is not null && await store.TrySaveAsync("statestore", key,
-                    new WorksSdkProofFaultState(false, receipt.EffectId) { Disposition = receipt.Disposition }, fault.ETag!, cancellationToken).ConfigureAwait(false))
+                    new WorksSdkProofFaultState(false, receipt.EffectId) { Disposition = receipt.Disposition,
+                        Submission = submission!.Submission, CausationId = submission.CausationId }, fault.ETag!, cancellationToken).ConfigureAwait(false))
                 {
                     response.Dispose();
                     throw new HttpRequestException("Synthetic response loss after a durable trusted-effect receipt.");

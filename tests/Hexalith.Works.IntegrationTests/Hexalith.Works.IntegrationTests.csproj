@@ -32,6 +32,13 @@
     <ProjectReference Include="$(HexalithPlatformRoot)\src\Hexalith.Platform.Identity\Hexalith.Platform.Identity.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
   </ItemGroup>
+  <PropertyGroup Condition="'$(PlatformWorksRuntimeRoot)' != ''">
+    <DefineConstants>$(DefineConstants);WORKS_PLATFORM_PARITY</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PlatformWorksRuntimeRoot)' != ''">
+    <!-- Explicit target-host proof dependency; it is never selected by the retained consumer build. -->
+    <ProjectReference Include="$(PlatformWorksRuntimeRoot)/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Exact existing Parties authority runtime source, test-only; public Parties.Client/Contracts stay pinned packages. -->

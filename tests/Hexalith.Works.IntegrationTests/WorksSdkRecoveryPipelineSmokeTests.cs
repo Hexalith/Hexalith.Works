@@ -40,7 +40,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             Assert.Skip("SDK Redis/Dapr lane cannot run: " + gap);
             return;
         }
-        WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct).ConfigureAwait(true);
+        WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: WorksAppHostSelection.IsPlatform).ConfigureAwait(true);
         await using var cleanup = isolation.ConfigureAwait(false);
         string suffix = Guid.NewGuid().ToString("N")[..10];
         string tenant = "sdk415-callback-" + suffix;
@@ -48,9 +48,19 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         using RSA rsa = RSA.Create(2048);
         string key = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        WorksPlatformTelemetryCollector telemetry = WorksAppHostSelection.IsPlatform
+            ? await WorksPlatformTelemetryCollector.StartAsync(ct).ConfigureAwait(true) : new WorksPlatformTelemetryCollector();
+        await using var telemetryCleanup = telemetry.ConfigureAwait(false);
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
         {
-            using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
+            if (WorksAppHostSelection.IsPlatform)
+            {
+                using HttpClient worksReadiness = app.CreateHttpClient("works");
+                JsonElement health = await worksReadiness.GetFromJsonAsync<JsonElement>("/ready", token).ConfigureAwait(false);
+                health.GetProperty("status").GetString().ShouldBe("Degraded", "Disabled periodic recovery must remain readiness-degraded.");
+                await EvidenceAsync("periodic-writers-disabled-readiness-degraded", health, token).ConfigureAwait(false);
+            }
+            using DaprClient dapr = await DaprAsync(app, token, allowDegraded: WorksAppHostSelection.IsPlatform).ConfigureAwait(false);
             var store = new DaprReadModelStore(dapr);
             using DaprClient gatewayDapr = await DaprAsync(app, token, "eventstore").ConfigureAwait(false);
             await gatewayDapr.SaveStateAsync("statestore", "projection-delivery-writer-protocol",
@@ -72,14 +82,21 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             (await checkpoints.ContainsCandidateAsync(source, token).ConfigureAwait(false)).ShouldBeTrue();
             (await checkpoints.GetAsync(source, token).ConfigureAwait(false)).Checkpoint.ShouldBe(0);
             await EvidenceAsync("successful-callback-no-periodic-recovery", new { source, witness, processCandidate = true }, token).ConfigureAwait(false);
+            if (WorksAppHostSelection.IsPlatform)
+            {
+                await WaitAsync(() => Task.FromResult(telemetry.Points.Any(point => point.Name == "eventstore.domain.recovery.alert" && point.Value == 1)), token).ConfigureAwait(false);
+                telemetry.Failures.ShouldBeEmpty();
+                await EvidenceAsync("disabled-recovery-otlp-alert-export", telemetry.Points, token).ConfigureAwait(false);
+            }
         }, builder =>
         {
-            Configure(builder, key, digestKey, isolation.ComponentPath);
+            Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, [new ProcessSource(tenant, "work", item)], WorksAppHostSelection.IsPlatform ? telemetry.Endpoint : null);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works"))
                 .WithEnvironment("WORKS_SDK_PROOF_CALLBACKS", "1")
                 .WithEnvironment("EventStore__Reminders__ReconciliationEnabled", "false")
                 .WithEnvironment("EventStore__Processes__ReconciliationEnabled", "false");
-        }, "WorksSdkReminderActor").ConfigureAwait(true);
+        }, "WorksSdkReminderActor", expectWorksReadinessDegraded: WorksAppHostSelection.IsPlatform,
+            schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
     }
 
     /// <summary>Lost wakeups and scheduler firing recover; target-commit response loss replays its receipt across restart.</summary>
@@ -92,7 +109,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             Assert.Skip("SDK Redis/Dapr lane cannot run: " + gap);
             return;
         }
-        WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct).ConfigureAwait(true);
+        WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: WorksAppHostSelection.IsPlatform).ConfigureAwait(true);
         await using System.Runtime.CompilerServices.ConfiguredAsyncDisposable cleanup = isolation.ConfigureAwait(false);
         string suffix = Guid.NewGuid().ToString("N")[..10];
         string tenant = "sdk415-" + suffix;
@@ -103,12 +120,18 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         using RSA rsa = RSA.Create(2048);
         string key = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        WorksPlatformTelemetryCollector telemetry = WorksAppHostSelection.IsPlatform
+            ? await WorksPlatformTelemetryCollector.StartAsync(ct).ConfigureAwait(true) : new WorksPlatformTelemetryCollector();
+        await using var telemetryCleanup = telemetry.ConfigureAwait(false);
         string? committedEffect = null;
         string? resumedEffect = null;
         string resumeParent = "work-sdk415-await-parent-" + suffix;
         string resumeChild = "work-sdk415-completed-child-" + suffix;
         string rescheduled = "work-sdk415-rescheduled-" + suffix;
-        Action<IDistributedApplicationTestingBuilder> configure = builder => Configure(builder, key, digestKey, isolation.ComponentPath);
+        ProcessSource[] recoveryGrants = [.. new[] { rescheduled, expiryItem, dateItem, parentId, childId,
+            childId + "-1", childId + "-2", childId + "-3", childId + "-4", resumeParent, resumeChild }
+            .Select(id => new ProcessSource(tenant, "work", id))];
+        Action<IDistributedApplicationTestingBuilder> configure = builder => Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, recoveryGrants, WorksAppHostSelection.IsPlatform ? telemetry.Endpoint : null);
         string? expiryCascadeEffect = null;
         WorkItemExpirySchedule? childScheduledExpiry = null;
 
@@ -182,7 +205,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             effect.Kind.ShouldBe(EffectKindCatalog.CascadeExpire);
             JsonSerializer.Deserialize<ExpireWorkItem>(effect.CommandPayload)!.ExpiryWitness.ShouldBeNull();
             await EvidenceAsync("cascade-expiry-target-commit-before-checkpoint", new { expiryCascadeEffect, childScheduledExpiry, checkpoint, childExpired = 1 }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor").ConfigureAwait(true);
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, sidecar, token) =>
         {
@@ -210,21 +233,37 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             await EvidenceAsync("cascade-expiry-restart-receipt-and-checkpoint", new { expiryCascadeEffect, childScheduledExpiry, expiryReceipt, replay, expiryCheckpoint, childExpired = 1 }, token).ConfigureAwait(false);
             var tenantId = new TenantId(tenant);
 
-            DateTimeOffset dateDue = DateTimeOffset.UtcNow.AddSeconds(20);
+            // Leave time for four committed commands and periodic discovery before the witness can fire.
+            DateTimeOffset dateDue = DateTimeOffset.UtcNow.AddSeconds(90);
             await WorksAppHostSmokeHarness.ParkSuspendedOnDateAsync(client, tenant, dateItem, dateDue, token).ConfigureAwait(false);
             string actor = ReminderIdentityCodec.ComputeActorId(tenant, dateItem);
             string stateKey = "eventstore:reminders:v1:WorksSdkReminderActor:item:" + actor;
             JsonObject? witness = null;
-            await WaitAsync(async () =>
+            try
             {
-                witness = (await store.GetAsync<JsonObject>("statestore", stateKey, token).ConfigureAwait(false)).Value;
-                return witness?["entries"]?.AsArray().Count > 0;
-            }, token).ConfigureAwait(false);
+                await WaitAsync(async () =>
+                {
+                    witness = (await store.GetAsync<JsonObject>("statestore", stateKey, token).ConfigureAwait(false)).Value;
+                    return witness?["entries"]?.AsArray().Count > 0;
+                }, token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            {
+                await EvidenceAsync("date-registration-timeout", new { dateDue, witness,
+                    resumed = await CountAsync(client, tenant, dateItem, nameof(WorkItemResumed), token).ConfigureAwait(false) }, token).ConfigureAwait(false);
+                await WorksSdkProofDiagnostics.CaptureAsync(app, token).ConfigureAwait(false);
+                throw;
+            }
+            dateDue.ShouldBeGreaterThan(DateTimeOffset.UtcNow, "the future reminder must be deleted before it can fire");
             string name = witness!["entries"]![0]!["reminderName"]!.GetValue<string>();
             using (HttpResponseMessage deleted = await sidecar.DeleteAsync(
                 $"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{name}", token).ConfigureAwait(false))
                 deleted.EnsureSuccessStatusCode();
-            await WaitAsync(async () => await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, dateItem, token).ConfigureAwait(false) == 1,
+            if (WorksAppHostSelection.IsPlatform)
+                await EvidenceAsync("concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+                    await WorksPlatformRecoveryChecks.ReissueConcurrentlyAsync(app, sidecar, tenant, dateItem, name, token).ConfigureAwait(false), token).ConfigureAwait(false);
+            // The bounded state poll treats SDK not-ready/unavailable reads as unresolved until a complete stream is available.
+            await WaitAsync(async () => await CountAsync(client, tenant, dateItem, nameof(WorkItemResumed), token).ConfigureAwait(false) == 1,
                 token).ConfigureAwait(false);
 
             var parent = new WorkItemId(parentId);
@@ -265,6 +304,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             var gapHealth = await new ProcessReadinessHealthCheck(new ProcessSweepStore(store, gapOptions, TimeProvider.System), gapOptions, TimeProvider.System)
                 .CheckHealthAsync(new Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckContext(), token).ConfigureAwait(false);
             gapHealth.Status.ShouldBe(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Degraded);
+            if (WorksAppHostSelection.IsPlatform)
+                await WaitAsync(() => Task.FromResult(telemetry.Points.Any(point => point.Name == "eventstore.domain.recovery.alert" && point.Value == 1)), token).ConfigureAwait(false);
             await EvidenceAsync("canonical-related-child-creation-gap", new { creationGap, gapSweep, readiness = gapHealth.Status.ToString(), existingChildCancellations = 0 }, token).ConfigureAwait(false);
             await WorksAppHostSmokeHarness.SubmitToTerminalAsync(client, tenant, childId, nameof(CreateWorkItem),
                 new CreateWorkItem(tenantId, new WorkItemId(childId), "Synthetic delayed child creation", Parent: new ParentWorkItemReference(tenantId, parent)), token).ConfigureAwait(false);
@@ -280,7 +321,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             checkpoint.Checkpoint.ShouldBeLessThan(7);
             checkpoint.PendingPlan!.Effects.Count.ShouldBe(5);
             await EvidenceAsync("cascade-target-commit-before-checkpoint", new { committedEffect, checkpoint, childCancelled = 1 }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor").ConfigureAwait(true);
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
         {
@@ -362,7 +403,10 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             var lostNoOp = (await store.GetAsync<WorksSdkProofFaultState>("statestore", "story415:fail-after-commit:" + tenant, token).ConfigureAwait(false)).Value!;
             lostNoOp.Disposition.ShouldBe(TrustedEffectDisposition.NoOp);
             await EvidenceAsync("child-resume-noop-receipt-before-checkpoint", new { resumedEffect, checkpoint = beforeResumeCheckpoint, lostNoOp, parentResumed = 1 }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor").ConfigureAwait(true);
+            if (WorksAppHostSelection.IsPlatform)
+                await EvidenceAsync("paged-process-candidates-pre-restart",
+                    await WorksPlatformRecoveryChecks.RepackCandidatePagesAsync(store, tenant, recoveryGrants, token).ConfigureAwait(false), token).ConfigureAwait(false);
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
         {
@@ -393,7 +437,48 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             await EvidenceAsync("complete-supported-process-coverage", completedSweep, token).ConfigureAwait(false);
             await EvidenceAsync("child-resume-noop-restart-receipt-and-checkpoint", new { resumedEffect, replay, receipt = JsonSerializer.Deserialize<JsonElement>(body),
                 checkpoint = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor").ConfigureAwait(true);
+            if (WorksAppHostSelection.IsPlatform)
+            {
+#if WORKS_PLATFORM_PARITY
+                await EvidenceAsync("paged-process-restart-and-shared-store-owner-fencing",
+                    await WorksPlatformRecoveryChecks.VerifyPagesAndOwnershipAsync(store, tenant, recoveryGrants, token).ConfigureAwait(false), token).ConfigureAwait(false);
+                await EvidenceAsync("protected-scoped-disposition-audit-before-mutation",
+                    await WorksPlatformOperationsChecks.VerifyAsync(app, store, source, token).ConfigureAwait(false), token).ConfigureAwait(false);
+                await EvidenceAsync("platform-named-redelivery-capture-through-commit-complete-family",
+                    await WorksPlatformProjectionChecks.VerifyAsync(app, client, store, tenant, resumeParent, token).ConfigureAwait(false), token).ConfigureAwait(false);
+#endif
+                await EvidenceAsync("platform-query-and-explicit-receipt-replay",
+                    await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, token).ConfigureAwait(false), token).ConfigureAwait(false);
+                DateTimeOffset settledAt = DateTimeOffset.UtcNow;
+                await WaitAsync(() => Task.FromResult(telemetry!.Points.Any(point => point.Name == "eventstore.domain.recovery.alert" && point.Value == 0 && point.ReceivedAt > settledAt)), token).ConfigureAwait(false);
+                telemetry!.Failures.ShouldBeEmpty();
+                await EvidenceAsync("durable-recovery-alert-export-and-clear", telemetry.Points, token).ConfigureAwait(false);
+            }
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+
+        if (WorksAppHostSelection.IsPlatform)
+        {
+            using WorksPlatformBinarySnapshot binaries = WorksPlatformBinarySnapshot.Capture(WorksPlatformRollbackChecks.RuntimeBinaryHashes());
+            IReadOnlyDictionary<string, string> runtimeHashes = binaries.Hashes;
+            IReadOnlyDictionary<string, string> fleet = await isolation.CaptureFleetAsync(ct).ConfigureAwait(true);
+            await EvidenceAsync("complete-platform-fleet-snapshot", new { fleet, runtimeHashes, schedulerVolume = isolation.SchedulerVolumeName }, ct).ConfigureAwait(true);
+            await isolation.RestoreFleetAsync(ct).ConfigureAwait(true);
+            binaries.Restore();
+            WorksPlatformRollbackChecks.RuntimeBinaryHashes().OrderBy(pair => pair.Key).ShouldBe(runtimeHashes.OrderBy(pair => pair.Key));
+            await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
+            {
+                WorksPlatformRollbackChecks.RuntimeBinaryHashes().OrderBy(pair => pair.Key).ShouldBe(runtimeHashes.OrderBy(pair => pair.Key));
+                object convergence = await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, token).ConfigureAwait(false);
+                (await CountAsync(client, tenant, childId, nameof(WorkItemCancelled), token).ConfigureAwait(false)).ShouldBe(1);
+                (await CountAsync(client, tenant, expiryItem, nameof(WorkItemExpired), token).ConfigureAwait(false)).ShouldBe(1);
+                await EvidenceAsync("complete-restore-retained-host-query-and-receipt-replay", new
+                {
+                    convergence, fleet, runtimeHashes, childCancelled = 1, childExpired = 1,
+                    restoredConfiguration = "captured compatible SDK configuration and receiver policy; retained Works AppHost binary",
+                }, token).ConfigureAwait(false);
+            }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName,
+                certificateDirectory: isolation.CertificateDirectory, useRetainedHost: true).ConfigureAwait(true);
+        }
     }
 
     private static async Task EvidenceAsync(string phase, object state, CancellationToken token)
@@ -415,8 +500,30 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         return copy.SequenceEqual(permitted, StringComparer.Ordinal);
     }
 
-    private static void Configure(IDistributedApplicationTestingBuilder builder, string key, string digestKey, string componentPath)
+    internal static void Configure(IDistributedApplicationTestingBuilder builder, string key, string digestKey, string componentPath, string redisEndpoint, IReadOnlyList<ProcessSource> recoveryGrants, Uri? telemetryEndpoint = null)
     {
+        if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_ROOT") is { Length: > 0 } platformRoot
+            && Path.GetFullPath(builder.AppHostDirectory) != Path.GetFullPath(platformRoot))
+        {
+            // A deliberate rollback restores the captured compatible receiver policy beside the retained
+            // host binary. It never mutates the historical AppHost or its checked-in policy files.
+            foreach (IDaprSidecarResource sidecar in builder.Resources.OfType<ProjectResource>()
+                .SelectMany(project => project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation => annotation.Sidecar)))
+            {
+                DaprSidecarOptionsAnnotation original = sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+                string restoredPolicy = Path.Combine(platformRoot, "DaprComponents", Path.GetFileName(original.Options.Config!));
+                File.Exists(restoredPolicy).ShouldBeTrue();
+                sidecar.Annotations.Remove(original);
+                sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(original.Options with { Config = restoredPolicy }));
+            }
+            if (!builder.Resources.Any(resource => resource.Name == "configstore"))
+            {
+                IResourceBuilder<IDaprComponentResource> configStore = builder.AddDaprComponent("configstore", "configuration.redis",
+                    new DaprComponentOptions { LocalPath = Path.Combine(platformRoot, "DaprComponents", "configstore.yaml") });
+                ProjectResource gateway = builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore");
+                builder.CreateResourceBuilder(gateway.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar).WithReference(configStore);
+            }
+        }
         // An opt-in process-local configuration copy can disable component file watching when the shared
         // host has exhausted inotify. The fixture never changes its committed ACL, mTLS, or Dapr resources.
         if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY") is { Length: > 0 } configDirectory)
@@ -442,14 +549,25 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         }
         foreach (DaprComponentResource component in builder.Resources.OfType<DaprComponentResource>())
         {
-            if (component.Options?.LocalPath is not { } original || component.Name is not ("statestore" or "pubsub")) continue;
-            string replacement = component.Name == "statestore" ? componentPath : Path.Combine(Path.GetDirectoryName(componentPath)!, "pubsub.yaml");
-            if (component.Name == "pubsub") File.Copy(original, replacement, true);
+            if (component.Options?.LocalPath is not { } original || component.Name is not ("statestore" or "pubsub" or "configstore")) continue;
+            string replacement = component.Name == "statestore" ? componentPath : Path.Combine(Path.GetDirectoryName(componentPath)!, component.Name + ".yaml");
+            if (component.Name != "statestore")
+            {
+                string content = File.ReadAllText(original);
+                if (WorksAppHostSelection.IsPlatform)
+                    content = content.Replace("localhost:6379", redisEndpoint, StringComparison.Ordinal);
+                File.WriteAllText(replacement, content);
+            }
             // Aspire constructs this init-only option before the testing callback; replace its
             // public option on the fixture model before BuildAsync, without editing production files.
             typeof(DaprComponentResource).GetProperty(nameof(DaprComponentResource.Options))!
                 .SetValue(component, new DaprComponentOptions { LocalPath = replacement });
         }
+        // Runtime-only source executables must identify the same producer version as the
+        // published proof consumer; MinVer otherwise derives the preceding repository tag.
+        if (WorksAppHostSelection.IsPlatform)
+            foreach (ProjectResource sourceProject in builder.Resources.OfType<ProjectResource>())
+                builder.CreateResourceBuilder(sourceProject).WithEnvironment("MinVerVersionOverride", "3.123.0");
         string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;
         foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "eventstore"))
         {
@@ -459,16 +577,31 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name)
                 .WithEnvironment("WORKS_SDK_PROOF_KEY", key);
             if (resource.Name == "works")
+            {
+                if (WorksAppHostSelection.IsPlatform)
+                {
+                    target.WithEnvironment("WORKS_PLATFORM_PARITY", "1")
+                        .WithEnvironment("WORKS_PLATFORM_RECOVERY_GRANTS", JsonSerializer.Serialize(recoveryGrants))
+                        .WithEnvironment("Works__Query__PermittedCoordinatorWorkloads__0", "eventstore")
+                        .WithEnvironment("Authentication__Workload__AllowedCallers__0", "eventstore")
+                        .WithEnvironment("Authentication__Workload__AllowedCallers__1", "eventstore-admin");
+                    if (telemetryEndpoint is not null)
+                        target.WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", telemetryEndpoint.AbsoluteUri.TrimEnd('/'))
+                            .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
+                            .WithEnvironment("OTEL_METRIC_EXPORT_INTERVAL", "1000");
+                }
                 target.WithEnvironment("Works__Recovery__UseSdkRuntime", "true").WithEnvironment("Works__Projection__UseSdkDelivery", "true")
                     .WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:02")
                     .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:10")
                     .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
                     .WithEnvironment("EventStore__Processes__RetryLimit", "10")
                     .WithEnvironment("EventStore__Processes__SupportedCandidateCount", "11")
+                    .WithEnvironment("EventStore__Processes__DiscoveryPageSize", "3")
                     .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:02")
                     .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
                     .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:01:00")
                     .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
+            }
             else
                 target.WithEnvironment("Version", "3.123.0")
                     .WithEnvironment("EventStore__IdempotencyAdmission__Enabled", "true")
@@ -477,9 +610,16 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         }
     }
 
-    private static async Task<DaprClient> DaprAsync(DistributedApplication app, CancellationToken token, string name = "works")
+    private static async Task<DaprClient> DaprAsync(DistributedApplication app, CancellationToken token, string name = "works", bool allowDegraded = false)
     {
-        ResourceEvent resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, name, token, token).ConfigureAwait(false);
+        ResourceEvent resource;
+        if (allowDegraded)
+        {
+            await app.ResourceNotifications.WaitForResourceAsync(name, KnownResourceStates.Running, token).ConfigureAwait(false);
+            app.ResourceNotifications.TryGetCurrentState(name, out ResourceEvent? current).ShouldBeTrue();
+            resource = current.ShouldNotBeNull();
+        }
+        else resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, name, token, token).ConfigureAwait(false);
         string Endpoint(string name) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
         return new DaprClientBuilder().UseHttpEndpoint(Endpoint("DAPR_HTTP_ENDPOINT")).UseGrpcEndpoint(Endpoint("DAPR_GRPC_ENDPOINT")).Build();
     }

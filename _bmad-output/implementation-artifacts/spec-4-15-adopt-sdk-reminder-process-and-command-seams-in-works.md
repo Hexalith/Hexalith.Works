@@ -3,7 +3,7 @@ title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
 updated: '2026-10-16'
-status: 'in-review'
+status: 'done'
 baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
 review_loop_iteration: 4
@@ -72,6 +72,8 @@ Host paths below are relative to `src/Hexalith.Works/`; context expands exact SD
 
 ## Implementation Notes
 
+- Final acceptance 2026-10-16: all three criteria and five matrix rows pass against published EventStore `3.123.0` (producer `f78916d9534a72ba1515d97cfd51408e6eb809f1`). [Final public-release evidence](evidence/story-4-15/public-3.123.0-final-2026-10-16/implementation.md) records Debug/Release integration 791 each, architecture 270, enabled runtime 2, exact config-copy guard 8, complete restore 27+1, both unchanged-binary probes and cold public API consumers, with zero skips in selected lanes. All five independent-review patches are resolved; root independently asserts all ten persisted phases and 5,398 unchanged runtime input bindings. Corrected preliminary fixture failures remain recorded. RB6-6's EventStore publication prerequisite is superseded by the public release; historical verdicts and separate SDK deferrals remain intact. Story and sprint are done; proceed to 4.16, then gated 4.9.
+
 - Resumed verification 2026-10-16: selected fresh unpublished local SDK `3.122.1-story415.20261016.10` from current source based on latest public 3.122.0, following the user's latest-version instruction. [Current evidence](evidence/story-4-15/resume-2026-10-16/implementation.md) records SDK 974, trusted/security/snapshot 105, client 37, Debug/Release integration 786 each, unit/architecture/property 589/270/3, enabled runtime 2 and complete-store restore 27+1, all passing with zero skips. Both unchanged-binary compatibility probes and three cold package API consumers pass. All ten fresh persisted runtime phases are independently asserted, clearing the previous unproven startup gap. A subsequent guard-only correction rejects YAML ACL indentation changes; eight focused cases validate all four byte-identical live copies and their dedented negative variants. The completed two-test live proof retains its exact pre-guard source/binary bindings and is distinct from the final guard verification. The source-only Contracts exemption and user's test-only Platform sibling edge are preserved; a same-version Parties CPM repair and explicit substitute forwarding close current graph/fixture issues. Historical archives and frozen intent remain unchanged. Status remains in-progress pending the root's independent workflow review and final acceptance.
 
 - Review follow-up 2026-10-16: all five open coverage patches are proved by fresh Debug/Release integration (778 each), unit (589), architecture (270) and property (3) gates, all passing with zero skips. The hosted test confirms authenticated workload assertion admission reaches the real default-deny authorizer; an adjacent bearer is CredentialConflict. [Follow-up evidence](evidence/story-4-15/review-followup-2026-10-16/implementation.md) distinguishes current-source Debug from unchanged .9 package Release, preserves preliminary failures, and records one fresh live callback success plus the unproven Sentry startup failure blocking the current-source restart/cascade lane. Frozen intent and in-progress status are unchanged. Root audit verified all 20 log hashes, four temporary configuration deltas and nine unchanged selected archives; fresh matrix verification remains blocked at Sentry startup, so independent workflow review has not started. See [root audit](evidence/story-4-15/review-followup-2026-10-16/orchestrator-audit.json).
@@ -91,6 +93,8 @@ Host paths below are relative to `src/Hexalith.Works/`; context expands exact SD
 - SDK reminder recovery previously discovered only already-registered targets. To meet the approved periodic/lost-firing recovery behavior, add an optional read-only SDK reminder target catalog, populated from existing Works SDK family membership and run by SDK reconciliation. Cover lost initial convergence and expiry-only sources; do not add a Works-owned periodic writer.
 
 ## Spec Change Log
+
+- 2026-10-16, final latest-version acceptance: public `3.123.0` became fully available during verification and supersedes the temporary unpublished `.10` selection under the user's latest-version instruction. All nine official package hashes and the common producer commit are verified. Final review, current source/package tests, persisted runtime and rollback pass; frozen behavior/security intent and every historical artifact remain unchanged.
 
 - 2026-10-16, resumed verification: the user requested "use latest version of eventstore and fix issues". Fresh official NuGet indexes confirm 3.122.0 is still the latest complete public line. Its missing reminder catalog seam requires the already-approved local-source correction route; selected fresh unpublished candidate `3.122.1-story415.20261016.10` comes from current SDK checkout `a2016e88f4d0da9b953fe6f4394f8b8fd4e27f72`. The next-patch identity satisfies the preserved test-only Platform.Identity source edge's stable Gateway floor. Historical `.1` through `.9` and the preliminary `3.122.0-story415.20261016.10` archives remain immutable. A same-version Parties CPM repair preserves its SignalR security floor. Frozen behavior/security intent and publication/production gates are unchanged. Fresh commands, source/archive bindings and preliminary failures are recorded in [resumed implementation evidence](evidence/story-4-15/resume-2026-10-16/implementation.md).
 
@@ -230,6 +234,10 @@ All three required layers completed against the immutable review diff. Edge Case
 | RB6-9 | low | patch | The ABI helper uses the full canonical baseline revision but does not document that its tree must exist locally. Add the exact history prerequisite to the verification documentation so shallow/source-only checkouts do not discover it after a build. |
 | RB6-10 | low | patch | The candidate consumer helper interpolates repository_root into NuGet.Config XML attributes without escaping. A valid checkout path with ampersands or quotes produces malformed XML. Generate that configuration using an XML writer and verify the helper through a special-character checkout path. |
 | RV6-1 | medium | patch | Pre-verified regression gap: new SDK reminder filtering is covered by date-only suspensions but not a heterogeneous DateReached/ChildCompleted/ExternalSignal suspension. Add a mixed-await case asserting the sole date intent and exact resume condition alongside the independent expiry intent. Removing the filter must fail that regression. |
+
+### Final review closure (2026-10-16)
+
+RB6-2, RB6-5, RB6-9, RB6-10 and RV6-1 are fixed and verified by the scoped review-fix/public-helper packets and final source/package gates. The original per-finding verdicts/routes above remain historical. RB6-6's unpublished SDK prerequisite is now resolved by all nine official 3.123.0 archives and exact Release restore; this does not accept Platform parity or production policy. Root reviewed the final helper and fixture-only corrections, preserved all rejected/carried decisions, and rewrote `/tmp/story415-review-all-mnja5xb6.diff` without staging.
 
 ## Verification
 

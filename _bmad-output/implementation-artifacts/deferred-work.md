@@ -1466,3 +1466,7 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: "Supply published corrected EventStore producers or an approved exact-artifact CI feed before Story 4.16 public-producer acceptance."
   evidence: "RB6-6: the baseline already selected unpublished Story 4.14 candidates; the latest public EventStore 3.122.0 lacks IReminderTargetCatalog. Local .10 package/source/live proofs pass, but ignored local feeds are absent on clean CI runners. Publication remains a separate frozen-intent gate."
+
+## Resolution evidence: Story 4.15 publication (2026-10-16)
+
+The review-time RB6-6 unpublished EventStore restore prerequisite is superseded by verified public `3.123.0` for all nine SDK packages. Historical deferred entries and their evidence remain unchanged. [Final producer, exact restore and acceptance proof](evidence/story-4-15/public-3.123.0-final-2026-10-16/implementation.md) does not accept Story 4.16 or production admission.

@@ -1,0 +1,261 @@
+[
+  {
+    "gate": "architecture-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 3.62,
+    "log": "/tmp/story415-public-final-20261016/architecture-build.log",
+    "sha256": "dec70cf4cf013b66a6fc3244e71d5a09592f6f7ecd1df02f88cb57b59d124c83"
+  },
+  {
+    "gate": "architecture-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/architecture-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 9.16,
+    "log": "/tmp/story415-public-final-20261016/architecture-tests.log",
+    "sha256": "e351749e68f1ecbbd4834aedec26e936f8bbf7583d7e2011184504833f9f7c89"
+  },
+  {
+    "gate": "complete-store-restore",
+    "command": [
+      "env",
+      "WORKS_SDK_RESULT_DIRECTORY=/tmp/story415-public-final-20261016/complete-restore",
+      "bash",
+      "tests/Hexalith.Works.IntegrationTests/run-sdk-rollback-restore.sh"
+    ],
+    "exit_code": 0,
+    "seconds": 11.99,
+    "log": "/tmp/story415-public-final-20261016/complete-store-restore.log",
+    "sha256": "5ccebc81e98c0b747ce7b91a939af420e515ce4059b9e3dc4af274058fb9208b"
+  },
+  {
+    "gate": "debug-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 15.06,
+    "log": "/tmp/story415-public-final-20261016/debug-build.log",
+    "sha256": "e9c9e407f3b59ab0f6f5b191a2818bc0b36460fc636196673db4f0d2a189ad98"
+  },
+  {
+    "gate": "debug-rerun-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 12.67,
+    "log": "/tmp/story415-public-final-20261016/debug-rerun-build.log",
+    "sha256": "bc995a20a143c5162217a9487cd1db879e6f2a2d13fbdbeea32ebbe23a8c74d3"
+  },
+  {
+    "gate": "debug-retry-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 12.93,
+    "log": "/tmp/story415-public-final-20261016/debug-retry-build.log",
+    "sha256": "eb4c1b24a90205a29a17686d7da9902fb0fff52387c55982640cbd60c1724ace"
+  },
+  {
+    "gate": "debug-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/debug-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 17.41,
+    "log": "/tmp/story415-public-final-20261016/debug-tests.log",
+    "sha256": "634f3224214ba25db708a35f83a3bc0168d4c1695acfcf9ffb5f8a882e788ab3"
+  },
+  {
+    "gate": "exact-live-config-copy-tests",
+    "command": [
+      "env",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-public-final-20261016/dapr-configs",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkDaprConfigCopyTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/exact-live-config-copy-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 0.35,
+    "log": "/tmp/story415-public-final-20261016/exact-live-config-copy-tests.log",
+    "sha256": "0dffdc7e940994ddf4992aa6e3d80e3b10cc1c7ad680436c58d78f4ed8fc489d"
+  },
+  {
+    "gate": "final-release-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Release",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 26.77,
+    "log": "/tmp/story415-public-final-20261016/final-release-build.log",
+    "sha256": "9067b713d000ff0b0af9b1ffd030523a5f73c532bf6b46aa91e8da48b837eee2"
+  },
+  {
+    "gate": "live-sdk-rerun",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-public-final-20261016/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-public-final-20261016/live-rerun-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-noLogo",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/live-sdk-rerun.xml"
+    ],
+    "exit_code": 1,
+    "seconds": 226.2,
+    "log": "/tmp/story415-public-final-20261016/live-sdk-rerun.log",
+    "sha256": "61bc59060744ce5a8afa9c6204e0779f3eca01f38ab7bcb8e731500225ddc1d6"
+  },
+  {
+    "gate": "live-sdk-retry",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-public-final-20261016/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-public-final-20261016/live-retry-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-noLogo",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/live-sdk-retry.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 471.77,
+    "log": "/tmp/story415-public-final-20261016/live-sdk-retry.log",
+    "sha256": "42b772f6653b2e14e6a8465de7ff69e475f6a1f12f5e79866004d4e4f3b8abd9"
+  },
+  {
+    "gate": "live-sdk-runtime",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-public-final-20261016/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-public-final-20261016/live-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-noLogo",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/live-sdk-runtime.xml"
+    ],
+    "exit_code": 1,
+    "seconds": 301.48,
+    "log": "/tmp/story415-public-final-20261016/live-sdk-runtime.log",
+    "sha256": "7b886d57a3ab078ff1920f360ea4f120a3d940d7149cbb736b052aa09119e2f6"
+  },
+  {
+    "gate": "release-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Release",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 5.52,
+    "log": "/tmp/story415-public-final-20261016/release-build.log",
+    "sha256": "71d6cd6918f15052701b41663e7e3b80665025224df50f22bc892a0dba7685d1"
+  },
+  {
+    "gate": "release-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story415-public-final-20261016/release-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 17.61,
+    "log": "/tmp/story415-public-final-20261016/release-tests.log",
+    "sha256": "ff0aa56150dfb1ffb8f56f19bde9749951d65da60839246cdf76991600c86bec"
+  },
+  {
+    "gate": "works-abi",
+    "command": [
+      "bash",
+      "scripts/verify-story415-works-contract-abi.sh"
+    ],
+    "exit_code": 0,
+    "seconds": 3.22,
+    "log": "/tmp/story415-public-final-20261016/works-abi.log",
+    "sha256": "a3c97e3e5f369b6f3bcf4895a1087da608a1ae1909afbdcc1d2e0359cd1dc057"
+  }
+]

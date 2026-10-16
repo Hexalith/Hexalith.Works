@@ -62,8 +62,9 @@ public sealed class WorksCommandPipelineSmokeTests
         startupCts.CancelAfter(TimeSpan.FromMinutes(5));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(
+            .CreateAsync(WorksAppHostSelection.EntryPoint(),
                 ["--EnableKeycloak=false", "--environment=Development", "--DcpPublisher:RandomizePorts=false",
+                    $"--Platform:Works:Enabled={WorksAppHostSelection.IsPlatform.ToString().ToLowerInvariant()}",
                     $"--Works:Authentication:DevSigningKey={DevSigningKey}"],
                 startupCts.Token)
             .ConfigureAwait(true);

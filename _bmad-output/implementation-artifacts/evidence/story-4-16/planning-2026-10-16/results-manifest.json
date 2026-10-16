@@ -1,0 +1,68 @@
+[
+  {
+    "gate": "platform-agents-full",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "command": [
+      "./eng/verify-agents-host.sh"
+    ],
+    "exit_code": 1,
+    "seconds": 0.04,
+    "log": "/tmp/story415-public-final-20261016/platform-agents-full.log",
+    "sha256": "7ae27a02e9e13c085fd4c63ff8fc2204002cbf5fafc706df02c0942ec09d019d"
+  },
+  {
+    "gate": "platform-baseline-start",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "command": [
+      "env",
+      "Platform__Works__Enabled=true",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "aspire",
+      "start",
+      "--non-interactive",
+      "--apphost",
+      "apphost.cs"
+    ],
+    "exit_code": 2,
+    "seconds": 82.99,
+    "log": "/tmp/story415-public-final-20261016/platform-baseline-start.log",
+    "sha256": "6479d35383d5be115c581caf755370f8de04d27cacadcc73e0227d593b2bc4b1"
+  },
+  {
+    "gate": "platform-agents-after-pins",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "command": [
+      "./eng/verify-agents-host.sh"
+    ],
+    "exit_code": 1,
+    "seconds": 0.04,
+    "log": "/tmp/story415-public-final-20261016/platform-agents-after-pins.log",
+    "sha256": "7ae27a02e9e13c085fd4c63ff8fc2204002cbf5fafc706df02c0942ec09d019d"
+  },
+  {
+    "gate": "platform-agents-aligned",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "command": [
+      "./eng/verify-agents-host.sh"
+    ],
+    "exit_code": 1,
+    "seconds": 0.42,
+    "log": "/tmp/story415-public-final-20261016/platform-agents-aligned.log",
+    "sha256": "ddd3a178cf2abdbd19c06fcf18e004be85c3ef4394504361dd6da3c2906c1184"
+  },
+  {
+    "gate": "platform-local-scaffold",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "command": [
+      "./eng/verify-agents-host.sh",
+      "--mode",
+      "LocalScaffold",
+      "--artifacts-path",
+      "/tmp/story416-platform-scaffold-20261016"
+    ],
+    "exit_code": 0,
+    "seconds": 26.2,
+    "log": "/tmp/story415-public-final-20261016/platform-local-scaffold.log",
+    "sha256": "2fa9ce157c28860c99b09245c8eaf5ec78bed8b03fe31218b61b106ef502c75e"
+  }
+]
