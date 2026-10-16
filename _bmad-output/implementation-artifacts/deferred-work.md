@@ -1458,3 +1458,7 @@ These four items were reconfirmed on the current production code. They do not op
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: WorksReminderIntentSource validates only the final expiry witness (medium, unverified). RESOLVED in chunk B review 2026-10-16: WorksSourceStreamReader applies WorksExpiryEvidence to every committed envelope, so the claim holds.
   evidence: Settle by confirming WorksSourceStreamReader (chunk B) validates every encountered witness before later history replaces it.
+
+## Deferred from: code review of spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works (2026-10-16)
+
+- `PackageVersion Remove` for Hexalith.EventStore.Contracts is gated on UseHexalithProjectReferences only (Directory.Packages.props:16-21); medium if true, unverified. Settle by a Debug restore with HexalithEventStoreFromSource=false and checking for NU1010.

@@ -3,7 +3,7 @@ title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
 updated: '2026-10-16'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
 review_loop_iteration: 4
@@ -251,3 +251,23 @@ Diff 8679d7d..c6ef556 for src/Hexalith.Works/Recovery (581 lines). Chunks C and 
 - false: IsTerminal hard-coded false on cascade descendants (documented intent: all direct targets get the same intent and the aggregate returns a receipt for terminal targets).
 - false: more than five children quarantine (documented supported profile, MaxEffectsPerEnvelope=5, triaged as BH2).
 - low/rejected: ChildResume folds the parent's head state (a child completes once; a stale head only yields no resume or an idempotent resume), comparison of committed vs supplied event omits correlation/protection metadata (same stream read), decoder default-accept for unlisted event types (identity validated by WorksEventIdentity.Matches; BH4-4 closed shape), TimeProvider/magic-number/null-guard/exception-class nits.
+
+#### Chunk A re-review (src/scripts/docs/props/Unit+Architecture tests, 8679d7d..HEAD), 2026-10-16
+
+Layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor (all completed). Chunk B (IntegrationTests, 3869 lines) not reviewed in this run.
+
+- [ ] [Review][Patch] Debug-from-source `PackageVersion Remove` for Hexalith.EventStore.Contracts and the duplicated `HexalithEventStoreVersion` (Directory.Build.props:42 vs Directory.Packages.props) are pinned by no test; add one architecture fitness test beside `P0_ExternalHexalithDependenciesUseDebugSourceAndReleasePackages` asserting evaluated PackageVersion items (Debug: no Contracts pin; Release: pin == candidate) and that both files carry the same version [Directory.Packages.props:16-21]
+- [ ] [Review][Patch] SDK branch of WorksDomainEventProcessor has no test for the reserved-tenant (`tenants`) or invalid-envelope-metadata rejections; extend `WorksSdkRecoveryCompositionTests.MalformedDeliveryCannotEraseSdkUnresolvedState` with both cases asserting `FailedInvalidPayload` and an untouched checkpoint store [src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:44-76]
+- [ ] [Review][Patch] Expiry-witness validation is tested only with lowercase tenant ids; add a mixed-case-tenant create/expire round-trip in `WorkItemExpiryWitnessTests` (resolve expected casing against the SDK `ComputeScheduleToken`) [src/Hexalith.Works.Contracts/ValueObjects/WorkItemExpirySchedule.cs:17-24]
+- [x] [Review][Defer] `PackageVersion Remove` is gated on UseHexalithProjectReferences only, not on the Contracts being consumed from source; if Contracts is a package in that mode, central package management may fail restore (NU1010) [Directory.Packages.props:16-21] — deferred: maybe-false, medium if true; settle by restoring Debug with HexalithEventStoreFromSource=false
+- Merged into the existing deferred ordinal-tenant item (same root cause): ValidateWitnessAddress ordinal compare and the case-sensitive Parent.TenantId comparison in WorksProcessTranslator.
+- Already open from chunk B (not duplicated): default-deny disposition authority and WorksProcessDelegationProvider/ForKind fail-closed branches untested.
+
+#### Chunk A re-review rejected
+
+- false: legacy rollback regression for witnessed expiry; a witnessed item requires the authenticated origin by design, and docs define rollback as full snapshot restore, not in-place downgrade.
+- false: `condition.Instant!.Value` null dereference; `AwaitCondition` normalizes DateReached with a required instant at construction.
+- false: catalog `sources.Add` duplicate throw; duplicates are already checked per family and CatalogKey is tenant-scoped.
+- low/rejected: `_ = HandleAsync(...)` discards ReminderConvergenceResult; it carries counts (Unresolved/Quarantined), not a failure signal, and unresolved work is retained by the SDK for recovery.
+- low/rejected: inconsistent Reject vs exception semantics, magic numbers (256/16/200), literals "work"/"json", unparenthesized conditions, unlogged catch-all, quadratic refold cost, cascade reads before fan-out limit (supported profile and paging cost triaged in earlier iterations; fixes add complexity for no demonstrated harm).
+- low/rejected: revalidate route policy/logging, endpoint unmapped InvalidOperationException (fails closed), eager legacy URI validation, null-payload checks, timeout mapping, script/ABI brittleness, stale historical docs, doc restructuring (cosmetic or manual tooling).
