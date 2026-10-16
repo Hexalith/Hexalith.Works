@@ -1,0 +1,131 @@
+{
+  "results": [
+    {
+      "command": [
+        "env",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "bash",
+        "scripts/verify-story415-sdk-candidate.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 16.52,
+      "log": "/tmp/story415-resume-20261016-re7solpv/published-3123-helper.log",
+      "sha256": "5e3933d5fdb298fc4ad01a0629a836619504036a3f5eb461d51f7a37a278be99",
+      "gate": "published-3123-helper",
+      "archiveProof": [
+        {
+          "identity": "Hexalith.EventStore.Client/3.123.0",
+          "isolatedCacheSha256": "bc709310c5c14a53da910b7f134d44dd61ee4934a038bb577473ec854870096a",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/3.123.0/hexalith.eventstore.client.3.123.0.nupkg",
+          "sourceSha256": "bc709310c5c14a53da910b7f134d44dd61ee4934a038bb577473ec854870096a"
+        },
+        {
+          "identity": "Hexalith.EventStore.Contracts/3.123.0",
+          "isolatedCacheSha256": "b3dccf466c0c264ad78f48cc1ed6181e4d5a1539dd7c2c1aab3f8c5e0d0ce5e7",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/3.123.0/hexalith.eventstore.contracts.3.123.0.nupkg",
+          "sourceSha256": "b3dccf466c0c264ad78f48cc1ed6181e4d5a1539dd7c2c1aab3f8c5e0d0ce5e7"
+        },
+        {
+          "identity": "Hexalith.EventStore.DomainService/3.123.0",
+          "isolatedCacheSha256": "50b07d829dcf07665d5e97613fd904f8a3c888a949d28c3f612f74b4c8a6369e",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/3.123.0/hexalith.eventstore.domainservice.3.123.0.nupkg",
+          "sourceSha256": "50b07d829dcf07665d5e97613fd904f8a3c888a949d28c3f612f74b4c8a6369e"
+        },
+        {
+          "identity": "Hexalith.EventStore.Server/3.123.0",
+          "isolatedCacheSha256": "2efbb3b81d126f139f7a9bb9888d1e3ae5a1fbab043cc1f0ef62934cd8959e06",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/3.123.0/hexalith.eventstore.server.3.123.0.nupkg",
+          "sourceSha256": "2efbb3b81d126f139f7a9bb9888d1e3ae5a1fbab043cc1f0ef62934cd8959e06"
+        },
+        {
+          "identity": "Hexalith.EventStore.ServiceDefaults/3.123.0",
+          "isolatedCacheSha256": "79aa2acd760c30652ddd5a844e85176b057e8f8e8580195d6d431d49f598e7ff",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/3.123.0/hexalith.eventstore.servicedefaults.3.123.0.nupkg",
+          "sourceSha256": "79aa2acd760c30652ddd5a844e85176b057e8f8e8580195d6d431d49f598e7ff"
+        },
+        {
+          "identity": "Hexalith.EventStore.Testing/3.123.0",
+          "isolatedCacheSha256": "2e2eb600327f98e80f9485df189ad41705a85458272fad464db0e1915652d49b",
+          "source": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/3.123.0/hexalith.eventstore.testing.3.123.0.nupkg",
+          "sourceSha256": "2e2eb600327f98e80f9485df189ad41705a85458272fad464db0e1915652d49b"
+        }
+      ]
+    },
+    {
+      "command": [
+        "env",
+        "PYTHONDONTWRITEBYTECODE=1",
+        "bash",
+        "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/scripts/verify-story415-sdk-candidate.sh"
+      ],
+      "exit_code": 0,
+      "seconds": 14.93,
+      "log": "/tmp/story415-resume-20261016-re7solpv/published-3123-helper-prerelease-regression.log",
+      "sha256": "8ded4cefdc673f9ae5ccc5be0b40f8837fb164050614f166c08f50be0578ead4",
+      "gate": "published-3123-helper-prerelease-regression",
+      "archiveProof": [
+        {
+          "identity": "Hexalith.EventStore.Client/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "669230b083b387484292c0033f84c5fc9ea31a063fe3f61eefa360072e252db9",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.Client.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "669230b083b387484292c0033f84c5fc9ea31a063fe3f61eefa360072e252db9"
+        },
+        {
+          "identity": "Hexalith.EventStore.Contracts/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "f426431224f4ce8fc7dd38aea0452cb2acfce0e8426869dca9fb4ecea7ea4bad",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "f426431224f4ce8fc7dd38aea0452cb2acfce0e8426869dca9fb4ecea7ea4bad"
+        },
+        {
+          "identity": "Hexalith.EventStore.DomainService/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "50bee039e5cf45203668be788f242b277bc82e8f55d7a83fe875f2d9bdbc2f2d",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.DomainService.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "50bee039e5cf45203668be788f242b277bc82e8f55d7a83fe875f2d9bdbc2f2d"
+        },
+        {
+          "identity": "Hexalith.EventStore.Server/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "3e6d23bc3abf9df5677e4d0611a577395ea755715baf112d60e5ba33eed9e28e",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.Server.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "3e6d23bc3abf9df5677e4d0611a577395ea755715baf112d60e5ba33eed9e28e"
+        },
+        {
+          "identity": "Hexalith.EventStore.ServiceDefaults/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "625dd52fd370c82176bfb81c74f8715604387e1405fa51042ee37769a058f511",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.ServiceDefaults.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "625dd52fd370c82176bfb81c74f8715604387e1405fa51042ee37769a058f511"
+        },
+        {
+          "identity": "Hexalith.EventStore.Testing/3.122.1-story415.20261016.10",
+          "isolatedCacheSha256": "8d4faa953adabd56198561c7548ad833190a91758b0c68f2535e33e0e580789d",
+          "source": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'/.artifacts/story-4-15/feed/Hexalith.EventStore.Testing.3.122.1-story415.20261016.10.nupkg",
+          "sourceSha256": "8d4faa953adabd56198561c7548ad833190a91758b0c68f2535e33e0e580789d"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "scripts/verify-story415-sdk-candidate.sh",
+      "sha256": "51971cbf5a93b0bebe7e4ea3d7b7278c38d13b452f2e186348ae3bfda6bc87d9"
+    },
+    {
+      "path": "docs/sdk-reminder-process-adoption.md",
+      "sha256": "56bead985276d37cd9e0ecdf6a6a5cc57df6e286ebda462d2d02c73d6924cb28"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs",
+      "sha256": "18d577c19ca8e7e8524da99726d01df32111fbac8f24bdae27dce7ade759b50a"
+    }
+  ],
+  "prereleaseFixture": {
+    "fixture": "/tmp/story415-resume-20261016-re7solpv/public-helper regression checkout & \"double\" and 'single'",
+    "selectedVersion": "3.122.1-story415.20261016.10",
+    "helperSha256": "51971cbf5a93b0bebe7e4ea3d7b7278c38d13b452f2e186348ae3bfda6bc87d9",
+    "historicalFixturePreserved": true,
+    "currentRootSelection": "3.123.0 unchanged"
+  },
+  "historicalSelectedArchivesUnchanged": 9,
+  "historicalEvidenceUnchanged": true,
+  "repositoryBuildsOrRestoresExecuted": false,
+  "configuredVersion": "3.123.0"
+}

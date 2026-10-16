@@ -5,33 +5,41 @@ repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
 export NUGET_PACKAGES="$fixture/packages"
-candidate_version="$(python3 - "$repository_root/Directory.Packages.props" <<'PY'
+export NUGET_HTTP_CACHE_PATH="$fixture/http-cache"
+sdk_version="$(python3 - "$repository_root/Directory.Packages.props" <<'PY'
 import sys
 import xml.etree.ElementTree as ET
 print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithEventStoreVersion'))
 PY
 )"
+verification_feed="$repository_root/.artifacts/story-4-15/feed"
+if [[ "$sdk_version" != *-* ]]; then
+    verification_feed="$fixture/public-feed"
+    mkdir -p "$verification_feed"
+fi
 cat >"$fixture/Consumer.csproj" <<PROJECT
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Hexalith.EventStore.DomainService" Version="$candidate_version" />
-    <PackageReference Include="Hexalith.EventStore.Testing" Version="$candidate_version" />
+    <PackageReference Include="Hexalith.EventStore.DomainService" Version="$sdk_version" />
+    <PackageReference Include="Hexalith.EventStore.Testing" Version="$sdk_version" />
     <PackageReference Include="Hexalith.Parties.Client" Version="1.2.1" />
   </ItemGroup>
 </Project>
 PROJECT
-python3 - "$repository_root" "$fixture/NuGet.Config" <<'CONFIG'
+python3 - "$repository_root" "$fixture/NuGet.Config" "$sdk_version" <<'CONFIG'
 import pathlib, sys
 import xml.etree.ElementTree as ET
 configuration = ET.Element('configuration')
 sources = ET.SubElement(configuration, 'packageSources')
 ET.SubElement(sources, 'clear')
-ET.SubElement(sources, 'add', key='candidate', value=str(pathlib.Path(sys.argv[1]) / '.artifacts/story-4-15/feed'))
+if '-' in sys.argv[3]:
+    ET.SubElement(sources, 'add', key='candidate', value=str(pathlib.Path(sys.argv[1]) / '.artifacts/story-4-15/feed'))
 ET.SubElement(sources, 'add', key='nuget.org', value='https://api.nuget.org/v3/index.json')
 ET.SubElement(ET.SubElement(configuration, 'fallbackPackageFolders'), 'clear')
 mapping = ET.SubElement(configuration, 'packageSourceMapping')
-ET.SubElement(ET.SubElement(mapping, 'packageSource', key='candidate'), 'package', pattern='Hexalith.EventStore.*')
+if '-' in sys.argv[3]:
+    ET.SubElement(ET.SubElement(mapping, 'packageSource', key='candidate'), 'package', pattern='Hexalith.EventStore.*')
 ET.SubElement(ET.SubElement(mapping, 'packageSource', key='nuget.org'), 'package', pattern='*')
 ET.ElementTree(configuration).write(sys.argv[2], encoding='utf-8', xml_declaration=True)
 CONFIG
@@ -85,8 +93,8 @@ Console.WriteLine("Isolated package-only host consumer: persisted accepted conte
 CS
 dotnet run --project "$fixture/Consumer.csproj" --configuration Release -p:NuGetAudit=false
 
-python3 - "$fixture" "$repository_root/.artifacts/story-4-15/feed" "$candidate_version" <<'HASHES'
-import hashlib, json, pathlib, sys
+python3 - "$fixture" "$verification_feed" "$sdk_version" <<'HASHES'
+import hashlib, json, pathlib, sys, urllib.request
 fixture, feed = map(pathlib.Path, sys.argv[1:3])
 version = sys.argv[3]
 assets = json.loads((fixture / 'obj/project.assets.json').read_text())
@@ -99,17 +107,24 @@ for identity, item in assets['libraries'].items():
     assert restored_version == version, identity
     intended = feed / f'{name}.{version}.nupkg'
     restored = fixture / 'packages' / name.lower() / version.lower() / f'{name.lower()}.{version.lower()}.nupkg'
+    if '-' in version:
+        archive_source = str(intended)
+    else:
+        archive_source = f'https://api.nuget.org/v3-flatcontainer/{name.lower()}/{version.lower()}/{name.lower()}.{version.lower()}.nupkg'
+        assert not intended.exists(), f'Public verification archive already exists: {intended}'
+        with urllib.request.urlopen(archive_source, timeout=30) as response:
+            intended.write_bytes(response.read())
     intended_hash = hashlib.sha256(intended.read_bytes()).hexdigest()
     restored_hash = hashlib.sha256(restored.read_bytes()).hexdigest()
-    assert restored_hash == intended_hash, f'Restored archive differs from intended feed: {identity}'
-    matched.append({'identity': identity, 'feedSha256': intended_hash, 'isolatedCacheSha256': restored_hash})
+    assert restored_hash == intended_hash, f'Restored archive differs from selected source: {identity}'
+    matched.append({'identity': identity, 'source': archive_source, 'sourceSha256': intended_hash, 'isolatedCacheSha256': restored_hash})
 assert len(matched) >= 5, 'Incomplete SDK package graph'
 print(json.dumps({'isolatedPackageProof': matched}, sort_keys=True))
 HASHES
 
-# The local candidate intentionally contains nine consumer dependencies, not the entire upstream release inventory.
-# Run the upstream public consumer probes directly for the three corrected API packages.
-python3 - "$repository_root" "$candidate_version" <<'CONSUMERS'
+# Run the upstream public consumer probes for the three adapter API packages. Stable releases
+# use the independently verified public archives above; prereleases keep the immutable candidate feed.
+python3 - "$repository_root" "$sdk_version" "$verification_feed" <<'CONSUMERS'
 import importlib.util, pathlib, sys
 root = pathlib.Path(sys.argv[1])
 script = root / 'references/Hexalith.EventStore/scripts/validate-consumer-package-references.py'
@@ -117,7 +132,7 @@ spec = importlib.util.spec_from_file_location('story415_public_consumers', scrip
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 from release_package_contract import read_package_metadata
-feed = root / '.artifacts/story-4-15/feed'
+feed = pathlib.Path(sys.argv[3])
 for suffix in ['Contracts', 'Client', 'DomainService']:
     archive = feed / f'Hexalith.EventStore.{suffix}.{sys.argv[2]}.nupkg'
     module.validate_library_package(read_package_metadata(archive), feed)
@@ -125,7 +140,7 @@ for suffix in ['Contracts', 'Client', 'DomainService']:
 CONSUMERS
 
 # Compile against the published eleven-parameter contract once, then run the unchanged binary
-# with only the candidate Contracts assembly substituted. This proves CLR constructor and
+# with only the selected Contracts assembly substituted. This proves CLR constructor and
 # Deconstruct compatibility in addition to the current source consumer above.
 mkdir -p "$fixture/abi"
 cat >"$fixture/abi/Abi.csproj" <<'PROJECT'
@@ -154,11 +169,11 @@ Console.WriteLine(Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeTo
 CS
 dotnet build "$fixture/abi/Abi.csproj" --configuration Release -p:NuGetAudit=false
 dotnet "$fixture/abi/bin/Release/net10.0/Abi.dll" >"$fixture/abi-baseline.txt"
-python3 - "$repository_root/.artifacts/story-4-15/feed/Hexalith.EventStore.Contracts.$candidate_version.nupkg" "$fixture/abi/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll" <<'ASSEMBLY'
+python3 - "$verification_feed/Hexalith.EventStore.Contracts.$sdk_version.nupkg" "$fixture/abi/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll" <<'ASSEMBLY'
 import pathlib, sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as archive:
     pathlib.Path(sys.argv[2]).write_bytes(archive.read('lib/net10.0/Hexalith.EventStore.Contracts.dll'))
 ASSEMBLY
-dotnet "$fixture/abi/bin/Release/net10.0/Abi.dll" >"$fixture/abi-candidate.txt"
-cmp "$fixture/abi-baseline.txt" "$fixture/abi-candidate.txt"
-echo "Unchanged published-contract binary passed candidate constructor/deconstruction and historical identity/serialization hash compatibility."
+dotnet "$fixture/abi/bin/Release/net10.0/Abi.dll" >"$fixture/abi-selected.txt"
+cmp "$fixture/abi-baseline.txt" "$fixture/abi-selected.txt"
+echo "Unchanged published-contract binary passed selected constructor/deconstruction and historical identity/serialization hash compatibility."

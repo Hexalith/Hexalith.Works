@@ -9,7 +9,7 @@ using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Consumer checks for the selected local SDK candidate, source mode and published Parties seams.</summary>
+/// <summary>Consumer checks for the selected SDK release, source mode and published Parties seams.</summary>
 public sealed class WorksSdkPackageContractTests
 {
 #if DEBUG
