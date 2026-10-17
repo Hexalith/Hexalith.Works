@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# HISTORICAL: packs the Story 4.15 local producer candidate (version suffix -story415.N). Kept so the 4.15
+# evidence manifests resolve. Release now pins published EventStore packages, so this script exits 1 by design.
 set -euo pipefail
 
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -11,7 +13,7 @@ print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithEventStoreVersion'))
 PY
 )"
 if [[ "$candidate_version" != *-story415.* ]]; then
-    echo "The configured EventStore version is not a Story 4.15 local candidate." >&2
+    echo "The configured EventStore version is not a Story 4.15 local candidate (historical script; Release uses published packages)." >&2
     exit 1
 fi
 mkdir -p "$feed"

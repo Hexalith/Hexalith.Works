@@ -1,10 +1,12 @@
 using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.EventStore.Testing.Fakes;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 
@@ -328,14 +330,50 @@ public sealed class WorkItemSuspendedReminderHandlerTests
         logger.Entries.Where(entry => entry.EventId.Id == 4609).ShouldHaveSingleItem().Level.ShouldBe(LogLevel.Warning);
     }
 
+    [Fact]
+    public async Task Records_the_pending_await_in_the_discovery_index_idempotently()
+    {
+        var scheduler = new Story48RecordingScheduler();
+        var store = new InMemoryReadModelStore();
+        IEventStoreGatewayClient gateway = GatewayReturning(Story48Streams.Page(
+            s_tenant.Value,
+            s_workItem.Value,
+            Created(),
+            SuspendedOnDate(s_future)));
+        WorkItemSuspendedReminderHandler handler = NewHandler(gateway, scheduler, store: store);
+
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            await handler.HandleAsync(
+                SuspendedOnDate(s_future),
+                Context(),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+        }
+
+        ReadModelEntry<PendingDateAwaitTenantRegistry> registry = await store.GetAsync<PendingDateAwaitTenantRegistry>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        registry.Value.ShouldNotBeNull().Tenants.ShouldContain(s_tenant.Value);
+
+        ReadModelEntry<PendingDateAwaitTenantIndex> index = await store.GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName,
+            WorksReadModelKeys.PendingDateAwaitIndexKey(s_tenant.Value),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        PendingDateAwaitTenantIndex value = index.Value.ShouldNotBeNull();
+        value.Entries[s_workItem.Value].ShouldHaveSingleItem().Instant.ShouldBe(s_future);
+        value.LastSequences[s_workItem.Value].ShouldBe(2);
+    }
+
     private static WorkItemSuspendedReminderHandler NewHandler(
         IEventStoreGatewayClient gateway,
         IDateReminderScheduler scheduler,
-        ILogger<WorkItemSuspendedReminderHandler>? logger = null)
+        ILogger<WorkItemSuspendedReminderHandler>? logger = null,
+        IReadModelStore? store = null)
         => new(
             gateway,
             scheduler,
-            new InMemoryReadModelStore(),
+            store ?? new InMemoryReadModelStore(),
             new Story48FixedTimeProvider(s_now),
             Options.Create(new WorksRecoveryOptions()),
             logger ?? NullLogger<WorkItemSuspendedReminderHandler>.Instance);

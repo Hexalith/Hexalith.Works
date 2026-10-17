@@ -1477,3 +1477,12 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - Legacy-to-SDK runtime handoff (outstanding Dapr date reminders, cascade checkpoints) when `UseSdkRuntime` flips; unverified medium — settle in Story 4.16 rollback proof.
 - `MapActorsHandlers()` skipped under SDK mode; unverified medium — confirm SDK maps actor endpoints.
 - `WorksProcessSourceCatalog` `sources.Add` duplicate-key `ArgumentException` outside per-tenant try; unverified medium — check control index duplicate/case-variant tenants.
+
+## Deferred from: code review of spec-4-15 (2026-10-17, src/scripts chunk 8679d7d..e7f67cd)
+
+- `WorksSourceStreamReader` raw-field budget pre-check omits `ProtectionMetadata`; unverified medium — confirm upstream envelope bound.
+- Partitioned rebuild accepts ordinal gaps in the partition inventory; unverified medium — confirm SDK contiguity guarantee.
+- Oversized single-aggregate history not rejected before finalize (`MaxItemBytes`); unverified low-medium.
+- `WorksDomainEventProcessor` ignores `ProcessSource.Validate` ArgumentException (possible endless redelivery); unverified medium.
+- `Directory.Packages.props` Contracts PackageVersion removal lacks `HexalithEventStoreFromSource` condition (possible NU1010); unverified medium — restore in mixed mode.
+- `Directory.Solution.targets` ignores `Targets`/`BuildProjectInSolution` metadata and may double-build; unverified low-medium — binlog.

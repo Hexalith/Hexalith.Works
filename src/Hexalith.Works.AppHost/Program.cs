@@ -94,7 +94,8 @@ IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventS
     .WithEnvironment("MSBUILDDISABLENODEREUSE", "1")
     // The composed proof host's actor and projection traffic shares one consumer partition. The production
     // 100-per-second cap rejects that internal traffic with 429, and a swallowed projection update then leaves
-    // the pending-date index empty. This topology is the local/CI proof, not the production quota.
+    // the pending-date index empty. This AppHost is a local/CI proof topology only and is never a deployment artifact;
+    // do not copy these limits into a deployed EventStore.
     .WithEnvironment("EventStore__RateLimiting__PermitLimit", "100000")
     .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimit", "100000");
 _ = eventStore

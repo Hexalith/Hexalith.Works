@@ -12,6 +12,12 @@ import xml.etree.ElementTree as ET
 print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithEventStoreVersion'))
 PY
 )"
+parties_version="$(python3 - "$repository_root/Directory.Packages.props" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithPartiesVersion'))
+PY
+)"
 verification_feed="$repository_root/.artifacts/story-4-15/feed"
 if [[ "$sdk_version" != *-* ]]; then
     verification_feed="$fixture/public-feed"
@@ -23,7 +29,7 @@ cat >"$fixture/Consumer.csproj" <<PROJECT
   <ItemGroup>
     <PackageReference Include="Hexalith.EventStore.DomainService" Version="$sdk_version" />
     <PackageReference Include="Hexalith.EventStore.Testing" Version="$sdk_version" />
-    <PackageReference Include="Hexalith.Parties.Client" Version="1.2.1" />
+    <PackageReference Include="Hexalith.Parties.Client" Version="$parties_version" />
   </ItemGroup>
 </Project>
 PROJECT

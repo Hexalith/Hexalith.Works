@@ -19,5 +19,6 @@ internal static class WorksProcessDispositionEndpoints
             }
             catch (UnauthorizedAccessException) { return Results.StatusCode(StatusCodes.Status403Forbidden); }
             catch (ArgumentException) { return Results.BadRequest(); }
+            catch (InvalidOperationException) { return Results.StatusCode(StatusCodes.Status503ServiceUnavailable); }
         }).RequireEventStoreDomainServicePolicy("/process");
 }
