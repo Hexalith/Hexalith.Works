@@ -62,7 +62,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 await EvidenceAsync("periodic-writers-disabled-readiness-degraded", health, token).ConfigureAwait(false);
             }
             using DaprClient dapr = await DaprAsync(app, token, allowDegraded: WorksAppHostSelection.IsPlatform).ConfigureAwait(false);
-            var store = new DaprReadModelStore(dapr);
+            var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
             using DaprClient gatewayDapr = await DaprAsync(app, token, "eventstore").ConfigureAwait(false);
             await gatewayDapr.SaveStateAsync("statestore", "projection-delivery-writer-protocol",
                 new { schemaVersion = 1, writerProtocolVersion = 2, cutoverCommit = "story415-isolated-callback-fixture", activatedAt = DateTimeOffset.UtcNow },
@@ -154,7 +154,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 { BaseAddress = client.BaseAddress, Timeout = TimeSpan.FromMinutes(2) };
             client = retryingClient;
             using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
-            var store = new DaprReadModelStore(dapr);
+            var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
             using DaprClient gatewayDapr = await DaprAsync(app, token, "eventstore").ConfigureAwait(false);
             await gatewayDapr.SaveStateAsync("statestore", "projection-delivery-writer-protocol",
                 new { schemaVersion = 1, writerProtocolVersion = 2, cutoverCommit = "story415-isolated-fixture", activatedAt = DateTimeOffset.UtcNow },
@@ -225,7 +225,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 { BaseAddress = client.BaseAddress, Timeout = TimeSpan.FromMinutes(2) };
             client = retryingClient;
             using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
-            var store = new DaprReadModelStore(dapr);
+            var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
             await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore",
                 ProcessStateKeys.Source(new ProcessSource(tenant, "work", rescheduled)), token).ConfigureAwait(false)).Value?.Checkpoint == 4,
                 token).ConfigureAwait(false);
@@ -341,7 +341,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 { BaseAddress = client.BaseAddress, Timeout = TimeSpan.FromMinutes(2) };
             client = retryingClient;
             using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
-            var store = new DaprReadModelStore(dapr);
+            var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
             await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore",
                 ProcessStateKeys.Source(new ProcessSource(tenant, "work", parentId)), token).ConfigureAwait(false)).Value?.Checkpoint >= 7,
                 token).ConfigureAwait(false);
@@ -426,7 +426,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 { BaseAddress = client.BaseAddress, Timeout = TimeSpan.FromMinutes(2) };
             client = retryingClient;
             using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
-            var store = new DaprReadModelStore(dapr);
+            var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
             var source = new ProcessSource(tenant, "work", resumeChild);
             await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value?.Checkpoint >= 4, token).ConfigureAwait(false);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, resumeParent, token).ConfigureAwait(false)).ShouldBe(1);
@@ -721,5 +721,46 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         deadline.CancelAfter(TimeSpan.FromMinutes(2));
         while (!await condition().ConfigureAwait(false))
             await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Retries state reads and writes while the shared Dapr state-store circuit breaker is open.
+    /// Fault injection in this proof trips that breaker for every key, not only the fault key.
+    /// </summary>
+    private sealed class OpenCircuitRetryStore(IReadModelStore inner) : IReadModelStore
+    {
+        public Task<ReadModelEntry<TValue>> GetAsync<TValue>(string storeName, string key, CancellationToken cancellationToken = default)
+            where TValue : class
+            => Retry(() => inner.GetAsync<TValue>(storeName, key, cancellationToken), cancellationToken);
+
+        public Task SaveAsync<TValue>(string storeName, string key, TValue value, CancellationToken cancellationToken = default)
+            where TValue : class
+            => Retry(async () =>
+            {
+                await inner.SaveAsync(storeName, key, value, cancellationToken).ConfigureAwait(false);
+                return true;
+            }, cancellationToken);
+
+        public Task<bool> TrySaveAsync<TValue>(string storeName, string key, TValue value, string etag, CancellationToken cancellationToken = default)
+            where TValue : class
+            => Retry(() => inner.TrySaveAsync(storeName, key, value, etag, cancellationToken), cancellationToken);
+
+        private static async Task<T> Retry<T>(Func<Task<T>> action, CancellationToken cancellationToken)
+        {
+            const int attempts = 20;
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    return await action().ConfigureAwait(false);
+                }
+                catch (Exception exception) when (
+                    attempt < attempts
+                    && exception.ToString().Contains("circuit breaker is open", StringComparison.OrdinalIgnoreCase))
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
     }
 }

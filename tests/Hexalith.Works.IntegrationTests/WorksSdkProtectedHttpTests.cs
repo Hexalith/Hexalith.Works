@@ -1104,7 +1104,7 @@ public sealed class WorksSdkProtectedHttpTests
             },
             IssuedAt = now.AddMinutes(-2),
             NotBefore = now.AddMinutes(-2),
-            Expires = expired ? now.AddMinutes(-1) : now.AddMinutes(5),
+            Expires = expired ? now.AddHours(-2) : now.AddMinutes(5),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
                 SecurityAlgorithms.HmacSha256),
         });
