@@ -1,6 +1,7 @@
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.EventStore.Contracts.Streams;
+using Hexalith.EventStore.Testing.Fakes;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
@@ -334,6 +335,7 @@ public sealed class WorkItemSuspendedReminderHandlerTests
         => new(
             gateway,
             scheduler,
+            new InMemoryReadModelStore(),
             new Story48FixedTimeProvider(s_now),
             Options.Create(new WorksRecoveryOptions()),
             logger ?? NullLogger<WorkItemSuspendedReminderHandler>.Instance);

@@ -91,7 +91,12 @@ HexalithEventStoreSecurityResources? security = builder.AddHexalithEventStoreSec
 // the Kubernetes-safe sanitized wildcard registration key (wildcard_<domain>_<version>).
 IResourceBuilder<ProjectResource> eventStore = builder.AddProject<HexalithEventStore>("eventstore")
     .WithHttpHealthCheck("/alive")
-    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1");
+    .WithEnvironment("MSBUILDDISABLENODEREUSE", "1")
+    // The composed proof host's actor and projection traffic shares one consumer partition. The production
+    // 100-per-second cap rejects that internal traffic with 429, and a swallowed projection update then leaves
+    // the pending-date index empty. This topology is the local/CI proof, not the production quota.
+    .WithEnvironment("EventStore__RateLimiting__PermitLimit", "100000")
+    .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimit", "100000");
 _ = eventStore
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__AppId", "works")
     .WithEnvironment("EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName", "process")

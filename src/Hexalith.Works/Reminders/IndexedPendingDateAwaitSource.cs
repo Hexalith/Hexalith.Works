@@ -263,9 +263,9 @@ internal sealed class IndexedPendingDateAwaitSource(
             // the whole system) because of one wedged work item.
             try
             {
-                pending.AddRange(await PendingDateAwaitStreamReader
+                pending.AddRange((await PendingDateAwaitStreamReader
                     .RebuildAsync(_gateway, tenant, workItemId, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
-                    .ConfigureAwait(false));
+                    .ConfigureAwait(false)).Pending);
             }
             catch (OperationCanceledException ex) when (
                 cancellationToken.IsCancellationRequested

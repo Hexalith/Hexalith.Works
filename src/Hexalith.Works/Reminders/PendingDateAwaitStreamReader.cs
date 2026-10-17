@@ -18,7 +18,7 @@ internal static class PendingDateAwaitStreamReader
 {
     private const int PageSize = 200;
 
-    internal static async Task<IReadOnlyList<PendingDateAwait>> RebuildAsync(
+    internal static async Task<PendingDateAwaitStreamFold> RebuildAsync(
         IEventStoreGatewayClient gateway,
         string tenantId,
         string workItemId,
@@ -105,6 +105,7 @@ internal static class PendingDateAwaitStreamReader
         }
 
         IReadOnlyList<IEventPayload> ordered = [.. events.OrderBy(static value => value.Sequence).Select(static value => value.Payload)];
-        return PendingDateAwaitProjection.PendingDateAwaits(ordered);
+        long streamLastSequence = events.Count == 0 ? 0 : events.Max(static value => value.Sequence);
+        return new PendingDateAwaitStreamFold(PendingDateAwaitProjection.PendingDateAwaits(ordered), streamLastSequence);
     }
 }

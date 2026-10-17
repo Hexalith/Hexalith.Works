@@ -39,6 +39,19 @@ public sealed class WorksAppHostTopologyTests
     [Fact]
     public async Task AppHostModelExposesTheExactCommandEventTopology()
     {
+        // Sidecar environment callbacks read Sentry issuer material. A model-only evaluation has no running
+        // Sentry, so point the AppHost at disposable credentials instead of the shared user Dapr directory.
+        string certificateDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "hexalith-works-topology-model-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(certificateDirectory);
+        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "ca.crt"), "topology-anchor", cancellationToken).ConfigureAwait(true);
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.crt"), "topology-chain", cancellationToken).ConfigureAwait(true);
+        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.key"), "topology-key", cancellationToken).ConfigureAwait(true);
+
+        try
+        {
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
             .CreateAsync<Projects.Hexalith_Works_AppHost>(
                 [
@@ -46,8 +59,9 @@ public sealed class WorksAppHostTopologyTests
                     "--environment=Development",
                     "--Dapr:PlacementHostAddress=localhost:6050",
                     "--Dapr:SchedulerHostAddress=localhost:6060",
+                    $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}",
                 ],
-                TestContext.Current.CancellationToken)
+                cancellationToken)
             .ConfigureAwait(true);
 
         ProjectResource eventStore = Project(builder, EventStoreName);
@@ -262,6 +276,11 @@ public sealed class WorksAppHostTopologyTests
         builder.Resources
             .Select(static resource => resource.Name)
             .ShouldNotContain(static name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase));
+        }
+        finally
+        {
+            Directory.Delete(certificateDirectory, recursive: true);
+        }
     }
 
     /// <summary>Keycloak mode binds the Works EventStore client to the intended credential parameters.</summary>

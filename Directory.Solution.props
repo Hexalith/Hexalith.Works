@@ -7,5 +7,7 @@
          but keep NU1901-NU1904 visible and non-blocking unless an individual advisory is suppressed. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
     <RestoreBuildInParallel>false</RestoreBuildInParallel>
+    <!-- Aspire AppHost and its solution projects otherwise write the same output files concurrently. -->
+    <BuildInParallel>false</BuildInParallel>
   </PropertyGroup>
 </Project>

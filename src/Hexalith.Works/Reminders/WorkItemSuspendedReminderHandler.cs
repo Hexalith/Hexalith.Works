@@ -1,6 +1,8 @@
 using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Subscriptions;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Projections;
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
@@ -25,6 +27,7 @@ namespace Hexalith.Works.Reminders;
 internal sealed class WorkItemSuspendedReminderHandler(
     IEventStoreGatewayClient gateway,
     IDateReminderScheduler scheduler,
+    IReadModelStore readModelStore,
     TimeProvider timeProvider,
     IOptions<WorksRecoveryOptions> options,
     ILogger<WorkItemSuspendedReminderHandler> logger) : IEventStoreDomainEventHandler<WorkItemSuspended>
@@ -32,6 +35,7 @@ internal sealed class WorkItemSuspendedReminderHandler(
     private readonly IEventStoreGatewayClient _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
     private readonly ILogger<WorkItemSuspendedReminderHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly WorksRecoveryOptions _options = (options ?? throw new ArgumentNullException(nameof(options))).Value;
+    private readonly IReadModelStore _readModelStore = readModelStore ?? throw new ArgumentNullException(nameof(readModelStore));
     private readonly IDateReminderScheduler _scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
     private readonly TimeProvider _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
 
@@ -44,9 +48,10 @@ internal sealed class WorkItemSuspendedReminderHandler(
         ArgumentNullException.ThrowIfNull(@event);
         ArgumentNullException.ThrowIfNull(context);
 
-        IReadOnlyList<PendingDateAwait> pending = await PendingDateAwaitStreamReader
+        PendingDateAwaitStreamFold fold = await PendingDateAwaitStreamReader
             .RebuildAsync(_gateway, @event.TenantId.Value, @event.WorkItemId.Value, _options.EffectiveMaxStreamPagesPerAggregate, cancellationToken)
             .ConfigureAwait(false);
+        IReadOnlyList<PendingDateAwait> pending = fold.Pending;
         if (pending.Count == 0)
         {
             return;
@@ -87,5 +92,16 @@ internal sealed class WorkItemSuspendedReminderHandler(
                 pendingAwait.WorkItemId,
                 reminderName);
         }
+
+        // Projection delivery can be dropped after the command is already accepted. Recovery still discovers
+        // this await from the durable index, so record it on the same stream fold that scheduled the reminder.
+        await PendingDateAwaitDiscoveryIndex.RecordAsync(
+            _readModelStore,
+            _logger,
+            @event.TenantId.Value,
+            @event.WorkItemId.Value,
+            fold.LastSequence,
+            pending,
+            cancellationToken).ConfigureAwait(false);
     }
 }
