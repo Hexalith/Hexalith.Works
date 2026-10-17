@@ -41,11 +41,14 @@ jobs:
   release:
     needs: verify-source
     # .releaserc.json disables success comments, labels and released-labels, so @semantic-release/github
-    # does not write issues or pull requests. The reusable workflow still declares those scopes, and
-    # GitHub rejects the call at startup unless the caller grants them.
+    # does not write issues or pull requests. GitHub still checks every nested job statically:
+    # governed-release requests attestations and id-token, and the workflow requests issue and
+    # pull-request write, so the caller must grant all of them or the run fails at startup.
     permissions:
       actions: read
+      attestations: write
       contents: write
+      id-token: write
       issues: write
       pull-requests: write
     uses: Hexalith/Hexalith.Builds/.github/workflows/domain-release.yml@04d961759994396132bb2b113ee465b64740a543
