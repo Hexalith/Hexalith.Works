@@ -1,7 +1,8 @@
 name: Release
 
 # Publication is an explicit operator action. The unprotected source proof runs before
-# the reusable workflow can enter the protected production environment or access secrets.
+# the production environment. NuGet trusted publishing matches this caller workflow,
+# repository, and environment, so the OIDC exchange stays in this file.
 on:
   workflow_dispatch:
 
@@ -40,46 +41,79 @@ jobs:
 
   release:
     needs: verify-source
-    # .releaserc.json disables success comments, labels and released-labels, so @semantic-release/github
-    # does not write issues or pull requests. GitHub still checks every nested job statically:
-    # governed-release requests attestations and id-token, and the workflow requests issue and
-    # pull-request write, so the caller must grant all of them or the run fails at startup.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    outputs:
+      publish-enabled: ${{ steps.prepare.outputs.publish-enabled }}
+    # The temporary NuGet key is minted in this job. No long-lived NuGet secret is accepted.
     permissions:
       actions: read
-      attestations: write
       contents: write
       id-token: write
       issues: write
       pull-requests: write
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-release.yml@04d961759994396132bb2b113ee465b64740a543
-    with:
-      solution: Hexalith.Works.slnx
-      test-platform: microsoft-testing-platform
-      test-projects: ''
-      timeout-minutes: 60
-      environment-name: production
-      governed-release: false
-      publish-containers: false
-      container-projects: ''
-      builds-execution-sha: 04d961759994396132bb2b113ee465b64740a543
-      source-branch: main
-      source-ci-workflow: ci.yml
-      package-manifest: tools/release-packages.json
-      expected-package-count: 5
-      require-publication-authority: false
-    secrets:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+    steps:
+      - name: Check out dispatched source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          submodules: false
+          persist-credentials: false
+
+      - name: Prepare domain release
+        id: prepare
+        uses: Hexalith/Hexalith.Builds/Github/prepare-domain-release@397c94a4e246c90b21cf408790fa0d55bf32d795
+        with:
+          solution: Hexalith.Works.slnx
+          builds-execution-sha: 397c94a4e246c90b21cf408790fa0d55bf32d795
+          source-branch: main
+          source-ci-workflow: ci.yml
+          package-manifest: tools/release-packages.json
+          expected-package-count: 5
+          publication-flag: ${{ vars.HEXALITH_RELEASE_PUBLISH_ENABLED }}
+          nuget-user: ${{ vars.NUGET_USER }}
+
+      - name: NuGet trusted publishing login
+        id: nuget-login
+        if: ${{ steps.prepare.outputs.publish-enabled == 'true' }}
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Semantic Release
+        if: ${{ steps.prepare.outputs.publish-enabled == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          HEXALITH_BUILDS_EXECUTION_SHA: 397c94a4e246c90b21cf408790fa0d55bf32d795
+          HEXALITH_RELEASE_ENVIRONMENT: production
+          HEXALITH_RELEASE_SOURCE_BRANCH: main
+          HEXALITH_RELEASE_SOURCE_CI_WORKFLOW: ci.yml
+          HEXALITH_RELEASE_PACKAGE_MANIFEST: tools/release-packages.json
+          HEXALITH_RELEASE_EXPECTED_PACKAGE_COUNT: '5'
+          HEXALITH_RELEASE_REQUIRE_AUTHORITY: 'false'
+        run: npm exec --no -- semantic-release
+
+      - name: Upload complete release evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .hexalith/release-evidence/**
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 30
 
   verify-publication:
     name: Verify exact five-package publication
     needs: release
-    # A rejected source proof skips the reusable release job and must not enter the protected environment.
-    # Once release actually starts, run this job even after a failure so partial publication is still reported.
-    if: ${{ always() && needs.release.result != 'skipped' }}
+    # A frozen or rejected source proof does not publish and must not enter production again.
+    # Once publication was enabled, run this job even after a failure so a partial push is reported.
+    if: ${{ always() && needs.release.outputs.publish-enabled == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Keep post-publication evidence behind the same protected production boundary as publication. This job
-    # deliberately does not re-read mutable freeze state after the release job has started.
     environment: production
     permissions:
       contents: read
@@ -98,5 +132,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           DISPATCH_SHA: ${{ github.sha }}
-        run: |
-          bash scripts/verify-release-publication.sh
+        run: bash scripts/verify-release-publication.sh

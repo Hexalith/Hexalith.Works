@@ -9,6 +9,7 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 public sealed class CiCdConfigurationTests
 {
     private const string ApprovedBuildsSha = "04d961759994396132bb2b113ee465b64740a543";
+    private const string ReleasePreparationSha = "397c94a4e246c90b21cf408790fa0d55bf32d795";
 
     private const string ForceSkipProbeEnvironment = "HEXALITH_WORKS_FORCE_SKIP_PROBE";
 
@@ -189,19 +190,18 @@ public sealed class CiCdConfigurationTests
         sourceProof.ShouldContain("git/ref/heads/main", Case.Sensitive);
         sourceProof.ShouldContain("event=push", Case.Sensitive);
         sourceProof.ShouldContain("head_sha=\"$dispatch_sha\"", Case.Sensitive);
-        workflow.ShouldContain("environment-name: production", Case.Sensitive);
+        workflow.ShouldContain("environment: production", Case.Sensitive);
         workflow.ShouldContain("cancel-in-progress: false", Case.Sensitive);
         workflow.ShouldContain(
-            $"Hexalith/Hexalith.Builds/.github/workflows/domain-release.yml@{ApprovedBuildsSha}",
+            $"Hexalith/Hexalith.Builds/Github/prepare-domain-release@{ReleasePreparationSha}",
             Case.Sensitive);
-        workflow.ShouldContain($"builds-execution-sha: {ApprovedBuildsSha}", Case.Sensitive);
-        workflow.ShouldContain("NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}", Case.Sensitive);
-        workflow.ShouldContain("governed-release: false", Case.Sensitive);
-        workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
-        // GitHub checks nested reusable jobs statically. governed-release stays disabled, but its
-        // attestations and id-token scopes must still be granted or the caller fails at startup.
-        workflow.ShouldContain("attestations: write", Case.Sensitive);
+        workflow.ShouldContain($"builds-execution-sha: {ReleasePreparationSha}", Case.Sensitive);
+        workflow.ShouldContain("NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0", Case.Sensitive);
+        workflow.ShouldContain("NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}", Case.Sensitive);
+        workflow.ShouldNotContain("secrets.NUGET_API_KEY", Case.Sensitive);
+        workflow.ShouldNotContain("attestations: write", Case.Sensitive);
         workflow.ShouldContain("id-token: write", Case.Sensitive);
+        workflow.ShouldContain("if: ${{ always() && needs.release.outputs.publish-enabled == 'true' }}", Case.Sensitive);
         foreach (string executableBranch in new[]
         {
             "test_source_proof_rejects_non_main_before_external_queries",
@@ -279,9 +279,11 @@ public sealed class CiCdConfigurationTests
         string regressionTests = Read(root, "scripts/tests/test_release_tooling.py");
 
         workflow.ShouldContain("needs: release", Case.Sensitive);
-        workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
+        workflow.ShouldContain("if: ${{ always() && needs.release.outputs.publish-enabled == 'true' }}", Case.Sensitive);
         workflow.ShouldContain("bash scripts/verify-release-publication.sh", Case.Sensitive);
-        workflow.ShouldNotContain("HEXALITH_RELEASE_PUBLISH_ENABLED", Case.Sensitive);
+        int verification = workflow.IndexOf("  verify-publication:", StringComparison.Ordinal);
+        verification.ShouldBeGreaterThan(0);
+        workflow[verification..].ShouldNotContain("HEXALITH_RELEASE_PUBLISH_ENABLED", Case.Sensitive);
         verifier.ShouldContain("git/matching-refs/tags/v", Case.Sensitive);
         verifier.ShouldNotContain("/releases?per_page=100", Case.Sensitive);
         verifier.ShouldContain("length == $expected", Case.Sensitive);
@@ -465,8 +467,6 @@ public sealed class CiCdConfigurationTests
             ".github/workflows/codeql.yml",
             ".github/workflows/commitlint.yml",
             ".github/workflows/dependency-review.yml",
-            ".github/workflows/release.yml",
-            "scripts/validate-publication-preflight.sh",
         ];
 
         foreach (string file in shaBearingFiles)
@@ -486,6 +486,18 @@ public sealed class CiCdConfigurationTests
                     $"{file} must reference Hexalith.Builds only at the approved commit, never a mutable ref.");
             }
         }
+
+        string releaseWorkflow = Read(root, ".github/workflows/release.yml");
+        releaseWorkflow.ShouldContain(ReleasePreparationSha, Case.Sensitive);
+        string[] releaseBuildsRefs = [.. Regex.Matches(
+                releaseWorkflow,
+                @"Hexalith/Hexalith\.Builds/[^@\s]+@([0-9a-f]{40}|main)")
+            .Select(match => match.Groups[1].Value)
+            .Distinct(StringComparer.Ordinal)];
+        releaseBuildsRefs.ShouldBe([ReleasePreparationSha]);
+        Read(root, "scripts/validate-publication-preflight.sh").ShouldContain(
+            ReleasePreparationSha,
+            Case.Sensitive);
 
         foreach (string file in new[]
         {
@@ -524,7 +536,6 @@ public sealed class CiCdConfigurationTests
 
     [Theory]
     [InlineData(".github/workflows/ci.yml", "domain-ci.yml")]
-    [InlineData(".github/workflows/release.yml", "domain-release.yml")]
     public async Task P0_ReusableWorkflowInputsExistAtTheExactPinnedBuildsObjectAsync(
         string callerPath,
         string sharedWorkflowName)
