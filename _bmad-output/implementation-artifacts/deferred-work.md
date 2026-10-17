@@ -1516,3 +1516,15 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Prevent ordinary package restores from confusing local candidate archives with published producers.
   evidence: BR7-9: baseline Directory.Build.props already adds the local Story 4.14 feed whenever present, and current props also adds the 4.15 feed. A matching ID/version can satisfy restore from those sources. Current packers refuse stable identities and isolated public verification checks official hashes; general restore source mapping/identity provenance belongs to shared build governance.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Record legacy pending-date discovery before scheduling so failed scheduler calls retain a recoverable target.
+  evidence: The legacy suspended handler writes the fallback index after scheduling all reminders; a failed scheduler call with missing projection delivery leaves no durable discovery entry. This is the independent Story 4.8 path.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Clear stale legacy pending-date discovery entries with a sequence-fenced empty fold.
+  evidence: PendingDateAwaitDiscoveryIndex.RecordAsync returns when the pending set is empty, so old entries continue to be scanned and can grow the tenant document. This is the independent Story 4.8 path.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Verify that release preparation and exact-source CI use compatible Builds action behavior.
+  evidence: CI invokes Builds workflow 04d9617 while release preparation invokes action 397c94a. Compare their implementations or run dry release preparation to determine whether the version difference changes accepted output; medium impact remains unverified.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Mark Platform-only integration facts skipped when the Platform artifact is not selected.
+  evidence: WorksPlatformHaPipelineSmokeTests and WorksPlatformProjectionPipelineSmokeTests return without assertions outside the Platform lane, so ordinary runs count their unexecuted behavior as passes. Platform parity is the separate Story 4.16 gate.

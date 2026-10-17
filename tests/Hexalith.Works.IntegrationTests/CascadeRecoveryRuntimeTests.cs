@@ -119,6 +119,8 @@ public sealed class CascadeRecoveryRuntimeTests
         ExpireWorkItem command = submission.Payload.Deserialize<ExpireWorkItem>()!;
         command.TenantId.ShouldBe(Tenant);
         command.WorkItemId.ShouldBe(ActiveChild);
+        submission.Payload.EnumerateObject().Any(property => string.Equals(property.Name,
+            nameof(ExpireWorkItem.ExpiryWitness), StringComparison.OrdinalIgnoreCase)).ShouldBeFalse();
         Should.Throw<ArgumentOutOfRangeException>(() => CascadeCommands.BuildSubmission(Tenant.Value, ActiveChild.Value, "Complete", correlationId));
     }
 

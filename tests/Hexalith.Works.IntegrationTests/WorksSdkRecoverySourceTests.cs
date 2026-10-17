@@ -446,6 +446,36 @@ public sealed class WorksSdkRecoverySourceTests
         page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
     }
 
+    /// <summary>Retained item or sequence evidence cannot disappear from complete SDK discovery.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MissingFamilyMembershipRetainsIncompleteDiscovery(bool extraItem)
+    {
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "retained", Suspended(TenantA, "retained"));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
+        long generation = (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)).ActiveGeneration;
+        string queueHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeQueueKey)));
+        string key = "shared-generation:" + scope.ComputeHash() + ":" + generation + ":" + queueHash;
+        var missing = new WhatsNextItem(new TenantId(TenantA), new WorkItemId("missing"), WorkItemStatus.Queued,
+            null, null, null, null, null, [], [], 1);
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, WorksRuntimeDocument.From(new WorksWhatsNextTenantIndex
+        {
+            SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion,
+            Items = extraItem ? new() { ["missing"] = missing } : new(),
+            LastSequences = extraItem ? new() { ["retained"] = 1 } : new() { ["retained"] = 1, ["missing"] = 1 },
+            MemberWorkItemIds = ["retained"],
+        }), TestContext.Current.CancellationToken);
+
+        var page = await new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(store, store))
+            .ListAsync(null, 256, TestContext.Current.CancellationToken);
+        page.IsIncomplete.ShouldBeTrue();
+        page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+    }
+
     private static async Task DegradeAsync(SharedProjectionEpochCoordinator coordinator, string source, bool parking)
     {
         var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions

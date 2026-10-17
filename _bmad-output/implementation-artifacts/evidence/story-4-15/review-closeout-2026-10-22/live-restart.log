@@ -1,0 +1,13 @@
+xUnit.net v3 In-Process Runner v4.0.2+0c7aa4991f (64-bit .NET 10.0.12)
+  Discovering: Hexalith.Works.IntegrationTests (method display = ClassAndMethod, method display options = None)
+  Discovered:  Hexalith.Works.IntegrationTests (1 test case to be run)
+  Starting:    Hexalith.Works.IntegrationTests (parallel mode = collections [14 threads], stop on fail = off, explicit = off, seed = 125467422)
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:01:29
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:02:14
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:03:04
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:03:49
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:04:34
+    [D::Hexalith.Works.IntegrationTests] [Long Running Test] 'Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart', Elapsed: 00:05:19
+  Finished:    Hexalith.Works.IntegrationTests (ID = '0c414918071bac5faabdd9d36a4277806964016bbf1945c06e69371eb6b7da73')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 347.667s

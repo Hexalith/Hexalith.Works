@@ -65,7 +65,16 @@ internal sealed class WorksSourceStreamReader(
         {
             cancellationToken.ThrowIfCancellationRequested();
             var request = new StreamReadRequest(tenant, WorkCommandSubmission.WorkDomain, aggregate, from, PageSize: 200);
-            StreamReadPage page = await _gateway.ReadWorkloadStreamAsync(request, cancellationToken).ConfigureAwait(false);
+            StreamReadPage page;
+            try
+            {
+                page = await _gateway.ReadWorkloadStreamAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException exception)
+            {
+                // The gateway uses this exception when bound read proof or workload credentials are unavailable.
+                throw new ProcessEvidenceUnavailableException(exception);
+            }
             cancellationToken.ThrowIfCancellationRequested();
             long next = StreamReadPageValidator.ValidateAndGetNextSequence(request, page);
             foreach (StreamReadEvent envelope in page.Events)

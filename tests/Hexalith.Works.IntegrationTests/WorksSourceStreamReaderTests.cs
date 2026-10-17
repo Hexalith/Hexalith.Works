@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Contracts.Streams;
@@ -106,4 +108,33 @@ public sealed class WorksSourceStreamReaderTests
         await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => new WorksSourceStreamReader(gateway,
             Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
     }
+    /// <summary>Gateway proof and workload authority outages remain retryable contextual evidence failures.</summary>
+    [Theory]
+    [InlineData("EventStore stream read proof is unavailable.")]
+    [InlineData("EventStore workload credentials are unavailable.")]
+    public async Task GatewayAuthorityOutageUsesRetryableContract(string message)
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<StreamReadPage>(new InvalidOperationException(message)));
+
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>A rejection that the aggregate cannot emit must not become a checkpointed recovery no-op.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InvalidInitialEffortRejectionFailsClosed(bool missingDone)
+    {
+        var fact = new Hexalith.Works.Contracts.Events.Rejections.WorkItemInitialEffortRejected(
+            new TenantId(Tenant), new WorkItemId(Item), 0);
+        byte[] bytes = missingDone
+            ? JsonSerializer.SerializeToUtf8Bytes(new { fact.TenantId, fact.WorkItemId })
+            : JsonSerializer.SerializeToUtf8Bytes(fact);
+
+        Should.Throw<InvalidOperationException>(() => WorksRecoveryEventDecoder.Decode(nameof(Hexalith.Works.Contracts.Events.Rejections.WorkItemInitialEffortRejected), bytes));
+    }
+
 }

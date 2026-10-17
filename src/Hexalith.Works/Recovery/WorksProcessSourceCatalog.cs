@@ -35,6 +35,10 @@ internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator
                     WorksWhatsNextTenantIndex membership = read.Value.As<WorksWhatsNextTenantIndex>();
                     if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(membership))
                         throw new InvalidOperationException("Works process source membership is invalid.");
+                    var memberIds = new HashSet<string>(membership.MemberWorkItemIds, StringComparer.Ordinal);
+                    if (membership.Items.Keys.Any(id => !memberIds.Contains(id))
+                        || membership.LastSequences.Keys.Any(id => !memberIds.Contains(id)))
+                        throw new InvalidOperationException("Works process source membership omits retained evidence.");
                     ProcessSource[] members = [.. membership.MemberWorkItemIds.Select(aggregate => new ProcessSource(tenant, "work", aggregate))];
                     foreach (ProcessSource source in members) source.Validate();
                     if (members.Select(source => source.CatalogKey).Distinct(StringComparer.Ordinal).Count() != members.Length)

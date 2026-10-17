@@ -2,8 +2,8 @@
 title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
-updated: '2026-10-17'
-status: 'in-review'
+updated: '2026-10-22'
+status: 'done'
 baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
 review_loop_iteration: 4
@@ -71,6 +71,8 @@ Host paths below are relative to `src/Hexalith.Works/`; context expands exact SD
 - Given forbidden origin, tenant, purpose or altered semantics, when an effect is submitted/replayed, then accepted target state and receipt confidentiality are preserved with audited disposition.
 
 ## Implementation Notes
+
+- Resumed review closeout 2026-10-22: the three review layers reported sixteen findings; individual triage retained four direct corrections (membership completeness, gateway read outage taxonomy, rejection shape, and witnessless command bytes), four new deferred follow-ups, prior carried deferrals, and false claims. [Portable closeout evidence](evidence/story-4-15/review-closeout-2026-10-22/results.json) contains Debug/Release focused results (19 cases each, zero failures/skips) and the final current-source live restart result (one case, zero failures/skips, 347.667 seconds). Sixty-four read-only synthetic Redis snapshots ended with no journal entries, eleven members and parent checkpoint 7. The preliminary Sentry inotify startup failure did not reach domain assertions; a temporary watch-limit increase was restored. The prior delayed-child journal-head timeout remains historical and its exact cause is unproven; this fresh unchanged-SDK run completed every required phase. The Story 4.15 implementation and review are complete; sprint review remains the next human gate.
 
 - Review corrections 2026-10-17: all sixteen reopened test/harness corrections (including the duplicate carried disposition entry) are implemented and independently checked against the final diff. [Current evidence](evidence/story-4-15/review-fixes-2026-10-17/implementation.md) records Debug/Release integration 889 each, final affected checks 134 each, unit/architecture/property 589/269/3, and final current-source live restart plus callback/batch 1+2, with zero failures/skips in selected gates. Root verified all 120 matrix observations, eleven persisted phases and selected live exits, plus current source/assembly/log/runtime bindings. The initial port-conflict failures and later delayed-child timeout remain separate preliminary evidence. Production/SDK source, dependency pins, frozen intent and historical evidence are unchanged; package-host live and complete rollback retain their historical scope. Status remains in-progress pending independent workflow review.
 
@@ -269,6 +271,33 @@ BR7-4, BR7-6 and BR7-10 are implemented. The undefined transition-status guard a
 Required final live verification remains **blocked**. The first class attempt failed at Sentry watch allocation; after a reversible kernel-watch increase, a class retry passed callback/two helpers but failed restart. The final unchanged-binary focused command `dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart' -longRunning 45 -result-xml /tmp/story415-root-final-zid_b9w1/final-restart.xml` exited 1 (one failed, zero skipped; 523.833 seconds reported by xUnit). Expiry witness/target-commit/replay phases pass, then the existing four-minute delayed-child observation deadline expires with a null parent source. Twenty-two read-only Redis snapshots show an applied date delivery retained at the runtime-family journal head, leaving the catalog stale/unavailable and new candidates undiscovered. The closeout exception/read/CAS cause is not established; no speculative SDK change or timing extension was made.
 
 The observer and owned fixture are removed, and `fs.inotify.max_user_watches` is restored to 1048576. Prior successful live evidence remains historical and does not replace this final failure. Under step-04's “if verification fails and the failure cannot be fixed, HALT and escalate to the human” rule, stop before step-05 completion/commit: spec remains `in-review`, sprint remains `in-progress`, baseline and frozen intent remain unchanged, and no commit or push is created. The three review patches are verified individually; this runtime blocker is not deferred as accepted work. Investigate SDK journal closeout using the retained exact trace before repeating final live acceptance.
+
+### Resumed review triage — 2026-10-22
+
+| Finding | Verdict | Route | Verified evidence |
+| --- | --- | --- | --- |
+| BH1 | maybe-false | carried defer | Same cursor-after-full-scan claim as BH6/BH5-1 at unchanged `WorksProcessSourceCatalog.ListAsync`; no measured supported population exceeds its configured service deadline. Preserve the existing benchmark deferral. |
+| BH2 | medium | patch | A current-schema queue document with `Items` or `LastSequences` keys absent from `MemberWorkItemIds` passes `IsValidCurrent`; the catalog returns a complete page that omits those source streams. Reject that inconsistent family as incomplete. |
+| BH3 | maybe-false | carried defer | Same noncanonical addressed-delivery claim as BR7-5/ER7-2 at unchanged `WorksDomainEventProcessor`/`ProcessSource.Validate`. A supported producer that emits such an address remains unproved; preserve the existing canonical-producer investigation. |
+| BH4 | medium | patch | `EventStoreGatewayClient.ReadWorkloadStreamAsync` throws `InvalidOperationException` when bound read proof or workload credentials are unavailable; `WorksSourceStreamReader` does not translate it, so `CheckpointedProcessRunner` marks a contextual translation as invalid evidence. Wrap only the gateway read as retryable unavailability. |
+| BH5 | false | reject | `WorkItemSuspended.Normalize` rejects null elements in its JSON constructor before the recovery decoder can return a payload. Neither reminder translation nor a process no-op checkpoint can consume that malformed suspension. |
+| BH6 | medium | defer | The legacy `WorkItemSuspendedReminderHandler` records its fallback index after scheduling. A scheduling failure with absent projection delivery leaves no discovery entry. This independent Story 4.8 fallback path is outside SDK adoption; repair its persistence order separately. |
+| BH7 | medium | defer | The legacy `PendingDateAwaitDiscoveryIndex.RecordAsync` returns for an empty pending set, retaining older entries and scan work. It was introduced in the independent Story 4.8 fallback change; add a sequence-fenced clearing write there. |
+| BH8 | low | carried defer | Same release-job issue/PR permission claim as BR7-8 at unchanged scopes. Preserve the release-governance cleanup entry. |
+| BH9 | maybe-false | defer | CI calls Builds workflow `04d9617`, while release preparation calls action `397c94a`; a behavioral mismatch is possible but not demonstrated. Compare those action implementations or run an exact-source dry preparation to settle the publication risk. |
+| BH10 | medium | defer | Platform-only facts return successfully without assertions on the ordinary lane, so its run counts them as passes. Platform parity belongs to Story 4.16; mark the inactive lane skipped in that story. |
+| BH11 | medium | carried defer | Same local-feed producer-provenance claim as BR7-9 at unchanged `Directory.Build.props` behavior. Preserve the existing build-governance entry. |
+| EC1 | false | reject | Missing `IReminderDelegationTokenProvider` deliberately fails closed: `WorksProcessDelegationProvider` refuses effects, and the adoption guide requires a host-supplied authority. Production authority is a separate gate. |
+| EC2 | false | reject | The configured finite profile supports five direct effects and retains over-capacity work as unresolved SDK evidence. The cited aggregate five-child rejection guard does not exist; exceeding the supported profile is an explicit capacity outcome. |
+| EC3 | medium | patch | `WorkItemInitialEffortRejected` is produced only for `Done != 0`, but the recovery decoder's default arm accepts missing or zero `Done` and the process runner can checkpoint the no-op. Require nonzero committed rejection evidence. |
+| EC4 | false | reject | The default disposition authorizer denies and audit sink refuses writes by design. The guide requires an operator host to provide current authority and durable audit; unauthenticated revalidation does not mutate a source. |
+| VG1 | medium | patch | Pre-verified gap: SDK and legacy cascade tests deserialize witnessless `ExpireWorkItem` and assert null, but neither asserts that serialized payload bytes omit `ExpiryWitness`. A null property would pass both tests. |
+
+BH2, BH4, EC3 and VG1 have separate direct corrections. No frozen-intent or non-frozen design loopback is required; carried findings retain their earlier routes without new ledger entries.
+
+### Resumed verification — 2026-10-22
+
+The four direct review corrections pass focused tests against Debug source and Release packages: two catalog cases, fifteen contextual-reader cases, SDK cascade translation, and legacy cascade command serialization in each mode. The full catalog class also passes 21 cases in each mode. Both test-project builds pass with zero warnings/errors using a normal restore. The final live restart command passed one case with zero failures/skips, including delayed-child discovery, target receipts and checkpoints across restart. The temporary inotify limit returned to 1048576; the exact fixture container and observer ended. The earlier `--no-restore` Debug build after a Release restore failed with CS1704 duplicate PolymorphicSerializations assemblies, and the normal Debug restore/build passed. The earlier live startup attempt failed at Dapr Sentry watch allocation before domain assertions. Raw selected XML/logs, hashes and exact command summaries are in the closeout evidence packet.
 
 ## Verification
 

@@ -1,0 +1,125 @@
+{
+  "spec": "spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md",
+  "source_baseline": "8679d7d700925a870e9931b3c43c745c063e459b",
+  "results": {
+    "live-restart.log": {
+      "bytes": 1959,
+      "sha256": "393eab95e8c8755709f1a712a90e0c70feba77f7a7b602d1e7652fa87f76e31c"
+    },
+    "live-restart.xml": {
+      "bytes": 1746,
+      "sha256": "e212a36166e86ca4759327b118fc03035e1595128f56557b09d1d812720a09c4",
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "debug-catalog.xml": {
+      "bytes": 2428,
+      "sha256": "242a260f897626526a3bed2bad3b5f14d103e1f929a306f649d4606cf1751bed",
+      "total": 2,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "debug-reader.xml": {
+      "bytes": 10049,
+      "sha256": "ea8b28051bfc0dfc6f22886142895b7f1b5f96f3978bc3bd66f658206a50258b",
+      "total": 15,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "debug-sdk-cascade.xml": {
+      "bytes": 1801,
+      "sha256": "33d7ef752ac3f4c4432d113ec67f8086dd08dd5143253f339ec57cf12ffab92b",
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "debug-legacy-cascade.xml": {
+      "bytes": 1847,
+      "sha256": "90b9faa7ded8543ec16d26a685f245930612e55297d817d6390295c880cacce0",
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "release-catalog.xml": {
+      "bytes": 2430,
+      "sha256": "a4d98349aa48f1e209165461f38681f16ed1fd047faa0e3840950f3d8df6510b",
+      "total": 2,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "release-reader.xml": {
+      "bytes": 10055,
+      "sha256": "5fd3e2e487f8a8dc2f81e254701d1656bdf781b360d4a2ba71b3ff5049b330ea",
+      "total": 15,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "release-sdk-cascade.xml": {
+      "bytes": 1803,
+      "sha256": "d04b4554fcb5859eacc1ee9ca657f82b337e1d1b59d04cdd117436fe7ad2dde3",
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "release-legacy-cascade.xml": {
+      "bytes": 1849,
+      "sha256": "2597efd5802a67f2fec55dcfb5e9d5d248c3342d8fe64507674ae699ed3b0b31",
+      "total": 1,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "debug-catalog-class.xml": {
+      "bytes": 14767,
+      "sha256": "b086edfeaec72d7926c6c8036ccb48560336d6ac647c4c1f813457322019c49f",
+      "total": 21,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "release-catalog-class.xml": {
+      "bytes": 14767,
+      "sha256": "c67d3574929f4d7a5b0da063ce128c31ad31efc6c39fdefc372860470416490f",
+      "total": 21,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    }
+  },
+  "checks": {
+    "debug_build": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0 (exit 0, 0 warnings/errors)",
+    "release_build": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1 -p:NuGetAudit=false -p:MinVerVersionOverride=1.0.0 (exit 0, 0 warnings/errors)",
+    "live_restart": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart' -longRunning 45 -result-xml /tmp/story415-current-restart-watches.xml (exit 0)",
+    "watch_limit": "Temporarily 2097152 for the live test; restored to original 1048576 by EXIT trap and independently read back.",
+    "preliminary_live": "The same focused command before the watch increase exited 1 at dapr-sentry startup: failed to add target /var/run/dapr/credentials: no space left on device. It did not reach domain assertions.",
+    "preliminary_debug_build": "A --no-restore Debug build after a Release restore exited 1 with CS1704 duplicate Hexalith.PolymorphicSerializations assemblies. A normal Debug restore/build then passed.",
+    "observer": "Read-only exact labelled synthetic Redis fixture; raw temporary capture was stopped after the test and is not retained. The passing test contains the authoritative persisted-state assertions.",
+    "observer_snapshots": 64,
+    "observer_last": {
+      "journal_count": 0,
+      "member_count": 11,
+      "parent_checkpoint": 7
+    },
+    "catalog_class": "dotnet <Debug|Release>/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkRecoverySourceTests' -result-xml /tmp/story415-catalog-class[-release].xml (21 passed each, 0 failed/skipped)"
+  },
+  "bindings": {
+    "src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs": "5e5aa4f97c6105b154929bcf621c7212446e83c4c90f2e49271cf7f743f9d5a2",
+    "src/Hexalith.Works/Recovery/WorksRecoveryEventDecoder.cs": "fb4520f33f6dd19a59c557c331801a4547b77718c48f82f3d543cc699df5eb23",
+    "src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs": "e5520f3af028e280656d0caea76bdb83a596410b3f8156a61cb30ce0365b9893",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs": "516cedf595815fa868652b39923c819a416974ffba7b58a616d0f2be4873d0ec",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "6b90824df3f97df4996c7e763339b3d04b1daa94eda48c9e539a44e9bb7c0490",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs": "d9aa8d5dbc2f6a024b4e13bf02696a7103852ec3f72b551371467bc582b5f96b",
+    "tests/Hexalith.Works.IntegrationTests/CascadeRecoveryRuntimeTests.cs": "bf4e96768979ebf30fbdca7a82c35f808395e3c059a2cc0607acd55b14ad7efd",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "2bc00a70b419a1346faa6a422f7fbb7bb75617f768388398f7c51bc9da272600",
+    "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll": "5b0f0707599438fc3fe44dedb05c9f06c8c895d9c8bf863d6660ab8e5db5b374"
+  }
+}

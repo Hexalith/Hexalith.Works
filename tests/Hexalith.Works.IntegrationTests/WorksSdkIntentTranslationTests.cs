@@ -187,6 +187,8 @@ public sealed class WorksSdkIntentTranslationTests
             command.TenantId.ShouldBe(tenant);
             command.WorkItemId.Value.ShouldBe(effect.TargetAggregate);
             command.ExpiryWitness.ShouldBeNull();
+            using JsonDocument payload = JsonDocument.Parse(effect.CommandPayload);
+            payload.RootElement.EnumerateObject().Any(property => string.Equals(property.Name, nameof(ExpireWorkItem.ExpiryWitness), StringComparison.OrdinalIgnoreCase)).ShouldBeFalse();
         }
     }
 

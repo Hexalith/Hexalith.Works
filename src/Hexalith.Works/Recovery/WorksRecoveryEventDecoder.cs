@@ -30,6 +30,7 @@ internal static class WorksRecoveryEventDecoder
             ConversationLinked fact => fact.ConversationCorrelationId is not null,
             WorkItemSuspended fact => fact.AwaitConditions is { Count: > 0 },
             WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue)),
+            WorkItemInitialEffortRejected fact => fact.Done != 0,
             WorkItemCannotReferenceParentFromAnotherTenant fact => fact.Parent is not null,
             WorkItemCannotReferenceSecondParent fact => fact.ExistingParent is not null && fact.ProposedParent is not null,
             WorkItemConversationLinkRejected fact => fact.ExistingConversationCorrelationId is not null && fact.ProposedConversationCorrelationId is not null,
