@@ -1,0 +1,39 @@
+{
+  "owned_containers": {
+    "command": [
+      "docker",
+      "ps",
+      "--all",
+      "--filter",
+      "label=hexalith.works.sdk-fixture=works-sdk415-7189c867abd84749a2a3412369a7c4cd",
+      "--format",
+      "{{.ID}} {{.Names}}"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "owned_volumes": {
+    "command": [
+      "docker",
+      "volume",
+      "ls",
+      "--filter",
+      "label=hexalith.works.sdk-fixture=works-sdk415-7189c867abd84749a2a3412369a7c4cd",
+      "--format",
+      "{{.Name}}"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "watch_limit": {
+    "expected": 1048576,
+    "observed": 1048576
+  },
+  "no_unrelated_resources_stopped_by_root": true,
+  "temporary_fixture_directory": {
+    "path": "/tmp/works-sdk415-7189c867abd84749a2a3412369a7c4cd",
+    "exists": false
+  }
+}

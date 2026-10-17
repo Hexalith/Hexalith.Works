@@ -729,7 +729,9 @@ public sealed class WorksSdkProtectedHttpTests
         else
         {
             response.StatusCode.ShouldBe(scenario == "caller" ? HttpStatusCode.Unauthorized : HttpStatusCode.Forbidden);
-            if (scenario != "caller")
+            if (scenario == "caller")
+                store.Snapshot<object>("statestore", "eventstore:trusted-effect-origin:v1:denials").ShouldBeNull();
+            else
             {
                 (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
                 Dictionary<string, JsonElement> audit = store.Snapshot<Dictionary<string, JsonElement>>("statestore", "eventstore:trusted-effect-origin:v1:denials")!;
@@ -742,12 +744,13 @@ public sealed class WorksSdkProtectedHttpTests
                 safe.ShouldNotContain(SigningKey);
             }
         }
-        state.Status.ShouldBe(WorkItemStatus.Created);
     }
 
     [Theory]
     [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.OK, false)]
     [InlineData(nameof(CancelWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.OK, false)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.ChildCompletionResume, false, HttpStatusCode.OK, false)]
     [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false)]
     [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false)]
     [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.OK, true)]
@@ -765,18 +768,24 @@ public sealed class WorksSdkProtectedHttpTests
         DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
         var witness = new WorkItemExpirySchedule(due, ReminderIdentityCodec.ComputeScheduleToken(Tenant, item.Value, due, 2), 2);
         var state = new WorkItemState();
-        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("matrix proof")));
+        var created = new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("matrix proof"));
+        state.Apply(created);
+        AwaitCondition condition = kind == EffectKindCatalog.ChildCompletionResume
+            ? AwaitCondition.ChildCompleted(new WorkItemId("completed-child")) : AwaitCondition.DateReached(due);
+        object currentState = commandType == nameof(ResumeWorkItem)
+            ? Story48Streams.Page(Tenant, item.Value, created, new WorkItemSuspended(item.Value, 2, tenant, item, [condition])).Events
+            : state;
         byte[] payload = commandType switch
         {
             nameof(CancelWorkItem) => JsonSerializer.SerializeToUtf8Bytes(new CancelWorkItem(tenant, item)),
-            nameof(ResumeWorkItem) => JsonSerializer.SerializeToUtf8Bytes(new ResumeWorkItem(tenant, item)),
+            nameof(ResumeWorkItem) => JsonSerializer.SerializeToUtf8Bytes(new ResumeWorkItem(tenant, item, condition)),
             _ => JsonSerializer.SerializeToUtf8Bytes(new ExpireWorkItem(tenant, item, withWitness ? witness : null)),
         };
         var identity = new EffectIdentity(Tenant, "work", "source-matrix", 9, kind, "work", item.Value, 0);
         string message = EffectIdentityCodec.ComputeMessageId(identity);
         var envelope = new CommandEnvelope(message, Tenant, "work", item.Value, commandType,
             payload, message, "committed-source", "works", new() { ["trusted-purpose"] = WorksEffectPurposes.ForKind(kind) });
-        var request = new DomainServiceRequest(envelope, state)
+        var request = new DomainServiceRequest(envelope, currentState)
         {
             TrustedEffectOrigin = new TrustedEffectOrigin(identity, "works", WorksEffectPurposes.ForKind(kind), "committed-source",
                 commandType, EffectIdentityCodec.RenderDigest(SHA256.HashData(payload))),
@@ -791,13 +800,13 @@ public sealed class WorksSdkProtectedHttpTests
             result.IsRejection.ShouldBe(expectedRejection);
             result.Events.Any(value => value.EventTypeName.EndsWith(nameof(WorkItemCancelled), StringComparison.Ordinal))
                 .ShouldBe(commandType == nameof(CancelWorkItem));
+            result.Events.Any(value => value.EventTypeName.EndsWith(nameof(WorkItemResumed), StringComparison.Ordinal))
+                .ShouldBe(commandType == nameof(ResumeWorkItem));
         }
         else
         {
             (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
         }
-
-        state.Status.ShouldBe(WorkItemStatus.Created);
     }
 
     /// <summary>An expiry-bearing create or reschedule must address the stream its envelope names.</summary>
@@ -882,6 +891,66 @@ public sealed class WorksSdkProtectedHttpTests
         await observedAuthorizer.Received(1).AuthorizeAsync(Arg.Any<System.Security.Claims.ClaimsPrincipal>(), source, Arg.Any<CancellationToken>());
     }
 
+    /// <summary>Malformed requests and unavailable audit authority fail before disposition or audit state changes.</summary>
+    [Theory]
+    [InlineData("null-source", HttpStatusCode.BadRequest)]
+    [InlineData("blank-reason", HttpStatusCode.BadRequest)]
+    [InlineData("long-reason", HttpStatusCode.BadRequest)]
+    [InlineData("invalid-source", HttpStatusCode.BadRequest)]
+    [InlineData("audit-unavailable", HttpStatusCode.ServiceUnavailable)]
+    public async Task InvalidOrUnauditableProcessDispositionPreservesDurableState(string scenario, HttpStatusCode expected)
+    {
+        var store = new InMemoryReadModelStore();
+        var source = new ProcessSource(Tenant, "work", "invalid-disposition");
+        var authorizer = Substitute.For<IProcessDispositionAuthorizer>();
+        authorizer.AuthorizeAsync(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProcessSource>(), Arg.Any<CancellationToken>()).Returns(true);
+        var audit = Substitute.For<IProcessDispositionAuditSink>();
+        audit.RecordAsync(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProcessSource>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(call => new WorksProcessDispositionAuditSink().RecordAsync(call.Arg<ClaimsPrincipal>(),
+                call.Arg<ProcessSource>(), call.Arg<string>(), call.Arg<CancellationToken>()));
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"],
+            configure: services =>
+            {
+                services.RemoveAll<IProcessDispositionAuthorizer>();
+                services.AddSingleton(authorizer);
+                services.RemoveAll<IProcessDispositionAuditSink>();
+                services.AddSingleton(audit);
+            });
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
+        await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+        ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
+        owned = await checkpoints.UpdateOwnedAsync(owned, state => state with
+        { Checkpoint = 1, Status = ProcessSourceStatus.Quarantined, FailureSequence = 2, ReasonCode = "invalid-evidence" },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var before = await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        string beforeSweep = JsonSerializer.Serialize(await store.GetAsync<ProcessSweepState>("statestore", ProcessStateKeys.Sweep,
+            TestContext.Current.CancellationToken).ConfigureAwait(true));
+        int beforeCount = store.Count;
+        var request = scenario switch
+        {
+            "null-source" => new WorksProcessDispositionRequest(null!, "synthetic repair"),
+            "blank-reason" => new WorksProcessDispositionRequest(source, " "),
+            "long-reason" => new WorksProcessDispositionRequest(source, new string('x', 257)),
+            "invalid-source" => new WorksProcessDispositionRequest(source with { Aggregate = " " }, "synthetic repair"),
+            _ => new WorksProcessDispositionRequest(source, "synthetic repair"),
+        };
+        using HttpResponseMessage response = await client.SendAsync(Request("/work/processes/revalidate", request,
+            channel: true, assertion: Assertion("domain-service:process")), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        response.StatusCode.ShouldBe(expected);
+        (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(before);
+        JsonSerializer.Serialize(await store.GetAsync<ProcessSweepState>("statestore", ProcessStateKeys.Sweep,
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(beforeSweep);
+        store.Count.ShouldBe(beforeCount, "denial must persist no audit or disposition writes");
+        await audit.Received(scenario == "audit-unavailable" ? 1 : 0).RecordAsync(Arg.Any<ClaimsPrincipal>(),
+            Arg.Any<ProcessSource>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
     /// <summary>Authorized HTTP disposition durably audits before mutation, preserves the checkpoint, and reuses SDK evidence validation.</summary>
     [Theory]
     [InlineData(false, HttpStatusCode.NoContent)]
@@ -946,7 +1015,7 @@ public sealed class WorksSdkProtectedHttpTests
         });
         ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
-            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"],
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false", "--EventStore:Processes:SourcesPerPass=1", "--EventStore:Processes:SupportedCandidateCount=1"],
             configure: services =>
             {
                 services.RemoveAll<IProcessDispositionAuthorizer>();
@@ -990,6 +1059,14 @@ public sealed class WorksSdkProtectedHttpTests
             pending.ClaimToken.ShouldBeNull();
             await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
             _ = await app.Services.GetRequiredService<ProcessReconciler>().RunPassAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+            ProcessPendingDisposition applied = (await app.Services.GetRequiredService<ProcessSweepStore>()
+                .GetAsync(TestContext.Current.CancellationToken).ConfigureAwait(true)).Pending[ProcessStateKeys.SourceId(source)];
+            applied.Applied.ShouldBeTrue();
+            after = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            after.Status.ShouldBe(ProcessSourceStatus.Revalidating);
+            after.LastDispositionGeneration.ShouldBe(pending.PreparedGeneration);
+            after.LastDispositionGeneration.ShouldBeGreaterThan(before.LastDispositionGeneration);
+            after.Checkpoint.ShouldBe(before.Checkpoint);
         }
         else
         {
@@ -1173,8 +1250,8 @@ public sealed class WorksSdkProtectedHttpTests
                 ["sub"] = "works-identity-reader", ["azp"] = "works",
                 ["eventstore:tenant"] = Tenant, ["eventstore:domain"] = "party", ["eventstore:permission"] = "query:read",
             },
-            IssuedAt = now.AddMinutes(-2),
-            NotBefore = now.AddMinutes(-2),
+            IssuedAt = expired ? now.AddHours(-3) : now.AddMinutes(-2),
+            NotBefore = expired ? now.AddHours(-3) : now.AddMinutes(-2),
             Expires = expired ? now.AddHours(-2) : now.AddMinutes(5),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)),
                 SecurityAlgorithms.HmacSha256),

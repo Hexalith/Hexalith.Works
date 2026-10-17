@@ -1,0 +1,15 @@
+{
+  "verified_artifacts": 47,
+  "positive": "all compressed and decompressed digests plus original manifest references match",
+  "original_tmp_files_required": false,
+  "negative_checks": {
+    "compressed-tamper": {
+      "exit_code": 1,
+      "expected": "rejected at compressed hash verification"
+    },
+    "uncompressed-tamper": {
+      "exit_code": 1,
+      "expected": "rejected at uncompressed hash verification"
+    }
+  }
+}

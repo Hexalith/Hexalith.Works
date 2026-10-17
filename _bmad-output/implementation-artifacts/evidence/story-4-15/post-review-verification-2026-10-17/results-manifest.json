@@ -1,0 +1,247 @@
+[
+  {
+    "gate": "debug-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 4.88,
+    "log": "/tmp/story415-root-final-zid_b9w1/debug-build.log",
+    "sha256": "17a1b4f92a88cb0168b37ec3550a96d4dbcdbfbd196cbfcf45cc86da39333185",
+    "classification": "selected"
+  },
+  {
+    "gate": "debug-integration",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/debug-integration.xml"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 51.733,
+    "log": "/tmp/story415-root-final-zid_b9w1/debug-integration.log",
+    "sha256": "9b0db4cae09450a236acbdcdd51170ac5223611a188d9b402774b0b526b90272",
+    "xml": "/tmp/story415-root-final-zid_b9w1/debug-integration.xml",
+    "xml_sha256": "12078718b2d3c7ae7821c7f57d58218dde3d9c0b3d66670e491763bdb7f6682a",
+    "total": 894,
+    "passed": 894,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "selected"
+  },
+  {
+    "gate": "release-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Release",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 4.342,
+    "log": "/tmp/story415-root-final-zid_b9w1/release-build.log",
+    "sha256": "65312e625788d7867271ed18d61a3964405477d3bab1d7a3c43c74bdb7db94f0",
+    "classification": "selected"
+  },
+  {
+    "gate": "release-integration",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/release-integration.xml"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 50.846,
+    "log": "/tmp/story415-root-final-zid_b9w1/release-integration.log",
+    "sha256": "0a8905f05bf82652669c5b8de1224b3c299bfcf02a58df13b216ace75f89ec21",
+    "xml": "/tmp/story415-root-final-zid_b9w1/release-integration.xml",
+    "xml_sha256": "0ed032c4e7ce11ee5fb57b021f8af5797677befa91612445874f8ca1e9ee6189",
+    "total": 894,
+    "passed": 894,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "selected"
+  },
+  {
+    "gate": "UnitTests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/UnitTests.xml"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 0.452,
+    "log": "/tmp/story415-root-final-zid_b9w1/UnitTests.log",
+    "sha256": "f1dbbd046e4e47f1e999f1c40772295ff9caf222c34186ad0294d76b85880cda",
+    "xml": "/tmp/story415-root-final-zid_b9w1/UnitTests.xml",
+    "xml_sha256": "0700ed82cd3cd238d0628ad2ccfef9c8e110de4b2758b0c36328a68866fc9582",
+    "total": 589,
+    "passed": 589,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "selected"
+  },
+  {
+    "gate": "ArchitectureTests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/ArchitectureTests.xml"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 7.649,
+    "log": "/tmp/story415-root-final-zid_b9w1/ArchitectureTests.log",
+    "sha256": "9b8105596de4fa3a812296bbbd6b0c087948b91de6397ddb505173b3f780e9e7",
+    "xml": "/tmp/story415-root-final-zid_b9w1/ArchitectureTests.xml",
+    "xml_sha256": "68e3c44eb6fd7af68802ea31727afe9f6ba55c638e5afefbe1c84151e01001e4",
+    "total": 269,
+    "passed": 269,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "selected"
+  },
+  {
+    "gate": "PropertyTests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/PropertyTests.xml"
+    ],
+    "environment_overrides": {},
+    "exit_code": 0,
+    "seconds": 0.398,
+    "log": "/tmp/story415-root-final-zid_b9w1/PropertyTests.log",
+    "sha256": "667c8217330af9b0416dae0ac05b73285c1944d4567b0a7f5339357b28d0ddb2",
+    "xml": "/tmp/story415-root-final-zid_b9w1/PropertyTests.xml",
+    "xml_sha256": "283c22676da8b87aba64e7cf9de2116b8c2671f225b00f7c0647c9cdd79112b8",
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "selected"
+  },
+  {
+    "gate": "live-sdk",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/live-sdk.xml"
+    ],
+    "environment_overrides": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/story415-root-final-zid_b9w1/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story415-root-final-zid_b9w1/live-state.jsonl"
+    },
+    "exit_code": 1,
+    "seconds": 25.423,
+    "log": "/tmp/story415-root-final-zid_b9w1/live-sdk.log",
+    "sha256": "2f263db1e241faaf8e9acdc0b767b66e3ce8355ce646d459c66b1ea7bd320483",
+    "xml": "/tmp/story415-root-final-zid_b9w1/live-sdk.xml",
+    "xml_sha256": "afa9e13d155cd088f4f760d4983a43603882d366b937aa0a71b8dc6e1874363a",
+    "total": 4,
+    "passed": 2,
+    "failed": 2,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "preliminary"
+  },
+  {
+    "gate": "live-sdk-retry",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/live-sdk-retry.xml"
+    ],
+    "environment_overrides": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/story415-root-final-zid_b9w1/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story415-root-final-zid_b9w1/live-retry-state.jsonl"
+    },
+    "exit_code": 1,
+    "seconds": 531.851,
+    "log": "/tmp/story415-root-final-zid_b9w1/live-sdk-retry.log",
+    "sha256": "f4bda7113b8cf18ee168445677c97591de1fdabdfbcd5a0d4d31c5bea59da4ce",
+    "xml": "/tmp/story415-root-final-zid_b9w1/live-sdk-retry.xml",
+    "xml_sha256": "628e0bea70932071bedf79db5d5e63d2fae4fc1a241bf6846ae599f9f4769b8c",
+    "total": 4,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "preliminary"
+  },
+  {
+    "gate": "final-restart",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-root-final-zid_b9w1/final-restart.xml"
+    ],
+    "environment_overrides": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS": "180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/story415-root-final-zid_b9w1/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH": "/tmp/story415-root-final-zid_b9w1/live-restart-state.jsonl"
+    },
+    "exit_code": 1,
+    "seconds": 524.142,
+    "log": "/tmp/story415-root-final-zid_b9w1/final-restart.log",
+    "sha256": "f9a7ce11e34951abf9fef2b1929b9953913e8aff2d07304b3e2a524199035012",
+    "xml": "/tmp/story415-root-final-zid_b9w1/final-restart.xml",
+    "xml_sha256": "a874845ec86c1146344f43b31267a2ada9f58c7124e42161d6a4218bf8cd5759",
+    "total": 1,
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0,
+    "errors": 0,
+    "classification": "preliminary"
+  }
+]

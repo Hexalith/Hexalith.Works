@@ -32,6 +32,7 @@ public sealed class WorksSdkRecoveryCompositionTests
     [InlineData("", "", "http://eventstore")]
     [InlineData(" ", "http://direct", "http://direct")]
     [InlineData("http://sidecar:3500", " ", "http://sidecar:3500")]
+    [InlineData("http://sidecar:3500", "http://direct", "http://sidecar:3500")]
     public void SdkTransportsShareValidatedEffectiveAddress(string dapr, string gateway, string expected)
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>

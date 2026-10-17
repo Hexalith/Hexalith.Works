@@ -1,0 +1,8 @@
+{
+  "artifacts": 34,
+  "fresh_directory_verification_exit": 0,
+  "fresh_directory_output": "Verified 34 compressed/raw hash pairs and their original manifest provenance.\n",
+  "tampered_archive_rejected": true,
+  "original_packet_unchanged": true,
+  "verifier_sha256": "30c724b4a58c050553a4f71ecc66dea696d720233bb631f603d07e6f34a6911f"
+}

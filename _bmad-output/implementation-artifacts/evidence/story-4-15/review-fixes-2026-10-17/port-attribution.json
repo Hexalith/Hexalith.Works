@@ -1,0 +1,8 @@
+{
+  "observedPort": 8080,
+  "owningProcess": "dcp",
+  "pid": 18712,
+  "cwd": "/proc/18712/cwd",
+  "effect": "Works EventStore /alive proxy timed out; app listened on 32261; Works did not start",
+  "action": "Do not stop the unrelated owner. Reuse existing harness application/sidecar port isolation for the synthetic retained proof."
+}

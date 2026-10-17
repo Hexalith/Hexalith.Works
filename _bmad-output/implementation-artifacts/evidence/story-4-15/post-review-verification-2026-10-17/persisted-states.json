@@ -1,0 +1,150 @@
+[
+  {
+    "phase": "rescheduled-expiry-committed-current-witness",
+    "state": {
+      "AggregateId": "work-sdk415-rescheduled-65eced8a2c",
+      "Sequence": 4,
+      "TenantId": {
+        "Value": "sdk415-65eced8a2c"
+      },
+      "WorkItemId": {
+        "Value": "work-sdk415-rescheduled-65eced8a2c"
+      },
+      "ExpiryWitness": {
+        "EffectiveExpiryUtc": "2026-10-17T18:06:31.1306255+00:00",
+        "ScheduleToken": "wrs-TCRQZ7KNEZ1J0FNJM44PR2KP84JKMZNT82ZRFRZ4EZXA09145930",
+        "Revision": 2
+      }
+    }
+  },
+  {
+    "phase": "cascade-expiry-target-commit-before-checkpoint",
+    "state": {
+      "expiryCascadeEffect": "Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G",
+      "childScheduledExpiry": {
+        "EffectiveExpiryUtc": "2026-10-17T19:06:31.1306255+00:00",
+        "ScheduleToken": "wrs-C35ZA68QRSM5WJ3EHHR90WSR14M21KRYWW5G528V4DJS76JGNSBG",
+        "Revision": 1
+      },
+      "checkpoint": {
+        "Version": 1,
+        "Source": {
+          "Tenant": "sdk415-65eced8a2c",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-rescheduled-65eced8a2c"
+        },
+        "Checkpoint": 3,
+        "Status": 2,
+        "Attempts": 1,
+        "FailureSequence": 4,
+        "ReasonCode": "effect-unknown",
+        "Owner": null,
+        "LeaseUntil": null,
+        "Fence": 5,
+        "ObservedCycle": 7,
+        "UpdatedAt": "2026-10-17T18:06:39.2022091+00:00",
+        "PendingPlan": {
+          "Sequence": 4,
+          "EvidenceDigest": "ECA59270861FD59CF40B8161A803DA582290128547B62482CF63E4E9E8FCA2C4",
+          "Effects": [
+            {
+              "Kind": "works.cascade-expire.v1",
+              "TargetDomain": "work",
+              "TargetAggregate": "work-sdk415-expiry-65eced8a2c",
+              "Ordinal": 0,
+              "CommandType": "ExpireWorkItem",
+              "CommandPayload": "[redacted]"
+            }
+          ]
+        },
+        "ObservedUnresolved": true,
+        "LastDispositionGeneration": 0,
+        "LastTransitionGeneration": 7,
+        "LastTransitionToken": "2833d80cc67e4b01acf2465a3c49c226"
+      },
+      "childExpired": 1
+    }
+  },
+  {
+    "phase": "cascade-expiry-restart-receipt-and-checkpoint",
+    "state": {
+      "expiryCascadeEffect": "Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G",
+      "childScheduledExpiry": {
+        "EffectiveExpiryUtc": "2026-10-17T19:06:31.1306255+00:00",
+        "ScheduleToken": "wrs-C35ZA68QRSM5WJ3EHHR90WSR14M21KRYWW5G528V4DJS76JGNSBG",
+        "Revision": 1
+      },
+      "expiryReceipt": {
+        "effectId": "Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G",
+        "identity": {
+          "sourceDomain": "work",
+          "sourceAggregate": "work-sdk415-rescheduled-65eced8a2c",
+          "sourceEnvelopeSequence": 4,
+          "effectKind": "works.cascade-expire.v1",
+          "targetDomain": "work",
+          "targetAggregate": "work-sdk415-expiry-65eced8a2c",
+          "ordinal": 0,
+          "tenant": "sdk415-65eced8a2c"
+        },
+        "semanticDigest": "3DYTWWF4VHD2X258ZA8ZJ8KXP5FSVHADKJVFKMPP2RQP5R37K5MG",
+        "disposition": 0,
+        "workload": "works",
+        "purpose": "works.cascade-expire",
+        "causationId": "01M55GPGAN5544YE16GHPTVDHZ",
+        "resultPayload": "[redacted]"
+      },
+      "replay": {
+        "FailNext": false,
+        "CommittedEffectId": "Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G",
+        "EffectKind": null,
+        "HoldDelegation": false,
+        "Disposition": 0,
+        "ReplayObserved": true,
+        "Submission": {
+          "Identity": {
+            "Tenant": "sdk415-65eced8a2c",
+            "SourceDomain": "work",
+            "SourceAggregate": "work-sdk415-rescheduled-65eced8a2c",
+            "SourceEnvelopeSequence": 4,
+            "EffectKind": "works.cascade-expire.v1",
+            "TargetDomain": "work",
+            "TargetAggregate": "work-sdk415-expiry-65eced8a2c",
+            "Ordinal": 0
+          },
+          "CommandType": "ExpireWorkItem",
+          "CommandPayload": "[redacted]",
+          "MessageId": "wrk-Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G",
+          "IdempotencyKey": "wrk-Y3R7TYGWAZQ9Z7BAXNPPH8VZS946ATGWNYDXV9QFM3ZXR5BZFP5G"
+        },
+        "CausationId": "01M55GPGAN5544YE16GHPTVDHZ"
+      },
+      "expiryCheckpoint": {
+        "Version": 1,
+        "Source": {
+          "Tenant": "sdk415-65eced8a2c",
+          "Domain": "work",
+          "Aggregate": "work-sdk415-rescheduled-65eced8a2c"
+        },
+        "Checkpoint": 4,
+        "Status": 0,
+        "Attempts": 0,
+        "FailureSequence": null,
+        "ReasonCode": null,
+        "Owner": null,
+        "LeaseUntil": null,
+        "Fence": 6,
+        "ObservedCycle": 8,
+        "UpdatedAt": "2026-10-17T18:07:02.6476889+00:00",
+        "ObservedUnresolved": false,
+        "LastDispositionGeneration": 0,
+        "LastTransitionGeneration": 8,
+        "LastTransitionToken": "6fab913ad79548c2853b1a2fafa35b48"
+      },
+      "childExpired": 1
+    }
+  },
+  {
+    "phase": "canonical-related-child-creation-gap-timeout",
+    "state": null
+  }
+]

@@ -37,7 +37,7 @@ internal static class WorksRecoveryEventDecoder
             WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null,
             WorkItemProgressRejected fact => fact.Reason is not null,
             WorkItemReEstimateRejected fact => fact.Reason is not null,
-            WorkItemTransitionRejected fact => fact.AttemptedAct is not null,
+            WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus),
             _ => true,
         };
         return valid ? payload : throw new InvalidOperationException("Works source evidence has missing required members.");

@@ -1,0 +1,96 @@
+{
+  "scope": "Exact unchanged Works AppHost; startup inspection before test changes, not a full readiness proof",
+  "resources": [
+    {
+      "name": "dapr-placement-mtls",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "dapr-scheduler-mtls",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "dapr-sentry",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-app-api-token",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "eventstore-admin-dapr-cli",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "eventstore-admin",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "eventstore-app-api-token",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "eventstore-dapr-cli",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "eventstore",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "eventstore-operations-app-api-token",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "eventstore-operations-dapr-cli",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "eventstore-operations",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "security-eventstore-client-password",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "security-eventstore-client-username",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "security",
+      "state": "Starting",
+      "health": null
+    },
+    {
+      "name": "works-app-api-token",
+      "state": "Running",
+      "health": "Healthy"
+    },
+    {
+      "name": "works-dapr-cli",
+      "state": "Waiting",
+      "health": null
+    },
+    {
+      "name": "works",
+      "state": "Waiting",
+      "health": null
+    }
+  ],
+  "stopped": true
+}

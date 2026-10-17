@@ -1,0 +1,632 @@
+[
+  {
+    "gate": "debug-full-integration",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-result-xml",
+      "/tmp/story415-review-debug-tests.xml"
+    ],
+    "exit_code": 0,
+    "scope": "All non-live integration tests, before the live-only bounded-parent-read and application-port-isolation adjustments. Their executed methods remain unchanged.",
+    "log": "/tmp/story415-review-debug-tests.log",
+    "sha256": "af344d96fa22ab5e8110bf7ba08a77fff1eb50150a01199caa7a19cf33251e05",
+    "log_archive": {
+      "archive": "raw-evidence/selected/151b4c676eb1-story415-review-debug-tests.log.gz",
+      "compressed_sha256": "0b391ef88d0b8441aeffd9c9d20349b0e00d62691c1331dfd16d8561db9130b0",
+      "uncompressed_sha256": "af344d96fa22ab5e8110bf7ba08a77fff1eb50150a01199caa7a19cf33251e05",
+      "compressed_bytes": 4686,
+      "uncompressed_bytes": 38288,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "debug-final-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "scope": "Final source, including retained synthetic port isolation and the bounded failure diagnostic.",
+    "log": "/tmp/story415-review-diagnostic-debug-build.log",
+    "sha256": "3d7c0d3e01d802c3bec228a19260a951905697b914f77753a164c56087ceaf83",
+    "log_archive": {
+      "archive": "raw-evidence/selected/db17c03c341a-story415-review-diagnostic-debug-build.log.gz",
+      "compressed_sha256": "de988c9d06b3ff8dab7f8ea0a4728ff34a100939f70e5e6ad6f299f24cc0536e",
+      "uncompressed_sha256": "3d7c0d3e01d802c3bec228a19260a951905697b914f77753a164c56087ceaf83",
+      "compressed_bytes": 869,
+      "uncompressed_bytes": 7493,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "debug-final-affected-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkProtectedHttpTests",
+      "-class",
+      "*WorksAppHostSmokeHarnessTests",
+      "-class",
+      "*WorksAppHostTopologyTests",
+      "-result-xml",
+      "/tmp/story415-review-isolated-debug-focused.xml"
+    ],
+    "exit_code": 0,
+    "scope": "134 affected HTTP/topology/harness cases; subsequent changes only add a failure diagnostic to the separate live restart method.",
+    "log": "/tmp/story415-review-isolated-debug-focused.log",
+    "sha256": "f7fcf5385b444ebdecdded25d0794e09a1a6c6f2c5eaee67c564ba46e2661308",
+    "log_archive": {
+      "archive": "raw-evidence/selected/9fcb5cc2dafb-story415-review-isolated-debug-focused.log.gz",
+      "compressed_sha256": "1a1b74bbf53d9fd64e2611826906e0852ad7cbd2a9805b7012b5a08645a79de3",
+      "uncompressed_sha256": "f7fcf5385b444ebdecdded25d0794e09a1a6c6f2c5eaee67c564ba46e2661308",
+      "compressed_bytes": 798,
+      "uncompressed_bytes": 1577,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "debug-persisted-batch",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*RetryStorePreservesCoordinatedBatchCapability",
+      "-result-xml",
+      "/tmp/story415-review-final-debug-batch.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Persisted coordinated writes and exact batch replay, before application-port-isolation-only adjustment.",
+    "log": "/tmp/story415-review-final-debug-batch.log",
+    "sha256": "df08621232fc7dc7fa68f2f46fc178f7d046e4cbbadbf1bcc67176c4491b9319",
+    "log_archive": {
+      "archive": "raw-evidence/selected/aa3e48f29522-story415-review-final-debug-batch.log.gz",
+      "compressed_sha256": "94b593f7d04559a83baeaebbea56fca77d46abae942e3a5895b7410d0265ccfd",
+      "uncompressed_sha256": "df08621232fc7dc7fa68f2f46fc178f7d046e4cbbadbf1bcc67176c4491b9319",
+      "compressed_bytes": 289,
+      "uncompressed_bytes": 469,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "release-full-integration",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-result-xml",
+      "/tmp/story415-review-release-tests.xml"
+    ],
+    "exit_code": 0,
+    "scope": "All non-live integration tests, before the live-only bounded-parent-read and application-port-isolation adjustments. Their executed methods remain unchanged.",
+    "log": "/tmp/story415-review-release-tests.log",
+    "sha256": "e3924ad37743c5adb6b0b1a3f88fe20686a9ae2315c6ef3a52468c2338e147fb",
+    "log_archive": {
+      "archive": "raw-evidence/selected/69a8b8e18333-story415-review-release-tests.log.gz",
+      "compressed_sha256": "284e58a2300606b0c3906ac205449b62f845450e147743afd8b66cc60decef74",
+      "uncompressed_sha256": "e3924ad37743c5adb6b0b1a3f88fe20686a9ae2315c6ef3a52468c2338e147fb",
+      "compressed_bytes": 4679,
+      "uncompressed_bytes": 38300,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "release-final-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Release",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "scope": "Final source, including retained synthetic port isolation and the bounded failure diagnostic.",
+    "log": "/tmp/story415-review-diagnostic-release-build.log",
+    "sha256": "39483014be8786d41a3ef6c35e6208e1de62ab668d01a2d3fe9131bf152f75b2",
+    "log_archive": {
+      "archive": "raw-evidence/selected/4d4897bb47cd-story415-review-diagnostic-release-build.log.gz",
+      "compressed_sha256": "3aa491a9eadfff59c1c18f68df40841483ffe8a465ddc0f838cfc73350809185",
+      "uncompressed_sha256": "39483014be8786d41a3ef6c35e6208e1de62ab668d01a2d3fe9131bf152f75b2",
+      "compressed_bytes": 460,
+      "uncompressed_bytes": 2979,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "release-final-affected-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkProtectedHttpTests",
+      "-class",
+      "*WorksAppHostSmokeHarnessTests",
+      "-class",
+      "*WorksAppHostTopologyTests",
+      "-result-xml",
+      "/tmp/story415-review-isolated-release-focused.xml"
+    ],
+    "exit_code": 0,
+    "scope": "134 affected HTTP/topology/harness cases; subsequent changes only add a failure diagnostic to the separate live restart method.",
+    "log": "/tmp/story415-review-isolated-release-focused.log",
+    "sha256": "cb08e7b0f490f3bbd02a3c8ea5f8b613f51ffc7b5041c6cdd9816905c5cdecc7",
+    "log_archive": {
+      "archive": "raw-evidence/selected/92561d92aef5-story415-review-isolated-release-focused.log.gz",
+      "compressed_sha256": "7a408beba8f66e8800bf91b4f3bd5ede1b1323f329ae456dd1d25c7adf5e2eca",
+      "uncompressed_sha256": "cb08e7b0f490f3bbd02a3c8ea5f8b613f51ffc7b5041c6cdd9816905c5cdecc7",
+      "compressed_bytes": 796,
+      "uncompressed_bytes": 1577,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "release-persisted-batch",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*RetryStorePreservesCoordinatedBatchCapability",
+      "-result-xml",
+      "/tmp/story415-review-final-release-batch.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Persisted coordinated writes and exact batch replay, before application-port-isolation-only adjustment.",
+    "log": "/tmp/story415-review-final-release-batch.log",
+    "sha256": "9f96f4b087c4246062bedd1da853682a429f8afc7f5022e9557c26e849fadd11",
+    "log_archive": {
+      "archive": "raw-evidence/selected/d4edcb38630a-story415-review-final-release-batch.log.gz",
+      "compressed_sha256": "72cbad3a85f1c5a1bfa6740477d9785685d06ffdf7a44c120265331e7841515e",
+      "uncompressed_sha256": "9f96f4b087c4246062bedd1da853682a429f8afc7f5022e9557c26e849fadd11",
+      "compressed_bytes": 289,
+      "uncompressed_bytes": 469,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "guarded-dapr-copies",
+    "command": [
+      "env",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-review-20261017/dapr-configs",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkDaprConfigCopyTests",
+      "-result-xml",
+      "/tmp/story415-review-debug-config-copy.xml"
+    ],
+    "exit_code": 0,
+    "scope": "All four exact protected copies and their ACL indentation negatives.",
+    "log": "/tmp/story415-review-debug-config-copy.log",
+    "sha256": "58f79542bb0078979370e01fc61281552ec8786d9c66031ed8e8bd6c682efb56",
+    "log_archive": {
+      "archive": "raw-evidence/selected/b4abcbcfbf55-story415-review-debug-config-copy.log.gz",
+      "compressed_sha256": "d581bbeafe514cfd8130408eee1d1883ca22e74c69e0c6add54101f71af67ded",
+      "uncompressed_sha256": "58f79542bb0078979370e01fc61281552ec8786d9c66031ed8e8bd6c682efb56",
+      "compressed_bytes": 289,
+      "uncompressed_bytes": 469,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "initial-fixture",
+    "scope": "Preliminary evidence; never a final passing gate.",
+    "log": "/tmp/story415-review-debug-focused.log",
+    "sha256": "b8cd7e31cf18749e55461dae64519f49a8f984d053afd78a9915088e20dca860",
+    "xml": "/tmp/story415-review-debug-focused.xml",
+    "xml_sha256": "098b41922bae1379976a59e0bf6767597bd80423f643127ea3ef7b56c63c054f",
+    "total": 151,
+    "failed": 9,
+    "skipped": 0,
+    "log_archive": {
+      "archive": "raw-evidence/preliminary/5d7bc15d69eb-story415-review-debug-focused.log.gz",
+      "compressed_sha256": "f11b19c96c3bbcda0485632beafd69d276c42077b7de996498d86c451bd0e6c2",
+      "uncompressed_sha256": "b8cd7e31cf18749e55461dae64519f49a8f984d053afd78a9915088e20dca860",
+      "compressed_bytes": 4202,
+      "uncompressed_bytes": 66722,
+      "role": "preliminary"
+    },
+    "xml_archive": {
+      "archive": "raw-evidence/preliminary/698f02fe306a-story415-review-debug-focused.xml.gz",
+      "compressed_sha256": "2a583f15c15a3b20a34e56830f3bfdfe6215b4fd53411b846ed427facf3b1c3a",
+      "uncompressed_sha256": "098b41922bae1379976a59e0bf6767597bd80423f643127ea3ef7b56c63c054f",
+      "compressed_bytes": 14264,
+      "uncompressed_bytes": 139766,
+      "role": "preliminary"
+    }
+  },
+  {
+    "gate": "readonly-await-fixture",
+    "scope": "Preliminary evidence; never a final passing gate.",
+    "log": "/tmp/story415-review-debug-focused-3.log",
+    "sha256": "a2ee7f28901e9c21d40fe42f319f0fb0f458df5f4d47b30c937319aaf61d4f92",
+    "xml": "/tmp/story415-review-debug-focused-3.xml",
+    "xml_sha256": "67797b1cc05f2bb1853479a5f3339abd4bd3fc07b179f87569dd329f8993449c",
+    "total": 198,
+    "failed": 2,
+    "skipped": 0,
+    "log_archive": {
+      "archive": "raw-evidence/preliminary/b65cb6ce3310-story415-review-debug-focused-3.log.gz",
+      "compressed_sha256": "37bd4845051703722543530a9315b6efe902f556a896e29f387fe389ca0d75f4",
+      "uncompressed_sha256": "a2ee7f28901e9c21d40fe42f319f0fb0f458df5f4d47b30c937319aaf61d4f92",
+      "compressed_bytes": 2265,
+      "uncompressed_bytes": 15900,
+      "role": "preliminary"
+    },
+    "xml_archive": {
+      "archive": "raw-evidence/preliminary/045dae1b2de3-story415-review-debug-focused-3.xml.gz",
+      "compressed_sha256": "a909f29b1221ca013e0c77aff98cc78c538cb77b507e616fede5a1935b5a0ea9",
+      "uncompressed_sha256": "67797b1cc05f2bb1853479a5f3339abd4bd3fc07b179f87569dd329f8993449c",
+      "compressed_bytes": 15897,
+      "uncompressed_bytes": 132471,
+      "role": "preliminary"
+    }
+  },
+  {
+    "gate": "zero-test-filter",
+    "scope": "Preliminary evidence; never a final passing gate.",
+    "log": "/tmp/story415-review-debug-focused-2.log",
+    "sha256": "2697397807793f4c2fe36bd44865fdeb98a39e451610ffdcd8892ae1b08ed11f",
+    "xml": "/tmp/story415-review-debug-focused-2.xml",
+    "xml_sha256": "5f2bd335415cc9f02f528aaaf0b10b08366d8d8236f00ccf192720fe57abc002",
+    "total": 0,
+    "failed": 0,
+    "skipped": 0,
+    "log_archive": {
+      "archive": "raw-evidence/preliminary/77d81a21d6af-story415-review-debug-focused-2.log.gz",
+      "compressed_sha256": "9de0cbb27a0ffd9a6235eae7dabe2a0474788702b37b70c19df3cbe2012ca525",
+      "uncompressed_sha256": "2697397807793f4c2fe36bd44865fdeb98a39e451610ffdcd8892ae1b08ed11f",
+      "compressed_bytes": 321,
+      "uncompressed_bytes": 520,
+      "role": "preliminary"
+    },
+    "xml_archive": {
+      "archive": "raw-evidence/preliminary/63863b064761-story415-review-debug-focused-2.xml.gz",
+      "compressed_sha256": "106d7af7384441037154d84dee75735532808ef3343439c563f2eb43cfb4103f",
+      "uncompressed_sha256": "5f2bd335415cc9f02f528aaaf0b10b08366d8d8236f00ccf192720fe57abc002",
+      "compressed_bytes": 509,
+      "uncompressed_bytes": 890,
+      "role": "preliminary"
+    }
+  },
+  {
+    "gate": "fixed-port-startup",
+    "scope": "Preliminary evidence; never a final passing gate.",
+    "log": "/tmp/story415-review-20261017/live-sdk-runtime.log",
+    "sha256": "866c2cd22c1d8bf52ad964c145d79130a923b4f00d2cd5d5d70dfd54f38670fe",
+    "xml": "/tmp/story415-review-20261017/live-sdk-runtime.xml",
+    "xml_sha256": "a54f77cc643c734f78d99c79db5eb937b33b1ebb4ee208fd78d58b15ab6ac974",
+    "total": 3,
+    "failed": 2,
+    "skipped": 0,
+    "log_archive": {
+      "archive": "raw-evidence/preliminary/9ae73b9936cc-live-sdk-runtime.log.gz",
+      "compressed_sha256": "e58d1eb07d74cdf540467b3657028b3a0e13489a6f709ad4765ccc5323ba528d",
+      "uncompressed_sha256": "866c2cd22c1d8bf52ad964c145d79130a923b4f00d2cd5d5d70dfd54f38670fe",
+      "compressed_bytes": 14073,
+      "uncompressed_bytes": 107401,
+      "role": "preliminary"
+    },
+    "xml_archive": {
+      "archive": "raw-evidence/preliminary/2c79cab87a77-live-sdk-runtime.xml.gz",
+      "compressed_sha256": "44bab0e883718e41bfd8bf38368a277ed7d5a05d13d062eff045ce105bcc12b8",
+      "uncompressed_sha256": "a54f77cc643c734f78d99c79db5eb937b33b1ebb4ee208fd78d58b15ab6ac974",
+      "compressed_bytes": 14833,
+      "uncompressed_bytes": 111344,
+      "role": "preliminary"
+    }
+  },
+  {
+    "gate": "isolated-protected-live-sdk",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-review-20261017/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-review-20261017/live-isolated-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkRecoveryPipelineSmokeTests",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-review-20261017/live-sdk-isolated.xml"
+    ],
+    "exit_code": 1,
+    "scope": "Protected callback and batch passed; restart attempt must be read with its XML and exact partial persisted phases.",
+    "log": "/tmp/story415-review-20261017/live-sdk-isolated.log",
+    "sha256": "88a5d917171082f21ce22ebff8b3fbe763801560611b2a58161fb88468a27eea",
+    "log_archive": {
+      "archive": "raw-evidence/preliminary/07b326121ca1-live-sdk-isolated.log.gz",
+      "compressed_sha256": "7e8715ad3a33933898909219d16902079ee3ebd1e61847952776de844650dce7",
+      "uncompressed_sha256": "88a5d917171082f21ce22ebff8b3fbe763801560611b2a58161fb88468a27eea",
+      "compressed_bytes": 8590,
+      "uncompressed_bytes": 102637,
+      "role": "preliminary"
+    }
+  },
+  {
+    "gate": "final-restart",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-review-20261017/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-review-20261017/live-diagnostic-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Exact final Debug assembly; selected attempts remain separate.",
+    "log": "/tmp/story415-review-20261017/live-sdk-diagnostic.log",
+    "sha256": "89c3ee9411e4d67d95c882e395a9551c944ec90860ae9815bfed33e91bfd7e84",
+    "log_archive": {
+      "archive": "raw-evidence/selected/ebb1f578c3cd-live-sdk-diagnostic.log.gz",
+      "compressed_sha256": "aafbd0d0b1d494861d2a0fa24c836f07677f58955ccc709eb3a2aad2f104cb85",
+      "uncompressed_sha256": "89c3ee9411e4d67d95c882e395a9551c944ec90860ae9815bfed33e91bfd7e84",
+      "compressed_bytes": 536,
+      "uncompressed_bytes": 1960,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "final-callback-batch",
+    "command": [
+      "env",
+      "DOTNET_USE_POLLING_FILE_WATCHER=1",
+      "WORKS_APPHOST_TEST_STARTUP_TIMEOUT_SECONDS=180",
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY=/tmp/story415-review-20261017/dapr-configs",
+      "WORKS_SDK_PROOF_EVIDENCE_PATH=/tmp/story415-review-20261017/live-final-callback-state.jsonl",
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "-method",
+      "*RetryStorePreservesCoordinatedBatchCapability",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Exact final Debug assembly; selected attempts remain separate.",
+    "log": "/tmp/story415-review-20261017/live-final-callback-batch.log",
+    "sha256": "a2e538b77161821925fc42a16a5efa2e1446775418c88723ae6b8d5bf3d6c8ef",
+    "log_archive": {
+      "archive": "raw-evidence/selected/e3e6b395b86e-live-final-callback-batch.log.gz",
+      "compressed_sha256": "a7b8ccde52adddcf1b5634ab85114c48f308d82de3b9359af53ab6c12fdabd45",
+      "uncompressed_sha256": "a2e538b77161821925fc42a16a5efa2e1446775418c88723ae6b8d5bf3d6c8ef",
+      "compressed_bytes": 405,
+      "uncompressed_bytes": 658,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "unit-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 2.386,
+    "log": "/tmp/story415-review-20261017/unit-build.log",
+    "sha256": "4b0abf18ce25ba4c18fa0a7804869fc8b9198cb53b06681f446afa9dda7c7e04",
+    "log_archive": {
+      "archive": "raw-evidence/selected/be4c0c5f3ba5-unit-build.log.gz",
+      "compressed_sha256": "b93c9fbf01153dfe41d6c62ae611c97645368511f3e96fef95a73be86f0873bd",
+      "uncompressed_sha256": "4b0abf18ce25ba4c18fa0a7804869fc8b9198cb53b06681f446afa9dda7c7e04",
+      "compressed_bytes": 477,
+      "uncompressed_bytes": 3100,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "unit-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+      "-result-xml",
+      "/tmp/story415-review-20261017/unit-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 0.488,
+    "log": "/tmp/story415-review-20261017/unit-tests.log",
+    "sha256": "d4587af910b112a375f3fa718c47dd413c084e8846e0feb6698a0861d635711d",
+    "log_archive": {
+      "archive": "raw-evidence/selected/c792a3038a9a-unit-tests.log.gz",
+      "compressed_sha256": "5976b4af4f5f15f39ae859e616c2f7eaa04efbf586c8f234fe37dd34b2ed8f60",
+      "uncompressed_sha256": "d4587af910b112a375f3fa718c47dd413c084e8846e0feb6698a0861d635711d",
+      "compressed_bytes": 286,
+      "uncompressed_bytes": 436,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "architecture-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 2.278,
+    "log": "/tmp/story415-review-20261017/architecture-build.log",
+    "sha256": "51e8bccb7032e8e5e2633d8423194f281eb535e2eb8f6a38dec7b9b467b76dbb",
+    "log_archive": {
+      "archive": "raw-evidence/selected/8678e0bcf453-architecture-build.log.gz",
+      "compressed_sha256": "1d73c57a43ae2ddfec58b2e3eb16946000b0dc4e88db1ae85ce133059998dd46",
+      "uncompressed_sha256": "51e8bccb7032e8e5e2633d8423194f281eb535e2eb8f6a38dec7b9b467b76dbb",
+      "compressed_bytes": 474,
+      "uncompressed_bytes": 2743,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "architecture-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-result-xml",
+      "/tmp/story415-review-20261017/architecture-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 8.041,
+    "log": "/tmp/story415-review-20261017/architecture-tests.log",
+    "sha256": "71f6782b06b91c6be0f6b434b7d706930fab40645a2accc0cde7110dd72a4324",
+    "log_archive": {
+      "archive": "raw-evidence/selected/5e3f8d8383ea-architecture-tests.log.gz",
+      "compressed_sha256": "89a05121a38956eeb5e4ac2273df8aebb8af38ad9f076c17ae54989895a0b518",
+      "uncompressed_sha256": "71f6782b06b91c6be0f6b434b7d706930fab40645a2accc0cde7110dd72a4324",
+      "compressed_bytes": 292,
+      "uncompressed_bytes": 476,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "property-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "seconds": 2.09,
+    "log": "/tmp/story415-review-20261017/property-build.log",
+    "sha256": "369f57bf7b37545821f9b8397e504a4774876f6d161f2634020ac5d952a5226e",
+    "log_archive": {
+      "archive": "raw-evidence/selected/036b3165f909-property-build.log.gz",
+      "compressed_sha256": "a5c19d5795a4140a2bcf681a539594c41e80287bd91cc714e965f3ab13d094e0",
+      "uncompressed_sha256": "369f57bf7b37545821f9b8397e504a4774876f6d161f2634020ac5d952a5226e",
+      "compressed_bytes": 474,
+      "uncompressed_bytes": 2727,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "property-tests",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+      "-result-xml",
+      "/tmp/story415-review-20261017/property-tests.xml"
+    ],
+    "exit_code": 0,
+    "seconds": 0.431,
+    "log": "/tmp/story415-review-20261017/property-tests.log",
+    "sha256": "a923769c5430cd0ef5d3f5f50a7af228802c23fd5a39b663ece2a154bf41997b",
+    "log_archive": {
+      "archive": "raw-evidence/selected/4b574d585281-property-tests.log.gz",
+      "compressed_sha256": "cb9dd912b6185577a2bfc9b024992138075c9d714f87c50c6ec112c87f0a6d6c",
+      "uncompressed_sha256": "a923769c5430cd0ef5d3f5f50a7af228802c23fd5a39b663ece2a154bf41997b",
+      "compressed_bytes": 306,
+      "uncompressed_bytes": 520,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "review-corrections-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1",
+      "-p:NuGetAudit=false",
+      "-p:MinVerVersionOverride=1.0.0"
+    ],
+    "exit_code": 0,
+    "scope": "Focused review follow-up only; broad verification remains with root.",
+    "log": "/tmp/story415-review-20261017/review-corrections-build.log",
+    "sha256": "8383d385bc014b104e39689cb08fa40bbc13545476cf907f4ee74e0b59cc6c0c",
+    "log_archive": {
+      "archive": "raw-evidence/selected/5febe0cbc700-review-corrections-build.log.gz",
+      "compressed_sha256": "9143ae5048bd0da16417c3ef92916f91ae38682a391a4e53d1015c1b6c932cca",
+      "uncompressed_sha256": "8383d385bc014b104e39689cb08fa40bbc13545476cf907f4ee74e0b59cc6c0c",
+      "compressed_bytes": 865,
+      "uncompressed_bytes": 7325,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "review-corrections-decoder",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkIteration4Tests",
+      "-result-xml",
+      "/tmp/story415-review-20261017/review-corrections-decoder.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Focused review follow-up only; broad verification remains with root.",
+    "log": "/tmp/story415-review-20261017/review-corrections-decoder.log",
+    "sha256": "a12638727031e634efcaee79f6d37cee1066f73e5cfb572de71c5e771a2be066",
+    "log_archive": {
+      "archive": "raw-evidence/selected/acb5c42f0c15-review-corrections-decoder.log.gz",
+      "compressed_sha256": "bdf51c5e556e17942152ef8e056dc0f8aec0a906bdc3595f352939a7bcdb7c14",
+      "uncompressed_sha256": "a12638727031e634efcaee79f6d37cee1066f73e5cfb572de71c5e771a2be066",
+      "compressed_bytes": 290,
+      "uncompressed_bytes": 470,
+      "role": "selected"
+    }
+  },
+  {
+    "gate": "review-corrections-retained-plan",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*RetainedPlanWaitBoundsNonCooperativeStoreAcquisition",
+      "-result-xml",
+      "/tmp/story415-review-20261017/review-corrections-retained-plan.xml"
+    ],
+    "exit_code": 0,
+    "scope": "Focused review follow-up only; broad verification remains with root.",
+    "log": "/tmp/story415-review-20261017/review-corrections-retained-plan.log",
+    "sha256": "0b7eefe8d44606adc38f7ff165d0a5f0458c8f279afcf28faaea6f6c773510e9",
+    "log_archive": {
+      "archive": "raw-evidence/selected/229f5c3457fd-review-corrections-retained-plan.log.gz",
+      "compressed_sha256": "9ec65225043bfc39175b7c4f0c06184c3a0466345bbef77bd99ac9d19ddf128a",
+      "uncompressed_sha256": "0b7eefe8d44606adc38f7ff165d0a5f0458c8f279afcf28faaea6f6c773510e9",
+      "compressed_bytes": 289,
+      "uncompressed_bytes": 469,
+      "role": "selected"
+    }
+  }
+]

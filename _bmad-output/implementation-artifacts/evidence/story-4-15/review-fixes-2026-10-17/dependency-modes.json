@@ -1,0 +1,24 @@
+{
+  "Debug": {
+    "Hexalith.EventStore.Admin.Abstractions/3.124.0": "project",
+    "Hexalith.EventStore.Aspire/3.124.0": "project",
+    "Hexalith.EventStore.Client/3.124.0": "project",
+    "Hexalith.EventStore.Contracts/3.124.0": "project",
+    "Hexalith.EventStore.DomainService/3.124.0": "project",
+    "Hexalith.EventStore.Gateway/3.124.0": "project",
+    "Hexalith.EventStore.Server/3.124.0": "project",
+    "Hexalith.EventStore.ServiceDefaults/3.124.0": "project",
+    "Hexalith.EventStore.Testing/3.124.0": "project"
+  },
+  "Release": {
+    "Hexalith.EventStore.Admin.Abstractions/3.124.0": "package",
+    "Hexalith.EventStore.Aspire/3.124.0": "package",
+    "Hexalith.EventStore.Client/3.124.0": "package",
+    "Hexalith.EventStore.Contracts/3.124.0": "package",
+    "Hexalith.EventStore.DomainService/3.124.0": "package",
+    "Hexalith.EventStore.Gateway/3.124.0": "package",
+    "Hexalith.EventStore.Server/3.124.0": "package",
+    "Hexalith.EventStore.ServiceDefaults/3.124.0": "package",
+    "Hexalith.EventStore.Testing/3.124.0": "package"
+  }
+}

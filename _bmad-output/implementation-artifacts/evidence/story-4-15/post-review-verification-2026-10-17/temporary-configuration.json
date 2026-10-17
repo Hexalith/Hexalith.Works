@@ -1,0 +1,25 @@
+{
+  "scope": "Guarded byte-equivalent copies of committed sidecar configuration, apart from the three approved HotReload opt-out lines; no authentication or ownership bypass.",
+  "files": [
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.eventstore-admin.yaml",
+      "retained_file": "configuration/accesscontrol.eventstore-admin.yaml",
+      "sha256": "d7976ae3c3f75decb9aa0fb762d1e3f697011aa1ec038d077bddd6796bc3e548"
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.eventstore-operations.yaml",
+      "retained_file": "configuration/accesscontrol.eventstore-operations.yaml",
+      "sha256": "72e8f9499609051651eb2ad9f59987e3c19a6fd6070bcacd3a8b5a520dc1a6bd"
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.works.yaml",
+      "retained_file": "configuration/accesscontrol.works.yaml",
+      "sha256": "731a888523e2cb8c43b54b27cb62fce65d8e49e52362a5134c855abaa62cfaff"
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.yaml",
+      "retained_file": "configuration/accesscontrol.yaml",
+      "sha256": "4400afd3a470c9f7c0e318706913ccd97120055b9d2410a19ff2a58f4b6e323e"
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+[
+  {
+    "scenario": "Duplicate/lost firing, restart, same-date re-suspension",
+    "executed": {
+      "debug": {
+        "xml": "/tmp/story415-review-debug-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart(parking: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart(parking: True)"
+        ]
+      },
+      "release": {
+        "xml": "/tmp/story415-review-release-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart(parking: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart(parking: True)"
+        ]
+      }
+    },
+    "required_live_phases": [
+      "successful-callback-no-periodic-recovery"
+    ],
+    "selected_live_xml": [
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "observed_live_phases": [
+      "successful-callback-no-periodic-recovery"
+    ],
+    "live_phases_not_observed": []
+  },
+  {
+    "scenario": "Reschedule/stale expiry",
+    "executed": {
+      "debug": {
+        "xml": "/tmp/story415-review-debug-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"equal\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"decreasing\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"drop\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"stale-expired\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"replacement\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"scheduled-expired\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"cascade-expired\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"historical\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"scheduled\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"cascade\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"stale\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"missing-origin\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"audit-outage\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"purpose\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"workload\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"kind\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"digest\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"target\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"caller\\\")"
+        ]
+      },
+      "release": {
+        "xml": "/tmp/story415-review-release-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"equal\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"decreasing\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"drop\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"stale-expired\\\", valid: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"replacement\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"scheduled-expired\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"cascade-expired\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.PersistedExpiryTransitionsUseThePureDomainRules(transition: \\\"historical\\\", valid: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"scheduled\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"cascade\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"stale\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"missing-origin\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"audit-outage\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"purpose\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"workload\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"kind\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"digest\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"target\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(scenario: \\\"caller\\\")"
+        ]
+      }
+    },
+    "required_live_phases": [
+      "rescheduled-expiry-committed-current-witness"
+    ],
+    "selected_live_xml": [
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "observed_live_phases": [
+      "rescheduled-expiry-committed-current-witness"
+    ],
+    "live_phases_not_observed": []
+  },
+  {
+    "scenario": "Cascade/child-resume target commit before checkpoint",
+    "executed": {
+      "debug": {
+        "xml": "/tmp/story415-review-debug-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay"
+        ]
+      },
+      "release": {
+        "xml": "/tmp/story415-review-release-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+          "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay"
+        ]
+      }
+    },
+    "required_live_phases": [
+      "cascade-expiry-target-commit-before-checkpoint",
+      "cascade-expiry-restart-receipt-and-checkpoint",
+      "cascade-target-commit-before-checkpoint",
+      "five-child-persisted-target-receipts",
+      "cascade-restart-receipt-and-checkpoint",
+      "child-resume-noop-receipt-before-checkpoint",
+      "complete-supported-process-coverage",
+      "child-resume-noop-restart-receipt-and-checkpoint"
+    ],
+    "selected_live_xml": [
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "observed_live_phases": [
+      "cascade-expiry-target-commit-before-checkpoint",
+      "cascade-expiry-restart-receipt-and-checkpoint",
+      "cascade-target-commit-before-checkpoint",
+      "five-child-persisted-target-receipts",
+      "cascade-restart-receipt-and-checkpoint",
+      "child-resume-noop-receipt-before-checkpoint",
+      "complete-supported-process-coverage",
+      "child-resume-noop-restart-receipt-and-checkpoint"
+    ],
+    "live_phases_not_observed": []
+  },
+  {
+    "scenario": "Page boundary/corrupt or foreign evidence",
+    "executed": {
+      "debug": {
+        "xml": "/tmp/story415-review-debug-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.EnvelopePositionsAndMessageIdsSurvivePageBoundaries",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"foreign-page\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"foreign-payload\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"gap\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"count\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"format\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"unknown\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"malformed\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"missing-head\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"outage\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"budget\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"slow\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"corruption\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"foreign\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.InconsistentRelatedStreamsRetainQuarantine(missingReciprocalSpawn: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.InconsistentRelatedStreamsRetainQuarantine(missingReciprocalSpawn: True)"
+        ]
+      },
+      "release": {
+        "xml": "/tmp/story415-review-release-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.EnvelopePositionsAndMessageIdsSurvivePageBoundaries",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"foreign-page\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"foreign-payload\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"gap\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"count\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"format\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"unknown\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"malformed\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.InvalidEvidenceFailsClosed(failure: \\\"missing-head\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"outage\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"budget\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"slow\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"corruption\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.UnresolvedEvidenceSurvivesReconstructionAndUsesTheSameValidator(failure: \\\"foreign\\\")",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.InconsistentRelatedStreamsRetainQuarantine(missingReciprocalSpawn: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests.InconsistentRelatedStreamsRetainQuarantine(missingReciprocalSpawn: True)"
+        ]
+      }
+    },
+    "required_live_phases": [],
+    "selected_live_xml": [
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "observed_live_phases": [],
+    "live_phases_not_observed": []
+  },
+  {
+    "scenario": "Related-read outage/denied submission",
+    "executed": {
+      "debug": {
+        "xml": "/tmp/story415-review-debug-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.CanonicalMissingRelatedChildRetriesThenConvergesAfterCreation",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.DependencyOutageUsesRetryableContract(gatewayFailure: False)",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.DependencyOutageUsesRetryableContract(gatewayFailure: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProcessDispositionIngressRequiresProtectedTransportAndCurrentAuthority",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation(retainOwner: False, expected: NoContent)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation(retainOwner: True, expected: Accepted)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"null-source\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"blank-reason\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"long-reason\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"invalid-source\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"audit-unavailable\\\", expected: ServiceUnavailable)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"CancelWorkItem\\\", kind: \\\"works.cascade-cancel.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"CancelWorkItem\\\", kind: \\\"works.date-resume.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.date-resume.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.child-completion-resume.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.expiry.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.cascade-cancel.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ExpireWorkItem\\\", kind: \\\"works.cascade-expire.v1\\\", withWitness: True, expectedStatus: OK, expectedRejection: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ExpireWorkItem\\\", kind: \\\"works.expiry.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)"
+        ]
+      },
+      "release": {
+        "xml": "/tmp/story415-review-release-tests.xml",
+        "passing_test_cases": [
+          "Hexalith.Works.IntegrationTests.WorksSdkIteration4Tests.CanonicalMissingRelatedChildRetriesThenConvergesAfterCreation",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.DependencyOutageUsesRetryableContract(gatewayFailure: False)",
+          "Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests.DependencyOutageUsesRetryableContract(gatewayFailure: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.ProcessDispositionIngressRequiresProtectedTransportAndCurrentAuthority",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation(retainOwner: False, expected: NoContent)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation(retainOwner: True, expected: Accepted)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"null-source\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"blank-reason\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"long-reason\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"invalid-source\\\", expected: BadRequest)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.InvalidOrUnauditableProcessDispositionPreservesDurableState(scenario: \\\"audit-unavailable\\\", expected: ServiceUnavailable)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"CancelWorkItem\\\", kind: \\\"works.cascade-cancel.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"CancelWorkItem\\\", kind: \\\"works.date-resume.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.date-resume.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.child-completion-resume.v1\\\", withWitness: False, expectedStatus: OK, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.expiry.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ResumeWorkItem\\\", kind: \\\"works.cascade-cancel.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ExpireWorkItem\\\", kind: \\\"works.cascade-expire.v1\\\", withWitness: True, expectedStatus: OK, expectedRejection: True)",
+          "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests.DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(commandType: \\\"ExpireWorkItem\\\", kind: \\\"works.expiry.v1\\\", withWitness: False, expectedStatus: Forbidden, expectedRejection: False)"
+        ]
+      }
+    },
+    "required_live_phases": [],
+    "selected_live_xml": [
+      "/tmp/story415-review-20261017/live-sdk-diagnostic.xml",
+      "/tmp/story415-review-20261017/live-final-callback-batch.xml"
+    ],
+    "observed_live_phases": [],
+    "live_phases_not_observed": []
+  }
+]

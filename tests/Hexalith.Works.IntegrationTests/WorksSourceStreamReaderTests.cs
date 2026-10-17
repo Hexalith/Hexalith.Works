@@ -37,6 +37,7 @@ public sealed class WorksSourceStreamReaderTests
                 StreamReadPage page = from == 0
                     ? Story48Streams.Page(Tenant, Item, created, rejection)
                     : Story48Streams.PageAt(Tenant, Item, 3, false, suspended);
+                if (from > 0) page = page with { Events = [page.Events[0] with { MessageId = "committed-second-page-suspension" }] };
                 return Task.FromResult(page with
                 {
                     Metadata = page.Metadata with { LatestSequence = 3, IsTruncated = from == 0 },
@@ -49,7 +50,8 @@ public sealed class WorksSourceStreamReaderTests
         events.Count.ShouldBe(3);
         events[^1].Envelope.SequenceNumber.ShouldBe(3);
         ((WorkItemSuspended)events[^1].Payload).Sequence.ShouldBe(2);
-        events[^1].Envelope.MessageId.ShouldBe("message-work-415-0");
+        events[0].Envelope.MessageId.ShouldBe("message-work-415-0");
+        events[^1].Envelope.MessageId.ShouldBe("committed-second-page-suspension");
         await gateway.Received(1).ReadWorkloadStreamAsync(
             Arg.Is<StreamReadRequest>(request => request.FromSequence == 2), Arg.Any<CancellationToken>());
     }

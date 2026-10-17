@@ -1,0 +1,13 @@
+{
+  "setting": "fs.inotify.max_user_watches",
+  "original": 1048576,
+  "temporary": 2097152,
+  "persistent_configuration_changed": false,
+  "existing_applications_stopped": false,
+  "set_exit_code": 0,
+  "set_output": "fs.inotify.max_user_watches = 2097152\n",
+  "observed_before_restore": 2097152,
+  "restore_exit_code": 0,
+  "restore_output": "fs.inotify.max_user_watches = 1048576\n",
+  "final": 1048576
+}

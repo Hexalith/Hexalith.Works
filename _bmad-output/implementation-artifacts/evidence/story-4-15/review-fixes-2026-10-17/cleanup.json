@@ -1,0 +1,10 @@
+{
+  "worksAppHostRunning": false,
+  "currentRunFixtureContainersRemaining": false,
+  "preexistingContainerLeftUntouched": [
+    "works-sdk415-062aa65e15854ba98e6ba3a6c9df8a9d 2026-10-16 21:05:26 +0200 CEST"
+  ],
+  "observerStopped": true,
+  "apphostsRawSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "containersRawSha256": "4e3f28d172947e5560b59a6e0cc06c38ff03e47539501e42fcd8e8b41090b5ae"
+}

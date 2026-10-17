@@ -94,6 +94,45 @@ public sealed class WorksSdkIteration4Tests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
+    /// <summary>Recovery quarantines undefined rejection states while defined Unknown and historical readers keep their meanings.</summary>
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(999, false)]
+    [InlineData((int)WorkItemStatus.Unknown, true)]
+    [InlineData((int)WorkItemStatus.Created, true)]
+    [InlineData((int)WorkItemStatus.Expired, true)]
+    public async Task TransitionRejectionRequiresDefinedStatusOnlyInRecovery(int status, bool valid)
+    {
+        var payload = new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(
+            s_tenant, s_item, (WorkItemStatus)status, "proof");
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
+        WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload)
+            .ShouldBeOfType<Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected>()
+            .FromStatus.ShouldBe((WorkItemStatus)status);
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        if (valid) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        else await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        var source = new ProcessSource(Tenant, "work", "item");
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(valid ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
+        var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(valid ? 1 : 0);
+        if (!valid)
+        {
+            retained.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+            retained.FailureSequence.ShouldBe(1);
+            retained.ReasonCode.ShouldBe("invalid-evidence");
+        }
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
     /// <summary>Only actual short/full Works names are accepted; a foreign name cannot turn a fact into a checkpointed no-op.</summary>
     [Theory]
     [InlineData("short", true)]

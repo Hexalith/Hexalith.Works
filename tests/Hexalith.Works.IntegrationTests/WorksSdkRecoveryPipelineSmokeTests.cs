@@ -23,6 +23,8 @@ using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
 
+using NSubstitute;
+
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -31,6 +33,46 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksSdkRecoveryPipelineSmokeTests
 {
+    /// <summary>A store that ignores cancellation cannot hold the retained-plan helper after its linked deadline is cancelled.</summary>
+    [Fact]
+    public async Task RetainedPlanWaitBoundsNonCooperativeStoreAcquisition()
+    {
+        var pending = new TaskCompletionSource<ReadModelEntry<ProcessSourceState>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var store = Substitute.For<IReadModelStore>();
+        CancellationToken acquisitionToken = default;
+        store.GetAsync<ProcessSourceState>("statestore", Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            acquisitionToken = call.Arg<CancellationToken>();
+            entered.SetResult();
+            return pending.Task;
+        });
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        Task waiting = WaitForRetainedPlanAsync(store, new ProcessSource("tenant-415", "work", "retained-plan"), 1, cancellation.Token);
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken).ConfigureAwait(true);
+        acquisitionToken.ShouldNotBe(cancellation.Token);
+        cancellation.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => waiting.WaitAsync(TimeSpan.FromSeconds(5))).ConfigureAwait(true);
+        acquisitionToken.IsCancellationRequested.ShouldBeTrue();
+        pending.Task.IsCompleted.ShouldBeFalse();
+    }
+
+    /// <summary>The recovery retry wrapper preserves coordinated projection writes and idempotent batch replay.</summary>
+    [Fact]
+    public async Task RetryStorePreservesCoordinatedBatchCapability()
+    {
+        var persisted = new Hexalith.EventStore.Testing.Fakes.InMemoryReadModelStore();
+        IReadModelStore store = new OpenCircuitRetryStore(persisted);
+        var batch = new ReadModelBatch(new ReadModelBatchScope("statestore", "tenant-415", "work", "batch-item", "proof", "batch-415"),
+            [ReadModelBatchOperation.Write("detail", new Dictionary<string, string> { ["value"] = "committed" }, ReadModelBatchConcurrency.CreateOnly),
+             ReadModelBatchOperation.Write("index", new Dictionary<string, string> { ["item"] = "batch-item" }, ReadModelBatchConcurrency.CreateOnly)]);
+        IReadModelBatchStore batches = store.ShouldBeAssignableTo<IReadModelBatchStore>();
+        (await batches.ExecuteAsync(batch, TestContext.Current.CancellationToken).ConfigureAwait(true)).Status.ShouldBe(ReadModelBatchStatus.Completed);
+        (await batches.ExecuteAsync(batch, TestContext.Current.CancellationToken).ConfigureAwait(true)).Status.ShouldBe(ReadModelBatchStatus.AlreadyCompleted);
+        persisted.Snapshot<Dictionary<string, string>>("statestore", "detail").ShouldNotBeNull()["value"].ShouldBe("committed");
+        persisted.Snapshot<Dictionary<string, string>>("statestore", "index").ShouldNotBeNull()["item"].ShouldBe("batch-item");
+    }
+
     /// <summary>Real protected event callbacks persist reminder witnesses and process membership with both periodic writers disabled.</summary>
     [Fact]
     public async Task SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery()
@@ -211,6 +253,22 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 expired.ExpiryWitness.ShouldBeNull();
                 return true;
             }, token).ConfigureAwait(false);
+            await WaitAsync(async () =>
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/streams/read")
+                { Content = JsonContent.Create(new { tenant, domain = "work", aggregateId = rescheduled, fromSequence = 0L, pageSize = 100 }) };
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", WorksAppHostSmokeHarness.MintToken(tenant));
+                using HttpResponseMessage response = await client.SendAsync(request, token).ConfigureAwait(false);
+                if ((int)response.StatusCode == 503) return false;
+                response.EnsureSuccessStatusCode();
+                JsonElement stream = await response.Content.ReadFromJsonAsync<JsonElement>(token).ConfigureAwait(false);
+                var expired = JsonSerializer.Deserialize<WorkItemExpired>(stream.GetProperty("events").EnumerateArray()
+                    .Single(fact => fact.GetProperty("eventTypeName").GetString()!.EndsWith(nameof(WorkItemExpired), StringComparison.Ordinal))
+                    .GetProperty("payload").GetBytesFromBase64(), JsonSerializerOptions.Web)!;
+                expired.ExpiryWitness.ShouldBe(Schedule(currentDue, 2));
+                await EvidenceAsync("rescheduled-expiry-committed-current-witness", expired, token).ConfigureAwait(false);
+                return true;
+            }, token).ConfigureAwait(false);
             var checkpoint = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(new ProcessSource(tenant, "work", rescheduled)), token).ConfigureAwait(false)).Value!;
             checkpoint.Checkpoint.ShouldBe(3);
             var effect = checkpoint.PendingPlan!.Effects.ShouldHaveSingleItem();
@@ -295,12 +353,20 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             await WorksAppHostSmokeHarness.SubmitToTerminalAsync(client, tenant, parentId, nameof(CancelWorkItem),
                 new CancelWorkItem(tenantId, parent), token).ConfigureAwait(false);
             ProcessSourceState? creationGap = null;
-            await WaitAsync(async () =>
+            try
             {
-                creationGap = (await store.GetAsync<ProcessSourceState>("statestore",
-                    ProcessStateKeys.Source(new ProcessSource(tenant, "work", parentId)), token).ConfigureAwait(false)).Value;
-                return creationGap?.ReasonCode == "evidence-unavailable";
-            }, token).ConfigureAwait(false);
+                await WaitAsync(async () =>
+                {
+                    creationGap = (await store.GetAsync<ProcessSourceState>("statestore",
+                        ProcessStateKeys.Source(new ProcessSource(tenant, "work", parentId)), token).ConfigureAwait(false)).Value;
+                    return creationGap?.ReasonCode == "evidence-unavailable";
+                }, token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException exception) when (!token.IsCancellationRequested)
+            {
+                await EvidenceAsync("canonical-related-child-creation-gap-timeout", creationGap!, token).ConfigureAwait(false);
+                throw new TimeoutException($"Delayed-child evidence was not observed. Checkpoint={creationGap?.Checkpoint} Status={creationGap?.Status} Reason={creationGap?.ReasonCode} FailureSequence={creationGap?.FailureSequence}.", exception);
+            }
             creationGap!.Checkpoint.ShouldBe(6);
             creationGap.FailureSequence.ShouldBe(7);
             creationGap.PendingPlan.ShouldBeNull();
@@ -722,7 +788,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         // A busy runner can spend longer than two minutes before a sweep records the expected state.
         deadline.CancelAfter(TimeSpan.FromMinutes(4));
-        while (!await condition().ConfigureAwait(false))
+        while (!await condition().WaitAsync(deadline.Token).ConfigureAwait(false))
             await Task.Delay(100, deadline.Token).ConfigureAwait(false);
     }
 
@@ -737,17 +803,17 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         ProcessSourceState? state = null;
         while (true)
         {
-            state = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value;
-            if (state?.PendingPlan?.Sequence == expectedSequence && state.PendingPlan.Effects.Count == 1)
-                return;
-            if (state is { Checkpoint: var checkpoint } && checkpoint >= expectedSequence && state.PendingPlan is null)
-            {
-                throw new InvalidOperationException(
-                    $"Process source {source.Aggregate} checkpointed sequence {checkpoint} without retaining the plan. Status={state.Status} Reason={state.ReasonCode}.");
-            }
-
             try
             {
+                state = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), deadline.Token)
+                    .WaitAsync(deadline.Token).ConfigureAwait(false)).Value;
+                if (state?.PendingPlan?.Sequence == expectedSequence && state.PendingPlan.Effects.Count == 1)
+                    return;
+                if (state is { Checkpoint: var checkpoint } && checkpoint >= expectedSequence && state.PendingPlan is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Process source {source.Aggregate} checkpointed sequence {checkpoint} without retaining the plan. Status={state.Status} Reason={state.ReasonCode}.");
+                }
                 await Task.Delay(100, deadline.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (!token.IsCancellationRequested)
@@ -762,7 +828,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     /// Retries state reads and writes while the shared Dapr state-store circuit breaker is open.
     /// Fault injection in this proof trips that breaker for every key, not only the fault key.
     /// </summary>
-    private sealed class OpenCircuitRetryStore(IReadModelStore inner) : IReadModelStore
+    private sealed class OpenCircuitRetryStore(IReadModelStore inner) : IReadModelStore, IReadModelBatchStore
     {
         public Task<ReadModelEntry<TValue>> GetAsync<TValue>(string storeName, string key, CancellationToken cancellationToken = default)
             where TValue : class
@@ -779,6 +845,9 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         public Task<bool> TrySaveAsync<TValue>(string storeName, string key, TValue value, string etag, CancellationToken cancellationToken = default)
             where TValue : class
             => Retry(() => inner.TrySaveAsync(storeName, key, value, etag, cancellationToken), cancellationToken);
+
+        public Task<ReadModelBatchResult> ExecuteAsync(ReadModelBatch batch, CancellationToken cancellationToken = default)
+            => Retry(() => ((IReadModelBatchStore)inner).ExecuteAsync(batch, cancellationToken), cancellationToken);
 
         private static async Task<T> Retry<T>(Func<Task<T>> action, CancellationToken cancellationToken)
         {

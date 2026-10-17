@@ -1,0 +1,13 @@
+{
+  "command": [
+    "aspire",
+    "describe",
+    "--apphost",
+    "/home/administrator/projects/hexalith/works/src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
+    "--include-hidden",
+    "--format",
+    "Json"
+  ],
+  "exit_code": 0,
+  "stdout_sha256": "18f6a57acd83d82cc285e027356dce6b7a4f5cd3190d3c3d31b04a8754be8b13"
+}

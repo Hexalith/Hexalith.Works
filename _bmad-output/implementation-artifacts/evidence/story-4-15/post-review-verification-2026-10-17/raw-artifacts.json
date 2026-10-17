@@ -1,0 +1,713 @@
+{
+  "version": 1,
+  "artifacts": [
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/ArchitectureTests.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/9b8105596de4fa3a-ArchitectureTests.log.gz",
+      "compressed_sha256": "f9d875a5cc4d6cefe97e9f01d4d8a5029947ff6506516b892821dc2b51091319",
+      "uncompressed_sha256": "9b8105596de4fa3a812296bbbd6b0c087948b91de6397ddb505173b3f780e9e7",
+      "compressed_bytes": 293,
+      "uncompressed_bytes": 476,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/5/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/5/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/ArchitectureTests.xml",
+      "role": "selected",
+      "archive": "raw-evidence/selected/68e3c44eb6fd7af6-ArchitectureTests.xml.gz",
+      "compressed_sha256": "9739084324964a0fad86573ae706cb431bf5197fb2d123b5fed3d20b457721a6",
+      "uncompressed_sha256": "68e3c44eb6fd7af68802ea31727afe9f6ba55c638e5afefbe1c84151e01001e4",
+      "compressed_bytes": 21006,
+      "uncompressed_bytes": 188482,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/5/command/3",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/5/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/5/xml_sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/PropertyTests.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/667c8217330af9b0-PropertyTests.log.gz",
+      "compressed_sha256": "1b1ac6e1ec737e2521a59b7496b0dbb47908cc879129a6bb539d13bde553f5f8",
+      "uncompressed_sha256": "667c8217330af9b0416dae0ac05b73285c1944d4567b0a7f5339357b28d0ddb2",
+      "compressed_bytes": 306,
+      "uncompressed_bytes": 520,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/6/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/6/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/PropertyTests.xml",
+      "role": "selected",
+      "archive": "raw-evidence/selected/283c22676da8b87a-PropertyTests.xml.gz",
+      "compressed_sha256": "e410cf2903475077ef02e78a9fe79a227ebdc5ad9762cab720282390c1dccbce",
+      "uncompressed_sha256": "283c22676da8b87aba64e7cf9de2116b8c2671f225b00f7c0647c9cdd79112b8",
+      "compressed_bytes": 1226,
+      "uncompressed_bytes": 3960,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/6/command/3",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/6/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/6/xml_sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/UnitTests.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/f1dbbd046e4e47f1-UnitTests.log.gz",
+      "compressed_sha256": "17cb7ce70666907f62a5435fa94dae6c0a3f64311c920bb9c66d0ee5e8d6cacf",
+      "uncompressed_sha256": "f1dbbd046e4e47f1e999f1c40772295ff9caf222c34186ad0294d76b85880cda",
+      "compressed_bytes": 286,
+      "uncompressed_bytes": 436,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/4/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/4/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/UnitTests.xml",
+      "role": "selected",
+      "archive": "raw-evidence/selected/0700ed82cd3cd238-UnitTests.xml.gz",
+      "compressed_sha256": "0f466827afe13dbadcc54c4e0bfe7422744f57254c2d4ee56df9fa0eda4241f6",
+      "uncompressed_sha256": "0700ed82cd3cd238d0628ad2ccfef9c8e110de4b2758b0c36328a68866fc9582",
+      "compressed_bytes": 40872,
+      "uncompressed_bytes": 373468,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/4/command/3",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/4/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/4/xml_sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/cleanup.json",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/586ff6454144cc0c-cleanup.json.gz",
+      "compressed_sha256": "30e54e3540711ab6147bab8c8f383cbd588fe7309f8c487fa1b885368929a8e8",
+      "uncompressed_sha256": "586ff6454144cc0cc8fa887694f8d831ffbc947359985f5b4f7af45938f19ce4",
+      "compressed_bytes": 298,
+      "uncompressed_bytes": 719,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/debug-build.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/17a1b4f92a88cb01-debug-build.log.gz",
+      "compressed_sha256": "bb3be1ed76fa40b9b768caf38a86e17a7d7a167258dacb41d894d005a6f985c0",
+      "uncompressed_sha256": "17a1b4f92a88cb0168b37ec3550a96d4dbcdbfbd196cbfcf45cc86da39333185",
+      "compressed_bytes": 792,
+      "uncompressed_bytes": 5988,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/0/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/0/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/debug-integration.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/9b0db4cae09450a2-debug-integration.log.gz",
+      "compressed_sha256": "aeef6c28e53703e16c6c55386529f37399c801557783cc7f38880db99d178942",
+      "uncompressed_sha256": "9b0db4cae09450a236acbdcdd51170ac5223611a188d9b402774b0b526b90272",
+      "compressed_bytes": 4695,
+      "uncompressed_bytes": 38285,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/1/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/1/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/debug-integration.xml",
+      "role": "selected",
+      "archive": "raw-evidence/selected/12078718b2d3c7ae-debug-integration.xml.gz",
+      "compressed_sha256": "e2ba5e310886bb42cc67bd3ab2ef192f8cced1ceda0863fc41331417251fa496",
+      "uncompressed_sha256": "12078718b2d3c7ae7821c7f57d58218dde3d9c0b3d66670e491763bdb7f6682a",
+      "compressed_bytes": 73070,
+      "uncompressed_bytes": 645166,
+      "references": [
+        {
+          "manifest": "matrix.json",
+          "pointer": "/0/executed/debug/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/1/executed/debug/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/2/executed/debug/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/3/executed/debug/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/4/executed/debug/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/1/command/5",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/1/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/1/xml_sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/final-live.py",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/d1889cd24a74eff6-final-live.py.gz",
+      "compressed_sha256": "8c0910dac359d1845afe302d7f3e59582fa899cd15e0896dc2d28f513972ec04",
+      "uncompressed_sha256": "d1889cd24a74eff6988664a16931f51ed28e08e7b954d077d134710eae193735",
+      "compressed_bytes": 1861,
+      "uncompressed_bytes": 4303,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/final-restart-describe.json",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/18f6a57acd83d82c-final-restart-describe.json.gz",
+      "compressed_sha256": "2f42c1791ccc5b37b66cf521047c0c5f96a109a3e5bf47c0a6b90c7892320872",
+      "uncompressed_sha256": "18f6a57acd83d82cc285e027356dce6b7a4f5cd3190d3c3d31b04a8754be8b13",
+      "compressed_bytes": 7180,
+      "uncompressed_bytes": 60429,
+      "references": [
+        {
+          "manifest": "final-restart-describe-command.json",
+          "pointer": "/stdout_sha256",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/final-restart.log",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/f9a7ce11e34951ab-final-restart.log.gz",
+      "compressed_sha256": "cd4584576e3f8a4a8147a9e4fe7f03f7b1f56431133b5a9e612787bf8374c80c",
+      "uncompressed_sha256": "f9a7ce11e34951abf9fef2b1929b9953913e8aff2d07304b3e2a524199035012",
+      "compressed_bytes": 8223,
+      "uncompressed_bytes": 108723,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/log",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/final-restart.xml",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/a874845ec86c1146-final-restart.xml.gz",
+      "compressed_sha256": "71f90104c78b9ce9fbafc12ea8553c065eeab7dda8fe7620ca14129f0333867b",
+      "uncompressed_sha256": "a874845ec86c1146344f43b31267a2ada9f58c7124e42161d6a4218bf8cd5759",
+      "compressed_bytes": 8647,
+      "uncompressed_bytes": 112504,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/command/7",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/xml",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/xml_sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-restart-discovery-diagnosis.json",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/d4d5db4a89c97e57-live-restart-discovery-diagnosis.json.gz",
+      "compressed_sha256": "136ca35378635e0613fb26fea81491a17f5cbaca553f3f59170e7f87026aaad6",
+      "uncompressed_sha256": "d4d5db4a89c97e57ac6d226a75dbac056bc4b86b473391e7a8c96ca9699ea956",
+      "compressed_bytes": 4492,
+      "uncompressed_bytes": 13415,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-restart-discovery-secret-scan.json",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/3a833ac7534723ac-live-restart-discovery-secret-scan.json.gz",
+      "compressed_sha256": "450043f65af534dabf586d71f44a3beff23e1f442d3ed784fd5200b88d67ff0e",
+      "uncompressed_sha256": "3a833ac7534723ac67a1208bfbabd0c261d1bafc9a5492233b5beb8e8c622a52",
+      "compressed_bytes": 475,
+      "uncompressed_bytes": 725,
+      "references": [
+        {
+          "manifest": "live-restart-discovery-diagnosis.json",
+          "pointer": "/secret_inspection",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-restart-discovery.jsonl",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/0ca65b259d44eefe-live-restart-discovery.jsonl.gz",
+      "compressed_sha256": "1eae38e864452d2afb95fc4a5e6c853afc910c3737350dd0daa1d20ac5932853",
+      "uncompressed_sha256": "0ca65b259d44eefe22d43726d5f01090d37f3e33bc67dc5908052907b8591e98",
+      "compressed_bytes": 707343,
+      "uncompressed_bytes": 3423617,
+      "references": [
+        {
+          "manifest": "live-restart-discovery-diagnosis.json",
+          "pointer": "/observer/artifact",
+          "role": "supporting"
+        },
+        {
+          "manifest": "live-restart-discovery-diagnosis.json",
+          "pointer": "/observer/sha256",
+          "role": "supporting"
+        },
+        {
+          "manifest": "live-restart-discovery-secret-scan.json",
+          "pointer": "/path",
+          "role": "supporting"
+        },
+        {
+          "manifest": "live-restart-discovery-secret-scan.json",
+          "pointer": "/sha256",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-restart-state.jsonl",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/e6631e1ddd13489e-live-restart-state.jsonl.gz",
+      "compressed_sha256": "123258030d8e1af5dd5d27304a41f378febcb380ccbe03f78269ca8348fe5e91",
+      "uncompressed_sha256": "e6631e1ddd13489e6eddd9e3702aec60c23fdec68006efbc4730b6540700c4a1",
+      "compressed_bytes": 1346,
+      "uncompressed_bytes": 3891,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/9/environment_overrides/WORKS_SDK_PROOF_EVIDENCE_PATH",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "root-runtime-audit.json",
+          "pointer": "/inputs/~1tmp~1story415-root-final-zid_b9w1~1live-restart-state.jsonl",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-retry-describe.json",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/c23fd6de8d2e7f1f-live-retry-describe.json.gz",
+      "compressed_sha256": "183f3b0b14eb9252dcd161b4e10fee119df35df90da9d49850cb124c963ba95a",
+      "uncompressed_sha256": "c23fd6de8d2e7f1fb6ad97e603f92d5dea3c17996389c769e81d71974685543d",
+      "compressed_bytes": 7152,
+      "uncompressed_bytes": 60421,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-retry-state.jsonl",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/97917f4f14906ac9-live-retry-state.jsonl.gz",
+      "compressed_sha256": "d65e89b97edf8b65616661b79e897be22e28d6d3c246cd91af199366fc577798",
+      "uncompressed_sha256": "97917f4f14906ac9a1b4d7a8c5afff22464f3dda0e66c4a5988aa62c8eaa9359",
+      "compressed_bytes": 1668,
+      "uncompressed_bytes": 4840,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/environment_overrides/WORKS_SDK_PROOF_EVIDENCE_PATH",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-sdk-retry.log",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/f4bda7113b8cf18e-live-sdk-retry.log.gz",
+      "compressed_sha256": "cd1e0c63418556acd5c30cdcf9f90557ec3ac3f4f4a14195e6727a6b15fb53b7",
+      "uncompressed_sha256": "f4bda7113b8cf18ee168445677c97591de1fdabdfbcd5a0d4d31c5bea59da4ce",
+      "compressed_bytes": 8561,
+      "uncompressed_bytes": 102108,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/log",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-sdk-retry.xml",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/628e0bea70932071-live-sdk-retry.xml.gz",
+      "compressed_sha256": "2ef23a0a876a30d6a650c8fb133afda660fa645c8abfcfbd563eb5e90af45914",
+      "uncompressed_sha256": "628e0bea70932071bedf79db5d5e63d2fae4fc1a241bf6846ae599f9f4769b8c",
+      "compressed_bytes": 9192,
+      "uncompressed_bytes": 108169,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/command/7",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/xml",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/8/xml_sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-sdk.log",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/2f263db1e241faaf-live-sdk.log.gz",
+      "compressed_sha256": "b84f2feb61f0402fd3246bfb417ec57bb4452454cccf3ceaff1d34abed460685",
+      "uncompressed_sha256": "2f263db1e241faaf8e9acdc0b767b66e3ce8355ce646d459c66b1ea7bd320483",
+      "compressed_bytes": 3338,
+      "uncompressed_bytes": 54236,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/7/log",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/7/sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/live-sdk.xml",
+      "role": "preliminary",
+      "archive": "raw-evidence/preliminary/afa9e13d155cd088-live-sdk.xml.gz",
+      "compressed_sha256": "a1e3c46a604e14e8a2e9b6d558b8a3142a7fd628b5c1d03760f50f1b25716e45",
+      "uncompressed_sha256": "afa9e13d155cd088f4f760d4983a43603882d366b937aa0a71b8dc6e1874363a",
+      "compressed_bytes": 3888,
+      "uncompressed_bytes": 56290,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/7/command/7",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/7/xml",
+          "role": "preliminary"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/7/xml_sha256",
+          "role": "preliminary"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/release-build.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/65312e625788d786-release-build.log.gz",
+      "compressed_sha256": "a6dc19e57d17ba5c91cee5cba77a7c51dda9b06854736391933415b757695877",
+      "uncompressed_sha256": "65312e625788d7867271ed18d61a3964405477d3bab1d7a3c43c74bdb7db94f0",
+      "compressed_bytes": 465,
+      "uncompressed_bytes": 2979,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/2/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/2/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/release-integration.log",
+      "role": "selected",
+      "archive": "raw-evidence/selected/0a8905f05bf82652-release-integration.log.gz",
+      "compressed_sha256": "d5e9da22120a1d2c521cba340f44f67b4bee6fd7a805dd4c093ebffa6ad8d7bf",
+      "uncompressed_sha256": "0a8905f05bf82652669c5b8de1224b3c299bfcf02a58df13b216ace75f89ec21",
+      "compressed_bytes": 4649,
+      "uncompressed_bytes": 38297,
+      "references": [
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/3/log",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/3/sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/release-integration.xml",
+      "role": "selected",
+      "archive": "raw-evidence/selected/0ed032c4e7ce11ee-release-integration.xml.gz",
+      "compressed_sha256": "daf5854652c0ff68f3b4989f242271034cda31d287502ebc1329daa54dfcd079",
+      "uncompressed_sha256": "0ed032c4e7ce11ee5fb57b021f8af5797677befa91612445874f8ca1e9ee6189",
+      "compressed_bytes": 73700,
+      "uncompressed_bytes": 645239,
+      "references": [
+        {
+          "manifest": "matrix.json",
+          "pointer": "/0/executed/release/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/1/executed/release/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/2/executed/release/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/3/executed/release/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "matrix.json",
+          "pointer": "/4/executed/release/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/3/command/5",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/3/xml",
+          "role": "selected"
+        },
+        {
+          "manifest": "results-manifest.json",
+          "pointer": "/3/xml_sha256",
+          "role": "selected"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/retry-live.py",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/75c8954fc26ae792-retry-live.py.gz",
+      "compressed_sha256": "e9d22308b45904f6eaa4f8f33aac71aa02fd34c5039303604f705d0a27f2ca64",
+      "uncompressed_sha256": "75c8954fc26ae7928e3b7f4b644625175866b2eb0a31411664f6d95306e9dc1b",
+      "compressed_bytes": 1663,
+      "uncompressed_bytes": 4093,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/run.py",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/8b7fc20c3ad4532f-run.py.gz",
+      "compressed_sha256": "ff987320b3c5a772b2e37871a9b16514b312a551dc8eb29085ea8b7a89490f7e",
+      "uncompressed_sha256": "8b7fc20c3ad4532f898c399a8e1651563f9b798d0c691cd38ac15522df8ea6ce",
+      "compressed_bytes": 1764,
+      "uncompressed_bytes": 4109,
+      "references": []
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.eventstore-admin.yaml",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/d7976ae3c3f75dec-accesscontrol.eventstore-admin.yaml.gz",
+      "compressed_sha256": "7ea47002acb67bd829b37a331b8f8d7b0ef3bc97f96fa8e267e088f04ced3dda",
+      "uncompressed_sha256": "d7976ae3c3f75decb9aa0fb762d1e3f697011aa1ec038d077bddd6796bc3e548",
+      "compressed_bytes": 533,
+      "uncompressed_bytes": 1044,
+      "references": [
+        {
+          "manifest": "temporary-configuration.json",
+          "pointer": "/files/0/original_path",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.eventstore-operations.yaml",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/72e8f94996090516-accesscontrol.eventstore-operations.yaml.gz",
+      "compressed_sha256": "d65353ddd7cec0fb3a35f186680e17a7bb1b6ba6f958239f8d421bcbfd87997d",
+      "uncompressed_sha256": "72e8f9499609051651eb2ad9f59987e3c19a6fd6070bcacd3a8b5a520dc1a6bd",
+      "compressed_bytes": 492,
+      "uncompressed_bytes": 885,
+      "references": [
+        {
+          "manifest": "temporary-configuration.json",
+          "pointer": "/files/1/original_path",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.works.yaml",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/731a888523e2cb8c-accesscontrol.works.yaml.gz",
+      "compressed_sha256": "ceb7ad7d81334375bdf30d12b66e52b18f52f583749a9e78d4f141291d5f8c69",
+      "uncompressed_sha256": "731a888523e2cb8c43b54b27cb62fce65d8e49e52362a5134c855abaa62cfaff",
+      "compressed_bytes": 747,
+      "uncompressed_bytes": 2034,
+      "references": [
+        {
+          "manifest": "temporary-configuration.json",
+          "pointer": "/files/2/original_path",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-root-final-zid_b9w1/dapr-configs/accesscontrol.yaml",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/4400afd3a470c9f7-accesscontrol.yaml.gz",
+      "compressed_sha256": "d529eadd8b6afa9f5a93359f6fd423241802fe43f7b766f31e040a3f88fc445b",
+      "uncompressed_sha256": "4400afd3a470c9f7c0e318706913ccd97120055b9d2410a19ff2a58f4b6e323e",
+      "compressed_bytes": 566,
+      "uncompressed_bytes": 1088,
+      "references": [
+        {
+          "manifest": "temporary-configuration.json",
+          "pointer": "/files/3/original_path",
+          "role": "supporting"
+        }
+      ]
+    },
+    {
+      "original_path": "/tmp/story415-discovery-observer.py",
+      "role": "supporting",
+      "archive": "raw-evidence/supporting/5ee45e12d609f5ee-story415-discovery-observer.py.gz",
+      "compressed_sha256": "68596f058c4bc262dd4dc267f2a56f448fd74258b86319dd57351facc121519e",
+      "uncompressed_sha256": "5ee45e12d609f5ee91d27d8fee87fd35b44ea2a456081c0ac628b37829e9a309",
+      "compressed_bytes": 3109,
+      "uncompressed_bytes": 7632,
+      "references": [
+        {
+          "manifest": "live-restart-discovery-diagnosis.json",
+          "pointer": "/observer/script",
+          "role": "supporting"
+        }
+      ]
+    }
+  ]
+}

@@ -147,7 +147,7 @@ public sealed class WorksSdkRemediationTests
         using var blocker = new ManualResetEventSlim();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(_ =>
         {
-            if (synchronous) blocker.Wait();
+            if (synchronous) blocker.Wait(TimeSpan.FromSeconds(5)).ShouldBeTrue("the test must release the blocked provider");
             return release.Task;
         });
         var reader = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions { ContextReadTimeout = TimeSpan.FromMilliseconds(100) }));

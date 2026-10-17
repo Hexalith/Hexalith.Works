@@ -135,6 +135,7 @@ public sealed class WorksSdkProofRedisOwnershipTests
                 .SelectMany(command => command).ShouldNotContain(value => value.StartsWith("foreign-", StringComparison.Ordinal));
             commands.Any(command => command[0] == "rm").ShouldBe(volumeIsForeign);
             commands.Any(command => command[0] == "volume" && command[1] == "rm").ShouldBe(!volumeIsForeign);
+            Directory.Exists(Path.GetDirectoryName(fixture.ComponentPath)).ShouldBeFalse("temporary authority material must be removed even when Docker cleanup fails");
         }
         finally
         {

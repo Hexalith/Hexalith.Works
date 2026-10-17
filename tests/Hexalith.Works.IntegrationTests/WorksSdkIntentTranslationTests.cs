@@ -65,7 +65,7 @@ public sealed class WorksSdkIntentTranslationTests
         ReminderIntent repeated = (await source.GetCurrentIntentsAsync(target, TestContext.Current.CancellationToken)).Single(intent => intent.Kind == EffectKindCatalog.DateResume);
         repeated.SourceSequence.ShouldBe(4);
         repeated.SourceMessageId.ShouldBe("committed-second-suspension");
-        ReminderIdentityCodec.ComputeReminderName(repeated).ShouldNotBe(ReminderIdentityCodec.ComputeReminderName(first[0]));
+        ReminderIdentityCodec.ComputeReminderName(repeated).ShouldNotBe(ReminderIdentityCodec.ComputeReminderName(first.Single(intent => intent.Kind == EffectKindCatalog.DateResume && intent.Ordinal == 0)));
         var replacement = new WorkItemExpirySchedule(s_due.AddDays(2),
             ReminderIdentityCodec.ComputeScheduleToken(Tenant, item, s_due.AddDays(2), 2), 2);
         facts = [.. facts, new WorkItemRescheduled(item, 5, tenant, id, new WorkItemSchedule(), Expiry: replacement)];

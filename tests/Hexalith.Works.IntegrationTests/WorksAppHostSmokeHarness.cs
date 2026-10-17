@@ -254,8 +254,7 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("Version", "3.124.0");
         }
         configure?.Invoke(builder);
-        if (WorksAppHostSelection.IsPlatform)
-            IsolateApplicationPorts(builder);
+        IsolateApplicationPorts(builder);
         if (schedulerVolumeName is not null)
         {
             if (!schedulerVolumeName.StartsWith("works-sdk416-", StringComparison.Ordinal))
@@ -296,7 +295,7 @@ internal static class WorksAppHostSmokeHarness
                             "works",
                             "eventstore-operations",
                             "eventstore-admin",
-                        ]) + await StartupLogsAsync(app).ConfigureAwait(true),
+                        ]),
                     ex);
             }
 
@@ -384,7 +383,8 @@ internal static class WorksAppHostSmokeHarness
         }
         catch (Exception exception)
         {
-            primaryException = app is null ? exception : new InvalidOperationException(
+            primaryException = app is null || exception is OperationCanceledException && cancellationToken.IsCancellationRequested
+                ? exception : new InvalidOperationException(
                 exception.Message + await StartupLogsAsync(app).ConfigureAwait(true), exception);
         }
 

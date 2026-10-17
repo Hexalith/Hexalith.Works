@@ -1,0 +1,31 @@
+{
+  "inputs": {
+    "/tmp/story415-review-20261017/live-diagnostic-state.jsonl": "fcd45e05757dad74b9f580f649f33de4ced3e4f664bf6cce90cdf6407b687bcd",
+    "/tmp/story415-review-20261017/live-final-callback-state.jsonl": "c25add27e39f95127049aa786a86dd72360b1f9df6235960d0751c98e28f0785"
+  },
+  "phases": 11,
+  "assertions": {
+    "callback membership and witness": true,
+    "committed revision 2 expiry witness": true,
+    "expiry target commit before checkpoint": true,
+    "expiry receipt replay before checkpoint": true,
+    "missing child retains degraded evidence": true,
+    "five retained cascade effects before checkpoint": true,
+    "five single cancellations and receipts": true,
+    "cascade replay clears plan": true,
+    "single resume retains noop receipt": true,
+    "noop replay precedes checkpoint": true,
+    "all eleven sources complete": true
+  },
+  "note": "Ten restart phases and fresh callback phase were recorded in separately selected passing runs against the final diagnostic assembly. Source/binary bindings remain a separate check.",
+  "selected_test_results": {
+    "live-sdk-diagnostic.xml": {
+      "passed": 1,
+      "sha256": "84337962254109c54f44fd71b3ca7594c07f7ccafab8072413e41fdd0cfdee41"
+    },
+    "live-final-callback-batch.xml": {
+      "passed": 2,
+      "sha256": "83aa5d8b6ac2328252e04f52bd8562377be46a9380dce776ee8e747b75e10838"
+    }
+  }
+}

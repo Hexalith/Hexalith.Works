@@ -1,0 +1,56 @@
+{
+  "passing_case_observations": 130,
+  "rows": [
+    {
+      "mode": "debug",
+      "scenario": "Duplicate/lost firing, restart, same-date re-suspension",
+      "passing_case_observations": 4
+    },
+    {
+      "mode": "release",
+      "scenario": "Duplicate/lost firing, restart, same-date re-suspension",
+      "passing_case_observations": 4
+    },
+    {
+      "mode": "debug",
+      "scenario": "Reschedule/stale expiry",
+      "passing_case_observations": 19
+    },
+    {
+      "mode": "release",
+      "scenario": "Reschedule/stale expiry",
+      "passing_case_observations": 19
+    },
+    {
+      "mode": "debug",
+      "scenario": "Cascade/child-resume target commit before checkpoint",
+      "passing_case_observations": 2
+    },
+    {
+      "mode": "release",
+      "scenario": "Cascade/child-resume target commit before checkpoint",
+      "passing_case_observations": 2
+    },
+    {
+      "mode": "debug",
+      "scenario": "Page boundary/corrupt or foreign evidence",
+      "passing_case_observations": 21
+    },
+    {
+      "mode": "release",
+      "scenario": "Page boundary/corrupt or foreign evidence",
+      "passing_case_observations": 21
+    },
+    {
+      "mode": "debug",
+      "scenario": "Related-read outage/denied submission",
+      "passing_case_observations": 19
+    },
+    {
+      "mode": "release",
+      "scenario": "Related-read outage/denied submission",
+      "passing_case_observations": 19
+    }
+  ],
+  "note": "Lost-firing proof is an exact WorkItemResumed stream-count assertion within the restart method, not an exported standalone phase."
+}

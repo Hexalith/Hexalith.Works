@@ -1,0 +1,22 @@
+{
+  "consumer_sources": {
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs": "bc877d8c2d6151080792b360482a3b6f73f9aa773afeccf97ceb765fcd5ca88a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs": "295902373339f8460aedb3250849ef5230c42aa158e49d9c74ab929f39710df4",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs": "65cf38c02d1d306288933e92bc4d394fb0694e94e922c5e4d39375825a3e0b4d",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRemediationTests.cs": "7e420c3cbdb4f3f3bed75b3bd8ba6b55de72ffa14edfeff0aaee5b9997c0672c",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "626e2eee5939f067870fccd580629a9d2deea47b5e7fd6da976cb346394f83f0",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "56fed2d4b85b989bd77409108322dd8f2a4cda565d49adeae4dbdfbb41d70c41",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs": "566a411ecff9d6054d9b804a2ed1360bcbbc88018c05a06e1dd8074b091c70b0",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "197b7b310c0382d1c8b83b39cbcdca39c593f641aaa28afbd5a6e04fed7e1edf",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedisOwnershipTests.cs": "bcdee6063e31a0a4937b05f4e5baaf716f10b8699f79fd06f841e321919bf257",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "6436807dc43b790f9c4a73f0251f74e2649c5c85e622e60bf429d09d0c0b89f0"
+  },
+  "Debug": {
+    "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+    "sha256": "6a9f7a7a82dd5af9375bad3ab5ea9dee1bc4761d1a2f7c548de692547446eaf2"
+  },
+  "Release": {
+    "path": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+    "sha256": "50e3147b611807bfdc6c71d0db292bb492cdb1406d2942f5c88f2de8a3928b06"
+  }
+}

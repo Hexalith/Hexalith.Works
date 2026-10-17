@@ -1,0 +1,25 @@
+{
+  "inputs": {
+    "/tmp/story415-root-final-zid_b9w1/live-restart-state.jsonl": "e6631e1ddd13489e6eddd9e3702aec60c23fdec68006efbc4730b6540700c4a1"
+  },
+  "phases": [
+    "rescheduled-expiry-committed-current-witness",
+    "cascade-expiry-target-commit-before-checkpoint",
+    "cascade-expiry-restart-receipt-and-checkpoint",
+    "canonical-related-child-creation-gap-timeout"
+  ],
+  "assertions": {
+    "callback membership and witness": null,
+    "revision 2 witness": true,
+    "expiry target commit before checkpoint": true,
+    "expiry receipt replay before checkpoint": true,
+    "missing child retains degraded evidence": null,
+    "five retained cascade effects": null,
+    "five unique success receipts and single cancellations": null,
+    "cascade replay clears plan": null,
+    "single resume retains noop receipt": null,
+    "noop replay precedes checkpoint": null,
+    "eleven sources complete": null
+  },
+  "complete": false
+}

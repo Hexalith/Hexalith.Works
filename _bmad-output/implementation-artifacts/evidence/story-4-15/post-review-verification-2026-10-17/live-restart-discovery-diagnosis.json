@@ -1,0 +1,276 @@
+{
+  "scope": "Read-only observation and source inspection only; no repository edits, tests, builds or retry initiated by observer.",
+  "observer": {
+    "script": "/tmp/story415-discovery-observer.py",
+    "artifact": "/tmp/story415-root-final-zid_b9w1/live-restart-discovery.jsonl",
+    "sha256": "0ca65b259d44eefe22d43726d5f01090d37f3e33bc67dc5908052907b8591e98",
+    "bytes": 3423617,
+    "snapshot_count": 22,
+    "errors": 0,
+    "first_sample": "2026-10-17T18:08:16.090111+00:00",
+    "last_sample": "2026-10-17T18:10:03.229406+00:00",
+    "container": "works-sdk415-7189c867abd84749a2a3412369a7c4cd",
+    "container_id": "0694ecd8bf25cbb80137002a8217d32c8dff903b0026efa6fed4f29ed893b7ca",
+    "ownership": "Exact fixture label equals fixture name; immutable container ID used for each Redis command",
+    "redis_commands": [
+      "EVAL_RO",
+      "SCAN",
+      "TYPE",
+      "PTTL",
+      "HGETALL",
+      "GET"
+    ],
+    "stopped": true,
+    "stop": "Intentional SIGTERM of exact observer PID31511; exec session23456 exited143"
+  },
+  "secret_inspection": "/tmp/story415-root-final-zid_b9w1/live-restart-discovery-secret-scan.json",
+  "proven": {
+    "before_parent_creation": {
+      "sample": "2026-10-17T18:08:41.528639+00:00",
+      "journal_count": 0,
+      "membership": [
+        "work-sdk415-date-65eced8a2c",
+        "work-sdk415-expiry-65eced8a2c",
+        "work-sdk415-rescheduled-65eced8a2c"
+      ],
+      "sweep_cycle": 17,
+      "sweep_unresolved": 0
+    },
+    "final_sample": {
+      "time": "2026-10-17T18:10:03.229406+00:00",
+      "tenant": "sdk415-65eced8a2c",
+      "epoch_key": "works||shared-epoch:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU",
+      "epoch_version": "38",
+      "phase": 0,
+      "active_generation": 0,
+      "offboarding_audit": null,
+      "queue_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:06EF88E6519FA38B68BE32CF835AA2CCB3ABE3F3B48481EF2FEB9DAD8B685D55",
+      "queue_visibility": "raw",
+      "membership": [
+        "work-sdk415-date-65eced8a2c",
+        "work-sdk415-expiry-65eced8a2c",
+        "work-sdk415-rescheduled-65eced8a2c"
+      ],
+      "last_sequences": {
+        "work-sdk415-date-65eced8a2c": 5,
+        "work-sdk415-expiry-65eced8a2c": 2,
+        "work-sdk415-rescheduled-65eced8a2c": 4
+      },
+      "journal": [
+        {
+          "source": "work-sdk415-date-65eced8a2c",
+          "position": 11,
+          "owner_sequence": 5,
+          "prepared": true,
+          "failure": null,
+          "parked": false
+        },
+        {
+          "source": "work-sdk415-parent-65eced8a2c",
+          "position": 12,
+          "owner_sequence": 1,
+          "prepared": false,
+          "failure": null,
+          "parked": false
+        },
+        {
+          "source": "work-sdk415-child-65eced8a2c-3",
+          "position": 19,
+          "owner_sequence": 1,
+          "prepared": false,
+          "failure": null,
+          "parked": false
+        },
+        {
+          "source": "work-sdk415-child-65eced8a2c-4",
+          "position": 21,
+          "owner_sequence": 1,
+          "prepared": false,
+          "failure": null,
+          "parked": false
+        },
+        {
+          "source": "work-sdk415-child-65eced8a2c-1",
+          "position": 15,
+          "owner_sequence": 1,
+          "prepared": false,
+          "failure": null,
+          "parked": false
+        },
+        {
+          "source": "work-sdk415-child-65eced8a2c-2",
+          "position": 17,
+          "owner_sequence": 1,
+          "prepared": false,
+          "failure": null,
+          "parked": false
+        }
+      ],
+      "sweep": {
+        "version": 1,
+        "cycle": 19,
+        "generation": 19,
+        "complete": true,
+        "cycleStartedAt": "2026-10-17T18:09:54.7261308+00:00",
+        "lastCompleteAt": "2026-10-17T18:09:55.0474937+00:00",
+        "catalogAfterKey": null,
+        "catalogComplete": true,
+        "tenantPage": 0,
+        "tenantOffset": 0,
+        "candidatePage": 0,
+        "candidateOffset": 0,
+        "candidatesComplete": true,
+        "nextCatalog": true,
+        "unresolved": 1,
+        "reasons": {
+          "catalog-unavailable": 1
+        },
+        "pending": {},
+        "owner": null,
+        "leaseUntil": null,
+        "fence": 19,
+        "pendingObservations": {},
+        "pendingPublications": {},
+        "pendingTransitions": {},
+        "publicationRepairAfterKey": null,
+        "dispositionRepairAfterKey": null,
+        "nextPublicationRepair": true,
+        "publicationCandidateRepairPages": {},
+        "publicationTenantRepairPages": {},
+        "publicationCandidateUnknownPages": {},
+        "publicationTenantUnknownPages": {},
+        "expectedTenantPage": false,
+        "expectedCandidatePage": false,
+        "tenantProbeMisses": 0,
+        "candidateProbeMisses": 0,
+        "retainedCandidates": 3,
+        "capacityExceeded": false,
+        "scanReadAdmissionRecorded": false
+      },
+      "parent": [
+        {
+          "aggregate": "work-sdk415-parent-65eced8a2c",
+          "source_key": "works||eventstore:process:v1:tenant:c2RrNDE1LTY1ZWNlZDhhMmM:source:03FB10824E0CD3B70E6D7639E135DF2BE557F3CBFFD8B43044D69C5BF2135613",
+          "visibility": "absent",
+          "state": null,
+          "candidate_key": "works||eventstore:process:v1:tenant:c2RrNDE1LTY1ZWNlZDhhMmM:source:03FB10824E0CD3B70E6D7639E135DF2BE557F3CBFFD8B43044D69C5BF2135613:candidate",
+          "candidate_visibility": "absent",
+          "candidate": null
+        }
+      ]
+    },
+    "applied_but_journal_retained_head": {
+      "source": "work-sdk415-date-65eced8a2c",
+      "position": 11,
+      "owner_sequence": 5,
+      "batch_marker_key": "works||hxrmb:v1:marker:yk23oEFaolHsuucE6yECYKQpjcFIpdeuuJ7HdvCn1J0",
+      "batch_marker": {
+        "batch": "C5639B9980896D6542C4DEE060A7006153A54D2A6AA1ED1DC059D9BFBEF0C5D6",
+        "fp": "v1:qrLt8B7t31aIKmcOEdy5gtqyG8visRrvAm5BeBYTifE",
+        "ops": null,
+        "scope": "yk23oEFaolHsuucE6yECYKQpjcFIpdeuuJ7HdvCn1J0",
+        "st": 4,
+        "time": "2026-10-17T18:08:42.9378642+00:00",
+        "v": 1
+      },
+      "canonical_operations": [
+        {
+          "logical_key": "works-runtime-v3:queue",
+          "physical_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:06EF88E6519FA38B68BE32CF835AA2CCB3ABE3F3B48481EF2FEB9DAD8B685D55",
+          "exact_canonical_bytes_match": true,
+          "expected_bytes": 346,
+          "observed_bytes": 346
+        },
+        {
+          "logical_key": "works-runtime-v3:pending-date",
+          "physical_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:1C679E92DDA19E7CA5EA3103C1605E077EA0F58813750D7BBE53828C4C6C836D",
+          "exact_canonical_bytes_match": true,
+          "expected_bytes": 138,
+          "observed_bytes": 138
+        },
+        {
+          "logical_key": "works-runtime-v3:history:work-sdk415-date-65eced8a2c",
+          "physical_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:2C9614BFEFC824BD1B37F1D14B28CFE1AE9B43B602BBF49234F6C62AE78846F5",
+          "exact_canonical_bytes_match": true,
+          "expected_bytes": 240,
+          "observed_bytes": 240
+        },
+        {
+          "logical_key": "works-runtime-v3:history:work-sdk415-date-65eced8a2c:page:0",
+          "physical_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:1732B5409B47837C2F0EE44C8FF303F2E8F457711E666384021F1BB6B4329EB7",
+          "exact_canonical_bytes_match": true,
+          "expected_bytes": 5079,
+          "observed_bytes": 5079
+        },
+        {
+          "logical_key": "works-runtime-v3:rollup:work-sdk415-date-65eced8a2c",
+          "physical_key": "works||shared-generation:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:04D44500F38BEA992CF83081F8D78837920381BD7F19B0BAAC152FB13A70D867",
+          "exact_canonical_bytes_match": true,
+          "expected_bytes": 438,
+          "observed_bytes": 438
+        }
+      ],
+      "checkpoint_key": "works||shared-checkpoint:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:AD6DD6A7A84F376C4DCA9977DA9A0FC6E9002F5624C9622AB7FCE6CE0C18E12E",
+      "checkpoint": {
+        "position": 11,
+        "token": "MTE=",
+        "ownerSequenceNumber": 5,
+        "capturedEventDigests": null
+      },
+      "receipt_key": "works||shared-receipt:MIFLd0BqKDdTn-4D4C0yCm2vTqSqV1uEovgep6-F4dU:0:93EC9C729D96A737775B7D0B48668B94DE19A3FC0A81B16238BDA1CBC9518B1F",
+      "receipt": {
+        "digest": "0474CF0A70452DE00D502E7329F7921C08A176AD7725654700B75F87504CF12B",
+        "parked": false,
+        "failure": null
+      },
+      "receipt_digest_matches_head": true
+    },
+    "callback_path": "Restart test installs WorksSdkProofWakeupFilter: sdk415-* /work/events requests are acknowledged before WorksDomainEventProcessor. Direct EnsureCandidateAsync is intentionally not reached. SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery is a separate method that sets WORKS_SDK_PROOF_CALLBACKS=1.",
+    "catalog_path": "WorksProcessSourceCatalog rejects the whole tenant family when discovery is stale/degraded/unavailable. SharedProjectionEpochCoordinator.ReadAsync sets IsStale when Journal.Length>0. The captured nonempty journal therefore establishes the stale discovery gate."
+  },
+  "source_locations": {
+    "deliberate_callback_loss": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofWakeupFilter.cs:17-36; WorksSdkProofHostingStartup.cs:69-70",
+    "direct_candidate_publication": "src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:68-72",
+    "catalog_skip": "src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs:31-35",
+    "stale_read": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs:2442-2444",
+    "fenced_named_delivery": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainProjectionDispatcher.cs:832-990",
+    "closeout_after_model_batch": "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs:2126-2185"
+  },
+  "sdk_comparison": {
+    "current_head": "77d9af18a54d92506e310fe5a45021a395e66f60",
+    "published_v3_124_0_tag": "0737c0befce5338e294a789092a0e223e8264a04",
+    "status_porcelain": "",
+    "post_tag_commits": [
+      "77d9af18a54d92506e310fe5a45021a395e66f60 build: sync local changes via /pushall",
+      "b99a03dfc29021af16511ee664820e05126b73f8 fix: story 6.4",
+      "9dbb3aaf0254a607e5b6489e0de2a8aee0f82edb build: sync local changes via /pushall"
+    ],
+    "unchanged_relevant_files_since_tag": {
+      "src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs": "6ba58bc3870ebcac84a3ceb3a9e36ef6e4764f4d956c8df8b0e42fa5dee2da3e",
+      "src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.AppliedProof.cs": "fe35c683e036b332c6e48fe5d12f0edc2c4afe6413081644a664dca624f8d7e4",
+      "src/Hexalith.EventStore.Client/Projections/SharedProjectionDiscoveryReadAdmission.cs": "fd85ee1733506c703fee5348e5e1d774e7753621272ca3e997ec5d09f672a702",
+      "src/Hexalith.EventStore.DomainService/ProcessCheckpointStore.cs": "86a5dabae5b8da87e1ccc87bd4bfd741ef61b1b5f320accc383bf99c150e9d96",
+      "src/Hexalith.EventStore.DomainService/ProcessReconciler.cs": "f37c2bf82bd3e550120112c4943837c76f7cb6b290f3796e1f7830130e153473"
+    },
+    "changed_ordinary_neighbor": "ReadModelBatchProtocol has post-tag terminal owner-manifest cleanup changes; DomainProjectionDispatcher changes are in streamed/full-replay rebuild preparation, outside fenced ordinary delivery. Server delivery guards, retry scheduling and receipt validation also changed. No causal attribution is established by this comparison.",
+    "initial_success_continuity": "Reflog places current HEAD at 2026-10-17 08:55:26+02:00 with no later checkout/reset, earlier than both initial selected pass and root verification; current SDK tree is clean. Prior implementation packet says SDK source unchanged. Initial selected packet does not bind every SDK DLL/source SHA, so independent exact SDK-binary continuity cannot be reconstructed from those bindings alone.",
+    "initial_selected_phase_names": [
+      "rescheduled-expiry-committed-current-witness",
+      "cascade-expiry-target-commit-before-checkpoint",
+      "cascade-expiry-restart-receipt-and-checkpoint",
+      "canonical-related-child-creation-gap",
+      "cascade-target-commit-before-checkpoint",
+      "five-child-persisted-target-receipts",
+      "cascade-restart-receipt-and-checkpoint",
+      "child-resume-noop-receipt-before-checkpoint",
+      "complete-supported-process-coverage",
+      "child-resume-noop-restart-receipt-and-checkpoint"
+    ]
+  },
+  "unresolved": [
+    "The precise runtime exception/read/CAS failure that prevents removal of the already-applied head was not captured. Persisted state alone does not establish why journal closeout stalls.",
+    "Discovery read admission also has a100ms bound; snapshots cannot show in-memory outstanding providers or transient exceptions. The stale gate is proven independently of those possibilities.",
+    "No causal SDK regression, host-resource cause, or safe source fix has been proven. No assertion/budget/fixture settings were changed.",
+    "Final test exit and owned-host cleanup are controlled and recorded by root, outside this observer interval."
+  ]
+}

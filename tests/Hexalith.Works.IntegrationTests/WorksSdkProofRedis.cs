@@ -153,17 +153,23 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         }
         finally
         {
-            if (_volumeCreated)
+            try
             {
-                string owned = (await _docker(["volume", "ls", "--filter", "label=hexalith.works.sdk-fixture=" + name,
-                    "--format", "{{.Name}}"], CancellationToken.None).ConfigureAwait(false)).Trim();
-                if (owned.Length > 0)
+                if (_volumeCreated)
                 {
-                    if (owned != SchedulerVolumeName) throw new InvalidOperationException("Synthetic Scheduler cleanup ownership is ambiguous.");
-                    _ = await _docker(["volume", "rm", SchedulerVolumeName!], CancellationToken.None).ConfigureAwait(false);
+                    string owned = (await _docker(["volume", "ls", "--filter", "label=hexalith.works.sdk-fixture=" + name,
+                        "--format", "{{.Name}}"], CancellationToken.None).ConfigureAwait(false)).Trim();
+                    if (owned.Length > 0)
+                    {
+                        if (owned != SchedulerVolumeName) throw new InvalidOperationException("Synthetic Scheduler cleanup ownership is ambiguous.");
+                        _ = await _docker(["volume", "rm", SchedulerVolumeName!], CancellationToken.None).ConfigureAwait(false);
+                    }
                 }
             }
-            if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            finally
+            {
+                if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            }
         }
     }
 

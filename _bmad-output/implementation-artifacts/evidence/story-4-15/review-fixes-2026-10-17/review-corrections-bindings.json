@@ -1,0 +1,12 @@
+{
+  "scope": "After the three review corrections; earlier broad/live bindings retain their original exact source scope.",
+  "sources": {
+    "src/Hexalith.Works/Recovery/WorksRecoveryEventDecoder.cs": "0821e6bc281ab9acf4311b8947a89d96d74b92c5f9a44cd0c8cdf66855fd11b8",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIteration4Tests.cs": "0ad1f712f2f3599725f5149c02cfb0b6bec0c10a0e878e7723da11f79f616a8f",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "691637df11d8518911d29d3d39d410277534b5d1356b6dc9e2511f467235e1cb"
+  },
+  "debugAssembly": {
+    "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+    "sha256": "ecc245dc1b65602be442ccaa9125cb98014ca6ac578faf4e2eb532543b607158"
+  }
+}

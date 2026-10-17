@@ -46,236 +46,236 @@ public sealed class WorksAppHostTopologyTests
             "hexalith-works-topology-model-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(certificateDirectory);
         CancellationToken cancellationToken = TestContext.Current.CancellationToken;
-        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "ca.crt"), "topology-anchor", cancellationToken).ConfigureAwait(true);
-        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.crt"), "topology-chain", cancellationToken).ConfigureAwait(true);
-        await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.key"), "topology-key", cancellationToken).ConfigureAwait(true);
-
         try
         {
-        IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.Hexalith_Works_AppHost>(
-                [
-                    "--EnableKeycloak=false",
-                    "--environment=Development",
-                    "--Dapr:PlacementHostAddress=localhost:6050",
-                    "--Dapr:SchedulerHostAddress=localhost:6060",
-                    $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}",
-                ],
-                cancellationToken)
-            .ConfigureAwait(true);
+            await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "ca.crt"), "topology-anchor", cancellationToken).ConfigureAwait(true);
+            await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.crt"), "topology-chain", cancellationToken).ConfigureAwait(true);
+            await File.WriteAllTextAsync(Path.Combine(certificateDirectory, "issuer.key"), "topology-key", cancellationToken).ConfigureAwait(true);
 
-        ProjectResource eventStore = Project(builder, EventStoreName);
-        ProjectResource adminServer = Project(builder, EventStoreAdminName);
-        ProjectResource operations = Project(builder, EventStoreOperationsName);
-        ProjectResource works = Project(builder, WorksName);
-        ContainerResource sentry = builder.Resources
-            .OfType<ContainerResource>()
-            .Single(static resource => string.Equals(resource.Name, SentryName, StringComparison.Ordinal));
+            IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.Hexalith_Works_AppHost>(
+                    [
+                        "--EnableKeycloak=false",
+                        "--environment=Development",
+                        "--Dapr:PlacementHostAddress=localhost:6050",
+                        "--Dapr:SchedulerHostAddress=localhost:6060",
+                        $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}",
+                    ],
+                    cancellationToken)
+                .ConfigureAwait(true);
 
-        ContainerImageAnnotation sentryImage = sentry.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
-        sentryImage.Image.ShouldBe("daprio/sentry");
-        sentryImage.Tag.ShouldBe("1.18.3");
-        sentry.Entrypoint.ShouldBe("/sentry");
-        EndpointAnnotation sentryGrpc = sentry.Annotations.OfType<EndpointAnnotation>()
-            .Single(static endpoint => string.Equals(endpoint.Name, "grpc", StringComparison.Ordinal));
-        sentryGrpc.Port.ShouldBe(50001);
-        sentryGrpc.TargetPort.ShouldBe(50001);
-        sentryGrpc.IsProxied.ShouldBeFalse();
-        EndpointAnnotation sentryHealth = sentry.Annotations.OfType<EndpointAnnotation>()
-            .Single(static endpoint => string.Equals(endpoint.Name, "health", StringComparison.Ordinal));
-        sentryHealth.TargetPort.ShouldBe(8080);
-        sentry.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
-        ContainerMountAnnotation credentialsMount = sentry.Annotations.OfType<ContainerMountAnnotation>()
-            .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/credentials", StringComparison.Ordinal));
-        credentialsMount.Source.ShouldNotBeNull().ShouldNotStartWith(LocateRepositoryRoot(), Case.Sensitive);
-        credentialsMount.IsReadOnly.ShouldBeFalse();
-        sentry.Annotations.OfType<ContainerMountAnnotation>()
-            .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/config/sentry.yaml", StringComparison.Ordinal))
-            .IsReadOnly.ShouldBeTrue();
+            ProjectResource eventStore = Project(builder, EventStoreName);
+            ProjectResource adminServer = Project(builder, EventStoreAdminName);
+            ProjectResource operations = Project(builder, EventStoreOperationsName);
+            ProjectResource works = Project(builder, WorksName);
+            ContainerResource sentry = builder.Resources
+                .OfType<ContainerResource>()
+                .Single(static resource => string.Equals(resource.Name, SentryName, StringComparison.Ordinal));
 
-        HealthKeys(eventStore).ShouldBe(Sorted(["eventstore_http_/alive_200_check"]));
-        HealthKeys(works).ShouldBe(Sorted(["works_http_/alive_200_check"]));
-        HealthKeys(operations).ShouldBe(Sorted(["eventstore-operations_http_/alive_200_check"]));
+            ContainerImageAnnotation sentryImage = sentry.Annotations.OfType<ContainerImageAnnotation>().ShouldHaveSingleItem();
+            sentryImage.Image.ShouldBe("daprio/sentry");
+            sentryImage.Tag.ShouldBe("1.18.3");
+            sentry.Entrypoint.ShouldBe("/sentry");
+            EndpointAnnotation sentryGrpc = sentry.Annotations.OfType<EndpointAnnotation>()
+                .Single(static endpoint => string.Equals(endpoint.Name, "grpc", StringComparison.Ordinal));
+            sentryGrpc.Port.ShouldBe(50001);
+            sentryGrpc.TargetPort.ShouldBe(50001);
+            sentryGrpc.IsProxied.ShouldBeFalse();
+            EndpointAnnotation sentryHealth = sentry.Annotations.OfType<EndpointAnnotation>()
+                .Single(static endpoint => string.Equals(endpoint.Name, "health", StringComparison.Ordinal));
+            sentryHealth.TargetPort.ShouldBe(8080);
+            sentry.Annotations.OfType<HealthCheckAnnotation>().ShouldHaveSingleItem();
+            ContainerMountAnnotation credentialsMount = sentry.Annotations.OfType<ContainerMountAnnotation>()
+                .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/credentials", StringComparison.Ordinal));
+            credentialsMount.Source.ShouldNotBeNull().ShouldNotStartWith(LocateRepositoryRoot(), Case.Sensitive);
+            credentialsMount.IsReadOnly.ShouldBeFalse();
+            sentry.Annotations.OfType<ContainerMountAnnotation>()
+                .Single(static mount => string.Equals(mount.Target, "/var/run/dapr/config/sentry.yaml", StringComparison.Ordinal))
+                .IsReadOnly.ShouldBeTrue();
 
-        EndpointAnnotation worksHttp = works.Annotations
-            .OfType<EndpointAnnotation>()
-            .Single(static endpoint => string.Equals(endpoint.Name, "http", StringComparison.Ordinal));
-        worksHttp.UriScheme.ShouldBe("http");
-        worksHttp.Transport.ShouldBe("http");
-        worksHttp.Protocol.ShouldBe(ProtocolType.Tcp);
-        worksHttp.Port.ShouldBeNull();
-        worksHttp.TargetPort.ShouldBeNull();
-        worksHttp.IsExternal.ShouldBeFalse();
-        worksHttp.IsProxied.ShouldBeTrue();
+            HealthKeys(eventStore).ShouldBe(Sorted(["eventstore_http_/alive_200_check"]));
+            HealthKeys(works).ShouldBe(Sorted(["works_http_/alive_200_check"]));
+            HealthKeys(operations).ShouldBe(Sorted(["eventstore-operations_http_/alive_200_check"]));
 
-        string componentsDirectory = ComponentsDirectory();
-        IDaprSidecarResource eventStoreSidecar = Sidecar(eventStore);
-        IDaprSidecarResource adminSidecar = Sidecar(adminServer);
-        IDaprSidecarResource worksSidecar = Sidecar(works);
-        IDaprSidecarResource operationsSidecar = Sidecar(operations);
+            EndpointAnnotation worksHttp = works.Annotations
+                .OfType<EndpointAnnotation>()
+                .Single(static endpoint => string.Equals(endpoint.Name, "http", StringComparison.Ordinal));
+            worksHttp.UriScheme.ShouldBe("http");
+            worksHttp.Transport.ShouldBe("http");
+            worksHttp.Protocol.ShouldBe(ProtocolType.Tcp);
+            worksHttp.Port.ShouldBeNull();
+            worksHttp.TargetPort.ShouldBeNull();
+            worksHttp.IsExternal.ShouldBeFalse();
+            worksHttp.IsProxied.ShouldBeTrue();
 
-        DaprSidecarOptions eventStoreOptions = SidecarOptions(eventStoreSidecar);
-        eventStoreOptions.AppId.ShouldBe(EventStoreName);
-        eventStoreOptions.DaprHttpPort.ShouldBe(3501);
-        eventStoreOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.yaml"));
-        eventStoreOptions.PlacementHostAddress.ShouldBe("localhost:6050");
-        eventStoreOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
-        ReferencedComponents(eventStoreSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
+            string componentsDirectory = ComponentsDirectory();
+            IDaprSidecarResource eventStoreSidecar = Sidecar(eventStore);
+            IDaprSidecarResource adminSidecar = Sidecar(adminServer);
+            IDaprSidecarResource worksSidecar = Sidecar(works);
+            IDaprSidecarResource operationsSidecar = Sidecar(operations);
 
-        DaprSidecarOptions adminOptions = SidecarOptions(adminSidecar);
-        adminOptions.AppId.ShouldBe(EventStoreAdminName);
-        adminOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-admin.yaml"));
-        ReferencedComponents(adminSidecar).ShouldBe([ResiliencyName, StateStoreName]);
+            DaprSidecarOptions eventStoreOptions = SidecarOptions(eventStoreSidecar);
+            eventStoreOptions.AppId.ShouldBe(EventStoreName);
+            eventStoreOptions.DaprHttpPort.ShouldBe(3501);
+            eventStoreOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.yaml"));
+            eventStoreOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+            eventStoreOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
+            ReferencedComponents(eventStoreSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
-        DaprSidecarOptions worksOptions = SidecarOptions(worksSidecar);
-        worksOptions.AppId.ShouldBe(WorksName);
-        worksOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.works.yaml"));
-        worksOptions.EnableAppHealthCheck.ShouldBe(true);
-        worksOptions.AppHealthCheckPath.ShouldBe("/alive");
-        worksOptions.PlacementHostAddress.ShouldBe("localhost:6050");
-        worksOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
-        worksOptions.AppPort.ShouldBeNull();
-        ReferencedComponents(worksSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
+            DaprSidecarOptions adminOptions = SidecarOptions(adminSidecar);
+            adminOptions.AppId.ShouldBe(EventStoreAdminName);
+            adminOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-admin.yaml"));
+            ReferencedComponents(adminSidecar).ShouldBe([ResiliencyName, StateStoreName]);
 
-        DaprSidecarOptions operationsOptions = SidecarOptions(operationsSidecar);
-        operationsOptions.AppId.ShouldBe(EventStoreOperationsName);
-        operationsOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-operations.yaml"));
-        operationsOptions.EnableAppHealthCheck.ShouldBe(true);
-        operationsOptions.AppHealthCheckPath.ShouldBe("/alive");
-        operationsOptions.PlacementHostAddress.ShouldBe("localhost:6050");
-        operationsOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
-        ReferencedComponents(operationsSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
+            DaprSidecarOptions worksOptions = SidecarOptions(worksSidecar);
+            worksOptions.AppId.ShouldBe(WorksName);
+            worksOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.works.yaml"));
+            worksOptions.EnableAppHealthCheck.ShouldBe(true);
+            worksOptions.AppHealthCheckPath.ShouldBe("/alive");
+            worksOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+            worksOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
+            worksOptions.AppPort.ShouldBeNull();
+            ReferencedComponents(worksSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
-        // Two "Reference" relationships to eventstore, not one: AddEventStoreDomainModule contributes the
-        // domain-module reference and the explicit EventStore__CommandGateway__BaseAddress endpoint reference
-        // contributes the second. Counted rather than de-duplicated so losing either one fails here.
-        ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName, "works-app-api-token", "works-local-jwt-signing-key"]);
-        WaitedResources(eventStore).ShouldBe([SentryName]);
-        WaitedResources(works).ShouldBe([SentryName, EventStoreName, StateStoreName]);
-        ReferencedResources(adminServer).ShouldBe([EventStoreName, "eventstore-admin-app-api-token", EventStoreOperationsName, "works-local-jwt-signing-key"]);
-        WaitedResources(adminServer).ShouldBe([SentryName, EventStoreOperationsName]);
-        ReferencedResources(operations).ShouldBe(["eventstore-operations-app-api-token", WorksName]);
-        WaitedResources(operations).ShouldBe([SentryName, StateStoreName, WorksName]);
+            DaprSidecarOptions operationsOptions = SidecarOptions(operationsSidecar);
+            operationsOptions.AppId.ShouldBe(EventStoreOperationsName);
+            operationsOptions.Config.ShouldBe(Path.Combine(componentsDirectory, "accesscontrol.eventstore-operations.yaml"));
+            operationsOptions.EnableAppHealthCheck.ShouldBe(true);
+            operationsOptions.AppHealthCheckPath.ShouldBe("/alive");
+            operationsOptions.PlacementHostAddress.ShouldBe("localhost:6050");
+            operationsOptions.SchedulerHostAddress.ShouldBe("localhost:6060");
+            ReferencedComponents(operationsSidecar).ShouldBe([PubSubName, ResiliencyName, StateStoreName]);
 
-        // The bounded inbound retry budget only holds where the CRD's directory reaches --resources-path, so no
-        // composed sidecar may be missing the reference — including one added after this test was written.
-        IDaprSidecarResource[] allSidecars =
-        [
-            .. builder.Resources.OfType<ProjectResource>()
-                .Where(static resource => resource.TryGetAnnotationsOfType<DaprSidecarAnnotation>(out _))
-                .Select(Sidecar)
-                .Distinct(),
-        ];
-        allSidecars.Length.ShouldBe(4);
-        allSidecars.ShouldAllBe(sidecar => ReferencedComponents(sidecar).Contains(ResiliencyName));
-        allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 2);
+            // Two "Reference" relationships to eventstore, not one: AddEventStoreDomainModule contributes the
+            // domain-module reference and the explicit EventStore__CommandGateway__BaseAddress endpoint reference
+            // contributes the second. Counted rather than de-duplicated so losing either one fails here.
+            ReferencedResources(works).ShouldBe([EventStoreName, EventStoreName, "works-app-api-token", "works-local-jwt-signing-key"]);
+            WaitedResources(eventStore).ShouldBe([SentryName]);
+            WaitedResources(works).ShouldBe([SentryName, EventStoreName, StateStoreName]);
+            ReferencedResources(adminServer).ShouldBe([EventStoreName, "eventstore-admin-app-api-token", EventStoreOperationsName, "works-local-jwt-signing-key"]);
+            WaitedResources(adminServer).ShouldBe([SentryName, EventStoreOperationsName]);
+            ReferencedResources(operations).ShouldBe(["eventstore-operations-app-api-token", WorksName]);
+            WaitedResources(operations).ShouldBe([SentryName, StateStoreName, WorksName]);
 
-        ParameterResource signingKey = Parameter(builder, "works-local-jwt-signing-key");
-        signingKey.Secret.ShouldBeTrue();
-        string? resolvedSigningKey = await ResolveAsync(signingKey, works, builder.ExecutionContext);
-        (resolvedSigningKey is { Length: >= 32 }).ShouldBeTrue();
-        var channelTokens = new HashSet<ParameterResource>();
-        foreach (ProjectResource project in new[] { eventStore, adminServer, works, operations })
-        {
-            Dictionary<string, object> projectEnvironment = await EvaluateEnvironmentAsync(project, builder.ExecutionContext);
-            Dictionary<string, object> sidecarEnvironment = await EvaluateEnvironmentAsync(Sidecar(project), builder.ExecutionContext);
-            ParameterResource channelToken = projectEnvironment["APP_API_TOKEN"].ShouldBeOfType<ParameterResource>();
-            channelToken.Secret.ShouldBeTrue();
-            channelToken.Name.ShouldBe(project.Name + "-app-api-token");
-            sidecarEnvironment["APP_API_TOKEN"].ShouldBeSameAs(channelToken);
-            channelTokens.Add(channelToken).ShouldBeTrue();
-            StringValue(projectEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
-            if (project != operations)
+            // The bounded inbound retry budget only holds where the CRD's directory reaches --resources-path, so no
+            // composed sidecar may be missing the reference — including one added after this test was written.
+            IDaprSidecarResource[] allSidecars =
+            [
+                .. builder.Resources.OfType<ProjectResource>()
+                    .Where(static resource => resource.TryGetAnnotationsOfType<DaprSidecarAnnotation>(out _))
+                    .Select(Sidecar)
+                    .Distinct(),
+            ];
+            allSidecars.Length.ShouldBe(4);
+            allSidecars.ShouldAllBe(sidecar => ReferencedComponents(sidecar).Contains(ResiliencyName));
+            allSidecars.ShouldAllBe(sidecar => sidecar.Annotations.OfType<EnvironmentCallbackAnnotation>().Count() == 2);
+
+            ParameterResource signingKey = Parameter(builder, "works-local-jwt-signing-key");
+            signingKey.Secret.ShouldBeTrue();
+            string? resolvedSigningKey = await ResolveAsync(signingKey, works, builder.ExecutionContext);
+            (resolvedSigningKey is { Length: >= 32 }).ShouldBeTrue();
+            var channelTokens = new HashSet<ParameterResource>();
+            foreach (ProjectResource project in new[] { eventStore, adminServer, works, operations })
             {
-                projectEnvironment["Authentication__JwtBearer__SigningKey"].ShouldBeSameAs(signingKey);
-                string.Equals(await ResolveAsync(signingKey, project, builder.ExecutionContext), resolvedSigningKey,
-                    StringComparison.Ordinal).ShouldBeTrue("Every receiver must resolve the same per-run signing key.");
-                StringValue(projectEnvironment, "Authentication__JwtBearer__Authority").ShouldBe(string.Empty);
-                StringValue(projectEnvironment, "Authentication__JwtBearer__Issuer").ShouldBe("hexalith-dev");
-                StringValue(projectEnvironment, "Authentication__JwtBearer__AllowedAlgorithms__0").ShouldBe("HS256");
-                StringValue(projectEnvironment, "Authentication__WorkloadIssuer__Workload").ShouldBe(project.Name);
+                Dictionary<string, object> projectEnvironment = await EvaluateEnvironmentAsync(project, builder.ExecutionContext);
+                Dictionary<string, object> sidecarEnvironment = await EvaluateEnvironmentAsync(Sidecar(project), builder.ExecutionContext);
+                ParameterResource channelToken = projectEnvironment["APP_API_TOKEN"].ShouldBeOfType<ParameterResource>();
+                channelToken.Secret.ShouldBeTrue();
+                channelToken.Name.ShouldBe(project.Name + "-app-api-token");
+                sidecarEnvironment["APP_API_TOKEN"].ShouldBeSameAs(channelToken);
+                channelTokens.Add(channelToken).ShouldBeTrue();
+                StringValue(projectEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
+                if (project != operations)
+                {
+                    projectEnvironment["Authentication__JwtBearer__SigningKey"].ShouldBeSameAs(signingKey);
+                    string.Equals(await ResolveAsync(signingKey, project, builder.ExecutionContext), resolvedSigningKey,
+                        StringComparison.Ordinal).ShouldBeTrue("Every receiver must resolve the same per-run signing key.");
+                    StringValue(projectEnvironment, "Authentication__JwtBearer__Authority").ShouldBe(string.Empty);
+                    StringValue(projectEnvironment, "Authentication__JwtBearer__Issuer").ShouldBe("hexalith-dev");
+                    StringValue(projectEnvironment, "Authentication__JwtBearer__AllowedAlgorithms__0").ShouldBe("HS256");
+                    StringValue(projectEnvironment, "Authentication__WorkloadIssuer__Workload").ShouldBe(project.Name);
+                }
             }
-        }
 
-        Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
-        StringValue(eventStoreEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
-        StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId").ShouldBe(WorksName);
-        StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName").ShouldBe("process");
-        StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId").ShouldBe("*");
-        StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__Domain").ShouldBe("work");
-        StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__Version").ShouldBe("v1");
-        StringValue(eventStoreEnvironment, "EventStore__Publisher__TopicOverrides__work").ShouldBe("work.events");
-        StringValue(eventStoreEnvironment, "Authentication__DaprInternal__AllowedCallers__0").ShouldBe(WorksName);
-        EnvironmentKeys(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__")
-            .ShouldBe([
-                "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId",
-                "EventStore__DomainServices__Registrations__wildcard_work_v1__Domain",
-                "EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName",
-                "EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId",
-                "EventStore__DomainServices__Registrations__wildcard_work_v1__Version",
+            Dictionary<string, object> eventStoreEnvironment = await EvaluateEnvironmentAsync(eventStore, builder.ExecutionContext);
+            StringValue(eventStoreEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
+            StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId").ShouldBe(WorksName);
+            StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName").ShouldBe("process");
+            StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId").ShouldBe("*");
+            StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__Domain").ShouldBe("work");
+            StringValue(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__Version").ShouldBe("v1");
+            StringValue(eventStoreEnvironment, "EventStore__Publisher__TopicOverrides__work").ShouldBe("work.events");
+            StringValue(eventStoreEnvironment, "Authentication__DaprInternal__AllowedCallers__0").ShouldBe(WorksName);
+            EnvironmentKeys(eventStoreEnvironment, "EventStore__DomainServices__Registrations__wildcard_work_v1__")
+                .ShouldBe([
+                    "EventStore__DomainServices__Registrations__wildcard_work_v1__AppId",
+                    "EventStore__DomainServices__Registrations__wildcard_work_v1__Domain",
+                    "EventStore__DomainServices__Registrations__wildcard_work_v1__MethodName",
+                    "EventStore__DomainServices__Registrations__wildcard_work_v1__TenantId",
+                    "EventStore__DomainServices__Registrations__wildcard_work_v1__Version",
+                ]);
+            EnvironmentKeys(eventStoreEnvironment, "EventStore__Publisher__TopicOverrides__")
+                .ShouldBe(["EventStore__Publisher__TopicOverrides__work"]);
+            EnvironmentKeys(eventStoreEnvironment, "Authentication__DaprInternal__AllowedCallers__")
+                .ShouldBe(["Authentication__DaprInternal__AllowedCallers__0"]);
+
+            Dictionary<string, object> worksEnvironment = await EvaluateEnvironmentAsync(works, builder.ExecutionContext);
+            StringValue(worksEnvironment, "EventStore__DomainService__AppId").ShouldBe(WorksName);
+            StringValue(worksEnvironment, "EventStore__DomainService__ServiceVersion").ShouldBe("v1");
+            EnvironmentKeys(worksEnvironment, "EventStore__DomainService__")
+                .ShouldBe(["EventStore__DomainService__AppId", "EventStore__DomainService__ServiceVersion"]);
+            EndpointReference gateway = worksEnvironment["EventStore__CommandGateway__BaseAddress"]
+                .ShouldBeOfType<EndpointReference>();
+            gateway.Resource.Name.ShouldBe(EventStoreName);
+            gateway.EndpointName.ShouldBe("http");
+
+            Dictionary<string, object> adminEnvironment = await EvaluateEnvironmentAsync(adminServer, builder.ExecutionContext);
+            StringValue(adminEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
+            StringValue(adminEnvironment, "AdminServer__ResiliencyConfigPath")
+                .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
+            StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
+
+            Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
+            StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
+            StringValue(operationsEnvironment, "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER").ShouldBe("1");
+            StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
+            StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
+            StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");
+            StringValue(operationsEnvironment, "EventStoreOperations__CaptureRoute").ShouldBe("/dead-letters/work/events");
+            StringValue(operationsEnvironment, "EventStoreOperations__AdminCallerAppId").ShouldBe(EventStoreAdminName);
+            StringValue(operationsEnvironment, "EventStoreOperations__ReplayAppId").ShouldBe(WorksName);
+            StringValue(operationsEnvironment, "EventStoreOperations__ReplayMethodName").ShouldBe("work/events");
+            EnvironmentKeys(operationsEnvironment, "EventStoreOperations__").ShouldBe([
+                "EventStoreOperations__AdminCallerAppId",
+                "EventStoreOperations__CaptureRoute",
+                "EventStoreOperations__PubSubName",
+                "EventStoreOperations__ReplayAppId",
+                "EventStoreOperations__ReplayMethodName",
+                "EventStoreOperations__TopicName",
             ]);
-        EnvironmentKeys(eventStoreEnvironment, "EventStore__Publisher__TopicOverrides__")
-            .ShouldBe(["EventStore__Publisher__TopicOverrides__work"]);
-        EnvironmentKeys(eventStoreEnvironment, "Authentication__DaprInternal__AllowedCallers__")
-            .ShouldBe(["Authentication__DaprInternal__AllowedCallers__0"]);
 
-        Dictionary<string, object> worksEnvironment = await EvaluateEnvironmentAsync(works, builder.ExecutionContext);
-        StringValue(worksEnvironment, "EventStore__DomainService__AppId").ShouldBe(WorksName);
-        StringValue(worksEnvironment, "EventStore__DomainService__ServiceVersion").ShouldBe("v1");
-        EnvironmentKeys(worksEnvironment, "EventStore__DomainService__")
-            .ShouldBe(["EventStore__DomainService__AppId", "EventStore__DomainService__ServiceVersion"]);
-        EndpointReference gateway = worksEnvironment["EventStore__CommandGateway__BaseAddress"]
-            .ShouldBeOfType<EndpointReference>();
-        gateway.Resource.Name.ShouldBe(EventStoreName);
-        gateway.EndpointName.ShouldBe("http");
+            IDaprComponentResource stateStore = Component(builder, StateStoreName);
+            stateStore.Type.ShouldBe("state.redis");
+            stateStore.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "statestore.yaml"));
+            IDaprComponentResource pubSub = Component(builder, PubSubName);
+            pubSub.Type.ShouldBe("pubsub.redis");
+            pubSub.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "pubsub.yaml"));
+            IDaprComponentResource resiliency = Component(builder, ResiliencyName);
+            resiliency.Type.ShouldBe("resiliency");
+            resiliency.Options.ShouldNotBeNull().LocalPath
+                .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
 
-        Dictionary<string, object> adminEnvironment = await EvaluateEnvironmentAsync(adminServer, builder.ExecutionContext);
-        StringValue(adminEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
-        StringValue(adminEnvironment, "AdminServer__ResiliencyConfigPath")
-            .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
-        StringValue(adminEnvironment, "AdminServer__OperationsAppId").ShouldBe(EventStoreOperationsName);
-
-        Dictionary<string, object> operationsEnvironment = await EvaluateEnvironmentAsync(operations, builder.ExecutionContext);
-        StringValue(operationsEnvironment, "DOTNET_ENVIRONMENT").ShouldBe("Development");
-        StringValue(operationsEnvironment, "DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER").ShouldBe("1");
-        StringValue(operationsEnvironment, "MSBUILDDISABLENODEREUSE").ShouldBe("1");
-        StringValue(operationsEnvironment, "EventStoreOperations__PubSubName").ShouldBe(PubSubName);
-        StringValue(operationsEnvironment, "EventStoreOperations__TopicName").ShouldBe("deadletter.work.events");
-        StringValue(operationsEnvironment, "EventStoreOperations__CaptureRoute").ShouldBe("/dead-letters/work/events");
-        StringValue(operationsEnvironment, "EventStoreOperations__AdminCallerAppId").ShouldBe(EventStoreAdminName);
-        StringValue(operationsEnvironment, "EventStoreOperations__ReplayAppId").ShouldBe(WorksName);
-        StringValue(operationsEnvironment, "EventStoreOperations__ReplayMethodName").ShouldBe("work/events");
-        EnvironmentKeys(operationsEnvironment, "EventStoreOperations__").ShouldBe([
-            "EventStoreOperations__AdminCallerAppId",
-            "EventStoreOperations__CaptureRoute",
-            "EventStoreOperations__PubSubName",
-            "EventStoreOperations__ReplayAppId",
-            "EventStoreOperations__ReplayMethodName",
-            "EventStoreOperations__TopicName",
-        ]);
-
-        IDaprComponentResource stateStore = Component(builder, StateStoreName);
-        stateStore.Type.ShouldBe("state.redis");
-        stateStore.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "statestore.yaml"));
-        IDaprComponentResource pubSub = Component(builder, PubSubName);
-        pubSub.Type.ShouldBe("pubsub.redis");
-        pubSub.Options.ShouldNotBeNull().LocalPath.ShouldBe(Path.Combine(componentsDirectory, "pubsub.yaml"));
-        IDaprComponentResource resiliency = Component(builder, ResiliencyName);
-        resiliency.Type.ShouldBe("resiliency");
-        resiliency.Options.ShouldNotBeNull().LocalPath
-            .ShouldBe(Path.Combine(componentsDirectory, ResiliencyName, "resiliency.yaml"));
-
-        string[] forbiddenFragments = ["mcp", "chatbot", "email", "mail", "datagrid", "webshell", "routing", "cost", "keycloak", "signalr"];
-        string[] forbiddenSurfaces =
-        [
-            .. builder.Resources
+            string[] forbiddenFragments = ["mcp", "chatbot", "email", "mail", "datagrid", "webshell", "routing", "cost", "keycloak", "signalr"];
+            string[] forbiddenSurfaces =
+            [
+                .. builder.Resources
+                    .Select(static resource => resource.Name)
+                    .Where(name => forbiddenFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase))),
+            ];
+            forbiddenSurfaces.ShouldBeEmpty($"The pipeline proof must not compose production surfaces: {string.Join(", ", forbiddenSurfaces)}");
+            builder.Resources
                 .Select(static resource => resource.Name)
-                .Where(name => forbiddenFragments.Any(fragment => name.Contains(fragment, StringComparison.OrdinalIgnoreCase))),
-        ];
-        forbiddenSurfaces.ShouldBeEmpty($"The pipeline proof must not compose production surfaces: {string.Join(", ", forbiddenSurfaces)}");
-        builder.Resources
-            .Select(static resource => resource.Name)
-            .ShouldNotContain(static name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase));
+                .ShouldNotContain(static name => name.EndsWith("-ui", StringComparison.OrdinalIgnoreCase));
         }
         finally
         {

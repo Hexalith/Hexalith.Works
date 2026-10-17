@@ -1,0 +1,52 @@
+{
+  "live-final-callback-state.jsonl": {
+    "path": "/tmp/story415-review-20261017/live-final-callback-state.jsonl",
+    "sha256": "c25add27e39f95127049aa786a86dd72360b1f9df6235960d0751c98e28f0785",
+    "archive": {
+      "archive": "raw-evidence/supporting/53400432d4d4-live-final-callback-state.jsonl.gz",
+      "compressed_sha256": "bbeabc9c9e1541b7ca4610b734a6cb44d6641cb0fec30336d89134fa2ed55974",
+      "uncompressed_sha256": "c25add27e39f95127049aa786a86dd72360b1f9df6235960d0751c98e28f0785",
+      "compressed_bytes": 529,
+      "uncompressed_bytes": 951,
+      "role": "supporting"
+    }
+  },
+  "live-diagnostic-state.jsonl": {
+    "path": "/tmp/story415-review-20261017/live-diagnostic-state.jsonl",
+    "sha256": "fcd45e05757dad74b9f580f649f33de4ced3e4f664bf6cce90cdf6407b687bcd",
+    "archive": {
+      "archive": "raw-evidence/supporting/d38eecb83a07-live-diagnostic-state.jsonl.gz",
+      "compressed_sha256": "8e19ae489a375fa104dd6298eee57ba8ee345fc3d399aa596799adeb5955f323",
+      "uncompressed_sha256": "fcd45e05757dad74b9f580f649f33de4ced3e4f664bf6cce90cdf6407b687bcd",
+      "compressed_bytes": 3353,
+      "uncompressed_bytes": 17792,
+      "role": "supporting"
+    }
+  },
+  "live-source-progress.jsonl": {
+    "path": "/tmp/story415-review-20261017/live-source-progress.jsonl",
+    "sha256": "ca249208d99e54bf1b0f2d1470381c88af9126f8dac0a2e8ea25a1ddabe4c75e",
+    "archive": {
+      "archive": "raw-evidence/supporting/4a92bee3d9ba-live-source-progress.jsonl.gz",
+      "compressed_sha256": "68cb7a9fc720ba3299b0002db40f599a8afb0a0bb28a4e02dca80ab63905775c",
+      "uncompressed_sha256": "ca249208d99e54bf1b0f2d1470381c88af9126f8dac0a2e8ea25a1ddabe4c75e",
+      "compressed_bytes": 1348,
+      "uncompressed_bytes": 13065,
+      "role": "supporting"
+    }
+  },
+  "selected_phases": [
+    "successful-callback-no-periodic-recovery",
+    "rescheduled-expiry-committed-current-witness",
+    "cascade-expiry-target-commit-before-checkpoint",
+    "cascade-expiry-restart-receipt-and-checkpoint",
+    "canonical-related-child-creation-gap",
+    "cascade-target-commit-before-checkpoint",
+    "five-child-persisted-target-receipts",
+    "cascade-restart-receipt-and-checkpoint",
+    "child-resume-noop-receipt-before-checkpoint",
+    "complete-supported-process-coverage",
+    "child-resume-noop-restart-receipt-and-checkpoint"
+  ],
+  "redacted_fields": 10
+}
