@@ -379,12 +379,12 @@ public sealed class WorksSdkProtectedHttpTests
             return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(CurrentIdentity())));
         });
         await parties.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var store = new QueryWindowStore(new InMemoryReadModelStore());
         string bearer = failure == "expired" ? ServiceBearer(expired: true) : "rejected-service-credential";
         await using WebApplication app = BuildProtectedHost(store, Address(parties), settings:
             [$"--Works:Query:PartiesGatewayBearerToken={bearer}"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        store.ClearReceivedCalls();
+        store.Observe = true;
         using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
         foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
         {
@@ -399,7 +399,7 @@ public sealed class WorksSdkProtectedHttpTests
         }
 
         identityRequests.ShouldBe(0);
-        store.ReceivedCalls().ShouldBeEmpty();
+        store.Operations.ShouldBe(0, "A rejected or expired service bearer must not read or write Works state.");
     }
 
     [Fact]
@@ -1018,6 +1018,45 @@ public sealed class WorksSdkProtectedHttpTests
         store.Snapshot<List<Dictionary<string, string>>>("statestore", auditKey).ShouldNotBeNull().Count.ShouldBe(2);
         auditedWrites.ShouldBeGreaterThan(0);
         submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>Counts store operations only after <see cref="Observe"/> is enabled, so startup traffic is ignored.</summary>
+    private sealed class QueryWindowStore(IReadModelStore inner) : IReadModelStore
+    {
+        private int _operations;
+
+        public bool Observe { get; set; }
+
+        public int Operations => _operations;
+
+        public Task<ReadModelEntry<TValue>> GetAsync<TValue>(string storeName, string key, CancellationToken cancellationToken = default)
+            where TValue : class
+        {
+            Note();
+            return inner.GetAsync<TValue>(storeName, key, cancellationToken);
+        }
+
+        public Task SaveAsync<TValue>(string storeName, string key, TValue value, CancellationToken cancellationToken = default)
+            where TValue : class
+        {
+            Note();
+            return inner.SaveAsync(storeName, key, value, cancellationToken);
+        }
+
+        public Task<bool> TrySaveAsync<TValue>(string storeName, string key, TValue value, string etag, CancellationToken cancellationToken = default)
+            where TValue : class
+        {
+            Note();
+            return inner.TrySaveAsync(storeName, key, value, etag, cancellationToken);
+        }
+
+        private void Note()
+        {
+            if (Observe)
+            {
+                _ = Interlocked.Increment(ref _operations);
+            }
+        }
     }
 
     private static WebApplication BuildProtectedHost(IReadModelStore store, string partiesAddress,
