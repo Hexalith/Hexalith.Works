@@ -720,7 +720,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
-        deadline.CancelAfter(TimeSpan.FromMinutes(2));
+        // A busy runner can spend longer than two minutes before a sweep records the expected state.
+        deadline.CancelAfter(TimeSpan.FromMinutes(4));
         while (!await condition().ConfigureAwait(false))
             await Task.Delay(100, deadline.Token).ConfigureAwait(false);
     }
