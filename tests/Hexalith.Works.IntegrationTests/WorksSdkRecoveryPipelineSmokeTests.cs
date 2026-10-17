@@ -395,8 +395,10 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             _ = await ReadModelWritePolicy.UpdateAsync<WorksSdkProofFaultState>(store, "statestore", "story415:fail-after-commit:" + tenant,
                 _ => new WorksSdkProofFaultState(false) { HoldDelegation = true }, maxAttempts: 8, cancellationToken: token).ConfigureAwait(false);
             await WorksAppHostSmokeHarness.SubmitToTerminalAsync(client, tenant, resumeChild, nameof(CompleteWorkItem), new CompleteWorkItem(tenantId, child), token).ConfigureAwait(false);
-            await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore",
-                ProcessStateKeys.Source(new ProcessSource(tenant, "work", resumeChild)), token).ConfigureAwait(false)).Value?.PendingPlan?.Effects.Count == 1, token).ConfigureAwait(false);
+            // The completion is discovered from projection membership on a later sweep cycle. A busy
+            // proof host can spend the ordinary two-minute poll inside earlier sources, so this wait
+            // allows one extra cycle and fails immediately once the completion is checkpointed without a plan.
+            await WaitForRetainedPlanAsync(store, new ProcessSource(tenant, "work", resumeChild), expectedSequence: 4, token).ConfigureAwait(false);
             // Consume the await through an ordinary command after the SDK retained its exact plan.
             // The trusted effect must then commit a no-op receipt without another domain event.
             await WorksAppHostSmokeHarness.SubmitToTerminalAsync(client, tenant, resumeParent, nameof(ResumeWorkItem),
@@ -721,6 +723,38 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         deadline.CancelAfter(TimeSpan.FromMinutes(2));
         while (!await condition().ConfigureAwait(false))
             await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Waits until the source retains one effect for <paramref name="expectedSequence"/>.
+    /// A checkpoint at that sequence means the effect was consumed and will not appear later.
+    /// </summary>
+    private static async Task WaitForRetainedPlanAsync(IReadModelStore store, ProcessSource source, long expectedSequence, CancellationToken token)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(TimeSpan.FromMinutes(4));
+        ProcessSourceState? state = null;
+        while (true)
+        {
+            state = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value;
+            if (state?.PendingPlan?.Sequence == expectedSequence && state.PendingPlan.Effects.Count == 1)
+                return;
+            if (state is { Checkpoint: var checkpoint } && checkpoint >= expectedSequence && state.PendingPlan is null)
+            {
+                throw new InvalidOperationException(
+                    $"Process source {source.Aggregate} checkpointed sequence {checkpoint} without retaining the plan. Status={state.Status} Reason={state.ReasonCode}.");
+            }
+
+            try
+            {
+                await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (!token.IsCancellationRequested)
+            {
+                throw new TimeoutException(
+                    $"Process source {source.Aggregate} did not retain a plan for sequence {expectedSequence}. Checkpoint={state?.Checkpoint} Status={state?.Status} Reason={state?.ReasonCode} PendingSequence={state?.PendingPlan?.Sequence} PendingEffects={state?.PendingPlan?.Effects.Count.ToString() ?? "none"}.");
+            }
+        }
     }
 
     /// <summary>
