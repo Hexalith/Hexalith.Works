@@ -1,0 +1,63 @@
+{
+  "scope": "Passed frozen V2 unpublished candidate callback, operations, telemetry and conflict-quarantine supporting fact; no published parity acceptance",
+  "checkedUtc": "2026-10-16T21:34:42.602581+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-callback-v2 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+  "exitCode": 0,
+  "tests": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "152.915"
+  },
+  "durablePhases": 5,
+  "sameHostAndCompleteRuntimeInventoryAsFull8": true,
+  "qualifiesAsPublishedParity": false,
+  "independentAudit": {
+    "disabledReadiness": "Degraded",
+    "actualOtlpAlertExported": true,
+    "negativeReceivers": {
+      "wrongPurpose": {
+        "receiverStatus": 403,
+        "callerStatus": 403,
+        "nonceCorrelated": true
+      },
+      "wrongTenant": {
+        "receiverStatus": 403,
+        "callerStatus": 500,
+        "nonceCorrelated": true
+      },
+      "wrongAggregate": {
+        "receiverStatus": 403,
+        "callerStatus": 500,
+        "nonceCorrelated": true
+      },
+      "auditOutage": {
+        "receiverStatus": 500,
+        "callerStatus": 500,
+        "nonceCorrelated": true
+      }
+    },
+    "acceptedCallerStatus": 204,
+    "attributedAuditBeforeMutation": true,
+    "auditOutageProviderAttempts": 1,
+    "durableConflictCount": 1,
+    "queryLifecycle": "Unavailable",
+    "acceptedFamilyUnchanged": true
+  },
+  "filesSha256": {
+    "story416-candidate-3124-callback-v2.xml": "59c1c901b0cb1402b4c6190bdce4e744d33d8438d8c94ec3845543d71f6ae707",
+    "story416-candidate-3124-callback-v2-command.json": "e64a2fc1fcbb499260b77db9b4c8a7fb10cd4ac3967372541321d0dda42c5d3b",
+    "story416-candidate-3124-callback-v2-starts.jsonl": "1d55b0f5fd40dce7e100f6c6f4ccf2c580ad1cd467f724012352c18205f940c9",
+    "story416-candidate-3124-callback-v2-states.jsonl": "7a76a266b2233594b1c1996b1c051b88db50a5559a9afb5948594b7b0d150043"
+  },
+  "actualRunnerCommand": [
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+    "-result-xml",
+    "/tmp/story416-candidate-3124-callback-v2.xml"
+  ]
+}

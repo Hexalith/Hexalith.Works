@@ -1,0 +1,25 @@
+{
+  "scope": "Failed canonical preparation, corrected by replacing generic1.0SDK source identity with actual3.124 target; does not invalidate frozen candidate live facts",
+  "checkedUtc": "2026-10-16T21:43:35.860202+00:00",
+  "command": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.124-source --artifacts-path /tmp/story416-final-public-admission-20261016",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "exitCode": 1,
+  "result": "works-consumer-debug fails CS1704 with duplicate Hexalith.Commons.UniqueIds1.0 project and2.30.1 package; warningMSB3243",
+  "fix": "Build helper now sets explicitVersion3.124.0 andMinVerVersionOverride3.124.0, matching the named SDK producer and the previously successful source graph. No Parties/Commons source or dependency pins changed.",
+  "fixPythonGateResult": "18/18passed; current fresh canonical attempt-v2 is running.",
+  "filesSha256": {
+    "stdout.log": "394e0ef212e1987c3061a3c2a7e23f174a0adfbed6d139003cc4aea6c3cb763d",
+    "ledger.json": "b156a2a9dd750775e12e73b4fd557589bc78cb0660746e768a8de5f10883581c",
+    "agents-full-refusal.log": "dc65d3503d241d8563da3a114bbc751bcab12046519fdeba21feccaa0a26bbb3",
+    "agents-local-scaffold.log": "d762deae287dc27057908afb117a52c0ccc8450836bedc1e4198a6c613653da7",
+    "evidence-gate-tests.log": "23d5b70966bbba27412bc57b71f1742fe7092ad4c8c74accb0a31bca74d706f0",
+    "platform-file-host-release.log": "4bc07c6c21c8dcd8a8d9c20fe242fd1e54d98ec9279505f9b0548c34b0bcb302",
+    "platform-tests-build-debug.log": "6d235b6fa9a206c3a060bbcedafbde88003414c7f775b833584887d9e8e09fc4",
+    "platform-tests-build-release.log": "3349d9a4940f96e442a76f84a31bfd318992cd7d722e430b2621bd5bd1cf008f",
+    "platform-tests-debug.log": "ae70da269df69097c7c0f78071cb3d21432f34ef955063cc1ef257fbd78a7f29",
+    "platform-tests-release.log": "f54a5daf2813d5f16bd51cb81bd64cf0aeda5080e0e8a217669102b9b75f90e0",
+    "works-consumer-debug.log": "32346097eab8ab1d9bfda48ce2beec349a1965c08a26480144a6318e7c21cfbb",
+    "platform-debug.xml": "181d0d93348070757ee56cde77b458eaff8fdc3a3e6c726408a1c65c216c2c6d",
+    "platform-release.xml": "713b2839721c4e435b49baed6a860414782ff3822b1ca728656c59b162875d9d"
+  }
+}

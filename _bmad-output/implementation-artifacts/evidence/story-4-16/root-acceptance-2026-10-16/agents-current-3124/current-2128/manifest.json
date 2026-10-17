@@ -1,0 +1,27 @@
+{
+  "scope": "Fresh preservation of the explicitly approved Agents contract after current Platform changes; not Full Agents qualification",
+  "checkedUtc": "2026-10-16T21:28:32.139042+00:00",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "full": {
+    "command": "bash eng/verify-agents-host.sh --artifacts-path /tmp/story416-agents-current-2126-full",
+    "exitCode": 1,
+    "requiredResult": "DependencyNotAvailable: EXT-HOST-1",
+    "prerequisiteTests": 9,
+    "qualifiesAsFull": false
+  },
+  "localScaffold": {
+    "command": "bash eng/verify-agents-host.sh --mode LocalScaffold --artifacts-path /tmp/story416-agents-current-2126-scaffold",
+    "exitCode": 0,
+    "prerequisiteTests": 9,
+    "requiredResult": "LocalScaffold build succeeded. Full EXT-HOST-1 qualification remains unavailable."
+  },
+  "sourceSha256": {
+    "eng/verify-agents-host.sh": "e749430cd605c2e944d65edeb54ef6c62d5cb4a62534d8fbac25b52666fabbde",
+    "apphost.cs": "b20f4f483723953943458ea438a9762ebfd08dc617ab5e7f5ec522b856f736f9",
+    "references/Hexalith.Builds/Props/Directory.Packages.props": "1a9fcfe7360e4b756db11173ef9bbc4f6dc49dd983c297b7fc27d42bd7f31dcd"
+  },
+  "filesSha256": {
+    "story416-agents-current-2126-full.log": "f33760b99d180712b67816b9f27b6eeaee899a72bf7c4015bdd5008fbfd51497",
+    "story416-agents-current-2126-scaffold.log": "c7926c37bed05ac66324273273fb60e5e7cd07be0869127cee5d09f8c5552778"
+  }
+}

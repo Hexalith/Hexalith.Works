@@ -1,0 +1,16 @@
+{
+  "scope": "Independent actual mapped binaries; unpublished latest-source candidate supporting evidence only",
+  "checkedUtc": "2026-10-16T21:30:33.629210+00:00",
+  "status": "inconclusive-partial-or-between-starts",
+  "readinessRecordCount": 5,
+  "expectedResources": [
+    "eventstore",
+    "eventstore-admin",
+    "works",
+    "eventstore-operations"
+  ],
+  "allFourExpectedEntriesMatch": false,
+  "mappedSdkServerVerified": false,
+  "mappedSdkMismatchCount": 0,
+  "processes": []
+}

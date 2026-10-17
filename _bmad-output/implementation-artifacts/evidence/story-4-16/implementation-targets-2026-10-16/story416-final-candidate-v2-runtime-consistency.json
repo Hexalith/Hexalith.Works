@@ -1,0 +1,99 @@
+{
+  "scope": "candidate diagnostics; compare recorded entry+SDKhashes acrossfourfacts inclretained",
+  "entries": {
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.dll": [
+      "A253B98851BA0E5B61A5634F744B9B50CF0B132B29983DFD25747C29F4D6B3BC"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.Host.dll": [
+      "F3943382E1C25D2A4CE47B7112719EA68824EED515F7E94A4C9A8FA54402B631"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.Works.dll": [
+      "299FEAE73C4751ABD746E25520E63BED5BE7CADFE0D6AABD19DB458337F185CC"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Operations.dll": [
+      "3B1A764E138BCC13716A4C847FD61855A676F3FAB5BF3D05791299E47060B71F"
+    ]
+  },
+  "SDK": {
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Admin.Abstractions.dll": [
+      "76BF5C4C25E9F57E2C53A9A1A0C074A22077E303B45AF2377C315826ED00AD99"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Client.dll": [
+      "266C19742E9C3978BDE4BA863AA49671B3AE50F2AB25FDF27CE6946643DF0B67"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Contracts.dll": [
+      "9181CBB78D2EEB7E6F6F84BEFE813FA39C2773BA1C307DCE70463DCCDEDBD6FD"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.DomainService.dll": [
+      "5437B2561A6DB44BCDC80B324453A0012620820D6E76A30CA954A9E196E012E8"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Gateway.dll": [
+      "DE6544B447B0855F4AD89B679DAD234EDB2F41A9342744A5868765F230115BE6"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Server.dll": [
+      "5742F12A4430991C9871C984B63A804944DFA2782F5A29B0EDB38A427C45E01A"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.ServiceDefaults.dll": [
+      "6D10BDDF8BADA0CBF0AACEA89E07EB4059A67FFD899040B4BEA1116C2470607B"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Abstractions.dll": [
+      "76BF5C4C25E9F57E2C53A9A1A0C074A22077E303B45AF2377C315826ED00AD99"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.Host.dll": [
+      "F3943382E1C25D2A4CE47B7112719EA68824EED515F7E94A4C9A8FA54402B631"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Admin.Server.dll": [
+      "AEF20FD98DE2EB48F8F1FCCCD7F51F548129894F16C09C6935B20653EB05EB02"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.Contracts.dll": [
+      "9181CBB78D2EEB7E6F6F84BEFE813FA39C2773BA1C307DCE70463DCCDEDBD6FD"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Admin.Server.Host/debug/Hexalith.EventStore.ServiceDefaults.dll": [
+      "6D10BDDF8BADA0CBF0AACEA89E07EB4059A67FFD899040B4BEA1116C2470607B"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.Client.dll": [
+      "266C19742E9C3978BDE4BA863AA49671B3AE50F2AB25FDF27CE6946643DF0B67"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.Contracts.dll": [
+      "9181CBB78D2EEB7E6F6F84BEFE813FA39C2773BA1C307DCE70463DCCDEDBD6FD"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.DomainService.dll": [
+      "5437B2561A6DB44BCDC80B324453A0012620820D6E76A30CA954A9E196E012E8"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works/debug/Hexalith.EventStore.ServiceDefaults.dll": [
+      "6D10BDDF8BADA0CBF0AACEA89E07EB4059A67FFD899040B4BEA1116C2470607B"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Admin.Abstractions.dll": [
+      "76BF5C4C25E9F57E2C53A9A1A0C074A22077E303B45AF2377C315826ED00AD99"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Contracts.dll": [
+      "9181CBB78D2EEB7E6F6F84BEFE813FA39C2773BA1C307DCE70463DCCDEDBD6FD"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.Operations.dll": [
+      "3B1A764E138BCC13716A4C847FD61855A676F3FAB5BF3D05791299E47060B71F"
+    ],
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore.Operations/debug/Hexalith.EventStore.ServiceDefaults.dll": [
+      "6D10BDDF8BADA0CBF0AACEA89E07EB4059A67FFD899040B4BEA1116C2470607B"
+    ]
+  },
+  "consumerCurrentHashes": {
+    "story416-candidate-3124-full8": {
+      "exeSHA": "1e2e46105fe491d2f7e79ebb9bbbb558c7b965b4d6ac85fb5fb24950ba3ce257",
+      "assemblySHA": "d6c0b5c5529a1a689c488e2ee8a98d38c595596a3a8bd08605553f535ebd56f9"
+    },
+    "story416-candidate-3124-callback-v2": {
+      "exeSHA": "1e2e46105fe491d2f7e79ebb9bbbb558c7b965b4d6ac85fb5fb24950ba3ce257",
+      "assemblySHA": "d6c0b5c5529a1a689c488e2ee8a98d38c595596a3a8bd08605553f535ebd56f9"
+    },
+    "story416-candidate-3124-historical-v2": {
+      "exeSHA": "1e2e46105fe491d2f7e79ebb9bbbb558c7b965b4d6ac85fb5fb24950ba3ce257",
+      "assemblySHA": "d6c0b5c5529a1a689c488e2ee8a98d38c595596a3a8bd08605553f535ebd56f9"
+    },
+    "story416-candidate-3124-ha-v2": {
+      "exeSHA": "1e2e46105fe491d2f7e79ebb9bbbb558c7b965b4d6ac85fb5fb24950ba3ce257",
+      "assemblySHA": "d6c0b5c5529a1a689c488e2ee8a98d38c595596a3a8bd08605553f535ebd56f9"
+    }
+  },
+  "allRecordedEntriesUnchanged": true,
+  "allRecordedSDKUnchanged": true
+}

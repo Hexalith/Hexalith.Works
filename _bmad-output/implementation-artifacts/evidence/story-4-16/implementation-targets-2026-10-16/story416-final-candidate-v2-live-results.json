@@ -1,0 +1,93 @@
+{
+  "scope": "UNPUBLISHED3.124.1 V2 candidate diagnostics; public3.124 acceptance blocked",
+  "tests": [
+    {
+      "prefix": "story416-candidate-3124-full8",
+      "result": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "time": "603.330"
+      },
+      "phaseCount": 19,
+      "phases": [
+        "cascade-expiry-target-commit-before-checkpoint",
+        "cascade-expiry-restart-receipt-and-checkpoint",
+        "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+        "canonical-related-child-creation-gap",
+        "cascade-target-commit-before-checkpoint",
+        "five-child-persisted-target-receipts",
+        "cascade-restart-receipt-and-checkpoint",
+        "child-resume-noop-receipt-before-checkpoint",
+        "paged-process-candidates-pre-restart",
+        "complete-supported-process-coverage",
+        "child-resume-noop-restart-receipt-and-checkpoint",
+        "paged-process-restart-and-shared-store-owner-fencing",
+        "protected-scoped-disposition-audit-before-mutation",
+        "platform-initial-projection-convergence",
+        "platform-named-redelivery-capture-through-commit-complete-family",
+        "platform-query-and-explicit-receipt-replay",
+        "durable-recovery-alert-export-and-clear",
+        "complete-platform-fleet-snapshot",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ],
+      "startCount": 5,
+      "startEvidenceSHA256": "f48b5243fc34c4d330a62b19074cb7a05f2af237e3165dff8c287e0a7952b838"
+    },
+    {
+      "prefix": "story416-candidate-3124-callback-v2",
+      "result": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "time": "152.915"
+      },
+      "phaseCount": 5,
+      "phases": [
+        "periodic-writers-disabled-readiness-degraded",
+        "successful-callback-no-periodic-recovery",
+        "disabled-recovery-otlp-alert-export",
+        "callback-protected-scoped-disposition-audit-before-mutation",
+        "platform-named-conflict-durable-quarantine-with-unchanged-family"
+      ],
+      "startCount": 1,
+      "startEvidenceSHA256": "1d55b0f5fd40dce7e100f6c6f4ccf2c580ad1cd467f724012352c18205f940c9"
+    },
+    {
+      "prefix": "story416-candidate-3124-historical-v2",
+      "result": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "time": "131.962"
+      },
+      "phaseCount": 3,
+      "phases": [
+        "platform-executor-filtering-and-origin-tenant-publish-refusals",
+        "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+        "platform-historical-restart-replay-and-family"
+      ],
+      "startCount": 2,
+      "startEvidenceSHA256": "6f0179bb222ca28b0d03a0ff18e390b1085cbeb6ca5b55352dc97bb05464a658"
+    },
+    {
+      "prefix": "story416-candidate-3124-ha-v2",
+      "result": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "time": "95.223"
+      },
+      "phaseCount": 1,
+      "phases": [
+        "platform-two-host-ha-lost-firing-stale-callback-recovery"
+      ],
+      "startCount": 1,
+      "startEvidenceSHA256": "a89c679b3599c1ce95b047f6a6417b349fa3942bac87a35596a466c6b5800bc8"
+    }
+  ]
+}

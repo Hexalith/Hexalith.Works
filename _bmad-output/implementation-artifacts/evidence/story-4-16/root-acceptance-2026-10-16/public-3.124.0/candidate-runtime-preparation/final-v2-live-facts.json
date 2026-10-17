@@ -1,0 +1,79 @@
+{
+  "scope": "All four fresh frozen unpublished V2 candidate live supporting facts; published producer acceptance remains blocked",
+  "checkedUtc": "2026-10-16T21:40:27.014361+00:00",
+  "passed": 4,
+  "failed": 0,
+  "skipped": 0,
+  "qualifiesAsPublishedParity": false,
+  "facts": {
+    "full8": {
+      "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full8 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "exitCode": 0,
+      "tests": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "603.330"
+      },
+      "evidence": "full8/root-audit.json"
+    },
+    "callback-v2": {
+      "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-callback-v2 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "exitCode": 0,
+      "tests": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "152.915"
+      },
+      "evidence": "callback-v2/root-audit.json"
+    },
+    "historical-v2": {
+      "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-historical-v2 Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+      "exitCode": 0,
+      "tests": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "131.962"
+      },
+      "evidence": "historical-v2/root-audit.json"
+    },
+    "ha-v2": {
+      "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-ha-v2 Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+      "exitCode": 0,
+      "tests": {
+        "total": "1",
+        "passed": "1",
+        "failed": "0",
+        "skipped": "0",
+        "errors": "0",
+        "time": "95.223"
+      },
+      "evidence": "ha-v2/root-audit.json"
+    }
+  },
+  "totalTestSeconds": 983.4300000000001,
+  "completeRestore": {
+    "redisKeyCount": 677,
+    "fullFleetInventoryEntries": 17,
+    "fullRuntimeBinaryEntries": 1211,
+    "snapshotAndRestoreInventoriesMatch": true,
+    "configurationBytesPreservedThroughRetainedStartup": true,
+    "originalNoOpReceiptReplayed": true,
+    "logicalResumeCount": 1,
+    "childCancelled": 1,
+    "childExpired": 1,
+    "completeSupportedProcessSources": 11,
+    "unresolvedSources": 0,
+    "durableCollisionCount": 1,
+    "attributedCollisionAudit": true
+  },
+  "noSourceOrRuntimeRebuildBetweenFacts": true
+}

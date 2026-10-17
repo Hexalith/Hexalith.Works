@@ -1,0 +1,33 @@
+{
+  "scope": "Exact component capture/startup regression after full7 retained-file rewrite; not full rollback acceptance",
+  "checkedUtc": "2026-10-16T21:21:05.269815+00:00",
+  "buildExitCode": 0,
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "buildLog": "story416-component-capture-build.log",
+  "testCommand": "artifacts/story416-root-config-3124/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests -noLogo -method Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.InitialComponentCapturePreservesTextAndBindsOnlyTheSelectedEndpoint -method Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RetainedComponentStartupPreservesCapturedBytesEvenWhenOriginalChangesOrDisappears -result-xml /tmp/story416-component-capture.xml",
+  "exitCode": 0,
+  "testResult": {
+    "total": "2",
+    "passed": "2",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "0.092"
+  },
+  "preservedChecks": [
+    "Exact initial text and Platform-only owned Redis endpoint binding",
+    "Captured bytes unchanged when retained original comment/content/endpoint differs",
+    "Existing capture is reused even when original template no longer exists"
+  ],
+  "sourceSha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs": "5651573a7af1f72ee77942cb881861539550b133b86db2c9566b8344c87767a5",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "4de523010eccdefce5d3433648ca7f63461de4e28f77e4e7a7ae5605e0560c8f",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "6ed0435a758c7e337149f5c5bf669c0c79fabb571336cb92d334b4df7e7f3bea"
+  },
+  "filesSha256": {
+    "story416-component-capture.xml": "176b6dbc64f419deaac541c9207347254ade08b8441a2917a5e8042cc6966d0c",
+    "story416-component-capture.log": "9a21b2fb5e90408312e295602448220335530b0e90d470efee905b1c15513ecf",
+    "story416-component-capture-build.log": "f2a6b8a8035cce608c261b310c23430696e57457befab8cab15eaf5a3dc16425"
+  }
+}

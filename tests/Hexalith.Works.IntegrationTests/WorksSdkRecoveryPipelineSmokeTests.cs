@@ -596,10 +596,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             string replacement = component.Name == "statestore" ? componentPath : Path.Combine(Path.GetDirectoryName(componentPath)!, component.Name + ".yaml");
             if (component.Name != "statestore")
             {
-                string content = File.ReadAllText(original);
-                if (WorksAppHostSelection.IsPlatform)
-                    content = content.Replace("localhost:6379", redisEndpoint, StringComparison.Ordinal);
-                File.WriteAllText(replacement, content);
+                CaptureComponentConfiguration(original, replacement, redisEndpoint, WorksAppHostSelection.IsPlatform);
             }
             // Aspire constructs this init-only option before the testing callback; replace its
             // public option on the fixture model before BuildAsync, without editing production files.
@@ -664,6 +661,15 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     .WithEnvironment("EventStore__IdempotencyAdmission__DigestKeys__story415", digestKey);
             }
         }
+    }
+
+    /// <summary>Captures a component once so a restored compatible policy is not rewritten by the retained host defaults.</summary>
+    internal static void CaptureComponentConfiguration(string original, string destination, string redisEndpoint, bool isPlatform)
+    {
+        if (File.Exists(destination)) return;
+        string content = File.ReadAllText(original);
+        if (isPlatform) content = content.Replace("localhost:6379", redisEndpoint, StringComparison.Ordinal);
+        File.WriteAllText(destination, content);
     }
 
     private static async Task<DaprClient> DaprAsync(DistributedApplication app, CancellationToken token, string name = "works", bool allowDegraded = false)

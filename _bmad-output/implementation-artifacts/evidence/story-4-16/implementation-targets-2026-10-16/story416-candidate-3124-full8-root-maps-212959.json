@@ -1,0 +1,73 @@
+{
+  "scope": "Independent actual mapped binaries; unpublished latest-source candidate supporting evidence only",
+  "checkedUtc": "2026-10-16T21:29:59.103595+00:00",
+  "status": "inconclusive-partial-or-between-starts",
+  "readinessRecordCount": 4,
+  "expectedResources": [
+    "eventstore",
+    "eventstore-admin",
+    "works",
+    "eventstore-operations"
+  ],
+  "allFourExpectedEntriesMatch": false,
+  "mappedSdkServerVerified": true,
+  "mappedSdkMismatchCount": 0,
+  "processes": [
+    {
+      "pid": 17130,
+      "process": "Hexalith.Works.",
+      "entryMappings": [],
+      "sdkMappings": [],
+      "allMappedPathsAreDebug": true
+    },
+    {
+      "pid": 58243,
+      "process": "Hexalith.EventS",
+      "entryMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.dll",
+          "sha256": "a253b98851ba0e5b61a5634f744b9b50cf0b132b29983dfd25747c29f4d6b3bc",
+          "matchesRecordedEntry": true
+        }
+      ],
+      "sdkMappings": [
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Admin.Abstractions.dll",
+          "sha256": "76bf5c4c25e9f57e2c53a9a1a0c074a22077e303b45af2377c315826ed00ad99",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Client.dll",
+          "sha256": "266c19742e9c3978bde4ba863aa49671b3ae50f2ab25fdf27ce6946643df0b67",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Contracts.dll",
+          "sha256": "9181cbb78d2eeb7e6f6f84befe813fa39c2773ba1c307dce70463dccdedbd6fd",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.DomainService.dll",
+          "sha256": "5437b2561a6db44bcdc80b324453a0012620820d6e76a30ca954a9e196e012e8",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Gateway.dll",
+          "sha256": "de6544b447b0855f4ad89b679dad234edb2f41a9342744a5868765f230115be6",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.Server.dll",
+          "sha256": "5742f12a4430991c9871c984b63a804944dfa2782f5a29b0edb38a427c45e01a",
+          "matchesRecordedSdk": true
+        },
+        {
+          "path": "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.EventStore/debug/Hexalith.EventStore.ServiceDefaults.dll",
+          "sha256": "6d10bddf8bada0cbf0aacea89e07eb4059a67ffd899040b4bea1116c2470607b",
+          "matchesRecordedSdk": true
+        }
+      ],
+      "allMappedPathsAreDebug": true
+    }
+  ]
+}

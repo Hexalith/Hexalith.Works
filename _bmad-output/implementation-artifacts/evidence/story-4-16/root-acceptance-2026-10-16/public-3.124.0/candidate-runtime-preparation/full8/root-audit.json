@@ -1,0 +1,70 @@
+{
+  "scope": "PASSED unpublished V2 candidate complete Platform-to-retained-host rollback supporting fact; does not satisfy named published producer acceptance",
+  "checkedUtc": "2026-10-16T21:31:57.671381+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full8 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 0,
+  "tests": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "603.330"
+  },
+  "qualifiesAsPublishedParity": false,
+  "durablePhases": 19,
+  "starts": {
+    "platform": 4,
+    "retained": 1,
+    "allReadinessPassed": true
+  },
+  "independentRestoredRuntimeMaps": {
+    "positiveReceipt": "story416-candidate-3124-full8-root-maps-213011.json",
+    "watchSamples": 13,
+    "allFourEntriesMatch": true,
+    "mappedSdkServerVerified": true,
+    "mappedSdkMismatchCount": 0
+  },
+  "completeRestore": {
+    "redisKeyCount": 677,
+    "fullFleetInventoryEntries": 17,
+    "fullRuntimeBinaryEntries": 1211,
+    "snapshotAndRestoreInventoriesMatch": true,
+    "configurationBytesPreservedThroughRetainedStartup": true,
+    "originalNoOpReceiptReplayed": true,
+    "logicalResumeCount": 1,
+    "childCancelled": 1,
+    "childExpired": 1,
+    "completeSupportedProcessSources": 11,
+    "unresolvedSources": 0,
+    "durableCollisionCount": 1,
+    "attributedCollisionAudit": true
+  },
+  "filesSha256": {
+    "story416-candidate-3124-full8.xml": "49ffc1a14e7723e7f5d8d2dcd56eceac0a241141ee83a62de9313197157c36e3",
+    "story416-candidate-3124-full8-command.json": "ce8e99ad15f5acb86647652f61dea928ccb5314221e5f0b6228a6741ba8c246a",
+    "story416-candidate-3124-full8-starts.jsonl": "f48b5243fc34c4d330a62b19074cb7a05f2af237e3165dff8c287e0a7952b838",
+    "story416-candidate-3124-full8-states.jsonl": "4779ee189c6d760dcdcb52b061331362bd919d5ca49bc9a76efaef9651c139d3",
+    "story416-candidate-3124-full8-retained-map-watch.json": "27b4c3a45d006131191071eaa6090d5a0535cc53187911e91ab68aacd34f9543",
+    "story416-candidate-3124-full8-retained-map-watch.log": "0ffda680c6c8d326d3061b73c725a907d03d8040e420b24f724e768fb587dd9f",
+    "story416-candidate-3124-full8-root-maps-212110.json": "62450fcd0bd6b3d319c713e691244e7aedd513cbf6300b8b966ea6935b8baf75",
+    "story416-candidate-3124-full8-root-maps-212946.json": "b6b1370529c35570d7212c574e36eb2678888e1696c28fbd4cc9e93dea9e2c83",
+    "story416-candidate-3124-full8-root-maps-212948.json": "c7f09a2df0a259cfb1da83a989a54171d9136874f98501f392908e01a6ce73d2",
+    "story416-candidate-3124-full8-root-maps-212950.json": "8cd8440df132618917ffa8b61a0cabaf4aa2f72f3a1de81b062a324f1f6ad08f",
+    "story416-candidate-3124-full8-root-maps-212952.json": "0c921aac2bbc655e66e1f6055d03ee0f3ae7061c8145388920511fb92dd7fab2",
+    "story416-candidate-3124-full8-root-maps-212954.json": "6ad96e0306d2b46b71d0039be94693be5128eead5e6af12b985b28b35878d858",
+    "story416-candidate-3124-full8-root-maps-212957.json": "ad556881a9b46a769fce6eea8e635df9d908bb344e0aaab552bbf01fea18305a",
+    "story416-candidate-3124-full8-root-maps-212959.json": "1fa89975b04bbe663afbfe485164bfefe6b5649a6285cfccfd1ec4d09f7d92a6",
+    "story416-candidate-3124-full8-root-maps-213001.json": "87db11774ed5f81f37de0bf5bcaa0e54b6c42cf45ef326e9a28318e9c55de746",
+    "story416-candidate-3124-full8-root-maps-213003.json": "e9dbacee3c5bb5f92d97c700ab8441b7cfa2578561002af36a9d1d7f8bf01c7d",
+    "story416-candidate-3124-full8-root-maps-213005.json": "a0e7abb53dc3f2eab7e9b9387e8039e8098f17a7a2286d88f3f6665ffd0fe00d",
+    "story416-candidate-3124-full8-root-maps-213007.json": "862201dd22be074f208f089bb6a8763b8ed0a49f0a983cf5e431eb8fdf5e971b",
+    "story416-candidate-3124-full8-root-maps-213009.json": "33b9558d33679e0c10c75e32bda64029b46b87112466d41824003f515a93366c",
+    "story416-candidate-3124-full8-root-maps-213011.json": "fb729e06f579f51cb11af77a8f1df399702790c4eafab681334b14ecbeffaca2",
+    "story416-candidate-3124-full8-root-maps-213033.json": "d13a620da991e425697dfaee0ebe589de5ba88a46991a4db7d844a641875127c",
+    "story416-watch-owned-retained-maps.py": "70ecd18872d3092e35d603cdd50d92cd7607156f1adc391c7271007554e8cf6f",
+    "story416-candidate-3124-consumer-retained-config-v2-prepare.json": "fe05f38abf491a93f14eee382c46a377c57f29c9d75ea411410f0f5924ab3244",
+    "story416-candidate-3124-consumer-retained-config-v2-build-0.log": "5a23b40082306a90c4f240a89f34581f934d5e2b32474b456b5c54ca463cf191"
+  }
+}

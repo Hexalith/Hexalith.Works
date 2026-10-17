@@ -1,0 +1,31 @@
+{
+  "scope": "read-only exact owned fixture cleanup; no foreign lifecycle actions",
+  "checkedAtUtc": "2026-10-16T21:39:34.261395+00:00",
+  "checks": [
+    {
+      "command": [
+        "docker",
+        "ps",
+        "--all",
+        "--filter",
+        "label=hexalith.works.sdk-fixture=works-sdk415-48a96abcf97a40f995d5aacbab53c56d",
+        "--format",
+        "{{.Names}}"
+      ],
+      "remainingOwnedNames": []
+    },
+    {
+      "command": [
+        "docker",
+        "volume",
+        "ls",
+        "--filter",
+        "label=hexalith.works.sdk-fixture=works-sdk415-48a96abcf97a40f995d5aacbab53c56d",
+        "--format",
+        "{{.Name}}"
+      ],
+      "remainingOwnedNames": []
+    }
+  ],
+  "remainingOwnedCandidateEntries": []
+}

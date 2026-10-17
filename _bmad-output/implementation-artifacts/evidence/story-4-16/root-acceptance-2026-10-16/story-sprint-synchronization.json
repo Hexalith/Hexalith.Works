@@ -1,0 +1,25 @@
+{
+  "checkedUtc": "2026-10-16T21:45:34.157312+00:00",
+  "items": {
+    "4.15": {
+      "story": "done",
+      "sprint": "done",
+      "matches": true
+    },
+    "4.16": {
+      "story": "in-progress",
+      "sprint": "in-progress",
+      "matches": true
+    },
+    "4.9": {
+      "story": "in-progress",
+      "sprint": "in-progress",
+      "matches": true
+    }
+  },
+  "story49Resumed": false,
+  "story49WaitsFor416Acceptance": true,
+  "sprintWasAlreadySynchronized": true,
+  "sprintFileChanged": false,
+  "sprintSha256": "7e161b616df1fea048ecc63625da028e15a644e8261351d314e2dab14d8d24b6"
+}

@@ -1,0 +1,150 @@
+{
+  "scope": "Read-only owned runtime process mappings after complete snapshot; no state mutation",
+  "status": "matched-retained-runtime",
+  "checkedUtc": "2026-10-16T21:30:11.856958+00:00",
+  "observations": [
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212946.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 0,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": false,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212948.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 0,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": false,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212950.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 0,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": false,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212952.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 0,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": false,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212954.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 0,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": false,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212957.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 1,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-212959.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 1,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213001.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 2,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213003.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 2,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213005.json",
+      "status": "inconclusive-partial-or-between-starts",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 3,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213007.json",
+      "status": "matched",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 4,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213009.json",
+      "status": "matched",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 4,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "platform-target",
+      "latestReadinessPassed": true
+    },
+    {
+      "resultPath": "/tmp/story416-candidate-3124-full8-root-maps-213011.json",
+      "status": "matched",
+      "expectedEntryCount": 4,
+      "mappedExpectedEntryCount": 4,
+      "mismatchCount": 0,
+      "mappedSdkServerVerified": true,
+      "mappedSdkMismatchCount": 0,
+      "latestRole": "retained-rollback",
+      "latestReadinessPassed": true
+    }
+  ]
+}

@@ -334,7 +334,9 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         {
             byte[] actual = await File.ReadAllBytesAsync(Path.Combine(directory, relative), cancellationToken).ConfigureAwait(false);
             if (!actual.AsSpan().SequenceEqual(bytes))
-                throw new InvalidOperationException("The running restored fleet changed captured configuration or credential bytes.");
+                throw new InvalidOperationException("The running restored fleet changed captured configuration or credential bytes: "
+                    + relative + "; expected SHA256=" + Convert.ToHexString(SHA256.HashData(bytes))
+                    + "; actual SHA256=" + Convert.ToHexString(SHA256.HashData(actual)));
         }
     }
 

@@ -1,0 +1,63 @@
+{
+  "scope": "FAILED unpublished V2 candidate full recovery; retained startup changed captured component bytes, no rollback acceptance",
+  "checkedUtc": "2026-10-16T21:19:35.832996+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full7 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 1,
+  "testResult": {
+    "total": "1",
+    "passed": "0",
+    "failed": "1",
+    "skipped": "0",
+    "errors": "0",
+    "time": "579.463"
+  },
+  "qualifies": false,
+  "durablePhasesReached": 18,
+  "actualStarts": 5,
+  "retainedReadinessRecorded": true,
+  "passingSupportingObservations": {
+    "naturalConvergence": {
+      "naturalCatchUp": true,
+      "polls": 1,
+      "recapturedHeads": 0,
+      "elapsedMilliseconds": 79
+    },
+    "allElevenExactHeadsMatch": true,
+    "twoRebuildsAndConcurrentDelivery": {
+      "command": "LinkConversation",
+      "committedSourceHead": 7,
+      "committedGlobalPosition": 39,
+      "before": {
+        "Generation": 1,
+        "Digest": "90399553e05ec69cf018e9a7b1d68f626b653f0b752fd6682852c1bc532b6057"
+      },
+      "after": {
+        "Generation": 2,
+        "Digest": "673d1984d1ee379f4d59e8f686abce622bdb9afa2679b0ded98bbc33b84d3052"
+      },
+      "expectedDigest": "673d1984d1ee379f4d59e8f686abce622bdb9afa2679b0ded98bbc33b84d3052",
+      "actualNewDeliveryDuringCapture": true,
+      "oldGenerationStayedReadable": true,
+      "automaticCatchUpAfterCommit": true,
+      "redeliveryLogicalCount": 1
+    },
+    "fullStoreSchedulerConfigAndBinaryRestoreReachedRetainedBody": true,
+    "snapshot": {
+      "redisKeyCount": 674,
+      "inventoryEntries": 17,
+      "runtimeBinaryEntries": 1211
+    }
+  },
+  "failure": "VerifyRestoredConfigurationAsync: The running restored fleet changed captured configuration or credential bytes. Failed before retained-host queries/replay.",
+  "diagnosis": "Retained fixture Configure unconditionally rewrote captured pubsub.yaml from its retained original. Only the leading Platform-owned versus Works-owned comment differed, but exact captured bytes remain required. Capture-once helper now preserves existing component bytes; strict equality is retained.",
+  "retainedMappedBinaryCheck": "Inconclusive: first sample during startup found zero expected mappings; resources had stopped before another sample. No retained map qualification is claimed.",
+  "filesSha256": {
+    "story416-candidate-3124-full7.xml": "a4a7fe1b503262e608f2d9dc94bc7e2668cae5c3de065eceb47e98467fdd4af9",
+    "story416-candidate-3124-full7-command.json": "7c9f582b73c2508b274d09161097726b30901771590394ef1e714dc96c2fe451",
+    "story416-candidate-3124-full7-starts.jsonl": "d3eb5fc2c6dba039516e07465e3c998555cb48d5fc2fbf6b997319a689c151b1",
+    "story416-candidate-3124-full7-states.jsonl": "a8c5ccf902d66b3ead65bdff39855ea323dcdd583dcc226e5fdf461a6867be33",
+    "story416-candidate-3124-full7-root-maps-210815.json": "36ebed79dd69d1940f33970cd8c8c594329dc4f6b76ed39a238652775453dc92",
+    "story416-candidate-3124-full7-root-maps-211705.json": "5ccd8c9b7d50cb2a006a671048405a1d291ab97c11ecd250f3adab8ff763a4ba"
+  }
+}

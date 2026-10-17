@@ -9,6 +9,56 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Actual isolated Redis restore preserves complete values, expiry and captured authority.</summary>
 public sealed class WorksPlatformFleetRestoreTests
 {
+    /// <summary>Initial component capture binds only Platform's synthetic Redis endpoint.</summary>
+    [Fact]
+    public void InitialComponentCapturePreservesTextAndBindsOnlyTheSelectedEndpoint()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "works416-component-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            string original = Path.Combine(root, "original.yaml");
+            const string content = "# Platform-owned component\r\nredisHost: localhost:6379\r\nother: localhost:6378\r\n";
+            File.WriteAllText(original, content);
+            string captured = Path.Combine(root, "captured.yaml");
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(original, captured, "127.0.0.1:49321", isPlatform: true);
+            File.ReadAllText(captured).ShouldBe(content.Replace("localhost:6379", "127.0.0.1:49321", StringComparison.Ordinal));
+            string retained = Path.Combine(root, "retained.yaml");
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(original, retained, "127.0.0.1:49321", isPlatform: false);
+            File.ReadAllText(retained).ShouldBe(content);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    /// <summary>A retained host cannot overwrite captured bytes from a different component original.</summary>
+    [Fact]
+    public void RetainedComponentStartupPreservesCapturedBytesEvenWhenOriginalChangesOrDisappears()
+    {
+        string root = Path.Combine(Path.GetTempPath(), "works416-component-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
+        {
+            string original = Path.Combine(root, "original.yaml");
+            string captured = Path.Combine(root, "captured.yaml");
+            File.WriteAllText(original, "# Platform-owned component\r\nredisHost: localhost:6379\r\n");
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(original, captured, "127.0.0.1:49321", isPlatform: true);
+            byte[] preserved = File.ReadAllBytes(captured);
+            File.WriteAllText(original, "# Works-owned component\nredisHost: incompatible\n");
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(original, captured, "127.0.0.1:49322", isPlatform: true);
+            File.ReadAllBytes(captured).ShouldBe(preserved);
+            File.Delete(original);
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(original, captured, "127.0.0.1:49323", isPlatform: true);
+            File.ReadAllBytes(captured).ShouldBe(preserved);
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     /// <summary>Redis encoding changes cannot hide missing members, bytes, list order or key expiry.</summary>
     [Fact]
     public async Task CompleteFleetRoundTripPreservesEveryLogicalValueAndCapturedFile()

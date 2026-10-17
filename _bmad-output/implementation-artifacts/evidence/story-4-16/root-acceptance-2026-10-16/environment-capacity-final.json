@@ -1,0 +1,18 @@
+{
+  "checkedUtc": "2026-10-16T21:45:14.192504+00:00",
+  "uid": 1000,
+  "inotifyInstances": 151,
+  "upperBoundWatchEntries": 962398,
+  "permissionDeniedReads": 0,
+  "transientFdReads": 4,
+  "originalWatchLimit": 1048576,
+  "currentWatchLimit": 1048576,
+  "restoredUtc": "2026-10-16T21:45:43.259024+00:00",
+  "command": "sudo -n sysctl -w fs.inotify.max_user_watches=1048576",
+  "exitCode": 0,
+  "output": "fs.inotify.max_user_watches = 1048576",
+  "originalRuntimeLimitRestored": true,
+  "ownedCandidateFleetsStopped": true,
+  "foreignProcessesStopped": false,
+  "configurationFilesChanged": false
+}

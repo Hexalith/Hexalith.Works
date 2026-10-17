@@ -1,0 +1,46 @@
+{
+  "scope": "Passed frozen V2 unpublished candidate actual two-host HA and observed stale-callback supporting fact; no published parity acceptance",
+  "checkedUtc": "2026-10-16T21:40:27.014361+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-ha-v2 Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+  "actualRunnerCommand": [
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+    "-result-xml",
+    "/tmp/story416-candidate-3124-ha-v2.xml"
+  ],
+  "exitCode": 0,
+  "tests": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "95.223"
+  },
+  "durablePhases": 1,
+  "sameHostAndCommonRuntimeInventoryAsFull8": true,
+  "qualifiesAsPublishedParity": false,
+  "independentAudit": {
+    "distinctPrimaryAndSecondary": true,
+    "distinctSidecars": true,
+    "primaryAndSidecarActuallyStopped": true,
+    "actualStaleCallbackObserved": true,
+    "beforeCallbacks": 0,
+    "afterCallbacks": 1,
+    "retiredReminderRemovedAfterFiring": true,
+    "resumeCount": 1,
+    "resumeCountAfterStaleFiring": 1,
+    "configuredMtlsRootAccepted": true,
+    "foreignRootHandshakeDenied": true,
+    "negativeDomainRequests": 0
+  },
+  "filesSha256": {
+    "story416-candidate-3124-ha-v2.xml": "934419e91234b6611b6fad5f8c730cda5a991b496a8ad081e9d41c2cc112043c",
+    "story416-candidate-3124-ha-v2-command.json": "21049bf9236133e5b39424a35d3362b988c89f58e4831b4d30f2e14ed46ee21e",
+    "story416-candidate-3124-ha-v2-starts.jsonl": "a89c679b3599c1ce95b047f6a6417b349fa3942bac87a35596a466c6b5800bc8",
+    "story416-candidate-3124-ha-v2-states.jsonl": "9f3ad9e2648692e577653d7806e7cc91fc39767b08280a2d9f82699c216325db",
+    "story416-final-candidate-v2-cleanup.json": "6bd842ec98279a268d9e9670ea91c1763524b758ac700e797d2589a7bf9d47e2"
+  }
+}

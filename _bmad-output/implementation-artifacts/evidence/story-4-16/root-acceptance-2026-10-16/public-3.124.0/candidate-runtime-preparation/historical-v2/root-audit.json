@@ -1,0 +1,47 @@
+{
+  "scope": "Passed frozen unpublished V2 candidate historical lifecycle/tree/claim/query/security/restart supporting fact; no published parity acceptance",
+  "checkedUtc": "2026-10-16T21:37:22.682278+00:00",
+  "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-historical-v2 Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+  "actualRunnerCommand": [
+    "/home/administrator/projects/hexalith/works/artifacts/story-4-16/candidate-3.124.1/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+    "-result-xml",
+    "/tmp/story416-candidate-3124-historical-v2.xml"
+  ],
+  "exitCode": 0,
+  "tests": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "errors": "0",
+    "time": "131.962"
+  },
+  "durablePhases": 3,
+  "actualPlatformStarts": 2,
+  "sameHostAndCompleteRuntimeInventoryAsFull8": true,
+  "qualifiesAsPublishedParity": false,
+  "independentAudit": {
+    "ownAssignmentVisible": true,
+    "foreignAssignmentHidden": true,
+    "wrongActorAndTenant": "Forbidden",
+    "wrongCaller": 401,
+    "wrongPort": 401,
+    "forbiddenPublish": 403,
+    "durableClaimOutcomes": [
+      "Completed",
+      "Rejected"
+    ],
+    "claimCountAfterRestart": 1,
+    "lifecycleCompleted": true,
+    "familyDigestPreservedAcrossRestart": true
+  },
+  "filesSha256": {
+    "story416-candidate-3124-historical-v2.xml": "e39190f2ca53438f79e8e97e1253aa535052ca142ec6795bd4f9072a2d6cc4a7",
+    "story416-candidate-3124-historical-v2-command.json": "e62d3ac771c754f8fc33674327a5fea4031499edf81ff79a9e59f3090d7e2d8f",
+    "story416-candidate-3124-historical-v2-starts.jsonl": "6f0179bb222ca28b0d03a0ff18e390b1085cbeb6ca5b55352dc97bb05464a658",
+    "story416-candidate-3124-historical-v2-states.jsonl": "98743e7d7264280a6ea25dbdfd42629b81c32043252d1e1ad333c812766eb140"
+  }
+}

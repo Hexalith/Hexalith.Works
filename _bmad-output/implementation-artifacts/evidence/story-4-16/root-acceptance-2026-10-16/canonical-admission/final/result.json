@@ -1,0 +1,66 @@
+{
+  "scope": "Final canonical verification admission result; named-published-producer acceptance remains incomplete",
+  "checkedUtc": "2026-10-16T21:48:11.182782+00:00",
+  "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.124-source --artifacts-path /tmp/story416-final-public-admission-20261016-v2",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "exitCode": 1,
+  "result": "Runtime SDK differs from published producer 0737c0befce5338e294a789092a0e223e8264a04: src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs, src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs",
+  "checks": {
+    "agentsFull": "expected-unavailable; not a Works prerequisite",
+    "Debug": {
+      "total": 92,
+      "passed": 92,
+      "skipped": 0,
+      "sha256": "9673ff700a3b1f495424624042578c7e0302c4405c33517ca7cf7db763e6871c"
+    },
+    "Release": {
+      "total": 92,
+      "passed": 92,
+      "skipped": 0,
+      "sha256": "ed519011ecf89b676b4e2e24365f04e014a1d8de05718fcd781176a1cff6d1ea"
+    },
+    "supportingConsumer": {
+      "total": 193,
+      "passed": 193,
+      "skipped": 0,
+      "sha256": "14566f920b520b96e9a617508a95ad63ae7d5f18fe143b668565c3a831ed5889"
+    }
+  },
+  "allBuildCommandsPassed": true,
+  "approvedAgentsFullRefusalPreserved": true,
+  "requiredPublishedPackages": 9,
+  "rowStatuses": {
+    "R1": "open",
+    "R2": "open",
+    "R3": "open",
+    "R4": "open",
+    "R5": "open",
+    "R6": "open",
+    "R7": "open",
+    "R8": "open",
+    "R9": "open",
+    "R10": "open",
+    "R11": "open"
+  },
+  "liveCanonicalFleetStarted": false,
+  "story416Accepted": false,
+  "story49Resumed": false,
+  "filesSha256": {
+    "stdout.log": "852837aecbc431519265bf3e8cae33df13eb1e504551c745e0eee4171de0861c",
+    "ledger.json": "c5b1635795853d1cba6f908a1ded057ea0c829023274a42da7b517f689a08507",
+    "agents-full-refusal.log": "d456635fd4a0fec00287aac20c390f709ad22baeab6a850df40aa6341b778cfe",
+    "agents-local-scaffold.log": "6038961088a5342faab10761265249ba755f60c7b7bf9621b077ec58b8f8d3e1",
+    "evidence-gate-tests.log": "eb2c8bfe66223a00e5e8280ad8388b0f41dc8de2f82dae1bd3542ae5133510ba",
+    "platform-file-host-release.log": "3807fe02c255cc56ee68210f5aa02830a286ad51eeece1d3f9d7e8568404a43a",
+    "platform-tests-build-debug.log": "d051c3f4b2b8aa1b3170a4502795020bff01438e16ffbc6c200228f369b78cd1",
+    "platform-tests-build-release.log": "2ef60b522b5cdba70ee5b5d3afb1ba33505085bc7274128f1494a765dda9566b",
+    "platform-tests-debug.log": "06c9bc065bc1369d96b438fb2d4fcfbfcdc1cbd0666196a730d6c1336f18aaac",
+    "platform-tests-release.log": "7b82ae10d534063026e67e165b9dcbbce4a70fd2a5cefc5e1bda5f89ca37c059",
+    "works-consumer-debug.log": "d550ed560f008f59bb50aaead653944dda2b6615b78edef7aa59ca12349013d0",
+    "works-consumer-release.log": "9ec900c45e55313dc09171605a6e037c7dc6b01711d22336d3e6f84fdabe6a23",
+    "works-consumer-supporting.log": "c0a5c9f62da9c3a45f2653684e56823521e18690178600c317ebec1ae72165f2",
+    "platform-debug.xml": "9673ff700a3b1f495424624042578c7e0302c4405c33517ca7cf7db763e6871c",
+    "platform-release.xml": "ed519011ecf89b676b4e2e24365f04e014a1d8de05718fcd781176a1cff6d1ea",
+    "works-consumer-supporting.xml": "14566f920b520b96e9a617508a95ad63ae7d5f18fe143b668565c3a831ed5889"
+  }
+}

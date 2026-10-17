@@ -1,0 +1,116 @@
+{
+  "scope": "Final canonical Release consumer/cache against independently downloaded official public3.124 archives; not live parity acceptance",
+  "checkedUtc": "2026-10-16T21:47:01.770996+00:00",
+  "consumer": "/tmp/story416-final-public-admission-20261016-v2/consumer/bin/Hexalith.Works.IntegrationTests/release",
+  "packages": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Contracts.dll",
+          "archiveSha256": "067b27b8f865340bf5633204e01b1cb7710017d9b7551eb5f667ab9b2d2da1e0",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Client.dll",
+          "archiveSha256": "c17fe1d05477308e5ff61d9dc6a7c5fac686c310e923190f07ec0130ac8a49d5",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+          "archiveSha256": "027c20158d304462906f3ab75579173bce296eb92257f23b7a054ab4ac4f2b6a",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.DomainService.dll",
+          "archiveSha256": "9f1e0a9bf525b210c5965ba65467ed802ee8ce2ff96253d19f05268b8dd0f49a",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Server.dll",
+          "archiveSha256": "0bf0158f856e87834ad52d6c2f26ea5ae65dd1fa174c8303b49f6ce56c5f3146",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Admin.Abstractions",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+          "archiveSha256": "8a42c660090cb806e12a4c9d2ff37b32235ce6bee0306610e0a3b0982b043ba5",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Testing.dll",
+          "archiveSha256": "37de755e23547ffeaebc1ba25a37865a8b13889309926cd80adabf31a7501485",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Gateway",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Gateway.dll",
+          "archiveSha256": "51dffc8791aee70f81f007704f57ccdaa94bb0c15a34fa6239e8ccd1b7951e32",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    },
+    {
+      "package": "Hexalith.EventStore.Aspire",
+      "archiveMatchesIndependentOfficialDownload": true,
+      "assemblies": [
+        {
+          "assembly": "Hexalith.EventStore.Aspire.dll",
+          "archiveSha256": "ed37f73f64f02a1a66a777815377fb4190cd71d19737b2a746c00f30be80716c",
+          "cacheMatchesArchive": true,
+          "consumerMatchesArchive": true
+        }
+      ]
+    }
+  ],
+  "allOfficialArchiveAndConsumerBytesMatch": true
+}

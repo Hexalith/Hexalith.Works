@@ -1,0 +1,69 @@
+{
+  "checkedUtc": "2026-10-16T21:27:39.075829+00:00",
+  "packages": [
+    {
+      "package": "Hexalith.EventStore.Contracts",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    },
+    {
+      "package": "Hexalith.EventStore.Client",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    },
+    {
+      "package": "Hexalith.EventStore.ServiceDefaults",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.servicedefaults/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "74011db7027ff8a5e6f72aae8766c7d2eb3bbeb54d02a7ae38817f3cadd6e855"
+    },
+    {
+      "package": "Hexalith.EventStore.DomainService",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "74011db7027ff8a5e6f72aae8766c7d2eb3bbeb54d02a7ae38817f3cadd6e855"
+    },
+    {
+      "package": "Hexalith.EventStore.Server",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.server/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    },
+    {
+      "package": "Hexalith.EventStore.Admin.Abstractions",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.admin.abstractions/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    },
+    {
+      "package": "Hexalith.EventStore.Testing",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.testing/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    },
+    {
+      "package": "Hexalith.EventStore.Gateway",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.gateway/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "634f9a54de5702ce55c18e995ac9396c31c61040b1ba5af0cb45c7f622dd3ac3"
+    },
+    {
+      "package": "Hexalith.EventStore.Aspire",
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+      "httpStatus": 200,
+      "latestStable": "3.124.0",
+      "responseSha256": "ee9869d2165f157d7f9ed7835176bbfcf931c497315f088564f28dbd1071c196"
+    }
+  ],
+  "allLatestStable3124": true
+}

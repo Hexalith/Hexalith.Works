@@ -1,53 +1,51 @@
 {
-  "checkedUtc": "2026-10-16T20:59:57.131048+00:00",
-  "scope": "Remaining4.16 acceptance gates; candidate successes do not qualify published parity",
-  "story415": "accepted, preserved270files",
-  "story416": "in-progress",
-  "story49": "inherited in-progress, not resumed; awaits4.16 acceptance",
+  "checkedUtc": "2026-10-16T21:48:11.182782+00:00",
+  "scope": "Final4.16 acceptance gates; candidate green facts do not qualify an unpublished producer",
+  "story415": "accepted/done;270preservedfiles unchanged",
+  "story416": "in-progress;notaccepted",
+  "story49": "inherited in-progress,notresumed;awaits4.16acceptance",
+  "canonicalAdmission": {
+    "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.124-source --artifacts-path /tmp/story416-final-public-admission-20261016-v2",
+    "cwd": "/home/administrator/projects/hexalith/platform",
+    "exitCode": 1,
+    "result": "Runtime SDK differs from published producer 0737c0befce5338e294a789092a0e223e8264a04: src/Hexalith.EventStore.Server/Commands/TrustedEffectRouter.cs, src/Hexalith.EventStore.Server/Projections/ProjectionUpdateOrchestrator.LegacyReplay.cs",
+    "evidence": "canonical-admission/final/result.json"
+  },
+  "candidateLiveFacts": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "qualifiesAsPublishedParity": false,
+    "evidence": "public-3.124.0/candidate-runtime-preparation/final-v2-live-facts.json"
+  },
   "matrix": [
     {
       "scenario": "Startup/restart",
-      "result": "V2 candidate all eleven heads naturally converge; eighteen persisted phases pass, complete public ledger pending"
+      "result": "All frozen candidate startup/restart facts pass; finalpublicverifierstops atsourceadmission."
     },
     {
       "scenario": "Historical scenarios",
-      "result": "older source candidate historical and public3.123 HA supporting passes; latest public3.124 R4 fails automatic catch-up"
+      "result": "Finalcandidatehistorical,callback,HAandtwo-rebuildcompletefamilyfactsallpasswithzeroskips."
     },
     {
       "scenario": "Wrong origin/policy",
-      "result": "Platform92permode, receiver34, public focused162 and guard18 pass; fresh complete public live negative ledger pending"
+      "result": "CurrentpublicRelease193supportingcasesandPlatform92permodepass;candidateactualreceiver,mTLS,claim/query/publishnegativespass."
     },
     {
       "scenario": "Complete fleet rollback",
-      "result": "V2 candidate full6 failed Redis restored-value byte check after complete capture; retained host not started, rollback unaccepted"
+      "result": "Unpublishedcandidatefull8passescomplete677-key/1211-binaryrestoreandretainedquery/receiptreplay;notpublishedqualification."
     }
   ],
-  "publicBlocker": {
-    "version": "3.124.0",
-    "producer": "0737c0befce5338e294a789092a0e223e8264a04",
-    "exactCommand": "python3 /tmp/story416-run-public-3124.py /tmp/story416-public-3124-projection3 Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
-    "cwd": "/home/administrator/projects/hexalith/works",
-    "exitCode": 1,
-    "failed": 1,
-    "skipped": 0,
-    "seconds": 283.125,
-    "result": "Automatic post-Commit catch-up timed out; selected generation2 owner3/global3, committed owner4/global14. One diagnostic direct named dispatch advances state and does not qualify acceptance.",
-    "evidence": "public-3.124.0/public-r4-blocker.json"
-  },
   "remaining": [
-    "Complete source-candidate restore and remaining candidate parity checks",
-    "Published corrected producer, then complete fresh public R1-R11/restore zero-skip verifier",
-    "Three independent review lenses and remediation after all acceptance criteria pass",
-    "Final spec and sprint acceptance sync"
+    "A published EventStore producer containing both prepared corrections, then complete fresh public R1-R11/rollback verification with zero skips",
+    "Three independent review lenses and remediation after every acceptance criterion passes",
+    "Accept4.16 and synchronize done status only then; subsequently resume4.9"
   ],
-  "authority": "Approved frozen4.16 scope excludes external publication/deployment. No authorization to publish is inferred from the latest-version dependency instruction.",
-  "currentCandidateFailure": {
-    "exactCommand": "python3 /tmp/story416-run-candidate-3124.py /tmp/story416-candidate-3124-full6 Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
-    "exitCode": 1,
-    "failed": 1,
-    "skipped": 0,
-    "seconds": 560.69,
-    "result": "RestoreFleetAsync line229: A restored synthetic value differs from its backup. Retained fleet was not started; no complete rollback qualifies.",
-    "evidence": "public-3.124.0/candidate-runtime-preparation/full6/root-failure.json"
+  "authority": "The approved frozen scope excludes external publication/deployment; no publication authority is inferred.",
+  "reviewGate": {
+    "skill": ".agents/skills/bmad-build/SKILL.md",
+    "renderedStep": "_bmad/render/bmad-build/works-f2b4635042f0/a5b668c72d9d564936a3/step-03-implement.md:48",
+    "instruction": "If any task is not done or any acceptance criterion is not satisfied, finish the missing work before proceeding",
+    "applies": "The named published producer criterion fails; formal review cannot start and no story acceptance is claimed."
   }
 }
