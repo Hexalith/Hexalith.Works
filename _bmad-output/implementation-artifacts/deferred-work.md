@@ -1490,3 +1490,9 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src-only pass)
 
 - `FinalizePartitionsAsync` accepts an empty partition list; unverified medium — confirm the SDK never finalizes an empty inventory.
+
+## Deferred from: code review of spec-4-15 (2026-10-17, tests/ integration pass)
+
+- Source-built `eventstore` stamped `Version=3.124.0` unconditionally in the SDK smoke fixture and bound-metadata startup (`WorksSdkRecoveryPipelineSmokeTests.cs:660`, `WorksAppHostSmokeHarness.cs:254`); unverified medium — confirm whether DCP builds project resources with these environment values as MSBuild properties and whether the stamp reaches evidence.
+- Commit 99976bb's `QueryWindowStore.Observe` starts at the same point the old `ClearReceivedCalls` ran (`WorksSdkProtectedHttpTests.cs:387`), so post-start hosted-service reads would still fail the denial check; unverified medium — identify the post-start store reader or loop the test under CPU load.
+- Platform host-evidence wording, for Story 4.16 (`WorksAppHostSmokeHarness.cs:352`, `references/Hexalith.Platform/eng/verify_works_host.py:75,88`): the verifier's `readinessPassed` check can never fail because the harness writes a start record only after every startup probe passes, and its "loaded SDK assemblies" error refers to the top-level list, which holds the test runner's assemblies (hosts are bound per module in `runtimeModules`). Not a false pass; Works-side comments landed in the 4.15 review. Reason deferred: changing the record shape mid-4.16 would invalidate the 52 captured start files, so rename (`worksReadiness`, `runnerSdkAssemblies`) when 4.16 next re-captures its live facts.

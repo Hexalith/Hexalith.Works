@@ -3,7 +3,7 @@ title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
 updated: '2026-10-17'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
 review_loop_iteration: 4
@@ -376,3 +376,63 @@ Layers: blind-hunter (14), edge-case-hunter (14), verification-gap (0 gaps, 1 ot
 - by design: `RescheduleWorkItem` without `Expiry` is rejected once a witness exists (`IsValidReplacement`); prevents silently dropping a witnessed expiry. Evidence fold null-witness path is the delegated cascade purpose, guarded in `WorkItemAggregate`.
 - carried (already deferred/rejected): ReminderConvergenceResult discarded (RB6-4), ordinal tenant compare, `TaskCanceledException` mapping, `UseSdkRuntime` string literals, `ExpireWorkItem` guard precedence, hardcoded 2 s timeout, `ProjectMetadataPaths` env edge cases, Aspire SDK bump and rate limits, stale discovery-index entry.
 - low/rejected: catalog swallows discovery exceptions without a log (incompleteness is retained for retry); disposition endpoint deny-by-default (production authority is a separate gate); audit-sink exception types beyond `InvalidOperationException`; five-children cap not enforced by the domain (finite Works profile, configuration comment); no tests in a src-only diff (covered by the tests/ tree).
+
+#### Code review: tests/Hexalith.Works.IntegrationTests (8679d7d..HEAD, 46 files, WorksPlatform* excluded), 2026-10-17
+
+Layers: blind-hunter (20), edge-case-hunter (44), verification-gap (2 gaps + 2 other), acceptance-auditor (10); all completed. Diff built with `--ignore-cr-at-eol` (CRLF churn triaged earlier). The 24 `WorksPlatform*` Story 4.16 files were out of scope.
+
+- [x] [Review][Decision] Platform host evidence records proxy values the Platform verifier treats as host observations — resolved 2026-10-17 as option 3, Works side only: the record is written only after every startup probe passes, so no false pass exists; the callback fixture records its own Degraded observation and host SDK assemblies are already bound per module. Harness comments now state both meanings; the Platform verifier wording goes to the 4.16 deferral (see `deferred-work.md`). Original detail: `readinessPassed = true` is hard-coded even when `expectWorksReadinessDegraded` skipped the Works readiness wait (the callback lane), and top-level `sdkAssemblies` lists the test runner's `AppDomain` assemblies, not the hosts'. `references/Hexalith.Platform/eng/verify_works_host.py` rejects a start whose `readinessPassed` is not true and accepts the top-level list as "loaded SDK assemblies". Options: (1) record truthful values (`worksReadiness: degraded-expected`, runner-scoped assembly list) and update the Platform verifier to accept the expected-degraded start; (2) defer to Story 4.16 as part of its parity evidence contract; (3) keep the values and document `readinessPassed` as "startup probes passed" in both harness and verifier. [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:352]
+- [ ] [Review][Patch] Deferred (202) disposition never asserted applied: in the `retainOwner` branch, after `RunPassAsync`, assert the sweep's `Pending[SourceId(source)].Applied` is true and the source is `Revalidating` with `LastDispositionGeneration` advanced; today the later 204 alone satisfies every check [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:987]
+- [ ] [Review][Patch] (carried 2026-10-17 src-chunk item, extended) Disposition endpoint 400 branches (null `Source`, blank `Reason`, `Reason` > 256, `ProcessSource` `ArgumentException`) and the 503 branch (audit sink `InvalidOperationException`) are untested; add a theory asserting status, unchanged `ProcessSourceState` and no audit write [src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs:13]
+- [ ] [Review][Patch] `OpenCircuitRetryStore` (afad95e) implements only `IReadModelStore`, but the Platform lane passes it to `WorksPlatformProjectionChecks.VerifyQuarantineAsync`/`VerifyAsync`, which cast `(IReadModelBatchStore)store` → `InvalidCastException`, so the Platform parity proof always fails; forward `IReadModelBatchStore` through the retry wrapper [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:764]
+- [ ] [Review][Patch] Delegated-origin matrix has no allowed `ResumeWorkItem` rows (`DateResume`, `ChildCompletionResume`); removing either from the `RefuseReservedTenant` allow-list (denying every SDK resume) stays green outside the skip-gated live lane — add both rows expecting admission (200) [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:751]
+- [ ] [Review][Patch] Gateway address precedence when both `DAPR_HTTP_ENDPOINT` and `EventStore:CommandGateway:BaseAddress` are non-blank (sidecar wins, `WorksRecoveryExtensions.cs:54`) is untested; a swapped precedence would route trusted effects around the sidecar — add `[InlineData("http://sidecar:3500", "http://direct", "http://sidecar:3500")]` [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs:34]
+- [ ] [Review][Patch] Live stale-expiry proof (matrix row 2) only checks no `WorkItemExpired` one second after the stale due time; a stale revision-1 firing arriving later would pass — assert the parent's committed `WorkItemExpired.ExpiryWitness` equals the revision-2 schedule [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:211]
+- [ ] [Review][Patch] `state.Status.ShouldBe(WorkItemStatus.Created)` asserts a local object only serialized into the request and can never fail; delete it in both origin tests (status, empty body and event checks are the real evidence) [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:745]
+- [ ] [Review][Patch] `ServiceBearer(expired: true)` sets `NotBefore`/`IssuedAt` (now-2m) after `Expires` (now-2h), so validation fails as an invalid lifetime (IDX10224), not expiry; move both before `Expires` (e.g. now-3h) [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:1132]
+- [ ] [Review][Patch] The `caller` (401) origin scenario asserts no denial-audit absence; add `store.Snapshot<object>("statestore", "eventstore:trusted-effect-origin:v1:denials").ShouldBeNull()` [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:680]
+- [ ] [Review][Patch] Same-date re-suspension identity compares `repeated` with `first[0]`, which may be the expiry intent; select the ordinal-0 `DateResume` intent explicitly [tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs:68]
+- [ ] [Review][Patch] `Story48Streams` numbers message ids per page, so sequences 1 and 3 both carry `message-work-415-0` and the page-boundary message-id assertion cannot detect envelope mix-ups; give the second page a distinct id and assert it [tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs:52]
+- [ ] [Review][Patch] `blocker.Wait()` has no timeout; a reader regression that calls the gateway inline deadlocks the test instead of failing it — use `blocker.Wait(TimeSpan.FromSeconds(5))` [tests/Hexalith.Works.IntegrationTests/WorksSdkRemediationTests.cs:150]
+- [ ] [Review][Patch] Smoke `WaitAsync` does not bound `condition()` by its two-minute deadline; a hung poll runs past the bound — await `condition().WaitAsync(deadline.Token)` [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:724]
+- [ ] [Review][Patch] The new outer harness catch wraps runner cancellation into `InvalidOperationException` (reported as failure) and re-appends startup logs to startup failures that already carry them; let caller cancellation pass through unwrapped [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:383]
+- [ ] [Review][Patch] `WorksSdkProofRedis.DisposeAsync` deletes the temp directory (synthetic signing/digest keys, certificates, scheduler archive) only after volume cleanup succeeds; move `Directory.Delete` into its own `finally` [tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs:166]
+- [ ] [Review][Patch] Topology test writes certificate files before its `try`, so a write failure leaks the temp directory; move the writes inside the `try` (and re-indent its body) [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:47]
+- [x] [Review][Defer] Source-built `eventstore` is stamped `Version=3.124.0` unconditionally (Debug source mode builds checkout `v3.124.0-3-g77d9af18`) [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:660, WorksAppHostSmokeHarness.cs:254] — deferred: unverified (medium if true; "local artifacts must never be described as published producers"); settle by confirming whether DCP builds project resources with the environment as MSBuild properties and whether the stamped version reaches evidence
+- [x] [Review][Defer] 99976bb "ignore startup state reads" enables `Observe` at the same point the old `ClearReceivedCalls` ran, so post-start hosted-service reads would still count [tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs:387] — deferred: unverified (medium if true; persistent busy-runner flake); settle by identifying the component that touched the store after start, or by looping the test under CPU load
+
+##### Rejected (2026-10-17 tests/ pass)
+
+- false: verification-gap "Platform lanes can skip silently" (Command/Cascade smoke tests) — `xunit.runner.json` sets `failSkips: true` and Platform `verify_works_host.py` rejects any skipped/not-run test; the fixed-port part fails loudly at bind (blind-hunter+edge-case-hunter+verification-gap).
+- false: `trusted-purpose` envelope extension contradicts the origin purpose — no `src/` or SDK code reads that key (blind-hunter+edge-case-hunter+acceptance-auditor).
+- false: unconditional Platform.Identity `ProjectReference` / removed package fallback — recorded decision; no published Platform.Identity package exists.
+- false: Release package test pins 3.124.0 — recorded 4.16 pin decision (docs note, 2026-10-17 src/scripts chunk).
+- false: startup hook shadows host assemblies with test builds — `AssemblyLoadContext.Resolving` fires only after default probing fails.
+- false: foreign-address theory passes on any `InvalidOperationException` — a matching envelope reaches `KernelAggregate`, which returns a `DomainResult`.
+- false: Works readiness never asserted — `WorksSdkRecoverySourceTests` asserts the composed host's `HealthCheckService` process/reminder entries Degraded across reconstruction.
+- false: 4.16 code wired into 4.15 fixtures / diff does not compile — Platform paths are opt-in (env + `PlatformWorksRuntimeRoot`); the repo builds; `WorksPlatform*` was excluded by scope choice.
+- false: missing-child unit test parks at once — intentional park path; the live lane proves automatic receipt-backed convergence.
+- false: fault-injection stores become vacuous if SDK keys change — every case fails loudly when injection stops; the audit store refuses the SDK read-modify-write.
+- false: terminal translation never checks envelope-sequence identity — `ProcessEffect` carries no sequence; the SDK runner derives identity from the envelope.
+- false: config-copy guard is circular/lacks negatives — exact sequence equality admits only the committed lines or the single permitted block.
+- false: in-memory tests share admission with parallel classes — the collection uses `DisableParallelization = true` (BH4-10).
+- false: slow-read case uses `Thread.Sleep` — deadline mechanics for sync/async reads are covered by `WholeContextDeadlineBoundsSlowAndNonCooperativeReads`.
+- false: transport-bound test asserts only a non-null reason — checkpoint 0 vs 2 distinguishes the two limits.
+- false: missing-child test never checks audit — audit-before-revalidation is covered by the hosted disposition theory and `UnresolvedEvidenceSurvivesReconstruction…`.
+- false: second `CaptureFleetAsync` restores a stale scheduler.tar — each fixture captures once.
+- false: discovery-index test allows duplicate tenants — `Tenants` is a `HashSet`.
+- false: no old-JSON-without-Expiry check — the SchemaEvolution golden corpus covers historical payloads.
+- false: style nits (using order, FQNs, blank lines, XML summaries) — no named harm; analyzers and `.editorconfig` pass.
+- false: stream page truncation unchecked — fixture streams carry fewer than 20 events.
+- false: trailing-separator `WORKS_PLATFORM_ROOT` — selection refuses loudly first; runners pass none.
+- false: receiver-policy leaf-name collisions — Platform `DaprComponents` leaf names are distinct.
+- false: `redisHost` literal replacement misses — every committed component uses `localhost:6379`.
+- false: retained-host scheduler volume / empty `sdkAssemblies` evidence — the Platform verifier rejects both.
+- false: Redis `LOADING` transient — fresh empty container; empty receipt body; non-JSON ordinary command body; unknown proof role (fixtures always set it; others fail loudly).
+- low/rejected: wrong-tenant/causation origin HTTP scenarios — SDK `TrustedEffectOriginTests` covers both binding denials before domain invocation.
+- low/rejected: duplicate firing / changed-content replay only in the Platform lane — SDK-owned (`ReminderCoordinatorTests`, `TrustedEffectReceiptTests`); retained lane proves lost firing and post-commit replay.
+- low/rejected: Platform checks vanish without `WORKS_PLATFORM_PARITY` — every Platform runner sets `PlatformWorksRuntimeRoot`; a guard adds code.
+- low/rejected: hard-coded 3.124.0/1.4.0 literals and `#if DEBUG` mode switch — fail loudly at pin bump or unsupported combos; MSBuild plumbing adds complexity.
+- low/rejected: 12 s stale-expiry window flake, reminder firing before DELETE, checkpoint read racing the 10 s retry (maybe-false) — loud or millisecond windows; guards add code.
+- low/rejected: diagnostics redaction/resource names, diagnostics failure aborting retry, wake-up filter non-object body, TTL key expiring during capture, Platform-mode config-copy baseline (maybe-false), artifact TOCTOU — synthetic/local-only, unlikely; fixes add branches.
+- low/rejected: unbounded `do…while Incomplete`, `entered.Task` hang, default query-deadline assumption — regressions still fail via runner timeout; bounds add code.
