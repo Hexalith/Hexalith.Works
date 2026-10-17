@@ -1020,14 +1020,24 @@ public sealed class WorksSdkProtectedHttpTests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
-    /// <summary>Counts store operations only after <see cref="Observe"/> is enabled, so startup traffic is ignored.</summary>
+    /// <summary>
+    /// Counts store operations for the in-flight HTTP request after <see cref="Observe"/> is enabled.
+    /// Startup and background recovery traffic stay outside that request and are not counted.
+    /// </summary>
     private sealed class QueryWindowStore(IReadModelStore inner) : IReadModelStore
     {
+        private static readonly AsyncLocal<int> RequestDepth = new();
         private int _operations;
 
         public bool Observe { get; set; }
 
         public int Operations => _operations;
+
+        internal static IDisposable EnterRequest()
+        {
+            RequestDepth.Value++;
+            return new RequestScope();
+        }
 
         public Task<ReadModelEntry<TValue>> GetAsync<TValue>(string storeName, string key, CancellationToken cancellationToken = default)
             where TValue : class
@@ -1052,11 +1062,31 @@ public sealed class WorksSdkProtectedHttpTests
 
         private void Note()
         {
-            if (Observe)
+            if (Observe && RequestDepth.Value > 0)
             {
                 _ = Interlocked.Increment(ref _operations);
             }
         }
+
+        private sealed class RequestScope : IDisposable
+        {
+            public void Dispose() => RequestDepth.Value--;
+        }
+    }
+
+    /// <summary>Marks the HTTP pipeline so only that request's store access is attributed to the denial check.</summary>
+    private sealed class QueryRequestObservationFilter : IStartupFilter
+    {
+        public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            => app =>
+            {
+                app.Use(async (context, continuation) =>
+                {
+                    using (QueryWindowStore.EnterRequest())
+                        await continuation(context).ConfigureAwait(false);
+                });
+                next(app);
+            };
     }
 
     private static WebApplication BuildProtectedHost(IReadModelStore store, string partiesAddress,
@@ -1079,6 +1109,8 @@ public sealed class WorksSdkProtectedHttpTests
         {
             services.RemoveAll<IReadModelStore>();
             services.AddSingleton(store);
+            if (store is QueryWindowStore)
+                services.AddSingleton<IStartupFilter, QueryRequestObservationFilter>();
             if (store is IReadModelBatchStore batches)
             {
                 services.RemoveAll<IReadModelBatchStore>();
