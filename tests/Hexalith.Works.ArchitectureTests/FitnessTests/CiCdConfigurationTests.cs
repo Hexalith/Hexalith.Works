@@ -198,8 +198,10 @@ public sealed class CiCdConfigurationTests
         workflow.ShouldContain("NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}", Case.Sensitive);
         workflow.ShouldContain("governed-release: false", Case.Sensitive);
         workflow.ShouldContain("if: ${{ always() && needs.release.result != 'skipped' }}", Case.Sensitive);
-        workflow.ShouldNotContain("attestations: write", Case.Sensitive);
-        workflow.ShouldNotContain("id-token: write", Case.Sensitive);
+        // GitHub checks nested reusable jobs statically. governed-release stays disabled, but its
+        // attestations and id-token scopes must still be granted or the caller fails at startup.
+        workflow.ShouldContain("attestations: write", Case.Sensitive);
+        workflow.ShouldContain("id-token: write", Case.Sensitive);
         foreach (string executableBranch in new[]
         {
             "test_source_proof_rejects_non_main_before_external_queries",

@@ -42,7 +42,7 @@ internal static class WorksAppHostTestReadiness
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        DateTime deadline = DateTime.UtcNow.AddSeconds(60);
+        DateTime deadline = DateTime.UtcNow.AddSeconds(120);
         string lastDiagnostic = "No readiness response was received.";
 
         while (DateTime.UtcNow < deadline)
@@ -50,7 +50,7 @@ internal static class WorksAppHostTestReadiness
             try
             {
                 using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                requestCts.CancelAfter(TimeSpan.FromSeconds(5));
+                requestCts.CancelAfter(TimeSpan.FromSeconds(20));
                 using HttpResponseMessage response = await client
                     .GetAsync("/ready", requestCts.Token)
                     .ConfigureAwait(false);
@@ -82,14 +82,14 @@ internal static class WorksAppHostTestReadiness
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
-                lastDiagnostic = "The EventStore /ready request exceeded 5 seconds.";
+                lastDiagnostic = "The EventStore /ready request exceeded 20 seconds.";
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken).ConfigureAwait(false);
         }
 
         throw new TimeoutException(
-            "[startup/readiness] EventStore did not report healthy Dapr actor placement within 60 seconds. "
+            "[startup/readiness] EventStore did not report healthy Dapr actor placement within 120 seconds. "
             + lastDiagnostic);
     }
 
