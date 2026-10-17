@@ -360,3 +360,19 @@ Layers: Blind Hunter (14), Edge Case Hunter (14), Verification Gap (2 + 2 other)
 - low/rejected: stale discovery-index entry when pending empties (legacy mode only; consumer re-reads authoritative stream); `ProjectMetadataPaths` env override edge cases (dev-only); hardcoded 2s query timeout; `ExpireWorkItem` guard precedence readability; magic `"work"`; `global.json` newline; CRLF rewrite noise; docs sprawl; `ScaffoldGovernance` path-suffix exclusion.
 - by intent: nested-submodule scan limited to `references/` (commit 11628b7); Platform.Identity Release sibling edge and Aspire SDK bump (recorded decisions/dependabot); verification gap on `BuildInParallel` (low, build infra).
 - out of chunk: "no tests for trusted-origin/cascade expiry/composition guard" — covered by integration tests (WorksSdkProtectedHttpTests, WorksSdkRecoveryCompositionTests) outside this chunk.
+
+#### Code review: src/ only (8679d7d..HEAD, 41 files), 2026-10-17
+
+Layers: blind-hunter (14), edge-case-hunter (14), verification-gap (0 gaps, 1 other), acceptance-auditor (6). No new decision-needed or patch findings; every claim was either refuted in code or already triaged above.
+
+- [x] [Review][Defer] Partitioned rebuild `FinalizePartitionsAsync` accepts an empty partition list [src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.Partitions.cs:50] — deferred: unverified (medium if true); same SDK-inventory-contiguity question as the existing partition-gap deferral; settle by confirming the SDK never finalizes an empty inventory.
+
+##### Rejected (2026-10-17 src-only pass)
+
+- false: query identity-resolution timeout escapes as cancellation — `WorksQueryPolicy.cs` rethrows only when the caller token is cancelled; the deadline `OperationCanceledException` falls to `catch (Exception)` and returns a fail-closed denial.
+- false: `/project` 409 stub removal, legacy-handler discovery-index write, SDK mode never maps actor handlers — recorded above (SDK maps `/project` itself; the index write restores 07e23a6; the SDK maps actors by default).
+- false: parent 404 MissingStream in `ChildResumeAsync` — the related-child read is the only MissingStream interpretation point and the earlier chunk-B triage covers the parent read.
+- false: `Instant!.Value` NRE — `AwaitCondition.Normalize` guarantees an instant for `DateReached`; previously carried.
+- by design: `RescheduleWorkItem` without `Expiry` is rejected once a witness exists (`IsValidReplacement`); prevents silently dropping a witnessed expiry. Evidence fold null-witness path is the delegated cascade purpose, guarded in `WorkItemAggregate`.
+- carried (already deferred/rejected): ReminderConvergenceResult discarded (RB6-4), ordinal tenant compare, `TaskCanceledException` mapping, `UseSdkRuntime` string literals, `ExpireWorkItem` guard precedence, hardcoded 2 s timeout, `ProjectMetadataPaths` env edge cases, Aspire SDK bump and rate limits, stale discovery-index entry.
+- low/rejected: catalog swallows discovery exceptions without a log (incompleteness is retained for retry); disposition endpoint deny-by-default (production authority is a separate gate); audit-sink exception types beyond `InvalidOperationException`; five-children cap not enforced by the domain (finite Works profile, configuration comment); no tests in a src-only diff (covered by the tests/ tree).

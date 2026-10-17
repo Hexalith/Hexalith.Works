@@ -85,7 +85,7 @@ development_status:
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: done
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: done
-  4-15-adopt-sdk-reminder-process-and-command-seams-in-works: review
+  4-15-adopt-sdk-reminder-process-and-command-seams-in-works: done
   4-16-prove-platform-works-parity-and-rollback: backlog
   epic-4-retrospective:in-progess
   action_items:

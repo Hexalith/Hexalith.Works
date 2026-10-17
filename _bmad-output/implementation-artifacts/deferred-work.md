@@ -1486,3 +1486,7 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - `WorksDomainEventProcessor` ignores `ProcessSource.Validate` ArgumentException (possible endless redelivery); unverified medium.
 - `Directory.Packages.props` Contracts PackageVersion removal lacks `HexalithEventStoreFromSource` condition (possible NU1010); unverified medium — restore in mixed mode.
 - `Directory.Solution.targets` ignores `Targets`/`BuildProjectInSolution` metadata and may double-build; unverified low-medium — binlog.
+
+## Deferred from: code review of spec-4-15 (2026-10-17, src-only pass)
+
+- `FinalizePartitionsAsync` accepts an empty partition list; unverified medium — confirm the SDK never finalizes an empty inventory.
