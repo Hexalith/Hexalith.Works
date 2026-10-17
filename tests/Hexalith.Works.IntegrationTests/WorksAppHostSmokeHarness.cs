@@ -349,9 +349,13 @@ internal static class WorksAppHostSmokeHarness
                     directory = builder.AppHostDirectory,
                     role = useRetainedHost ? "retained-rollback" : "platform-target",
                     schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
+                    // Written only after every startup probe above passed. An expectWorksReadinessDegraded start
+                    // required Works to reach Running, not Healthy; that fixture records its own Degraded observation.
                     readinessPassed = true,
                     runtimeModules = RuntimeModules(builder),
                     actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
+                    // The test runner's loaded SDK assemblies; each host's deployed SDK assemblies are bound per
+                    // module in runtimeModules.
                     sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                         .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location) && assembly.GetName().Name!.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))
                         .OrderBy(assembly => assembly.GetName().Name, StringComparer.Ordinal)
