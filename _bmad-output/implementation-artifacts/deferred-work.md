@@ -1470,3 +1470,10 @@ These four items were reconfirmed on the current production code. They do not op
 ## Resolution evidence: Story 4.15 publication (2026-10-16)
 
 The review-time RB6-6 unpublished EventStore restore prerequisite is superseded by verified public `3.123.0` for all nine SDK packages. Historical deferred entries and their evidence remain unchanged. [Final producer, exact restore and acceptance proof](evidence/story-4-15/public-3.123.0-final-2026-10-16/implementation.md) does not accept Story 4.16 or production admission.
+
+## Deferred from: code review of spec-4-15 (2026-10-17, src/ chunk)
+
+- Trusted-origin identity (target/causation/digest) not compared to envelope in `WorkItemEventStoreAggregate.Handle(ExpireWorkItem)`; unverified medium — confirm SDK boundary enforces it.
+- Legacy-to-SDK runtime handoff (outstanding Dapr date reminders, cascade checkpoints) when `UseSdkRuntime` flips; unverified medium — settle in Story 4.16 rollback proof.
+- `MapActorsHandlers()` skipped under SDK mode; unverified medium — confirm SDK maps actor endpoints.
+- `WorksProcessSourceCatalog` `sources.Add` duplicate-key `ArgumentException` outside per-tenant try; unverified medium — check control index duplicate/case-variant tenants.

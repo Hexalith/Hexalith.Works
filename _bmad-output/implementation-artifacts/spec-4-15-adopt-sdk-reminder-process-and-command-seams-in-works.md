@@ -2,8 +2,8 @@
 title: 'Adopt SDK Reminder, Process, and Command Seams in Works'
 type: 'feature'
 created: '2026-09-23'
-updated: '2026-10-16'
-status: 'done'
+updated: '2026-10-17'
+status: 'in-progress'
 baseline_commit: '8679d7d700925a870e9931b3c43c745c063e459b'
 route: 'dispatch'
 review_loop_iteration: 4
@@ -320,3 +320,21 @@ Layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor (al
 - merged into the existing deferred items: architecture pin test covers three projects and Debug absence only, not `HexalithEventStoreFromSource=false` (NU1010 item); mixed-case witness test omits the ordinal tenant-compare negative case (ordinal-tenant item).
 - low/rejected: theory uses string scenario names and the "valid" arm has no registrar assertion; invalid metadata exercised only through a blank correlation id; delegation test lists kinds by hand instead of enumerating `EffectKindCatalog`; disposition tests cover only `RevalidateAsync`; audit-sink ordering shown only by exception type; duplicate-sidecar `Distinct`; quarantine-seeding block repeated three times; `Received(1)` on a substitute (all test-only, no named harm).
 - false: `MsBuildEvaluatedItem` positional `Version` parameter breaks other construction sites (the tree builds; the only constructor call is in `MsBuildProjectEvaluation`, which this diff updates).
+
+#### Chunk re-review: src/ production code (8679d7d..10a11bd), 2026-10-17
+
+Layers: Blind Hunter (14), Edge Case Hunter (14), Verification Gap (2 + 2 other), Acceptance Auditor (0 violations, 1 unverifiable). Scope: `src/` only (30 files); `tests/` is a separate run.
+
+- [ ] [Review][Patch] Disposition endpoint 400 (carried into the tests/ review run) branches untested (null `Source`, blank `Reason`, `Reason` > 256 chars, invalid `ProcessSource` -> `ArgumentException`); every existing request sends a valid body, so removing any guard keeps tests green. Add a `[Theory]` beside `AuthorizedProcessDispositionAuditsBeforeImmediateOrDeferredRevalidation` asserting 400, unchanged `ProcessSourceState`, no audit write [src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs:22]
+- [x] [Review][Defer] Trusted-origin identity (target/causation/digest) is not compared to the envelope/command in `WorkItemEventStoreAggregate`; only workload, purpose, kind matrix and tenant/domain/aggregate are checked [src/Hexalith.Works/WorkItemEventStoreAggregate.cs:146] — deferred: unverified (medium if true); settle by confirming the SDK domain-service boundary rejects an origin whose identity target/digest mismatches the envelope before `Handle` runs, else add the check or a test
+- [x] [Review][Defer] No handoff from legacy runtime to SDK runtime when `UseSdkRuntime` flips (existing Dapr date reminders, cascade checkpoints, in-flight suspended items; SDK uses new `WorksSdkReminderActor`) [src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs:79] — deferred: unverified (medium if true); settle in Story 4.16 parity/rollback proof by flipping the flag with legacy reminders outstanding
+- [x] [Review][Defer] `MapActorsHandlers()` skipped in SDK mode while SDK reminders still use a Dapr actor type [src/Hexalith.Works/Runtime/WorksHost.cs:214] — deferred: unverified (medium if true); settle by confirming `UseEventStoreDomainService`/`AddEventStoreReminders` map actor endpoints (hosted tests pass, so likely yes)
+- [x] [Review][Defer] `WorksProcessSourceCatalog.ListAsync` `sources.Add(CatalogKey, ...)` outside the per-tenant try throws `ArgumentException` on a duplicate/case-variant key, aborting the page [src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs:54] — deferred: unverified (medium if true); settle by checking whether the control index can list a tenant twice or case-variant
+- Merged into existing deferred BH6/BH5-1: 500 ms `ContextReadTimeout` spanning all pages of a long stream; catalog rescans/sorts all membership per page.
+
+##### Rejected (2026-10-17 chunk)
+
+- false/by design: "reschedule can never drop expiry" / legacy 4-arg reschedule rejected on expiring item (VG3-1 and the earlier note: witness-dropping is rejected by intent; replay of own events cannot hit it).
+- false: more than five children exceeds envelope cap (documented supported profile, `MaxEffectsPerEnvelope=5`, BH2).
+- merged into existing deferred items: `ReminderConvergenceResult` discarded in `WorksDomainEventProcessor`; ordinal envelope-tenant compare in `ValidateWitnessAddress`.
+- low/rejected (previously triaged or fail-closed): `Instant!.Value` null; null-payload check in translator; `TaskCanceledException` timeout mapping; eager gateway-URI resolution (and its missing invalid-URI test); `UseSdkRuntime` read from three sources; disposition defaults failing late/closed; delegation provider null authority fails on first submission; `_ => true` decoder arm; composition guard checks type names only; DI scope per event; stale-witness reject vs no-op on terminal item; witnessless `ExpireWorkItem` with no persisted expiry (RB6-1); `WorksExpiryEvidence` cannot distinguish cascade expiry; `IsTerminal:false` on cascade descendants; serializer-options mismatch; stream-reader allocation/`TimeProvider.System`/readability nits; duplicate `ValidateWitnessAddress`; brace-less ifs; magic string.
