@@ -1,0 +1,10 @@
+{
+  "watchLimit": "1048576",
+  "aspirePs": "[]\n",
+  "runningContainers": [
+    "dapr_placement",
+    "dapr_scheduler",
+    "dapr_redis",
+    "dapr_zipkin"
+  ]
+}

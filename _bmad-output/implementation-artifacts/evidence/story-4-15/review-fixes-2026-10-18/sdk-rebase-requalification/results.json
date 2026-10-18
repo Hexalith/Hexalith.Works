@@ -1,0 +1,202 @@
+[
+  {
+    "label": "debug-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1"
+    ],
+    "exit": 0,
+    "seconds": 8.076,
+    "log": "debug-build.log"
+  },
+  {
+    "label": "UnitTests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1"
+    ],
+    "exit": 0,
+    "seconds": 2.64,
+    "log": "UnitTests-build.log"
+  },
+  {
+    "label": "ArchitectureTests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1"
+    ],
+    "exit": 0,
+    "seconds": 2.458,
+    "log": "ArchitectureTests-build.log"
+  },
+  {
+    "label": "PropertyTests-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1"
+    ],
+    "exit": 0,
+    "seconds": 2.347,
+    "log": "PropertyTests-build.log"
+  },
+  {
+    "label": "debug-integration",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/debug-integration.xml"
+    ],
+    "exit": 0,
+    "seconds": 19.982,
+    "log": "debug-integration.log",
+    "tests": {
+      "total": "848",
+      "passed": "848",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "19.686"
+    },
+    "xml": "debug-integration.xml"
+  },
+  {
+    "label": "debug-restart",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/debug-restart.xml"
+    ],
+    "exit": 0,
+    "seconds": 489.229,
+    "log": "debug-restart.log",
+    "tests": {
+      "total": "1",
+      "passed": "1",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "488.993"
+    },
+    "xml": "debug-restart.xml"
+  },
+  {
+    "label": "debug-callback",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "-longRunning",
+      "45",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/debug-callback.xml"
+    ],
+    "exit": 0,
+    "seconds": 35.904,
+    "log": "debug-callback.log",
+    "tests": {
+      "total": "1",
+      "passed": "1",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "35.651"
+    },
+    "xml": "debug-callback.xml"
+  },
+  {
+    "label": "UnitTests",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/UnitTests.xml"
+    ],
+    "exit": 0,
+    "seconds": 0.505,
+    "log": "UnitTests.log",
+    "tests": {
+      "total": "589",
+      "passed": "589",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "0.270"
+    },
+    "xml": "UnitTests.xml"
+  },
+  {
+    "label": "ArchitectureTests",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/ArchitectureTests.xml"
+    ],
+    "exit": 0,
+    "seconds": 9.088,
+    "log": "ArchitectureTests.log",
+    "tests": {
+      "total": "269",
+      "passed": "269",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "8.874"
+    },
+    "xml": "ArchitectureTests.xml"
+  },
+  {
+    "label": "PropertyTests",
+    "command": [
+      "dotnet",
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+      "-result-xml",
+      "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/raw/PropertyTests.xml"
+    ],
+    "exit": 0,
+    "seconds": 0.496,
+    "log": "PropertyTests.log",
+    "tests": {
+      "total": "3",
+      "passed": "3",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "0.250"
+    },
+    "xml": "PropertyTests.xml"
+  }
+]

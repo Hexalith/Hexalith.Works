@@ -1,0 +1,23 @@
+{
+  "worksHead": "ac3771ec9ae950fa3b86644279b6bc3d95110d9b",
+  "sdkGitlink": "216b790628574d39802adcc8f4fea0d4034ef9f0",
+  "sdkCheckout": "216b790628574d39802adcc8f4fea0d4034ef9f0",
+  "sdkDescribe": "v3.124.0-18-g216b7906",
+  "sdkDirty": false,
+  "submodules": [
+    "3f194e17174994d308ec84af9ee2b5aa68674d0d references/Hexalith.AI.Tools (heads/main)",
+    " 9d9e82a091c212f17f751d65aca2b9cd3d3ecde5 references/Hexalith.Builds (v4.33.0-1-g9d9e82a)",
+    " 16ba59f50fdbe87c55de117c13405b82fa664f93 references/Hexalith.Chatbot (v1.82.0-190-g16ba59f5)",
+    " 9e874b1a3c6e7b6ff07b6f40b81d36e4e1403798 references/Hexalith.Commons (v2.30.1-19-g9e874b1)",
+    " bf9f2369cefb9fd659effc26e0b972b4c644b5c3 references/Hexalith.Conversations (v1.1.0-204-gbf9f236)",
+    " 216b790628574d39802adcc8f4fea0d4034ef9f0 references/Hexalith.EventStore (v3.124.0-18-g216b7906)",
+    " 6ab8d2daac6d2ee8ef2f0ce8686cb446d0b6dd0b references/Hexalith.FrontComposer (v4.6.0-53-g6ab8d2da)",
+    " 55ed6e9cec45999d1f6bb67bcb513d203e9e2429 references/Hexalith.McpCli (v1.0.0-6-g55ed6e9)",
+    " d279b43548628c7e3d06113ab5c264a72bf5b69f references/Hexalith.Parties (v1.4.0-30-gd279b435)",
+    " 0d4c6dd91a0e5762b13dddb722e130f42320c062 references/Hexalith.Platform (heads/main)",
+    " 98de6e013840ece9f0fa7c68ab7dcdf2bba3b375 references/Hexalith.PolymorphicSerializations (v1.19.4)",
+    " 3a08ccb813251fa21fdd6b28d0516ad15ea438e4 references/Hexalith.Projects (v1.1.0-111-g3a08ccb)",
+    " 66ab4a5b3f8152535ede44670b50466d24ef588b references/Hexalith.Tenants (v5.8.0-116-g66ab4a5b)"
+  ],
+  "started": "2026-10-18T09:42:05Z"
+}

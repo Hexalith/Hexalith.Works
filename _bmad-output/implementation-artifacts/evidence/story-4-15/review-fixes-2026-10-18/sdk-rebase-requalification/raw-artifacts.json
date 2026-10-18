@@ -1,0 +1,102 @@
+[
+  {
+    "path": "raw/ArchitectureTests-build.log.gz",
+    "bytes": 2743,
+    "sha256": "8dc2fa0e995941c5f870c1f5e335addf7d02b6a7cf1604dd9ff8779f5f103524"
+  },
+  {
+    "path": "raw/ArchitectureTests.log.gz",
+    "bytes": 534,
+    "sha256": "ea434b969797efcbdb08bf5199327b55d77bf557bb05441f440583a36a837a89"
+  },
+  {
+    "path": "raw/ArchitectureTests.xml.gz",
+    "bytes": 188518,
+    "sha256": "554f45d39c55ac36ea5bc4dafd9d21feea6ed9e50d8ddd3c2b41a546ad24d081"
+  },
+  {
+    "path": "raw/PropertyTests-build.log.gz",
+    "bytes": 2727,
+    "sha256": "25756ef5ed43e06ab3862171da098f9761303ff1266f584388f25e22ef7f15cb"
+  },
+  {
+    "path": "raw/PropertyTests.log.gz",
+    "bytes": 578,
+    "sha256": "541a7eb5c2f53e141a811ebce3948616084b96e0ac98ad9351df1c73c82451ea"
+  },
+  {
+    "path": "raw/PropertyTests.xml.gz",
+    "bytes": 3960,
+    "sha256": "52303a5c40e40ae46011711bbfc5bb3e207ef3acaccb8c895dbc9d6071eb94fe"
+  },
+  {
+    "path": "raw/UnitTests-build.log.gz",
+    "bytes": 2976,
+    "sha256": "f6c12423e3ca5db363876cd0b63cdeb410226ce884ca51ab770d0974cf7fdde3"
+  },
+  {
+    "path": "raw/UnitTests.log.gz",
+    "bytes": 494,
+    "sha256": "0834687a45a421cd612a442c35bcb04d1557c2a2b3b26ac6af7c2bfbab5d0a9d"
+  },
+  {
+    "path": "raw/UnitTests.xml.gz",
+    "bytes": 373437,
+    "sha256": "e8046a087a8dcd1cda0d2fb7606ef515cfa4193ee0d1b1e6ef5b506155e7a66f"
+  },
+  {
+    "path": "raw/debug-build.log.gz",
+    "bytes": 8289,
+    "sha256": "b76d3c63144290fb690a471808f6bd218d6cf69fad2c98b2b274f154e1b70486"
+  },
+  {
+    "path": "raw/debug-callback-bindings.json.gz",
+    "bytes": 3031,
+    "sha256": "dee222bef964a943740838960ed4ce7aaec60381acb2e8a142b40234e28099ae"
+  },
+  {
+    "path": "raw/debug-callback-runtime.jsonl.gz",
+    "bytes": 951,
+    "sha256": "436db9dcffd38e866ee1c66af2c0da59eb83c900bd11b5b24fee3ad9dbea82fc"
+  },
+  {
+    "path": "raw/debug-callback.log.gz",
+    "bytes": 714,
+    "sha256": "a7b489f38dda8369b897543d910fc76e3c5b3b7afcb9425222f0c7fd2761a418"
+  },
+  {
+    "path": "raw/debug-callback.xml.gz",
+    "bytes": 1751,
+    "sha256": "5f8949659d065b95c4caa1c9609685d27440202214d53e880c328ccb743c68e5"
+  },
+  {
+    "path": "raw/debug-integration.log.gz",
+    "bytes": 38347,
+    "sha256": "32cf9cd94028fb6d639fd346cbdc5a3774a5c0ac1c8236e7b38871699a4832e0"
+  },
+  {
+    "path": "raw/debug-integration.xml.gz",
+    "bytes": 613730,
+    "sha256": "54f946f529649ad95d8206b23d0d155afa72e646ffa69ca9cadafcbd2deaa713"
+  },
+  {
+    "path": "raw/debug-restart-bindings.json.gz",
+    "bytes": 12110,
+    "sha256": "e40465bd8087b06be68068b3b5e9c25530948d4873a7539bc89ccfb4d0e5a05e"
+  },
+  {
+    "path": "raw/debug-restart-runtime.jsonl.gz",
+    "bytes": 17793,
+    "sha256": "aa78296cd27e9c29dede9773ab83795c5dc32e1736ef39f64a2cbbb6cf52b60f"
+  },
+  {
+    "path": "raw/debug-restart.log.gz",
+    "bytes": 2722,
+    "sha256": "e6b7affb50f1781fd1693e24601df9dcedc269085d9d285aacfb95873ff557f8"
+  },
+  {
+    "path": "raw/debug-restart.xml.gz",
+    "bytes": 1747,
+    "sha256": "97ecd147d8ea78ff8e69525dd04ea26dfb8e854a0f1b958582018749d95d1b8a"
+  }
+]

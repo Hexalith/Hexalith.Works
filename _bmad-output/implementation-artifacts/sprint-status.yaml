@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-18 (Story 4.15 implementation/review complete; sprint review; Story 4.16 implementation)
+# last_updated: 2026-10-18 (Story 4.15 post-reopen review: six patch action items open; Story 4.16 implementation)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-18 # Story 4.15 implementation and independent review complete; awaiting sprint review; 4.16 in progress; 4.9 gated
+last_updated: 2026-10-18 # Story 4.15 post-reopen code review left six patch action items; source Debug requalified at SDK 216b7906; 4.16 in progress; 4.9 gated
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
@@ -85,7 +85,7 @@ development_status:
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: done
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: done
-  4-15-adopt-sdk-reminder-process-and-command-seams-in-works: review
+  4-15-adopt-sdk-reminder-process-and-command-seams-in-works: in-progress
   4-16-prove-platform-works-parity-and-rollback: in-progress
   epic-4-retrospective: done
 action_items:
