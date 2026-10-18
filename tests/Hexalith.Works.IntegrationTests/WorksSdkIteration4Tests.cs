@@ -183,9 +183,12 @@ public sealed class WorksSdkIteration4Tests
         JsonNode? value = json[field]?.DeepClone();
         json.Remove(field);
         if (present) json[char.ToLowerInvariant(field[0]) + field[1..]] = value;
-        StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
-        page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
-        IEventPayload? historical = WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload);
+        // A reschedule is valid committed history only after its item's creation.
+        IEventPayload[] prefix = payload is WorkItemRescheduled ? [Created()] : [];
+        int target = prefix.Length;
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", [.. prefix, payload]);
+        page = page with { Events = [.. page.Events.Take(target), page.Events[target] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
+        IEventPayload? historical = WorksEventDecoder.Decode(page.Events[target].EventTypeName, page.Events[target].Payload);
         historical.ShouldNotBeNull();
         historical.GetType().ShouldBe(payload.GetType());
         switch (field)
@@ -202,7 +205,7 @@ public sealed class WorksSdkIteration4Tests
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
             .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
         var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
-        if (present) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        if (present) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).Count.ShouldBe(target + 1);
         else await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
         var store = new InMemoryReadModelStore();
         var options = Options.Create(new EventStoreProcessOptions());
@@ -211,10 +214,10 @@ public sealed class WorksSdkIteration4Tests
         (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
             .Status.ShouldBe(present ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
         var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
-        retained.Checkpoint.ShouldBe(present ? 1 : 0);
+        retained.Checkpoint.ShouldBe(present ? target + 1 : target);
         if (!present)
         {
-            retained.FailureSequence.ShouldBe(1);
+            retained.FailureSequence.ShouldBe(target + 1);
             retained.ReasonCode.ShouldBe("invalid-evidence");
         }
         retained.PendingPlan.ShouldBeNull();
@@ -401,6 +404,41 @@ public sealed class WorksSdkIteration4Tests
         retained.Status.ShouldBe(ProcessSourceStatus.Quarantined);
         retained.Checkpoint.ShouldBe(before.Checkpoint);
         retained.FailureSequence.ShouldBe(3);
+        retained.ReasonCode.ShouldBe("invalid-evidence");
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>A witnessed reschedule before the first creation cannot establish evidence that creation later erases or replaces.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RescheduleBeforeCreationRefusesContextAndQuarantinesWithoutCheckpointAdvance(bool createdWitness)
+    {
+        StreamReadPage page = Story48Streams.Page(Tenant, "item",
+            new WorkItemRescheduled("item", 1, s_tenant, s_item, new(), Expiry: Schedule(1)),
+            Created(createdWitness ? Schedule(2) : null));
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        (await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)))
+            .Message.ShouldBe("The persisted Works source reschedules before creation.");
+        (await Should.ThrowAsync<InvalidOperationException>(() => new WorksReminderIntentSource(streams)
+            .GetCurrentIntentsAsync(new(Tenant, "work", "item"), TestContext.Current.CancellationToken)))
+            .Message.ShouldBe("The persisted Works source reschedules before creation.");
+
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var source = new ProcessSource(Tenant, "work", "item");
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        ProcessSourceState retained = await new ProcessCheckpointStore(store, options, TimeProvider.System)
+            .GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        retained.Checkpoint.ShouldBe(0);
+        retained.FailureSequence.ShouldBe(1);
         retained.ReasonCode.ShouldBe("invalid-evidence");
         retained.PendingPlan.ShouldBeNull();
         submitter.ReceivedCalls().ShouldBeEmpty();

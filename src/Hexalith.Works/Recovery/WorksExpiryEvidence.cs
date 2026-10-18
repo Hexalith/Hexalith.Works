@@ -23,6 +23,8 @@ internal sealed class WorksExpiryEvidence
                 _current = created.Expiry;
                 break;
             case WorkItemRescheduled rescheduled:
+                if (!_created)
+                    throw new InvalidOperationException("The persisted Works source reschedules before creation.");
                 if (!WorkItemExpirySchedule.IsValidReplacement(_current, rescheduled.Expiry, new TenantId(tenant), new WorkItemId(aggregate)))
                     throw new InvalidOperationException("The persisted Works expiry replacement is invalid.");
                 _current = rescheduled.Expiry;
