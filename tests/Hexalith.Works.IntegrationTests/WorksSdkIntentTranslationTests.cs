@@ -121,6 +121,62 @@ public sealed class WorksSdkIntentTranslationTests
         JsonSerializer.Deserialize<ExpireWorkItem>(translatedExpiry.Payload)!.ExpiryWitness.ShouldBe(expiry);
     }
 
+    /// <summary>Requeue retains the exact committed expiry witness; terminal rejection removes every reminder intent.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task RejectedAssignmentRetainsExpiryOnlyWhenRequeued(bool requeue)
+    {
+        const string item = "requeued-expiry-item";
+        var tenant = new TenantId(Tenant);
+        var id = new WorkItemId(item);
+        var expiry = new WorkItemExpirySchedule(s_due,
+            ReminderIdentityCodec.ComputeScheduleToken(Tenant, item, s_due, 1), 1);
+        StreamReadPage page = Story48Streams.Page(Tenant, item,
+            new WorkItemCreated(item, 1, tenant, id, new Obligation("requeue proof"), Expiry: expiry),
+            new WorkItemQueued(item, 2, tenant, id),
+            new WorkItemAssigned(item, 3, tenant, id, new(new("party"), Channel.Mcp, AuthorityLevel.Contribute)),
+            new WorkItemRejected(item, 4, tenant, id, requeue));
+        page = page with { Events = [page.Events[0] with { MessageId = "committed-expiry-create" }, .. page.Events.Skip(1)] };
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
+        var source = new WorksReminderIntentSource(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+        StreamReadPage rejectedHistory = page;
+        page = page with { Events = [.. page.Events.Take(3)], Metadata = page.Metadata with { EventCount = 3, LastSequenceReturned = 3, LatestSequence = 3 } };
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(_ => page);
+        var target = new ReminderTarget(Tenant, "work", item);
+        ReminderIntent original = (await source.GetCurrentIntentsAsync(target, TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        page = rejectedHistory;
+        IReadOnlyList<ReminderIntent> intents = await source.GetCurrentIntentsAsync(target, TestContext.Current.CancellationToken);
+        if (!requeue)
+        {
+            intents.ShouldBeEmpty();
+            return;
+        }
+        ReminderIntent intent = intents.ShouldHaveSingleItem();
+        ReminderIdentityCodec.ComputeReminderName(intent).ShouldBe(ReminderIdentityCodec.ComputeReminderName(original));
+        intent.Payload.ShouldBe(original.Payload);
+        intent.Ordinal.ShouldBe(0);
+        intent.Kind.ShouldBe(EffectKindCatalog.Expiry);
+        intent.Tenant.ShouldBe(Tenant);
+        intent.TargetDomain.ShouldBe("work");
+        intent.TargetAggregate.ShouldBe(item);
+        intent.SourceDomain.ShouldBe("work");
+        intent.SourceAggregate.ShouldBe(item);
+        intent.SourceSequence.ShouldBe(1);
+        intent.SourceMessageId.ShouldBe("committed-expiry-create");
+        intent.ScheduleRevision.ShouldBe(expiry.Revision);
+        intent.DueUtc.ShouldBe(expiry.EffectiveExpiryUtc);
+        intent.PayloadType.ShouldBe(nameof(ExpireWorkItem));
+        ReminderCommand translated = source.TranslateDueIntent(intent);
+        translated.CommandType.ShouldBe(nameof(ExpireWorkItem));
+        translated.Payload.ShouldBe(intent.Payload);
+        ExpireWorkItem command = JsonSerializer.Deserialize<ExpireWorkItem>(translated.Payload)!;
+        command.TenantId.ShouldBe(tenant);
+        command.WorkItemId.ShouldBe(id);
+        command.ExpiryWitness.ShouldBe(expiry);
+    }
+
     /// <summary>Current translation requires the exact await; the SDK retained plan owns receipt replay after consumption.</summary>
     [Fact]
     public async Task ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay()

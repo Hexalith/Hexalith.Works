@@ -1,0 +1,61 @@
+{
+  "currentSourceHashes": 15,
+  "verifiedCandidateArchives": 9,
+  "passingMatrixObservations": 130,
+  "matrix": [
+    {
+      "mode": "debug",
+      "scenario": "Duplicate/lost firing, restart, same-date re-suspension",
+      "passingCases": 4
+    },
+    {
+      "mode": "debug",
+      "scenario": "Reschedule/stale expiry",
+      "passingCases": 19
+    },
+    {
+      "mode": "debug",
+      "scenario": "Cascade/child-resume target commit before checkpoint",
+      "passingCases": 2
+    },
+    {
+      "mode": "debug",
+      "scenario": "Page boundary/corrupt or foreign evidence",
+      "passingCases": 21
+    },
+    {
+      "mode": "debug",
+      "scenario": "Related-read outage/denied submission",
+      "passingCases": 19
+    },
+    {
+      "mode": "release",
+      "scenario": "Duplicate/lost firing, restart, same-date re-suspension",
+      "passingCases": 4
+    },
+    {
+      "mode": "release",
+      "scenario": "Reschedule/stale expiry",
+      "passingCases": 19
+    },
+    {
+      "mode": "release",
+      "scenario": "Cascade/child-resume target commit before checkpoint",
+      "passingCases": 2
+    },
+    {
+      "mode": "release",
+      "scenario": "Page boundary/corrupt or foreign evidence",
+      "passingCases": 21
+    },
+    {
+      "mode": "release",
+      "scenario": "Related-read outage/denied submission",
+      "passingCases": 19
+    }
+  ],
+  "persistedRestartPhasesAsserted": 20,
+  "callbackWitnessAndCandidateAsserted": true,
+  "frozenIntentUnchanged": true,
+  "defaultReleaseContainsSdkCorrection": false
+}

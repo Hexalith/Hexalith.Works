@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Projections;
@@ -27,8 +28,11 @@ public sealed class WorksSdkPackageContractTests
     }
 #else
     [Fact]
-    public void ReleaseConsumerLoadsPublishedSdkAndPartiesContracts()
+    public void ReleaseConsumerLoadsSelectedSdkPackagesAndPartiesContracts()
     {
+        string selectedVersion = typeof(WorksSdkPackageContractTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "WorksSelectedEventStoreVersion").Value!;
+        selectedVersion.ShouldNotBeNullOrWhiteSpace();
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(
             Path.Combine(AppContext.BaseDirectory, "Hexalith.Works.IntegrationTests.deps.json")));
         JsonElement libraries = dependencies.RootElement.GetProperty("libraries");
@@ -37,7 +41,7 @@ public sealed class WorksSdkPackageContractTests
         sdk.ShouldContain(library => library.Name.StartsWith("Hexalith.EventStore.Contracts/", StringComparison.Ordinal));
         foreach (JsonProperty library in sdk)
         {
-            library.Name.ShouldEndWith("/3.124.0");
+            library.Name.ShouldEndWith("/" + selectedVersion);
             library.Value.GetProperty("type").GetString().ShouldBe("package");
         }
 

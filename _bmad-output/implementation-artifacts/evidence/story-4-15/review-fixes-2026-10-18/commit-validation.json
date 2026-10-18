@@ -1,0 +1,26 @@
+{
+  "sdkCommit": "b9e2d2aae484a00b938745f9d7d15e8ae5626550",
+  "sdkProducerBase": "77d9af18a54d92506e310fe5a45021a395e66f60",
+  "candidate": "3.124.1-story415.20261018.1",
+  "published": false,
+  "validation": [
+    {
+      "repository": "sdk",
+      "pinnedCliVersion": "21.1.0",
+      "config": "commitlint.config.mjs",
+      "message": "fix(client): recover create-only receipt conflicts\n\nResolve failed create-only Dapr writes through strong same-key read-back.\nPreserve genuine failures and verify receipt-backed journal recovery.\n",
+      "exit": 0,
+      "log": "sdk-commitlint.log",
+      "logSha256": "59397a850e5b04ad785ca6929e99d53cd15300305726cc5cd26705ffd518350d"
+    },
+    {
+      "repository": "works",
+      "pinnedCliVersion": "21.2.2",
+      "config": "commitlint.config.mjs",
+      "message": "fix(works): complete SDK reminder and process adoption\n\nClose story 4.15 recovery review findings and bind the local SDK correction.\nVerify final source and candidate lanes, persisted restart phases, and portable evidence.\nKeep public dependency qualification and production admission as separate gates.\n",
+      "exit": 0,
+      "log": "works-commitlint.log",
+      "logSha256": "5c8dd961f5108c62c128fd10861ae5f5cc77c82230e4529aa996b50564e3075c"
+    }
+  ]
+}

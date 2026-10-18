@@ -1,0 +1,296 @@
+[
+  {
+    "path": "raw/ArchitectureTests.log.gz",
+    "bytes": 476,
+    "sha256": "c1c8b8431da5e22706a9cd2cb0e8b1a45f5fa4ee40ad54fea9ec53769592514a",
+    "compressedSha256": "6df7f60fc055f0e4ec788ccff9d5998a5d3dc77e93dd732904875af4c1c9a305"
+  },
+  {
+    "path": "raw/ArchitectureTests.xml.gz",
+    "bytes": 188481,
+    "sha256": "c585e930fe476b947091a0721060a4c8bde12cced1c14997fe6e0c8f02029f64",
+    "compressedSha256": "8c51893e28332c09207fca107a18e6219fa4c608f3aa1743bd89d73a8866fdf7"
+  },
+  {
+    "path": "raw/PropertyTests.log.gz",
+    "bytes": 520,
+    "sha256": "522692bb2de4171550136c72e75caecb94bbe1996f14e5d56e97626165d4c44f",
+    "compressedSha256": "91e2b6b3d79b0efe26e091d88f5cd97387efa6e2b1040431adf18ef2414d4e9c"
+  },
+  {
+    "path": "raw/PropertyTests.xml.gz",
+    "bytes": 3960,
+    "sha256": "cc217e4aaa9e43ba4e648bb3c255cc5cf1907fcb437198a901d21aeba63b7c09",
+    "compressedSha256": "6e0db6a5d830476f71246ef37915d93698f153b6b2b24208fcbf80f4981ea487"
+  },
+  {
+    "path": "raw/UnitTests.log.gz",
+    "bytes": 436,
+    "sha256": "c40fc9966ea71e9fe41bf36991db46d2c397e6f16cfe35117f1793a14b1018f5",
+    "compressedSha256": "34c4c3146d935971a2b0f6b8c1c070e9b66afce3037afade83aca7bc6a83cc30"
+  },
+  {
+    "path": "raw/UnitTests.xml.gz",
+    "bytes": 373510,
+    "sha256": "7df22880f5edb0c509a9e457f57e1def788c9b51a234a3c4b2a2c2a7e85f84bd",
+    "compressedSha256": "4426caa5d9d692904f331a08a7985122f4976e66426cd112fe195573ebcab946"
+  },
+  {
+    "path": "raw/candidate-build.log.gz",
+    "bytes": 2979,
+    "sha256": "16c010dc7b944768c84658949b56c063f2359915cdb114825e9a14e76ec1ee28",
+    "compressedSha256": "30052d9b91854cb843f26e29f9b5f6a6694617d790a5d6567420a326a5fcddf1"
+  },
+  {
+    "path": "raw/candidate-integration.log.gz",
+    "bytes": 38301,
+    "sha256": "e8a9c83a914586bbc4acaef2de7ea1d04094d0fdec1dc4a49926aaa462d90643",
+    "compressedSha256": "0921d043b5067f32e439af516a14bd925a30c6615372cd43b43cf844b600ac6b"
+  },
+  {
+    "path": "raw/candidate-integration.xml.gz",
+    "bytes": 613753,
+    "sha256": "6f54eee0c12329dac1212feca146392226872b1cb53b9306773c81dbeb92828f",
+    "compressedSha256": "7d4ec22ee3c5434bdc107857612de97df899a8bea8f72b4b33bfda1cca887562"
+  },
+  {
+    "path": "raw/candidate-restart-binaries.json.gz",
+    "bytes": 5899,
+    "sha256": "4693e51b7bafd7850fa140d1dc8b1cd48c9b8b440cf76815dbbc58f68a8499fa",
+    "compressedSha256": "f653c78976a247146bbb3f10ffaa4d32694c5143cd581e66e3923f507cd27109"
+  },
+  {
+    "path": "raw/candidate-restart-bindings.json.gz",
+    "bytes": 12244,
+    "sha256": "a6c8483486e8b991c6e3a659ae91ef5755b44c7a74d0997310301f76a7f7f797",
+    "compressedSha256": "d3213fbb3ce6120600cd313936d07cb35a443601fdb5d9d08dbad4a510623da3"
+  },
+  {
+    "path": "raw/candidate-restart-runtime.jsonl.gz",
+    "bytes": 17796,
+    "sha256": "354debcf40fa00e15f9f72e60919a6f1e423f8535e8943b136a376729496bf09",
+    "compressedSha256": "e2af27257517018fe128b1bbacc6aad0de3386c91f929d2293a6242a6cde45ee"
+  },
+  {
+    "path": "raw/candidate-restart.log.gz",
+    "bytes": 3045,
+    "sha256": "8895d7b2cfacf6c1afeb6539816602e40776a23efc414efdddb6bed6aa92d890",
+    "compressedSha256": "fb6cbf193241bade844b1e60de30cfeb83fcfa22d338521f038b6e7345735e0e"
+  },
+  {
+    "path": "raw/candidate-restart.xml.gz",
+    "bytes": 1749,
+    "sha256": "a3111f16484610e6f088240ee88aa02f30dbca4a1e370162b45e373200a4e0ec",
+    "compressedSha256": "e3430f8995f01478f4f6d5f6b83a12a07effd7371a816a8d93c55fc113ed3c2e"
+  },
+  {
+    "path": "raw/cleanup.json.gz",
+    "bytes": 161,
+    "sha256": "936df6a3c2b0afd7457263f06590b5444d4aa251986af4913ef5efb8e95b4719",
+    "compressedSha256": "295580f34cfaa7a78c89d9a6706659a527cfc0e5941eb41188cf6bbc9690fbd6"
+  },
+  {
+    "path": "raw/debug-build.log.gz",
+    "bytes": 5988,
+    "sha256": "a3aaac24d52061ec7cf7a1d790805a86c8c8ca793b67819007f58853ba7e2f42",
+    "compressedSha256": "a4e06e7407a1417f69c4a2a4e326cda8cae9515871cece2955c7e5707ad4759a"
+  },
+  {
+    "path": "raw/debug-callback-binaries.json.gz",
+    "bytes": 5823,
+    "sha256": "82656cf107895abd583dfbbaa854f92dda713a2ed2b65c64ece072879bb52d3f",
+    "compressedSha256": "1a45d1af71cf151f83dea53f718c4442a736b5f904da323cd06cde8fcf3adabe"
+  },
+  {
+    "path": "raw/debug-callback-bindings.json.gz",
+    "bytes": 3031,
+    "sha256": "2257f1a3c1ffc7e1eb6d309cd7c5a7747b46b68605a95df13cd364861051c56d",
+    "compressedSha256": "591570d02f269e47ccb8058f8ae8a0dce343d229c5937d73f7dbe8330a4faa97"
+  },
+  {
+    "path": "raw/debug-callback-runtime.jsonl.gz",
+    "bytes": 950,
+    "sha256": "8e60fc5e14058b5dab5de1847b942d2628e06436b650713e8174aef5c31e7d2e",
+    "compressedSha256": "fbf75afa4dcfafbe23ececb3a95e469911b8271669f4096ac2d48eb122bcb12b"
+  },
+  {
+    "path": "raw/debug-callback.log.gz",
+    "bytes": 657,
+    "sha256": "ee5a6a499d7e4815f798030451f95d98b95d49747661f03ffd874dd8562d9a94",
+    "compressedSha256": "1c5633da4a6d0ab0e1e8b045834f8c2b5d0f2573d111d709d341ffd31e6a35c3"
+  },
+  {
+    "path": "raw/debug-callback.xml.gz",
+    "bytes": 1751,
+    "sha256": "e08bd3d318435b5e2f4ee30fa44fcefb02df22021a71b82527df1805ac481706",
+    "compressedSha256": "dee0bf839260dc44e5bd172fc2239222c906360233cd28ae3493b894322a54bb"
+  },
+  {
+    "path": "raw/debug-integration.log.gz",
+    "bytes": 38291,
+    "sha256": "5a7bb1a840039d8eeb9fb7eb26181a482828938557d672a18d5e541aaab432c1",
+    "compressedSha256": "3ef4c84cc27140ce73cea5cadc9e1dd11a14f26d0f391c7bfaf5e8e89ed2126c"
+  },
+  {
+    "path": "raw/debug-integration.xml.gz",
+    "bytes": 613724,
+    "sha256": "22533c76020e81d149f0ab7563660df5593ce364d8c6ddf51705b58742a02556",
+    "compressedSha256": "1523d005ab26dc158fc1381525c47ddad29258ed6c7e6a8bdf44d28ff0761bf9"
+  },
+  {
+    "path": "raw/debug-restart-binaries.json.gz",
+    "bytes": 5823,
+    "sha256": "82656cf107895abd583dfbbaa854f92dda713a2ed2b65c64ece072879bb52d3f",
+    "compressedSha256": "1a45d1af71cf151f83dea53f718c4442a736b5f904da323cd06cde8fcf3adabe"
+  },
+  {
+    "path": "raw/debug-restart-bindings.json.gz",
+    "bytes": 12110,
+    "sha256": "f77b1c360ce6902b08cf911fe42bec5229cbc2315ab789aa30bed0c2d79ed174",
+    "compressedSha256": "177347a4586a2ce02a612b0622de31700ef8987f57af71d268c27bf97c34ce91"
+  },
+  {
+    "path": "raw/debug-restart-runtime.jsonl.gz",
+    "bytes": 17791,
+    "sha256": "1bb70afc4251b6b395e9b9a112164fffc24c0977f4ad5855a294fca8b3f48c94",
+    "compressedSha256": "9d42cc7bdd5907739ac60efb6f9074debf269116727f401690767bb94e8636c2"
+  },
+  {
+    "path": "raw/debug-restart.log.gz",
+    "bytes": 2177,
+    "sha256": "1223cbbb11ee1494b5ddffe5e2ef71fe4e890182a6b0f8b8e239db7be98dafb2",
+    "compressedSha256": "227a04a2c6efd60e9e70a19edff88bdc3ae1f51a4872e802dc652ba269873fae"
+  },
+  {
+    "path": "raw/debug-restart.xml.gz",
+    "bytes": 1747,
+    "sha256": "172d95b79a2b64a54f19df078418716945178619fc0dbc1813941f59853f64e5",
+    "compressedSha256": "2ea735d6eb5c1d76638b2660943e27bda58357943deff7904ea5b75bcceae6ee"
+  },
+  {
+    "path": "raw/finalize.py.gz",
+    "bytes": 5494,
+    "sha256": "30970ca45e17a8141d3533fefc1bc076a2a558bedb9d006d33843704423d4c40",
+    "compressedSha256": "0cce2577b089da2cd6e5b3877c8988ba580088515a78575e597d6fbe4e2c81ff"
+  },
+  {
+    "path": "raw/results.json.gz",
+    "bytes": 6028,
+    "sha256": "00faf816b513582066d2edc73179e0530e4f44f33166a4c0c66b91c44eb1cc45",
+    "compressedSha256": "832b94f7e4dc398ccc6f6a5f005b198c03ce28c29d45ad32d3a3b76090f308b9"
+  },
+  {
+    "path": "raw/run.py.gz",
+    "bytes": 6412,
+    "sha256": "0c0c1709828cae6beb9f96333143ba3b6017e3b4cd9a5189cd4b541e4e05a969",
+    "compressedSha256": "4055be4f03eabe3ccf34af9ac7d79cd40755fd15c155ef692c151a1e52ed2175"
+  },
+  {
+    "path": "raw/source-bindings-before.json.gz",
+    "bytes": 415,
+    "sha256": "a32dd9f1c0173ea0888f92a3dba192b5b34e1d8535bf18b8b35499bc2335b7c9",
+    "compressedSha256": "9c55b3e85459d3f5a8e67db112bac9a19e10ccfc5c166efa26aaa076ad97249d"
+  },
+  {
+    "path": "raw/verify-final.py.gz",
+    "bytes": 5535,
+    "sha256": "9597a1bbddd40ff9fa9764425c8a97aae56830e1a3d574a2ba60c2227ae965c5",
+    "compressedSha256": "34f4b78171a91a0100add3f2e1b8b4b2d1f88071acf3e242f6276e6f3fcdb1ff"
+  },
+  {
+    "path": "raw/source-0-Directory.Packages.props.gz",
+    "bytes": 1841,
+    "sha256": "b4e2095c1ed2a6ad560c6927d8bcff83c3fe77eca78131adc87db97d91b76ec3",
+    "compressedSha256": "1c70f18817e9ce573fab7b724a3c86962c4c7e9d6b03006f42dd464d03d3a5ff"
+  },
+  {
+    "path": "raw/source-1-DaprReadModelBatchStateAccessor.cs.gz",
+    "bytes": 6376,
+    "sha256": "63f1793b4ce197ee8151e3db60af1e8e109766d46b02c0908d323bae769c02b9",
+    "compressedSha256": "338a10585eaf0239799d63406bc7c12d6e53d4c4e2c8e0e03067452bc2ddd615"
+  },
+  {
+    "path": "raw/source-2-DaprReadModelCreateConflict.cs.gz",
+    "bytes": 1034,
+    "sha256": "2dbceb09b1809c44259cf49450c4b45a1789b559756c7f8a902338690cd5aa83",
+    "compressedSha256": "cc512401dca5dbe7aba4f9ea14b56823aa68d132f19d6052a6182a4a0a94fbc3"
+  },
+  {
+    "path": "raw/source-3-DaprReadModelStore.cs.gz",
+    "bytes": 14666,
+    "sha256": "7dcce71d8b244270f2cdb47347b2784170cc973861f7042e26daba08f8d98364",
+    "compressedSha256": "aeb71bc34fa8231f13bd1f9bb22e44956395067d6fb23ee74112cc6c51dc1064"
+  },
+  {
+    "path": "raw/source-4-DaprReadModelStoreTests.cs.gz",
+    "bytes": 12352,
+    "sha256": "2985a7f4cf1e6a5f49f2cd3e00868259ba02de993b50f7d44088b20bfa7c02b3",
+    "compressedSha256": "92cb79729503688c5c72d889a526835d3269f84269e2106a5a3f240f0e824da5"
+  },
+  {
+    "path": "raw/source-5-RecordingDaprClient.cs.gz",
+    "bytes": 22617,
+    "sha256": "65e4e4d97604af3547edc9e93b61aa30dba14c58416f44c21e6c19dd9d4ae4ab",
+    "compressedSha256": "d776c835e3d59a743591aa559cbf9173f6220fba8c31c8ac207c3d0566f9586a"
+  },
+  {
+    "path": "raw/source-6-WorksRecoveryEventDecoder.cs.gz",
+    "bytes": 3892,
+    "sha256": "09b1cdeaa5699917ef9722d6dc646183950bb7d98927acb6a1457e0755a508ab",
+    "compressedSha256": "96da1b37389cfb82e19f4dd496b082dbefd3e299fe6507841bdb1501d116c83d"
+  },
+  {
+    "path": "raw/source-7-WorksSourceStreamReader.cs.gz",
+    "bytes": 6920,
+    "sha256": "ce6286aa0ff7c2705a88fbda905c8f00cb3216b58c7e9cea63865411e050819d",
+    "compressedSha256": "bd3babb7843663f5eb3615aa9eb6b888c3b2c0f05e0811b28377a6567eea16e3"
+  },
+  {
+    "path": "raw/source-8-Hexalith.Works.IntegrationTests.csproj.gz",
+    "bytes": 5367,
+    "sha256": "fca5b90e2b4ae1245d42a37ba2f0d554db23a85e58c2698db64b2298c17eac10",
+    "compressedSha256": "e963664c758491a256d91914b48ab01e3174ffa665ef7b57409803746e1cb74e"
+  },
+  {
+    "path": "raw/source-9-WorksAppHostSmokeHarness.cs.gz",
+    "bytes": 61426,
+    "sha256": "7ca2e4241f5ff1e7a9036503ee4762c8a26c05a8c299657400bd4ca53ad29aa9",
+    "compressedSha256": "6a3d86dec1e23cdbc32bdd21464f3dab159d097bcd87595221a75c94bbe73d13"
+  },
+  {
+    "path": "raw/source-10-WorksSdkIntentTranslationTests.cs.gz",
+    "bytes": 19367,
+    "sha256": "5c6fcc7a9a654f667122897c1bd2f4921992805eeb6160424e6a92714194d9d7",
+    "compressedSha256": "2961f2e3ccc0117357bc3a406223c2e8ae817102bf0d143c9d4e075d0b78dc2b"
+  },
+  {
+    "path": "raw/source-11-WorksSdkIteration4Tests.cs.gz",
+    "bytes": 32451,
+    "sha256": "dd635fc90b41af9577fad7b3bbb3df5b16454084c3ac1990c930fdd144b12bf6",
+    "compressedSha256": "fbea65e59186a810b3e0e7fbe13feb465f5a72aca890624d5eaffccb16cb144b"
+  },
+  {
+    "path": "raw/source-12-WorksSdkPackageContractTests.cs.gz",
+    "bytes": 3548,
+    "sha256": "83117062555b7c095b3c61b1b3d6b87898be6ec36fc0a74b32ff0b85003bfbd9",
+    "compressedSha256": "d28b44cac141e32520c8815da77038143d6c51e615f96d58e194fc1b5b9e846f"
+  },
+  {
+    "path": "raw/source-13-WorksSdkProofProducer.cs.gz",
+    "bytes": 660,
+    "sha256": "65b140474e9c5324fb39998d15afd0162a62c76b1f7bd5bd605d113d436a68b4",
+    "compressedSha256": "bca4e492a5afbe79f98fe23e3d45163e030ff364088169d3eb4e63310426cce4"
+  },
+  {
+    "path": "raw/source-14-WorksSdkRecoveryPipelineSmokeTests.cs.gz",
+    "bytes": 70555,
+    "sha256": "e139ae6889ea420df987713eb8ab83f7b5e30e819e5c23dca913365a0efddd5d",
+    "compressedSha256": "c781df168c78321c67c60660008df7074c2e48e89059b17225bdb7f0f4a0a8b8"
+  },
+  {
+    "path": "raw/source-15-WorksSourceStreamReaderTests.cs.gz",
+    "bytes": 8428,
+    "sha256": "95a60cd2e8930265c086ae006ae328b9269843e9a0846978ec15debc95b5448d",
+    "compressedSha256": "c2bc890d670f86bdb6a27cf73d91359feaced2e7d49a4c2d6a974bc86ef3195a"
+  }
+]

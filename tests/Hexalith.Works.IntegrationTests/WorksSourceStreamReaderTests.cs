@@ -122,6 +122,20 @@ public sealed class WorksSourceStreamReaderTests
             Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
     }
 
+    /// <summary>Workload assertion and proof denials describe unavailable authority, not corrupt stored evidence.</summary>
+    [Theory]
+    [InlineData(401)]
+    [InlineData(403)]
+    public async Task GatewayAuthorityDenialUsesRetryableContract(int status)
+    {
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<StreamReadPage>(new EventStoreGatewayException(status, "authority-unavailable")));
+
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
+    }
+
     /// <summary>A rejection that the aggregate cannot emit must not become a checkpointed recovery no-op.</summary>
     [Theory]
     [InlineData(false)]

@@ -251,7 +251,7 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
                 .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
-                .WithEnvironment("Version", "3.124.0");
+                .WithEnvironment("Version", WorksSdkProofProducer.Version);
         }
         configure?.Invoke(builder);
         IsolateApplicationPorts(builder);

@@ -1,0 +1,156 @@
+{
+  "originalArtifactHashesUnchanged": 126,
+  "reviewSourceHashesMatch": true,
+  "reviewVerifierTests": 9,
+  "portableCopyExit": 0,
+  "portableCopyResult": {
+    "verifiedArtifacts": 135,
+    "acceptedReports": 11,
+    "candidateBoundHostStarts": 8,
+    "packagedHostDllChecks": 20,
+    "sourceHostArchiveComparisons": [
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.Client.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.Contracts.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.DomainService.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.Gateway.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.Server.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 26364,
+        "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.Client.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.Contracts.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.DomainService.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.Gateway.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.Server.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 49761,
+        "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.Client.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.Contracts.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.DomainService.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.Gateway.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.Server.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 96104,
+        "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.Admin.Abstractions.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.Client.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.Contracts.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.DomainService.dll",
+        "matchesArchive": true
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.Gateway.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.Server.dll",
+        "matchesArchive": false
+      },
+      {
+        "pid": 28867,
+        "assembly": "Hexalith.EventStore.ServiceDefaults.dll",
+        "matchesArchive": true
+      }
+    ],
+    "nativeReceiptReplay": "unchanged receipt/checkpoint; head dequeued only by candidate",
+    "defaultRelease": "unfixed public 3.124.0"
+  }
+}

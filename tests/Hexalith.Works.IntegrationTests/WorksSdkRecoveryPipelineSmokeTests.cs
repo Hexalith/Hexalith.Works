@@ -675,13 +675,16 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         // published proof consumer; MinVer otherwise derives the preceding repository tag.
         if (WorksAppHostSelection.IsPlatform)
             foreach (ProjectResource sourceProject in builder.Resources.OfType<ProjectResource>())
-                builder.CreateResourceBuilder(sourceProject).WithEnvironment("MinVerVersionOverride", "3.124.0")
+                builder.CreateResourceBuilder(sourceProject).WithEnvironment("MinVerVersionOverride", WorksSdkProofProducer.Version)
                     .WithEnvironment("DOTNET_ENVIRONMENT", "Development")
                     .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Development");
         string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;
         foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "works-ha" or "eventstore"))
         {
             IResourceBuilder<ProjectResource> target = builder.CreateResourceBuilder(resource);
+            target.WithEnvironment("HexalithEventStoreVersion", WorksSdkProofProducer.Version);
+            if (WorksSdkProofProducer.Version.Contains("-story415.", StringComparison.Ordinal))
+                target.WithEnvironment("RestoreAdditionalProjectSources", Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../.artifacts/story-4-15/feed")));
             target.WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
                 .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name == "eventstore" ? "eventstore" : "works")
@@ -723,7 +726,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                         .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimit", "8192")
                         .WithEnvironment("EventStore__RateLimiting__TenantPermitLimits__anonymous", "8192")
                         .WithEnvironment("EventStore__RateLimiting__ConsumerPermitLimits__anonymous", "8192");
-                target.WithEnvironment("Version", "3.124.0")
+                target.WithEnvironment("Version", WorksSdkProofProducer.Version)
                     .WithEnvironment("EventStore__IdempotencyAdmission__Enabled", "true")
                     .WithEnvironment("EventStore__IdempotencyAdmission__ActiveDigestKeyVersion", "story415")
                     .WithEnvironment("EventStore__IdempotencyAdmission__DigestKeys__story415", digestKey);

@@ -30,18 +30,26 @@ internal static class WorksRecoveryEventDecoder
             ConversationLinked fact => fact.ConversationCorrelationId is not null,
             WorkItemSuspended fact => fact.AwaitConditions is { Count: > 0 },
             WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue)),
+            WorkItemCancelled => HasProperty(bytes, nameof(WorkItemCancelled.Sequence)),
             WorkItemInitialEffortRejected fact => fact.Done != 0,
             WorkItemCannotReferenceParentFromAnotherTenant fact => fact.Parent is not null,
             WorkItemCannotReferenceSecondParent fact => fact.ExistingParent is not null && fact.ProposedParent is not null,
             WorkItemConversationLinkRejected fact => fact.ExistingConversationCorrelationId is not null && fact.ProposedConversationCorrelationId is not null,
             WorkItemTreeCycleRejected fact => fact.ProposedParent is not null && fact.CycleWorkItemId is not null,
-            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null,
+            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null && fact.ResultingDepth > fact.MaxDepth,
             WorkItemProgressRejected fact => fact.Reason is not null,
             WorkItemReEstimateRejected fact => fact.Reason is not null,
-            WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus),
+            WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus)
+                && HasProperty(bytes, nameof(WorkItemTransitionRejected.FromStatus)),
             _ => true,
         };
         return valid ? payload : throw new InvalidOperationException("Works source evidence has missing required members.");
+    }
+
+    private static bool HasProperty(byte[] bytes, string name)
+    {
+        using JsonDocument document = JsonDocument.Parse(bytes);
+        return document.RootElement.EnumerateObject().Any(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool HasBooleanProperty(byte[] bytes, string name)

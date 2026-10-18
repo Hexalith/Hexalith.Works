@@ -1497,34 +1497,42 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - Commit 99976bb's `QueryWindowStore.Observe` starts at the same point the old `ClearReceivedCalls` ran (`WorksSdkProtectedHttpTests.cs:387`), so post-start hosted-service reads would still fail the denial check; unverified medium — identify the post-start store reader or loop the test under CPU load.
 - Platform host-evidence wording, for Story 4.16 (`WorksAppHostSmokeHarness.cs:352`, `references/Hexalith.Platform/eng/verify_works_host.py:75,88`): the verifier's `readinessPassed` check can never fail because the harness writes a start record only after every startup probe passes, and its "loaded SDK assemblies" error refers to the top-level list, which holds the test runner's assemblies (hosts are bound per module in `runtimeModules`). Not a false pass; Works-side comments landed in the 4.15 review. Reason deferred: changing the record shape mid-4.16 would invalidate the 52 captured start files, so rename (`worksReadiness`, `runnerSdkAssemblies`) when 4.16 next re-captures its live facts.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+## Deferred from: code review of spec-4-15 (2026-10-17, resumed independent review)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Bound synchronous and cancellation-ignoring Parties query-authority acquisition with shared admission and lifetime handling.
   evidence: BR7-2: baseline 8679d7d700925a870e9931b3c43c745c063e459b directly awaits ResolvePartyIdentityAsync without an invocation/admission bound; current WorksQueryPolicy.cs:52-59 can block synchronously or retain cancellation-ignoring requests. This R5 issue predates the R6–R8/R11 adoption; use a shared SDK/provider seam and regressions for sync blocking, refused admission and completion-based release.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Isolate query deadline completion from provider cancellation callbacks.
   evidence: ER7-1: /tmp/story415-edge-probe reproduced a callback entering at two seconds and holding AuthorizeAsync pending at three seconds until released. The baseline query path is already provider-bound; the later R5 WaitAsync improvement uses the provider token as its deadline token. Verify distinct deadline/provider lifetimes and nonblocking cancellation at the shared seam.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Preserve subsequent solution targets when serializing solution project builds.
   evidence: BR7-3: independent CI commit f9ddce953f37b1e11db9cdc3d88ba2c1ca62d2d5 removes ProjectReference items in Directory.Solution.targets. Root package-free .csproj probe /tmp/story415-root-msbuild-5e_gzxzq, dotnet msbuild x.slnx -nologo -t:Build,Pack, exits 0 with BUILD_A and no PACK_A. Repair reusable build orchestration with a multi-target regression; initial .proj parse failure is separate.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Remove unused issue and pull-request write grants from release publication authority after governance alignment.
   evidence: BR7-8: release.yml grants issues: write and pull-requests: write while .releaserc.json disables success/failure comments and labels; installed @semantic-release/github skips those writes. This is independent publication-authority work, which the frozen adoption intent leaves as a separate gate.
 
-- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Prevent ordinary package restores from confusing local candidate archives with published producers.
   evidence: BR7-9: baseline Directory.Build.props already adds the local Story 4.14 feed whenever present, and current props also adds the 4.15 feed. A matching ID/version can satisfy restore from those sources. Current packers refuse stable identities and isolated public verification checks official hashes; general restore source mapping/identity provenance belongs to shared build governance.
+
+## Deferred from: code review of spec-4-15 (2026-10-17, resumed closeout review)
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Record legacy pending-date discovery before scheduling so failed scheduler calls retain a recoverable target.
-  evidence: The legacy suspended handler writes the fallback index after scheduling all reminders; a failed scheduler call with missing projection delivery leaves no durable discovery entry. This is the independent Story 4.8 path.
+  evidence: The legacy suspended handler writes the fallback index after scheduling all reminders; a failed scheduler call with missing projection delivery leaves no durable discovery entry. The index write was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d; before that commit the handler wrote no fallback index, so this scheduling-failure window predates the new write.
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Clear stale legacy pending-date discovery entries with a sequence-fenced empty fold.
-  evidence: PendingDateAwaitDiscoveryIndex.RecordAsync returns when the pending set is empty, so old entries continue to be scanned and can grow the tenant document. This is the independent Story 4.8 path.
+  evidence: PendingDateAwaitDiscoveryIndex.RecordAsync returns when the pending set is empty, so old entries continue to be scanned and can grow the tenant document. PendingDateAwaitDiscoveryIndex was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d. The same stale-entry claim was rejected as low in the 2026-10-17 src/scripts review because the legacy consumer rereads authoritative streams; preserve that earlier verdict when reassessing this follow-up.
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Verify that release preparation and exact-source CI use compatible Builds action behavior.
   evidence: CI invokes Builds workflow 04d9617 while release preparation invokes action 397c94a. Compare their implementations or run dry release preparation to determine whether the version difference changes accepted output; medium impact remains unverified.
+
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Mark Platform-only integration facts skipped when the Platform artifact is not selected.
   evidence: WorksPlatformHaPipelineSmokeTests and WorksPlatformProjectionPipelineSmokeTests return without assertions outside the Platform lane, so ordinary runs count their unexecuted behavior as passes. Platform parity is the separate Story 4.16 gate.

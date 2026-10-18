@@ -133,6 +133,97 @@ public sealed class WorksSdkIteration4Tests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
+    /// <summary>Recovery requires demonstrated value members while explicit defaults and historical decoding remain valid.</summary>
+    [Theory]
+    [InlineData("transition", false)]
+    [InlineData("transition", true)]
+    [InlineData("cancelled", false)]
+    [InlineData("cancelled", true)]
+    public async Task RequiredValueMemberPresenceDoesNotRejectExplicitDefaults(string kind, bool present)
+    {
+        IEventPayload payload = kind == "transition"
+            ? new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof")
+            : new WorkItemCancelled("item", 0, s_tenant, s_item);
+        string field = kind == "transition" ? "FromStatus" : "Sequence";
+        JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
+        JsonNode? value = json[field]?.DeepClone();
+        json.Remove(field);
+        if (present) json[char.ToLowerInvariant(field[0]) + field[1..]] = value;
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
+        page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
+        IEventPayload historical = WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload)!;
+        if (historical is WorkItemCancelled cancelled) cancelled.Sequence.ShouldBe(0);
+        else ((Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected)historical).FromStatus.ShouldBe(WorkItemStatus.Unknown);
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        if (present) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        else await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        var source = new ProcessSource(Tenant, "work", "item");
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(present ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
+        var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(present ? 1 : 0);
+        if (!present)
+        {
+            retained.FailureSequence.ShouldBe(1);
+            retained.ReasonCode.ShouldBe("invalid-evidence");
+        }
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>Committed rejection facts must carry the condition that caused the aggregate to refuse the command.</summary>
+    [Theory]
+    [InlineData("effort", 0, 0, false)]
+    [InlineData("effort-missing", 0, 0, false)]
+    [InlineData("effort", 3, 0, true)]
+    [InlineData("depth", 0, 0, false)]
+    [InlineData("depth-missing", 0, 0, false)]
+    [InlineData("depth", 32, 32, false)]
+    [InlineData("depth", 31, 32, false)]
+    [InlineData("depth", 33, 32, true)]
+    public async Task RejectionRequiresItsCommittedFailureCondition(string kind, int value, int limit, bool valid)
+    {
+        ArgumentNullException.ThrowIfNull(kind);
+        IEventPayload payload = kind.StartsWith("effort", StringComparison.Ordinal)
+            ? new Hexalith.Works.Contracts.Events.Rejections.WorkItemInitialEffortRejected(s_tenant, s_item, value)
+            : new Hexalith.Works.Contracts.Events.Rejections.WorkItemTreeDepthExceeded(s_tenant, s_item, new(s_tenant, new("parent")), limit, value);
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
+        if (kind.EndsWith("missing", StringComparison.Ordinal))
+        {
+            JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
+            json.Remove(kind == "effort-missing" ? "Done" : "ResultingDepth");
+            if (kind == "depth-missing") json.Remove("MaxDepth");
+            page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
+        }
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        if (valid) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        else await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        var source = new ProcessSource(Tenant, "work", "item");
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(valid ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
+        var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(valid ? 1 : 0);
+        if (!valid)
+        {
+            retained.FailureSequence.ShouldBe(1);
+            retained.ReasonCode.ShouldBe("invalid-evidence");
+        }
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
     /// <summary>Only actual short/full Works names are accepted; a foreign name cannot turn a fact into a checkpointed no-op.</summary>
     [Theory]
     [InlineData("short", true)]
@@ -222,6 +313,40 @@ public sealed class WorksSdkIteration4Tests
         var state = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
         state.Checkpoint.ShouldBe(valid ? 2 : 1);
         if (!valid) { state.FailureSequence.ShouldBe(2); state.ReasonCode.ShouldBe("invalid-evidence"); }
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>Persistent contextual workload denials park with unavailable evidence instead of quarantining valid facts.</summary>
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task ContextualWorkloadDenialParksAfterRetryLimit(HttpStatusCode status)
+    {
+        var child = new WorkItemId("child");
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", Created(),
+            new ChildSpawned("item", 2, s_tenant, s_item, child, new("child")),
+            new WorkItemCancelled("item", 3, s_tenant, s_item));
+        using var http = new HttpClient(new WorksSdkHttpEvidenceHandler(async (request, token) =>
+        {
+            StreamReadRequest read = (await request.Content!.ReadFromJsonAsync<StreamReadRequest>(cancellationToken: token).ConfigureAwait(false))!;
+            return read.AggregateId == child.Value
+                ? new HttpResponseMessage(status)
+                : new(HttpStatusCode.OK) { Content = JsonContent.Create(Tail(page, read)) };
+        })) { BaseAddress = new("https://eventstore.test/") };
+        IEventStoreGatewayClient gateway = Gateway(http);
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => streams.ReadAsync(Tenant, child.Value, TestContext.Current.CancellationToken));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions { RetryLimit = 1 });
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        var source = new ProcessSource(Tenant, "work", "item");
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Parked);
+        var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(2);
+        retained.FailureSequence.ShouldBe(3);
+        retained.ReasonCode.ShouldBe("evidence-unavailable");
+        retained.PendingPlan.ShouldBeNull();
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 

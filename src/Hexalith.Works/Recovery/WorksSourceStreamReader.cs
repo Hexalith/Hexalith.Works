@@ -47,7 +47,7 @@ internal sealed class WorksSourceStreamReader(
         {
             throw new ProcessEvidenceUnavailableException(exception);
         }
-        catch (EventStoreGatewayException exception) when (exception.StatusCode is 408 or 429 or >= 500
+        catch (EventStoreGatewayException exception) when (exception.StatusCode is 401 or 403 or 408 or 429 or >= 500
             && exception.ReasonCode is not (StreamReplayReasonCodes.MissingEvent or StreamReplayReasonCodes.CorruptEvent)
             && exception.Code is not (StreamReplayReasonCodes.MissingEvent or StreamReplayReasonCodes.CorruptEvent))
         {
