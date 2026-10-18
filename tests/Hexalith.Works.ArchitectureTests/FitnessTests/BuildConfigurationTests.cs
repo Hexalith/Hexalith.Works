@@ -14,7 +14,7 @@ public sealed class BuildConfigurationTests
         string root = RepositoryRoot.Locate();
         JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
 
-        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.401");
+        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.402");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
         // Keep the selected SDK aligned with global.json and the centrally pinned hosting packages.
