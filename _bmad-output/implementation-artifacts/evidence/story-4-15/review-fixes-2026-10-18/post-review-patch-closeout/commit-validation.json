@@ -1,0 +1,14 @@
+{
+  "command": [
+    "npm",
+    "run",
+    "commitlint",
+    "--",
+    "--edit",
+    "/tmp/story415-root-review-yuc5uitl/commit-message.txt"
+  ],
+  "exitCode": 0,
+  "output": "\n> hexalith-works@0.0.0 commitlint\n> commitlint --config commitlint.config.mjs --edit /tmp/story415-root-review-yuc5uitl/commit-message.txt\n\n",
+  "cliVersion": "21.2.2",
+  "message": "fix(works): validate complete recovery evidence and close story 4.15\n"
+}

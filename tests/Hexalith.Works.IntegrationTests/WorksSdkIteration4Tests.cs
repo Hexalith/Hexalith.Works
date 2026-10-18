@@ -133,62 +133,70 @@ public sealed class WorksSdkIteration4Tests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
-    /// <summary>Recovery requires demonstrated value members while explicit defaults and historical decoding remain valid.</summary>
-    [Theory]
-    [InlineData("transition", false)]
-    [InlineData("transition", true)]
-    [InlineData("cancelled", false)]
-    [InlineData("cancelled", true)]
-    [InlineData("expired", false)]
-    [InlineData("expired", true)]
-    [InlineData("completed", false)]
-    [InlineData("completed", true)]
-    [InlineData("created", false)]
-    [InlineData("created", true)]
-    [InlineData("rejected", false)]
-    [InlineData("rejected", true)]
-    [InlineData("progress", false)]
-    [InlineData("progress", true)]
-    [InlineData("reestimated", false)]
-    [InlineData("reestimated", true)]
-    public async Task RequiredValueMemberPresenceDoesNotRejectExplicitDefaults(string kind, bool present)
+    /// <summary>Inventories every state-changing event and additional required scalar defaults.</summary>
+    public static TheoryData<string, string, bool> RequiredValueMembers
     {
-        IEventPayload payload = kind switch
+        get
         {
-            "transition" => new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof"),
-            "expired" => new WorkItemExpired("item", 0, s_tenant, s_item),
-            "completed" => new WorkItemCompleted("item", 0, s_tenant, s_item),
-            "created" => new WorkItemCreated("item", 0, s_tenant, s_item, new("proof")),
-            "rejected" => new WorkItemRejected("item", 0, s_tenant, s_item, true),
-            "progress" => new ProgressReported("item", 1, s_tenant, s_item, 0, new("hours")),
-            "reestimated" => new ReEstimated("item", 1, s_tenant, s_item, 0, new("hours")),
-            _ => new WorkItemCancelled("item", 0, s_tenant, s_item),
-        };
-        string field = kind switch
-        {
-            "transition" => "FromStatus",
-            "progress" => "DoneDelta",
-            "reestimated" => "Estimated",
-            _ => "Sequence",
-        };
+            var data = new TheoryData<string, string, bool>();
+            foreach (IEventPayload payload in StateChangingPayloads())
+            {
+                data.Add(payload.GetType().Name, "Sequence", false);
+                data.Add(payload.GetType().Name, "Sequence", true);
+            }
+            foreach ((string kind, string member) in new[]
+            {
+                ("transition", "FromStatus"),
+                (nameof(ProgressReported), "DoneDelta"),
+                (nameof(ReEstimated), "Estimated"),
+            })
+            {
+                data.Add(kind, member, false);
+                data.Add(kind, member, true);
+            }
+            return data;
+        }
+    }
+
+    /// <summary>Adding a state-changing event cannot silently omit its sequence presence regression.</summary>
+    [Fact]
+    public void StateChangingInventoryCoversEverySequencedEvent()
+    {
+        Type[] sequenced = typeof(WorkItemCreated).Assembly.GetTypes()
+            .Where(type => type is { IsAbstract: false } && typeof(IEventPayload).IsAssignableFrom(type)
+                && type.GetProperty(nameof(WorkItemCreated.Sequence)) is not null)
+            .OrderBy(type => type.FullName, StringComparer.Ordinal).ToArray();
+        StateChangingPayloads().Select(payload => payload.GetType())
+            .OrderBy(type => type.FullName, StringComparer.Ordinal).ShouldBe(sequenced);
+    }
+
+    /// <summary>Recovery requires all payload sequences and additional scalars while preserving explicit defaults and historical readers.</summary>
+    [Theory]
+    [MemberData(nameof(RequiredValueMembers))]
+    public async Task RequiredValueMemberPresenceDoesNotRejectExplicitDefaults(string kind, string field, bool present)
+    {
+        ArgumentNullException.ThrowIfNull(field);
+        IEventPayload payload = kind == "transition"
+            ? new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof")
+            : StateChangingPayloads().Single(fact => fact.GetType().Name == kind);
         JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
         JsonNode? value = json[field]?.DeepClone();
         json.Remove(field);
         if (present) json[char.ToLowerInvariant(field[0]) + field[1..]] = value;
         StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
         page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
-        IEventPayload historical = WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload)!;
-        switch (historical)
+        IEventPayload? historical = WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload);
+        historical.ShouldNotBeNull();
+        historical.GetType().ShouldBe(payload.GetType());
+        switch (field)
         {
-            case WorkItemCancelled cancelled: cancelled.Sequence.ShouldBe(0); break;
-            case WorkItemExpired expired: expired.Sequence.ShouldBe(0); break;
-            case WorkItemCompleted completed: completed.Sequence.ShouldBe(0); break;
-            case WorkItemCreated created: created.Sequence.ShouldBe(0); break;
-            case WorkItemRejected rejected: rejected.Sequence.ShouldBe(0); break;
-            case ProgressReported progress: progress.DoneDelta.ShouldBe(0); break;
-            case ReEstimated reestimated: reestimated.Estimated.ShouldBe(0); break;
-            case Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected transition:
-                transition.FromStatus.ShouldBe(WorkItemStatus.Unknown); break;
+            case "Sequence": ((long)historical.GetType().GetProperty(field)!.GetValue(historical)!).ShouldBe(0); break;
+            case "DoneDelta": ((ProgressReported)historical).DoneDelta.ShouldBe(0); break;
+            case "Estimated": ((ReEstimated)historical).Estimated.ShouldBe(0); break;
+            case "FromStatus":
+                ((Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected)historical)
+                    .FromStatus.ShouldBe(WorkItemStatus.Unknown); break;
+            default: throw new InvalidOperationException("Historical value-member fixture has no assertion.");
         }
         var gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
@@ -224,6 +232,7 @@ public sealed class WorksSdkIteration4Tests
     [InlineData("depth", 32, 32, false)]
     [InlineData("depth", 31, 32, false)]
     [InlineData("depth", 33, 32, true)]
+    [InlineData("depth", 1, 0, true)]
     public async Task RejectionRequiresItsCommittedFailureCondition(string kind, int value, int limit, bool valid)
     {
         ArgumentNullException.ThrowIfNull(kind);
@@ -353,6 +362,85 @@ public sealed class WorksSdkIteration4Tests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
+    /// <summary>A second creation cannot erase or replace expiry evidence, even when both facts have valid shapes.</summary>
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    public async Task RepeatedCreationRefusesContextAndQuarantinesWithoutCheckpointAdvance(bool originalWitness, bool repeatedWitness)
+    {
+        WorkItemExpirySchedule? replacement = repeatedWitness ? Schedule(2) : null;
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", Created(originalWitness ? Schedule(1) : null),
+            new WorkItemCreated("item", 2, s_tenant, s_item, new("second creation"), Expiry: replacement),
+            new WorkItemRescheduled("item", 3, s_tenant, s_item, new(), Expiry: repeatedWitness ? Schedule(3) : null));
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        (await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)))
+            .Message.ShouldBe("The persisted Works source contains repeated creation.");
+        (await Should.ThrowAsync<InvalidOperationException>(() => new WorksReminderIntentSource(streams)
+            .GetCurrentIntentsAsync(new(Tenant, "work", "item"), TestContext.Current.CancellationToken)))
+            .Message.ShouldBe("The persisted Works source contains repeated creation.");
+
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var source = new ProcessSource(Tenant, "work", "item");
+        var checkpoints = new ProcessCheckpointStore(store, options, TimeProvider.System);
+        // Resume at the contextual envelope after earlier no-op envelopes were already checkpointed.
+        ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken))!;
+        owned = await checkpoints.UpdateOwnedAsync(owned, state => state with { Checkpoint = 2 }, TestContext.Current.CancellationToken);
+        await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken);
+        ProcessSourceState before = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken);
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        ProcessSourceState retained = await new ProcessCheckpointStore(store, options, TimeProvider.System)
+            .GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        retained.Checkpoint.ShouldBe(before.Checkpoint);
+        retained.FailureSequence.ShouldBe(3);
+        retained.ReasonCode.ShouldBe("invalid-evidence");
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>Rejected create attempts before the first accepted creation do not block a valid schedule replacement.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FirstCreationAndRescheduleRemainValidAfterOptionalCreationRejection(bool rejectedFirst)
+    {
+        IEventPayload[] facts = [Created(Schedule(1)), new WorkItemRescheduled("item", 2, s_tenant, s_item, new(), Expiry: Schedule(2))];
+        if (rejectedFirst)
+            facts = [new Hexalith.Works.Contracts.Events.Rejections.WorkItemCannotBeCreatedWithoutObligation(s_tenant, s_item), .. facts];
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", facts);
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).Count.ShouldBe(facts.Length);
+        ReminderIntent intent = (await new WorksReminderIntentSource(streams)
+            .GetCurrentIntentsAsync(new(Tenant, "work", "item"), TestContext.Current.CancellationToken)).ShouldHaveSingleItem();
+        intent.Kind.ShouldBe(EffectKindCatalog.Expiry);
+        intent.SourceSequence.ShouldBe(facts.Length);
+        intent.ScheduleRevision.ShouldBe(2);
+        JsonSerializer.Deserialize<Hexalith.Works.Contracts.Commands.ExpireWorkItem>(intent.Payload)!
+            .ExpiryWitness.ShouldBe(Schedule(2));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var source = new ProcessSource(Tenant, "work", "item");
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Active);
+        ProcessSourceState retained = await new ProcessCheckpointStore(store, options, TimeProvider.System)
+            .GetAsync(source, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(facts.Length);
+        retained.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+    }
+
     /// <summary>Persistent contextual workload denials park with unavailable evidence instead of quarantining valid facts.</summary>
     [Theory]
     [InlineData(HttpStatusCode.Unauthorized)]
@@ -474,6 +562,25 @@ public sealed class WorksSdkIteration4Tests
         retained.ReasonCode.ShouldNotBeNullOrWhiteSpace();
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
+
+    private static IEventPayload[] StateChangingPayloads() =>
+    [
+        new WorkItemCreated("item", 0, s_tenant, s_item, new("proof")),
+        new ChildSpawned("item", 0, s_tenant, s_item, new("child"), new("child")),
+        new WorkItemRescheduled("item", 0, s_tenant, s_item, new()),
+        new WorkItemAssigned("item", 0, s_tenant, s_item, new(new("party"), Channel.Mcp, AuthorityLevel.Contribute)),
+        new WorkItemClaimed("item", 0, s_tenant, s_item, new(new("party"), Channel.Mcp, AuthorityLevel.Contribute)),
+        new ProgressReported("item", 0, s_tenant, s_item, 0, new("hours")),
+        new ReEstimated("item", 0, s_tenant, s_item, 0, new("hours")),
+        new ConversationLinked("item", 0, s_tenant, s_item, new("conversation")),
+        new WorkItemSuspended("item", 0, s_tenant, s_item, [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)]),
+        new WorkItemRejected("item", 0, s_tenant, s_item, true),
+        new WorkItemQueued("item", 0, s_tenant, s_item),
+        new WorkItemResumed("item", 0, s_tenant, s_item),
+        new WorkItemCancelled("item", 0, s_tenant, s_item),
+        new WorkItemExpired("item", 0, s_tenant, s_item),
+        new WorkItemCompleted("item", 0, s_tenant, s_item),
+    ];
 
     private static WorkItemCreated Created(WorkItemExpirySchedule? expiry = null) => new("item", 1, s_tenant, s_item, new("proof"), Expiry: expiry);
 

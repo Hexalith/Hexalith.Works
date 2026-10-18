@@ -18,9 +18,13 @@ internal static class WorksRecoveryEventDecoder
         if (!string.Equals(eventType, payload.GetType().Name, StringComparison.Ordinal)
             && !string.Equals(eventType, payload.GetType().FullName, StringComparison.Ordinal))
             throw new InvalidOperationException("Works source evidence has a foreign event type.");
+        // State-changing payloads declare Sequence; command-rejection payloads do not.
+        if (payload.GetType().GetProperty(nameof(WorkItemCreated.Sequence)) is not null
+            && !HasProperty(bytes, nameof(WorkItemCreated.Sequence)))
+            throw new InvalidOperationException("Works source evidence has missing required members.");
         bool valid = payload switch
         {
-            WorkItemCreated fact => fact.Obligation is not null && HasProperty(bytes, nameof(WorkItemCreated.Sequence)),
+            WorkItemCreated fact => fact.Obligation is not null,
             ChildSpawned fact => fact.ChildWorkItemId is not null && fact.Obligation is not null,
             WorkItemRescheduled fact => fact.Schedule is not null,
             WorkItemAssigned fact => fact.Binding is not null,
@@ -29,11 +33,7 @@ internal static class WorksRecoveryEventDecoder
             ReEstimated fact => fact.Unit is not null && HasProperty(bytes, nameof(ReEstimated.Estimated)),
             ConversationLinked fact => fact.ConversationCorrelationId is not null,
             WorkItemSuspended fact => fact.AwaitConditions is { Count: > 0 },
-            WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue))
-                && HasProperty(bytes, nameof(WorkItemRejected.Sequence)),
-            WorkItemCancelled => HasProperty(bytes, nameof(WorkItemCancelled.Sequence)),
-            WorkItemExpired => HasProperty(bytes, nameof(WorkItemExpired.Sequence)),
-            WorkItemCompleted => HasProperty(bytes, nameof(WorkItemCompleted.Sequence)),
+            WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue)),
             WorkItemInitialEffortRejected fact => fact.Done != 0,
             WorkItemCannotReferenceParentFromAnotherTenant fact => fact.Parent is not null,
             WorkItemCannotReferenceSecondParent fact => fact.ExistingParent is not null && fact.ProposedParent is not null,

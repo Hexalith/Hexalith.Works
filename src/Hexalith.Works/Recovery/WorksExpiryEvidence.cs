@@ -8,6 +8,7 @@ namespace Hexalith.Works.Recovery;
 internal sealed class WorksExpiryEvidence
 {
     private WorkItemExpirySchedule? _current;
+    private bool _created;
 
     /// <summary>Validates the existing clock-free schedule transition rules in committed order.</summary>
     internal void Apply(IEventPayload payload, string tenant, string aggregate)
@@ -16,6 +17,9 @@ internal sealed class WorksExpiryEvidence
         switch (payload)
         {
             case WorkItemCreated created:
+                if (_created)
+                    throw new InvalidOperationException("The persisted Works source contains repeated creation.");
+                _created = true;
                 _current = created.Expiry;
                 break;
             case WorkItemRescheduled rescheduled:
