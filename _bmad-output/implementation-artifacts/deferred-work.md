@@ -1542,3 +1542,10 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Publish the create-only receipt-conflict correction and requalify the default EventStore pin.
   evidence: `Directory.Packages.props:6` keeps public 3.124.0 by default, and `review-fixes-2026-10-18/implementation.md` records that public 3.124.0 leaves the shared-projection date head at journal position 11 with six pending entries. Story 4.15 acceptance uses source plus unpublished `3.124.1-story415.20261018.1`. The correction is SDK `216b7906` on `origin/main` (rebased from verified `b9e2d2aa`). Publication and pin qualification are separate frozen-intent gates. Story 4.16 currently verifies Platform parity on 3.124.0 without this defect as an input; requalify it against the first published release that contains the correction.
+
+
+## Deferred from: code review of spec-4-15 (2026-10-18, post-reopen build)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
+  summary: Story 4.16 fleet-restore verification must account for captured Redis hash fields expiring before restore or verification.
+  evidence: P18-E2; WorksSdkProofRedis.RedisValueFingerprintAsync records exact hash members and HPEXPIRETIME deadlines, but VerifyRestoredRedisAsync skips only expired whole keys. A field legitimately expiring after capture changes the expected logical fingerprint and makes faithful restore fail. Only the explicit Platform branch and WorksPlatformFleetRestoreTests call this helper. Preserve still-live field bytes/deadlines and corruption detection while testing field expiration across capture/restore; Platform parity is a separate frozen-intent gate.

@@ -74,6 +74,65 @@ public sealed class WorksSdkProcessRecoveryTests
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
+    /// <summary>Enumerated terminal facts must match the authoritative contextual reread before checkpointing.</summary>
+    [Theory]
+    [InlineData("matching")]
+    [InlineData("message-id")]
+    [InlineData("event-type")]
+    [InlineData("payload")]
+    public async Task TerminalSourceMustMatchItsContextualReread(string difference)
+    {
+        const string tenant = "tenant-415";
+        const string item = "source-415";
+        var tenantId = new TenantId(tenant);
+        var itemId = new WorkItemId(item);
+        StreamReadPage enumerated = Story48Streams.Page(tenant, item, new WorkItemCancelled(item, 1, tenantId, itemId));
+        StreamReadEvent committed = enumerated.Events[0];
+        committed = difference switch
+        {
+            "message-id" => committed with { MessageId = "different-committed-message" },
+            "event-type" => committed with { EventTypeName = typeof(WorkItemExpired).FullName! },
+            "payload" => committed with { Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
+                new WorkItemCancelled(item, 2, tenantId, itemId)) },
+            _ => committed,
+        };
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            StreamReadRequest request = call.Arg<StreamReadRequest>();
+            StreamReadEvent[] tail = [.. enumerated.Events.Where(fact => fact.SequenceNumber > request.FromSequence)];
+            return enumerated with { Events = tail, Metadata = enumerated.Metadata with
+            { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber } };
+        });
+        IEventStoreGatewayClient contextGateway = Substitute.For<IEventStoreGatewayClient>();
+        contextGateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(enumerated with { Events = [committed] });
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var source = new ProcessSource(tenant, "work", item);
+        var checkpoints = new ProcessCheckpointStore(store, options, TimeProvider.System);
+        ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
+        var runner = new CheckpointedProcessRunner(gateway,
+            new WorksProcessTranslator(new WorksSourceStreamReader(contextGateway, Options.Create(new WorksRecoveryOptions()))),
+            Substitute.For<IProcessDelegationProvider>(), submitter, checkpoints, options);
+
+        bool matching = difference == "matching";
+        ProcessRunResult result = await runner.RunAsync(source, TestContext.Current.CancellationToken);
+        result.Status.ShouldBe(matching ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
+        result.Checkpoint.ShouldBe(matching ? 1 : 0);
+        ProcessSourceState durable = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken);
+        durable.Status.ShouldBe(result.Status);
+        durable.Checkpoint.ShouldBe(result.Checkpoint);
+        if (!matching)
+        {
+            durable.FailureSequence.ShouldBe(1);
+            durable.ReasonCode.ShouldBe("invalid-evidence");
+        }
+        durable.PendingPlan.ShouldBeNull();
+        submitter.ReceivedCalls().ShouldBeEmpty();
+        await contextGateway.Received(1).ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>());
+    }
+
     [Theory]
     [InlineData("outage")]
     [InlineData("budget")]

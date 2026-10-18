@@ -1,0 +1,35 @@
+{
+  "works": {
+    "message": "fix(works): complete SDK reminder and process adoption review\n",
+    "command": [
+      "node",
+      "node_modules/@commitlint/cli/cli.js",
+      "--config",
+      "commitlint.config.mjs",
+      "--edit",
+      "/tmp/story415-works-commit-message.txt",
+      "--verbose"
+    ],
+    "cliVersion": "21.2.2",
+    "exitCode": 0,
+    "configSha256": "796a04abdd8c35e645f654c9d8d571556f34ccf4ab3611c9327697a452add38d",
+    "log": "works-commitlint.log"
+  },
+  "sdk": {
+    "message": "fix(client): cover TTL create conflicts and count readback RPCs\n",
+    "command": [
+      "node",
+      "node_modules/@commitlint/cli/cli.js",
+      "--config",
+      "commitlint.config.mjs",
+      "--edit",
+      "/tmp/story415-sdk-commit-message.txt",
+      "--verbose"
+    ],
+    "cliVersion": "21.1.0",
+    "exitCode": 0,
+    "configSha256": "796a04abdd8c35e645f654c9d8d571556f34ccf4ab3611c9327697a452add38d",
+    "log": "sdk-commitlint.log",
+    "committedHead": "575c8070355ff9b6afb17521d6eb529a85327e4d"
+  }
+}

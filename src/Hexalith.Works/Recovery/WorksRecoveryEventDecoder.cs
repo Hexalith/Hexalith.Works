@@ -20,23 +20,27 @@ internal static class WorksRecoveryEventDecoder
             throw new InvalidOperationException("Works source evidence has a foreign event type.");
         bool valid = payload switch
         {
-            WorkItemCreated fact => fact.Obligation is not null,
+            WorkItemCreated fact => fact.Obligation is not null && HasProperty(bytes, nameof(WorkItemCreated.Sequence)),
             ChildSpawned fact => fact.ChildWorkItemId is not null && fact.Obligation is not null,
             WorkItemRescheduled fact => fact.Schedule is not null,
             WorkItemAssigned fact => fact.Binding is not null,
             WorkItemClaimed fact => fact.Binding is not null,
-            ProgressReported fact => fact.Unit is not null,
-            ReEstimated fact => fact.Unit is not null,
+            ProgressReported fact => fact.Unit is not null && HasProperty(bytes, nameof(ProgressReported.DoneDelta)),
+            ReEstimated fact => fact.Unit is not null && HasProperty(bytes, nameof(ReEstimated.Estimated)),
             ConversationLinked fact => fact.ConversationCorrelationId is not null,
             WorkItemSuspended fact => fact.AwaitConditions is { Count: > 0 },
-            WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue)),
+            WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue))
+                && HasProperty(bytes, nameof(WorkItemRejected.Sequence)),
             WorkItemCancelled => HasProperty(bytes, nameof(WorkItemCancelled.Sequence)),
+            WorkItemExpired => HasProperty(bytes, nameof(WorkItemExpired.Sequence)),
+            WorkItemCompleted => HasProperty(bytes, nameof(WorkItemCompleted.Sequence)),
             WorkItemInitialEffortRejected fact => fact.Done != 0,
             WorkItemCannotReferenceParentFromAnotherTenant fact => fact.Parent is not null,
             WorkItemCannotReferenceSecondParent fact => fact.ExistingParent is not null && fact.ProposedParent is not null,
             WorkItemConversationLinkRejected fact => fact.ExistingConversationCorrelationId is not null && fact.ProposedConversationCorrelationId is not null,
             WorkItemTreeCycleRejected fact => fact.ProposedParent is not null && fact.CycleWorkItemId is not null,
-            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null && fact.ResultingDepth > fact.MaxDepth,
+            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null && fact.ResultingDepth > fact.MaxDepth
+                && HasProperty(bytes, nameof(WorkItemTreeDepthExceeded.MaxDepth)),
             WorkItemProgressRejected fact => fact.Reason is not null,
             WorkItemReEstimateRejected fact => fact.Reason is not null,
             WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus)

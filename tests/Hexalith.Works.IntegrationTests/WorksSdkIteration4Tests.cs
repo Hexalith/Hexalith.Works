@@ -139,12 +139,38 @@ public sealed class WorksSdkIteration4Tests
     [InlineData("transition", true)]
     [InlineData("cancelled", false)]
     [InlineData("cancelled", true)]
+    [InlineData("expired", false)]
+    [InlineData("expired", true)]
+    [InlineData("completed", false)]
+    [InlineData("completed", true)]
+    [InlineData("created", false)]
+    [InlineData("created", true)]
+    [InlineData("rejected", false)]
+    [InlineData("rejected", true)]
+    [InlineData("progress", false)]
+    [InlineData("progress", true)]
+    [InlineData("reestimated", false)]
+    [InlineData("reestimated", true)]
     public async Task RequiredValueMemberPresenceDoesNotRejectExplicitDefaults(string kind, bool present)
     {
-        IEventPayload payload = kind == "transition"
-            ? new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof")
-            : new WorkItemCancelled("item", 0, s_tenant, s_item);
-        string field = kind == "transition" ? "FromStatus" : "Sequence";
+        IEventPayload payload = kind switch
+        {
+            "transition" => new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof"),
+            "expired" => new WorkItemExpired("item", 0, s_tenant, s_item),
+            "completed" => new WorkItemCompleted("item", 0, s_tenant, s_item),
+            "created" => new WorkItemCreated("item", 0, s_tenant, s_item, new("proof")),
+            "rejected" => new WorkItemRejected("item", 0, s_tenant, s_item, true),
+            "progress" => new ProgressReported("item", 1, s_tenant, s_item, 0, new("hours")),
+            "reestimated" => new ReEstimated("item", 1, s_tenant, s_item, 0, new("hours")),
+            _ => new WorkItemCancelled("item", 0, s_tenant, s_item),
+        };
+        string field = kind switch
+        {
+            "transition" => "FromStatus",
+            "progress" => "DoneDelta",
+            "reestimated" => "Estimated",
+            _ => "Sequence",
+        };
         JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
         JsonNode? value = json[field]?.DeepClone();
         json.Remove(field);
@@ -152,8 +178,18 @@ public sealed class WorksSdkIteration4Tests
         StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
         page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
         IEventPayload historical = WorksEventDecoder.Decode(page.Events[0].EventTypeName, page.Events[0].Payload)!;
-        if (historical is WorkItemCancelled cancelled) cancelled.Sequence.ShouldBe(0);
-        else ((Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected)historical).FromStatus.ShouldBe(WorkItemStatus.Unknown);
+        switch (historical)
+        {
+            case WorkItemCancelled cancelled: cancelled.Sequence.ShouldBe(0); break;
+            case WorkItemExpired expired: expired.Sequence.ShouldBe(0); break;
+            case WorkItemCompleted completed: completed.Sequence.ShouldBe(0); break;
+            case WorkItemCreated created: created.Sequence.ShouldBe(0); break;
+            case WorkItemRejected rejected: rejected.Sequence.ShouldBe(0); break;
+            case ProgressReported progress: progress.DoneDelta.ShouldBe(0); break;
+            case ReEstimated reestimated: reestimated.Estimated.ShouldBe(0); break;
+            case Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected transition:
+                transition.FromStatus.ShouldBe(WorkItemStatus.Unknown); break;
+        }
         var gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
             .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
@@ -184,6 +220,7 @@ public sealed class WorksSdkIteration4Tests
     [InlineData("effort", 3, 0, true)]
     [InlineData("depth", 0, 0, false)]
     [InlineData("depth-missing", 0, 0, false)]
+    [InlineData("depth-max-missing", 33, 32, false)]
     [InlineData("depth", 32, 32, false)]
     [InlineData("depth", 31, 32, false)]
     [InlineData("depth", 33, 32, true)]
@@ -197,7 +234,7 @@ public sealed class WorksSdkIteration4Tests
         if (kind.EndsWith("missing", StringComparison.Ordinal))
         {
             JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
-            json.Remove(kind == "effort-missing" ? "Done" : "ResultingDepth");
+            json.Remove(kind == "effort-missing" ? "Done" : kind == "depth-max-missing" ? "MaxDepth" : "ResultingDepth");
             if (kind == "depth-missing") json.Remove("MaxDepth");
             page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
         }

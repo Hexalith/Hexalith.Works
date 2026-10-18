@@ -612,6 +612,9 @@ public sealed class DependencyDirectionTests
         string candidate = VersionIn("Directory.Packages.props");
         candidate.ShouldNotBeNullOrWhiteSpace();
         VersionIn("Directory.Build.props").ShouldBe(candidate);
+        System.Xml.Linq.XDocument.Load(Path.Combine(root, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"))
+            .Descendants("AssemblyMetadata").Single(item => (string?)item.Attribute("Include") == "WorksPinnedEventStoreVersion")
+            .Attribute("Value")!.Value.ShouldBe(candidate);
 
         foreach (string project in new[] { "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj",
             "src/Hexalith.Works/Hexalith.Works.csproj", "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" })

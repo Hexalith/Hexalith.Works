@@ -30,9 +30,15 @@ public sealed class WorksSdkPackageContractTests
     [Fact]
     public void ReleaseConsumerLoadsSelectedSdkPackagesAndPartiesContracts()
     {
-        string selectedVersion = typeof(WorksSdkPackageContractTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(attribute => attribute.Key == "WorksSelectedEventStoreVersion").Value!;
+        AssemblyMetadataAttribute[] metadata = [.. typeof(WorksSdkPackageContractTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()];
+        string selectedVersion = metadata.Single(attribute => attribute.Key == "WorksSelectedEventStoreVersion").Value!;
+        string pinnedVersion = metadata.Single(attribute => attribute.Key == "WorksPinnedEventStoreVersion").Value!;
+        bool allowLocalCandidate = string.Equals(metadata.Single(attribute => attribute.Key == "WorksAllowLocalEventStoreCandidate").Value,
+            "true", StringComparison.OrdinalIgnoreCase);
         selectedVersion.ShouldNotBeNullOrWhiteSpace();
+        pinnedVersion.ShouldNotBeNullOrWhiteSpace();
+        if (allowLocalCandidate) selectedVersion.ShouldContain("-story415.");
+        else selectedVersion.ShouldBe(pinnedVersion, "Release uses the static public pin unless WorksAllowLocalEventStoreCandidate=true explicitly selects a local proof.");
         using JsonDocument dependencies = JsonDocument.Parse(File.ReadAllBytes(
             Path.Combine(AppContext.BaseDirectory, "Hexalith.Works.IntegrationTests.deps.json")));
         JsonElement libraries = dependencies.RootElement.GetProperty("libraries");
