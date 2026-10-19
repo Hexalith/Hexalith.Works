@@ -1,0 +1,31 @@
+{
+  "before": {
+    "observedUtc": "2026-10-18T21:42:07.262262+00:00",
+    "maxUserWatches": 1048576,
+    "uid1000WatchesObserved": 1040530,
+    "largestHolders": [
+      [
+        "fluentui-mcp",
+        1037468
+      ],
+      [
+        "codex",
+        2499
+      ],
+      [
+        "node",
+        185
+      ]
+    ],
+    "symptom": "dapr-sentry fatal: failed to add target /var/run/dapr/credentials: no space left on device (focused callback attempt 1)"
+  },
+  "temporaryRuntimeLimit": 2097152,
+  "command": "sudo -n sysctl -w fs.inotify.max_user_watches=2097152",
+  "after": {
+    "restoredUtc": "2026-10-18T22:15:34.011838+00:00",
+    "maxUserWatches": 1048576
+  },
+  "restoreCommand": "sudo -n sysctl -w fs.inotify.max_user_watches=1048576",
+  "foreignProcessesStopped": false,
+  "note": "Runtime-only; raised after focused callback attempt 1 and restored after every owned fleet stopped."
+}

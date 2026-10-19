@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/tmp/story416-public-3.125.1-admission-run2/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "-result-xml",
+    "/tmp/story416-3125-diag1/result.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "scope": "diagnostic only; never qualifies acceptance"
+}

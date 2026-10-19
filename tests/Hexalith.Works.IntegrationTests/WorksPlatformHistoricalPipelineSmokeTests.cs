@@ -49,7 +49,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
         {
             // Ordinary consumer tests have no Platform deployment artifact. The required Platform verifier
             // selects this fact only with a hash-bound target; it never counts this path as parity.
-            return;
+            Assert.Skip("Runs only in the Platform verifier lane, which binds the actual Platform AppHost artifact.");
         }
         CancellationToken ct = TestContext.Current.CancellationToken;
         (await WorksAppHostSmokeHarness.PrerequisiteGapAsync(ct).ConfigureAwait(true)).ShouldBeNull();
@@ -70,11 +70,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
         ProcessSource[] grants = [.. ids.Select(id => new ProcessSource(tenant, "work", id))];
         Action<IDistributedApplicationTestingBuilder> configure = builder =>
         {
-            WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, grants);
-            ProjectResource works = builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works");
-            builder.CreateResourceBuilder(works)
-                .WithEnvironment("Works__Query__PartiesGatewayBaseAddress", identity.Endpoint.AbsoluteUri)
-                .WithEnvironment("Works__Query__PartiesGatewayBearerToken", identity.ServiceBearer);
+            WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, grants, identity: identity);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore"))
                 .WithEnvironment("Logging__LogLevel__Hexalith.EventStore.Server.Projections.NamedProjectionDispatchCoordinator", "Information");
         };
@@ -130,6 +126,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
             ResourceEvent worksResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
             using HttpClient gatewaySidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
             using HttpClient worksSidecar = WorksAppHostTestReadiness.CreateDaprClient(worksResource, "Works");
+            int identityCallsBefore = identity.Calls;
             QueryEnvelope executorQuery = ExecutorQuery(tenant, mine);
             QueryResult list = await QueryAsync(gatewaySidecar, executorQuery, token).ConfigureAwait(false);
             list.Success.ShouldBeTrue(list.ErrorMessage);
@@ -177,6 +174,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
                 tenant, visible, own = ownDetail.GetPayload(), hidden = hidden.GetPayload(), wrongActor = wrongActor.ErrorMessage,
                 wrongTenant = wrongTenant.ErrorMessage, identityCalls = identity.Calls, wrongCaller = (int)wrongCaller.StatusCode,
                 wrongPort = (int)wrongPort.StatusCode, forbiddenPublish = (int)forbiddenPublish.StatusCode, unchangedFamily = unchanged,
+                queryIdentity = identity.Evidence(executorQuery, identityCallsBefore),
                 authority = "independent ephemeral RSA authenticated synthetic current-identity fixture; published Parties client",
             }, token).ConfigureAwait(false);
 
@@ -229,12 +227,20 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
             var store = new DaprReadModelStore(dapr);
             var coordinator = new SharedProjectionEpochCoordinator(store, store);
             var scope = new SharedProjectionScope("statestore", tenant, "work", WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);
-            (await FamilyDigestAsync(coordinator, scope, ids, token).ConfigureAwait(false)).ShouldBe(persistedDigest);
-            (await ReadRollUpAsync(coordinator, scope, mine, token).ConfigureAwait(false))!.Status.ShouldBe(WorkItemStatus.Completed);
-            Replay(await StreamAsync(gateway, tenant, mine, token).ConfigureAwait(false)).Status.ShouldBe(WorkItemStatus.Completed);
+            // Every recorded value is re-observed after the restart; the persisted digest is only the comparison oracle.
+            string restartedDigest = await FamilyDigestAsync(coordinator, scope, ids, token).ConfigureAwait(false);
+            restartedDigest.ShouldBe(persistedDigest);
+            WorkItemStatus? rolledUp = (await ReadRollUpAsync(coordinator, scope, mine, token).ConfigureAwait(false))?.Status;
+            WorkItemStatus replayed = Replay(await StreamAsync(gateway, tenant, mine, token).ConfigureAwait(false)).Status;
+            rolledUp.ShouldBe(WorkItemStatus.Completed);
+            replayed.ShouldBe(WorkItemStatus.Completed);
             StreamReadPage raceStream = await StreamAsync(gateway, tenant, race, token).ConfigureAwait(false);
-            raceStream.Events.Count(item => Simple(item.EventTypeName) == nameof(WorkItemClaimed)).ShouldBe(1);
-            await EvidenceAsync("platform-historical-restart-replay-and-family", new { tenant, familyDigest = persistedDigest, claimCount = 1, completed = true }, token).ConfigureAwait(false);
+            int claimCount = raceStream.Events.Count(item => Simple(item.EventTypeName) == nameof(WorkItemClaimed));
+            claimCount.ShouldBe(1);
+            await EvidenceAsync("platform-historical-restart-replay-and-family", new
+            {
+                tenant, familyDigest = restartedDigest, claimCount, completed = rolledUp == WorkItemStatus.Completed && replayed == WorkItemStatus.Completed,
+            }, token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
     }
 

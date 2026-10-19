@@ -1,0 +1,90 @@
+[
+  {
+    "suite": "UnitTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-3125-suites/debug-UnitTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.5,
+    "tests": {
+      "total": "589",
+      "passed": "589",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "aee4b565e1a032f948e2c4209853a62ae79a07d149932ee2ffb0d57e3a4e293a"
+  },
+  {
+    "suite": "PropertyTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-3125-suites/debug-PropertyTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.4,
+    "tests": {
+      "total": "3",
+      "passed": "3",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "754848270421b801ca9a73181b24ff383b589acbdcf625dd44cf683b0befe956"
+  },
+  {
+    "suite": "ArchitectureTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-3125-suites/debug-ArchitectureTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 7.9,
+    "tests": {
+      "total": "269",
+      "passed": "269",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "0a542f8897fea88a427f90fc787c9ca627355b926e6c401479cefe62c21cf2f6"
+  },
+  {
+    "suite": "IntegrationTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-3125-suites/debug-IntegrationTests.xml",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*"
+    ],
+    "exitCode": 0,
+    "seconds": 35.7,
+    "tests": {
+      "total": "907",
+      "passed": "907",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "d8fd129a45cd0308910fa6ae35346bcafab28dba95be59633def7eab11ba9de9"
+  }
+]

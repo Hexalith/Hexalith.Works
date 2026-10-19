@@ -57,6 +57,24 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
                         await Task.Delay(100, readiness.Token).ConfigureAwait(false);
                     }
                 }
+
+                // docker exec reaches Redis inside the container; the published host port can still lag behind it.
+                // Every consumer connects through that host binding, so it must answer before the fixture is ready.
+                // A substituted Docker command (ownership tests) publishes no real port and skips this probe.
+                while (dockerCommand is null)
+                {
+                    try
+                    {
+                        using ConnectionMultiplexer probe = await ConnectionMultiplexer.ConnectAsync(binding + ",connectTimeout=2000")
+                            .WaitAsync(readiness.Token).ConfigureAwait(false);
+                        _ = await probe.GetDatabase().PingAsync().WaitAsync(readiness.Token).ConfigureAwait(false);
+                        break;
+                    }
+                    catch (RedisConnectionException)
+                    {
+                        await Task.Delay(100, readiness.Token).ConfigureAwait(false);
+                    }
+                }
             }
             if (activateSdkWriter)
             {
@@ -210,6 +228,38 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         return hashes;
     }
 
+    /// <summary>The capture-only inventory of original DUMP bytes, which a re-observation cannot reproduce.</summary>
+    internal const string DumpInventoryKey = "redis-full-value-inventory-sha256";
+
+    /// <summary>Re-observes the stopped fleet as it now is, without consulting any captured snapshot value.</summary>
+    /// <remarks>
+    /// Redis may re-encode unordered hashes and sets after RESTORE, so a re-observation reports every other
+    /// <see cref="CaptureFleetAsync"/> entry, including the canonical logical inventory, and omits <see cref="DumpInventoryKey"/>.
+    /// </remarks>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The re-observed file, Scheduler and Redis inventory hashes.</returns>
+    internal async Task<IReadOnlyDictionary<string, string>> ObserveFleetAsync(CancellationToken cancellationToken)
+    {
+        await RequireStoppedFleetAsync(cancellationToken).ConfigureAwait(false);
+        using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
+        IDatabase database = redis.GetDatabase();
+        var fingerprints = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
+            fingerprints.Add(key.ToString(), await RedisValueFingerprintAsync(database, key).ConfigureAwait(false));
+        Dictionary<string, string> hashes = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+            .Select(path => Path.GetRelativePath(directory, path))
+            .Where(relative => relative != "scheduler.tar")
+            .ToDictionary(relative => relative, relative => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(directory, relative)))), StringComparer.Ordinal);
+        hashes["scheduler.tar"] = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(directory, "scheduler.tar"), cancellationToken).ConfigureAwait(false)));
+        hashes["scheduler-file-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
+            await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false))));
+        hashes["redis-key-count"] = fingerprints.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string logicalInventory = string.Join("\n", fingerprints
+            .Select(pair => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(pair.Key))) + ":" + pair.Value));
+        hashes["redis-logical-value-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(logicalInventory)));
+        return hashes;
+    }
+
     /// <summary>Restores the complete owned fleet and proves a post-snapshot sentinel is removed.</summary>
     internal async Task RestoreFleetAsync(CancellationToken cancellationToken)
     {
@@ -329,21 +379,44 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         writer.Write(bytes);
     }
 
-    private Task<string> SchedulerInventoryAsync(CancellationToken cancellationToken)
+    // Binds every entry's type, mode, owner and link target, including the volume root itself, plus the content hash of
+    // every regular file. A restore that changes permissions, ownership, entry types or symbolic links changes the inventory.
+    internal Task<string> SchedulerInventoryAsync(CancellationToken cancellationToken)
         => _docker(["run", "--rm", "--entrypoint", "sh", "-v", SchedulerVolumeName + ":/fleet:ro",
-            "redis:7.4-alpine", "-c", "cd /fleet && find . -type f -exec sha256sum {} + | sort"], cancellationToken);
+            "redis:7.4-alpine", "-c", SchedulerInventoryScript], cancellationToken);
 
-    internal async Task VerifyRestoredConfigurationAsync(CancellationToken cancellationToken)
+    /// <summary>Runs a fixture-owned shell script against this fixture's own Scheduler volume.</summary>
+    /// <param name="script">The script, run as root with the volume mounted at <c>/fleet</c>.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The script output.</returns>
+    internal Task<string> ExecuteInSchedulerVolumeAsync(string script, CancellationToken cancellationToken)
+    {
+        if (!_volumeCreated || SchedulerVolumeName is null) throw new InvalidOperationException("This fixture owns no Scheduler volume.");
+        return _docker(["run", "--rm", "--entrypoint", "sh", "-v", SchedulerVolumeName + ":/fleet", "redis:7.4-alpine", "-c", script], cancellationToken);
+    }
+
+    /// <summary>The complete Scheduler volume inventory command run against the read-only volume mount.</summary>
+    internal const string SchedulerInventoryScript =
+        "cd /fleet && find . -exec stat -c '%F|%a|%u:%g|%N' {} + | sort && find . -type f -exec sha256sum {} + | sort";
+
+    /// <summary>Re-reads every captured configuration and credential file of the running restored fleet.</summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The relative paths whose re-read bytes equal their capture.</returns>
+    internal async Task<IReadOnlyList<string>> VerifyRestoredConfigurationAsync(CancellationToken cancellationToken)
     {
         if (_files is null) throw new InvalidOperationException("No fleet configuration snapshot exists.");
-        foreach ((string relative, byte[] bytes) in _files)
+        var verified = new List<string>();
+        foreach ((string relative, byte[] bytes) in _files.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
             byte[] actual = await File.ReadAllBytesAsync(Path.Combine(directory, relative), cancellationToken).ConfigureAwait(false);
             if (!actual.AsSpan().SequenceEqual(bytes))
                 throw new InvalidOperationException("The running restored fleet changed captured configuration or credential bytes: "
                     + relative + "; expected SHA256=" + Convert.ToHexString(SHA256.HashData(bytes))
                     + "; actual SHA256=" + Convert.ToHexString(SHA256.HashData(actual)));
+            verified.Add(relative);
         }
+
+        return verified;
     }
 
     private async Task RequireStoppedFleetAsync(CancellationToken cancellationToken)

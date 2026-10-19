@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/tmp/story416-review1-prep1/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+    "-result-xml",
+    "/tmp/story416-review1-focused-ha1/result.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "exitCode": 1,
+  "seconds": 53.3,
+  "prepared": "/tmp/story416-review1-prep1"
+}

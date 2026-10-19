@@ -81,14 +81,16 @@ internal static class WorksPlatformOperationsChecks
                     JsonObject? observed = (await store.GetAsync<JsonObject>("statestore", WorksPlatformDispositionProbe.Key(source, kind), deadline.Token).ConfigureAwait(false)).Value;
                     if (observed?["nonce"]?.GetValue<string>() == nonce)
                     {
-                        observed["status"]!.GetValue<int>().ShouldBe(receiverStatus);
+                        int observedStatus = observed["status"]!.GetValue<int>();
+                        observedStatus.ShouldBe(receiverStatus);
                         observed["kind"]!.GetValue<string>().ShouldBe(kind);
                         observed["route"]!.GetValue<string>().ShouldBe(WorksPlatformDispositionProbe.Route);
                         observed["tenant"]!.GetValue<string>().ShouldBe(source.Tenant);
                         observed["domain"]!.GetValue<string>().ShouldBe(source.Domain);
                         observed["aggregate"]!.GetValue<string>().ShouldBe(source.Aggregate);
                         observed["workload"]!.GetValue<string>().ShouldBe("eventstore-admin");
-                        return new { nonce, callerStatus = lastStatus, receiverStatus, receiver = observed, callerBody = lastBody };
+                        // The receiver's own persisted status, not the expected value, is the recorded observation.
+                        return new { nonce, callerStatus = lastStatus, receiverStatus = observedStatus, expectedReceiverStatus = receiverStatus, receiver = observed, callerBody = lastBody };
                     }
                     await Task.Delay(500, deadline.Token).ConfigureAwait(false);
                 }

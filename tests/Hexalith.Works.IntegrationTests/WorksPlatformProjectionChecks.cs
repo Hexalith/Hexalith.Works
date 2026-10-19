@@ -6,6 +6,7 @@ using System.Text.Json;
 
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Testing;
 
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Projections;
@@ -33,10 +34,16 @@ internal static class WorksPlatformProjectionChecks
 {
     private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
 
-    /// <summary>Captures the existing eleven-source fixture, proves redelivery/fencing, and verifies complete promotion.</summary>
+    /// <summary>Captures the existing bounded fixture, proves redelivery/fencing, and verifies complete promotion.</summary>
+    /// <param name="executor">The test-only Parties identity whose Party is bound to <paramref name="aggregateId"/>; every query is a delegated Executor query.</param>
+    /// <param name="initialConvergencePhase">The unique evidence phase for this caller's initial natural convergence.</param>
+    /// <param name="expectedSources">The complete process candidate count of the caller's fixture.</param>
     internal static async Task<object> VerifyAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
-        string tenant, string aggregateId, CancellationToken cancellationToken)
+        string tenant, string aggregateId, WorksPlatformIdentityFixture executor, CancellationToken cancellationToken,
+        string initialConvergencePhase = "platform-initial-projection-convergence", int expectedSources = 11)
     {
+        ArgumentNullException.ThrowIfNull(executor);
+        int identityCallsBefore = executor.Calls;
         ResourceEvent worksResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
         ResourceEvent gatewayResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
         using HttpClient gatewaySidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
@@ -64,7 +71,7 @@ internal static class WorksPlatformProjectionChecks
             candidates.NextPage.ShouldBe(page < tail ? page + 1 : null);
             sources.AddRange(candidates.Entries);
         }
-        sources.Count.ShouldBe(11, "The existing supported fixture must remain complete without creating extra aggregates.");
+        sources.Count.ShouldBe(expectedSources, "The existing supported fixture must remain complete without creating extra aggregates.");
         sources.Select(source => source.CatalogKey).Distinct(StringComparer.Ordinal).Count().ShouldBe(sources.Count);
         sources.ShouldAllBe(source => source.Tenant == tenant && source.Domain == "work");
         sources.ShouldContain(new ProcessSource(tenant, "work", aggregateId));
@@ -82,7 +89,7 @@ internal static class WorksPlatformProjectionChecks
             writeDeadline.CancelAfter(TimeSpan.FromSeconds(2));
             await File.AppendAllTextAsync(initialEvidencePath, JsonSerializer.Serialize(new
             {
-                phase = "platform-initial-projection-convergence", state = initialConvergence,
+                phase = initialConvergencePhase, state = initialConvergence,
             }) + Environment.NewLine, writeDeadline.Token).ConfigureAwait(false);
         }
         ProjectionEventDto[] history = histories[aggregateId];
@@ -100,14 +107,17 @@ internal static class WorksPlatformProjectionChecks
         afterRedelivery.Checkpoints.ShouldBe(before.Checkpoints);
 
         int circuitRefusals = 0;
+        var negativeControls = new List<string>();
         async Task ConfirmUnchangedRedeliveryAsync()
         {
+            // Each control is a fresh delivery identity, so it proves a new acceptance rather than an AlreadyCompleted dedupe.
+            string dispatchId = request.DispatchId + "-negative-control-" + (negativeControls.Count + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             deadline.CancelAfter(TimeSpan.FromSeconds(45));
             while (true)
             {
                 using HttpResponseMessage response = await WorksPlatformProofRequests.PostAsync(gatewaySidecar, "works", "/project/v2",
-                    request with { DispatchId = request.DispatchId + "-negative-control" },
+                    request with { DispatchId = dispatchId },
                     WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]), deadline.Token).ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
@@ -117,6 +127,7 @@ internal static class WorksPlatformProjectionChecks
                     unchanged.Generation.ShouldBe(before.Generation);
                     unchanged.Digest.ShouldBe(before.Digest);
                     unchanged.Checkpoints.ShouldBe(before.Checkpoints);
+                    negativeControls.Add(dispatchId);
                     return;
                 }
                 string detail = await ReadFailureBodyAsync(response, deadline.Token).ConfigureAwait(false);
@@ -179,7 +190,8 @@ internal static class WorksPlatformProjectionChecks
         var captured = await SnapshotAsync(coordinator, scope, histories, cancellationToken, expectStale: true).ConfigureAwait(false);
         captured.Digest.ShouldBe(before.Digest);
         captured.Generation.ShouldBe(before.Generation);
-        QueryResult staleQuery = await QueryAsync(gatewaySidecar, tenant, aggregateId, cancellationToken).ConfigureAwait(false);
+        QueryEnvelope delegatedQuery = executor.ExecutorQuery(aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, "platform-rebuild-query");
+        QueryResult staleQuery = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         staleQuery.Success.ShouldBeTrue(staleQuery.ErrorMessage);
         staleQuery.Metadata.ShouldNotBeNull().IsStale.ShouldBe(true);
 
@@ -215,26 +227,31 @@ internal static class WorksPlatformProjectionChecks
         after.Generation.ShouldBeGreaterThan(before.Generation);
         after.Digest.ShouldBe(before.Digest, "Capture-through-Commit must preserve the complete authoritative logical family.");
         after.Checkpoints.ShouldBe(before.Checkpoints);
-        QueryResult currentQuery = await QueryAsync(gatewaySidecar, tenant, aggregateId, cancellationToken).ConfigureAwait(false);
+        QueryResult currentQuery = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         currentQuery.Success.ShouldBeTrue(currentQuery.ErrorMessage);
         currentQuery.Metadata.ShouldNotBeNull().IsStale.ShouldBe(false);
+        currentQuery.GetPayload().GetProperty("found").GetBoolean().ShouldBeTrue("The delegated Executor must read its own Assigned item.");
         currentQuery.GetPayload().ToString().ShouldContain(aggregateId);
         (await DispatchAsync(gatewaySidecar, request with { DispatchId = request.DispatchId + "-after-commit" }, projectionAssertion, cancellationToken).ConfigureAwait(false))
             .Outcomes.ShouldHaveSingleItem().Status.ShouldBeOneOf(ProjectionDispatchStatus.Completed, ProjectionDispatchStatus.AlreadyCompleted);
         (await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false)).Digest.ShouldBe(after.Digest);
         object concurrentDelivery = await VerifyConcurrentDeliveryAsync(coordinator, scope, gateway, gatewaySidecar, histories,
-            aggregateId, catalog, projectionAssertion, cancellationToken).ConfigureAwait(false);
+            aggregateId, catalog, executor, delegatedQuery, cancellationToken).ConfigureAwait(false);
+        object queryIdentity = executor.Evidence(delegatedQuery, identityCallsBefore);
+        (executor.Calls - identityCallsBefore).ShouldBeGreaterThan(0, "Works must resolve every delegated rebuild query through the Parties authority.");
         return new { initialConvergence, concurrentDelivery, catalog, sources = histories.Keys.ToArray(), sourceGlobalPositions = after.Checkpoints, sourceHeads = histories.ToDictionary(pair => pair.Key, pair => pair.Value[^1].SequenceNumber, StringComparer.Ordinal), redelivered, fenced,
-            negatives = new { wrongOrigin = (int)wrongOrigin.StatusCode, wrongOperation = (int)wrongOperation.StatusCode, invalidSequence = invalidSequenceStatus, circuitRefusals, unchangedProtectedControls = 2 },
+            negatives = new { wrongOrigin = (int)wrongOrigin.StatusCode, wrongOperation = (int)wrongOperation.StatusCode, invalidSequence = invalidSequenceStatus, circuitRefusals,
+                unchangedProtectedControls = negativeControls.Count, negativeControlDispatchIds = negativeControls },
             before = new { before.Generation, before.Digest }, after = new { after.Generation, after.Digest }, inventory,
-            begun, accumulated, finalized, staged, committed, verified, staleQuery = staleQuery.Metadata, currentQuery = currentQuery.Metadata };
+            begun, accumulated, finalized, staged, committed, verified, staleQuery = staleQuery.Metadata, currentQuery = currentQuery.Metadata, queryIdentity };
     }
 
     private static async Task<object> VerifyConcurrentDeliveryAsync(SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope,
         HttpClient gateway, HttpClient gatewaySidecar, SortedDictionary<string, ProjectionEventDto[]> histories, string owner,
-        string catalog, string assertion, CancellationToken cancellationToken)
+        string catalog, WorksPlatformIdentityFixture executor, QueryEnvelope delegatedQuery, CancellationToken cancellationToken)
     {
-        assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
+        int identityCallsBefore = executor.Calls;
+        string assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
         var before = await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false);
         string inventory = DomainSharedProjectionRebuildFingerprint.EmptyInventory;
         long ordinal = 0;
@@ -258,10 +275,14 @@ internal static class WorksPlatformProjectionChecks
         var during = await SnapshotAsync(coordinator, scope, histories, cancellationToken, expectStale: true).ConfigureAwait(false);
         during.Generation.ShouldBe(before.Generation);
         during.Digest.ShouldBe(before.Digest);
-        QueryResult stale = await QueryAsync(gatewaySidecar, scope.TenantId, owner, cancellationToken).ConfigureAwait(false);
+        QueryResult stale = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         stale.Success.ShouldBeTrue(stale.ErrorMessage);
         stale.Metadata.ShouldNotBeNull().IsStale.ShouldBe(true);
         stale.GetPayload().ToString().ShouldNotContain(correlation);
+        // Observed, not asserted-then-restated: the old generation served the stale view without the new event.
+        bool oldGenerationStayedReadable = during.Generation == before.Generation && during.Digest == before.Digest && stale.Success
+            && stale.Metadata?.IsStale == true && stale.GetPayload().GetProperty("found").GetBoolean() && !stale.GetPayload().ToString().Contains(correlation, StringComparison.Ordinal);
+        bool actualNewDeliveryDuringCapture = changed.Length == histories[owner].Length + 1;
         ordinal = 0;
         foreach ((string source, ProjectionEventDto[] events) in histories)
             _ = await RebuildAsync(gatewaySidecar, Lifecycle(DomainSharedProjectionRebuildAction.Accumulate) with
@@ -276,6 +297,7 @@ internal static class WorksPlatformProjectionChecks
         (await SnapshotAsync(coordinator, scope, histories, cancellationToken, expectStale: true).ConfigureAwait(false)).Digest.ShouldBe(before.Digest);
         DomainSharedProjectionRebuildResponse committed = await RebuildAsync(gatewaySidecar, Lifecycle(DomainSharedProjectionRebuildAction.Commit), assertion, cancellationToken).ConfigureAwait(false);
         committed.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
+        SharedProjectionCheckpoint? caughtUp = null;
         try
         {
             using (var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
@@ -286,7 +308,11 @@ internal static class WorksPlatformProjectionChecks
                     SharedProjectionCheckpoint? checkpoint = await coordinator.GetCheckpointAsync(scope, owner, deadline.Token).ConfigureAwait(false);
                     SharedProjectionEpochStatus status = await coordinator.GetStatusAsync(scope, deadline.Token).ConfigureAwait(false);
                     if (checkpoint?.OwnerSequenceNumber == changed[^1].SequenceNumber && checkpoint.Position == changed[^1].GlobalPosition
-                        && !status.IsBuilding && status.PendingDeliveryCount == 0 && !status.IsDegraded) break;
+                        && !status.IsBuilding && status.PendingDeliveryCount == 0 && !status.IsDegraded)
+                    {
+                        caughtUp = checkpoint;
+                        break;
+                    }
                     await Task.Delay(100, deadline.Token).ConfigureAwait(false);
                 }
             }
@@ -317,7 +343,7 @@ internal static class WorksPlatformProjectionChecks
         using (var writer = new Utf8JsonWriter(serialized)) Canonical(writer, JsonSerializer.SerializeToElement(complete, _json));
         string expectedDigest = Convert.ToHexStringLower(SHA256.HashData(serialized.ToArray()));
         after.Digest.ShouldBe(expectedDigest);
-        QueryResult current = await QueryAsync(gatewaySidecar, scope.TenantId, owner, cancellationToken).ConfigureAwait(false);
+        QueryResult current = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         current.Success.ShouldBeTrue(current.ErrorMessage);
         current.Metadata.ShouldNotBeNull().IsStale.ShouldBe(false);
         current.GetPayload().ToString().ShouldContain(correlation);
@@ -326,11 +352,15 @@ internal static class WorksPlatformProjectionChecks
         (await DispatchAsync(gatewaySidecar, redelivery, assertion, cancellationToken).ConfigureAwait(false))
             .Outcomes.ShouldHaveSingleItem().Status.ShouldBeOneOf(ProjectionDispatchStatus.Completed, ProjectionDispatchStatus.AlreadyCompleted);
         (await SnapshotAsync(coordinator, scope, updated, cancellationToken).ConfigureAwait(false)).Digest.ShouldBe(after.Digest);
-        (await ReadHistoryAsync(gateway, new ProcessSource(scope.TenantId, "work", owner), cancellationToken).ConfigureAwait(false))
-            .Count(item => item.EventTypeName.Split('.').Last() == nameof(ConversationLinked)).ShouldBe(1);
+        int redeliveryLogicalCount = (await ReadHistoryAsync(gateway, new ProcessSource(scope.TenantId, "work", owner), cancellationToken).ConfigureAwait(false))
+            .Count(item => item.EventTypeName.Split('.').Last() == nameof(ConversationLinked));
+        redeliveryLogicalCount.ShouldBe(1);
+        bool automaticCatchUpAfterCommit = caughtUp is not null && caughtUp.OwnerSequenceNumber == changed[^1].SequenceNumber
+            && caughtUp.Position == changed[^1].GlobalPosition && after.Generation > before.Generation;
         return new { command = nameof(LinkConversation), committedSourceHead = changed[^1].SequenceNumber, committedGlobalPosition = changed[^1].GlobalPosition,
             before = new { before.Generation, before.Digest }, after = new { after.Generation, after.Digest }, expectedDigest,
-            actualNewDeliveryDuringCapture = true, oldGenerationStayedReadable = true, automaticCatchUpAfterCommit = true, redeliveryLogicalCount = 1 };
+            caughtUpCheckpoint = caughtUp, actualNewDeliveryDuringCapture, oldGenerationStayedReadable, automaticCatchUpAfterCommit, redeliveryLogicalCount,
+            queryIdentity = executor.Evidence(delegatedQuery, identityCallsBefore) };
     }
 
     private static async Task CaptureConcurrentDeliveryFailureAsync(SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope,
@@ -380,10 +410,71 @@ internal static class WorksPlatformProjectionChecks
         }
     }
 
-    /// <summary>Conflicting named redelivery persists SDK quarantine and refuses queries without changing accepted data.</summary>
-    internal static async Task<object> VerifyQuarantineAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
-        string tenant, string aggregateId, CancellationToken cancellationToken)
+    /// <summary>
+    /// The live Platform host consumes the canonical SDK in named-delivery mode: the retired bespoke legacy route is absent,
+    /// so even a fully credentialed request receives the SDK's 404, an uncredentialed one is refused, and nothing changes.
+    /// </summary>
+    /// <remarks>
+    /// The probes call the Works application port directly with the captured receiver channel token, so the refusals never
+    /// count against the gateway's Dapr resiliency circuit for the works target.
+    /// </remarks>
+    internal static async Task<object> VerifyLegacyRouteAbsentAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
+        string tenant, string aggregateId, string componentPath, CancellationToken cancellationToken)
     {
+        ProjectionEventDto[] history = await ReadHistoryAsync(gateway, new ProcessSource(tenant, "work", aggregateId), cancellationToken).ConfigureAwait(false);
+        var histories = new Dictionary<string, ProjectionEventDto[]>(StringComparer.Ordinal) { [aggregateId] = history };
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        SharedProjectionScope scope = handler.CreateScope(tenant);
+        var coordinator = new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store);
+        using (var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        {
+            deadline.CancelAfter(TimeSpan.FromMinutes(2));
+            while ((await coordinator.GetCheckpointAsync(scope, aggregateId, deadline.Token).ConfigureAwait(false))?.Position != history[^1].GlobalPosition)
+                await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+        }
+        var before = await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false);
+        string tokens = WorksPlatformAppChannelTokens.EnsureCaptured(componentPath);
+        string channelToken = (JsonSerializer.Deserialize<Dictionary<string, string>>(await File.ReadAllBytesAsync(tokens, cancellationToken).ConfigureAwait(false))
+            ?? throw new InvalidOperationException("Captured synthetic channel tokens are unavailable."))["works"];
+        using HttpClient direct = app.CreateHttpClient("works");
+        HttpRequestMessage Legacy(bool channel)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/project")
+            {
+                Content = JsonContent.Create(new ProjectionRequest(tenant, "work", aggregateId, history), options: _json),
+            };
+            request.Headers.TryAddWithoutValidation(EventStoreWorkloadAuthenticationDefaults.AssertionHeaderName,
+                WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]));
+            if (channel) request.Headers.TryAddWithoutValidation(DaprAppChannelToken.HeaderName, channelToken);
+            return request;
+        }
+
+        using HttpRequestMessage credentialed = Legacy(channel: true);
+        using HttpResponseMessage legacy = await direct.SendAsync(credentialed, cancellationToken).ConfigureAwait(false);
+        legacy.StatusCode.ShouldBe(HttpStatusCode.NotFound,
+            "Named-mode Works must not serve the retired legacy projection route. Body: " + await ReadFailureBodyAsync(legacy, cancellationToken).ConfigureAwait(false));
+        using HttpRequestMessage uncredentialed = Legacy(channel: false);
+        using HttpResponseMessage missingChannel = await direct.SendAsync(uncredentialed, cancellationToken).ConfigureAwait(false);
+        missingChannel.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        var after = await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false);
+        after.Generation.ShouldBe(before.Generation);
+        after.Digest.ShouldBe(before.Digest);
+        after.Checkpoints.ShouldBe(before.Checkpoints);
+        return new
+        {
+            tenant, aggregateId, legacyRoute = "/project", namedRoute = "/project/v2",
+            legacyRouteStatus = (int)legacy.StatusCode, missingChannelStatus = (int)missingChannel.StatusCode,
+            acceptedGeneration = before.Generation, acceptedFamilySha256 = before.Digest, unchangedFamilySha256 = after.Digest,
+            unchangedCheckpoints = after.Checkpoints,
+        };
+    }
+
+    /// <summary>Conflicting named redelivery persists SDK quarantine and refuses queries without changing accepted data.</summary>
+    /// <param name="executor">The test-only Parties identity; the refused query is a delegated Executor query.</param>
+    internal static async Task<object> VerifyQuarantineAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
+        string tenant, string aggregateId, WorksPlatformIdentityFixture executor, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(executor);
         ResourceEvent gatewayResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
         using HttpClient sidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
         string assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
@@ -428,18 +519,24 @@ internal static class WorksPlatformProjectionChecks
         after.Generation.ShouldBe(before.Generation);
         after.Digest.ShouldBe(before.Digest);
         after.Checkpoints.ShouldBe(before.Checkpoints);
-        QueryResult denied = await QueryAsync(sidecar, tenant, aggregateId, cancellationToken).ConfigureAwait(false);
+        // The delegated identity resolves, so the refusal is the durable quarantine itself rather than missing authority.
+        int identityCallsBefore = executor.Calls;
+        QueryEnvelope delegatedQuery = executor.ExecutorQuery(aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, "platform-quarantine-query");
+        QueryResult denied = await WorksPlatformIdentityFixture.QueryAsync(sidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         denied.Success.ShouldBeFalse();
         denied.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
         denied.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
+        (executor.Calls - identityCallsBefore).ShouldBeGreaterThan(0, "The quarantined query must pass delegated authority before it is refused.");
+        object queryIdentity = executor.Evidence(delegatedQuery, identityCallsBefore);
         // A retried conflict remains refused and cannot multiply evidence or change the accepted family.
         (await DispatchAsync(sidecar, request with { DispatchId = request.DispatchId + "-retry" }, assertion, cancellationToken).ConfigureAwait(false))
             .Outcomes.ShouldHaveSingleItem().Status.ShouldBe(ProjectionDispatchStatus.Failed);
-        (await new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store).GetStatusAsync(scope, cancellationToken).ConfigureAwait(false))
-            .DeliveryConflicts.ShouldHaveSingleItem();
-        return new { tenant, aggregateId, outcome, conflict, query = denied.Metadata,
+        int repeatedConflictCount = (await new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store).GetStatusAsync(scope, cancellationToken).ConfigureAwait(false))
+            .DeliveryConflicts.Count;
+        repeatedConflictCount.ShouldBe(1);
+        return new { tenant, aggregateId, outcome, conflict, query = denied.Metadata, queryIdentity,
             acceptedGeneration = before.Generation, acceptedFamilySha256 = before.Digest, unchangedFamilySha256 = after.Digest,
-            unchangedCheckpoints = after.Checkpoints, repeatedConflictCount = 1 };
+            unchangedCheckpoints = after.Checkpoints, repeatedConflictCount };
     }
 
     private static async Task<string> ReadFailureBodyAsync(HttpResponseMessage response, CancellationToken cancellationToken)
@@ -631,16 +728,6 @@ internal static class WorksPlatformProjectionChecks
         DomainSharedProjectionRebuildResponse result = (await response.Content.ReadFromJsonAsync<DomainSharedProjectionRebuildResponse>(cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
         result.Status.ShouldBeOneOf(ProjectionDispatchStatus.Completed, ProjectionDispatchStatus.AlreadyCompleted);
         return result;
-    }
-
-    private static async Task<QueryResult> QueryAsync(HttpClient gatewaySidecar, string tenant, string owner, CancellationToken cancellationToken)
-    {
-        var query = new QueryEnvelope(tenant, "work", owner, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "platform-rebuild-query", "workload:eventstore")
-        { AuthenticatedWorkloadId = "eventstore" };
-        using HttpResponseMessage response = await WorksPlatformProofRequests.PostAsync(gatewaySidecar, "works", "/query", query,
-            WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceQuery]), cancellationToken).ConfigureAwait(false);
-        response.EnsureSuccessStatusCode();
-        return (await response.Content.ReadFromJsonAsync<QueryResult>(cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
     }
 
     private static void Canonical(Utf8JsonWriter writer, JsonElement value)

@@ -143,7 +143,55 @@ public sealed class WorksPlatformFleetRestoreTests
         if (!OperatingSystem.IsWindows()) File.GetUnixFileMode(configuration).ShouldBe(UnixFileMode.UserRead | UnixFileMode.UserWrite);
         (await fixture.ReadRestoredAuthorityAsync(ct).ConfigureAwait(true)).ShouldBe(("synthetic-signing-key", "synthetic-digest-key"));
         File.Exists(Path.Combine(root, "post-snapshot-sentinel")).ShouldBeFalse();
-        await fixture.VerifyRestoredConfigurationAsync(ct).ConfigureAwait(true);
+        IReadOnlyList<string> verified = await fixture.VerifyRestoredConfigurationAsync(ct).ConfigureAwait(true);
+        verified.ShouldContain("synthetic-provider.json");
+        verified.ShouldContain(Path.GetFileName(fixture.ComponentPath));
+        // The independent re-observation of the restored stopped fleet reproduces every capture entry except the
+        // capture-only DUMP inventory, which Redis may re-encode after RESTORE.
+        IReadOnlyDictionary<string, string> observed = await fixture.ObserveFleetAsync(ct).ConfigureAwait(true);
+        observed.ContainsKey(WorksSdkProofRedis.DumpInventoryKey).ShouldBeFalse();
+        observed.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .ShouldBe(captured.Where(pair => pair.Key != WorksSdkProofRedis.DumpInventoryKey).OrderBy(pair => pair.Key, StringComparer.Ordinal));
+        await database.StringSetAsync("integer-string", "00124").ConfigureAwait(true);
+        (await fixture.ObserveFleetAsync(ct).ConfigureAwait(true))["redis-logical-value-inventory-sha256"]
+            .ShouldNotBe(captured["redis-logical-value-inventory-sha256"], "A changed restored value must change the re-observation.");
+    }
+
+    /// <summary>The Scheduler inventory detects changed modes, owners, entry types and link targets; restore reproduces them.</summary>
+    [Fact]
+    public async Task SchedulerInventoryBindsEntryMetadataAndRestoreReproducesIt()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        WorksSdkProofRedis fixture = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
+        await using var ownedFixture = fixture.ConfigureAwait(true);
+        _ = await fixture.ExecuteInSchedulerVolumeAsync(
+            "mkdir -p /fleet/member/snap && printf wal > /fleet/member/wal && chmod 600 /fleet/member/wal"
+            + " && printf db > /fleet/member/snap/db && chmod 640 /fleet/member/snap/db && chown 1000:1000 /fleet/member/snap/db"
+            + " && chmod 700 /fleet/member && ln -s snap/db /fleet/member/current", ct).ConfigureAwait(true);
+        _ = await fixture.ExecuteInSchedulerVolumeAsync("chmod 751 /fleet && chown 1000:1000 /fleet", ct).ConfigureAwait(true);
+        string captured = await fixture.SchedulerInventoryAsync(ct).ConfigureAwait(true);
+        // The volume root itself is an inventory entry, so its mode and owner are bound too.
+        captured.ShouldContain("directory|751|1000:1000|.\n");
+        captured.ShouldContain("regular file|600|0:0|./member/wal");
+        captured.ShouldContain("regular file|640|1000:1000|./member/snap/db");
+        captured.ShouldContain("symbolic link|777|0:0|'./member/current' -> 'snap/db'");
+        _ = await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+        foreach (string mutation in new[]
+        {
+            "chmod 700 /fleet",
+            "chown 0:0 /fleet",
+            "chmod 644 /fleet/member/wal",
+            "chown 0:0 /fleet/member/snap/db",
+            "ln -sfn wal /fleet/member/current",
+            "rm /fleet/member/current && printf db > /fleet/member/current",
+            "printf changed > /fleet/member/wal && chmod 600 /fleet/member/wal",
+        })
+        {
+            _ = await fixture.ExecuteInSchedulerVolumeAsync(mutation, ct).ConfigureAwait(true);
+            (await fixture.SchedulerInventoryAsync(ct).ConfigureAwait(true)).ShouldNotBe(captured, mutation);
+            await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+            (await fixture.SchedulerInventoryAsync(ct).ConfigureAwait(true)).ShouldBe(captured, mutation);
+        }
     }
 
     /// <summary>Full restored-state validation refuses changed bytes, collections, types and expiry.</summary>

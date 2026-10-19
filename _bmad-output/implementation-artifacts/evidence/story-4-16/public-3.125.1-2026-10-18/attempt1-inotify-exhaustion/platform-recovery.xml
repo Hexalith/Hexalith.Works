@@ -1,0 +1,329 @@
+<assemblies schema-version="3" id="90f54596-b821-45a2-be68-2b84a5c59deb" computer="DESKTOP-VIOG240" user="administrator" start-rtf="2026-10-18T17:51:31.2050451+00:00" finish-rtf="2026-10-18T17:52:50.2536122+00:00" timestamp="10/18/2026 19:52:50"><assembly environment="64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]" id="7369de35-af8b-4ef9-a290-f0dbbb2f3304" name="/tmp/story416-public-3.125.1-admission-run1/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll" run-date="2026-10-18" run-time="17:51:31" start-rtf="2026-10-18T17:51:31.2050451+00:00" test-framework="xUnit.net v3 4.0.2+0c7aa4991f" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="2" finish-rtf="2026-10-18T17:52:50.2536122+00:00" not-run="0" passed="2" skipped="0" time="79.054" time-rtf="00:01:19.0540000" total="4"><collection name="Works AppHost live topology" id="0d464edc-7e34-4241-b68d-40296134f1bb" failed="2" not-run="0" passed="2" skipped="0" time="78.935" time-rtf="00:01:18.9350000" total="4"><test id="5eaa720e-28ba-401b-b78f-0a0896565281" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery" result="Fail" time="65.189" time-rtf="00:01:05.1889999" start-rtf="2026-10-18T17:51:31.2794296+00:00" finish-rtf="2026-10-18T17:52:36.4833768+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="77"><failure exception-type="System.InvalidOperationException"><message>System.InvalidOperationException : [startup/readiness] Resource 'dapr-sentry': it did not become healthy. State=Exited; Health=unknown; ExitCode=1.
+dapr-sentry startup output:
+2026-10-18T17:52:25.8820000Z 552edb9ed57bb745afbeff5349d1d3a2288bf0c743b84a75abd18256c0056686
+2026-10-18T17:52:26.7170000Z 
+2026-10-18T17:52:26.7170000Z 552edb9ed57bb745afbeff5349d1d3a2288bf0c743b84a75abd18256c0056686
+2026-10-18T17:52:26.6517505Z time=\"2026-10-18T17:52:26.651475605Z\" level=info msg=\"Starting Dapr Sentry certificate authority -- version 1.18.2 -- commit d2dd3747145e38e4d85db4714e26d7569c9c37db\" instance=552edb9ed57b scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:26.6517777Z time=\"2026-10-18T17:52:26.651608063Z\" level=info msg=\"Log level set to: info\" instance=552edb9ed57b scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:26.6520582Z time=\"2026-10-18T17:52:26.651934741Z\" level=fatal msg=\"failed to add target /var/run/dapr/credentials: no space left on device\" instance=552edb9ed57b scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:27.8320000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-sentry-synqnvhz
+
+dapr-placement-mtls startup output:
+2026-10-18T17:52:24.6114738Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:32.8476384Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8505036Z Failed to create resource dapr-placement-mtls
+Aspire.Hosting.DistributedApplicationException: Resource 'dapr-placement-mtls' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+dapr-scheduler-mtls startup output:
+2026-10-18T17:52:24.6114691Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:32.8483229Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8503633Z Failed to create resource dapr-scheduler-mtls
+Aspire.Hosting.DistributedApplicationException: Resource 'dapr-scheduler-mtls' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+eventstore startup output:
+2026-10-18T17:52:24.6114741Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:24.6146146Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:24.6147110Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:32.8482378Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8571204Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:32.8593904Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:32.8596933Z Failed to create resource eventstore
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+works startup output:
+2026-10-18T17:52:24.6115372Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T17:52:24.6134259Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T17:52:24.6135506Z Finished waiting for resource 'statestore'.
+2026-10-18T17:52:24.6175644Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:24.6188382Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:24.6188608Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:32.8476387Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8572530Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:32.8603298Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:32.8603695Z Failed to create resource works
+Aspire.Hosting.DistributedApplicationException: Resource 'works' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+works-ha startup output:
+
+eventstore-operations startup output:
+2026-10-18T17:52:24.6114691Z Waiting for resource 'works' to enter the 'Running' state.
+2026-10-18T17:52:24.6153470Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T17:52:24.6153874Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T17:52:24.6154000Z Finished waiting for resource 'statestore'.
+2026-10-18T17:52:24.6171063Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:24.6171446Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:24.6171627Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:32.8482736Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8571907Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:32.8600557Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:32.8612742Z Dependency resource 'works' failed to start.
+2026-10-18T17:52:32.8613452Z Failed to create resource eventstore-operations
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore-operations' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+eventstore-admin startup output:
+2026-10-18T17:52:24.6114952Z Waiting for resource 'eventstore-operations' to enter the 'Running' state.
+2026-10-18T17:52:24.6145653Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:24.6146769Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:24.6147538Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:32.8482859Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:32.8571383Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:32.8599467Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:32.8615888Z Dependency resource 'eventstore-operations' failed to start.
+2026-10-18T17:52:32.8616332Z Failed to create resource eventstore-admin
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore-admin' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+---- System.InvalidOperationException : [startup/readiness] Resource 'dapr-sentry': it did not become healthy. State=Exited; Health=unknown; ExitCode=1.
+-------- Aspire.Hosting.DistributedApplicationException : Stopped waiting for resource 'dapr-sentry' to become healthy because it failed to start.</message><stack-trace>   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 441
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 97
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 97
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 97
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at Hexalith.Works.IntegrationTests.WorksAppHostTestReadiness.WaitForResourceHealthyAsync(DistributedApplication app, String resourceName, CancellationToken cancellationToken, CancellationToken callerCancellationToken) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:line 137
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 302
+----- Inner Stack Trace -----
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForResourceHealthyAsync(String resourceName, WaitBehavior waitBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 266
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForResourceHealthyAsync(String resourceName, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 206
+   at Hexalith.Works.IntegrationTests.WorksAppHostTestReadiness.WaitForResourceHealthyAsync(DistributedApplication app, String resourceName, CancellationToken cancellationToken, CancellationToken callerCancellationToken) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:line 118</stack-trace></failure></test><test id="f6cf6ddb-640b-47eb-ac14-19b7a8159498" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" result="Fail" time="13.633" time-rtf="00:00:13.6330000" start-rtf="2026-10-18T17:52:36.4938717+00:00" finish-rtf="2026-10-18T17:52:50.1267090+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="155"><failure exception-type="System.InvalidOperationException"><message>System.InvalidOperationException : [startup/readiness] Resource 'dapr-sentry': it did not become healthy. State=Exited; Health=unknown; ExitCode=1.
+dapr-sentry startup output:
+2026-10-18T17:52:39.9010000Z b97de800afdaab24e0fe0c87aa3d3d1a4c539291d3e668118600d8ff5b8142d9
+2026-10-18T17:52:40.5780000Z 
+2026-10-18T17:52:40.5780000Z b97de800afdaab24e0fe0c87aa3d3d1a4c539291d3e668118600d8ff5b8142d9
+2026-10-18T17:52:40.5158951Z time=\"2026-10-18T17:52:40.515691887Z\" level=info msg=\"Starting Dapr Sentry certificate authority -- version 1.18.2 -- commit d2dd3747145e38e4d85db4714e26d7569c9c37db\" instance=b97de800afda scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:40.5159448Z time=\"2026-10-18T17:52:40.515780981Z\" level=info msg=\"Log level set to: info\" instance=b97de800afda scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:40.5164316Z time=\"2026-10-18T17:52:40.516014396Z\" level=fatal msg=\"failed to add target /var/run/dapr/credentials: no space left on device\" instance=b97de800afda scope=dapr.sentry type=log ver=1.18.2
+2026-10-18T17:52:41.5860000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-sentry-srpmpqqt
+
+dapr-placement-mtls startup output:
+2026-10-18T17:52:38.7889170Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:46.5924405Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5926022Z Failed to create resource dapr-placement-mtls
+Aspire.Hosting.DistributedApplicationException: Resource 'dapr-placement-mtls' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+dapr-scheduler-mtls startup output:
+2026-10-18T17:52:38.7888178Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:46.5924177Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5925368Z Failed to create resource dapr-scheduler-mtls
+Aspire.Hosting.DistributedApplicationException: Resource 'dapr-scheduler-mtls' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+eventstore startup output:
+2026-10-18T17:52:38.7876204Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:38.7876555Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:38.7876661Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:46.5923047Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5930309Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:46.5930690Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:46.5932044Z Failed to create resource eventstore
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+works startup output:
+2026-10-18T17:52:38.7879814Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T17:52:38.7879938Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T17:52:38.7880027Z Finished waiting for resource 'statestore'.
+2026-10-18T17:52:38.7880143Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:38.7880247Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:38.7880350Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:46.5923600Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5930783Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:46.5932230Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:46.5933238Z Failed to create resource works
+Aspire.Hosting.DistributedApplicationException: Resource 'works' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+works-ha startup output:
+
+eventstore-operations startup output:
+2026-10-18T17:52:38.7879745Z Waiting for resource 'works' to enter the 'Running' state.
+2026-10-18T17:52:38.7879922Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T17:52:38.7880027Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T17:52:38.7880056Z Finished waiting for resource 'statestore'.
+2026-10-18T17:52:38.7880163Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:38.7880246Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:38.7880340Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:46.5923849Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5930755Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:46.5931312Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:46.5935306Z Dependency resource 'works' failed to start.
+2026-10-18T17:52:46.5935847Z Failed to create resource eventstore-operations
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore-operations' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+eventstore-admin startup output:
+2026-10-18T17:52:38.7879313Z Waiting for resource 'eventstore-operations' to enter the 'Running' state.
+2026-10-18T17:52:38.7879524Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T17:52:38.7879664Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T17:52:38.7879807Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T17:52:46.5923448Z Resource 'dapr-sentry' has entered the 'Exited' state prematurely.
+2026-10-18T17:52:46.5930578Z Dependency resource 'dapr-placement-mtls' failed to start.
+2026-10-18T17:52:46.5930615Z Dependency resource 'dapr-scheduler-mtls' failed to start.
+2026-10-18T17:52:46.5938403Z Dependency resource 'eventstore-operations' failed to start.
+2026-10-18T17:52:46.5938749Z Failed to create resource eventstore-admin
+Aspire.Hosting.DistributedApplicationException: Resource 'eventstore-admin' stopped waiting for dependency resource 'dapr-sentry' because it entered the 'Exited' state prematurely.
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.&lt;&gt;c__DisplayClass25_0.&lt;&lt;WaitUntilStateAsync&gt;g__Core|0&gt;d.MoveNext() in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 420
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilStateAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, Func`5 postRunningAction, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 387
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitUntilHealthyAsync(IResource resource, IResource dependency, WaitBehavior waitBehavior, CancellationToken cancellationToken, Func`2 onDependencyReady) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 148
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForDependenciesAsync(IResource resource, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 561
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.WaitForInBeforeResourceStartedEvent(BeforeResourceStartedEvent event, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 186
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;&gt;c__DisplayClass5_0`1.&lt;&lt;Subscribe&gt;b__0&gt;d.MoveNext() in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 130
+--- End of stack trace from previous location ---
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.&lt;InvokeSubscriptionCallbackAsync&gt;g__AwaitSubscriptionCallbackAsync|4_0[T](Task callbackTask, ActivityScope activity) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 108
+   at Aspire.Hosting.Eventing.DistributedApplicationEventing.PublishAsync[T](T event, EventDispatchBehavior dispatchBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Eventing/DistributedApplicationEventing.cs:line 70
+   at Aspire.Hosting.Orchestrator.ApplicationOrchestrator.OnResourceStarting(OnResourceStartingContext context) in /_/src/Aspire.Hosting/Orchestrator/ApplicationOrchestrator.cs:line 283
+   at Aspire.Hosting.Dcp.DcpExecutorEvents.PublishAsync[T](T context) in /_/src/Aspire.Hosting/Dcp/DcpExecutorEvents.cs:line 34
+   at Aspire.Hosting.Dcp.DcpExecutor.CreateResourceReplicasAsync[TDcpResource,TContext](IResource modelResource, IEnumerable`1 replicaResources, IObjectCreator`2 creator, TContext context, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/Dcp/DcpExecutor.cs:line 1046
+
+---- System.InvalidOperationException : [startup/readiness] Resource 'dapr-sentry': it did not become healthy. State=Exited; Health=unknown; ExitCode=1.
+-------- Aspire.Hosting.DistributedApplicationException : Stopped waiting for resource 'dapr-sentry' to become healthy because it failed to start.</message><stack-trace>   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 441
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 193
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 567
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 567
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at Hexalith.Works.IntegrationTests.WorksAppHostTestReadiness.WaitForResourceHealthyAsync(DistributedApplication app, String resourceName, CancellationToken cancellationToken, CancellationToken callerCancellationToken) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:line 137
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 302
+----- Inner Stack Trace -----
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForResourceHealthyAsync(String resourceName, WaitBehavior waitBehavior, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 266
+   at Aspire.Hosting.ApplicationModel.ResourceNotificationService.WaitForResourceHealthyAsync(String resourceName, CancellationToken cancellationToken) in /_/src/Aspire.Hosting/ApplicationModel/ResourceNotificationService.cs:line 206
+   at Hexalith.Works.IntegrationTests.WorksAppHostTestReadiness.WaitForResourceHealthyAsync(DistributedApplication app, String resourceName, CancellationToken cancellationToken, CancellationToken callerCancellationToken) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:line 118</stack-trace></failure></test><test id="cad3fed6-832f-4149-99e5-7b61a5b49c97" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetryStorePreservesCoordinatedBatchCapability" result="Pass" time="0.049" time-rtf="00:00:00.0490000" start-rtf="2026-10-18T17:52:50.1294960+00:00" finish-rtf="2026-10-18T17:52:50.1795420+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="RetryStorePreservesCoordinatedBatchCapability" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="61" /><test id="def1a167-8ec9-49db-90d6-dcebd08ba324" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetainedPlanWaitBoundsNonCooperativeStoreAcquisition" result="Pass" time="0.064" time-rtf="00:00:00.0640000" start-rtf="2026-10-18T17:52:50.1800758+00:00" finish-rtf="2026-10-18T17:52:50.2450488+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="RetainedPlanWaitBoundsNonCooperativeStoreAcquisition" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="37" /></collection></assembly></assemblies>

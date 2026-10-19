@@ -1,0 +1,32 @@
+{
+  "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-review2-canonical1",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "startedUtc": "2026-10-19T06:53:09Z",
+  "finishedUtc": "2026-10-19T06:57:58Z",
+  "exitCode": 1,
+  "status": "incomplete",
+  "failure": "works-consumer-supporting failed; see /tmp/story416-review2-canonical1/works-consumer-supporting.log",
+  "diagnosis": "WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(hash-value) failed with RedisConnectionException connecting to the fixture Redis host port. WorksSdkProofRedis readiness only pinged Redis through docker exec inside the container; the published host port can lag. The fixture now also waits for the host binding to answer PING (real Docker only). The same class passed in preparation and in the rerun (24/24).",
+  "checksBeforeFailure": {
+    "agentsFull": "expected-unavailable; not a Works prerequisite",
+    "Debug": {
+      "total": 107,
+      "passed": 107,
+      "skipped": 0,
+      "sha256": "dfa64257d6903c4747b0c40136203de182dfdb2aa6bed5b6864a619a3178937f"
+    },
+    "Release": {
+      "total": 107,
+      "passed": 107,
+      "skipped": 0,
+      "sha256": "636097a97b77682bf3859a18bd24c90c72a029f2fce55f0792756b3495c42e06"
+    }
+  },
+  "platformRuntimeIdentity": {
+    "hostOutput": "/tmp/story416-review2-canonical1/host/bin/release/Hexalith.Platform.Works.Runtime.dll",
+    "consumer": "/tmp/story416-review2-canonical1/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Platform.Works.Runtime.dll",
+    "sha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f",
+    "identical": true,
+    "deterministicBuildRoot": "/_/hexalith-works-platform-build"
+  }
+}

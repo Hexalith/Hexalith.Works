@@ -28,9 +28,14 @@ namespace Hexalith.Works.IntegrationTests;
 internal static class WorksPlatformRollbackChecks
 {
     /// <summary>Verifies usable persisted SDK queries, exact receipt replay, and unchanged logical resume count.</summary>
+    /// <param name="executor">The test-only Parties identity for the delegated Executor query; no coordinator authority is composed.</param>
+    /// <param name="executorItem">The work item currently Assigned to <paramref name="executor"/>'s Party, so the Executor view can read it.</param>
+    /// <param name="expectedCandidates">The complete retained process candidate count of the fixture.</param>
     internal static async Task<object> VerifyAsync(DistributedApplication app, HttpClient gateway, RSA authority,
-        string tenant, string parent, string resumedEffect, CancellationToken cancellationToken, bool restored = false)
+        string tenant, string parent, string resumedEffect, WorksPlatformIdentityFixture executor, string executorItem,
+        int expectedCandidates, CancellationToken cancellationToken, bool restored = false)
     {
+        ArgumentNullException.ThrowIfNull(executor);
         ResourceEvent works = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
         ResourceEvent eventStore = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
         using HttpClient worksSidecar = WorksAppHostTestReadiness.CreateDaprClient(works, "Works");
@@ -57,14 +62,30 @@ internal static class WorksPlatformRollbackChecks
         receipt.EffectId.ShouldBe(resumedEffect);
         receipt.Disposition.ShouldBe(TrustedEffectDisposition.NoOp);
         (await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, parent, cancellationToken).ConfigureAwait(false)).ShouldBe(1);
-        var query = new QueryEnvelope(tenant, "work", parent, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "story416-rollback-query", "workload:eventstore")
-        { AuthenticatedWorkloadId = "eventstore" };
-        using HttpResponseMessage queried = await WorksPlatformProofRequests.PostAsync(gatewaySidecar, "works", "/query", query,
-            WorksPlatformProofRequests.Assertion("eventstore", "works", ["domain-service:query"]), cancellationToken).ConfigureAwait(false);
-        queried.EnsureSuccessStatusCode();
-        QueryResult result = (await queried.Content.ReadFromJsonAsync<QueryResult>(cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
+        // A delegated Executor query under the host's composed gateway workload, resolved through the test-only Parties
+        // identity. The Executor view reads only its own Assigned and the Queued items, so the query reads the Assigned item.
+        int queryCallsBefore = executor.Calls;
+        QueryEnvelope query = executor.ExecutorQuery(executorItem, GetWorkItemQueryHandler.GetWorkItemQueryType, "story416-rollback-query");
+        QueryResult result = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, query, cancellationToken).ConfigureAwait(false);
         result.Success.ShouldBeTrue(result.ErrorMessage);
-        result.GetPayload().ToString().ShouldContain(parent);
+        JsonElement view = result.GetPayload();
+        view.GetProperty("found").GetBoolean().ShouldBeTrue("The delegated Executor must read its own Assigned item.");
+        view.ToString().ShouldContain(executorItem);
+        object queryIdentity = executor.Evidence(query, queryCallsBefore);
+        (executor.Calls - queryCallsBefore).ShouldBeGreaterThan(0, "Works must resolve the delegated identity through the Parties authority.");
+        // Neither host composes coordinator authority, so a non-delegated full-tenant workload query is refused before any read.
+        int refusalCallsBefore = executor.Calls;
+        var fullTenant = new QueryEnvelope(tenant, "work", executorItem, WhatsNextQueryHandler.WhatsNextQueryType,
+            JsonSerializer.SerializeToUtf8Bytes(new { allWork = true }), "story416-non-delegated-full-tenant-query", "workload:eventstore")
+        { AuthenticatedWorkloadId = "eventstore" };
+        QueryResult refusedFullTenant = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, fullTenant, cancellationToken).ConfigureAwait(false);
+        refusedFullTenant.Success.ShouldBeFalse("A non-delegated workload query has no composed coordinator authority.");
+        refusedFullTenant.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        object nonDelegatedFullTenantQuery = new
+        {
+            queryType = fullTenant.QueryType, isDelegated = fullTenant.IsDelegated, authenticatedWorkloadId = fullTenant.AuthenticatedWorkloadId,
+            success = refusedFullTenant.Success, error = refusedFullTenant.ErrorMessage, identityCalls = executor.Calls - refusalCallsBefore,
+        };
         JsonObject changedCommand = JsonNode.Parse(submission.CommandPayload)!.AsObject();
         string conditionKey = changedCommand.Select(property => property.Key)
             .Single(name => string.Equals(name, "AwaitCondition", StringComparison.OrdinalIgnoreCase));
@@ -91,10 +112,13 @@ internal static class WorksPlatformRollbackChecks
         Property(collision, "AttemptedSemanticDigest").GetString().ShouldNotBe(Property(collision, "OriginalSemanticDigest").GetString());
         WorksSdkProofAuditDocument trustedAudit = (await gatewaySidecar.GetFromJsonAsync<WorksSdkProofAuditDocument>(
             "v1.0/state/statestore/" + Uri.EscapeDataString("story415:trusted-audit:" + tenant), cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
-        trustedAudit.Attempts.ShouldContain(attempt => attempt.Action == "collision" && attempt.EffectId == resumedEffect
+        bool attributedCollisionAudit = trustedAudit.Attempts.Any(attempt => attempt.Action == "collision" && attempt.EffectId == resumedEffect
             && attempt.Workload == "works" && attempt.Disposition == "quarantined");
-        (await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, parent, cancellationToken).ConfigureAwait(false)).ShouldBe(1);
+        attributedCollisionAudit.ShouldBeTrue();
+        int resumedCount = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, parent, cancellationToken).ConfigureAwait(false);
+        resumedCount.ShouldBe(1);
         ProcessSweepState? sweep = null;
+        int? restoredOperatorAuditAttempts = null;
         if (restored)
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -102,7 +126,7 @@ internal static class WorksPlatformRollbackChecks
             do
             {
                 sweep = (await store.GetAsync<ProcessSweepState>("statestore", ProcessStateKeys.Sweep, deadline.Token).ConfigureAwait(false)).Value;
-                if (sweep is { Complete: true, Unresolved: 0, RetainedCandidates: 11 }) break;
+                if (sweep is { Complete: true, Unresolved: 0 } && sweep.RetainedCandidates == expectedCandidates) break;
                 await Task.Delay(100, deadline.Token).ConfigureAwait(false);
             } while (true);
             sweep.Pending.Count.ShouldBe(0);
@@ -112,11 +136,12 @@ internal static class WorksPlatformRollbackChecks
             WorksProcessDispositionAuditDocument audit = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore",
                 WorksSyntheticDispositionAuditSink.Key(source), cancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();
             audit.Attempts.ShouldHaveSingleItem().Actor.ShouldBe("synthetic-operator-416");
+            restoredOperatorAuditAttempts = audit.Attempts.Count;
 #endif
         }
-        return new { receipt, query = result.GetPayload(), resumedCount = 1, restoredSweep = sweep,
-            conflictingReplayStatus = (int)conflict.StatusCode, collision, durableCollisionCount = collisions.Length,
-            attributedCollisionAudit = true };
+        return new { receipt, query = view, queryMetadata = result.Metadata, queryIdentity, nonDelegatedFullTenantQuery, resumedCount,
+            restoredSweep = sweep, restoredOperatorAuditAttempts, conflictingReplayStatus = (int)conflict.StatusCode, collision,
+            durableCollisionCount = collisions.Length, attributedCollisionAudit };
     }
 
     private static JsonElement Property(JsonElement document, string name)

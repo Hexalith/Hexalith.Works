@@ -1,0 +1,1202 @@
+{
+  "scope": "Story 4.16 review iteration 1: canonical Platform Works parity and complete fleet rollback on the corrected graph; disposable synthetic data only",
+  "checkedUtc": "2026-10-18T22:15:55.447699+00:00",
+  "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-review1-canonical1",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "startedUtc": "2026-10-18T21:45:37Z",
+  "finishedUtc": "2026-10-18T22:15:02Z",
+  "exitCode": 0,
+  "status": "passed-disposable-synthetic-parity-and-rollback",
+  "failure": null,
+  "selectedSdk": {
+    "version": "3.125.1",
+    "catalog": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/Props/Directory.Packages.props",
+    "catalogSha256": "6613474830ffd7901b03dedb38849962353613af745f625a59bf0a082a20a646",
+    "worksConsumerPins": {
+      "Directory.Build.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Build.props",
+        "version": "3.125.1",
+        "sha256": "eefa298cecae747e49d5b872789b6caccf985a284379e2505194b717442f3897"
+      },
+      "Directory.Packages.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+        "version": "3.125.1",
+        "sha256": "9a4cec9da19656320373a4260f96bc83a2afad6d195f72bf20584206edbb999b"
+      }
+    },
+    "hostPackagePins": {
+      "path": "/home/administrator/projects/hexalith/platform/apphost.cs",
+      "version": "3.125.1",
+      "packages": [
+        "Hexalith.EventStore.Aspire",
+        "Hexalith.EventStore.ServiceDefaults"
+      ],
+      "sha256": "84cb495efe328a9ef475fa1218d6ececceea0ba52344f19b117667269be38e00"
+    }
+  },
+  "runtimeProducerQualification": {
+    "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+    "qualification": "official-commit-tree-and-exact-git-blob-identities",
+    "runtimeFileCount": 2102,
+    "matchesPublishedProducer": true,
+    "namedTag": {
+      "tag": "v3.125.1",
+      "commit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+      "receipts": [
+        {
+          "url": "https://api.github.com/repos/Hexalith/Hexalith.EventStore/git/ref/tags/v3.125.1",
+          "responseSha256": "5a088512b7586682cedc26480bcbc5a565b169e5760bcbbafc86655f0fce5db6",
+          "ref": "refs/tags/v3.125.1"
+        }
+      ]
+    }
+  },
+  "checks": {
+    "agentsFull": "expected-unavailable; not a Works prerequisite",
+    "Debug": {
+      "total": 98,
+      "passed": 98,
+      "skipped": 0,
+      "sha256": "2e4c1354ec87e98eeac4d552e747bd76dc5b11dc4c286f28e8f24f3453786f72"
+    },
+    "Release": {
+      "total": 98,
+      "passed": 98,
+      "skipped": 0,
+      "sha256": "f3860d27b0151bdbb0e6eea31627ad29f158ee9edb738a6d8275fb40df50564f"
+    },
+    "supportingConsumer": {
+      "total": 222,
+      "passed": 222,
+      "skipped": 0,
+      "sha256": "95c50273fdb877df15942cf8b1df2faa7e2a635e3d224acf0f82b70e696e0d3b"
+    },
+    "liveRecovery": {
+      "total": 4,
+      "passed": 4,
+      "skipped": 0,
+      "sha256": "f6d73aba053aa6d9132d91737d5a647b10a0fdeb36d5b3a82f0899a2fd9f8a0c"
+    },
+    "liveHistorical": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "85052fb93e1fa79848d7ea88a22d88c13f2d147324c83476b59eadff15b13021"
+    },
+    "liveHa": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "68570a070a413d9983a9847289ef5e7d193eb1367c1e938e3ad2ca07328caa44"
+    },
+    "liveProjection": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "9a4d518757d600e9ad62a355517b502f02f01c81f3da897aec9e37cd0bbde7d8"
+    }
+  },
+  "commands": [
+    {
+      "name": "evidence-gate-tests",
+      "exitCode": 0,
+      "log": "evidence-gate-tests.log",
+      "sha256": "ef3cafe062a1f6b7d5de7a0ebd77c06200c9237b439063a6f69f8e1c63916bf7"
+    },
+    {
+      "name": "agents-full-refusal",
+      "exitCode": 1,
+      "log": "agents-full-refusal.log",
+      "sha256": "f0f4624d37b9434845bc718f8c1fd5aaf6fb3a73c14110fec27964b3ffa48757"
+    },
+    {
+      "name": "agents-local-scaffold",
+      "exitCode": 0,
+      "log": "agents-local-scaffold.log",
+      "sha256": "c7ad9dda76ee4ee080b42bc51bdcee983f3ff77dee5358a5f43d764de6003af2"
+    },
+    {
+      "name": "platform-tests-build-debug",
+      "exitCode": 0,
+      "log": "platform-tests-build-debug.log",
+      "sha256": "13df5a2a953a24bd1494c134209441b7af7cf7fe6b13c0283a71918f6489af59"
+    },
+    {
+      "name": "platform-tests-debug",
+      "exitCode": 0,
+      "log": "platform-tests-debug.log",
+      "sha256": "90d5b09338c8c589788259341e2b361144090364f6518ef60a510d4c6a54f6d0"
+    },
+    {
+      "name": "platform-tests-build-release",
+      "exitCode": 0,
+      "log": "platform-tests-build-release.log",
+      "sha256": "2f0d83767849fbc8a0b043f7f8e4e2f4d560d75abf02e56f00ee28ac8b7b367a"
+    },
+    {
+      "name": "platform-tests-release",
+      "exitCode": 0,
+      "log": "platform-tests-release.log",
+      "sha256": "f96dfe8d45623c9c3b53d1033f4a970e191fd15267c24e690bc0f62a25aaa26a"
+    },
+    {
+      "name": "platform-file-host-release",
+      "exitCode": 0,
+      "log": "platform-file-host-release.log",
+      "sha256": "00df6cf12a1a10b345a2faacf965ecb48317b7fd65b132839a32c67eadce3672"
+    },
+    {
+      "name": "works-consumer-debug",
+      "exitCode": 0,
+      "log": "works-consumer-debug.log",
+      "sha256": "4620484a4a019265bbb31b552285b46bbce87ee05f5e754668b143ce10e8e8d8"
+    },
+    {
+      "name": "works-consumer-release",
+      "exitCode": 0,
+      "log": "works-consumer-release.log",
+      "sha256": "149644999552cceef11627738eb14ed4517ace6de73e5dd1d05378da7a61f65c"
+    },
+    {
+      "name": "works-consumer-supporting",
+      "exitCode": 0,
+      "log": "works-consumer-supporting.log",
+      "sha256": "5f5cb7540edb87016f7ac8ace77729d3fd8afdd4175786efa436285c5b678d70"
+    },
+    {
+      "name": "runtime-release-prebuild-0",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-0.log",
+      "sha256": "e25f122b01c515fe9501ae2a3a25bb8359499453804fde76584706e93476f972"
+    },
+    {
+      "name": "runtime-release-prebuild-1",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-1.log",
+      "sha256": "59b8f20d159954a36220295cf4987246f272e98436e22d4ae2a3f688dc6b049c"
+    },
+    {
+      "name": "runtime-release-prebuild-2",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-2.log",
+      "sha256": "827b3662e3a3c16d65c25991b05da04a5ffca772423e41fbfdda551ca03314e0"
+    },
+    {
+      "name": "runtime-release-prebuild-3",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-3.log",
+      "sha256": "2c031524c1b5e4d9e3d94cbfe901449b3ba0304ee20a35e46a81f595187d9f11"
+    },
+    {
+      "name": "runtime-release-prebuild-4",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-4.log",
+      "sha256": "0640ab7275387a5b8a99a8fd9ccb4ed914e09a0d9976db131d64b6eab305e1eb"
+    },
+    {
+      "name": "platform-recovery",
+      "exitCode": 0,
+      "log": "platform-recovery.log",
+      "sha256": "a481a1e9427dd51c9f02b4166b251ddbfa5a83d1c40119008126d78376faab80"
+    },
+    {
+      "name": "platform-historical",
+      "exitCode": 0,
+      "log": "platform-historical.log",
+      "sha256": "4a062373832ca332702a39850b48a95b0256a2cbf0ec6e5e4acd94a88c26e4c1"
+    },
+    {
+      "name": "platform-ha",
+      "exitCode": 0,
+      "log": "platform-ha.log",
+      "sha256": "694a6809fd5362af259bf3da369b521ca28f6d687223b97609b5b4754b172f34"
+    },
+    {
+      "name": "platform-projection",
+      "exitCode": 0,
+      "log": "platform-projection.log",
+      "sha256": "a21037ccaec1b46014a9ca7c8b63fcfb3e8edae99706128791a56dbb72a1d79d"
+    }
+  ],
+  "rows": {
+    "R1": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+              "recordSha256": "b935215725f5856afb2602b425a11323ea74afb45cd61f8131d8759bd1967a30",
+              "fields": {
+                "familyDigest": "SHA-256 family digest",
+                "claimOutcomes": "two concurrent claims",
+                "lifecycle.Events": "complete seven-event lifecycle",
+                "replay.Status": "replayed Completed"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "8f6c7863c6a80dcf9d241148a432dbc9922b7b517cd4363e9bbb40e344f5b5b6",
+              "fields": {
+                "wrongCaller": "wrong caller refused",
+                "wrongPort": "direct application port refused",
+                "forbiddenPublish": "forbidden publisher refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-historical-restart-replay-and-family",
+              "recordSha256": "d8dbc258b3b2a1983090f8215c098a83c531ec0d7f6a19a1792f37452abbfdba",
+              "fields": {
+                "completed": "lifecycle replays Completed after restart",
+                "claimCount": "one claim after restart",
+                "familyDigest": "family digest after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.query.found": "retained host query finds the item",
+                "restoredConfigurationVerified": "restored configuration bytes verified"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R2": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-supported-process-coverage",
+              "recordSha256": "6218ba3d779d3047af3acf444a5774ff6b16424d39705ca609b75ada01ba9d7b",
+              "fields": {
+                "Complete": "complete recovery sweep",
+                "Unresolved": "zero unresolved",
+                "RetainedCandidates": "eleven retained candidates"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "periodic-writers-disabled-readiness-degraded",
+              "recordSha256": "65aea3afa71cfb9db40723ead790c668931790d4488f0ee0d526ce5d2861aca9",
+              "fields": {
+                "status": "SDK readiness Degraded with periodic writers disabled"
+              }
+            },
+            {
+              "phase": "disabled-recovery-otlp-alert-export",
+              "recordSha256": "bbf3cd888be0801c970e657f1d6f3d717fe4f85b9840ab065244d6decc71edbb",
+              "fields": {
+                "<state>": "OTLP recovery alert raised"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "durable-recovery-alert-export-and-clear",
+              "recordSha256": "f39c0ad6f77907426c8a177829e9d74dfc5559f4d7bfa83f8c7afd89258ab32d",
+              "fields": {
+                "<state>": "recovery alert clears after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.restoredSweep.Complete": "restored sweep complete",
+                "convergence.restoredSweep.Unresolved": "restored sweep has zero unresolved"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R3": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-redelivery-capture-through-commit-complete-family",
+              "recordSha256": "461c077232c305705f57f39e63e740b720ca6a8d785c266e00ec9e99e47b2139",
+              "fields": {
+                "redelivered.Outcomes.0.Status": "redelivery Completed or AlreadyCompleted",
+                "concurrentDelivery.redeliveryLogicalCount": "one logical redelivery",
+                "<state>": "redelivery and capture preserve the family digest"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-conflict-durable-quarantine-with-unchanged-family",
+              "recordSha256": "ef48134b990e6066a408b49f319d95d1d2d5069dd27d05c6d5fd4f8086a92067",
+              "fields": {
+                "<state>": "conflict leaves the accepted family unchanged",
+                "repeatedConflictCount": "repeated conflict keeps one evidence record",
+                "conflict.SourceStream": "durable conflict evidence"
+              }
+            },
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "8f6c7863c6a80dcf9d241148a432dbc9922b7b517cd4363e9bbb40e344f5b5b6",
+              "fields": {
+                "forbiddenPublish": "forbidden origin publish refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-initial-projection-convergence",
+              "recordSha256": "0839da333f8d3fe3a2bb22a3b93ec6f9b864e9b4f26bb76d2d88e6bd4d078bdd",
+              "fields": {
+                "naturalCatchUp": "natural catch-up after restarts",
+                "heads": "all eleven owner/global heads converged"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.receipt.Replayed": "retained host replays the receipt"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R4": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-focused-projection-rebuild",
+              "recordSha256": "aee5e18879ab55980a46bbdf7bdc57f8d693ec9a19cba1190238621e74031936",
+              "fields": {
+                "concurrentDelivery.automaticCatchUpAfterCommit": "automatic catch-up after Commit",
+                "concurrentDelivery.oldGenerationStayedReadable": "old generation readable during capture",
+                "<state>": "committed family equals the independent fold",
+                "sources": "eleven captured sources",
+                "committed.Phase": "rebuild Committed"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-redelivery-capture-through-commit-complete-family",
+              "recordSha256": "461c077232c305705f57f39e63e740b720ca6a8d785c266e00ec9e99e47b2139",
+              "fields": {
+                "fenced.Outcomes.0.Status": "delivery during capture is fenced Retryable",
+                "negatives.wrongOrigin": "wrong origin refused",
+                "negatives.wrongOperation": "wrong operation refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-initial-projection-convergence",
+              "recordSha256": "0839da333f8d3fe3a2bb22a3b93ec6f9b864e9b4f26bb76d2d88e6bd4d078bdd",
+              "fields": {
+                "heads": "named projection heads converge after restarts"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.query.conversationCorrelationId.value": "restored family includes the post-capture event"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R5": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "8f6c7863c6a80dcf9d241148a432dbc9922b7b517cd4363e9bbb40e344f5b5b6",
+              "fields": {
+                "own.found": "executor reads own item",
+                "visible": "executor queue view"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "8f6c7863c6a80dcf9d241148a432dbc9922b7b517cd4363e9bbb40e344f5b5b6",
+              "fields": {
+                "hidden.found": "foreign item filtered",
+                "wrongActor": "wrong actor denied",
+                "wrongTenant": "wrong tenant denied"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-query-and-explicit-receipt-replay",
+              "recordSha256": "1261a2ed59db142572557f7100173f77b3c1698945431750d2fd90453d3541bc",
+              "fields": {
+                "query.found": "query usable after restarts",
+                "query.latestAcceptedSourceSequence": "query reflects accepted source"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.query.found": "retained host query usable"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R6": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "successful-callback-no-periodic-recovery",
+              "recordSha256": "8f197f01b084474c0dec6efa723186032c724867e31a435e2a822573b72ea7c2",
+              "fields": {
+                "witness.entries": "persisted SDK reminder witness",
+                "processCandidate": "process candidate persisted"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-two-host-ha-lost-firing-stale-callback-recovery",
+              "recordSha256": "b6007ebf53711054a8f7989261f1513935157892243cf98fea988c6db1d691d3",
+              "fields": {
+                "actualStaleCallbackObserved": "stale Scheduler callback observed",
+                "staleSchedulerFireResumed": "stale firing caused no second resume",
+                "retiredReminderRemovedAfterFiring": "retired reminder removed",
+                "<state>": "a real callback fired"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "cascade-expiry-restart-receipt-and-checkpoint",
+              "recordSha256": "15edc37b2be8ed6eeac833af1463e809c82915786fbb3a69b71db39aed75e653",
+              "fields": {
+                "replay.ReplayObserved": "lost receipt replayed after restart",
+                "childExpired": "one child expiry",
+                "expiryReceipt.disposition": "expiry receipt Success"
+              }
+            },
+            {
+              "phase": "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+              "recordSha256": "4ff4a3cf3e3feddfc167a0a4bd744b284bf6e117fa8daa2e24837de106317e43",
+              "fields": {
+                "callers": "two concurrent reissuers",
+                "persistedSchedulerReminder.actorType": "reissued SDK reminder persisted"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "dateResumed": "one date resume after restore",
+                "childExpired": "one child expiry after restore"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R7": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "paged-process-candidates-pre-restart",
+              "recordSha256": "08af2c487135cd7323f40f55312c18e304af4e7fb10767e8222cd492c08e8ca5",
+              "fields": {
+                "expectedSources": "eleven process sources",
+                "pages": "four linked candidate pages"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "canonical-related-child-creation-gap",
+              "recordSha256": "8ee7ecbf5dd75749342a276dcf9815750917aaed001f1a568a76af2b8f61bee1",
+              "fields": {
+                "creationGap.ReasonCode": "missing child evidence refuses the cascade",
+                "existingChildCancellations": "no partial cascade effect",
+                "readiness": "readiness Degraded"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "paged-process-restart-and-shared-store-owner-fencing",
+              "recordSha256": "f0ae4c759f71a04400830b08d67c05745f737c75283d731449634431c7980aee",
+              "fields": {
+                "linkedPages": "pages relinked after restart",
+                "candidates": "eleven candidates",
+                "staleOwnerWriteRefused": "stale owner write refused",
+                "concurrentOwners": "one owner",
+                "<state>": "successor fence advanced"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.restoredSweep.RetainedCandidates": "restored sweep retains eleven candidates",
+                "childCancelled": "one child cancellation after restore"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R8": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "393f06d7ece0dd7ecdca4508ccea080b9f99c7f82d35dfb59a99541afcd0d95b",
+              "fields": {
+                "audit.Attempts": "one attributed audit record",
+                "acceptedCallerStatus": "authorized disposition accepted",
+                "<state>": "SDK disposition mutated after audit"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "callback-protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "69c858c58f1ed81ffb61dbaa83d322702d04dbdd7ca4d7f4b452c720fa1872a9",
+              "fields": {
+                "wrongPurpose.receiverStatus": "wrong purpose refused",
+                "wrongTenant.receiverStatus": "wrong tenant refused",
+                "wrongAggregate.receiverStatus": "wrong aggregate refused",
+                "auditOutage.receiverStatus": "audit outage refuses before mutation"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "durable-recovery-alert-export-and-clear",
+              "recordSha256": "f39c0ad6f77907426c8a177829e9d74dfc5559f4d7bfa83f8c7afd89258ab32d",
+              "fields": {
+                "<state>": "alert clears after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.restoredOperatorAuditAttempts": "restored attributed operator audit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R9": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "successful-callback-no-periodic-recovery",
+              "recordSha256": "8f197f01b084474c0dec6efa723186032c724867e31a435e2a822573b72ea7c2",
+              "fields": {
+                "processCandidate": "SDK process registration from a real callback",
+                "witness.entries": "SDK reminder registration"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-sdk-named-mode-legacy-route-refused",
+              "recordSha256": "50979dc5e4963b177d717d116f74b3d06bc92640c4bf3f3dbd7ef6756dd9aad1",
+              "fields": {
+                "legacyRouteStatus": "named-mode host serves no legacy route",
+                "missingChannelStatus": "uncredentialed request refused",
+                "<state>": "refusals leave the family unchanged"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "child-resume-noop-restart-receipt-and-checkpoint",
+              "recordSha256": "04c641139674bf82376ed52fad8e3fd02e094781000467eea929812d86dfa62a",
+              "fields": {
+                "replay.ReplayObserved": "SDK process replays after restart",
+                "replay.Disposition": "NoOp receipt",
+                "checkpoint.Checkpoint": "checkpoint advanced"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.receipt.Disposition": "restored NoOp receipt",
+                "convergence.resumedCount": "one resume"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R10": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "8f6c7863c6a80dcf9d241148a432dbc9922b7b517cd4363e9bbb40e344f5b5b6",
+              "fields": {
+                "unchangedFamily": "refused traffic leaves the persisted family unchanged",
+                "wrongPort": "direct port refused"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-two-host-ha-lost-firing-stale-callback-recovery",
+              "recordSha256": "b6007ebf53711054a8f7989261f1513935157892243cf98fea988c6db1d691d3",
+              "fields": {
+                "trust.trustedClientAcceptedByServer": "configured-root client accepted",
+                "trust.noClientCertificateRefusedByServer": "server refuses a client without a certificate",
+                "trust.foreignCaClientRefusedByServer": "server refuses a foreign-CA client",
+                "trust.nameMismatchRejectedByProbe": "probe rejects a server identity mismatch",
+                "trust.serverIdentity": "exact SPIFFE server identity"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "393f06d7ece0dd7ecdca4508ccea080b9f99c7f82d35dfb59a99541afcd0d95b",
+              "fields": {
+                "wrongTenant.receiverStatus": "receiver refuses wrong tenant after restarts",
+                "wrongAggregate.receiverStatus": "receiver refuses wrong aggregate after restarts"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "restoredConfigurationVerified": "restored trust and policy bytes verified"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R11": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "five-child-persisted-target-receipts",
+              "recordSha256": "b3469d4e0dad330af11cacd4c6ab6c53d626a5f5b85829e3a9c78e32d044a38f",
+              "fields": {
+                "<state>": "five persisted Success cascade receipts, each child cancelled once"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-query-and-explicit-receipt-replay",
+              "recordSha256": "1261a2ed59db142572557f7100173f77b3c1698945431750d2fd90453d3541bc",
+              "fields": {
+                "conflictingReplayStatus": "conflicting replay refused",
+                "durableCollisionCount": "one durable collision",
+                "attributedCollisionAudit": "attributed collision audit"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "cascade-restart-receipt-and-checkpoint",
+              "recordSha256": "42ce6cb381f9b31dddf4de7821c4b4420914538f22ae3314aa99be03a5728145",
+              "fields": {
+                "<state>": "persisted receipt names the committed effect",
+                "checkpoint.Checkpoint": "checkpoint advanced past the cascade"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "3e8cab0ad4f642355ef9e43838f852ab88d8faab02d83abed2a909f84e9a8b86",
+              "fields": {
+                "convergence.receipt.Replayed": "restored receipt replays",
+                "convergence.durableCollisionCount": "restored collision evidence"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "rollback": {
+    "complete": true,
+    "crossChecks": [
+      "restart preserves the persisted historical family",
+      "restored fleet equals the complete snapshot",
+      "restored runtime binaries equal the snapshot",
+      "retained host replays the Platform-written receipt"
+    ],
+    "evidenceSha256": "914e5411766c4bf0a8aff07fa6ea125d466b6b782320c768f3a0e0d288504cbf"
+  },
+  "starts": [
+    {
+      "role": "platform-target",
+      "readinessPassed": false,
+      "worksReadinessExpectation": "Degraded",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "retained-rollback",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": null
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works",
+        "works-ha"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        },
+        {
+          "resource": "works-ha",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "c2bd2f7e1d034fb960412c97a75ef6db0e91a5beca89cffef1b2d7c5b3cd3a65"
+        }
+      ]
+    }
+  ],
+  "phases": [
+    "periodic-writers-disabled-readiness-degraded",
+    "successful-callback-no-periodic-recovery",
+    "disabled-recovery-otlp-alert-export",
+    "callback-protected-scoped-disposition-audit-before-mutation",
+    "platform-sdk-named-mode-legacy-route-refused",
+    "platform-named-conflict-durable-quarantine-with-unchanged-family",
+    "rescheduled-expiry-committed-current-witness",
+    "cascade-expiry-target-commit-before-checkpoint",
+    "cascade-expiry-restart-receipt-and-checkpoint",
+    "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+    "canonical-related-child-creation-gap",
+    "cascade-target-commit-before-checkpoint",
+    "five-child-persisted-target-receipts",
+    "cascade-restart-receipt-and-checkpoint",
+    "child-resume-noop-receipt-before-checkpoint",
+    "paged-process-candidates-pre-restart",
+    "complete-supported-process-coverage",
+    "child-resume-noop-restart-receipt-and-checkpoint",
+    "paged-process-restart-and-shared-store-owner-fencing",
+    "protected-scoped-disposition-audit-before-mutation",
+    "platform-initial-projection-convergence",
+    "platform-named-redelivery-capture-through-commit-complete-family",
+    "platform-query-and-explicit-receipt-replay",
+    "durable-recovery-alert-export-and-clear",
+    "complete-platform-fleet-snapshot",
+    "complete-restore-retained-host-query-and-receipt-replay",
+    "platform-executor-filtering-and-origin-tenant-publish-refusals",
+    "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+    "platform-historical-restart-replay-and-family",
+    "platform-two-host-ha-lost-firing-stale-callback-recovery",
+    "platform-focused-initial-projection-convergence",
+    "platform-focused-projection-rebuild"
+  ],
+  "duplicatePhases": [],
+  "verifierSha256": "66472f5c04750402719e9f23c2ba898fd48c9ca843c100dc949cde36bae207cd",
+  "verifierHelpers": {
+    "verify_works_producer.py": "625dabafd5dd51b9ed932297eda31809a8f321749a2047ab6669ec56314d710f",
+    "test_verify_works_host.py": "8b97057d39c6b0c201d1cc0eaa8ac6729de6cd731a387faa8d67a87f6cca3470",
+    "test_verify_works_producer.py": "95ce15e8d5a6e0cd8a2ce85516f515aaf2512f64afd524d9e7cfb85613dc05e5"
+  },
+  "fixtureSources": {
+    "src/Hexalith.Works.AppHost/ProjectMetadataPaths.cs": "6bfca917d141a13f009b14eb15188ebdfcb6b93129eb4b15ae9a4273728b8209",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "6fd1ffad9f13bdd56eeaeb679b02d2c8eaf5fd418f14362f28b6d5362a8d0d90",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolation.cs": "800fc33d660b2b9cabd7db869c04a5f7af645d0576834cace503c0f9bd9cb22f",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolationTests.cs": "9a9cb529b50b38ba2c8f4a49cf7f906d224f1aec03f4a630d1a4aca05442bac6",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSelection.cs": "02024839ab8266a9e8e4b5571b06aa2698cf32b5324f93ed7e3be9e0819757d8",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "6c2e466c1f21175fd040e9d1a25440a6cf1407b1c48f29e2e8e0274cf1c4556e",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAppChannelTokens.cs": "0e94d5c03f4828a39b6c37966060766d9e4fc3d2138e304895cbb666823069b0",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAuditFault.cs": "3fd1dd45dfbf0e6e755be22e25ca696a777cb6e2c95265ebea225893cef4a122",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAuditFaultStore.cs": "14e4fb2a4aa4004dee7557b1e76eba4b5bc69ac278d65d7b21022a2a0faf260c",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformBinarySnapshot.cs": "6ed1b3f16f8f4cfb4bc0db01b3b3cecd79737337bcd8b6a014191ba33761184f",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbe.cs": "84be8fa2953f7b883321ccd0a08dd6adfccfc70807382b184ec616ffd0b8b389",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbeTests.cs": "10406f6c5b061f6f127bc99d4bf4bed0c2780f9526d638f4c4f60ff7ce736e9a",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs": "6650623afead852268ae882fb41f3cc8fb043e0b65405bdcbebbff5c783129a3",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "724f5ac8f50349de7cb9d3ec0badd29b267adf7e15311e8cbd2b112432b80ed3",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs": "af5f2d872f96fa3b384e2e088e43594a6ffcf8afe925258c7c5f6364ab45267f",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHostingCompositionTests.cs": "b90e9d4612a35ea8fee67270cc1a7ab8cd0199a9320b302b2e688b2512a66c8a",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixture.cs": "842a25bf6a2cc9d64f0606807cb66678bee848efb6f51e4c286c8e162dded915",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs": "7c6392201cc942bfdb50ead0a97aa66dd6cff35f61dfbf95f972cba3c884cee8",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformMetricPoint.cs": "7dbd648d050cfc14052363f4731a24011cb4d4b0a6c9dffcf3936602834d0321",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformOperationsChecks.cs": "3abe9a204e26cb36d1d067b9bef81ef645a9e95cda679d6458d964db55d2321d",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs": "a9ff0c0c615392eb6b05a08efba4dfbbcc14e6397dd76a9325e977e5aab568bf",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs": "b4aeb57b35250112bcbfcd1003ad297f778c3145a9473e8007399021fb177e44",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRequests.cs": "6b382e3ee7ce34f10fbeaa2f2fbca2844f117480b46e16633924da46734b1190",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRecoveryChecks.cs": "551e3ba24038aa2091e5602a0c7cac79744938926341c07d21dcada9c1a1d2d8",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformReminderCallbackProbe.cs": "2b1bcd9c887e61baba6e2893d9a679bbf47bb85bbfb99639b98ba9c3387db7f4",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs": "6985a75f2210d05719f3231d9aa324ae4c921854e34efe62a3693295127e87c4",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRuntimeArtifacts.cs": "124ac62598a91e13ec22d8b42398097348b3124eccb37c38dc3f5aae6918dd48",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformSelectedSdkPathsTests.cs": "61c5b834be2643f42deb0a5406e80d59a877dc9e83aa09d4f631a5065a4906d2",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs": "84c2e0642fba754528849b7f16b4d53ca1b144d2c8db32c172e435c55631e17e",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollectorTests.cs": "b41b8a185c5efd1e9dca70e992c32086f604ee0eab390131c210a97d4a6fdde9",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustChecks.cs": "ed7371c50fecc7e661820367f40bb8c8668da63ea409841791e045bcba6c67af",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs": "d1643fd65f33d7cc5355525ce59748d64569e501a135d1ac9a09b8d4d053d291",
+    "tests/Hexalith.Works.IntegrationTests/WorksQueryPolicyDeadlineTests.cs": "d2b313be0bc16611e0535b6680f4bf104123a17dde13446ff246f8b8d6eb0e62",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkPartitionedRebuildTests.cs": "10c8b2e8c082f951ea9cbc199d8d3e783e7f6fb6d1648c85f5c3be178310bd88",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "3603e4fd729ae58b4215af5d7d54fcff150afa7f08e76a2eafa5e720f5438fc7",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingEvidence.cs": "71a83e867d152a60efa84ede53b1f73f4779b37a32a47845eb3926865490e669",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs": "96d63cd874176b5ed2da8831f7755a38a16ac04ad763ddc842fb0bdfa53b2965",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "6a49c9d7174f5ed228b5fe0b49bdc14ab9d7b8cab919cc38f90b54d26cbd2d06",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedisOwnershipTests.cs": "bcdee6063e31a0a4937b05f4e5baaf716f10b8699f79fd06f841e321919bf257",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs": "566a411ecff9d6054d9b804a2ed1360bcbbc88018c05a06e1dd8074b091c70b0",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "63e2eb3909668bbc7c7cda25b1ba4ba4920f693f39fbb7ee8e38789a9fa2109e"
+  },
+  "platformConsumerSources": 261,
+  "worksConsumerSource": {
+    "commit": "1ab960c76c12c726862a6a25616c2ce88a0f55a0",
+    "inventorySha256": "db976fc97eadef64a636a7260f5e753e7916c642ae1d3abbe6a5343677be5d99",
+    "provenance": "owning Git checkout"
+  }
+}

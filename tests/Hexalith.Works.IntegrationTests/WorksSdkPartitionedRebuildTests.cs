@@ -157,6 +157,54 @@ public sealed class WorksSdkPartitionedRebuildTests
         _ = await Should.ThrowAsync<SharedProjectionCapacityExceededException>(() => handler.FinalizePartitionsAsync(identity, partitions, ct));
     }
 
+    [Fact]
+    public async Task Finalize_refuses_unordered_incomplete_empty_malformed_and_foreign_partitions_before_building_a_plan()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", handler.ProjectionType, "partition-refusals", "catalog");
+        async Task<ReadOnlyMemory<byte>> StateAsync(string aggregate) => (await handler.PreparePartitionChunksAsync(identity,
+            new ProjectionRequest(Tenant, "work", aggregate, [Dto(new WorkItemCreated(aggregate, 1, new TenantId(Tenant), new WorkItemId(aggregate),
+                new Obligation("refusal")), 1)]), ct).ConfigureAwait(false)).ShouldHaveSingleItem();
+        ReadOnlyMemory<byte> first = await StateAsync("owner-a");
+        ReadOnlyMemory<byte> second = await StateAsync("owner-b");
+        DomainSharedProjectionRebuildPartition A(long ordinal = 0, string aggregate = "owner-a", int chunk = 0) => new(ordinal, aggregate, first, chunk);
+        DomainSharedProjectionRebuildPartition B(long ordinal = 1, string aggregate = "owner-b", int chunk = 0) => new(ordinal, aggregate, second, chunk);
+
+        // The ordered, complete control is accepted, so every refusal below is caused by its single defect.
+        (await handler.FinalizePartitionsAsync(identity, [A(), B()], ct)).Operations.ShouldNotBeEmpty();
+
+        async Task RefusesAsync(string reason, IReadOnlyList<DomainSharedProjectionRebuildPartition> partitions)
+        {
+            InvalidOperationException refused = await Should.ThrowAsync<InvalidOperationException>(() => handler.FinalizePartitionsAsync(identity, partitions, ct)).ConfigureAwait(false);
+            refused.Message.ShouldContain(reason);
+        }
+
+        const string Ordering = "not ordered and unique";
+        await RefusesAsync(Ordering, [B(), A(ordinal: 2)]);
+        await RefusesAsync(Ordering, [A(ordinal: 1), B(ordinal: 0)]);
+        await RefusesAsync(Ordering, [A(), A(ordinal: 1)]);
+        await RefusesAsync(Ordering, [A(aggregate: " ")]);
+        await RefusesAsync(Ordering, [A(ordinal: -1)]);
+
+        const string Chunks = "owner chunks are invalid or incomplete";
+        await RefusesAsync(Chunks, [A(chunk: 1)]);
+        await RefusesAsync(Chunks, [A(), A(chunk: 2)]);
+        await RefusesAsync(Chunks, [A(), A(aggregate: "owner-b", chunk: 1)]);
+        await RefusesAsync(Chunks, [new DomainSharedProjectionRebuildPartition(0, "owner-a", ReadOnlyMemory<byte>.Empty, 0)]);
+        await RefusesAsync(Chunks, [new DomainSharedProjectionRebuildPartition(0, "owner-a", new byte[WorkItemRuntimeHistoryStore.PageBytes + 1], 0)]);
+
+        await RefusesAsync("partition is empty", [new DomainSharedProjectionRebuildPartition(0, "owner-a", "null"u8.ToArray(), 0)]);
+        await RefusesAsync("partition is malformed", [new DomainSharedProjectionRebuildPartition(0, "owner-a", "{"u8.ToArray(), 0)]);
+        await RefusesAsync("partition is malformed", [A(), new DomainSharedProjectionRebuildPartition(0, "owner-a", "not-json"u8.ToArray(), 1)]);
+
+        const string Foreign = "foreign identity or missing history";
+        await RefusesAsync(Foreign, [new DomainSharedProjectionRebuildPartition(0, "owner-a", second, 0)]);
+        System.Text.Json.Nodes.JsonObject withoutEvents = System.Text.Json.Nodes.JsonNode.Parse(first.Span)!.AsObject();
+        withoutEvents.Remove(withoutEvents.Single(property => string.Equals(property.Key, "events", StringComparison.OrdinalIgnoreCase)).Key).ShouldBeTrue();
+        await RefusesAsync(Foreign, [new DomainSharedProjectionRebuildPartition(0, "owner-a", JsonSerializer.SerializeToUtf8Bytes(withoutEvents), 0)]);
+    }
+
     private static ProjectionEventDto Dto(IEventPayload payload, long sequence) => new(payload.GetType().Name,
         JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()), "json", sequence, DateTimeOffset.UnixEpoch, "partition-proof", GlobalPosition: sequence * 10);
 }

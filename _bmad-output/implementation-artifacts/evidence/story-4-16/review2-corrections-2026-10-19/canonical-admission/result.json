@@ -1,0 +1,2162 @@
+{
+  "scope": "Story 4.16 review iteration 2: canonical Platform Works parity and complete fleet rollback on the corrected graph; disposable synthetic data only",
+  "checkedUtc": "2026-10-19T07:25:17.735962+00:00",
+  "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-review2-canonical2",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "startedUtc": "2026-10-19T07:00:21Z",
+  "finishedUtc": "2026-10-19T07:24:22Z",
+  "exitCode": 0,
+  "status": "passed-disposable-synthetic-parity-and-rollback",
+  "failure": null,
+  "selectedSdk": {
+    "version": "3.125.1",
+    "catalog": "/home/administrator/projects/hexalith/platform/references/Hexalith.Builds/Props/Directory.Packages.props",
+    "catalogSha256": "0439d2f595339f278f31d7f05628e9c0912b0caad85d78cff3a59c004ecd1eb3",
+    "worksConsumerPins": {
+      "Directory.Build.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Build.props",
+        "version": "3.125.1",
+        "sha256": "eefa298cecae747e49d5b872789b6caccf985a284379e2505194b717442f3897"
+      },
+      "Directory.Packages.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+        "version": "3.125.1",
+        "sha256": "9a4cec9da19656320373a4260f96bc83a2afad6d195f72bf20584206edbb999b"
+      }
+    },
+    "hostPackagePins": {
+      "path": "/home/administrator/projects/hexalith/platform/apphost.cs",
+      "version": "3.125.1",
+      "packages": [
+        "Hexalith.EventStore.Aspire",
+        "Hexalith.EventStore.ServiceDefaults"
+      ],
+      "sha256": "84cb495efe328a9ef475fa1218d6ececceea0ba52344f19b117667269be38e00"
+    }
+  },
+  "runtimeProducerQualification": {
+    "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+    "qualification": "official-commit-tree-and-exact-git-blob-identities",
+    "runtimeFileCount": 2102,
+    "matchesPublishedProducer": true,
+    "namedTag": {
+      "tag": "v3.125.1",
+      "commit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+      "receipts": [
+        {
+          "url": "https://api.github.com/repos/Hexalith/Hexalith.EventStore/git/ref/tags/v3.125.1",
+          "responseSha256": "5a088512b7586682cedc26480bcbc5a565b169e5760bcbbafc86655f0fce5db6",
+          "ref": "refs/tags/v3.125.1"
+        }
+      ]
+    }
+  },
+  "checks": {
+    "agentsFull": "expected-unavailable; not a Works prerequisite",
+    "Debug": {
+      "total": 107,
+      "passed": 107,
+      "skipped": 0,
+      "sha256": "42a23c23298ec5a25dcde9f3fdb1323694602273cc967d1dcd0f82e3bbdba99d"
+    },
+    "Release": {
+      "total": 107,
+      "passed": 107,
+      "skipped": 0,
+      "sha256": "f5f659d8a9a6d824f4426f94e0e6c3d98e7fba47512b667f4e1151b0d1f38555"
+    },
+    "supportingConsumer": {
+      "total": 231,
+      "passed": 231,
+      "skipped": 0,
+      "sha256": "dafee7f68bbb5519f553069d7e5563978975aa957f06aa48dcd880f4e786e5f8"
+    },
+    "liveRecovery": {
+      "total": 4,
+      "passed": 4,
+      "skipped": 0,
+      "sha256": "15984f11dd6fdd5269b06ee9af3aec339b19d4353fe81399c5b10045612a9277"
+    },
+    "liveHistorical": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "82ea78a59b1758e545e94ad59f11901ca909a0b7dcbbcbe9aa13495e457d38a2"
+    },
+    "liveHa": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "95a0d8438a664dc41719a937054e25a42e9bd221268204955c15990c8aec16dd"
+    },
+    "liveProjection": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "0c689ad0958e9e98df9849721b05e1b0e5dea8323993c6f6619b26d54fe08826"
+    }
+  },
+  "commands": [
+    {
+      "name": "evidence-gate-tests",
+      "exitCode": 0,
+      "log": "evidence-gate-tests.log",
+      "sha256": "b3025cd255ed16b097e17dd2d2ebf65d237d12ad6fed8d7e803d6027d92c6a10"
+    },
+    {
+      "name": "agents-full-refusal",
+      "exitCode": 1,
+      "log": "agents-full-refusal.log",
+      "sha256": "6de80aeac6869e36cc247ea60e64efbbeb53cb9122e02dea27d3cd4dc917ca65"
+    },
+    {
+      "name": "agents-local-scaffold",
+      "exitCode": 0,
+      "log": "agents-local-scaffold.log",
+      "sha256": "5fa9bf89a64f62882dae994505390751a904fe40bad3d28ec6ea27d24c9c665a"
+    },
+    {
+      "name": "platform-tests-build-debug",
+      "exitCode": 0,
+      "log": "platform-tests-build-debug.log",
+      "sha256": "6774fd44bb3285b360cc89cee303320821004df1dae58c1793adbb67f34135e7"
+    },
+    {
+      "name": "platform-tests-debug",
+      "exitCode": 0,
+      "log": "platform-tests-debug.log",
+      "sha256": "6761e207a7b76ec55af04bdb0075ccc1bd6a6999a00a97cad02803d8f01cafb9"
+    },
+    {
+      "name": "platform-tests-build-release",
+      "exitCode": 0,
+      "log": "platform-tests-build-release.log",
+      "sha256": "cc31c063a1d57c54625cfed525a9ae805f03d68e620e1547b4ea2020343c681c"
+    },
+    {
+      "name": "platform-tests-release",
+      "exitCode": 0,
+      "log": "platform-tests-release.log",
+      "sha256": "26d3c82c14437cb7ec3e211920f41e2e472776ff55f72f49ad3c591b603ae307"
+    },
+    {
+      "name": "platform-file-host-release",
+      "exitCode": 0,
+      "log": "platform-file-host-release.log",
+      "sha256": "ca94301417ea0f916868e84e0c306152a3dd1d11afaab60b055fc5d2589c2635"
+    },
+    {
+      "name": "works-consumer-debug",
+      "exitCode": 0,
+      "log": "works-consumer-debug.log",
+      "sha256": "7fbc77412cb9bb86a99711ee8184b948e89d3e421a3f8fc0324eb9575efde074"
+    },
+    {
+      "name": "works-consumer-release",
+      "exitCode": 0,
+      "log": "works-consumer-release.log",
+      "sha256": "ca273df5f94276a8aacef3279fc6f944503bd34c7b40c5115a477182ec4b80ea"
+    },
+    {
+      "name": "works-consumer-supporting",
+      "exitCode": 0,
+      "log": "works-consumer-supporting.log",
+      "sha256": "0ca599ad1c2980f1fa9587b8b127dcd4e957088ec84d5ed89bab8cdd448d3d1f"
+    },
+    {
+      "name": "runtime-release-prebuild-0",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-0.log",
+      "sha256": "a6de4eca13de89b022c01045d8d87d909aab6e5a8e5f19eac84b4689dc0fe040"
+    },
+    {
+      "name": "runtime-release-prebuild-1",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-1.log",
+      "sha256": "01809af4c53d09fb7af220cf3e4f86c07193f6c353a256677b1bd1a4804fba68"
+    },
+    {
+      "name": "runtime-release-prebuild-2",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-2.log",
+      "sha256": "a5a77277384dd2116062e8e1971fef027a05679a5bfd7b6f64a124af59ecc8d7"
+    },
+    {
+      "name": "runtime-release-prebuild-3",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-3.log",
+      "sha256": "d3853c7e2ba71df0292d4971f56ade6f1551a8439f46ada6e681beb8e44547fc"
+    },
+    {
+      "name": "runtime-release-prebuild-4",
+      "exitCode": 0,
+      "log": "runtime-release-prebuild-4.log",
+      "sha256": "113c005567bf5c356eee33370084499abb85a85386b0c1a0341bad8a9cfdb404"
+    },
+    {
+      "name": "platform-recovery",
+      "exitCode": 0,
+      "log": "platform-recovery.log",
+      "sha256": "084c097967a1814eeff02678ed09e2fff52ff7376f22a6f9796f0741870bca94"
+    },
+    {
+      "name": "platform-historical",
+      "exitCode": 0,
+      "log": "platform-historical.log",
+      "sha256": "645879638dc48faa0c8cebcaf3845ee91f4f43ab4ee09f45df236be30cda07d3"
+    },
+    {
+      "name": "platform-ha",
+      "exitCode": 0,
+      "log": "platform-ha.log",
+      "sha256": "f7d9209125760d4c8198c4fb49f6633f9a7962262b30ae170abf1265472d9396"
+    },
+    {
+      "name": "platform-projection",
+      "exitCode": 0,
+      "log": "platform-projection.log",
+      "sha256": "d7047e80a0cd471f4393a8c5f3fc20853ec5037c024884a6f998c5f416579c1c"
+    }
+  ],
+  "rows": {
+    "R1": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+              "recordSha256": "1f9d65f97161d1a7ce2cb2df64519944bff422b694cbacca6e838fa49597b3de",
+              "fields": {
+                "familyDigest": "SHA-256 family digest",
+                "claimOutcomes": "two concurrent claims",
+                "lifecycle.Events": "complete seven-event lifecycle",
+                "replay.Status": "replayed Completed"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "80ddfa80e9a0ac21ecd316f85a7976d528b93ff558ba4e901bacc52dc4a5bb10",
+              "fields": {
+                "wrongCaller": "wrong caller refused",
+                "wrongPort": "direct application port refused",
+                "forbiddenPublish": "forbidden publisher refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-historical-restart-replay-and-family",
+              "recordSha256": "1e661ce1576963e4ac0cfbdaedccea158a63f65b281c4d927cf0b4d953d78073",
+              "fields": {
+                "completed": "lifecycle replays Completed after restart",
+                "claimCount": "one claim after restart",
+                "familyDigest": "family digest after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.query.found": "retained host query finds the item",
+                "convergence.queryIdentity": "retained host query is a delegated Executor query",
+                "restoredConfigurationVerified": "restored configuration bytes verified"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R2": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-supported-process-coverage",
+              "recordSha256": "f90d661b4f25573f2af2429516639acd917fa3bc83f00171f7f96419a152899c",
+              "fields": {
+                "Complete": "complete recovery sweep",
+                "Unresolved": "zero unresolved",
+                "RetainedCandidates": "twelve retained candidates"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "periodic-writers-disabled-readiness-degraded",
+              "recordSha256": "7d7a2f53bcb6f26d2938625ad3c61cc365405b255a47e46fabd77ccc4e1d92e2",
+              "fields": {
+                "status": "SDK readiness Degraded with periodic writers disabled"
+              }
+            },
+            {
+              "phase": "disabled-recovery-otlp-alert-export",
+              "recordSha256": "7d59f6e478881c8424d8483816b8fca65474e8b96c3b36e9575525b5c1bc8f35",
+              "fields": {
+                "<state>": "OTLP recovery alert raised"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "durable-recovery-alert-export-and-clear",
+              "recordSha256": "ec82388472bd416d2194dcc75435ed1f24c77211c0f59c666c5e935c1b961368",
+              "fields": {
+                "<state>": "recovery alert clears after its last raise, after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.restoredSweep.Complete": "restored sweep complete",
+                "convergence.restoredSweep.Unresolved": "restored sweep has zero unresolved"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R3": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-redelivery-capture-through-commit-complete-family",
+              "recordSha256": "cc019ff51a06cfdb3183efb83022ed40a2d93bd91d89d05885156467db2f4697",
+              "fields": {
+                "redelivered.Outcomes.0.Status": "redelivery Completed or AlreadyCompleted",
+                "concurrentDelivery.redeliveryLogicalCount": "one logical redelivery",
+                "queryIdentity": "rebuild queries are delegated Executor queries",
+                "<state>": "redelivery and capture preserve the family digest"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-conflict-durable-quarantine-with-unchanged-family",
+              "recordSha256": "0749b19381c21b9934ac39ec766dce8fb29f8c95aab0b5a94d9ff60192f313a9",
+              "fields": {
+                "<state>": "conflict leaves the accepted family unchanged",
+                "repeatedConflictCount": "repeated conflict keeps one evidence record",
+                "queryIdentity": "the refused query is a delegated Executor query",
+                "conflict.SourceStream": "durable conflict evidence"
+              }
+            },
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "80ddfa80e9a0ac21ecd316f85a7976d528b93ff558ba4e901bacc52dc4a5bb10",
+              "fields": {
+                "forbiddenPublish": "forbidden origin publish refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-initial-projection-convergence",
+              "recordSha256": "b53eab982b300711e57a99c2d62b2b06363a2112419316b7cef377edcae39b6d",
+              "fields": {
+                "naturalCatchUp": "natural catch-up after restarts",
+                "heads": "all twelve owner/global heads converged"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.receipt.Replayed": "retained host replays the receipt"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R4": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-focused-projection-rebuild",
+              "recordSha256": "43a7ea356b5accf111edc31647a342c20bbd26d8133ec41902c80bdd32dab688",
+              "fields": {
+                "concurrentDelivery.automaticCatchUpAfterCommit": "automatic catch-up after Commit",
+                "concurrentDelivery.oldGenerationStayedReadable": "old generation readable during capture",
+                "<state>": "committed family equals the independent fold",
+                "queryIdentity": "focused rebuild queries are delegated Executor queries",
+                "sources": "eleven captured sources",
+                "committed.Phase": "rebuild Committed"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-named-redelivery-capture-through-commit-complete-family",
+              "recordSha256": "cc019ff51a06cfdb3183efb83022ed40a2d93bd91d89d05885156467db2f4697",
+              "fields": {
+                "fenced.Outcomes.0.Status": "delivery during capture is fenced Retryable",
+                "negatives.wrongOrigin": "wrong origin refused",
+                "negatives.wrongOperation": "wrong operation refused"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-initial-projection-convergence",
+              "recordSha256": "b53eab982b300711e57a99c2d62b2b06363a2112419316b7cef377edcae39b6d",
+              "fields": {
+                "heads": "named projection heads converge after restarts"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.query.conversationCorrelationId.value": "restored family includes the post-capture event",
+                "convergence.queryIdentity": "restored family read by a delegated Executor query"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R5": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "80ddfa80e9a0ac21ecd316f85a7976d528b93ff558ba4e901bacc52dc4a5bb10",
+              "fields": {
+                "own.found": "executor reads own item",
+                "visible": "executor queue view",
+                "queryIdentity": "historical queries are delegated Executor queries"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "80ddfa80e9a0ac21ecd316f85a7976d528b93ff558ba4e901bacc52dc4a5bb10",
+              "fields": {
+                "hidden.found": "foreign item filtered",
+                "wrongActor": "wrong actor denied",
+                "wrongTenant": "wrong tenant denied"
+              }
+            },
+            {
+              "phase": "platform-query-and-explicit-receipt-replay",
+              "recordSha256": "f8f713bb22a8df9c79538f21615f66ef7ba23fcf87e8bbd3d3024d915dda2570",
+              "fields": {
+                "nonDelegatedFullTenantQuery.error": "non-delegated full-tenant query refused",
+                "nonDelegatedFullTenantQuery.isDelegated": "the refused query carried no delegated identity",
+                "nonDelegatedFullTenantQuery.authenticatedWorkloadId": "refused under the composed gateway workload",
+                "nonDelegatedFullTenantQuery.identityCalls": "refused before any identity resolution"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-query-and-explicit-receipt-replay",
+              "recordSha256": "f8f713bb22a8df9c79538f21615f66ef7ba23fcf87e8bbd3d3024d915dda2570",
+              "fields": {
+                "query.found": "query usable after restarts",
+                "query.latestAcceptedSourceSequence": "query reflects accepted source",
+                "queryIdentity": "restart query is a delegated Executor query"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.query.found": "retained host query usable",
+                "convergence.queryIdentity": "retained host query is a delegated Executor query"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R6": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "successful-callback-no-periodic-recovery",
+              "recordSha256": "cfae5caae1f62f8380521bf5549f0e9fcf04d76a489e34929aeeba19e344b951",
+              "fields": {
+                "witness.entries": "persisted SDK reminder witness",
+                "processCandidate": "process candidate persisted"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-two-host-ha-lost-firing-stale-callback-recovery",
+              "recordSha256": "1f8f3adea3bd81407dab359a98a00ebd52f8fae748d41330935055bf3e14938c",
+              "fields": {
+                "actualStaleCallbackObserved": "stale Scheduler callback observed",
+                "staleSchedulerFireResumed": "stale firing caused no second resume",
+                "retiredReminderRemovedAfterFiring": "retired reminder removed",
+                "<state>": "a real callback fired"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "cascade-expiry-restart-receipt-and-checkpoint",
+              "recordSha256": "b5127cbf1a44c2ff9249eced147d4a0d2b2a85b0b3d1403b8c0b9fa4f98cf4aa",
+              "fields": {
+                "replay.ReplayObserved": "lost receipt replayed after restart",
+                "childExpired": "one child expiry",
+                "expiryReceipt.disposition": "expiry receipt Success"
+              }
+            },
+            {
+              "phase": "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+              "recordSha256": "a4014c109c1eacc136cd73a2f03bfb79559bba987885e89a0373685007cb0bfe",
+              "fields": {
+                "callers": "two concurrent reissuers",
+                "persistedSchedulerReminder.actorType": "reissued SDK reminder persisted"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "dateResumed": "one date resume after restore",
+                "childExpired": "one child expiry after restore"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R7": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "paged-process-candidates-pre-restart",
+              "recordSha256": "337979e765e44bf086e0bd541e39c7bb319f371e9832d1cd79c27ba5fb043157",
+              "fields": {
+                "expectedSources": "twelve process sources",
+                "pages": "four linked candidate pages"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "canonical-related-child-creation-gap",
+              "recordSha256": "3468927345742bc7f968c347a5be79f0bf8d63b55199ce577add19c1716cd1e3",
+              "fields": {
+                "creationGap.ReasonCode": "missing child evidence refuses the cascade",
+                "existingChildCancellations": "no partial cascade effect",
+                "readiness": "readiness Degraded"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "paged-process-restart-and-shared-store-owner-fencing",
+              "recordSha256": "65993d552ac187c03b8bdfde8cbbd657c14264617943b5725c64a78dc1ffb2fe",
+              "fields": {
+                "linkedPages": "pages relinked after restart",
+                "candidates": "twelve candidates",
+                "staleOwnerWriteRefused": "stale owner write refused",
+                "concurrentOwners": "one owner",
+                "<state>": "successor fence advanced"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.restoredSweep.RetainedCandidates": "restored sweep retains twelve candidates",
+                "childCancelled": "one child cancellation after restore"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R8": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "d5c0bede158961f5dc8c16e0b01a67df0d770788ab8ebbf899eca0bdbdab7ad1",
+              "fields": {
+                "audit.Attempts": "one attributed audit record",
+                "acceptedCallerStatus": "authorized disposition accepted",
+                "<state>": "SDK disposition mutated after audit"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "callback-protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "edbf0caf7c57a02ca265beecfcc5fc7a949c89347c709a379baddceef11c8794",
+              "fields": {
+                "wrongPurpose.receiverStatus": "wrong purpose refused",
+                "wrongTenant.receiverStatus": "wrong tenant refused",
+                "wrongAggregate.receiverStatus": "wrong aggregate refused",
+                "auditOutage.receiverStatus": "audit outage refuses before mutation"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "durable-recovery-alert-export-and-clear",
+              "recordSha256": "ec82388472bd416d2194dcc75435ed1f24c77211c0f59c666c5e935c1b961368",
+              "fields": {
+                "<state>": "alert clears after its last raise, after restart"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.restoredOperatorAuditAttempts": "restored attributed operator audit"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R9": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "successful-callback-no-periodic-recovery",
+              "recordSha256": "cfae5caae1f62f8380521bf5549f0e9fcf04d76a489e34929aeeba19e344b951",
+              "fields": {
+                "processCandidate": "SDK process registration from a real callback",
+                "witness.entries": "SDK reminder registration"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-sdk-named-mode-legacy-route-refused",
+              "recordSha256": "9b72168d10c8cade3d6dfe3f5c88ba5326ae8766eaaa3357193b2fb5fdffe721",
+              "fields": {
+                "legacyRouteStatus": "named-mode host serves no legacy route",
+                "missingChannelStatus": "uncredentialed request refused",
+                "<state>": "refusals leave the family unchanged"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "child-resume-noop-restart-receipt-and-checkpoint",
+              "recordSha256": "f7c813682887242988f65e2a74361efcbd2029aaab4b61274d8b3595b74e941b",
+              "fields": {
+                "replay.ReplayObserved": "SDK process replays after restart",
+                "replay.Disposition": "NoOp receipt",
+                "checkpoint.Checkpoint": "checkpoint advanced"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.receipt.Disposition": "restored NoOp receipt",
+                "convergence.resumedCount": "one resume"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R10": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-executor-filtering-and-origin-tenant-publish-refusals",
+              "recordSha256": "80ddfa80e9a0ac21ecd316f85a7976d528b93ff558ba4e901bacc52dc4a5bb10",
+              "fields": {
+                "unchangedFamily": "refused traffic leaves the persisted family unchanged",
+                "wrongPort": "direct port refused"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-two-host-ha-lost-firing-stale-callback-recovery",
+              "recordSha256": "1f8f3adea3bd81407dab359a98a00ebd52f8fae748d41330935055bf3e14938c",
+              "fields": {
+                "trust.trustedClientAcceptedByServer": "configured-root client accepted",
+                "trust.noClientCertificateRefusedByServer": "server refuses a client without a certificate",
+                "trust.foreignCaClientRefusedByServer": "server refuses a foreign-CA client",
+                "trust.nameMismatchRejectedByProbe": "probe rejects a server identity mismatch",
+                "trust.serverIdentity": "exact SPIFFE server identity"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "protected-scoped-disposition-audit-before-mutation",
+              "recordSha256": "d5c0bede158961f5dc8c16e0b01a67df0d770788ab8ebbf899eca0bdbdab7ad1",
+              "fields": {
+                "wrongTenant.receiverStatus": "receiver refuses wrong tenant after restarts",
+                "wrongAggregate.receiverStatus": "receiver refuses wrong aggregate after restarts"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "restoredConfigurationVerified": "restored trust and policy bytes verified"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "R11": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "five-child-persisted-target-receipts",
+              "recordSha256": "b68ca0f95f9149cbafe65c8ae839f71c4932af5f8ae33dcf7a2b74b3a88b076a",
+              "fields": {
+                "<state>": "five persisted Success cascade receipts, each child cancelled once"
+              }
+            }
+          ]
+        },
+        "negative": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "platform-query-and-explicit-receipt-replay",
+              "recordSha256": "f8f713bb22a8df9c79538f21615f66ef7ba23fcf87e8bbd3d3024d915dda2570",
+              "fields": {
+                "conflictingReplayStatus": "conflicting replay refused",
+                "durableCollisionCount": "one durable collision",
+                "attributedCollisionAudit": "attributed collision audit"
+              }
+            }
+          ]
+        },
+        "restart": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "cascade-restart-receipt-and-checkpoint",
+              "recordSha256": "2c157670a292a28cda89abed116cc258c06ba40b7337fd84305307b2046dc8d9",
+              "fields": {
+                "<state>": "persisted receipt names the committed effect",
+                "checkpoint.Checkpoint": "checkpoint advanced past the cascade"
+              }
+            }
+          ]
+        },
+        "rollback": {
+          "passed": true,
+          "evidence": [
+            {
+              "phase": "complete-restore-retained-host-query-and-receipt-replay",
+              "recordSha256": "e149c74b07f6c04a67cfdd79c139ad69d3b09b9d44541849bc675810d6b1dd11",
+              "fields": {
+                "convergence.receipt.Replayed": "restored receipt replays",
+                "convergence.durableCollisionCount": "restored collision evidence"
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "rollback": {
+    "complete": true,
+    "crossChecks": [
+      "restart preserves the persisted historical family",
+      "restored fleet equals the complete snapshot",
+      "restored runtime binaries equal the snapshot",
+      "retained host replays the Platform-written receipt"
+    ],
+    "evidenceSha256": "2fd42656d605ee6658fb6363c896216fde211bfcbc1b728faa96e76341ff42f1"
+  },
+  "starts": [
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-b01a3bdf003848cfb05bd545f91155d6",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_ENDPOINT",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_PROTOCOL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_METRIC_EXPORT_INTERVAL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-b01a3bdf003848cfb05bd545f91155d6",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_ENDPOINT",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_PROTOCOL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_METRIC_EXPORT_INTERVAL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-b01a3bdf003848cfb05bd545f91155d6",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_ENDPOINT",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_PROTOCOL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_METRIC_EXPORT_INTERVAL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-b01a3bdf003848cfb05bd545f91155d6",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_ENDPOINT",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_PROTOCOL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_METRIC_EXPORT_INTERVAL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "retained-rollback",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": null,
+      "platformComposition": null,
+      "schedulerVolume": "works-sdk416-b01a3bdf003848cfb05bd545f91155d6",
+      "compositionGuard": {}
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": false,
+      "worksReadinessExpectation": "Degraded",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-4057ecea7eef46b0bdafd5649bba5563",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_ENDPOINT",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_EXPORTER_OTLP_PROTOCOL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            },
+            {
+              "key": "OTEL_METRIC_EXPORT_INTERVAL",
+              "rule": "redirects-otlp-export-to-owned-loopback-collector"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-d67f30d70d114dd18941b80d2436194d",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-d67f30d70d114dd18941b80d2436194d",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works",
+        "works-ha"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        },
+        {
+          "resource": "works-ha",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "works-ha": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        }
+      },
+      "schedulerVolume": "works-sdk416-4b6cffea1b924d6cbed92b225769a51e",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    },
+    {
+      "role": "platform-target",
+      "readinessPassed": true,
+      "worksReadinessExpectation": "Healthy",
+      "modules": [
+        "eventstore",
+        "eventstore-admin",
+        "eventstore-operations",
+        "works"
+      ],
+      "platformHosting": [
+        {
+          "resource": "works",
+          "hostingStartupAssemblies": [
+            "Hexalith.Platform.Works.Runtime",
+            "Hexalith.Works.IntegrationTests"
+          ],
+          "platformHostingStartupSha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f"
+        }
+      ],
+      "platformComposition": {
+        "eventstore": {
+          "DOTNET_ENVIRONMENT": "Development",
+          "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+          "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+          "EventStore__RateLimiting__PermitLimit": "8192",
+          "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+        },
+        "works": {
+          "Authentication__Workload__AllowedCallers__0": "eventstore",
+          "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+          "DOTNET_ENVIRONMENT": "Development",
+          "Works__Projection__UseSdkDelivery": "true",
+          "Works__Recovery__UseSdkRuntime": "true"
+        },
+        "eventstore-operations": {
+          "DOTNET_ENVIRONMENT": "Development"
+        },
+        "eventstore-admin": {
+          "DOTNET_ENVIRONMENT": "Development"
+        }
+      },
+      "schedulerVolume": "works-sdk416-8a7d4557b3a348bf9984379c6a46fe4b",
+      "compositionGuard": {
+        "eventstore": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development",
+            "EventStore__RateLimiting__ConsumerPermitLimit": "8192",
+            "EventStore__RateLimiting__ConsumerPermitLimits__anonymous": "8192",
+            "EventStore__RateLimiting__PermitLimit": "8192",
+            "EventStore__RateLimiting__TenantPermitLimits__anonymous": "8192"
+          }
+        },
+        "eventstore-admin": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "eventstore-operations": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            }
+          ],
+          "composition": {
+            "DOTNET_ENVIRONMENT": "Development"
+          }
+        },
+        "works": {
+          "permittedOverlaps": [
+            {
+              "key": "APP_API_TOKEN",
+              "rule": "captured-restorable-synthetic-secret"
+            },
+            {
+              "key": "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+              "rule": "extends-composed-list"
+            },
+            {
+              "key": "DOTNET_STARTUP_HOOKS",
+              "rule": "extends-composed-list"
+            }
+          ],
+          "composition": {
+            "Authentication__Workload__AllowedCallers__0": "eventstore",
+            "Authentication__Workload__AllowedCallers__1": "eventstore-admin",
+            "DOTNET_ENVIRONMENT": "Development",
+            "Works__Projection__UseSdkDelivery": "true",
+            "Works__Recovery__UseSdkRuntime": "true"
+          }
+        }
+      }
+    }
+  ],
+  "platformRuntimeIdentity": {
+    "hostOutput": "/tmp/story416-review2-canonical2/host/bin/release/Hexalith.Platform.Works.Runtime.dll",
+    "consumer": "/tmp/story416-review2-canonical2/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Platform.Works.Runtime.dll",
+    "sha256": "4bdcb8eb1e4bf7ccfd9eeff56ee4db73d258f9ccfe9563db7ecac205c8a2a58f",
+    "identical": true,
+    "deterministicBuildRoot": "/_/hexalith-works-platform-build"
+  },
+  "phases": [
+    "rescheduled-expiry-committed-current-witness",
+    "cascade-expiry-target-commit-before-checkpoint",
+    "cascade-expiry-restart-receipt-and-checkpoint",
+    "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+    "canonical-related-child-creation-gap",
+    "cascade-target-commit-before-checkpoint",
+    "five-child-persisted-target-receipts",
+    "cascade-restart-receipt-and-checkpoint",
+    "child-resume-noop-receipt-before-checkpoint",
+    "paged-process-candidates-pre-restart",
+    "complete-supported-process-coverage",
+    "child-resume-noop-restart-receipt-and-checkpoint",
+    "paged-process-restart-and-shared-store-owner-fencing",
+    "protected-scoped-disposition-audit-before-mutation",
+    "platform-initial-projection-convergence",
+    "platform-named-redelivery-capture-through-commit-complete-family",
+    "platform-query-and-explicit-receipt-replay",
+    "durable-recovery-alert-export-and-clear",
+    "complete-platform-fleet-snapshot",
+    "complete-restore-retained-host-query-and-receipt-replay",
+    "periodic-writers-disabled-readiness-degraded",
+    "successful-callback-no-periodic-recovery",
+    "disabled-recovery-otlp-alert-export",
+    "callback-protected-scoped-disposition-audit-before-mutation",
+    "platform-sdk-named-mode-legacy-route-refused",
+    "platform-named-conflict-durable-quarantine-with-unchanged-family",
+    "platform-executor-filtering-and-origin-tenant-publish-refusals",
+    "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+    "platform-historical-restart-replay-and-family",
+    "platform-two-host-ha-lost-firing-stale-callback-recovery",
+    "platform-focused-initial-projection-convergence",
+    "platform-focused-projection-rebuild"
+  ],
+  "duplicatePhases": [],
+  "verifierSha256": "c2cf8549a1a4831c8007fc91c0274c86ad63d1470a06709540e074b940560a82",
+  "verifierHelpers": {
+    "verify_works_producer.py": "625dabafd5dd51b9ed932297eda31809a8f321749a2047ab6669ec56314d710f",
+    "test_verify_works_host.py": "10a8c9dae89a6facac603ab99615cdb73edc2e44ef8d11f164668a9f8633ab7b",
+    "test_verify_works_producer.py": "95ce15e8d5a6e0cd8a2ce85516f515aaf2512f64afd524d9e7cfb85613dc05e5"
+  },
+  "fixtureSources": {
+    "src/Hexalith.Works.AppHost/ProjectMetadataPaths.cs": "a2ea7b404dd4ae415626d4c274cc59901ab424423347b0809166400b172bf1d1",
+    "tests/Hexalith.Works.IntegrationTests/AwaitConditionSerializationContractFlowTests.cs": "22df89cbb762dadeb54ee61fca3ec452eb20ab65f005ad5f5caa227e2cad5d2f",
+    "tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs": "ab305f5964a57b98a1a00b8ca6f24a71be1a3eb99952bf7dc945dc766edb3f79",
+    "tests/Hexalith.Works.IntegrationTests/CascadeDispatcherPacingTests.cs": "ae6aca73101498669311e909ebe6784e43c6a78ce1fef5e7d66fccdbd2b01970",
+    "tests/Hexalith.Works.IntegrationTests/CascadeRecoveryRuntimeTests.cs": "bf4e96768979ebf30fbdca7a82c35f808395e3c059a2cc0607acd55b14ad7efd",
+    "tests/Hexalith.Works.IntegrationTests/ChildCompletionEventHandlerTests.cs": "f314db4ca51b43d49896222f7aaf0218c0600d7234e7cc4642b8930c657267fb",
+    "tests/Hexalith.Works.IntegrationTests/ConflictInjectingActorStateManager.cs": "b69227c8479da3c2d8dd04d067cfa0828d094e4bd0ba1e03d7146d7d6168fdc9",
+    "tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs": "f15f274f83fe0c024901b77ccce5fa76cf681df615ceebaaf440330149577476",
+    "tests/Hexalith.Works.IntegrationTests/DateReminderRegistrationSerializationTests.cs": "ea8a74a49f83fd6c97edbd5c311d8be93688f84b00fcec1e1b7c0b8b18a18f7c",
+    "tests/Hexalith.Works.IntegrationTests/DiscoveryBlockedReadModelStore.cs": "8658b5ab6466d274a5749ff2f2b6829a485366c0f629bbc0d2aa43556a6c700b",
+    "tests/Hexalith.Works.IntegrationTests/EnvelopeCanonicalSequencingTests.cs": "972d66ced5f829745bed046053f9885c80b6465a3dd3705b3d8521897ece79ab",
+    "tests/Hexalith.Works.IntegrationTests/EventStoreAdminResponseContractTests.cs": "9af3e0641c8d40abccfea2a4c0fa183440346ffc5521b8f7b7a5e8950b56c56a",
+    "tests/Hexalith.Works.IntegrationTests/EventStoreOperationsTests.cs": "5417f00d19b6c750b567c2b7cdad0572377ace8a1da0e6a1110687c11de77a02",
+    "tests/Hexalith.Works.IntegrationTests/GetWorkItemQueryHandlerTests.cs": "da3f464a65584016f31a7b8c0e9d80bcf74ea782b8d64315cf935961b7a6af92",
+    "tests/Hexalith.Works.IntegrationTests/HangingSchedulerVolumeProbe.cs": "88ebbe299080f80376b667e8859e2ecb12dd3bba5e4c4274cb74af77810cd195",
+    "tests/Hexalith.Works.IntegrationTests/ISchedulerVolumeProbe.cs": "d98eadc9d3fdb8f9b9e831cb21d7e013413c65b872ecd2b81ec7a99a32bef6d0",
+    "tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs": "c6142eab3fd6f6fb06efd6e0402edaedc26fde5600eea70137d7cc0ccf47264d",
+    "tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs": "11790fa599ea10e64b52ca3ee11ec1647f3b9ca1f9e0e66daca442a673b5b27c",
+    "tests/Hexalith.Works.IntegrationTests/OriginAuditUnavailableReadModelStore.cs": "344d44727227a1b07446c74bb81750a1fdde7ecd39f65a0c58b647f6f272f3ba",
+    "tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs": "4974a6f514f2986c7b2365ae947a4f095624c1ced80738bbcbd0319feb749d7e",
+    "tests/Hexalith.Works.IntegrationTests/PendingDateAwaitScanIncompleteExceptionTests.cs": "87b141a6770c928870a234b31ed228fda0e88594d372adee48237b0bb20532bc",
+    "tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs": "a27764eb11bfe013d3655ab87e22378c565ab96b0dc59b6e16b1d9068dcefe74",
+    "tests/Hexalith.Works.IntegrationTests/RedisSnapshotValue.cs": "2c15154839ab69f934c3044ddfd2113b166e3553df0baaa37703c13c8fc45357",
+    "tests/Hexalith.Works.IntegrationTests/ReminderReconciliationServiceTests.cs": "e7b1c1d23f7044586b7ff564ebd7f619d0003afc5d4f9c0a69846a85c4aa9aea",
+    "tests/Hexalith.Works.IntegrationTests/ScaffoldIntegrationTests.cs": "990cfd0474c5109274773bd4227dfd0e6e5b961d9354b40150545bce3512f452",
+    "tests/Hexalith.Works.IntegrationTests/SchedulerVolumeProbeCleanupException.cs": "c1abf23c093125be0022b9ab5ad720040a3d9536187a101093d0b03fc8cf2241",
+    "tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGoldenCorpusTests.cs": "54260194ec7711085398c4274175796a9b38fd4073823a2bfb9a340d9381abbf",
+    "tests/Hexalith.Works.IntegrationTests/SchemaEvolution/LinkConversationCommandGoldenTests.cs": "9c88f91e244ff092693712e35cc82d6c3c4eba1206321f6619ef7ce09502cf68",
+    "tests/Hexalith.Works.IntegrationTests/SchemaEvolution/SchemaEvolutionGoldenCorpusTests.cs": "097989ffc3b94416a6e59d9990bf62fdd8b595a5ce51df19e50b86b27f372d5c",
+    "tests/Hexalith.Works.IntegrationTests/StartupHook.cs": "1d59fff1643cc4b11abddced2e6388376863171cce3a4dfc27282be9f88df93a",
+    "tests/Hexalith.Works.IntegrationTests/Story47InMemoryReadModelStore.cs": "e067e5de595b82f142be5361e425aa936e06a2e8516f46069ad70d6df274f8da",
+    "tests/Hexalith.Works.IntegrationTests/Story48FixedTimeProvider.cs": "13df498388e1d9dcc1c1d7a2be34029cb30d94591b49b546c6a6dc573ac078ca",
+    "tests/Hexalith.Works.IntegrationTests/Story48RecordingLogger.cs": "a062501a478db15a636e40a0ff75400783636fb26b2acb1715deeb646b60a35a",
+    "tests/Hexalith.Works.IntegrationTests/Story48RecordingScheduler.cs": "79be193258a62afe219d3d539768a7004af11f6d7d06d72b297b7891786292a9",
+    "tests/Hexalith.Works.IntegrationTests/Story48RecordingSubmitter.cs": "d55176bc6b520e4fd5cbb9b41de2fb2094dce42ba35d5ec2d2fdc68a6ae77807",
+    "tests/Hexalith.Works.IntegrationTests/Story48Streams.cs": "414b5ab3b70b3f1f23b13204c01bf84fed4c57665910c0460ceff090d5e11f75",
+    "tests/Hexalith.Works.IntegrationTests/StreamReadingCascadeDescendantSourceTests.cs": "cbf9b5537ea4d01bfe438846d3e8a4f9ef6dcfacff0ff5325920e787522a0319",
+    "tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs": "c140a56fb8a95a6ec8851ba41acef37085c29e335c66a40a2d77c5963f290f96",
+    "tests/Hexalith.Works.IntegrationTests/TerminalCascadeContractFlowTests.cs": "a7b07958bb1908052806836a9e4db1757443c529c18ceacf854bbf54a87a6a1a",
+    "tests/Hexalith.Works.IntegrationTests/TerminalCascadeEventHandlerTests.cs": "c9bb3231d2e4ac1e1fe7f9adbfc2f74849577b8dd8a5f00182374395e3172a22",
+    "tests/Hexalith.Works.IntegrationTests/TombstoneUnavailableReadModelStore.cs": "0245f2e526d5c0e487af8b812e432fb62549a6c7dc8d0303e530e60892df281c",
+    "tests/Hexalith.Works.IntegrationTests/UniformExecutorBindingLifecycleFlowTests.cs": "ab1d0628e7f5a26c853ce7820fdb64dcdbadf000895736160872559ab1d6c218",
+    "tests/Hexalith.Works.IntegrationTests/UniformExecutorBindingSerializationTests.cs": "ba517eec967f5c0386dfe0398c133e384bdb3e6e7777ef1138b0035c41fc9d20",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemClaimPersistenceConflictTests.cs": "0a5f60e211fab0a774f9b58aaaf190f99a8e4bbe5fa040a0fa95226bffde933c",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemCreateContractFlowTests.cs": "ad528c71558e531a0e8c5ad8203df0041a7dc597d15ad12ba1e510cb9e6144f0",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs": "2171d08dc1340c97c21fc3c659002e3256365b4e1284d688d96407dace1ed44c",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemLifecycleContractFlowTests.cs": "95987f2735d0f39863a59266ef22b50f42f246c02f97ebe2ba436a0eeb436551",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemProgressContractFlowTests.cs": "adb5b0535d5cd4e11dc7369dde836d1d6e34996ddf3b986fd2f92c9e4ebc5863",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemProjectionQueryAdapterTests.cs": "6d185687210715b40929c513dbf9db7f18a27cc001aa836ddbc71efd2f9d6080",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemRawActAdditivityTests.cs": "3adf5ec7aabcb79ac939fd220b287ccf1d9964bd898ab6b9e2e67b9aa108149c",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemReEstimateRescheduleContractFlowTests.cs": "eb7491c56374d8ea921aa7c57dfd5818cf43380e435e261d0b6db31335f50957",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemReadModelGenerationQueryTests.cs": "72e439e333a0e0189d02a34ce576754cc7cdbc09df9ce47f27c53b6a6b24bbb9",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSerializationRegistrationTests.cs": "9093ab4790650c176a83c8412b4f465b3c894234d496b61dc7187f442cf5e3d2",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "6fd1ffad9f13bdd56eeaeb679b02d2c8eaf5fd418f14362f28b6d5362a8d0d90",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSpawnChildContractFlowTests.cs": "259e8fa02f2333bd38eaac4b6f95acfffa6e51def113aabd512cb176e4ff44b6",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSuspendedReminderHandlerTests.cs": "a3f51328b48be4e40edb825008bad73dba3c01b4b34714ea3b7083a7009eb801",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs": "49723c593307cc36daf3cd185e29d05f885d566886465194c43c3b3c4263bfa2",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolation.cs": "800fc33d660b2b9cabd7db869c04a5f7af645d0576834cace503c0f9bd9cb22f",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolationTests.cs": "9a9cb529b50b38ba2c8f4a49cf7f906d224f1aec03f4a630d1a4aca05442bac6",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSelection.cs": "44c4e26d67e38c1b5504efb1969c358be048d73c3070982f6dfdf14506d73f86",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSelectionTests.cs": "9622ecfc88291550bd3abb2a335d3e87f4f3a2c253b52d9176d3834c8c439c4e",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "6b9236588fc2ca515154f43c94a5b2ec725281f415efa4de7b3a9e0f59faa203",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs": "2b933c0ca9dbb3ccf8a2f9806c70ceb24e4fb7013884ddb1d3b3dd22c4c4b860",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostTestCollection.cs": "33e250ea229116b98679f72a57afd5a39ecef59aa12e465040c96751d4c40e59",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs": "71f59dfeb923a1fa5ea6971a9633bd15c46a9719789a9ab6745706ac326f8827",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs": "f1e67b7c98bdc2487601da654d2f762ac7265112885650756919771974c855e4",
+    "tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs": "2d34e9d09ddeba05aabfea2423be184294df0b54b20f8118852d41573fe65d86",
+    "tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs": "6f3c2205cfe51b61962abadb0ea674310285b2612c7846b8bc05dc3332e8eb1d",
+    "tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs": "6966a75708ff833592ea5b9f14efe3583be2c70ad8f97b32e727336fcd9c9924",
+    "tests/Hexalith.Works.IntegrationTests/WorksDomainEventSubscriptionTests.cs": "286cf0617b132fb7b72c3714705487bdeeccdba48bcd71c70c223a0040eba136",
+    "tests/Hexalith.Works.IntegrationTests/WorksEventIdentityTests.cs": "3f91705211f878519661257a6c4e2492a983ebb5b9f2bbb0133e40db18beb6e1",
+    "tests/Hexalith.Works.IntegrationTests/WorksHostTestAuthentication.cs": "605d18eb520f28da6df0bbed326034c1b421ad72e1173d7368e7cea8ae8a0f85",
+    "tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs": "45ce71673115c3ff251990cfa8f99fae68897aca262954453ff46d3bdd631307",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAppChannelTokens.cs": "0e94d5c03f4828a39b6c37966060766d9e4fc3d2138e304895cbb666823069b0",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAuditFault.cs": "030096a01ed3bd1cab3a90fb7678308e2f98c878d79dc087c7877fd420df0018",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformAuditFaultStore.cs": "4cc13bc1785fde016e2971d4c0fc00498b28be0aeabd5805cab2af9bae872818",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformBinarySnapshot.cs": "6ed1b3f16f8f4cfb4bc0db01b3b3cecd79737337bcd8b6a014191ba33761184f",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuard.cs": "96225d0ef71c7c26a94d4a1d3da551d82bce18e934d0217e2037c8cfa3c88685",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuardTests.cs": "a1bb661b7b417c762932d099d3fe88295cb0a706cfe88b9d2ecf3522f229d5f1",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbe.cs": "84be8fa2953f7b883321ccd0a08dd6adfccfc70807382b184ec616ffd0b8b389",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformDispositionProbeTests.cs": "10406f6c5b061f6f127bc99d4bf4bed0c2780f9526d638f4c4f60ff7ce736e9a",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs": "031fde665257f78bf150d0dec677f26324795404e716b3ee6bd223075a251c93",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "6b602524160bf7fc9b642033ed6ef7b707d005ec57b9f4bfcb44653bd96511d3",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs": "5404e14b743771be2bb43b33c6e827b12623966a2d148402b22a28fea8f8b8b8",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHostingCompositionTests.cs": "8a4b003c9b106ff3ae34a9e8494b94a010e6dacd5da0eac5f0da6c040e10a43d",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixture.cs": "d49dd55bbef4f5cbf7672e04385f57ae66b071b2129960cd9a34ece9331a901b",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs": "7c6392201cc942bfdb50ead0a97aa66dd6cff35f61dfbf95f972cba3c884cee8",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformMetricPoint.cs": "7dbd648d050cfc14052363f4731a24011cb4d4b0a6c9dffcf3936602834d0321",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformOperationsChecks.cs": "9248246c30adfa0593fc8c16441e5a10a184d2ba88054a09d171829bc8fa4b4a",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs": "b2f3a8b0bf7134c6f2b329198810be3719282bb5cb3faa693add9ba6ecc7c011",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs": "e5451608f1002fcdd05ab463bbdfb188a4df8464eedd628095ec26b3482dfb80",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRequests.cs": "a0f81bc5be48f58de54b6c224f62410b6ea657b842e4bd4a425dfd200bead937",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRecoveryChecks.cs": "c33a448a579fdd290eccee55a49ca238ad012e8efc26431da0b087826cf1ad3d",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformReminderCallbackProbe.cs": "2b1bcd9c887e61baba6e2893d9a679bbf47bb85bbfb99639b98ba9c3387db7f4",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs": "923bb61d68163c82d0a8203edd54061e8e37e4db003ddbcb22290dafce8f2023",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformRuntimeArtifacts.cs": "124ac62598a91e13ec22d8b42398097348b3124eccb37c38dc3f5aae6918dd48",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformSelectedSdkPathsTests.cs": "61c5b834be2643f42deb0a5406e80d59a877dc9e83aa09d4f631a5065a4906d2",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs": "84c2e0642fba754528849b7f16b4d53ca1b144d2c8db32c172e435c55631e17e",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollectorTests.cs": "b41b8a185c5efd1e9dca70e992c32086f604ee0eab390131c210a97d4a6fdde9",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrackedEnvironment.cs": "3ba5964b875d594077d9ab157f3746a7c4f03aa985cf202a8d1af7ad023cabc7",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustChecks.cs": "b97ad35ccbdebc8613856d17ae277343da6992ccb2be2e3981a8e19f01521340",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs": "d1643fd65f33d7cc5355525ce59748d64569e501a135d1ac9a09b8d4d053d291",
+    "tests/Hexalith.Works.IntegrationTests/WorksQueryPolicyDeadlineTests.cs": "d2b313be0bc16611e0535b6680f4bf104123a17dde13446ff246f8b8d6eb0e62",
+    "tests/Hexalith.Works.IntegrationTests/WorksRecoveryGatewayRoutingTests.cs": "885cce78b6962047c33c49f2723845d3ad8c7dfc2a5f9a610bb04dba7898859c",
+    "tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs": "e68d72b4b3f6bbd12e7058eb1d380c024ec860a901b0ad4a829c0fafac3453a5",
+    "tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs": "434a9cc3e947fd7db7089b623de415a9e9ff54b84f80531eb674dc8f0881266a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkDaprConfigCopyTests.cs": "6cd478c950e684f8735e5b0f68a0886ceb3be8f45a8e0118a1ae2c11e22eda40",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkHttpEvidenceHandler.cs": "85e4efa593a939ddc727f7fbb061f4e42c44489f554ddd094ee4ada78c38c1ac",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs": "5c6fcc7a9a654f667122897c1bd2f4921992805eeb6160424e6a92714194d9d7",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIteration4Tests.cs": "bed4fbf58842c527e642de8f90133eaa1a8b8f8c4dda84df839ddb78212e0953",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs": "86d075b03cab857c774b51734b7b5a0cc96d17d49d83ccbbe78465f2e2071818",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkPartitionedRebuildTests.cs": "232cde61d7826149a263ff71ca3fb038dd42ff364191c123d0d15d28fc830167",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkPlatformAuthorityFixture.cs": "2b6768dc63342b8bbba59d880ed05a74b6b8851bc0813f565683ddada2ca230e",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessAuthorityTests.cs": "325e00c74f05b376b1da61a97dbee3c0497c90cb831bf6726a1b97522492e80e",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryTests.cs": "7e1398b040db3ea98d3ccd6db775cd8c7c6ad8bc5c15c3d1782edc5be79cab6a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "3603e4fd729ae58b4215af5d7d54fcff150afa7f08e76a2eafa5e720f5438fc7",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditDocument.cs": "7a0a71f1fb8612e87276c2607a53a5f09bc556032afefe5e6d130d3aa72b3455",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofAuditSink.cs": "692b1a008c63c65fc65d743176936017be74a1674e4e6c89e68c78e434869c2a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofDelegationProvider.cs": "90fb8949d76e66d0445b482d721aad28466c939514aa3f58b4d315692d1670ca",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofDiagnostics.cs": "9e89ec726852174fb42d62c71c7d32326081b7170106d4d1c57cfe12b2874e69",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofFaultState.cs": "b35d71f35504f7eb9636bd9eb930dda5fb77f01bbb0f9f1d30c2ec311d989725",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingEvidence.cs": "bd8d34aa6017f6ac3116cfe9e21cc41e3aaeef42a96e67fb5c21f8c7f35098f9",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs": "96d63cd874176b5ed2da8831f7755a38a16ac04ad763ddc842fb0bdfa53b2965",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofIntentRegistry.cs": "b7767e8fff68ef9322a4aa56ef6cfed2218d159dcce1dc05cf4b9e8c71720234",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataFilter.cs": "5086013839a995d84e198d3b6ad95588881c2667ba92ae89792db4913f989e3a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofMetadataHandler.cs": "a3dd96ef8ab21d6435012b5a2df397ffbfb2a2b0aa7c2cb3d9d6fafa11259098",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofOrdinaryRetryHandler.cs": "d11f116040b3617c0a486b47484416e1e86145f35ed9bce7a322a11baea056ef",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofProducer.cs": "65b140474e9c5324fb39998d15afd0162a62c76b1f7bd5bd605d113d436a68b4",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "21bc49ccd06de7b8b97f5e219d9b0f3f68c8529ad87dc14d0beed85d51df1b3a",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedisOwnershipTests.cs": "bcdee6063e31a0a4937b05f4e5baaf716f10b8699f79fd06f841e321919bf257",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseFilter.cs": "539350d150c434909b384422e631dd03bc0dde10b13db0e931a965ce67ea19d6",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseHandler.cs": "bd45d48918f2e0b911cdca3acd5e9d5fb2fbf15139b40391a11b16a106dae01b",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRetentionGate.cs": "07aae46d1aae6115158603adf126bcfe47506c1f66521f0d68273581d082a3e5",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofWakeupFilter.cs": "752e1b1d44e0debc6ae68c1cbaf07c85b39bd22f2f3ae0966fe3a21102373d28",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs": "566a411ecff9d6054d9b804a2ed1360bcbbc88018c05a06e1dd8074b091c70b0",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs": "295902373339f8460aedb3250849ef5230c42aa158e49d9c74ab929f39710df4",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "35082009b5ac4ff1179c12547d9526ca096c891d9aa45b9f344920f9156e98d5",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs": "516cedf595815fa868652b39923c819a416974ffba7b58a616d0f2be4873d0ec",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRemediationTests.cs": "7e420c3cbdb4f3f3bed75b3bd8ba6b55de72ffa14edfeff0aaee5b9997c0672c",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRollbackRestoreTests.cs": "edc55497f7cb6c833437592da04a71ba2a30ae13ff604cb99dc786e7d9a9fec6",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "95a60cd2e8930265c086ae006ae328b9269843e9a0846978ec15debc95b5448d"
+  },
+  "platformConsumerSources": 261,
+  "worksConsumerSource": {
+    "commit": "1ab960c76c12c726862a6a25616c2ce88a0f55a0",
+    "inventorySha256": "333a5cfcfec3270854479000af9bef964b9466570961fbd49c9ce9858fa3b141",
+    "provenance": "owning Git checkout"
+  }
+}

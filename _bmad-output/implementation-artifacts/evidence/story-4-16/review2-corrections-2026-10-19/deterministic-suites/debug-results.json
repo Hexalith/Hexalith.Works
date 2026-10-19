@@ -1,0 +1,90 @@
+[
+  {
+    "suite": "UnitTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/claude-1000/-home-administrator-projects-hexalith-works/4da8a93e-0466-4882-99aa-98b8059e9b3c/scratchpad/suites/debug-UnitTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.4,
+    "tests": {
+      "total": "589",
+      "passed": "589",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "5d91e9f8b008de984170be14def962a4d91565247e5f28507bc9076fc586b14f"
+  },
+  {
+    "suite": "PropertyTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/claude-1000/-home-administrator-projects-hexalith-works/4da8a93e-0466-4882-99aa-98b8059e9b3c/scratchpad/suites/debug-PropertyTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.4,
+    "tests": {
+      "total": "3",
+      "passed": "3",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "3e25b17dc134299ed7928b8e3caf93260da345bef61aa29ee44e969d8c32b36f"
+  },
+  {
+    "suite": "ArchitectureTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/claude-1000/-home-administrator-projects-hexalith-works/4da8a93e-0466-4882-99aa-98b8059e9b3c/scratchpad/suites/debug-ArchitectureTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 7.7,
+    "tests": {
+      "total": "269",
+      "passed": "269",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "842c36f11e9c854b070d7a14cd6c6929f5d240ccb5511ac5c43266ead686f097"
+  },
+  {
+    "suite": "IntegrationTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/claude-1000/-home-administrator-projects-hexalith-works/4da8a93e-0466-4882-99aa-98b8059e9b3c/scratchpad/suites/debug-IntegrationTests.xml",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*"
+    ],
+    "exitCode": 0,
+    "seconds": 15.4,
+    "tests": {
+      "total": "908",
+      "passed": "908",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "06aa1848e06517809cbca6cc92936c0930109438e5f34dd707afaca17d243e5f"
+  }
+]

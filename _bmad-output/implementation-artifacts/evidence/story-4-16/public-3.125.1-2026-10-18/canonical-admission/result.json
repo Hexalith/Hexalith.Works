@@ -1,0 +1,555 @@
+{
+  "scope": "Story 4.16 canonical Platform Works parity and complete fleet rollback on named published EventStore 3.125.1; disposable synthetic data only",
+  "checkedUtc": "2026-10-18T19:38:08.513945+00:00",
+  "exactCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-public-3.125.1-admission-run3",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "startedUtc": "2026-10-18T19:11:42Z",
+  "finishedUtc": "2026-10-18T19:35:36Z",
+  "exitCode": 0,
+  "status": "passed-disposable-synthetic-parity-and-rollback",
+  "selectedProducer": {
+    "version": "3.125.1",
+    "tag": "v3.125.1",
+    "commit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+    "catalogSha256": "6613474830ffd7901b03dedb38849962353613af745f625a59bf0a082a20a646",
+    "worksDefaultPin": {
+      "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+      "version": "3.125.1",
+      "sha256": "9a4cec9da19656320373a4260f96bc83a2afad6d195f72bf20584206edbb999b"
+    },
+    "runtimeSourceQualification": {
+      "qualification": "official-commit-tree-and-exact-git-blob-identities",
+      "runtimeFileCount": 1978,
+      "matchesPublishedProducer": true
+    },
+    "publishedArchives": {
+      "Hexalith.EventStore.Admin.Abstractions": {
+        "version": "3.125.1",
+        "sha256": "c5c157f7f6416631b0576ef4d6c88741d2a7f960ec2cdfe2021f379f1a402364",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Aspire": {
+        "version": "3.125.1",
+        "sha256": "06f7bca25be30d6c4273a73f4998a62c3e854580304728ee07fed67fe2459444",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Client": {
+        "version": "3.125.1",
+        "sha256": "27bbd41df6a8b59e5fa71bd3d3c4ee30583c1b77b7999b53f0b7af530e97189c",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Contracts": {
+        "version": "3.125.1",
+        "sha256": "b386677aa8d37d74c2d22905c7422220dd7ca9b809379f2023a597d0ab64e802",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.DomainService": {
+        "version": "3.125.1",
+        "sha256": "a05d9afae5d242e86f40a2dbd89b5c965b2715cfe395d3d99f0e8a68665b847e",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Gateway": {
+        "version": "3.125.1",
+        "sha256": "8ad674e754c534eefd25fb0f990432565b528b0e8c4d71b23f5739705bd6d375",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Server": {
+        "version": "3.125.1",
+        "sha256": "38e0698d5037955d10d2968c80defbd1845f3a217d6ee0ae68a800f9cada7da8",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.ServiceDefaults": {
+        "version": "3.125.1",
+        "sha256": "71ce53d42bea7203cf463e431ba82c15e1e3a19fd1e73123f7d3894510642838",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      },
+      "Hexalith.EventStore.Testing": {
+        "version": "3.125.1",
+        "sha256": "9c0fd8b869a0d6992e17245a379fc260d3c855c5b995c8526fc0f957538fb4a3",
+        "source": "https://api.nuget.org/v3/index.json",
+        "repositoryCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b"
+      }
+    }
+  },
+  "checks": {
+    "agentsFull": "expected-unavailable; not a Works prerequisite",
+    "Debug": {
+      "total": 92,
+      "passed": 92,
+      "skipped": 0,
+      "sha256": "54c3fff33bbe161f42b003d360a49c315b4fec00cae3063ef59d4a80e1056aaf"
+    },
+    "Release": {
+      "total": 92,
+      "passed": 92,
+      "skipped": 0,
+      "sha256": "73fe81b866b0a96db45ee8676b645575391a10ef8342ccdf87f12eed8429a252"
+    },
+    "supportingConsumer": {
+      "total": 212,
+      "passed": 212,
+      "skipped": 0,
+      "sha256": "6412003e167140229a66b8628d4b848befea612d2b0d14a9f3e9d52db24203e4"
+    },
+    "liveRecovery": {
+      "total": 4,
+      "passed": 4,
+      "skipped": 0,
+      "sha256": "9f3713457d890a0e009bc9802fe050c295cdc3b26cb03812b64965d41a25b479"
+    },
+    "liveHistorical": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "1c7b78002d2c1dee6f0091568e69e0eaa8ed1bf6f7694e42d04e0b216a5ffb8a"
+    },
+    "liveHa": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "c1743a0ac13bf9796366e8faf8c467237c23db1a88c10bb3bab7988b4a99b80b"
+    },
+    "liveProjection": {
+      "total": 1,
+      "passed": 1,
+      "skipped": 0,
+      "sha256": "00601a946a726bf2382691bc2d008ba0ccfa48fc012816cd50066cd132c711cf"
+    }
+  },
+  "commands": [
+    {
+      "name": "evidence-gate-tests",
+      "exitCode": 0,
+      "logSha256": "7493e59a43ad3217f24fc5aa48cb5d2eceae5dd0cdd706d28220ab6ba0e2d5dd"
+    },
+    {
+      "name": "agents-full-refusal",
+      "exitCode": 1,
+      "logSha256": "56609dbf7b746149b0fb4cb462c7f64bea79c2fcdfdda36ddb078db14c372e38"
+    },
+    {
+      "name": "agents-local-scaffold",
+      "exitCode": 0,
+      "logSha256": "2ce57322d69a44bfc9bfb2de03fc2944f3ec4c6196f90be79ee78eebf9a532ae"
+    },
+    {
+      "name": "platform-tests-build-debug",
+      "exitCode": 0,
+      "logSha256": "37c5dabd74dac35a857f489a375d578833ce631d8e3a99be5f6d76780a10b2b1"
+    },
+    {
+      "name": "platform-tests-debug",
+      "exitCode": 0,
+      "logSha256": "e3bdbc0dd58bb4eab4c5e6db8febc53c773411c5ad3040c8b8ae03e24f21488b"
+    },
+    {
+      "name": "platform-tests-build-release",
+      "exitCode": 0,
+      "logSha256": "8ffeedc2bb2bb701f76569543eb9973bb00747061c5d466d12c458e817e683af"
+    },
+    {
+      "name": "platform-tests-release",
+      "exitCode": 0,
+      "logSha256": "023b79e4b3a3316fea0f4dc55c22f1e59ac49e5abb99680ef81f09950ed49c0d"
+    },
+    {
+      "name": "platform-file-host-release",
+      "exitCode": 0,
+      "logSha256": "98010fca1c3ee7427d5fc5cd6c7ac2bd4c673b3fab481d4739d0627ab44d49de"
+    },
+    {
+      "name": "works-consumer-debug",
+      "exitCode": 0,
+      "logSha256": "fb874e707d61c06ae78151bc9bf807762d3192c2887a26e99e2b96692d416708"
+    },
+    {
+      "name": "works-consumer-release",
+      "exitCode": 0,
+      "logSha256": "852fcd883ba0a8623db0926443f2bbd4f9711132bdfab1421ee1de08e1c1f269"
+    },
+    {
+      "name": "works-consumer-supporting",
+      "exitCode": 0,
+      "logSha256": "f74eeb692358270cdec3d7d1236243352241bad92c731f539c83b7be74cd43a1"
+    },
+    {
+      "name": "runtime-release-prebuild-0",
+      "exitCode": 0,
+      "logSha256": "e0d96fbd439603338b4ef5d0a9e10f360da9a1c812a88ed293a5ed430e5527a6"
+    },
+    {
+      "name": "runtime-release-prebuild-1",
+      "exitCode": 0,
+      "logSha256": "c2bffdff22a3572bde92b13003fa7ffb0db886a5ba9056c0b0ea16631e939196"
+    },
+    {
+      "name": "runtime-release-prebuild-2",
+      "exitCode": 0,
+      "logSha256": "6fc9c5a87d6d5b89e624aa0c2013b56ac3fa8baf535ec3919de131159f9aabd5"
+    },
+    {
+      "name": "runtime-release-prebuild-3",
+      "exitCode": 0,
+      "logSha256": "7eaa7ce9316e902e8159371d2b0e15b27438e1a163dcba8ae3a155891eff71a7"
+    },
+    {
+      "name": "runtime-release-prebuild-4",
+      "exitCode": 0,
+      "logSha256": "2ba868d14131dae58b7d7a3d1707770a6face9a047ca05e10ed3afe18355b30c"
+    },
+    {
+      "name": "platform-recovery",
+      "exitCode": 0,
+      "logSha256": "8447db9258b02ba8723fd5a9a869c1594456f91ae4a2a6e6b9177e32d0b75c57"
+    },
+    {
+      "name": "platform-historical",
+      "exitCode": 0,
+      "logSha256": "6228c1c0bd441704644620011ac21a6e20f2bf52843734da23a51e4364c02d4f"
+    },
+    {
+      "name": "platform-ha",
+      "exitCode": 0,
+      "logSha256": "1c6bba779f4456c7e3420129f0f91f9cd87ec66aa369089017124e944b17e998"
+    },
+    {
+      "name": "platform-projection",
+      "exitCode": 0,
+      "logSha256": "c301a266a36443dab8216d9f6aa8bd507900cd9d9ac3eb7cebe0d83edc948730"
+    }
+  ],
+  "rowStatuses": {
+    "R1": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.Aspire@3.125.1",
+      "api": "AddHexalithEventStore/AddEventStoreDomainModule",
+      "consumer": "P/src/Hexalith.Platform.Composition/WorksPreviewModel.cs",
+      "evidencePhases": [
+        "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+        "complete-supported-process-coverage",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R2": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "AddEventStoreDomainService",
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "evidencePhases": [
+        "periodic-writers-disabled-readiness-degraded",
+        "disabled-recovery-otlp-alert-export",
+        "durable-recovery-alert-export-and-clear",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R3": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "UseEventStoreDomainService",
+      "consumer": "src/Hexalith.Works/Runtime/Events/WorksDomainEventEndpointExtensions.cs",
+      "evidencePhases": [
+        "platform-named-conflict-durable-quarantine-with-unchanged-family",
+        "platform-named-redelivery-capture-through-commit-complete-family",
+        "platform-executor-filtering-and-origin-tenant-publish-refusals",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R4": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.Client@3.125.1",
+      "api": "SharedProjectionEpochCoordinator",
+      "consumer": "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs",
+      "evidencePhases": [
+        "platform-named-redelivery-capture-through-commit-complete-family",
+        "platform-focused-projection-rebuild",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R5": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "IDomainQueryHandler",
+      "consumer": "src/Hexalith.Works/Queries/WhatsNextQueryHandler.cs",
+      "evidencePhases": [
+        "platform-historical-lifecycle-tree-concurrent-claim-persisted",
+        "platform-executor-filtering-and-origin-tenant-publish-refusals",
+        "platform-query-and-explicit-receipt-replay",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R6": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "AddEventStoreReminders",
+      "consumer": "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs",
+      "evidencePhases": [
+        "platform-two-host-ha-lost-firing-stale-callback-recovery",
+        "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+        "cascade-expiry-restart-receipt-and-checkpoint",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R7": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "AddEventStoreProcesses",
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessTranslator.cs",
+      "evidencePhases": [
+        "paged-process-candidates-pre-restart",
+        "paged-process-restart-and-shared-store-owner-fencing",
+        "complete-supported-process-coverage",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R8": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "ProcessDispositionService",
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs",
+      "evidencePhases": [
+        "protected-scoped-disposition-audit-before-mutation",
+        "durable-recovery-alert-export-and-clear",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R9": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.DomainService@3.125.1",
+      "api": "AddEventStoreDomainService/UseEventStoreDomainService",
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "evidencePhases": [
+        "successful-callback-no-periodic-recovery",
+        "complete-supported-process-coverage",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R10": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.ServiceDefaults@3.125.1",
+      "api": "EventStoreWorkloadAuthenticationDefaults",
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "evidencePhases": [
+        "platform-two-host-ha-lost-firing-stale-callback-recovery",
+        "platform-executor-filtering-and-origin-tenant-publish-refusals",
+        "protected-scoped-disposition-audit-before-mutation",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    },
+    "R11": {
+      "status": "passed",
+      "requiredProofs": {
+        "persisted": true,
+        "negative": true,
+        "restart": true,
+        "rollback": true
+      },
+      "producer": "Hexalith.EventStore.Client@3.125.1",
+      "api": "HttpTrustedEffectSubmitter",
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessDelegationProvider.cs",
+      "evidencePhases": [
+        "five-child-persisted-target-receipts",
+        "platform-query-and-explicit-receipt-replay",
+        "complete-restore-retained-host-query-and-receipt-replay"
+      ]
+    }
+  },
+  "actualStarts": {
+    "byRole": {
+      "platform-target": 9,
+      "retained-rollback": 1
+    },
+    "hostAssemblySha256": "fbb151bf187dded43ab8ea84cd1a6bc94f419a045f1bcf184b66b78d20ad97d3",
+    "hostSourceSha256": "84cb495efe328a9ef475fa1218d6ececceea0ba52344f19b117667269be38e00"
+  },
+  "rollback": {
+    "complete": true,
+    "persistedStatesSha256": "d417cf82ba8623781aedf896a9203114ce67e4fb738df47ea60d52a100f3194a",
+    "redisKeysCapturedAndRestored": [
+      "682",
+      "682"
+    ],
+    "runtimeEntriesCapturedAndRestored": [
+      1070,
+      1070
+    ],
+    "fleetInventoryEqual": true,
+    "runtimeInventoryEqual": true,
+    "retainedQueryFound": true,
+    "receiptReplayed": true,
+    "resumedCount": 1,
+    "childCancelled": 1,
+    "childExpired": 1,
+    "restoredSweepComplete": true,
+    "restoredSweepUnresolved": 0,
+    "conflictingReplayStatus": 500,
+    "durableCollisionCount": 1
+  },
+  "ha": {
+    "trust": {
+      "configuredRootHandshake": true,
+      "foreignRootHandshakeDenied": true,
+      "endpoint": "owned-sentry:50001",
+      "domainRequests": 0
+    },
+    "stoppedPrimary": true,
+    "stoppedPrimarySidecar": true,
+    "resumed": 1,
+    "retiredReminderRemovedAfterFiring": true,
+    "actualStaleCallbackObserved": true,
+    "staleSchedulerFireResumed": 1
+  },
+  "focusedProjection": {
+    "naturalCatchUp": true,
+    "heads": 11,
+    "committedOwnerSequence": 4,
+    "committedGlobalPosition": 14,
+    "automaticCatchUpAfterCommit": true,
+    "oldGenerationStayedReadable": true,
+    "public3124Blocker": "public 3.124.0 left this fact at owner 3/global 3 instead of owner 4/global 14"
+  },
+  "completeFamily": {
+    "automaticCatchUpAfterCommit": true,
+    "sources": 11
+  },
+  "consumerProvenance": {
+    "works": {
+      "head": "1ab960c76c12c726862a6a25616c2ce88a0f55a0",
+      "inventorySha256": "db976fc97eadef64a636a7260f5e753e7916c642ae1d3abbe6a5343677be5d99",
+      "uncommittedWorkingFiles": {
+        "Directory.Build.props": "eefa298cecae747e49d5b872789b6caccf985a284379e2505194b717442f3897",
+        "Directory.Packages.props": "9a4cec9da19656320373a4260f96bc83a2afad6d195f72bf20584206edbb999b",
+        "docs/boundary-decision-record.md": "964f8a582341fedcd041f605fd3b26b90702fc88104cfa4918075504ba5d96d0",
+        "docs/eventstore-api-surface-constraints.md": "d5d405a6b8aebfe446b30bf79b8f87d8c0a03ec8efbf841f9214771cd9f81a8b",
+        "docs/sdk-reminder-process-adoption.md": "631fb25fe3de24b67981a8f2ac570648e82622e8d8201fc3186847d44245294b",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "6afef2b7614ae0af8c0e12ba88679f56735c80fb01ea74caedbce8a0430dcd06",
+        "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "b262bc0d70f795b0d73e312b69405c13ccc17f6a7e0d1b5c7e7bf770deaed716",
+        "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolation.cs": "800fc33d660b2b9cabd7db869c04a5f7af645d0576834cace503c0f9bd9cb22f",
+        "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolationTests.cs": "9a9cb529b50b38ba2c8f4a49cf7f906d224f1aec03f4a630d1a4aca05442bac6"
+      },
+      "fixtureSources": 38
+    },
+    "platform": {
+      "verifierSha256": "662a385b36ab1d1b1858b152b4fcb68b17de3a9d0012fdde0b358711d17b5d67",
+      "consumerSources": 261,
+      "boundCommit": "d8b444dd8b3ba6bd9bcb11271681300652a37752",
+      "note": "Platform inputs were uncommitted when the run started; the owner's commit d8b444d (and HEAD 2d5178f) contains byte-identical verifier, helpers, 261 consumer sources, R10 configuration and apphost.cs"
+    }
+  },
+  "dependencyModes": {
+    "Debug": "sibling source project graph; independently built and hashed",
+    "Release": "public NuGet 3.125.1 consumer graph plus explicitly named test-only Platform.Identity and Platform runtime source"
+  },
+  "identityProvenance": "explicit-test-only-source; no published Platform.Identity package",
+  "previousAttempts": [
+    "../attempt1-inotify-exhaustion/diagnosis.json",
+    "../attempt2-mdns-cross-talk/diagnosis.json"
+  ],
+  "notClaimed": [
+    "Story 4.16 acceptance: independent review lenses remain with the root",
+    "Story 4.9 resumption",
+    "real-data or new-catalog admission (AD-28)",
+    "production admission: the Works preview stays development/test only",
+    "Full Agents EXT-HOST-1 qualification (preserved refusal)"
+  ],
+  "filesSha256": {
+    "agents-full-refusal.log": "56609dbf7b746149b0fb4cb462c7f64bea79c2fcdfdda36ddb078db14c372e38",
+    "agents-local-scaffold.log": "2ce57322d69a44bfc9bfb2de03fc2944f3ec4c6196f90be79ee78eebf9a532ae",
+    "evidence-gate-tests.log": "7493e59a43ad3217f24fc5aa48cb5d2eceae5dd0cdd706d28220ab6ba0e2d5dd",
+    "host-starts.jsonl": "d939ffa9dab8b4c74e186e6aed9feab41734e453bd561b7a6ac0db05c1d5c8cd",
+    "ledger.json": "9d1d4537fb03ad361f5b056b755ef7819883cc530ee7508385beef07eedf52b5",
+    "persisted-states.jsonl.gz": "cce354152ed3cdfbc2fe146d2b328087315583626c5137f6e85c9323821e3d47",
+    "platform-debug.xml": "54c3fff33bbe161f42b003d360a49c315b4fec00cae3063ef59d4a80e1056aaf",
+    "platform-file-host-release.log": "98010fca1c3ee7427d5fc5cd6c7ac2bd4c673b3fab481d4739d0627ab44d49de",
+    "platform-ha.log": "1c6bba779f4456c7e3420129f0f91f9cd87ec66aa369089017124e944b17e998",
+    "platform-ha.xml": "c1743a0ac13bf9796366e8faf8c467237c23db1a88c10bb3bab7988b4a99b80b",
+    "platform-historical.log": "6228c1c0bd441704644620011ac21a6e20f2bf52843734da23a51e4364c02d4f",
+    "platform-historical.xml": "1c7b78002d2c1dee6f0091568e69e0eaa8ed1bf6f7694e42d04e0b216a5ffb8a",
+    "platform-projection.log": "c301a266a36443dab8216d9f6aa8bd507900cd9d9ac3eb7cebe0d83edc948730",
+    "platform-projection.xml": "00601a946a726bf2382691bc2d008ba0ccfa48fc012816cd50066cd132c711cf",
+    "platform-recovery.log": "8447db9258b02ba8723fd5a9a869c1594456f91ae4a2a6e6b9177e32d0b75c57",
+    "platform-recovery.xml": "9f3713457d890a0e009bc9802fe050c295cdc3b26cb03812b64965d41a25b479",
+    "platform-release.xml": "73fe81b866b0a96db45ee8676b645575391a10ef8342ccdf87f12eed8429a252",
+    "platform-tests-build-debug.log": "37c5dabd74dac35a857f489a375d578833ce631d8e3a99be5f6d76780a10b2b1",
+    "platform-tests-build-release.log": "8ffeedc2bb2bb701f76569543eb9973bb00747061c5d466d12c458e817e683af",
+    "platform-tests-debug.log": "e3bdbc0dd58bb4eab4c5e6db8febc53c773411c5ad3040c8b8ae03e24f21488b",
+    "platform-tests-release.log": "023b79e4b3a3316fea0f4dc55c22f1e59ac49e5abb99680ef81f09950ed49c0d",
+    "runtime-release-prebuild-0.log": "e0d96fbd439603338b4ef5d0a9e10f360da9a1c812a88ed293a5ed430e5527a6",
+    "runtime-release-prebuild-1.log": "c2bffdff22a3572bde92b13003fa7ffb0db886a5ba9056c0b0ea16631e939196",
+    "runtime-release-prebuild-2.log": "6fc9c5a87d6d5b89e624aa0c2013b56ac3fa8baf535ec3919de131159f9aabd5",
+    "runtime-release-prebuild-3.log": "7eaa7ce9316e902e8159371d2b0e15b27438e1a163dcba8ae3a155891eff71a7",
+    "runtime-release-prebuild-4.log": "2ba868d14131dae58b7d7a3d1707770a6face9a047ca05e10ed3afe18355b30c",
+    "stdout.log": "27ab15eb4fa4492cfc30df1896894b38ca7cf37dea05d2433a62c3eaf6d1e9c2",
+    "works-consumer-debug.log": "fb874e707d61c06ae78151bc9bf807762d3192c2887a26e99e2b96692d416708",
+    "works-consumer-release.log": "852fcd883ba0a8623db0926443f2bbd4f9711132bdfab1421ee1de08e1c1f269",
+    "works-consumer-supporting.log": "f74eeb692358270cdec3d7d1236243352241bad92c731f539c83b7be74cd43a1",
+    "works-consumer-supporting.xml": "6412003e167140229a66b8628d4b848befea612d2b0d14a9f3e9d52db24203e4"
+  }
+}

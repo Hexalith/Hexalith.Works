@@ -1,0 +1,58 @@
+{
+  "checkedUtc": "2026-10-19T13:50:00Z",
+  "scope": "Diagnostic only. Each new deterministic test was run against a deliberately weakened source, then the exact original bytes were restored (SHA-256 re-checked) before the suites and the canonical run. The canonical run is the sole admission evidence.",
+  "mutations": [
+    {
+      "patch": "T133",
+      "source": "W/tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuard.cs",
+      "mutation": "AffectedKeys considers only keys the fixture writes on an empty environment (the iteration 2 behavior)",
+      "failingTest": "WorksPlatformCompositionGuardTests.RemovalAndConditionalOverwriteOfAPlatformComposedKeyAreRefused",
+      "result": "1 of 5 failed",
+      "restoredSha256": "3b890eb9f583d65c1cc655ff6809848c9bba24ceba898ed5a185d0418e136f1a"
+    },
+    {
+      "patch": "T129",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryRuntimeExtensions.cs",
+      "mutation": "environment.IsDevelopment() guard removed",
+      "failingTest": "RecoveryRuntimeTests.EverySyntheticAuthorityGuardRefusesWithNoServicesAdded",
+      "result": "1 of 17 failed"
+    },
+    {
+      "patch": "T129",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryRuntimeExtensions.cs",
+      "mutation": "WORKS_PLATFORM_PARITY marker check replaced by false",
+      "failingTest": "RecoveryRuntimeTests.EverySyntheticAuthorityGuardRefusesWithNoServicesAdded",
+      "result": "1 of 17 failed"
+    },
+    {
+      "patch": "T129",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksRecoveryRuntimeExtensions.cs",
+      "mutation": "WORKS_SDK_PROOF marker check removed",
+      "failingTest": "RecoveryRuntimeTests.EverySyntheticAuthorityGuardRefusesWithNoServicesAdded",
+      "result": "1 of 17 failed"
+    },
+    {
+      "patch": "T130",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksSyntheticDispositionAuditSink.cs",
+      "mutation": "retry de-duplication by AttemptId removed",
+      "failingTest": "RecoveryRuntimeTests.AuditRetryAfterACommittedConflictStoresExactlyOneAttempt",
+      "result": "failed"
+    },
+    {
+      "patch": "T130",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksSyntheticDispositionAuditSink.cs",
+      "mutation": "capacity cap raised from 256 to 4096",
+      "failingTest": "RecoveryRuntimeTests.FullAuditDocumentRefusesTheNextDispositionBeforeSdkMutation",
+      "result": "1 of 17 failed"
+    },
+    {
+      "patch": "T130",
+      "source": "P/src/Hexalith.Platform.Works.Runtime/WorksSyntheticDispositionAuditSink.cs",
+      "mutation": "capacity cap lowered from 256 to 255",
+      "failingTest": "RecoveryRuntimeTests.FullAuditDocumentRefusesTheNextDispositionBeforeSdkMutation",
+      "result": "1 of 17 failed"
+    }
+  ],
+  "restoredPlatformSources": "sha256sum -c over WorksRecoveryRuntimeExtensions.cs and WorksSyntheticDispositionAuditSink.cs passed after every mutation",
+  "verifierPredicates": "T132 and T155 refusals are covered by eng/test_verify_works_host.py (startup-only, same-tick and one-tick-earlier raises refused; RuntimeError, IncompleteRead and pre-command inventory failures recorded in the ledger)."
+}

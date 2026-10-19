@@ -93,10 +93,29 @@ internal static class WorksAppHostSmokeHarness
             })];
     }
 
-    private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder)
+    private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder, string discovery)
     {
         // Control-plane endpoints remain fixed and ownership-checked. Application and sidecar
         // proxies are disposable: never route synthetic proof traffic to another local AppHost.
+        // Name resolution is isolated too: default mDNS discovery would round-robin this start's
+        // app IDs with any unrelated local sidecar that shares them.
+        string registry = Path.Combine(discovery, WorksAppHostDiscoveryIsolation.RegistryFileName);
+        var isolatedConfigurations = new Dictionary<string, string>(StringComparer.Ordinal);
+        string Isolated(string? configuration)
+        {
+            if (string.IsNullOrWhiteSpace(configuration))
+                throw new InvalidOperationException("Every live sidecar needs a Dapr configuration to isolate its name resolution.");
+            if (!isolatedConfigurations.TryGetValue(configuration, out string? isolated))
+            {
+                isolated = Path.Combine(discovery, isolatedConfigurations.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    + "-" + Path.GetFileName(configuration));
+                File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(File.ReadAllText(configuration), registry));
+                isolatedConfigurations[configuration] = isolated;
+            }
+
+            return isolated;
+        }
+
         foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>())
         {
             foreach (EndpointAnnotation endpoint in project.Annotations.OfType<EndpointAnnotation>())
@@ -109,6 +128,7 @@ internal static class WorksAppHostSmokeHarness
             {
                 AppPort = null, DaprHttpPort = null, DaprGrpcPort = null,
                 DaprInternalGrpcPort = null, MetricsPort = null,
+                Config = Isolated(annotation.Options.Config),
             }));
             string cliName = dapr.Sidecar.Name + "-cli";
             builder.CreateResourceBuilder(project).WithEnvironment(context =>
@@ -127,6 +147,81 @@ internal static class WorksAppHostSmokeHarness
                 }
             });
         }
+    }
+
+    private static Dictionary<string, string> AssignHostingEvidence(IDistributedApplicationTestingBuilder builder, string directory)
+    {
+        // Each proof host records, from inside its own process, the hosting startups that actually loaded.
+        var assigned = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>()
+            .Where(resource => resource.Name is "eventstore" or "works" or "works-ha"))
+        {
+            string path = Path.Combine(directory, "hosting-" + project.Name + ".json");
+            assigned[project.Name] = path;
+            builder.CreateResourceBuilder(project).WithEnvironment(WorksSdkProofHostingEvidence.PathVariable, path);
+        }
+
+        return assigned;
+    }
+
+    private static async Task<Dictionary<string, JsonElement?>> ReadHostingEvidenceAsync(
+        IReadOnlyDictionary<string, string> assigned, CancellationToken cancellationToken)
+    {
+        // Every host has passed its startup probes, so its hosting startups ran long ago. A short bound only
+        // covers a slow file flush; a missing record stays null and refuses verification. Each resource has its
+        // own bound, so one missing record cannot consume another resource's wait and misattribute the absence.
+        var records = new Dictionary<string, JsonElement?>(StringComparer.Ordinal);
+        foreach ((string resource, string path) in assigned.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        {
+            using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            deadline.CancelAfter(TimeSpan.FromSeconds(30));
+            JsonElement? record = null;
+            try
+            {
+                while (record is null)
+                {
+                    if (File.Exists(path))
+                    {
+                        try
+                        {
+                            record = JsonSerializer.Deserialize<JsonElement>(await File.ReadAllTextAsync(path, deadline.Token).ConfigureAwait(false));
+                            break;
+                        }
+                        catch (JsonException)
+                        {
+                            // The host may still be writing its record.
+                        }
+                    }
+
+                    await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                // Leave the record absent so the verifier refuses the start.
+            }
+
+            records[resource] = record;
+        }
+
+        return records;
+    }
+
+    /// <summary>Reads each runtime module's effective tracked environment from its launched resource snapshot.</summary>
+    private static Dictionary<string, Dictionary<string, string?>> EffectiveEnvironment(DistributedApplication app)
+    {
+        var effective = new Dictionary<string, Dictionary<string, string?>>(StringComparer.Ordinal);
+        foreach (string resource in new[] { "eventstore", "works", "works-ha", "eventstore-operations", "eventstore-admin" })
+        {
+            if (!app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? current)) continue;
+            effective[resource] = current.Snapshot.EnvironmentVariables
+                .Where(variable => WorksPlatformTrackedEnvironment.IsTracked(variable.Name))
+                .GroupBy(variable => variable.Name, StringComparer.Ordinal)
+                .OrderBy(group => group.Key, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => (group.FirstOrDefault(variable => variable.IsFromSpec) ?? group.First()).Value, StringComparer.Ordinal);
+        }
+
+        return effective;
     }
 
     /// <summary>
@@ -253,22 +348,37 @@ internal static class WorksAppHostSmokeHarness
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
                 .WithEnvironment("Version", WorksSdkProofProducer.Version);
         }
+        // On an actual Platform start, capture Platform's own composition before the fixture configures the builder,
+        // and the fixture's additions immediately after, before the harness adds its isolation and evidence wiring.
+        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
+            ? WorksPlatformCompositionGuard.Capture(builder) : null;
         configure?.Invoke(builder);
-        IsolateApplicationPorts(builder);
-        if (schedulerVolumeName is not null)
-        {
-            if (!schedulerVolumeName.StartsWith("works-sdk416-", StringComparison.Ordinal))
-                throw new InvalidOperationException("A proof Scheduler must use an owned synthetic volume.");
-            ContainerResource scheduler = builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-scheduler-mtls");
-            ContainerMountAnnotation mount = scheduler.Annotations.OfType<ContainerMountAnnotation>().Single(item => item.Target == "/var/lock");
-            scheduler.Annotations.Remove(mount);
-            builder.CreateResourceBuilder(scheduler).WithVolume(schedulerVolumeName, "/var/lock");
-        }
+        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? fixtureComposition = platformComposition is null
+            ? null : WorksPlatformCompositionGuard.Capture(builder);
         WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
         DistributedApplication? app = null;
         Exception? primaryException = null;
+        string? discoveryDirectory = null;
         try
         {
+            // Refuses, before any resource is built, a fixture that set a key Platform composed for that resource.
+            Dictionary<string, object>? compositionGuard = platformComposition is null ? null
+                : await WorksPlatformCompositionGuard.VerifyAsync(builder, platformComposition, fixtureComposition!, startupCts.Token).ConfigureAwait(true);
+            if (schedulerVolumeName is not null)
+            {
+                if (!schedulerVolumeName.StartsWith("works-sdk416-", StringComparison.Ordinal))
+                    throw new InvalidOperationException("A proof Scheduler must use an owned synthetic volume.");
+                ContainerResource scheduler = builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-scheduler-mtls");
+                ContainerMountAnnotation mount = scheduler.Annotations.OfType<ContainerMountAnnotation>().Single(item => item.Target == "/var/lock");
+                scheduler.Annotations.Remove(mount);
+                builder.CreateResourceBuilder(scheduler).WithVolume(schedulerVolumeName, "/var/lock");
+            }
+
+            // Created only inside this try, so the cleanup below always removes it.
+            discoveryDirectory = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
+            IsolateApplicationPorts(builder, discoveryDirectory);
+            Dictionary<string, string> hostingEvidence = WorksAppHostSelection.IsPlatform
+                ? AssignHostingEvidence(builder, discoveryDirectory) : [];
             if (WorksAppHostSelection.IsPlatform)
             {
                 _ = WorksPlatformRuntimeArtifacts.RequireMatchingConfigurations(
@@ -349,9 +459,16 @@ internal static class WorksAppHostSmokeHarness
                     role = useRetainedHost ? "retained-rollback" : "platform-target",
                     schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
                     // Written only after every startup probe above passed. An expectWorksReadinessDegraded start
-                    // required Works to reach Running, not Healthy; that fixture records its own Degraded observation.
-                    readinessPassed = true,
+                    // waited for Works to reach Running, not Healthy, so its readiness did not pass; that fixture
+                    // records its own Degraded observation.
+                    readinessPassed = !expectWorksReadinessDegraded,
+                    worksReadinessExpectation = expectWorksReadinessDegraded ? "Degraded" : "Healthy",
                     runtimeModules = RuntimeModules(builder),
+                    hostingStartups = await ReadHostingEvidenceAsync(hostingEvidence, cancellationToken).ConfigureAwait(false),
+                    // Platform's composed values (evaluated from its own callbacks before the fixture ran), the keys the
+                    // fixture wrote, and each module's effective launched environment, for independent comparison.
+                    compositionGuard,
+                    effectiveEnvironment = EffectiveEnvironment(app),
                     actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
                     // The test runner's loaded SDK assemblies; each host's deployed SDK assemblies are bound per
                     // module in runtimeModules.
@@ -427,6 +544,15 @@ internal static class WorksAppHostSmokeHarness
                     "[teardown] AppHost control-plane resources did not settle.",
                     exception));
             }
+        }
+
+        try
+        {
+            if (discoveryDirectory is not null) Directory.Delete(discoveryDirectory, recursive: true);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            cleanupFailures.Add(new InvalidOperationException("[teardown] The owned Dapr discovery registry could not be removed.", exception));
         }
 
         if (primaryException is not null)

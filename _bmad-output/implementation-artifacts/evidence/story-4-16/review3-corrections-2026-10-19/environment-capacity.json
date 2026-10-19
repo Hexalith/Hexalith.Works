@@ -1,0 +1,22 @@
+{
+  "observedUtc": "2026-10-19T14:18:29.692364+00:00",
+  "maxUserWatches": 1048576,
+  "watchesObserved": 305,
+  "largestHolders": [
+    [
+      "MainThread",
+      185
+    ],
+    [
+      "codex",
+      111
+    ],
+    [
+      "dbus-daemon",
+      5
+    ]
+  ],
+  "limitChanged": false,
+  "daprInitRedis": "dapr_redis was already running (Up 8 hours); no container was started or stopped outside the fixture's owned resources.",
+  "note": "No inotify limit change was needed for this packet. Before the run 306,014 of 1,048,576 watches were in use, mostly by a foreign fluentui-mcp process."
+}

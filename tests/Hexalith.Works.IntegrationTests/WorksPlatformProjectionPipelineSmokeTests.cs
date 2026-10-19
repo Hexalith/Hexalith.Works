@@ -25,7 +25,8 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
     [Fact]
     public async Task ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily()
     {
-        if (!WorksAppHostSelection.IsPlatform) return;
+        if (!WorksAppHostSelection.IsPlatform)
+            Assert.Skip("Runs only in the Platform verifier lane, which binds the actual Platform AppHost artifact.");
         CancellationToken ct = TestContext.Current.CancellationToken;
         (await WorksAppHostSmokeHarness.PrerequisiteGapAsync(ct).ConfigureAwait(true)).ShouldBeNull();
         WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
@@ -37,10 +38,17 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
         using RSA authority = RSA.Create(2048);
         string key = Convert.ToBase64String(authority.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        // Test-only Parties identity for the delegated Executor queries; neither host composes coordinator authority.
+        WorksPlatformIdentityFixture identity = await WorksPlatformIdentityFixture.StartAsync(tenant,
+            WorksPlatformIdentityFixture.SyntheticExecutorParty, WorksPlatformIdentityFixture.SyntheticExecutorActor, ct).ConfigureAwait(true);
+        await using var identityCleanup = identity.ConfigureAwait(false);
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, gateway, _sidecar, token) =>
         {
             var tenantId = new TenantId(tenant);
-            var binding = new ExecutorBinding(new PartyId("synthetic-projection-worker"), Channel.Cli, AuthorityLevel.Contribute);
+            // The owner keeps its three-event history (created, assigned, reassigned) and rests Assigned to the
+            // synthetic Executor, so the delegated Executor view can read it before and after the rebuilds.
+            var initial = new ExecutorBinding(new PartyId("synthetic-projection-worker"), Channel.Cli, AuthorityLevel.Contribute);
+            var executor = new ExecutorBinding(new PartyId(identity.Party), Channel.Cli, AuthorityLevel.Contribute);
             foreach (ProcessSource source in sources)
             {
                 await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, tenant, source.Aggregate, nameof(CreateWorkItem),
@@ -48,9 +56,9 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
                 if (source.Aggregate == owner)
                 {
                     await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, tenant, owner, nameof(AssignWorkItem),
-                        new AssignWorkItem(tenantId, new WorkItemId(owner), binding), token).ConfigureAwait(false);
-                    await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, tenant, owner, nameof(ClaimWorkItem),
-                        new ClaimWorkItem(tenantId, new WorkItemId(owner), binding), token).ConfigureAwait(false);
+                        new AssignWorkItem(tenantId, new WorkItemId(owner), initial), token).ConfigureAwait(false);
+                    await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, tenant, owner, nameof(AssignWorkItem),
+                        new AssignWorkItem(tenantId, new WorkItemId(owner), executor), token).ConfigureAwait(false);
                 }
             }
             ResourceEvent resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
@@ -69,12 +77,13 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
                     while ((await coordinator.GetCheckpointAsync(scope, source.Aggregate, deadline.Token).ConfigureAwait(false))?.OwnerSequenceNumber != (source.Aggregate == owner ? 3 : 1))
                         await Task.Delay(100, deadline.Token).ConfigureAwait(false);
             }
-            object proof = await WorksPlatformProjectionChecks.VerifyAsync(app, gateway, store, tenant, owner, token).ConfigureAwait(false);
+            object proof = await WorksPlatformProjectionChecks.VerifyAsync(app, gateway, store, tenant, owner, identity, token,
+                initialConvergencePhase: "platform-focused-initial-projection-convergence", expectedSources: sources.Length).ConfigureAwait(false);
             if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_EVIDENCE_PATH") is { Length: > 0 } path)
                 await File.AppendAllTextAsync(path, JsonSerializer.Serialize(new { phase = "platform-focused-projection-rebuild", state = proof }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>
         {
-            WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, sources);
+            WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, sources, identity: identity);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works"))
                 .WithEnvironment("WORKS_SDK_PROOF_CALLBACKS", "1");
         }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);

@@ -1,0 +1,18 @@
+{
+  "raisedUtc": "2026-10-18T17:53:34.053953+00:00",
+  "uid": 1000,
+  "observedWatchEntriesUid1000": 1342482,
+  "observedInstancesUid1000": 228,
+  "originalWatchLimit": 1048576,
+  "temporaryWatchLimit": 2097152,
+  "command": "sudo -n sysctl -w fs.inotify.max_user_watches=2097152",
+  "reason": "run1 dapr-sentry failed with 'failed to add target /var/run/dapr/credentials: no space left on device' because uid 1000 already held more inotify watches than the runtime limit (foreign concurrent sessions); runtime-only change, no persistent kernel configuration edited",
+  "restore": "completed",
+  "restoredUtc": "2026-10-18T19:59:10.470032+00:00",
+  "valueBeforeRestore": 2097152,
+  "restoreCommand": "sudo -n sysctl -w fs.inotify.max_user_watches=1048576",
+  "currentWatchLimit": 1048576,
+  "originalRuntimeLimitRestored": true,
+  "foreignProcessesStopped": false,
+  "persistentKernelConfigurationChanged": false
+}

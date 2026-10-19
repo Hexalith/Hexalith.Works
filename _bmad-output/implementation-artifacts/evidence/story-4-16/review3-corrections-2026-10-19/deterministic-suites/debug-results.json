@@ -1,0 +1,90 @@
+[
+  {
+    "suite": "UnitTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests",
+      "-noLogo",
+      "-result-xml",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/review3-corrections-2026-10-19/deterministic-suites/debug-UnitTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.4,
+    "tests": {
+      "total": "589",
+      "passed": "589",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "dec687877664f26b14bcad82405c5cbbb6a3d447d2eeeb79245569d10d510011"
+  },
+  {
+    "suite": "PropertyTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests",
+      "-noLogo",
+      "-result-xml",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/review3-corrections-2026-10-19/deterministic-suites/debug-PropertyTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 0.4,
+    "tests": {
+      "total": "3",
+      "passed": "3",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "e58bdcd77931a919fb551bed25aaf481f00f067f07405ee8a50683c201a5603f"
+  },
+  {
+    "suite": "ArchitectureTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-result-xml",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/review3-corrections-2026-10-19/deterministic-suites/debug-ArchitectureTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 7.3,
+    "tests": {
+      "total": "269",
+      "passed": "269",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "3d1aad3d55f12ac99844d796e8c82c5334701e5682a9a80ea50dec863a14f91a"
+  },
+  {
+    "suite": "IntegrationTests",
+    "configuration": "Debug",
+    "command": [
+      "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "_bmad-output/implementation-artifacts/evidence/story-4-16/review3-corrections-2026-10-19/deterministic-suites/debug-IntegrationTests.xml",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*"
+    ],
+    "exitCode": 0,
+    "seconds": 14.8,
+    "tests": {
+      "total": "908",
+      "passed": "908",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "7d926400c1bad8e00ff3caa589b70cf76ebdf84f3504987513ed0a2b48048a5f"
+  }
+]

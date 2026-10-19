@@ -34,61 +34,71 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         {
             if (context.HostingEnvironment.EnvironmentName != "Development")
                 throw new InvalidOperationException("Synthetic Works proof authority is restricted to Development fixtures.");
-            string role = Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_ROLE")!;
-            if (role == "metadata-only")
-            {
-                ConfigureMetadata(services);
-                return;
-            }
-            var rsa = RSA.Create();
-            rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_KEY")!), out _);
-            var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
-            services.AddSingleton(key);
-            services.AddSingleton<WorksSdkProofIntentRegistry>();
-            if (role == "works")
-            {
-                if (Environment.GetEnvironmentVariable(WorksPlatformReminderCallbackProbe.ActorEnvironment) is { Length: > 0 })
-                    services.AddSingleton<IStartupFilter, WorksPlatformReminderCallbackProbe>();
-#if WORKS_PLATFORM_PARITY
-                if (Environment.GetEnvironmentVariable("WORKS_PLATFORM_PARITY") == "1")
-                {
-                    ProcessSource[] grants = JsonSerializer.Deserialize<ProcessSource[]>(
-                        Environment.GetEnvironmentVariable("WORKS_PLATFORM_RECOVERY_GRANTS") ?? "[]")!;
-                    services.AddWorksSyntheticRecoveryRuntime(context.HostingEnvironment, grants, "eventstore-admin", "statestore");
-                    services.AddSingleton<IStartupFilter>(_ => new WorksPlatformDispositionProbe(grants));
-                    services.AddSingleton<Hexalith.EventStore.Client.Processes.IProcessDispositionAuditSink>(provider =>
-                        new WorksSyntheticDispositionAuditSink(new WorksPlatformAuditFaultStore(provider.GetRequiredService<Hexalith.EventStore.Client.Projections.IReadModelStore>()),
-                            provider.GetRequiredService<WorksSyntheticDispositionAuthorizer>(), "statestore", provider.GetRequiredService<TimeProvider>()));
-                }
-#endif
-                services.AddSingleton<IReminderDelegationTokenProvider, WorksSdkProofDelegationProvider>();
-                services.AddSingleton<Microsoft.Extensions.Http.IHttpMessageHandlerBuilderFilter, WorksSdkProofResponseFilter>();
-                if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_CALLBACKS") != "1")
-                    services.AddSingleton<IStartupFilter, WorksSdkProofWakeupFilter>();
-            }
-            else if (role == "eventstore")
-            {
-                ConfigureMetadata(services);
-                services.AddSingleton<IIdempotencyIntentAdapterRegistry>(provider => provider.GetRequiredService<WorksSdkProofIntentRegistry>());
-                services.AddSingleton<ITrustedEffectRetentionGate, WorksSdkProofRetentionGate>();
-                services.AddSingleton<ITrustedEffectAuditSink, WorksSdkProofAuditSink>();
-                services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-                {
-                    var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
-                    metadata.SigningKeys.Add(new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId });
-                    options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
-                    options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256];
-                });
-                services.Configure<TrustedEffectAuthorityOptions>(options => options.Rules = [
-                    new("works", "works.date-resume", "work", "ResumeWorkItem"),
-                    new("works", "works.expiry", "work", "ExpireWorkItem"),
-                    new("works", "works.cascade-cancel", "work", "CancelWorkItem"),
-                    new("works", "works.cascade-expire", "work", "ExpireWorkItem"),
-                    new("works", "works.child-completion-resume", "work", "ResumeWorkItem"),
-                ]);
-            }
+            // Hosting startups run in their listed order, so Platform's telemetry is already registered here
+            // exactly when its own hosting startup executed before this proof.
+            bool platformTelemetryRegisteredBeforeProof = WorksSdkProofHostingEvidence.PlatformTelemetryRegistered(services);
+            ConfigureProofServices(context, services);
+            WorksSdkProofHostingEvidence.Write(services, platformTelemetryRegisteredBeforeProof);
         });
     }
+
+    private static void ConfigureProofServices(WebHostBuilderContext context, IServiceCollection services)
+    {
+        string role = Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_ROLE")!;
+        if (role == "metadata-only")
+        {
+            ConfigureMetadata(services);
+            return;
+        }
+        var rsa = RSA.Create();
+        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_KEY")!), out _);
+        var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
+        services.AddSingleton(key);
+        services.AddSingleton<WorksSdkProofIntentRegistry>();
+        if (role == "works")
+        {
+            if (Environment.GetEnvironmentVariable(WorksPlatformReminderCallbackProbe.ActorEnvironment) is { Length: > 0 })
+                services.AddSingleton<IStartupFilter, WorksPlatformReminderCallbackProbe>();
+#if WORKS_PLATFORM_PARITY
+            if (Environment.GetEnvironmentVariable("WORKS_PLATFORM_PARITY") == "1")
+            {
+                ProcessSource[] grants = JsonSerializer.Deserialize<ProcessSource[]>(
+                    Environment.GetEnvironmentVariable("WORKS_PLATFORM_RECOVERY_GRANTS") ?? "[]")!;
+                services.AddWorksSyntheticRecoveryRuntime(context.HostingEnvironment, grants, "eventstore-admin", "statestore");
+                services.AddSingleton<IStartupFilter>(_ => new WorksPlatformDispositionProbe(grants));
+                services.AddSingleton<Hexalith.EventStore.Client.Processes.IProcessDispositionAuditSink>(provider =>
+                    new WorksSyntheticDispositionAuditSink(new WorksPlatformAuditFaultStore(provider.GetRequiredService<Hexalith.EventStore.Client.Projections.IReadModelStore>()),
+                        provider.GetRequiredService<WorksSyntheticDispositionAuthorizer>(), "statestore", provider.GetRequiredService<TimeProvider>()));
+            }
+#endif
+            services.AddSingleton<IReminderDelegationTokenProvider, WorksSdkProofDelegationProvider>();
+            services.AddSingleton<Microsoft.Extensions.Http.IHttpMessageHandlerBuilderFilter, WorksSdkProofResponseFilter>();
+            if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_CALLBACKS") != "1")
+                services.AddSingleton<IStartupFilter, WorksSdkProofWakeupFilter>();
+        }
+        else if (role == "eventstore")
+        {
+            ConfigureMetadata(services);
+            services.AddSingleton<IIdempotencyIntentAdapterRegistry>(provider => provider.GetRequiredService<WorksSdkProofIntentRegistry>());
+            services.AddSingleton<ITrustedEffectRetentionGate, WorksSdkProofRetentionGate>();
+            services.AddSingleton<ITrustedEffectAuditSink, WorksSdkProofAuditSink>();
+            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
+                metadata.SigningKeys.Add(new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId });
+                options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
+                options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256];
+            });
+            services.Configure<TrustedEffectAuthorityOptions>(options => options.Rules = [
+                new("works", "works.date-resume", "work", "ResumeWorkItem"),
+                new("works", "works.expiry", "work", "ExpireWorkItem"),
+                new("works", "works.cascade-cancel", "work", "CancelWorkItem"),
+                new("works", "works.cascade-expire", "work", "ExpireWorkItem"),
+                new("works", "works.child-completion-resume", "work", "ResumeWorkItem"),
+            ]);
+        }
+    }
+
     private static void ConfigureMetadata(IServiceCollection services)
     {
         // Use the SDK's explicit Development response-writer seam to expose the actual

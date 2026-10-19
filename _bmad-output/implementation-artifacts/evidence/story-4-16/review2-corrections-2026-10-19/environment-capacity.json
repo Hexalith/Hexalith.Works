@@ -1,0 +1,22 @@
+{
+  "observedUtc": "2026-10-19T07:28:55.272518+00:00",
+  "maxUserWatches": 1048576,
+  "watchesObserved": 472243,
+  "largestHolders": [
+    [
+      "fluentui-mcp",
+      470402
+    ],
+    [
+      "codex",
+      1573
+    ],
+    [
+      "MainThread",
+      197
+    ]
+  ],
+  "limitChanged": false,
+  "daprInitRedis": "dapr_redis had exited at about 05:31 UTC (with the other dapr init containers); it was started with docker start dapr_redis before preparation because the harness requires the dapr-init Redis on :6379. No other container was started or stopped.",
+  "note": "No inotify limit change was needed for this packet."
+}

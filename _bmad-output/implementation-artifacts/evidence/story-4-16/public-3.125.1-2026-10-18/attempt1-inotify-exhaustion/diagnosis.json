@@ -1,0 +1,42 @@
+{
+  "scope": "Canonical attempt 1 on public 3.125.1; failed before any qualifying live outcome",
+  "canonicalCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-public-3.125.1-admission-run1",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "exitCode": 1,
+  "preparation": "all preparation passed, including official v3.125.1 commit/tree/tag qualification (1,978 runtime/build files)",
+  "liveResult": {
+    "class": "WorksSdkRecoveryPipelineSmokeTests",
+    "total": 4,
+    "passed": 2,
+    "failed": 2,
+    "skipped": 0
+  },
+  "cause": "dapr-sentry exited: 'failed to add target /var/run/dapr/credentials: no space left on device'; uid 1000 held 1,342,482 inotify watches (foreign concurrent sessions) above the runtime limit of 1,048,576",
+  "environmentAction": "temporary runtime-only sudo -n sysctl -w fs.inotify.max_user_watches=2097152; recorded in ../environment-capacity.json",
+  "checkedUtc": "2026-10-18T19:13:00.838426+00:00",
+  "filesSha256": {
+    "agents-full-refusal.log": "7ffbb042f4f581cab110f2eaa8d62df9e706a10bfac730f286d47ab38cfa49fc",
+    "agents-local-scaffold.log": "ded28c73e4296038f0e56d985c3f8983440b8fd4ce32ad270638180c31053dd2",
+    "evidence-gate-tests.log": "2fa071fe977705bfef05c7a955446f9d9708d3d39ffd9f8494d5d07911cb1f1c",
+    "ledger.json": "83052040990fdba1419eef0cd1dc37a18e2a205cb6bdbeda94ffb9245e981071",
+    "platform-debug.xml": "e16136c11e77d6c8eb80c7ed8ef43e2505956963994f47e667b64797c8aad3b5",
+    "platform-file-host-release.log": "16d2673c9b3a8ab355f1e0748a5ff67937636c059a921c060b026798cf2f6a77",
+    "platform-recovery.log": "626f7074ea193c25c082bd011e4b2833365ebbc07becf9d731c5a7fb0433f7a0",
+    "platform-recovery.xml": "72f6c87f535ebd16bc3e4256360ce6651961a1b145f2baa8e4e8e24c715260ad",
+    "platform-release.xml": "02bae43c7fa822e919a5eb54e8b12f5297a4d7e252b4e3a42e6cb059f92de50f",
+    "platform-tests-build-debug.log": "847d743887526814d2dce00ea2afbb1e17058097117a61d51ad36c1b312faa0d",
+    "platform-tests-build-release.log": "0551c6982c75a84b4aa505039487ff1bf152c23ea1ba6dbbfbb04296d5f2d52a",
+    "platform-tests-debug.log": "0d519fd01110a607395cdadf854c6ae23e492d2c6dd449323dfbcde23df57f4e",
+    "platform-tests-release.log": "1655c49cb922ba4c2c52905ecb6cb49e807c3f3f4e59d4310fc16ccdc767a454",
+    "runtime-release-prebuild-0.log": "8607a2f32024c9123d6bf2bb778d914e233ed6b1adbe8982afe42b9fe3490284",
+    "runtime-release-prebuild-1.log": "de2dc72cbec8aca6591e6bc589464ef921d1134b22b24eb41581bc137a858eff",
+    "runtime-release-prebuild-2.log": "98f984dbee84ba07ecc63f12cf5c0d5b18539534b3f0eca6c92745d9b087f2fc",
+    "runtime-release-prebuild-3.log": "9e919b78839ff1995c6cfa09998d97b796580a7755fea05ba800fc511e014e1e",
+    "runtime-release-prebuild-4.log": "44ab5d8d7b379f8ecd2fc900192e00d99f0fb35bcc966371ec2e5832912bcadd",
+    "stdout.log": "3c7b3ef9a3d76f795b3ae24b4a94d56b9dd00165b2c848a799a72a59e22dab44",
+    "works-consumer-debug.log": "00f704ac41f9efeaf8a02bd1af0b9e0b83726dae0cc2b65d43eceb9c36176b4e",
+    "works-consumer-release.log": "7bbf8aef93b4c40beaaf479f737d1eab5f1339be5eaa85fe67060c57df1b889d",
+    "works-consumer-supporting.log": "bba5d4b9b3694a4ec070ae34e1411d1ef792d3e6c4d606e6c0ef6870ad34da7e",
+    "works-consumer-supporting.xml": "aebd27d69af5c6b2f5f2ef1cbe232e796585bd4ade9b8e23e664591ce5fd3d86"
+  }
+}

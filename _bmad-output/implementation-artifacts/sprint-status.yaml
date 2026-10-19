@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-18 # Story 4.15 done: closeout review patches applied, Debug/Release integration 895 each; live requalification remains 4.16; 4.16 in progress; 4.9 gated
+last_updated: 2026-10-19 # Story 4.15 done: closeout review patches applied, Debug/Release integration 895 each; 4.16 review iteration 3 corrections applied (SDK-template eventstore-admin grant on the EventStore receiver, alert raise after the observed degradation, combined composition guard, held patches) and the fresh canonical public 3.125.1 parity/rollback verifier passed on the corrected graph, in progress pending independent review; 4.9 gated
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status

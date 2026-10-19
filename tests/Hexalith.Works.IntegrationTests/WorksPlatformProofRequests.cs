@@ -22,7 +22,7 @@ internal static class WorksPlatformProofRequests
         return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
         {
             Issuer = "hexalith-dev", Audience = audience, IssuedAt = now, NotBefore = now.AddSeconds(-1), Expires = now.AddMinutes(2),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("DevOnlySigningKey-AtLeast32Chars!")), SecurityAlgorithms.HmacSha256),
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WorksAppHostSmokeHarness.DevSigningKey)), SecurityAlgorithms.HmacSha256),
             Claims = claims,
         });
     }

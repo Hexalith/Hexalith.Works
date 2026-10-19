@@ -1,0 +1,160 @@
+<assemblies schema-version="3" id="28a4ea52-b78e-47ce-95b7-c6cea5314bc8" computer="DESKTOP-VIOG240" user="administrator" start-rtf="2026-10-18T19:42:58.9253336+00:00" finish-rtf="2026-10-18T19:50:39.4005764+00:00" timestamp="10/18/2026 21:50:39"><assembly environment="64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]" id="ee91cd87-bf7f-44aa-a574-50b5fd84eeb6" name="/tmp/story416-3125-source-debug-lane2/consumer/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll" run-date="2026-10-18" run-time="19:42:58" start-rtf="2026-10-18T19:42:58.9253336+00:00" test-framework="xUnit.net v3 4.0.2+0c7aa4991f" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="1" finish-rtf="2026-10-18T19:50:39.4005764+00:00" not-run="0" passed="0" skipped="0" time="460.494" time-rtf="00:07:40.4940000" total="1"><collection name="Works AppHost live topology" id="9c102f2f-8ff4-4253-a035-57c720528e7b" failed="1" not-run="0" passed="0" skipped="0" time="460.399" time-rtf="00:07:40.3990000" total="1"><test id="4a725a7f-caa0-4fb3-9fef-a4d041063461" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" result="Fail" time="460.399" time-rtf="00:07:40.3990000" start-rtf="2026-10-18T19:42:58.9898413+00:00" finish-rtf="2026-10-18T19:50:39.3852326+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" source-file="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="155"><failure exception-type="System.InvalidOperationException"><message>System.InvalidOperationException : [startup/readiness] The Aspire AppHost could not start the live Works topology. dapr-sentry[state=Running,health=Healthy,exit=none] dapr-placement-mtls[state=Running,health=Unhealthy,exit=none] dapr-scheduler-mtls[state=Running,health=Healthy,exit=none] eventstore[state=Waiting,health=unknown,exit=none] works[state=Waiting,health=unknown,exit=none] eventstore-operations[state=Waiting,health=unknown,exit=none] eventstore-admin[state=Waiting,health=unknown,exit=none]
+dapr-sentry startup output:
+2026-10-18T19:47:34.8110000Z a8bd3c7e01d9b77b4df597afd828ae0385186d77ac8b11a890081ba4ea967f71
+2026-10-18T19:47:35.4010000Z 
+2026-10-18T19:47:35.4010000Z a8bd3c7e01d9b77b4df597afd828ae0385186d77ac8b11a890081ba4ea967f71
+2026-10-18T19:47:35.3422350Z time=\"2026-10-18T19:47:35.341996718Z\" level=info msg=\"Starting Dapr Sentry certificate authority -- version 1.18.3 -- commit 2dcf2e3548faf3c740b3d29ee300e2132db65cff\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3422686Z time=\"2026-10-18T19:47:35.342082154Z\" level=info msg=\"Log level set to: info\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3427117Z time=\"2026-10-18T19:47:35.342573456Z\" level=info msg=\"Starting watch on filesystem directories: [/var/run/dapr/credentials]\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3427185Z time=\"2026-10-18T19:47:35.342583766Z\" level=info msg=\"Adding validator 'insecure'\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3427198Z time=\"2026-10-18T19:47:35.342644344Z\" level=info msg=\"Using local file system for trust bundle storage\" instance=a8bd3c7e01d9 scope=dapr.sentry.ca type=log ver=1.18.3
+2026-10-18T19:47:35.3436815Z time=\"2026-10-18T19:47:35.343531193Z\" level=info msg=\"Root and issuer certs found: using credentials from store\" instance=a8bd3c7e01d9 scope=dapr.sentry.ca type=log ver=1.18.3
+2026-10-18T19:47:35.3436871Z time=\"2026-10-18T19:47:35.343575348Z\" level=info msg=\"CA certificate key pair ready\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3436882Z time=\"2026-10-18T19:47:35.343599154Z\" level=info msg=\"OIDC HTTP server is disabled\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3436891Z time=\"2026-10-18T19:47:35.343625225Z\" level=info msg=\"Using validator 'insecure'\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3438550Z time=\"2026-10-18T19:47:35.343699208Z\" level=info msg=\"Fetching initial identity\" instance=a8bd3c7e01d9 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:35.3441167Z time=\"2026-10-18T19:47:35.343980113Z\" level=info msg=\"Security is initialized successfully\" instance=a8bd3c7e01d9 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:35.3441358Z time=\"2026-10-18T19:47:35.3440095Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-19 19:47:35 +0000 UTC, renewal at: 2026-10-19 07:40:05 +0000 UTC\" instance=a8bd3c7e01d9 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:35.3455874Z time=\"2026-10-18T19:47:35.345439422Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3455969Z time=\"2026-10-18T19:47:35.345439918Z\" level=info msg=\"metrics server started on :9090/\" instance=a8bd3c7e01d9 scope=dapr.sentry type=log ver=1.18.3
+2026-10-18T19:47:35.3455976Z time=\"2026-10-18T19:47:35.345500846Z\" level=info msg=\"Running gRPC server on port 50001\" instance=a8bd3c7e01d9 scope=dapr.sentry.server type=log ver=1.18.3
+2026-10-18T19:47:36.1670000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-sentry-gpfdnnxe
+
+dapr-placement-mtls startup output:
+2026-10-18T19:47:33.7171534Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T19:47:36.1700436Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-18T19:47:36.1720283Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-18T19:47:36.1720338Z Finished waiting for resource 'dapr-sentry'.
+2026-10-18T19:47:36.3030000Z f8cfe884b1d815ecd7da413a8991ccbc931c4dd70aa0872c0c7d51c0e1559a15
+2026-10-18T19:47:36.9450000Z 
+2026-10-18T19:47:36.9450000Z f8cfe884b1d815ecd7da413a8991ccbc931c4dd70aa0872c0c7d51c0e1559a15
+2026-10-18T19:47:36.8779534Z time=\"2026-10-18T19:47:36.87772253Z\" level=info msg=\"Starting Dapr Placement Service -- version 1.18.3 -- commit 2dcf2e3548faf3c740b3d29ee300e2132db65cff\" instance=f8cfe884b1d8 scope=dapr.placement type=log ver=1.18.3
+2026-10-18T19:47:36.8779881Z time=\"2026-10-18T19:47:36.877818677Z\" level=info msg=\"Log level set to: info\" instance=f8cfe884b1d8 scope=dapr.placement type=log ver=1.18.3
+2026-10-18T19:47:36.8785145Z time=\"2026-10-18T19:47:36.878349246Z\" level=info msg=\"Fetching initial identity\" instance=f8cfe884b1d8 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:36.8785235Z time=\"2026-10-18T19:47:36.878428895Z\" level=info msg=\"Trust anchors file '/var/run/dapr/credentials/ca.crt' found\" instance=f8cfe884b1d8 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:36.8786931Z time=\"2026-10-18T19:47:36.878547996Z\" level=info msg=\"Watching trust anchors file '/var/run/dapr/credentials/ca.crt' for changes\" instance=f8cfe884b1d8 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:36.8803990Z time=\"2026-10-18T19:47:36.880240632Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=f8cfe884b1d8 scope=dapr.placement type=log ver=1.18.3
+2026-10-18T19:47:36.8804046Z time=\"2026-10-18T19:47:36.880306859Z\" level=info msg=\"metrics server started on :9090/\" instance=f8cfe884b1d8 scope=dapr.placement type=log ver=1.18.3
+2026-10-18T19:47:36.8836587Z time=\"2026-10-18T19:47:36.883529832Z\" level=info msg=\"Security is initialized successfully\" instance=f8cfe884b1d8 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:36.8838144Z time=\"2026-10-18T19:47:36.88372448Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-19 19:47:36 +0000 UTC, renewal at: 2026-10-19 07:40:06 +0000 UTC\" instance=f8cfe884b1d8 scope=dapr.runtime.security type=log ver=1.18.3
+2026-10-18T19:47:36.8838199Z time=\"2026-10-18T19:47:36.883691265Z\" level=info msg=\"Placement service is starting...\" instance=f8cfe884b1d8 scope=dapr.placement.server type=log ver=1.18.3
+2026-10-18T19:47:36.8839872Z time=\"2026-10-18T19:47:36.883808352Z\" level=info msg=\"Placement service started on port 50005\" instance=f8cfe884b1d8 scope=dapr.placement.server type=log ver=1.18.3
+2026-10-18T19:47:36.8839921Z time=\"2026-10-18T19:47:36.883869952Z\" level=info msg=\"Node id=dapr-placement-0 is waiting for leadership\" instance=f8cfe884b1d8 scope=dapr.placement.server type=log ver=1.18.3
+2026-10-18T19:47:36.8839930Z time=\"2026-10-18T19:47:36.883885011Z\" level=info msg=\"Running Placement gRPC server on [::]:50005\" instance=f8cfe884b1d8 scope=dapr.placement.server type=log ver=1.18.3
+2026-10-18T19:47:36.8905104Z time=\"2026-10-18T19:47:36.890331261Z\" level=info msg=\"Node id=dapr-placement-0 has acquired leadership\" instance=f8cfe884b1d8 scope=dapr.placement.server type=log ver=1.18.3
+2026-10-18T19:47:37.7100000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-placement-mtls-zwydpgan
+
+dapr-scheduler-mtls startup output:
+2026-10-18T19:47:36.9356141Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.935467Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d became follower at term 583\"}
+2026-10-18T19:47:36.9356163Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.935488Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"newRaft 8e9e05c52164694d [peers: [], term: 583, commit: 3733, applied: 0, lastindex: 3733, lastterm: 583]\"}
+2026-10-18T19:47:36.9369523Z {\"level\":\"warn\",\"ts\":\"2026-10-18T19:47:36.936788Z\",\"caller\":\"auth/store.go:1243\",\"msg\":\"simple token is not cryptographically signed\"}
+2026-10-18T19:47:36.9386446Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.938444Z\",\"caller\":\"mvcc/kvstore.go:425\",\"msg\":\"kvstore restored\",\"current-rev\":1981}
+2026-10-18T19:47:36.9386537Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.938502Z\",\"caller\":\"etcdserver/server.go:628\",\"msg\":\"restore consistentIndex\",\"index\":3733}
+2026-10-18T19:47:36.9400862Z {\"level\":\"warn\",\"ts\":\"2026-10-18T19:47:36.939925Z\",\"caller\":\"etcdserver/quota.go:108\",\"msg\":\"quota exceeds the maximum value\",\"quota-name\":\"v3-applier\",\"quota-size-bytes\":9200000000000000000,\"quota-size\":\"9.2 EB\",\"quota-maximum-size-bytes\":8589934592,\"quota-maximum-size\":\"8.6 GB\"}
+2026-10-18T19:47:36.9400907Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.939958Z\",\"caller\":\"etcdserver/quota.go:117\",\"msg\":\"enabled backend quota\",\"quota-name\":\"v3-applier\",\"quota-size-bytes\":9200000000000000000,\"quota-size\":\"9.2 EB\"}
+2026-10-18T19:47:36.9417743Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941623Z\",\"caller\":\"etcdserver/server.go:875\",\"msg\":\"starting etcd server\",\"local-member-id\":\"8e9e05c52164694d\",\"local-server-version\":\"3.5.30\",\"cluster-version\":\"to_be_decided\"}
+2026-10-18T19:47:36.9418829Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941756Z\",\"caller\":\"etcdserver/server.go:772\",\"msg\":\"skipping initial election tick advance\",\"election-ticks\":10}
+2026-10-18T19:47:36.9418955Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941832Z\",\"caller\":\"fileutil/purge.go:50\",\"msg\":\"started to purge file\",\"dir\":\"/var/lock/dapr/scheduler/default-dapr-scheduler-server-0/dapr-0.1/member/snap\",\"suffix\":\"snap.db\",\"max\":10,\"interval\":\"30s\"}
+2026-10-18T19:47:36.9418971Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941877Z\",\"caller\":\"fileutil/purge.go:50\",\"msg\":\"started to purge file\",\"dir\":\"/var/lock/dapr/scheduler/default-dapr-scheduler-server-0/dapr-0.1/member/snap\",\"suffix\":\"snap\",\"max\":10,\"interval\":\"30s\"}
+2026-10-18T19:47:36.9418984Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941886Z\",\"caller\":\"fileutil/purge.go:50\",\"msg\":\"started to purge file\",\"dir\":\"/var/lock/dapr/scheduler/default-dapr-scheduler-server-0/dapr-0.1/member/wal\",\"suffix\":\"wal\",\"max\":10,\"interval\":\"30s\"}
+2026-10-18T19:47:36.9421057Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941932Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d switched to configuration voters=(10276657743932975437)\"}
+2026-10-18T19:47:36.9421114Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941959Z\",\"caller\":\"v3rpc/health.go:61\",\"msg\":\"grpc service status changed\",\"service\":\"\",\"status\":\"SERVING\"}
+2026-10-18T19:47:36.9421122Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.941995Z\",\"caller\":\"membership/cluster.go:421\",\"msg\":\"added member\",\"cluster-id\":\"cdf818194e3a8c32\",\"local-member-id\":\"8e9e05c52164694d\",\"added-peer-id\":\"8e9e05c52164694d\",\"added-peer-peer-urls\":[\"http://localhost:2380\"],\"added-peer-is-learner\":false}
+2026-10-18T19:47:36.9421135Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942043Z\",\"caller\":\"membership/cluster.go:605\",\"msg\":\"set initial cluster version\",\"cluster-id\":\"cdf818194e3a8c32\",\"local-member-id\":\"8e9e05c52164694d\",\"cluster-version\":\"3.5\"}
+2026-10-18T19:47:36.9421521Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942079Z\",\"caller\":\"api/capability.go:75\",\"msg\":\"enabled capabilities for version\",\"cluster-version\":\"3.5\"}
+2026-10-18T19:47:36.9427078Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942558Z\",\"caller\":\"embed/etcd.go:762\",\"msg\":\"starting with client TLS\",\"tls-info\":\"cert = /tmp/secrets/dapr.io/tls/cert.pem, key = /tmp/secrets/dapr.io/tls/key.pem, client-cert=/tmp/secrets/dapr.io/tls/cert.pem, client-key=/tmp/secrets/dapr.io/tls/key.pem, trusted-ca = /tmp/secrets/dapr.io/tls/ca.pem, client-cert-auth = true, crl-file = \",\"cipher-suites\":[]}
+2026-10-18T19:47:36.9427189Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942664Z\",\"caller\":\"embed/etcd.go:292\",\"msg\":\"now serving peer/client/metrics\",\"local-member-id\":\"8e9e05c52164694d\",\"initial-advertise-peer-urls\":[\"http://localhost:2380\"],\"listen-peer-urls\":[\"http://localhost:2380\"],\"advertise-client-urls\":[\"https://localhost:2379\"],\"listen-client-urls\":[\"http://localhost:2379\"],\"listen-metrics-urls\":[]}
+2026-10-18T19:47:36.9429203Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942730Z\",\"caller\":\"embed/etcd.go:633\",\"msg\":\"serving peer traffic\",\"address\":\"127.0.0.1:2380\"}
+2026-10-18T19:47:36.9432817Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:36.942776Z\",\"caller\":\"embed/etcd.go:603\",\"msg\":\"cmux::serve\",\"address\":\"127.0.0.1:2380\"}
+2026-10-18T19:47:38.5362732Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536016Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d is starting a new election at term 583\"}
+2026-10-18T19:47:38.5363108Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536090Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d became pre-candidate at term 583\"}
+2026-10-18T19:47:38.5363149Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536109Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d received MsgPreVoteResp from 8e9e05c52164694d at term 583\"}
+2026-10-18T19:47:38.5363166Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536138Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d became candidate at term 584\"}
+2026-10-18T19:47:38.5363208Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536143Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d received MsgVoteResp from 8e9e05c52164694d at term 584\"}
+2026-10-18T19:47:38.5363215Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536150Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"8e9e05c52164694d became leader at term 584\"}
+2026-10-18T19:47:38.5363224Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.536167Z\",\"logger\":\"raft\",\"caller\":\"etcdserver/zap_raft.go:77\",\"msg\":\"raft.node: 8e9e05c52164694d elected leader 8e9e05c52164694d at term 584\"}
+2026-10-18T19:47:38.5388501Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.538689Z\",\"caller\":\"membership/cluster.go:508\",\"msg\":\"checking and cleaning up zombie members after attribute update\"}
+2026-10-18T19:47:38.5389048Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.538816Z\",\"caller\":\"etcdserver/server.go:2174\",\"msg\":\"published local member to cluster through raft\",\"local-member-id\":\"8e9e05c52164694d\",\"local-member-attributes\":\"{Name:dapr-scheduler-server-0 ClientURLs:[https://localhost:2379]}\",\"request-path\":\"/0/members/8e9e05c52164694d/attributes\",\"cluster-id\":\"cdf818194e3a8c32\",\"publish-timeout\":\"7s\"}
+2026-10-18T19:47:38.5390197Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.538850Z\",\"caller\":\"embed/serve.go:124\",\"msg\":\"ready to serve client requests\"}
+2026-10-18T19:47:38.5393702Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.539234Z\",\"caller\":\"v3rpc/health.go:61\",\"msg\":\"grpc service status changed\",\"service\":\"\",\"status\":\"SERVING\"}
+2026-10-18T19:47:38.5395550Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.539432Z\",\"caller\":\"embed/serve.go:210\",\"msg\":\"serving client traffic insecurely; this is strongly discouraged!\",\"traffic\":\"grpc+http\",\"address\":\"127.0.0.1:2379\"}
+2026-10-18T19:47:38.5442819Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.544104Z\",\"logger\":\"diagrid-cron.leadership.elector\",\"caller\":\"elector/elector.go:96\",\"msg\":\"attempting to get initial leadership\",\"id\":\"dapr-scheduler-server-0\",\"key\":\"dapr/leadership/dapr-scheduler-server-0\"}
+2026-10-18T19:47:38.5459272Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.545786Z\",\"logger\":\"diagrid-cron.leadership.elector\",\"caller\":\"elector/elector.go:119\",\"msg\":\"fetched initial leadership, waiting for quorum for partition total\",\"id\":\"dapr-scheduler-server-0\",\"key\":\"dapr/leadership/dapr-scheduler-server-0\",\"total\":0}
+2026-10-18T19:47:38.5463801Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.546217Z\",\"logger\":\"diagrid-cron.leadership.elector\",\"caller\":\"elector/elector.go:148\",\"msg\":\"leadership quorum reached\",\"id\":\"dapr-scheduler-server-0\",\"key\":\"dapr/leadership/dapr-scheduler-server-0\",\"total\":1}
+2026-10-18T19:47:38.5463861Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.546275Z\",\"logger\":\"diagrid-cron.engine\",\"caller\":\"engine/engine.go:112\",\"msg\":\"starting cron engine\",\"id\":\"dapr-scheduler-server-0\"}
+2026-10-18T19:47:38.5464841Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.546321Z\",\"logger\":\"diagrid-cron.queue\",\"caller\":\"queue/queue.go:112\",\"msg\":\"Starting queue with workers\",\"id\":\"dapr-scheduler-server-0\",\"count\":2048}
+2026-10-18T19:47:38.5475020Z {\"level\":\"info\",\"ts\":\"2026-10-18T19:47:38.547336Z\",\"logger\":\"diagrid-cron.api\",\"caller\":\"handler/handler.go:122\",\"msg\":\"api is ready\",\"id\":\"dapr-scheduler-server-0\"}
+2026-10-18T19:47:37.7760000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-scheduler-mtls-xxjgerek
+
+eventstore startup output:
+2026-10-18T19:47:33.7056841Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T19:47:33.7057073Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T19:47:33.7057180Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T19:47:36.1700068Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-18T19:47:36.1719631Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-18T19:47:36.1719763Z Finished waiting for resource 'dapr-sentry'.
+2026-10-18T19:47:37.7129826Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-18T19:47:37.7797656Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-18T19:47:37.7810283Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-18T19:47:37.7810317Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+works startup output:
+2026-10-18T19:47:33.7058517Z Waiting for resource 'eventstore' to enter the 'Running' state.
+2026-10-18T19:47:33.7058590Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T19:47:33.7058623Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T19:47:33.7058652Z Finished waiting for resource 'statestore'.
+2026-10-18T19:47:33.7058826Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T19:47:33.7058879Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T19:47:33.7058943Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T19:47:36.1700197Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-18T19:47:36.1720103Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-18T19:47:36.1720155Z Finished waiting for resource 'dapr-sentry'.
+2026-10-18T19:47:37.7129948Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-18T19:47:37.7797935Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-18T19:47:37.7810442Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-18T19:47:37.7810471Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+works-ha startup output:
+
+eventstore-operations startup output:
+2026-10-18T19:47:33.7058516Z Waiting for resource 'works' to enter the 'Running' state.
+2026-10-18T19:47:33.7058589Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-18T19:47:33.7058623Z Waiting for resource ready to execute for 'statestore'.
+2026-10-18T19:47:33.7058654Z Finished waiting for resource 'statestore'.
+2026-10-18T19:47:33.7058825Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T19:47:33.7058877Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T19:47:33.7058926Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T19:47:36.1700275Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-18T19:47:36.1719980Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-18T19:47:36.1720040Z Finished waiting for resource 'dapr-sentry'.
+2026-10-18T19:47:37.7130219Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-18T19:47:37.7797861Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-18T19:47:37.7810829Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-18T19:47:37.7811014Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+eventstore-admin startup output:
+2026-10-18T19:47:33.7059258Z Waiting for resource 'eventstore-operations' to enter the 'Running' state.
+2026-10-18T19:47:33.7059340Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-18T19:47:33.7059377Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-18T19:47:33.7059415Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-18T19:47:36.1700286Z Waiting for resource 'dapr-sentry' to become healthy.
+2026-10-18T19:47:36.1719983Z Waiting for resource ready to execute for 'dapr-sentry'.
+2026-10-18T19:47:36.1720020Z Finished waiting for resource 'dapr-sentry'.
+2026-10-18T19:47:37.7130054Z Waiting for resource 'dapr-placement-mtls' to become healthy.
+2026-10-18T19:47:37.7798018Z Waiting for resource 'dapr-scheduler-mtls' to become healthy.
+2026-10-18T19:47:37.7810482Z Waiting for resource ready to execute for 'dapr-scheduler-mtls'.
+2026-10-18T19:47:37.7810503Z Finished waiting for resource 'dapr-scheduler-mtls'.
+
+---- System.InvalidOperationException : [startup/readiness] The Aspire AppHost could not start the live Works topology. dapr-sentry[state=Running,health=Healthy,exit=none] dapr-placement-mtls[state=Running,health=Unhealthy,exit=none] dapr-scheduler-mtls[state=Running,health=Healthy,exit=none] eventstore[state=Waiting,health=unknown,exit=none] works[state=Waiting,health=unknown,exit=none] eventstore-operations[state=Waiting,health=unknown,exit=none] eventstore-admin[state=Waiting,health=unknown,exit=none]
+-------- System.Threading.Tasks.TaskCanceledException : A task was canceled.</message><stack-trace>   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 473
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 404
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 567
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 567
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 309
+----- Inner Stack Trace -----
+   at Aspire.Hosting.Testing.DistributedApplicationFactory.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationFactory.cs:line 73
+   at Aspire.Hosting.Testing.DistributedApplicationTestingBuilder.SuspendingDistributedApplicationFactory.DelegatedHost.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationTestingBuilder.cs:line 599
+   at Aspire.Hosting.Testing.DistributedApplicationTestingBuilder.SuspendingDistributedApplicationFactory.DelegatedDistributedApplication.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationTestingBuilder.cs:line 574
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 305</stack-trace></failure></test></collection></assembly></assemblies>

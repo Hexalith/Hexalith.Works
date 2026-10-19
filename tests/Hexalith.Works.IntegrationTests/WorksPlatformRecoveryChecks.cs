@@ -33,7 +33,7 @@ internal static class WorksPlatformRecoveryChecks
         outcomes.All(outcome => outcome.Quarantined == 0 && outcome.Unresolved == 0).ShouldBeTrue();
         using HttpResponseMessage reissued = await sidecar.GetAsync($"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{reminderName}", cancellationToken).ConfigureAwait(false);
         reissued.EnsureSuccessStatusCode();
-        return new { actor, reminderName, callers = 2, outcomes, persistedSchedulerReminder = await reissued.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(cancellationToken).ConfigureAwait(false) };
+        return new { actor, reminderName, callers = outcomes.Length, outcomes, persistedSchedulerReminder = await reissued.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(cancellationToken).ConfigureAwait(false) };
     }
 
     internal static async Task<object> RepackCandidatePagesAsync(IReadModelStore store, string tenant,
@@ -43,6 +43,7 @@ internal static class WorksPlatformRecoveryChecks
         ProcessIndexPage<ProcessSource> original = (await checkpoints.ReadCandidatePageAsync(tenant, 0, cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
         original.NextPage.ShouldBeNull();
         original.Entries.OrderBy(source => source.CatalogKey).ShouldBe(expected.OrderBy(source => source.CatalogKey));
+        int observedSources = original.Entries.Count;
         ProcessSource[][] chunks = original.Entries.Chunk(3).ToArray();
         var pages = chunks.Select((entries, index) => new ProcessIndexPage<ProcessSource>(1, index, entries, index + 1 < chunks.Length ? index + 1 : null)).ToArray();
         // Publish successors first, then the root link, then its matching tail. A concurrent reader
@@ -56,7 +57,7 @@ internal static class WorksPlatformRecoveryChecks
         }
         _ = await ReadModelWritePolicy.UpdateAsync<ProcessIndexTail>(store, "statestore", ProcessStateKeys.CandidatesTail(tenant),
             _ => new ProcessIndexTail(1, pages.Length - 1), maxAttempts: 8, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return new { expectedSources = expected.Count, pages };
+        return new { expectedSources = observedSources, pages };
     }
 
     internal static async Task<object> VerifyPagesAndOwnershipAsync(IReadModelStore store, string tenant,
@@ -78,12 +79,14 @@ internal static class WorksPlatformRecoveryChecks
         discovered.OrderBy(source => source.CatalogKey).ShouldBe(expected.OrderBy(source => source.CatalogKey));
         ProcessSource source = expected[0];
         ProcessSourceState? owner = null;
+        int concurrentOwners = 0;
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromMinutes(2));
         while (owner is null)
         {
             ProcessSourceState?[] contenders = await Task.WhenAll(first.AcquireAsync(source, deadline.Token), second.AcquireAsync(source, deadline.Token)).ConfigureAwait(false);
-            contenders.Count(candidate => candidate is not null).ShouldBeLessThanOrEqualTo(1);
+            concurrentOwners = contenders.Count(candidate => candidate is not null);
+            concurrentOwners.ShouldBeLessThanOrEqualTo(1);
             owner = contenders.SingleOrDefault(candidate => candidate is not null);
             if (owner is null) await Task.Delay(100, deadline.Token).ConfigureAwait(false);
         }
@@ -95,12 +98,14 @@ internal static class WorksPlatformRecoveryChecks
             try
             {
                 next.Fence.ShouldBeGreaterThan(owner.Fence);
-                await Should.ThrowAsync<InvalidOperationException>(() => first.UpdateOwnedAsync(owner, state => state, deadline.Token)).ConfigureAwait(false);
+                string staleOwnerWriteRefusal = (await Should.ThrowAsync<InvalidOperationException>(() => first.UpdateOwnedAsync(owner, state => state, deadline.Token)).ConfigureAwait(false)).GetType().Name;
                 await first.ReleaseAsync(owner, deadline.Token).ConfigureAwait(false);
-                (await second.GetAsync(source, deadline.Token).ConfigureAwait(false)).Owner.ShouldBe(next.Owner);
+                string? retainedOwner = (await second.GetAsync(source, deadline.Token).ConfigureAwait(false)).Owner;
+                retainedOwner.ShouldBe(next.Owner);
                 next.Checkpoint.ShouldBe(owner.Checkpoint);
                 return new { linkedPages = tail + 1, candidates = discovered, priorFence = owner.Fence, successorFence = next.Fence,
-                    concurrentOwners = 1, staleOwnerWriteRefused = true, staleReleasePreservedSuccessor = true, checkpoint = next.Checkpoint };
+                    concurrentOwners, staleOwnerWriteRefused = staleOwnerWriteRefusal == nameof(InvalidOperationException), staleOwnerWriteRefusal,
+                    staleReleasePreservedSuccessor = retainedOwner == next.Owner, checkpoint = next.Checkpoint };
             }
             finally { await second.ReleaseAsync(next, cancellationToken).ConfigureAwait(false); }
         }

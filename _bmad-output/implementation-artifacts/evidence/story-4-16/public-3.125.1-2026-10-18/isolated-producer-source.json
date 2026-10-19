@@ -1,0 +1,19 @@
+{
+  "checkedUtc": "2026-10-18T17:43:53.819153+00:00",
+  "exportRoot": "/tmp/story416-sdk-3.125.1-public-source",
+  "producerTag": "v3.125.1",
+  "producerCommit": "55432c50d4b6f1666b4bd6d4a60bfc263b2d0e0b",
+  "method": "git archive of the exact tag commit from the root-declared SDK checkout's object store, without checkout mutation; global.json rewritten from its raw blob because archive applied eol=crlf conversion",
+  "trackedBlobsCompared": 22998,
+  "blobMismatches": [],
+  "runtimeAndBuildFiles": 1978,
+  "untrackedExtraFiles": [],
+  "buildsCatalog": {
+    "link": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds",
+    "head": "4629ff2d3bd66376b29a553663c241d3a7b87853",
+    "tagGitlink": "4629ff2d3bd66376b29a553663c241d3a7b87853",
+    "matchesTagGitlink": true,
+    "clean": true
+  },
+  "sharedSdkCheckoutUnchanged": "f43b121c6c7539487b1f38b3c28508e3ab6264cc"
+}

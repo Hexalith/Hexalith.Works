@@ -1555,3 +1555,86 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Requalify Works live source Debug restart and callback on the final recovery decoder and the current upstream SDK source.
   evidence: The last restart/callback runs bind SDK `216b7906` and the pre-patch `WorksRecoveryEventDecoder`; the decoder then changed three times (post-reopen patches, P18-B1, uniform payload `Sequence` presence), the contextual reader added two lifecycle refusals (RP-B5 repeated creation, closeout-review reschedule-before-creation) and the SDK gitlink moved to `1aaa1737` (28 `src` files, including `AggregateActor`, `EventPersister`, `EventPublisher`, `DaprLogicalEventReader`) and then `f43b121c` on `84bb115a` (five upstream Server commits). `post-reopen-review/report.json` records `currentSourceLiveRerun: false`. The user accepted deterministic-only closure: decoder tightening cannot reject real payloads (no default-value omission), and the lifecycle refusals cannot reject real histories because `WorkItemAggregate` never emits a second creation or a pre-creation reschedule; live requalification on the current upstream SDK is a Story 4.16 input under the approved scope rule. Settle with source Debug restart and callback runs at the gitlink Story 4.16 qualifies.
+
+## Resolution evidence: Story 4.16 public 3.125.1 qualification (2026-10-18)
+
+Historical entries above stay unchanged. The [qualification packet](evidence/story-4-16/public-3.125.1-2026-10-18/README.md) binds the following resolutions. It does not accept Story 4.16; independent review remains.
+
+- Published corrected producers: public EventStore 3.125.1 (tag `v3.125.1`, producer `55432c50`) contains the Story 4.15 journal-closeout correction (`216b7906`) and both Story 4.16 producer corrections (`9dbb3aaf`). The Works default pin selects it. The canonical Platform verifier exits 0 against its nine official archives, with runtime source qualified against the official commit, trees and tag.
+- Live source Debug restart and callback requalification on the final decoder: both facts pass on the retained Works host at exact `v3.125.1` source (`source-debug-lane/lane3`). The Works SDK gitlink remains `v3.125.0`; its runtime source differs from `v3.125.1` only in two Aspire hosting files.
+- Platform host-evidence wording: verifier errors now name the top-level `sdkAssemblies` list as the test runner's assemblies. The record field names stay unchanged so earlier start files remain comparable.
+
+## Deferred from: Story 4.16 public 3.125.1 qualification (2026-10-18)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Isolate Dapr name resolution for direct developer runs of the Platform Works preview.
+  evidence: Canonical attempt 2 (`evidence/story-4-16/public-3.125.1-2026-10-18/attempt2-mdns-cross-talk/diagnosis.json`) showed default mDNS discovery round-robining the Works sidecar onto an unrelated session's non-mTLS `eventstore` sidecar. The live fixture now uses a run-owned SQLite registry. `WorksPreviewModel` still points sidecars at committed configurations without `nameResolution`, unlike the Builds run renderer and Platform `MergeRunDiscovery`. Development/test preview only; production uses platform-managed discovery.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Align the Works EventStore gitlink with the qualified public producer when Git work is authorized.
+  evidence: Works Debug defaults to the `v3.125.0` gitlink (`f43b121c`), while qualification used an exact isolated `v3.125.1` export. The two differ only in `EventStorePlatformProjectMetadata.cs` and `RepositoryProjectPaths.cs`. No Git or submodule work was authorized for this implementation.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Diagnose intermittent control-plane readiness failures of live restarts on the shared host.
+  evidence: Source Debug lanes 1 and 2 failed before any fixture assertion: EventStore placement was disconnected and the sidecar unresponsive on a restart, then the placement health probe stayed unhealthy. Diagnostic run 7 showed the same placement symptom. Lane 3 and the canonical run passed with healthy probes. Concurrent sessions held load averages of 6–17 and contended for the fixed control-plane ports.
+
+## Deferred from: Story 4.16 review iteration 1 (2026-10-18)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Fix EventStore so a rate-limited (HTTP 429) internal projection update is retried or surfaced, not silently dropped.
+  evidence: Triage T3. `src/Hexalith.Works.AppHost/Program.cs:94-97` records that EventStore's default 100-per-second limiter rejects the host's internal actor/projection traffic with 429, and the swallowed projection update leaves the pending-date index empty. The retained host raises the limits to 100000; the Story 4.16 parity fixture injected 8192 on Platform starts. On 2026-10-18 the owner chose to compose explicit dev/test limits in the Platform preview and to track the drop as an EventStore producer defect. Fixing it needs a producer change and a release published by the owner.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Bind the Works production profile's `brokerPolicySha256` and `networkPolicySha256` to committed policy files at the AD-28 production gate.
+  evidence: Triage T25. `WorksProductionProfile` only checks that both values are hex. No broker or network policy file exists for them to match. Production admission stays closed. On 2026-10-18 the owner deferred the binding to the AD-28 gate, which must supply the committed policy files the hashes are compared against.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Restore an unconditional default EventStore pin, or refuse a Release build whose effective `HexalithEventStoreVersion` differs from `WorksPinnedEventStoreVersion` without an explicit opt-in.
+  evidence: Triage T15. The pin at `Directory.Packages.props:6` was unconditional at the Story 4.16 baseline (`3.123.0`). Story 4.15 `fbcacfb` made it conditional, as `Directory.Build.props:42` already was. An ambient `HexalithEventStoreVersion` environment variable now silently selects another SDK for Release restores, while global `-p:` overrides would have worked either way.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Limit Dapr resiliency retries and circuit breaking on the `works` and `eventstore` app targets to transport failures before production admission.
+  evidence: Triage T22. Platform `DaprComponents/resiliency/resiliency.yaml` (since `b9410d3`, 2026-09-27) gives the `works` target `defaultRetry` and `defaultBreaker` (`consecutiveFailures > 3`, 30 s). The Story 4.16 operations and projection checks wait up to 60 s / 45 s through 500 "circuit breaker open" answers after their own 403/400 negative cases, and the test comments say a denial "consumed its retry policy". So four refused operator or projection calls can block legitimate ingress for 30 s, and refused POSTs are re-sent.
+
+## Resolution evidence: Story 4.16 review iteration 1 corrections (2026-10-18)
+
+Historical entries above stay unchanged. The [corrections packet](evidence/story-4-16/review1-corrections-2026-10-18/README.md) binds these resolutions. It does not accept Story 4.16; independent review remains.
+
+- Live parity no longer replaces Platform's `DOTNET_STARTUP_HOOKS` or `ASPNETCORE_HOSTINGSTARTUPASSEMBLIES` (triage T1). Every Platform `works` and `works-ha` start loaded `WorksRecoveryHostingStartup` before the proof and registered telemetry once, and the verifier now refuses a start that does not.
+- Parity runs at Platform-composed development/test EventStore rate limits, and the fixture injects none (T3). The EventStore 429 drop entry above stays open.
+- The verifier derives each row's four proofs from named phases and qualifying fields, and refuses duplicate phases (T5). R9 gained a real negative phase, `platform-sdk-named-mode-legacy-route-refused`.
+- The R10 trust probe now records server-side refusals (T7): `tlsv13 alert certificate required` for a client without a certificate, `bad certificate` for a foreign-CA client, and probe rejection of a mismatched SPIFFE identity.
+- The 4.15 "Platform host-evidence wording" deferral is resolved for `readinessPassed` (T6), which can now fail: a Degraded-expected start records `false` with `worksReadinessExpectation: Degraded`, and the verifier accepts `false` only with that expectation on a Platform start. The suggested renames (`worksReadiness`, `runnerSdkAssemblies`) were not made, so earlier start files keep their field names.
+- The 4.15 deferral "Mark Platform-only integration facts skipped" is resolved (T17). `WorksPlatformHistoricalPipelineSmokeTests`, `WorksPlatformHaPipelineSmokeTests` and `WorksPlatformProjectionPipelineSmokeTests` call `Assert.Skip` outside the Platform lane. Under the repository's `failSkips: true` policy, an unfiltered integration run therefore reports them as failed skips rather than passes. Deterministic lanes exclude `*SmokeTests` and `*Platform*`.
+
+## Deferred from: Story 4.16 review iteration 2 (2026-10-19)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: `WorksSdkProtectedHttpTests.QueryWindowStore` counts only `IReadModelStore` reads, so a query path that reads Works state through an SDK batch or bulk read-model store would leave its non-disclosure checks at zero operations (triage T109, unverified medium).
+  evidence: Works `src` resolves no `IReadModelBatchStore` or `IReadModelBulkStore`. To settle it, trace which store interfaces the 3.125.1 SDK query and authorization path resolves during the trusted-origin matrix. If any of them reads Works state, register the window wrapper for those interfaces too, and confirm the operation count moves.
+
+## Resolution evidence: Story 4.16 review iteration 2 corrections (2026-10-19)
+
+Historical entries above stay unchanged. The [corrections packet](evidence/story-4-16/review2-corrections-2026-10-19/README.md) binds these resolutions. It does not accept Story 4.16; independent review remains.
+
+- Live parity no longer grants `Works:Query:PermittedCoordinatorWorkloads` (triage T78). The R5 restart query and the R1/R4/R5 rollback, rebuild and quarantine queries are delegated Executor queries through the `eventstore` gateway workload, resolved by the test-only Parties identity setup on Platform and retained-host starts. Each phase records `queryIdentity`, and a non-delegated full-tenant query is recorded as `Forbidden` on a Platform start.
+- On `platform-target` starts the fixture sets no key Platform composes for that resource (T84). A pre-build composition guard refuses any other overlap; the only permitted overlaps are the hook-list extension, the captured restorable app-channel secret and the telemetry lanes' OTLP redirect to an owned loopback collector. The HA replica now mirrors Platform's `DOTNET_ENVIRONMENT` too.
+- The held review iteration 2 patches T58, T63, T65, T70, T77, T79–T83, T85, T91, T95, T98 and T100–T102 are applied. Path-mapped deterministic builds make the consumer's `Hexalith.Platform.Works.Runtime.dll` byte-identical to Platform's host output (T77).
+- The 2026-10-18 entry "Story 4.16 fleet-restore verification must account for captured Redis hash fields expiring before restore or verification" keeps its scope. The restore phase now re-observes the stopped restored fleet itself (T83) and omits only the capture-only DUMP inventory.
+
+## Deferred from: Story 4.16 review iteration 2 corrections (2026-10-19)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Public EventStore 3.126.0 is available on nuget.org, while this story still qualifies the 3.125.1 producer its spec keeps.
+  evidence: The NuGet registration lists 3.126.0 for Server, Contracts, Client, DomainService, Aspire and ServiceDefaults (Server published 2026-10-18T21:00:06Z). Platform's Builds catalog (`references/Hexalith.Builds`, 4aaeed8) and both Works props still select 3.125.1, and the spec's iteration 1 and 2 KEEP lists retain the 3.125.1 qualification. Selecting 3.126.0 needs an owner decision, a Builds submodule update and a fresh producer qualification. That work is outside this iteration's no-submodule scope.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: The executor-visible twelfth recovery source needs a retuned synthetic process profile: 1.9-second operations and a 56-second source quantum.
+  evidence: The Executor view shows only its own Assigned and the Queued work, and the eleven existing recovery sources all end terminal or `InProgress`, so delegated restart and rollback queries need one Assigned source. Under the previous profile (two-second operations, 60-second quantum) SDK validation cannot fit twelve sources in the 30-minute window. A five-effect envelope also needs a quantum of at least 29 operation timeouts. The retune is fixture-only and recorded in `docs/sdk-reminder-process-adoption.md`. If review prefers the original profile, the alternative is a separate executor-only fleet or a narrower rollback query proof.
+
+## Resolution evidence: Story 4.16 review iteration 3 corrections (2026-10-19)
+
+Historical entries above stay unchanged. The [corrections packet](evidence/story-4-16/review3-corrections-2026-10-19/README.md) binds these resolutions. It does not accept Story 4.16; independent review remains.
+
+- The Platform EventStore receiver now names exactly two callers (triage T131): `works` on its exact routes, and `eventstore-admin` with the selected producer's production-template grant (`/**`, GET/POST/PUT, `deploy/dapr/accesscontrol.yaml:34-46` at `v3.125.1`). Admin.Server's documented Dapr invocations of `eventstore` are no longer refused on Platform, so the two hosts no longer diverge there. EventStore authorization still protects the command surface, and `WorksDaprPolicyTests` pins both callers and their operations.
+- The held review iteration 3 patches T123, T126, T127, T129, T130, T132, T133, T155 and T157 are applied. The recovery alert raise must now follow the phase's observed Degraded state (T132), and the composition guard also refuses a fixture callback that removes a Platform key or rewrites it only where Platform composed it (T133).
+- The carried defers T112 (resiliency circuit breaker, logged as T22) and T148 (query-window batch reads, logged as T109) keep their existing entries above; no new defer was appended in iteration 3.

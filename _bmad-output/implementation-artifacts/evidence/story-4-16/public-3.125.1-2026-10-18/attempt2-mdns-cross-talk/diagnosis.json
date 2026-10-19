@@ -1,0 +1,67 @@
+{
+  "scope": "Canonical attempt 2 on public 3.125.1 failed in its live phase; diagnostics are non-qualifying and isolate an environment cross-talk defect in the fixture",
+  "canonicalCommand": "bash eng/verify-works-host.sh --works-root /home/administrator/projects/hexalith/works --runtime-sdk-root /tmp/story416-sdk-3.125.1-public-source --artifacts-path /tmp/story416-public-3.125.1-admission-run2",
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "exitCode": 1,
+  "preparation": "evidence gates, Agents Full refusal, LocalScaffold, Platform 92/92 per mode, Works Debug/Release builds, 200 supporting Release tests, official v3.125.1 commit/tree/tag qualification and five runtime prebuilds all passed",
+  "liveResult": {
+    "class": "WorksSdkRecoveryPipelineSmokeTests",
+    "total": 4,
+    "passed": 3,
+    "failed": 1,
+    "skipped": 0,
+    "failed_fact": "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "failurePoint": "WorksSdkRecoveryPipelineSmokeTests.cs:228 four-minute wait for the committed cascade-expiry effect"
+  },
+  "rootCause": {
+    "observation": "Every other Works -> EventStore workload stream read returned HTTP 500 in about 1 ms without reaching the gateway, which logged only 200 results for the same route",
+    "probe": "diagnostic replay of four keep-alive POSTs through the Works sidecar (dapr-app-id: eventstore) alternated 500/401/500/401",
+    "daprError": "ERR_DIRECT_INVOKE: failed to invoke, id: eventstore, err: rpc error: code = Unavailable desc = connection error: desc = \"transport: authentication handshake failed: tls: first record does not look like a TLS handshake\"",
+    "cause": "self-hosted daprd uses mDNS name resolution by default; an unrelated concurrent Tenants AppHost session ran a non-mTLS daprd with app-id eventstore (pid 83657, config /home/administrator/projects/hexalith/tenants/src/Hexalith.Tenants.AppHost/DaprComponents/accesscontrol.yaml), so the Works sidecar round-robined half of its invocations to that foreign sidecar",
+    "foreignProcessStopped": false
+  },
+  "correction": {
+    "files": [
+      "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolation.cs",
+      "tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolationTests.cs",
+      "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs"
+    ],
+    "behavior": "each live topology start derives every sidecar configuration from its exact committed/captured bytes plus one run-owned SQLite nameResolution block (busyTimeout 5s, timeout 2s, disableWAL) in an owned temporary directory removed at teardown, mirroring the Builds composition renderer's isolated discovery",
+    "firstIsolationAttempt": "diag6 used SQLite with default WAL; the Works sidecar failed initialization with SQLITE_BUSY while four sidecars migrated the fresh registry concurrently (diagnostics/diag6/sqlite-init-race.log)",
+    "unitTests": "12 deterministic WorksAppHostDiscoveryIsolationTests pass"
+  },
+  "diagnostics": {
+    "diag1": "unchanged consumer, same failure at line 228 (reproduction)",
+    "diag4": "unchanged consumer with ASP.NET debug logging plus the sidecar probe; same failure",
+    "diag6": "isolation with WAL; SQLITE_BUSY init race, command submission 500",
+    "diag7": "isolation with rollback journaling; placement health probe never became healthy within 180 s (environment flake, no fixture assertion reached)",
+    "diag8": "isolation with rollback journaling; restart/restore fact passed 1/1, 671.787 s, all four Platform starts and the retained start initialized SQLite discovery; non-qualifying because it reused attempt 2's consumer-independent runtime and a separately built consumer"
+  },
+  "checkedUtc": "2026-10-18T19:12:42.501871+00:00",
+  "filesSha256": {
+    "diagnostics/diag1/command.json": "608f4470fafdd49ac4e6ddb112f1b4b8663f23e7f658b4f22d3ce48895216d6b",
+    "diagnostics/diag1/result.xml": "ccfa1a10dc8e6ff291097bdfd9e25aa54af21e4bccd59672aa3929a157633a61",
+    "diagnostics/diag1/summary.log": "59cee356506b920abd623777e84a564d4801f0427c4631412c199ee4f476c356",
+    "diagnostics/diag4/command.json": "5c290db7323c2ec5b9221032238cbdfd65c629d4673b739e400b37656e35f9b5",
+    "diagnostics/diag4/result.xml": "c68b6095f4dd3aa2a577ff244b21a10495f622d48bb4a878dd028952c12cbcae",
+    "diagnostics/diag4/summary.log": "00c058a85edf69766528f6685eaad1823beb7613b1ed26f2c43b58bef9cffeaf",
+    "diagnostics/diag6/command.json": "b55dddf51a474cccfe9c97f1624ff46264651fd1cd45ab3296007cbb539e63cf",
+    "diagnostics/diag6/result.xml": "9847612bbd280df1a2be38661b7e3c93cf40f66c6b7fcc64619f99675b4e2d78",
+    "diagnostics/diag6/sqlite-init-race.log": "38b591436d46479e97567171501bb301047d9ada282a06064e281962857261dd",
+    "diagnostics/diag6/summary.log": "32ccf0cb62970261357a0f2f127806554cf10647202d3635694f59fd97b976e2",
+    "diagnostics/diag7/command.json": "d05baa56907977eddcb50e090027317e89b905d8c5db4610f06b9556b38cfdee",
+    "diagnostics/diag7/result.xml": "0f291adf386520509b3fac989599c91cd02b7264d9fcfd626ff823e7d0624ce1",
+    "diagnostics/diag7/summary.log": "bb804f06569d21b006970adee6b3edff5cc1998ba73d86655415b221160a1488",
+    "diagnostics/diag8/command.json": "da8cb26715b98a762882be724248c060dcf7a5fad9be33a6d2c841c9b1840fdf",
+    "diagnostics/diag8/persisted-states.jsonl.gz": "56a00569f508311d8a8ad4b62d3610aa26f9af15f96570b6173744d4d87ad639",
+    "diagnostics/diag8/result.xml": "35063b1bec32b4539b7331b1fb565fbecd178a8dd66eb4937bef7f3c43ee88d3",
+    "diagnostics/diag8/sqlite-init.log": "8d7b5a01f5bee4b9e70eccf15f1163f517e5f38860b05b9e6e3d017652a773bd",
+    "diagnostics/diag8/summary.log": "951fe3ffa82646e11c38d9d8388d3fc81fc57dd1fce0f95efa1576b553638cf2",
+    "host-starts.jsonl": "7911b6c6384dbd9db6857d430c6a625872380bed1016a01d3567db83643bc114",
+    "ledger.json": "25441a2e8ca8e6fa99a7d348b55cb7a4f71beb0d10a95e88287519d95059e17d",
+    "persisted-states.jsonl": "fe739d19447507c9f91f8c49089e04980e33e9bdec58be1368a61fcd265fa68e",
+    "platform-recovery.log": "cc3d2339693376337fda34edf5a07bff402aabc6cabff16aa18df1990666f753",
+    "platform-recovery.xml": "b1d2c1ae69438f8174395fddac7fcd4a15175ec6587aa1a6ff639823f5c01c89",
+    "stdout.log": "35462e50aecc4a1d2fc4c5e2640624154478e28caca7fc7aae28b31f4d6d1528"
+  }
+}

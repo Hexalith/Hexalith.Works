@@ -1,0 +1,54 @@
+{
+  "checkedUtc": "2026-10-19T06:53:49.061220+00:00",
+  "prepared": "/tmp/story416-review2-prep1",
+  "scope": "Diagnostic only: the five focused live facts on the --prepare-only outputs, then the verifier host-record and persisted-outcome gates applied to their combined records. The canonical run is the sole admission evidence.",
+  "runs": {
+    "callback1": {
+      "exitCode": 0,
+      "seconds": 154.9,
+      "target": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery"
+    },
+    "ha1": {
+      "exitCode": 0,
+      "seconds": 88.8,
+      "target": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+    },
+    "projection1": {
+      "exitCode": 0,
+      "seconds": 143.0,
+      "target": "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+    },
+    "historical1": {
+      "exitCode": 0,
+      "seconds": 125.3,
+      "target": "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart"
+    },
+    "restart1": {
+      "exitCode": 0,
+      "seconds": 665.7,
+      "target": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+    }
+  },
+  "compositeGates": {
+    "starts": 10,
+    "roles": {
+      "platform-target": 9,
+      "retained-rollback": 1
+    },
+    "rows": {
+      "R1": "passed",
+      "R2": "passed",
+      "R3": "passed",
+      "R4": "passed",
+      "R5": "passed",
+      "R6": "passed",
+      "R7": "passed",
+      "R8": "passed",
+      "R9": "passed",
+      "R10": "passed",
+      "R11": "passed"
+    },
+    "complete": true
+  },
+  "note": "The composite combines separate fleets; it exercises the gates on real records but does not qualify parity."
+}

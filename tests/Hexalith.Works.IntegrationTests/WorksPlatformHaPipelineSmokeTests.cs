@@ -31,7 +31,8 @@ public sealed class WorksPlatformHaPipelineSmokeTests
     [Fact]
     public async Task TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect()
     {
-        if (!WorksAppHostSelection.IsPlatform) return;
+        if (!WorksAppHostSelection.IsPlatform)
+            Assert.Skip("Runs only in the Platform verifier lane, which binds the actual Platform AppHost artifact.");
         CancellationToken ct = TestContext.Current.CancellationToken;
         (await WorksAppHostSmokeHarness.PrerequisiteGapAsync(ct).ConfigureAwait(true)).ShouldBeNull();
         WorksSdkProofRedis isolation = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
@@ -44,7 +45,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, gateway, sidecar, token) =>
         {
-            object trust = await WorksPlatformTrustChecks.VerifyAsync(isolation.CertificateDirectory!, token).ConfigureAwait(false);
+            object trust = await WorksPlatformTrustChecks.VerifyAsync(app, isolation.CertificateDirectory!, "works-dapr-cli", "works", "eventstore", token).ConfigureAwait(false);
             ResourceEvent primary = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
             ResourceEvent secondary = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works-ha", token, token).ConfigureAwait(false);
             primary.ResourceId.ShouldNotBe(secondary.ResourceId);
@@ -75,7 +76,8 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             }
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
             deadline.CancelAfter(TimeSpan.FromMinutes(3));
-            while (await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, deadline.Token).ConfigureAwait(false) != 1)
+            int resumed;
+            while ((resumed = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, deadline.Token).ConfigureAwait(false)) != 1)
                 await Task.Delay(200, deadline.Token).ConfigureAwait(false);
             using HttpClient survivor = WorksAppHostTestReadiness.CreateDaprClient(secondary, "Surviving Works");
             using DaprClient survivorDapr = new DaprClientBuilder().UseHttpEndpoint(Endpoint(secondary, "DAPR_HTTP_ENDPOINT"))
@@ -84,6 +86,8 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             string callbackKey = WorksPlatformReminderCallbackProbe.Key(actor);
             int beforeCallbacks = (await survivorStore.GetAsync<System.Text.Json.Nodes.JsonObject>("statestore", callbackKey, token).ConfigureAwait(false)).Value?["calls"]?.GetValue<int>() ?? 0;
             int afterCallbacks = beforeCallbacks;
+            bool retiredReminderRemovedAfterFiring = false;
+            string? firedReminder = null;
             // A stale witness is fired by the real Scheduler after the logical effect committed.
             using (HttpResponseMessage stale = await survivor.PutAsJsonAsync($"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{reminderName}",
                 new { dueTime = "1s", period = "0s", data = (object?)null }, token).ConfigureAwait(false)) stale.EnsureSuccessStatusCode();
@@ -99,21 +103,27 @@ public sealed class WorksPlatformHaPipelineSmokeTests
                     afterCallbacks = observation?["calls"]?.GetValue<int>() ?? 0;
                     if (reminder.StatusCode == System.Net.HttpStatusCode.NotFound && afterCallbacks > beforeCallbacks)
                     {
-                        observation!["reminder"]!.GetValue<string>().ShouldBe(reminderName);
+                        firedReminder = observation!["reminder"]!.GetValue<string>();
+                        firedReminder.ShouldBe(reminderName);
+                        retiredReminderRemovedAfterFiring = true;
                         break;
                     }
                     if (reminder.StatusCode != System.Net.HttpStatusCode.NotFound) reminder.EnsureSuccessStatusCode();
                     await Task.Delay(100, staleDeadline.Token).ConfigureAwait(false);
                 }
             }
-            (await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, token).ConfigureAwait(false)).ShouldBe(1);
+            // Re-observed after the stale firing: the committed resume count stays one.
+            int staleSchedulerFireResumed = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, token).ConfigureAwait(false);
+            staleSchedulerFireResumed.ShouldBe(1);
+            bool actualStaleCallbackObserved = afterCallbacks > beforeCallbacks && firedReminder == reminderName;
             if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_EVIDENCE_PATH") is { Length: > 0 } path)
                 await File.AppendAllTextAsync(path, JsonSerializer.Serialize(new
                 {
                     phase = "platform-two-host-ha-lost-firing-stale-callback-recovery",
                     state = new { primary = primary.ResourceId, secondary = secondary.ResourceId,
                         primarySidecar = Endpoint(primary, "DAPR_HTTP_ENDPOINT"), secondarySidecar = Endpoint(secondary, "DAPR_HTTP_ENDPOINT"),
-                        actor, reminderName, trust, stoppedPrimary = true, stoppedPrimarySidecar = true, resumed = 1, retiredReminderRemovedAfterFiring = true, beforeCallbacks, afterCallbacks, actualStaleCallbackObserved = true, staleSchedulerFireResumed = 1 },
+                        actor, reminderName, firedReminder, trust, stoppedPrimary = stopped.Success, stoppedPrimarySidecar = sidecarStopped.Success, resumed,
+                        retiredReminderRemovedAfterFiring, beforeCallbacks, afterCallbacks, actualStaleCallbackObserved, staleSchedulerFireResumed },
                 }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>
         {
@@ -131,26 +141,27 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         string platform = Environment.GetEnvironmentVariable("WORKS_PLATFORM_ROOT")!;
         string works = Environment.GetEnvironmentVariable("WORKS_PLATFORM_WORKS_ROOT") ?? Path.GetFullPath(Path.Combine(platform, "..", "works"));
         IResourceBuilder<ProjectResource> replica = builder.AddProject("works-ha", Path.Combine(works, "src", "Hexalith.Works", "Hexalith.Works.csproj")).WithHttpEndpoint();
-        // Each resource owns its environment annotations. Copying callbacks from another project
-        // also copies their captured mutable state and endpoint bindings, so configure this host explicitly.
-        replica.WithEnvironment("Works__Query__GatewayWorkloadId", "eventstore")
-            .WithEnvironment("Authentication__Workload__Audience", "works")
-            .WithEnvironment("Authentication__WorkloadIssuer__Workload", "works")
-            .WithEnvironment("Authentication__JwtBearer__Authority", string.Empty)
-            .WithEnvironment("Authentication__JwtBearer__Issuer", "hexalith-dev")
-            .WithEnvironment("Authentication__JwtBearer__Audience", HexalithEventStoreSecurityOptions.DefaultAudience)
-            .WithEnvironment("Authentication__JwtBearer__ValidAudiences__0", HexalithEventStoreSecurityOptions.DefaultAudience)
-            .WithEnvironment("Authentication__JwtBearer__SigningKey", WorksAppHostSmokeHarness.DevSigningKey)
-            .WithEnvironment("Authentication__JwtBearer__RequireHttpsMetadata", "false");
+        // Each resource owns its environment annotations. Re-registering another project's callbacks would
+        // also share their captured state and endpoint bindings. Instead, evaluate only the callbacks Platform
+        // composed for its works host, into a scratch dictionary, and copy the named string values. The replica
+        // therefore runs Platform's own runtime hook, hosting startup, SDK modes and workload callers.
+        EnvironmentCallbackAnnotation[] platformComposition = [.. primary.Annotations.OfType<EnvironmentCallbackAnnotation>()];
+        replica.WithEnvironment(async context =>
+        {
+            var composed = new Dictionary<string, object>(StringComparer.Ordinal);
+            foreach (EnvironmentCallbackAnnotation callback in platformComposition)
+                await callback.Callback(new EnvironmentCallbackContext(context.ExecutionContext, primary, composed, context.CancellationToken)).ConfigureAwait(false);
+            foreach ((string name, string value) in PlatformComposedValues(composed))
+                context.EnvironmentVariables[name] = value;
+        });
         var resources = new HexalithEventStoreResources(
             builder.CreateResourceBuilder((IDaprComponentResource)builder.Resources.Single(resource => resource.Name == "statestore")),
             builder.CreateResourceBuilder((IDaprComponentResource)builder.Resources.Single(resource => resource.Name == "pubsub")),
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore")),
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore-admin")));
-        foreach (ProjectResource host in new[] { primary, replica.Resource })
-            builder.CreateResourceBuilder(host)
-                .WithEnvironment("EventStore__CommandGateway__BaseAddress", resources.EventStore.GetEndpoint("http"))
-                .WithEnvironment("Works__Query__PartiesGatewayBaseAddress", resources.EventStore.GetEndpoint("http"));
+        // Platform composes the command gateway on its own works host. The replica receives the same endpoint
+        // reference; the fixture never re-sets a key Platform composed on the primary.
+        replica.WithEnvironment("EventStore__CommandGateway__BaseAddress", resources.EventStore.GetEndpoint("http"));
         replica.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://localhost:{replica.GetEndpoint("http").Property(EndpointProperty.TargetPort)}"));
         replica.AddEventStoreDomainModule(resources, "works", Path.Combine(platform, "DaprComponents", "accesscontrol.works.yaml"),
             daprPlacementHostAddress: "localhost:51005", daprSchedulerHostAddress: "localhost:51006");
@@ -163,6 +174,29 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         replica.WaitFor(resources.StateStore).WithHttpHealthCheck("/ready");
         foreach (WaitAnnotation wait in replica.Resource.Annotations.OfType<WaitAnnotation>()
             .Where(wait => ReferenceEquals(wait.Resource, resources.EventStore.Resource)).ToArray()) replica.Resource.Annotations.Remove(wait);
+    }
+
+    /// <summary>Selects the Platform-composed works values a replica must share, refusing any that Platform did not compose.</summary>
+    /// <param name="composed">The environment Platform composed for its works host.</param>
+    /// <returns>The mirrored names and string values.</returns>
+    internal static IReadOnlyList<(string Name, string Value)> PlatformComposedValues(IReadOnlyDictionary<string, object> composed)
+    {
+        // DOTNET_ENVIRONMENT too: on an actual Platform start the fixture no longer sets it, so the replica takes Platform's value.
+        string[] required = ["DOTNET_ENVIRONMENT", "WORKS_PLATFORM_RUNTIME", "DOTNET_STARTUP_HOOKS", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+            "Works__Projection__UseSdkDelivery", "Works__Recovery__UseSdkRuntime", "Works__Query__GatewayWorkloadId",
+            "Authentication__Workload__Audience", "Authentication__WorkloadIssuer__Workload", "Authentication__Workload__AllowedCallers__0"];
+        string[] prefixed = [.. composed.Keys.Where(name => name.StartsWith("Authentication__Workload__AllowedCallers__", StringComparison.Ordinal)
+            || name.StartsWith("Authentication__JwtBearer__", StringComparison.Ordinal))];
+        List<(string Name, string Value)> values = [];
+        foreach (string name in required.Union(prefixed, StringComparer.Ordinal).Order(StringComparer.Ordinal))
+        {
+            if (!composed.TryGetValue(name, out object? value) || value is not string text
+                || (text.Length == 0 && name != "Authentication__JwtBearer__Authority"))
+                throw new InvalidOperationException("Platform did not compose a string " + name + " value for its works host.");
+            values.Add((name, text));
+        }
+
+        return values;
     }
 
     private static async Task<string> WaitWitnessAsync(IReadModelStore store, string key, CancellationToken cancellationToken)

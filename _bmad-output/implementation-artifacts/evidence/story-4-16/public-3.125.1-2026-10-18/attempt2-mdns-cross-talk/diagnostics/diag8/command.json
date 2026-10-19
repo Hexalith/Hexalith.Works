@@ -1,0 +1,19 @@
+{
+  "command": [
+    "/tmp/story416-3125-diag5-consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "-result-xml",
+    "/tmp/story416-3125-diag8/result.xml"
+  ],
+  "extraEnv": {
+    "Logging__LogLevel__Microsoft.AspNetCore": "Debug",
+    "Logging__LogLevel__Microsoft.AspNetCore.Authentication": "Debug",
+    "Logging__LogLevel__Microsoft.AspNetCore.Authorization": "Debug",
+    "Logging__LogLevel__Microsoft.AspNetCore.Server.Kestrel": "Debug",
+    "Logging__LogLevel__Microsoft.AspNetCore.Diagnostics": "Debug",
+    "Logging__LogLevel__Microsoft.AspNetCore.RateLimiting": "Debug"
+  },
+  "scope": "diagnostic only"
+}

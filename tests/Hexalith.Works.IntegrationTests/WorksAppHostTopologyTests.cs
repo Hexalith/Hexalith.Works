@@ -218,6 +218,12 @@ public sealed class WorksAppHostTopologyTests
                 .ShouldBe(["EventStore__Publisher__TopicOverrides__work"]);
             EnvironmentKeys(eventStoreEnvironment, "Authentication__DaprInternal__AllowedCallers__")
                 .ShouldBe(["Authentication__DaprInternal__AllowedCallers__0"]);
+            // The retained proof topology raises both limiters so internal actor/projection traffic is not rejected
+            // with 429; the dropped projection update itself is a tracked EventStore defect.
+            StringValue(eventStoreEnvironment, "EventStore__RateLimiting__PermitLimit").ShouldBe("100000");
+            StringValue(eventStoreEnvironment, "EventStore__RateLimiting__ConsumerPermitLimit").ShouldBe("100000");
+            EnvironmentKeys(eventStoreEnvironment, "EventStore__RateLimiting__")
+                .ShouldBe(["EventStore__RateLimiting__ConsumerPermitLimit", "EventStore__RateLimiting__PermitLimit"]);
 
             Dictionary<string, object> worksEnvironment = await EvaluateEnvironmentAsync(works, builder.ExecutionContext);
             StringValue(worksEnvironment, "EventStore__DomainService__AppId").ShouldBe(WorksName);
