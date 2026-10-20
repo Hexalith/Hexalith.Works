@@ -1,0 +1,102 @@
+{
+  "ledger.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/ledger.json",
+    "sourceSha256": "366af0127fa5cb37359569507fdb0642ea7e5033b1b3365c5d3782bf5f693437",
+    "sha256": "366af0127fa5cb37359569507fdb0642ea7e5033b1b3365c5d3782bf5f693437"
+  },
+  "gate-command.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/gate-command.json",
+    "sourceSha256": "e8d39b541c00bf799e7a880b76881c825ec7af9fb23f9b8670f0c2add366cb32",
+    "sha256": "e8d39b541c00bf799e7a880b76881c825ec7af9fb23f9b8670f0c2add366cb32"
+  },
+  "platform-mtls.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-mtls.log",
+    "sourceSha256": "dff5b7e93b0f7da4228a2817714808555f8d4d8f7c8ec4efee7f7dd8218dc59d",
+    "sha256": "dff5b7e93b0f7da4228a2817714808555f8d4d8f7c8ec4efee7f7dd8218dc59d"
+  },
+  "platform-mtls.xml": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-mtls.xml",
+    "sourceSha256": "7a0168310041b4ab6c90da004dcaa8b3cc41d06049b3338b6a7e1bd830370810",
+    "sha256": "7a0168310041b4ab6c90da004dcaa8b3cc41d06049b3338b6a7e1bd830370810"
+  },
+  "platform-recovery.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-recovery.log",
+    "sourceSha256": "a639a3c167bae07427630b3c352a93b3601dc3610dcd2a0be6535274a0b1e681",
+    "sha256": "a639a3c167bae07427630b3c352a93b3601dc3610dcd2a0be6535274a0b1e681"
+  },
+  "platform-recovery.xml": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-recovery.xml",
+    "sourceSha256": "41f98743e49adc8159470989ed97413f1b3afff662754f28dd9d92f77f019307",
+    "sha256": "41f98743e49adc8159470989ed97413f1b3afff662754f28dd9d92f77f019307"
+  },
+  "platform-historical.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-historical.log",
+    "sourceSha256": "fec3adf09a4bbb0e0ccc103014d1c4bef5f763505ab475ba201ae7d466184801",
+    "sha256": "fec3adf09a4bbb0e0ccc103014d1c4bef5f763505ab475ba201ae7d466184801"
+  },
+  "platform-historical.xml": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-historical.xml",
+    "sourceSha256": "edd2ed2144d74b088d6cfad812bc68cf58310850970b6a27d100ac9c2f86a3e1",
+    "sha256": "edd2ed2144d74b088d6cfad812bc68cf58310850970b6a27d100ac9c2f86a3e1"
+  },
+  "platform-ha.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-ha.log",
+    "sourceSha256": "e2693086154e29439a8b5401f20f9ae1e9266671f67e7b16d235b04bf1848537",
+    "sha256": "e2693086154e29439a8b5401f20f9ae1e9266671f67e7b16d235b04bf1848537"
+  },
+  "platform-ha.xml": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/platform-ha.xml",
+    "sourceSha256": "caae64ea8b603fbd97741412a6e9ef13e1201347df24afe84ecdb76802361616",
+    "sha256": "caae64ea8b603fbd97741412a6e9ef13e1201347df24afe84ecdb76802361616"
+  },
+  "retained-preflight.xml": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/retained-preflight.xml",
+    "sourceSha256": "ea347e38febd036e6a8fcb27713ad12b44cd15f141eaa7c059c54de166699b64",
+    "sha256": "ea347e38febd036e6a8fcb27713ad12b44cd15f141eaa7c059c54de166699b64"
+  },
+  "capacity-check.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/capacity-check.json",
+    "sourceSha256": "582d89441460f0cd0ccef544a1652729d68e91531a6c3633b8861a0f25529919",
+    "sha256": "582d89441460f0cd0ccef544a1652729d68e91531a6c3633b8861a0f25529919"
+  },
+  "builds-source-binding.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/builds-source-binding.json",
+    "sourceSha256": "9b5913cf78ce900042f6d2d6605817781d89ca5f97a9b80ed7462d84f8e43aad",
+    "sha256": "9b5913cf78ce900042f6d2d6605817781d89ca5f97a9b80ed7462d84f8e43aad"
+  },
+  "host-starts.jsonl.gz": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/host-starts.jsonl",
+    "sourceSha256": "cede7aaed5be55b5f12a450ecc7a1942bf5c2d18b2d0c92c09e8d05d7a1591fc",
+    "sha256": "cd56c3ccb80a07faa5c3f27ba713aa7bd042b47e09cb78ea936ee14a63f81662"
+  },
+  "persisted-states.jsonl.gz": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/persisted-states.jsonl",
+    "sourceSha256": "90edc7ac82656d43745d4c6a6189cdc59216d9faaebbdeead002dbfa71f58d6d",
+    "sha256": "f42dfe09669222eb5aaf40b53923a0eb04f614aa0656390fd2779063254f2b58"
+  },
+  "isolated-daprd/binding.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/isolated-daprd/binding.json",
+    "sourceSha256": "84d66a4e392959f188e29e626e2e1f61a09d87c6f2902dac6bb5316ca7bfb63c",
+    "sha256": "84d66a4e392959f188e29e626e2e1f61a09d87c6f2902dac6bb5316ca7bfb63c"
+  },
+  "isolated-daprd/launches.jsonl": {
+    "source": "/mnt/wsl/story49-gate-final-20261020-attempt2/isolated-daprd/launches.jsonl",
+    "sourceSha256": "04b215f1a218c85f9a80bbcfa9e47cc22f88e52dda139b12e2470567d31f2131",
+    "sha256": "04b215f1a218c85f9a80bbcfa9e47cc22f88e52dda139b12e2470567d31f2131"
+  },
+  "platform-source-binding.json": {
+    "source": "/mnt/wsl/story49-platform-source-after-debugger.json",
+    "sourceSha256": "c3d81c41e8baf05116e85d422964b7c98a53dd5db4863e0c648dc2603a73da80",
+    "sha256": "c3d81c41e8baf05116e85d422964b7c98a53dd5db4863e0c648dc2603a73da80"
+  },
+  "verifier-inputs/verify_works_host.py": {
+    "source": "/mnt/wsl/story49-platform-final-source/eng/verify_works_host.py",
+    "sourceSha256": "2946a9089c3f75ffe1cac5d6c19c08b8ea04784d2f16cfb32127091034339940",
+    "sha256": "2946a9089c3f75ffe1cac5d6c19c08b8ea04784d2f16cfb32127091034339940"
+  },
+  "verifier-inputs/test_verify_works_host.py": {
+    "source": "/mnt/wsl/story49-platform-final-source/eng/test_verify_works_host.py",
+    "sourceSha256": "873d6210db2603f271644676b48867a152ce6732a363dd3bc58f2f2608a00af6",
+    "sha256": "873d6210db2603f271644676b48867a152ce6732a363dd3bc58f2f2608a00af6"
+  }
+}

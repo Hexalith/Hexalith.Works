@@ -1,0 +1,9 @@
+{
+  "reason": "Required legacy mTLS fact has no owned Redis/Scheduler/synthetic SDK authority configuration and defaults to pre-existing localhost:6379. Cancel before it can run; adapt fixture and require exact focused security proof before a new complete gate.",
+  "cancelledOnlyPid": 2330345,
+  "exactProcessCommand": "/mnt/wsl/story49-gate-20261020/artifacts/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests -noLogo -explicit on -class Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests -result-xml /mnt/wsl/story49-gate-20261020/artifacts/platform-recovery.xml",
+  "signal": "SIGINT",
+  "observedAt": "2026-10-20T15:08:28.296445+00:00",
+  "fixture": "tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs",
+  "fixtureSha256": "cf4dca5b80f29b7ccfc1e237a5ea3ad685e722b8730476ad9328453755cc751b"
+}

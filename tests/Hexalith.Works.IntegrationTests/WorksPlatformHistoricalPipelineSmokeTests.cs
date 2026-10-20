@@ -42,7 +42,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
     private const string Party = "party-416-executor";
 
     /// <summary>Persists historical semantics, refuses unauthorized traffic and preserves views across actual target restart.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart()
     {
         if (!WorksAppHostSelection.IsPlatform)

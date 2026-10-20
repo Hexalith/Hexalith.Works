@@ -1,0 +1,45 @@
+{
+  "observedAt": "2026-10-20T14:54:36.692963+00:00",
+  "filesystem": "existing /mnt/wsl tmpfs; no mount/system/external-storage change",
+  "nativeExecutionExitCode": 0,
+  "nativeExecutableSha256": "913a39cd38f353497086bcf317b12f91f93c23b51869cea763b8340b4f84cfd3",
+  "dockerCommand": [
+    "docker",
+    "run",
+    "--rm",
+    "--name",
+    "story49-storage-probe-20261020",
+    "--mount",
+    "type=bind,source=/mnt/wsl/story49-storage-probe-20261020,target=/proof,readonly",
+    "--entrypoint",
+    "/bin/sh",
+    "redis:7.4-alpine",
+    "-c",
+    "cat /proof/probe.txt"
+  ],
+  "dockerExitCode": 0,
+  "bindReadExact": true,
+  "availableBytes": 48487030784,
+  "estimatedGatePeakBytes": 5368709120,
+  "requiredHeadroomBytes": 10737418240,
+  "meminfo": {
+    "MemAvailable": "51805640 kB",
+    "SwapFree": "28567544 kB"
+  },
+  "secondObservation": {
+    "observedAt": "2026-10-20T14:55:18.576811+00:00",
+    "availableBytes": 48478625792,
+    "rootAvailableBytes": 4818829312,
+    "freeInodes": 11842249
+  },
+  "liveObservation": {
+    "observedAt": "2026-10-20T15:03:49.709400+00:00",
+    "availableBytes": 47533240320,
+    "rootAvailableBytes": 3726794752
+  },
+  "finalRunLiveObservation": {
+    "observedAt": "2026-10-20T15:31:38.761738+00:00",
+    "availableBytes": 46461743104,
+    "rootAvailableBytes": 7178940416
+  }
+}

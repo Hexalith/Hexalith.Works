@@ -20,7 +20,6 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Reactor;
-using Hexalith.Works.Recovery.Cascade;
 using Hexalith.Works.Recovery;
 using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
@@ -88,191 +87,7 @@ public sealed class WorksSdkRecoverySourceTests
     private static readonly IOptions<WorksProjectionOptions> s_sdkOptions =
         Options.Create(new WorksProjectionOptions { UseSdkDelivery = true });
 
-    [Fact]
-    public async Task Pending_date_source_discovers_sdk_tenants_and_uses_stream_truth_over_pinned_index()
-    {
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, "work-pending", Suspended(TenantA, "work-pending"));
-        await SeedAsync(coordinator, TenantB, "work-resumed", Suspended(TenantB, "work-resumed"));
-        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey,
-            new PendingDateAwaitTenantRegistry { Tenants = { "tenant-legacy-only" } },
-            TestContext.Current.CancellationToken);
 
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call =>
-            {
-                StreamReadRequest request = call.ArgAt<StreamReadRequest>(0);
-                return Task.FromResult(request.Tenant switch
-                {
-                    TenantA => Story48Streams.Page(TenantA, "work-pending",
-                        Created(TenantA, "work-pending"), Suspended(TenantA, "work-pending")),
-                    TenantB => Story48Streams.Page(TenantB, "work-resumed",
-                        Created(TenantB, "work-resumed"), Suspended(TenantB, "work-resumed"),
-                        new WorkItemResumed("work-resumed", 3, new TenantId(TenantB),
-                            new WorkItemId("work-resumed"), AwaitCondition.DateReached(s_instant))),
-                    _ => throw new InvalidOperationException("An unregistered tenant was scanned."),
-                });
-            });
-        var source = NewPendingSource(store, gateway, coordinator);
-
-        PendingDateAwaitScanResult scan = await source.GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken);
-
-        PendingDateAwait pending = scan.Pending.ShouldHaveSingleItem();
-        pending.TenantId.ShouldBe(TenantA);
-        pending.WorkItemId.ShouldBe("work-pending");
-        await gateway.Received(2).ReadStreamAsync(
-            Arg.Is<StreamReadRequest>(request => request.AggregateId != null), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Pending_date_source_reports_partial_sdk_candidate_failure_without_losing_healthy_stream()
-    {
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, "work-good", Suspended(TenantA, "work-good"));
-        await SeedAsync(coordinator, TenantA, "work-unreadable", Suspended(TenantA, "work-unreadable"));
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call => call.ArgAt<StreamReadRequest>(0).AggregateId == "work-good"
-                ? Task.FromResult(Story48Streams.Page(TenantA, "work-good",
-                    Created(TenantA, "work-good"), Suspended(TenantA, "work-good")))
-                : Task.FromException<StreamReadPage>(new HttpRequestException("stream unavailable")));
-
-        PendingDateAwaitScanIncompleteException error = await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(
-            () => NewPendingSource(store, gateway, coordinator)
-                .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken));
-
-        error.FailedTenantCount.ShouldBe(0);
-        error.FailedCandidateCount.ShouldBe(1);
-        error.PartialResults.ShouldHaveSingleItem().WorkItemId.ShouldBe("work-good");
-    }
-
-    [Fact]
-    public async Task Pending_date_source_does_not_borrow_parking_from_an_older_generation()
-    {
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, "work-good", Suspended(TenantA, "work-good"));
-        await SeedAsync(coordinator, TenantA, "work-missing-parking", Suspended(TenantA, "work-missing-parking"));
-        await PromoteWithoutAsync(coordinator, TenantA,
-            ["work-good", "work-missing-parking"],
-            workItemId => [Created(TenantA, workItemId), Suspended(TenantA, workItemId)],
-            WorksReadModelKeys.RuntimeParkingKey("work-missing-parking"));
-
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call => Task.FromResult(Story48Streams.Page(TenantA,
-                call.ArgAt<StreamReadRequest>(0).AggregateId!,
-                Created(TenantA, call.ArgAt<StreamReadRequest>(0).AggregateId!),
-                Suspended(TenantA, call.ArgAt<StreamReadRequest>(0).AggregateId!))));
-
-        PendingDateAwaitScanIncompleteException error = await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(
-            () => NewPendingSource(store, gateway, coordinator)
-                .GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken));
-
-        error.FailedCandidateCount.ShouldBe(1);
-        error.PartialResults.ShouldHaveSingleItem().WorkItemId.ShouldBe("work-good");
-        await gateway.DidNotReceive().ReadStreamAsync(Arg.Is<StreamReadRequest>(request =>
-            request.AggregateId == "work-missing-parking"), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Cascade_source_uses_parent_stream_and_one_sdk_generation_for_child_terminality()
-    {
-        const string parent = "parent-sdk";
-        const string terminal = "child-terminal";
-        const string missing = "child-untracked";
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, terminal,
-            new WorkItemCancelled(terminal, 2, new TenantId(TenantA), new WorkItemId(terminal)));
-        await store.SaveAsync(WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(TenantA, terminal),
-            new WorkItemRollUp(new TenantId(TenantA), new WorkItemId(terminal), WorkItemStatus.InProgress,
-                null, null, null, [], [], 1), TestContext.Current.CancellationToken);
-
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(ParentPage(parent, terminal, missing));
-        var source = new StreamReadingCascadeDescendantSource(gateway, store,
-            Options.Create(new WorksRecoveryOptions()), NullLogger<StreamReadingCascadeDescendantSource>.Instance,
-            s_sdkOptions, coordinator);
-
-        IReadOnlyList<CascadeDescendant> descendants = await source.GetDescendantsAsync(
-            TenantA, parent, TestContext.Current.CancellationToken);
-
-        descendants.Count.ShouldBe(2);
-        descendants.Single(child => child.WorkItemId.Value == terminal).IsTerminal.ShouldBeTrue();
-        descendants.Single(child => child.WorkItemId.Value == missing).IsTerminal.ShouldBeFalse();
-        await gateway.Received(1).ReadStreamAsync(Arg.Is<StreamReadRequest>(request =>
-            request.Tenant == TenantA && request.AggregateId == parent), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Cascade_source_treats_missing_current_rollup_as_active_even_when_old_generation_was_terminal()
-    {
-        const string parent = "parent-sdk";
-        const string child = "child-terminal";
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, child,
-            new WorkItemCancelled(child, 2, new TenantId(TenantA), new WorkItemId(child)));
-        await PromoteWithoutAsync(coordinator, TenantA, [child],
-            workItemId => [Created(TenantA, workItemId),
-                new WorkItemCancelled(workItemId, 2, new TenantId(TenantA), new WorkItemId(workItemId))],
-            WorksReadModelKeys.RuntimeRollUpKey(child));
-
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(ParentPage(parent, child));
-        var source = new StreamReadingCascadeDescendantSource(gateway, store,
-            Options.Create(new WorksRecoveryOptions()), NullLogger<StreamReadingCascadeDescendantSource>.Instance,
-            s_sdkOptions, coordinator);
-
-        IReadOnlyList<CascadeDescendant> descendants = await source.GetDescendantsAsync(
-            TenantA, parent, TestContext.Current.CancellationToken);
-
-        descendants.ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Pending_date_source_reports_incomplete_when_restarted_sdk_family_has_conflict_or_orphan_parking(bool parking)
-    {
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, "pending", Suspended(TenantA, "pending"));
-        await DegradeAsync(coordinator, "pending", parking);
-        var restarted = new SharedProjectionEpochCoordinator(store, store);
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        var error = await Should.ThrowAsync<PendingDateAwaitScanIncompleteException>(() =>
-            NewPendingSource(store, gateway, restarted).GetPendingDateAwaitsAsync(TestContext.Current.CancellationToken));
-        error.FailedTenantCount.ShouldBe(1);
-        error.PartialResults.ShouldBeEmpty();
-        await gateway.DidNotReceive().ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>());
-    }
-
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task Cascade_source_keeps_terminal_child_active_when_restarted_sdk_family_has_conflict_or_orphan_parking(bool parking)
-    {
-        const string child = "terminal";
-        var store = new InMemoryReadModelStore();
-        var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        await SeedAsync(coordinator, TenantA, child, new WorkItemCancelled(child, 2, new TenantId(TenantA), new WorkItemId(child)));
-        await DegradeAsync(coordinator, child, parking);
-        var restarted = new SharedProjectionEpochCoordinator(store, store);
-        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(ParentPage("parent", child));
-        var source = new StreamReadingCascadeDescendantSource(gateway, store, Options.Create(new WorksRecoveryOptions()),
-            NullLogger<StreamReadingCascadeDescendantSource>.Instance, s_sdkOptions, restarted);
-        (await source.GetDescendantsAsync(TenantA, "parent", TestContext.Current.CancellationToken))
-            .ShouldHaveSingleItem().IsTerminal.ShouldBeFalse();
-    }
 
     /// <summary>Offboarding removes discovery membership and reconstructed catalogs never resurrect it.</summary>
     [Fact]
@@ -495,10 +310,7 @@ public sealed class WorksSdkRecoverySourceTests
         else result.ShouldBe(SharedProjectionJournalResult.IdentityConflict);
     }
 
-    private static IndexedPendingDateAwaitSource NewPendingSource(
-        IReadModelStore store, IEventStoreGatewayClient gateway, SharedProjectionEpochCoordinator coordinator)
-        => new(store, gateway, Options.Create(new WorksRecoveryOptions()),
-            NullLogger<IndexedPendingDateAwaitSource>.Instance, s_sdkOptions, coordinator);
+
 
     private static async Task SeedAsync(SharedProjectionEpochCoordinator coordinator, string tenantId,
         string workItemId, IEventPayload secondEvent)

@@ -115,7 +115,7 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
     public static DomainResult Handle(LinkConversation command, WorkItemState? state, CommandEnvelope envelope)
     {
         RefuseReservedTenant(command, static value => value.TenantId, envelope);
-        if (!string.Equals(envelope.Domain, WorkCommandSubmission.WorkDomain, StringComparison.Ordinal)
+        if (!string.Equals(envelope.Domain, "work", StringComparison.Ordinal)
             || !string.Equals(envelope.TenantId, command.TenantId?.Value, StringComparison.Ordinal)
             || !string.Equals(envelope.AggregateId, command.WorkItemId?.Value, StringComparison.Ordinal))
         {

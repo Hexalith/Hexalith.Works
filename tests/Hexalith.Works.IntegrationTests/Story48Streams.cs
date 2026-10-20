@@ -40,7 +40,7 @@ internal static class Story48Streams
 
         return new StreamReadPage(
             tenant,
-            WorkCommandSubmission.WorkDomain,
+            "work",
             aggregateId,
             streamEvents,
             new StreamReadMetadata(

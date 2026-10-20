@@ -58,11 +58,11 @@ internal static class WorksAppHostSmokeHarness
     private static string SchedulerVolumeName => WorksAppHostSelection.SchedulerVolumeName;
 
     /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
-    private static readonly (int Port, string Name)[] ControlPlanePorts =
+    private static (int Port, string Name)[] ControlPlanePorts =>
     [
-        (50001, "dapr-sentry"),
-        (51005, "dapr-placement-mtls"),
-        (51006, "dapr-scheduler-mtls"),
+        (WorksAppHostSelection.ControlPlanePorts.Sentry, "dapr-sentry"),
+        (WorksAppHostSelection.ControlPlanePorts.Placement, "dapr-placement-mtls"),
+        (WorksAppHostSelection.ControlPlanePorts.Scheduler, "dapr-scheduler-mtls"),
     ];
 
     /// <summary>Both loopback address families that must be free before a fixed-port topology starts.</summary>
@@ -95,6 +95,20 @@ internal static class WorksAppHostSmokeHarness
 
     private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder, string discovery)
     {
+        (int sentryPort, int placementPort, int schedulerPort) = WorksAppHostSelection.ControlPlanePorts;
+        if (WorksAppHostSelection.IsPlatform)
+        {
+            foreach ((string name, int port) in new[] { ("dapr-sentry", sentryPort), ("dapr-placement-mtls", placementPort), ("dapr-scheduler-mtls", schedulerPort) })
+                builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == name)
+                    .Annotations.OfType<EndpointAnnotation>().Single(endpoint => endpoint.Name == "grpc").Port = port;
+            ContainerResource scheduler = builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-scheduler-mtls");
+            builder.CreateResourceBuilder(scheduler).WithArgs(context =>
+            {
+                for (int index = 0; index < context.Args.Count; index++)
+                    if (context.Args[index] is string value && value.StartsWith("--override-broadcast-host-port=localhost:", StringComparison.Ordinal))
+                        context.Args[index] = "--override-broadcast-host-port=localhost:" + schedulerPort.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            });
+        }
         // Control-plane endpoints remain fixed and ownership-checked. Application and sidecar
         // proxies are disposable: never route synthetic proof traffic to another local AppHost.
         // Name resolution is isolated too: default mDNS discovery would round-robin this start's
@@ -109,7 +123,8 @@ internal static class WorksAppHostSmokeHarness
             {
                 isolated = Path.Combine(discovery, isolatedConfigurations.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
                     + "-" + Path.GetFileName(configuration));
-                File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(File.ReadAllText(configuration), registry));
+                File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(File.ReadAllText(configuration), registry,
+                    WorksAppHostSelection.IsPlatform ? sentryPort : null));
                 isolatedConfigurations[configuration] = isolated;
             }
 
@@ -129,6 +144,10 @@ internal static class WorksAppHostSmokeHarness
                 AppPort = null, DaprHttpPort = null, DaprGrpcPort = null,
                 DaprInternalGrpcPort = null, MetricsPort = null,
                 Config = Isolated(annotation.Options.Config),
+                RuntimePath = WorksAppHostSelection.IsPlatform
+                    ? Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH") ?? annotation.Options.RuntimePath : annotation.Options.RuntimePath,
+                PlacementHostAddress = WorksAppHostSelection.IsPlatform ? "localhost:" + placementPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.PlacementHostAddress,
+                SchedulerHostAddress = WorksAppHostSelection.IsPlatform ? "localhost:" + schedulerPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.SchedulerHostAddress,
             }));
             string cliName = dapr.Sidecar.Name + "-cli";
             builder.CreateResourceBuilder(project).WithEnvironment(context =>
@@ -229,6 +248,7 @@ internal static class WorksAppHostSmokeHarness
     /// </summary>
     public static async Task<string?> PrerequisiteGapAsync(CancellationToken cancellationToken)
     {
+        if (!WorksAppHostSelection.IsPlatform) return "Select the actual Platform host through Platform eng/verify-works-host.sh for live hosting proofs.";
         if (!await IsPortReachableAsync(DaprInitRedisPort, cancellationToken).ConfigureAwait(false))
         {
             string gap = $"the dapr-init Redis on :{DaprInitRedisPort} is not reachable. Start Docker and run `dapr init`";
@@ -288,23 +308,27 @@ internal static class WorksAppHostSmokeHarness
         return output.ToString();
     }
 
-    /// <summary>
-    /// Starts the full AppHost topology with NO recovery-tenant configuration (Story 4.8: recovery discovers
-    /// tenants from the durable registry), waits for eventstore + works to be healthy, runs the body against the
-    /// eventstore gateway client, and disposes both the application and the builder — so the next call is a
-    /// genuine restart.
-    /// </summary>
+    /// <summary>Refuses the shared default providers before any live resource can start.</summary>
+    internal static void RequireOwnedPlatformFixture(bool platform, bool configured, string? schedulerVolume, string? certificates)
+    {
+        if (platform && (!configured || schedulerVolume is null || !schedulerVolume.StartsWith("works-sdk416-", StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(certificates) || !Path.IsPathFullyQualified(certificates)))
+            throw new InvalidOperationException("Platform live proofs require explicit owned SDK configuration, Scheduler volume and certificates.");
+    }
+
+    /// <summary>Starts the owned SDK topology, verifies readiness, runs the proof and disposes it for a genuine restart.</summary>
     public static async Task WithAppHostAsync(
         CancellationToken cancellationToken,
         Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body,
         Action<IDistributedApplicationTestingBuilder>? configure = null,
-        string actorTypeName = nameof(DateReminderActor),
+        string actorTypeName = "WorksSdkReminderActor",
         bool expectWorksReadinessDegraded = false,
         string? schedulerVolumeName = null,
         string? certificateDirectory = null,
         bool useRetainedHost = false)
     {
         ArgumentNullException.ThrowIfNull(body);
+        RequireOwnedPlatformFixture(WorksAppHostSelection.IsPlatform, configure is not null, schedulerVolumeName, certificateDirectory);
 
         // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
         // every start so teardown lag from the first run cannot race the second scheduler/placement bind. Once
@@ -322,7 +346,7 @@ internal static class WorksAppHostSmokeHarness
         startupCts.CancelAfter(TimeSpan.FromSeconds(startupSeconds));
 
         IDistributedApplicationTestingBuilder builder = await DistributedApplicationTestingBuilder
-            .CreateAsync(useRetainedHost ? typeof(Projects.Hexalith_Works_AppHost) : WorksAppHostSelection.EntryPoint(),
+            .CreateAsync(useRetainedHost ? WorksAppHostSelection.RetainedEntryPoint() : WorksAppHostSelection.EntryPoint(),
                 [
                     "--EnableKeycloak=false",
                     "--environment=Development",
@@ -384,7 +408,7 @@ internal static class WorksAppHostSmokeHarness
                 _ = WorksPlatformRuntimeArtifacts.RequireMatchingConfigurations(
                     typeof(WorksAppHostSmokeHarness).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
                     builder.AppHostAssembly?.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
-                    typeof(Projects.Hexalith_Works_AppHost).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration);
+                    WorksAppHostSelection.RetainedEntryPoint().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration);
             }
             app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
             try
@@ -445,7 +469,7 @@ internal static class WorksAppHostSmokeHarness
             using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
             await WorksAppHostTestReadiness
                 .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token,
-                    WorksAppHostSelection.IsPlatform && actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName)
+                    WorksAppHostSelection.IsPlatform && actorTypeName == "WorksSdkReminderActor" ? "WorksSdkReminderActor" : actorTypeName)
                 .ConfigureAwait(true);
             if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
             {
@@ -458,6 +482,17 @@ internal static class WorksAppHostSmokeHarness
                     directory = builder.AppHostDirectory,
                     role = useRetainedHost ? "retained-rollback" : "platform-target",
                     schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
+                    controlPlanePorts = new { sentry = WorksAppHostSelection.ControlPlanePorts.Sentry,
+                        placement = WorksAppHostSelection.ControlPlanePorts.Placement, scheduler = WorksAppHostSelection.ControlPlanePorts.Scheduler },
+                    dependencyBuildsSuppressed = Environment.GetEnvironmentVariable("BuildProjectReferences") == "false",
+                    daprdRuntimePath = Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"),
+                    sidecarLaunches = builder.Resources.OfType<ProjectResource>().SelectMany(project =>
+                        project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation =>
+                        {
+                            DaprSidecarOptions options = annotation.Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options;
+                            return new { appId = options.AppId ?? project.Name, config = options.Config,
+                                configSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(options.Config!))).ToLowerInvariant() };
+                        })).ToArray(),
                     // Written only after every startup probe above passed. An expectWorksReadinessDegraded start
                     // waited for Works to reach Running, not Healthy, so its readiness did not pass; that fixture
                     // records its own Degraded observation.
@@ -469,7 +504,7 @@ internal static class WorksAppHostSmokeHarness
                     // fixture wrote, and each module's effective launched environment, for independent comparison.
                     compositionGuard,
                     effectiveEnvironment = EffectiveEnvironment(app),
-                    actorType = actorTypeName == nameof(DateReminderActor) ? "WorksSdkReminderActor" : actorTypeName,
+                    actorType = actorTypeName == "WorksSdkReminderActor" ? "WorksSdkReminderActor" : actorTypeName,
                     // The test runner's loaded SDK assemblies; each host's deployed SDK assemblies are bound per
                     // module in runtimeModules.
                     sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()

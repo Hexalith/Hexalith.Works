@@ -13,7 +13,7 @@ public sealed class WorksProjectionOptions
     public const int DefaultMaxUndecodableEventDispatchesBeforeParking = 5;
 
     /// <summary>Opt in to the SDK named writer and generation-selected readers as one mode.</summary>
-    public bool UseSdkDelivery { get; init; }
+    public bool UseSdkDelivery { get; init; } = true;
 
     /// <summary>
     /// How many consecutive dispatches may fail to decode the same state-affecting event before the aggregate is

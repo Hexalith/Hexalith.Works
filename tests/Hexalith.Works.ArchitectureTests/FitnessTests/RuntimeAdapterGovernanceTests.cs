@@ -10,7 +10,7 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 /// <summary>
 /// Runtime-adapter governance guardrails introduced by Stories 4.5-4.7. These keep the pure kernel pure and confine
 /// every EventStore-runtime / Dapr / ASP.NET-hosting concern to the single runnable host project
-/// (<c>src/Hexalith.Works</c>) and the AppHost, while freezing the production-surface vocabulary out of Works
+/// (<c>src/Hexalith.Works</c>), while freezing the production-surface vocabulary out of Works
 /// source. All assertions are source/XML text based so the ArchitectureTests lane stays pure (no Dapr/Aspire).
 /// </summary>
 public sealed class RuntimeAdapterGovernanceTests
@@ -43,9 +43,8 @@ public sealed class RuntimeAdapterGovernanceTests
                 $"The runnable Works host must resolve exactly one EventStore domain-service edge in {configuration}.");
         }
 
-        hostPackages.ShouldContain("Dapr.AspNetCore", "The runnable Works host owns the Dapr dependency for the proof.");
-        hostPackages.ShouldContain("Dapr.Actors", "Story 4.6 date-resume reminders are Dapr actor reminders owned by the runnable Works host.");
-        hostPackages.ShouldContain("Dapr.Actors.AspNetCore", "Story 4.6 maps actor reminder callbacks only in the runnable Works host.");
+        hostPackages.Where(package => package.StartsWith("Dapr.", StringComparison.Ordinal)).ShouldBeEmpty(
+            "The EventStore SDK owns Dapr; Works declares no direct Dapr plumbing dependency.");
 
         // The pure kernel + Reactor must never reach EventStore runtime (anything beyond EventStore.Contracts)
         // or take a Dapr dependency. The host is the only Works src project allowed those.
@@ -113,7 +112,7 @@ public sealed class RuntimeAdapterGovernanceTests
                 .Where(token => file.Text.Contains(token, StringComparison.Ordinal))
                 .Select(token => $"{Path.GetRelativePath(root, file.Path)} contains host-edge runtime token '{token}'"))];
 
-        misplaced.ShouldBeEmpty("Reminder actors, domain-event consumption, command submission, stream reads, and checkpoint persistence must stay in src/Hexalith.Works or AppHost/config/test/docs locations, not in pure kernel projects.");
+        misplaced.ShouldBeEmpty("Reminder actors, domain-event consumption, command submission, stream reads, and checkpoint persistence must stay in src/Hexalith.Works, not in pure kernel projects.");
     }
 
     [Fact]
@@ -164,24 +163,7 @@ public sealed class RuntimeAdapterGovernanceTests
         polymorphicCatalogCount.ShouldBe(40, "Subscription envelopes, reminder/checkpoint/index records, and source records are host-edge runtime records, not durable polymorphic command/event/rejection catalog types.");
     }
 
-    [Fact]
-    public void P0_AppHostProgramUsesPlatformEventStoreHelpersNotHandRolledDaprWiring()
-    {
-        string root = RepositoryRoot.Locate();
-        string program = File.ReadAllText(Path.Combine(root, "src", "Hexalith.Works.AppHost", "Program.cs"));
 
-        program.ShouldContain("AddHexalithEventStore", Case.Sensitive, "The AppHost must compose the shared EventStore topology via the platform helper.");
-        program.ShouldContain("AddHexalithEventStoreSecurity", Case.Sensitive, "The AppHost must initialize local security via the shared EventStore Aspire helper.");
-        program.ShouldContain("AddEventStoreDomainModule", Case.Sensitive, "The AppHost must attach the Works domain service via the platform helper.");
-        program.ShouldContain("WithJwtBearerSecurity(security)", Case.Sensitive, "EventStore, Admin.Server, and Works must receive the shared JWT bearer security configuration when security is enabled.");
-        program.ShouldContain("WithEventStoreClientCredentials(security)", Case.Sensitive,
-            "The shared helper must bind its own EventStore client id and realm-bound secret parameters.");
-
-        // No hand-rolled, duplicated Dapr component wiring — the helper owns state store / pub-sub creation.
-        program.ShouldNotContain("AddDaprStateStore", Case.Insensitive, "The AppHost must not hand-roll a Dapr state store; AddHexalithEventStore owns it.");
-        program.ShouldNotContain("AddDaprPubSub", Case.Insensitive, "The AppHost must not hand-roll a Dapr pub/sub; AddHexalithEventStore owns it.");
-        program.ShouldNotContain("AddKeycloak(", Case.Sensitive, "The AppHost must not hand-roll Keycloak; AddHexalithEventStoreSecurity owns the shared security service.");
-    }
 
     [Fact]
     public void P0_WorkItemAggregateStaysPureStaticAndEventStoreAdapterLivesInHost()
@@ -318,7 +300,6 @@ public sealed class RuntimeAdapterGovernanceTests
     private static bool IsAllowedRuntimeAdapterLocation(string root, string path)
     {
         string relative = Path.GetRelativePath(root, path);
-        return relative.StartsWith(Path.Combine("src", RunnableHost) + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.AppHost") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+        return relative.StartsWith(Path.Combine("src", RunnableHost) + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

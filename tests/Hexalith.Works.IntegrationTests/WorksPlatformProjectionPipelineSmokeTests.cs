@@ -22,7 +22,7 @@ namespace Hexalith.Works.IntegrationTests;
 public sealed class WorksPlatformProjectionPipelineSmokeTests
 {
     /// <summary>Promotes all eleven sources and catches a genuinely new event committed during capture.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily()
     {
         if (!WorksAppHostSelection.IsPlatform)

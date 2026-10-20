@@ -1,0 +1,912 @@
+{
+  "scope": "Behavior replacements for removed integration fixtures, not claims that removed private implementation types still exist. Compatibility rebuild/fold tests remain explicitly on the historical data format, while active host legacy flags fail closed.",
+  "records": [
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/CascadeCheckpointIndexRecoveryTests.cs",
+      "retiredPublicTestMethods": [
+        "Checkpoint_store_writes_index_only_at_lifecycle_transitions",
+        "First_incomplete_checkpoint_failure_retains_discovery_for_pruning",
+        "Intermediate_progress_failure_propagates_and_leaves_discovery_intact",
+        "Completion_removal_failure_keeps_durable_completion_reconcilable",
+        "Completed_checkpoint_rejects_incomplete_regression_without_persisting",
+        "Multi_target_dispatch_persists_progress_without_index_amplification",
+        "Empty_cascade_completion_does_not_write_discovery_index",
+        "Concurrent_cross_tenant_first_saves_preserve_both_identities",
+        "Multi_entry_recovery_performs_one_lifecycle_removal_per_identity",
+        "Startup_replay_converges_from_index_and_second_pass_is_noop",
+        "Stale_index_entry_with_no_checkpoint_is_pruned_after_threshold",
+        "Recovery_pass_survives_an_overflowing_stale_after_configuration",
+        "Cascade_target_correlation_id_keeps_its_deterministic_format",
+        "Advance"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/CascadeDispatcherPacingTests.cs",
+      "retiredPublicTestMethods": [
+        "Configured_interval_above_maximum_is_clamped",
+        "Paced_dispatch_still_submits_every_target_exactly_once"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/CascadeRecoveryRuntimeTests.cs",
+      "retiredPublicTestMethods": [
+        "New_cancel_cascade_persists_checkpoint_and_dispatches_only_active_descendants",
+        "Restart_replay_reissues_attempted_target_with_same_correlation_and_completes_checkpoint",
+        "Duplicate_parent_terminal_event_reuses_checkpoint_without_rediscovering_targets",
+        "Cascade_command_submission_is_deterministic_and_rejects_unknown_kinds",
+        "SaveAsync",
+        "SubmitAsync"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/ChildCompletionEventHandlerTests.cs",
+      "retiredPublicTestMethods": [
+        "Completed_child_resumes_awaiting_parent_with_deterministic_submission"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/DateReminderRecoveryRuntimeTests.cs",
+      "retiredPublicTestMethods": [
+        "Reminder_name_is_deterministic_and_uses_only_bounded_identity_fields",
+        "Date_resume_submission_carries_the_deterministic_date_await_condition",
+        "Pending_date_projection_keeps_only_the_latest_uncleared_date_awaits",
+        "Terminal_event_clears_pending_date_awaits",
+        "Reconciler_reissues_due_awaits_and_reschedules_future_awaits_idempotently",
+        "Reconciler_acts_on_partial_results_then_rethrows_when_the_source_scan_is_incomplete",
+        "Reconciler_rewrap_retains_scan_counts_and_both_causes_when_partial_submission_fails",
+        "Incomplete_scan_exact_caller_scheduling_cancellation_escapes_unwrapped_and_warning_free",
+        "Incomplete_scan_foreign_scheduling_cancellation_is_rewrapped_with_counts_and_both_causes",
+        "Reconciler_exposes_parked_skips_from_a_clean_scan_without_making_them_retryable",
+        "Recovery_scheduler_failure_emits_bounded_warning_and_rethrows_the_original_exception",
+        "Recovery_caller_cancellation_rethrows_without_a_scheduling_failure_warning",
+        "Recovery_foreign_cancellation_warns_when_the_caller_token_is_also_canceled",
+        "ScheduleResumeReminderAsync",
+        "ScheduleResumeReminderAsync",
+        "SubmitAsync",
+        "SubmitAsync"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/DateReminderRegistrationSerializationTests.cs",
+      "retiredPublicTestMethods": [
+        "Registration_round_trips_through_the_actor_remoting_serializer_contract",
+        "Frozen_actor_remoting_payload_reads_forward",
+        "Missing_required_actor_remoting_member_is_rejected"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/GetWorkItemQueryHandlerTests.cs",
+      "retiredPublicTestMethods": [
+        "Returns_found_view_with_planned_effort_for_an_existing_work_item",
+        "Linked_conversation_is_persisted_and_exposed_as_only_its_opaque_reference",
+        "Create_time_conversation_is_persisted_and_queried_without_a_link_event",
+        "Malformed_null_link_cannot_clear_create_time_conversation_or_advance_its_watermark",
+        "Legacy_rollup_json_without_conversation_property_remains_queryable",
+        "Fails_closed_to_not_found_for_an_unknown_work_item",
+        "Read_is_tenant_scoped_so_another_tenants_id_is_not_found",
+        "Legacy_rollup_only_survivor_remains_queryable_when_another_aggregate_dispatches_before_rebuild"
+      ],
+      "reason": "Canonical SDK generation selection, tenant/executor filtering, no-disclosure authorization and restart replace the local query/dispatcher fixtures.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs",
+      "retiredPublicTestMethods": [
+        "Discovers_pending_awaits_from_registry_index_and_per_aggregate_refold",
+        "Ignores_an_unknown_non_state_event_beside_a_valid_suspension",
+        "Skips_a_stale_index_entry_whose_stream_shows_the_await_cleared",
+        "Empty_registry_returns_nothing_without_reading_any_stream",
+        "Never_constructs_a_null_aggregate_stream_read",
+        "Advances_to_the_next_page_and_folds_the_complete_stream",
+        "Fails_closed_when_the_page_budget_ends_on_a_truncated_page",
+        "Fails_closed_when_a_known_lifecycle_event_is_malformed",
+        "Rejects_a_page_or_payload_outside_the_requested_stream_identity",
+        "Fails_closed_immediately_when_a_truncated_page_reports_no_last_sequence_instead_of_stalling_the_cursor",
+        "Isolates_a_single_candidate_scan_failure_and_still_returns_partial_results_from_the_others",
+        "Isolates_a_single_tenant_index_read_failure_and_still_scans_the_other_tenants",
+        "Keeps_the_readable_candidates_of_a_tenant_when_one_candidate_stream_is_unreadable",
+        "Skips_a_parked_candidate_without_reading_its_stream_or_marking_the_scan_incomplete",
+        "Aggregates_multiple_parked_candidates_into_the_clean_scan_count",
+        "Aggregates_parked_candidates_across_tenants_into_the_clean_scan_count",
+        "Carries_the_cross_tenant_parked_count_when_another_candidate_makes_the_scan_incomplete",
+        "Carries_the_parked_skip_count_when_another_candidate_makes_the_scan_incomplete",
+        "Parking_lookup_failure_is_classified_while_later_candidates_remain_partial_results",
+        "Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation",
+        "Clean_exact_caller_cancellation_from_the_final_tenant_index_propagates_without_warning",
+        "Shutdown_after_a_recorded_tenant_failure_preserves_typed_evidence_and_stops_before_the_next_tenant",
+        "Exact_caller_cancellation_from_the_next_tenant_index_preserves_earlier_cross_tenant_evidence",
+        "Exact_caller_cancellation_from_the_next_tenant_index_preserves_earlier_candidate_failure_evidence",
+        "Shutdown_after_a_candidate_failure_preserves_partial_results_and_stops_before_the_next_tenant",
+        "Foreign_tenant_index_cancellation_is_classified_when_the_caller_becomes_canceled",
+        "Foreign_parking_lookup_cancellation_is_classified_when_the_caller_becomes_canceled",
+        "Foreign_stream_cancellation_is_classified_when_the_caller_becomes_canceled",
+        "Still_fails_a_candidate_that_has_parking_history_but_is_not_yet_parked",
+        "Reconciler_over_the_indexed_source_reissues_due_and_reschedules_future_idempotently"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/PendingDateAwaitIndexDispatcherTests.cs",
+      "retiredPublicTestMethods": [
+        "Date_suspension_upserts_the_tenant_index_and_registers_the_tenant",
+        "Resume_removes_a_previously_indexed_entry",
+        "Terminal_event_removes_a_previously_indexed_entry",
+        "Non_date_suspension_writes_nothing_to_the_index_or_registry",
+        "Colliding_inner_ids_in_two_tenants_never_merge",
+        "Double_dispatch_of_the_same_stream_is_idempotent",
+        "Initially_absent_cleared_replay_tombstone_prevents_older_await_resurrection",
+        "An_item_that_never_held_a_date_await_writes_no_index_document_at_all",
+        "A_projection_request_for_another_domain_is_refused",
+        "A_reserved_tenant_id_is_refused_at_the_project_host_edge",
+        "Non_positive_source_sequence_is_refused_before_any_projection_write",
+        "Malformed_state_affecting_event_fails_before_the_pending_index_is_updated",
+        "Constructor_rejected_suspension_uses_the_bounded_parking_path",
+        "Projection_logs_safe_simple_event_type_and_bounded_correlation_metadata",
+        "Known_type_projection_skips_log_the_simple_event_name",
+        "A_matching_null_conversation_link_logs_the_simple_event_name",
+        "Undecodable_state_affecting_event_parks_the_aggregate_after_the_configured_failure_budget",
+        "A_failure_at_a_new_sequence_restarts_the_parking_budget",
+        "An_already_parked_aggregate_is_acknowledged_with_event_4503_and_no_write",
+        "A_foreign_identity_state_affecting_event_parks_instead_of_throwing_before_parking",
+        "A_foreign_null_conversation_link_logs_identity_mismatch_before_value_validation",
+        "A_malformed_state_event_uses_the_shared_handled_failure_classification_and_parks",
+        "Registry_etag_retry_keeps_both_tenants_without_mutating_the_store_instance",
+        "Concurrent_tenants_are_both_retained_in_the_registry_after_an_etag_conflict",
+        "Concurrent_aggregates_are_both_retained_in_one_tenant_index_after_an_etag_conflict",
+        "Index_and_registry_round_trip_through_system_text_json"
+      ],
+      "reason": "SDK named projection publishes complete family and recovery membership; no local dispatcher remains.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/PendingDateAwaitScanIncompleteExceptionTests.cs",
+      "retiredPublicTestMethods": [
+        "Constructor_throws_argument_null_for_a_null_partial_results_list",
+        "Constructor_exposes_the_partial_results_and_failed_tenant_and_candidate_counts"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/ReminderReconciliationServiceTests.cs",
+      "retiredPublicTestMethods": [
+        "Incomplete_first_scan_is_retried_and_the_complete_scan_succeeds",
+        "Permanent_failure_finishes_naturally_after_exactly_the_configured_maximum_attempts",
+        "Shutdown_during_the_retry_delay_finishes_cleanly_without_another_attempt",
+        "Foreign_cancellation_is_logged_when_the_stopping_token_is_also_canceled"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/Story48RecordingScheduler.cs",
+      "retiredPublicTestMethods": [
+        "ScheduleResumeReminderAsync"
+      ],
+      "reason": "Removed helper for the retired local scheduler/submitter; typed SDK transport behavior is exercised.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/Story48RecordingSubmitter.cs",
+      "retiredPublicTestMethods": [
+        "SubmitAsync"
+      ],
+      "reason": "Removed helper for the retired local scheduler/submitter; typed SDK transport behavior is exercised.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/StreamReadingCascadeDescendantSourceTests.cs",
+      "retiredPublicTestMethods": [
+        "Descendants_use_persisted_rollup_terminality_and_treat_missing_as_active",
+        "Descendant_stream_failure_propagates_for_subscription_retry",
+        "Descendant_discovery_fails_closed_when_parent_stream_stays_truncated",
+        "Descendant_discovery_does_not_skip_first_event_on_next_page",
+        "Descendant_terminality_propagates_cancellation_rather_than_treating_as_active",
+        "Descendant_terminality_treats_unreadable_rollup_as_active",
+        "Current_manifest_gates_terminality_by_membership_without_legacy_fallback"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/StreamReadingChildCompletionAwaitingParentSourceTests.cs",
+      "retiredPublicTestMethods": [
+        "Source_rebuilds_current_awaiting_parent_from_two_per_aggregate_streams",
+        "Source_returns_no_awaiting_parent_after_parent_await_clearing_event",
+        "Source_fails_closed_on_cross_tenant_parent_reference",
+        "Source_propagates_gateway_failure_for_subscription_retry",
+        "Source_fails_closed_when_stream_stays_truncated",
+        "Source_does_not_skip_parent_await_at_page_boundary",
+        "Source_returns_no_awaiting_parent_for_root_child_without_parent"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/TerminalCascadeEventHandlerTests.cs",
+      "retiredPublicTestMethods": [
+        "Cancelled_event_drives_existing_cascade_dispatcher",
+        "Expired_event_drives_existing_cascade_dispatcher"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorkItemProjectionQueryAdapterTests.cs",
+      "retiredPublicTestMethods": [
+        "Assigned_item_is_projected_into_the_index_and_returned_by_the_query",
+        "CamelCaseWebCompatibilityPayloadIsAcceptedByTheProjectionReader",
+        "Completed_item_falls_out_of_the_whats_next_eligible_set",
+        "AcceptedFreshnessUsesEnvelopePositionAndFilteredRejectionsDoNotAdvanceIt",
+        "Parent_progress_persists_reliable_local_evidence_but_refuses_child_dependent_totals",
+        "A_newer_roll_up_with_the_wrong_identity_is_replaced_without_merging_its_children",
+        "Undecodable_child_spawn_event_type_conservatively_refuses_incomplete_local_totals",
+        "Undecodable_non_relationship_event_refuses_rolled_shapes_on_the_ordinary_path",
+        "Mixed_unit_parent_and_child_refuse_scalar_and_per_unit_totals_across_adapter_outputs",
+        "Initially_effortless_child_still_triggers_refusal_by_contribution_count",
+        "Separately_dispatched_child_progress_preserves_child_state_without_restoring_parent_spawn_total",
+        "Leaf_replay_keeps_locally_complete_rolled_totals_available",
+        "Terminal_parent_preserves_status_and_structure_while_rolled_totals_remain_unavailable",
+        "Older_ineligible_replay_cannot_delete_newer_eligible_state",
+        "Older_eligible_replay_cannot_resurrect_terminal_index_state",
+        "Tombstone_only_index_refuses_older_eligible_replay_and_does_not_notify",
+        "Older_terminal_replay_cannot_delete_newer_eligible_index_entry",
+        "Accepted_replay_notifies_once_and_a_later_stale_replay_does_not",
+        "Terminal_notification_failure_is_retried_on_identical_redelivery_after_the_index_commit",
+        "Concurrent_distinct_items_merge_after_a_tenant_index_etag_conflict",
+        "Concurrent_older_and_newer_replays_converge_after_a_roll_up_etag_conflict",
+        "Empty_and_rejection_only_replays_do_not_mutate_authoritative_projection_models",
+        "Legacy_eligible_item_watermark_refuses_an_older_replay_without_a_tombstone_map_entry",
+        "Stored_item_ahead_of_its_retained_sequence_does_not_freeze_the_index",
+        "Newer_replay_over_a_retained_tombstone_restores_eligibility",
+        "Whats_next_index_sequence_tombstones_round_trip_and_legacy_json_gets_a_usable_empty_map",
+        "Equal_sequence_redispatch_refreshes_deterministic_roll_up_and_index_documents",
+        "Roll_up_retry_exhaustion_propagates_without_an_unconditional_fallback",
+        "Equal_sequence_redispatch_repairs_index_after_non_atomic_index_retry_exhaustion",
+        "Ordering_guards_keep_colliding_inner_ids_isolated_by_tenant",
+        "Colliding_work_item_ids_remain_isolated_by_tenant",
+        "Query_fails_closed_to_empty_for_a_tenant_with_no_index"
+      ],
+      "reason": "Canonical SDK generation selection, tenant/executor filtering, no-disclosure authorization and restart replace the local query/dispatcher fixtures.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorkItemReadModelGenerationQueryTests.cs",
+      "retiredPublicTestMethods": [
+        "Whats_next_rereads_current_manifest_when_commit_removes_legacy_between_reads",
+        "Get_work_item_rereads_current_manifest_when_commit_removes_legacy_between_reads",
+        "Present_current_manifest_with_missing_or_unsupported_schema_fails_closed_without_downgrade",
+        "Null_current_collections_fail_closed_and_dispatch_does_not_downgrade_manifest",
+        "Null_legacy_collections_fail_closed_and_dispatch_does_not_rewrite_the_legacy_index",
+        "Current_queue_filters_unlisted_items_and_get_refuses_miskeyed_embedded_rollup",
+        "Legacy_rollup_with_mismatched_embedded_identity_is_refused_by_readers"
+      ],
+      "reason": "Canonical SDK generation selection, tenant/executor filtering, no-disclosure authorization and restart replace the local query/dispatcher fixtures.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorkItemSuspendedReminderHandlerTests.cs",
+      "retiredPublicTestMethods": [
+        "Registers_a_reminder_for_a_pending_future_date_await",
+        "Registers_with_zero_due_time_for_an_already_due_await",
+        "Registers_every_distinct_date_await_from_one_suspension",
+        "Redelivering_the_same_suspension_registers_the_same_single_reminder_name",
+        "Registers_nothing_for_a_non_date_suspension",
+        "Registers_nothing_when_the_item_has_since_resumed",
+        "Reads_only_the_suspended_aggregate_with_a_non_null_aggregate_id",
+        "Propagates_gateway_failure_so_the_subscription_marker_stays_retryable",
+        "Scheduler_failure_emits_bounded_warning_and_rethrows_the_original_exception",
+        "Caller_cancellation_rethrows_without_a_scheduling_failure_warning",
+        "Scheduler_cancellation_not_attributable_to_the_caller_still_emits_the_failure_warning",
+        "Unrelated_scheduler_cancellation_still_warns_when_the_caller_token_is_also_canceled",
+        "Records_the_pending_await_in_the_discovery_index_idempotently"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs",
+      "retiredPublicTestMethods": [
+        "AppHostModelExposesTheExactCommandEventTopology",
+        "KeycloakTopologyBindsTheWorksEventStoreClientCredentials",
+        "DefaultAppHostComposesTheMtlsActorControlPlane",
+        "AppHostRejectsOneSidedActorControlPlaneConfiguration",
+        "AppHostRejectsRepositoryLocalCertificateDirectory",
+        "SidecarEnvironmentUsesTheAppHostOwnedControlPlaneIdentity",
+        "SentryCredentialReadRetriesUntilMaterialIsAvailable",
+        "SentryCredentialReadFailsClosedAfterTheBoundedBudget",
+        "SentryCredentialReadFailsClosedWhenTheFileStaysEmptyOrWhitespace",
+        "AppHostRejectsCertificateDirectorySymlinkedIntoTheRepository",
+        "StateStoreComponentHasExactActorMetadataAndScopes",
+        "PubSubComponentHasExactLiteralEndpointAndTopicScopes",
+        "EventStoreCommandDeadLettersUseADistinctTopicFromTheSubscriberQueue",
+        "AccessControlConfigurationsDenyByDefaultAndGrantExactlyOneCallerPath",
+        "DaprConfigurationsUseTheSameSelfHostedSentry",
+        "ResiliencyComponentHasExactInboundRetryTargetAndPolicy",
+        "ResiliencyResourceDirectoryContainsOnlyTheCommittedPolicyDocument"
+      ],
+      "reason": "Topology ownership and historical lifecycle/security move to Platform.",
+      "replacementTests": [
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs",
+      "retiredPublicTestMethods": [
+        "Reactor_translators_run_live_and_interrupted_cascade_converges_after_restart",
+        "Prerequisite_probe_reports_first_unavailable_port_in_skip_reason",
+        "Prerequisite_probe_reports_no_unavailable_port_when_all_ports_are_reachable",
+        "Port_probe_reports_reachable_when_connection_succeeds",
+        "Port_probe_reports_socket_failure_as_unavailable",
+        "Port_probe_reports_probe_timeout_as_unavailable",
+        "Port_probe_propagates_caller_cancellation",
+        "Port_probe_production_boundary_propagates_pre_cancelled_caller",
+        "Port_probe_gives_caller_cancellation_precedence_over_probe_timeout",
+        "Port_probe_propagates_caller_cancellation_after_connection_completes",
+        "Port_probe_reports_probe_timeout_after_connection_completes_as_unavailable",
+        "Port_probe_propagates_caller_cancellation_from_socket_failure",
+        "Port_probe_rethrows_unattributable_cancellation",
+        "Port_probe_production_boundary_reports_listening_port_as_reachable",
+        "Port_probe_production_boundary_reports_closed_port_as_unreachable",
+        "Port_probe_deadline_reports_a_never_completing_connection_as_unavailable",
+        "Port_probe_deadline_is_two_seconds",
+        "Prerequisite_gate_propagates_caller_cancellation_through_the_production_probe"
+      ],
+      "reason": "Works cascade/child-resume translation and contextual source safety remain covered; SDK owns paging/checkpoints/fences, reissue and receipt replay.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs",
+      "retiredPublicTestMethods": [
+        "CreateWorkItem_command_persists_then_publishes_to_a_terminal_status"
+      ],
+      "reason": "Topology ownership and historical lifecycle/security move to Platform.",
+      "replacementTests": [
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksDomainEventProcessorTests.cs",
+      "retiredPublicTestMethods": [
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "MarkCompletedAsync",
+        "ReleaseAsync",
+        "Works_processor_is_activatable_by_the_default_service_provider",
+        "GenericSdkProcessorBindsCamelCaseWebCompatibilityPayload",
+        "WorksProcessorBindsCamelCaseWebCompatibilityPayloadOnce",
+        "Works_processor_legacy_marker_store_completes_exactly_once",
+        "Works_processor_post_handler_finalization_ignores_canceled_request_token",
+        "WorksProcessorDispatchesEveryConsumedPersistedEventOnce",
+        "Works_processor_acknowledges_undecodable_payload_and_marks_it_complete",
+        "Works_processor_acknowledges_constructor_rejected_suspension_without_dispatching_it",
+        "Works_processor_skips_envelope_with_identity_mismatch",
+        "Works_processor_returns_retryable_when_marker_in_progress",
+        "Works_processor_logs_unsupported_marker_acquisition_result",
+        "Works_processor_rejects_invalid_envelope_before_marker_acquisition",
+        "Works_processor_rejects_reserved_tenant_before_marker_acquisition",
+        "Works_processor_post_acquisition_invalid_envelope_releases_for_corrected_redelivery",
+        "Works_processor_handler_failure_releases_for_successful_redelivery",
+        "Works_processor_release_failure_logs_the_caught_exception",
+        "Works_processor_rejects_non_exact_work_domain_before_marker_acquisition",
+        "Works_processor_completion_failure_redelivery_completes_without_redispatch",
+        "Works_processor_completion_pending_persistent_failure_remains_retryable",
+        "Works_processor_dispatch_marker_failure_escapes_without_release_and_logs_context",
+        "Works_processor_terminally_acknowledges_unsupported_serialization_format",
+        "Works_processor_skips_consumed_event_with_no_registered_handler",
+        "Works_processor_accepts_the_submitted_work_domain_through_the_wire_envelope_shape",
+        "Works_processor_terminal_skip_keeps_its_outcome_when_completion_persistence_fails"
+      ],
+      "reason": "Canonical SDK typed event ingress, callback discovery, conflict quarantine and redelivery replace the local processor/subscription.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksDomainEventSubscriptionTests.cs",
+      "retiredPublicTestMethods": [
+        "ProcessingResultMappingIsExhaustiveAndFutureValuesFailClosed",
+        "WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute"
+      ],
+      "reason": "Canonical SDK typed event ingress, callback discovery, conflict quarantine and redelivery replace the local processor/subscription.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksRecoveryOptionsTests.cs",
+      "retiredPublicTestMethods": [
+        "Invalid_recovery_configuration_fails_the_validation_chain",
+        "Valid_recovery_configuration_binds_and_passes_validation",
+        "Deprecated_per_tenant_key_still_binds_the_per_aggregate_page_budget",
+        "Deprecated_alias_wins_over_the_renamed_key_so_existing_configuration_keeps_its_meaning",
+        "Unconfigured_recovery_options_use_the_documented_defaults",
+        "Built_recovery_services_resolve_the_indexed_pending_date_await_source",
+        "Invalid_projection_parking_budget_fails_validate_on_start",
+        "Bound_projection_parking_budget_of_one_is_what_project_uses",
+        "Failed_host_build_removes_the_temporary_key_directory",
+        "Failed_host_disposal_still_removes_the_temporary_key_directory",
+        "Dispose"
+      ],
+      "reason": "SDK-only selection, coupled capacity and shared trusted/ordinary transport configuration replace inactive local runtime options.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryPipelineSmokeTests.cs",
+      "retiredPublicTestMethods": [
+        "Recovery_reissues_a_parked_date_await_from_the_durable_index_without_hand_configuration",
+        "Recovery_re_registers_a_still_future_await_that_later_fires",
+        "Suspend_time_registration_resumes_the_item_when_the_scheduler_fires"
+      ],
+      "reason": "Works date/expiry intent and fail-closed discovery remain covered; SDK owns scheduling, retries, serialization and lost-firing recovery.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses",
+        "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksSdkRollbackRestoreTests.cs",
+      "retiredPublicTestMethods": [
+        "Complete_isolated_keyspace_restore_removes_sdk_epoch_then_legacy_replay_recovers_queue"
+      ],
+      "reason": "Complete-fleet rollback is executed through the separately qualified historical topology.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs",
+      "retiredMethodsOnly": [
+        "Committed_reconciliation_survives_later_ordinary_dispatches_of_the_reconciled_streams",
+        "Later_child_spawn_merges_with_reconciled_children_instead_of_replacing_them",
+        "Dispatch_after_commit_admits_a_new_aggregate_to_the_current_generation"
+      ],
+      "reason": "Retired implementation-specific entry points; preserved domain/data compatibility and current SDK/Platform behavior are tested. Historical path selection is separately bound by the archive verifier.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs",
+      "retiredMethodsOnly": [
+        "Pending_date_source_discovers_sdk_tenants_and_uses_stream_truth_over_pinned_index",
+        "Pending_date_source_reports_partial_sdk_candidate_failure_without_losing_healthy_stream",
+        "Pending_date_source_does_not_borrow_parking_from_an_older_generation",
+        "Cascade_source_uses_parent_stream_and_one_sdk_generation_for_child_terminality",
+        "Cascade_source_treats_missing_current_rollup_as_active_even_when_old_generation_was_terminal",
+        "Pending_date_source_reports_incomplete_when_restarted_sdk_family_has_conflict_or_orphan_parking",
+        "Cascade_source_keeps_terminal_child_active_when_restarted_sdk_family_has_conflict_or_orphan_parking"
+      ],
+      "reason": "Retired implementation-specific entry points; preserved domain/data compatibility and current SDK/Platform behavior are tested. Historical path selection is separately bound by the archive verifier.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksPlatformSelectedSdkPathsTests.cs",
+      "retiredMethodsOnly": [
+        "ExplicitArchiveRootSelectsTheMatchingSdkEntryPoint",
+        "InvalidExplicitSelectionRefusesFallback",
+        "DefaultDeclaredSdkPathIsPreserved"
+      ],
+      "reason": "Retired implementation-specific entry points; preserved domain/data compatibility and current SDK/Platform behavior are tested. Historical path selection is separately bound by the archive verifier.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs",
+      "retiredMethodsOnly": [
+        "P0_AppHostProjectPinsTheSameAspireSdkAndCliBundle",
+        "P0_AspireConfigPointsAtWorksAppHost",
+        "P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk"
+      ],
+      "reason": "Positive guards requiring retired topology are replaced by rejection of Works-owned host projects and generic runtime mechanics; evaluated kernel/dependency guards still run.",
+      "replacementTests": [
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs",
+      "retiredMethodsOnly": [
+        "P0_AppHostReferencesOnlyWorksTopologyProjects",
+        "P0_EventStoreRuntimeHostsAreMetadataNotCompileGraphProjects"
+      ],
+      "reason": "Positive guards requiring retired topology are replaced by rejection of Works-owned host projects and generic runtime mechanics; evaluated kernel/dependency guards still run.",
+      "replacementTests": [
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs",
+      "retiredMethodsOnly": [
+        "P0_AppHostProgramUsesPlatformEventStoreHelpersNotHandRolledDaprWiring"
+      ],
+      "reason": "Positive guards requiring retired topology are replaced by rejection of Works-owned host projects and generic runtime mechanics; evaluated kernel/dependency guards still run.",
+      "replacementTests": [
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected",
+        "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksAppHostSelectionTests.cs",
+      "retiredMethodsOnly": [
+        "UnselectedLaneRetainsWorksHost"
+      ],
+      "reason": "Ordinary callers now require explicit Platform selection; no implicit retired host fallback exists.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost"
+      ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+      "retiredMethodsOnly": [
+        "ActualHostedWritersAreRefusedBeforeAnyStart",
+        "ConflictingRuntimeRegistrationIsRejected",
+        "DirectLegacyActorRegistrationIsRefusedBeforeAnyStart",
+        "FinalCompositionRefusesLateLegacyWriter",
+        "HostCallbackFactoryIsValidatedBeforeStart",
+        "LegacyActorCannotJoinSdkComposition",
+        "MalformedDeliveryCannotEraseSdkUnresolvedState",
+        "SdkModeRegistersOnlySdkMechanics",
+        "ValidGenericHostCompositionStarts"
+      ],
+      "reason": "The local actor/recovery/processor/late-writer registration types and composition guard are removed. Assembly/architecture guards prove their absence; SDK-only defaults, explicit legacy refusal, scoped callback identity, durable quarantine and live restart cover active behavior. Generic host callback extensibility remains test-only.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint",
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ]
+    }
+  ],
+  "executedReplacementEvidence": {
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
+      "/tmp/story49-architecture-final.xml",
+      "/tmp/story49-architecture-final.xml",
+      "/tmp/story49-architecture-final.xml",
+      "/tmp/story49-architecture-final.xml"
+    ],
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
+      "/tmp/story49-architecture-final.xml"
+    ],
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
+      "/tmp/story49-architecture-final.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
+      "/tmp/story49-pre-cutover-20261020-isolated/platform-ha.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+      "/tmp/story49-pre-cutover-20261020-isolated/platform-historical.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+      "/tmp/story49-pre-cutover-20261020-isolated/platform-projection.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+      "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
+      "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml",
+      "/tmp/story49-integration-final2.xml"
+    ]
+  },
+  "archiveRefusalTests": [
+    "test_retained_works_host.RetainedWorksHostTests.test_archive_and_historical_git_blob_substitution_refuse",
+    "test_retained_works_host.RetainedWorksHostTests.test_unsafe_or_duplicate_members_refuse_even_with_an_updated_archive_digest",
+    "test_retained_works_host.RetainedWorksHostTests.test_later_source_changes_additions_and_symlinks_refuse",
+    "test_retained_works_host.RetainedWorksHostTests.test_later_dependency_substitution_refuses"
+  ]
+}

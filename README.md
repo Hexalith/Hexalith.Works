@@ -1,6 +1,6 @@
 # Hexalith.Works
 
-Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a Works-specific Aspire host for local and automated validation.
+Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform.
 
 ## Local Debug development
 
@@ -18,9 +18,13 @@ Do not use recursive submodule initialization.
 
 CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
 
-`Hexalith.EventStore.Operations` is an unpackageable executable topology resource. The AppHost locates it through
-project metadata and builds it only when the live topology starts; it is not a compile-time ProjectReference in the
-Release graph. The EventStore submodule is therefore still required by the Integration lane:
+Platform owns the live Works topology, its SDK executable source inputs, health, telemetry, declarative subscriptions, and complete-fleet rollback. Run its verifier from the owning Platform checkout after initializing only required root-declared dependencies:
+
+```bash
+../platform/eng/verify-works-host.sh --works-root "$PWD" --artifacts-path /tmp/works-platform-proof
+```
+
+Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
 
 ```bash
 git submodule update --init references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants

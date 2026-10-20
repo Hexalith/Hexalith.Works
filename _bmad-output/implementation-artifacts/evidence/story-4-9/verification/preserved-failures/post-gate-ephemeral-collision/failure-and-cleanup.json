@@ -1,0 +1,37 @@
+{
+  "status": "failed-nonqualifying",
+  "observedAt": "2026-10-20T15:53:20.147119+00:00",
+  "exitCode": 1,
+  "failedFact": "WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+  "startupBoundSeconds": 180,
+  "testDurationSeconds": 190.546,
+  "controlPlanePorts": {
+    "sentry": 36113,
+    "placement": 36965,
+    "scheduler": 38043
+  },
+  "hostEphemeralRange": [
+    32768,
+    60999
+  ],
+  "observedGatewayDaprArguments": [
+    "--scheduler-host-address",
+    "localhost:38043",
+    "--app-port",
+    "38043",
+    "--dapr-http-port",
+    "11835"
+  ],
+  "gatewayReadyStatus": 503,
+  "gatewayOnlyFailedCheck": "dapr-sidecar",
+  "daprdHealthStatus": 500,
+  "daprdHealthBody": {
+    "errorCode": "ERR_HEALTH_NOT_READY",
+    "message": "dapr is not ready: [scheduler-watch-hosts]"
+  },
+  "otherOwnedApplicationsReadyStatus": 200,
+  "qualifiedPhaseCount": 30,
+  "ownedProcessRemainder": [],
+  "ownedContainerRemainder": [],
+  "foreignResourcesUntouched": true
+}

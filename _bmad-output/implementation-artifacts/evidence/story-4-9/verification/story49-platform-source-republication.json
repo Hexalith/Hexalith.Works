@@ -1,0 +1,20 @@
+{
+  "observedAt": "2026-10-20T15:18:50.046222+00:00",
+  "priorManifest": "/mnt/wsl/story49-platform-final-source.json",
+  "priorManifestSha256": "05950a1be16b45bdf8c36b1ac7e45ffbdfb796f3b140c2311747a0429f88d392",
+  "preservedPriorSourceLocation": "/mnt/wsl/story49-platform-source-before-debugger",
+  "priorSourceInventoryUnchanged": true,
+  "newManifest": "/mnt/wsl/story49-platform-source-after-debugger.json",
+  "selectedExecutionRoot": "/mnt/wsl/story49-platform-final-source",
+  "compiledInputPathsUnchanged": true,
+  "allRelevantChanges": [
+    "eng/test_works_host_snapshot.py",
+    "eng/works_host_snapshot.py"
+  ],
+  "observedDebuggerOutput": {
+    "path": "/home/administrator/projects/hexalith/platform/.netcoredbg_hist",
+    "sha256": "c34225a9afecac905e1cf9263b755f4b66868d277472a339fcfcde06002c6ab6",
+    "scope": "Generated debugger output, name/hash only; never source-exported"
+  },
+  "artifactReuse": "Existing host/runtime/fleet outputs are reusable because every compiled source/project/build/config input and its selected physical path is byte-identical; only the executed Python source-inventory helper and its tests changed before the new proof."
+}

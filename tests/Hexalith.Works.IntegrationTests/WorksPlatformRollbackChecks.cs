@@ -161,10 +161,10 @@ internal static class WorksPlatformRollbackChecks
             Path.Combine(eventStore, "src", "Hexalith.EventStore", "Hexalith.EventStore.csproj"),
             Path.Combine(eventStore, "src", "Hexalith.EventStore.Operations", "Hexalith.EventStore.Operations.csproj"),
             Path.Combine(eventStore, "src", "Hexalith.EventStore.Admin.Server.Host", "Hexalith.EventStore.Admin.Server.Host.csproj"),
-            Path.Combine(works, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj"),
+            WorksAppHostSelection.RetainedProjectPath,
         ];
         string[] directories = [.. projects.Select(project => WorksPlatformRuntimeArtifacts.DirectoryFor(project, configuration)),
-            Path.GetDirectoryName(typeof(Projects.Hexalith_Works_AppHost).Assembly.Location)!,
+            Path.GetDirectoryName(WorksAppHostSelection.RetainedEntryPoint().Assembly.Location)!,
             Path.GetDirectoryName(Environment.GetEnvironmentVariable("WORKS_PLATFORM_APPHOST_ASSEMBLY"))!];
         return directories.SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             .Where(path => !string.Equals(path, Environment.ProcessPath, StringComparison.Ordinal))

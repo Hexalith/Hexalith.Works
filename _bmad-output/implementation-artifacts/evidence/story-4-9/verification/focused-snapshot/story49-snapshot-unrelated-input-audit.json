@@ -1,0 +1,24 @@
+{
+  "command": [
+    "rg",
+    "-n",
+    "recovery-contract|hexalith\\.recovery-hook",
+    "eng/verify_works_host.py",
+    "eng/verify_works_producer.py",
+    "eng/works_host_snapshot.py",
+    "eng/verify-agents-host.sh",
+    "eng/verify-platform-pins.py",
+    "eng/ext-host-1",
+    "src",
+    "tests/Hexalith.Platform.Works.Tests",
+    "tests/Hexalith.Platform.Custody.Tests",
+    "tests/Hexalith.Platform.Composition.Tests",
+    "Directory.Build.props",
+    "Directory.Build.targets",
+    "Directory.Packages.props",
+    "apphost.cs"
+  ],
+  "exitCode": 0,
+  "matches": "eng/works_host_snapshot.py:19:UNRELATED_CANONICAL_INPUTS = {\"eng/recovery-contract/validate.py\", \"eng/recovery-contract/fixtures/failed-chain.json\",\neng/works_host_snapshot.py:20:    \"eng/recovery-contract/fixtures/result.json\", \"eng/recovery-contract/fixtures/valid-chain.json\",\neng/works_host_snapshot.py:21:    \"schemas/hexalith.recovery-hook.v1.json\"}\n",
+  "classification": "Only the explicit snapshot exclusion declaration may name these paths. No read/import/invocation/Compile reference exists in either Agents lane, compiled Platform graph, Works runtime or actual gate fixture graph. Complete export bytes remain bound; only current canonical copies of these five paths may differ, with recorded hashes."
+}

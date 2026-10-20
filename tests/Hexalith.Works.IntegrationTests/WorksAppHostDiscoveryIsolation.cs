@@ -21,9 +21,10 @@ internal static class WorksAppHostDiscoveryIsolation
     /// <summary>Returns the committed configuration with one isolated SQLite name-resolution block after <c>spec:</c>.</summary>
     /// <param name="committed">The exact Dapr Configuration document the sidecar would otherwise load.</param>
     /// <param name="registryPath">The absolute registry path owned by this topology start.</param>
+    /// <param name="sentryPort">The optional run-owned Sentry host port; mTLS identities and policy stay unchanged.</param>
     /// <returns>The derived configuration document.</returns>
     /// <exception cref="InvalidOperationException">The document already selects discovery or has an unexpected shape.</exception>
-    internal static string Render(string committed, string registryPath)
+    internal static string Render(string committed, string registryPath, int? sentryPort = null)
     {
         ArgumentNullException.ThrowIfNull(committed);
         ArgumentException.ThrowIfNullOrWhiteSpace(registryPath);
@@ -31,6 +32,18 @@ internal static class WorksAppHostDiscoveryIsolation
             throw new InvalidOperationException("The isolated Dapr name-resolution registry must be a plain absolute path.");
         string newline = committed.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
         string[] lines = committed.Split(newline);
+        if (sentryPort is not null)
+        {
+            if (sentryPort is < 1024 or > 65535)
+                throw new InvalidOperationException("The isolated Sentry host port must be unprivileged.");
+            int[] addresses = [.. lines.Select((line, index) => (line, index))
+                .Where(item => item.line.TrimStart().StartsWith("sentryAddress:", StringComparison.Ordinal)).Select(item => item.index)];
+            if (addresses.Length != 1 || !lines[addresses[0]].StartsWith("    sentryAddress:", StringComparison.Ordinal)
+                || lines.Take(addresses[0]).LastOrDefault(line => line.StartsWith("  ", StringComparison.Ordinal)
+                    && line.Length > 2 && line[2] != ' ' && !line.TrimStart().StartsWith('#')) != "  mtls:")
+                throw new InvalidOperationException("The isolated configuration must contain exactly one mTLS Sentry endpoint.");
+            lines[addresses[0]] = "    sentryAddress: \"127.0.0.1:" + sentryPort.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) + "\"";
+        }
         int[] specs = [.. lines.Select((line, index) => (line, index)).Where(item => item.line.TrimEnd() == "spec:").Select(item => item.index)];
         if (specs.Length != 1)
             throw new InvalidOperationException("A Dapr configuration must contain exactly one top-level spec mapping to isolate discovery.");

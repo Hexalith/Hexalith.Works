@@ -36,11 +36,9 @@ public sealed class KernelDependencyPolicyTests
         KernelDependencyPolicy.AdapterProjects.ShouldBe(
             [
                 "Hexalith.Works",
-                "Hexalith.Works.AppHost",
-                "Hexalith.Works.ServiceDefaults",
             ],
             ignoreOrder: true,
-            customMessage: "The runnable host, AppHost, and ServiceDefaults are the deliberate adapters; every other source project must be governed.");
+            customMessage: "Only the domain-service executable is an adapter; Platform owns topology and service defaults.");
     }
 
     /// <summary>

@@ -15,7 +15,7 @@ namespace Hexalith.Works.Queries;
 
 /// <summary>
 /// Runtime query handler for the tenant "what's next" queue (domain <c>work</c>). It reads the persisted
-/// tenant-scoped index written by <see cref="WorkItemProjectionDispatcher"/>, applies the pure
+/// tenant-scoped index written by the SDK projection delivery adapter, applies the pure
 /// <see cref="WhatsNextOrdering"/> (Priority → earliest Due Date → identity) and the pure
 /// <see cref="WhatsNextQueryAuthorization"/> tenant filter using <see cref="QueryEnvelope.TenantId"/>, and
 /// returns the ordered, authorized result as payload bytes only. It is fail-closed: a missing/unavailable read

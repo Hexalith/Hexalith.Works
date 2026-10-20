@@ -6,12 +6,7 @@ abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realiz
 (boundary decision record). Aligned with NFR-5 (domain purity) and NFR-11 (natural-language-is-data
 boundary).
 
-> **Conversation link implemented; hosting migration pending — 2026-09-06:** FR-21's additive
-> `LinkConversation` → `ConversationLinked` path was delivered by Story 1.5. The separately approved
-> hosting course correction remains pending Story 4.9: Works still ships its AppHost and Aspire wiring
-> until that story moves topology and generic runtime plumbing to **`Hexalith.Platform`**
-> (github.com/Hexalith/Hexalith.Platform), owned by the Platform Maintainer (Hexalith), leaving Works
-> with domain-centric projects plus the canonical minimal EventStore domain-service executable.
+> **Platform cutover — 2026-10-20:** Story 4.9's pre-cutover gate passed all AD-20 R1–R11 persisted, negative, restart and complete-fleet rollback proofs on public EventStore **3.126.0**, before removal. Works now uses the canonical SDK host and owns only domain adapters. Hexalith.Platform owns topology, HTTP defaults, subscriptions, readiness and telemetry. The exact pre-cutover ledger is in `evidence/story-4-9/pre-cutover-2026-10-20`; the post-cutover evidence and historical rollback command are recorded in `docs/platform-hosting-cutover.md`.
 
 ## Purpose
 

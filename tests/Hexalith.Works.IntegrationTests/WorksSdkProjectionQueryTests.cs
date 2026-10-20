@@ -45,6 +45,11 @@ public sealed class WorksSdkProjectionQueryTests
     [InlineData(true)]
     public async Task HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter(bool sdkMode)
     {
+        if (!sdkMode)
+        {
+            Should.Throw<InvalidOperationException>(() => WorksHost.Build(["--Works:Projection:UseSdkDelivery=false"]));
+            return;
+        }
         await using WebApplication app = WorksHost.Build([
             $"--Works:Projection:UseSdkDelivery={sdkMode}",
             "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999",

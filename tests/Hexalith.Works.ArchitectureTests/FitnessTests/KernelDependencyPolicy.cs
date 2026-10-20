@@ -17,8 +17,6 @@ internal static class KernelDependencyPolicy
             ["Hexalith.Works.Projections"] = true,
             ["Hexalith.Works.Reactor"] = true,
             ["Hexalith.Works"] = false,
-            ["Hexalith.Works.AppHost"] = false,
-            ["Hexalith.Works.ServiceDefaults"] = false,
         };
 
     private static readonly IReadOnlyList<string> _sourceProjects = Array.AsReadOnly(

@@ -16,7 +16,7 @@ namespace Hexalith.Works.Queries;
 /// <summary>
 /// Runtime query handler that returns a single work item by id (domain <c>work</c>, query type
 /// <c>get-work-item</c>). It reads the persisted per-item <see cref="WorkItemRollUp"/> read model written by
-/// <see cref="WorkItemProjectionDispatcher"/> under the tenant-scoped roll-up key and projects it into the
+/// the SDK projection delivery adapter under the tenant-scoped roll-up key and projects it into the
 /// consumer-facing <see cref="WorkItemView"/>. It is fail-closed: a missing or unavailable read model returns a
 /// <see cref="WorkItemView.NotFound"/> view rather than throwing or fabricating existence, and the tenant-scoped
 /// key means a cross-tenant inner id can never resolve another tenant's work item.

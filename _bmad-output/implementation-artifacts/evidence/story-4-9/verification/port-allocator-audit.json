@@ -1,0 +1,51 @@
+{
+  "observedAt": "2026-10-20T15:54:45.861079+00:00",
+  "kernelEphemeralRange": [
+    32768,
+    60999
+  ],
+  "usedRangeSource": "/proc/sys/net/ipv4/ip_local_port_range",
+  "controlPlane": {
+    "owners": [
+      "canonical Platform",
+      "archived rollback topology",
+      "two-host HA"
+    ],
+    "selection": "one bound Python selector; fixed selected ports supplied through existing test environment overrides",
+    "change": "Choose dual-stack available complement of actual kernel ephemeral application range; retain probes until all three choices exist; recheck range at acceptance"
+  },
+  "otherSelectors": [
+    {
+      "file": "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs",
+      "kind": "Docker 127.0.0.1::6379",
+      "assessment": "Docker publishes and owns the listener before the endpoint is observed; it remains bound through fixture lifetime."
+    },
+    {
+      "file": "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixture.cs",
+      "kind": "Kestrel loopback port 0",
+      "assessment": "Kestrel starts and owns its listener before the endpoint is observed; it remains bound through fixture lifetime."
+    },
+    {
+      "file": "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs",
+      "kind": "Kestrel loopback port 0",
+      "assessment": "Kestrel starts and owns its listener before the endpoint is observed; it remains bound through fixture lifetime."
+    },
+    {
+      "file": "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs",
+      "kind": "application and sidecar endpoint annotations cleared for Aspire allocation",
+      "assessment": "Later application bind(0) allocations use the excluded kernel range. Control-plane endpoint overrides are distinct. Port-0 exclusive-bind helper calls are capability probes, never a reserved-then-released resource selection."
+    },
+    {
+      "file": "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs",
+      "kind": "replica WithHttpEndpoint",
+      "assessment": "Uses the same later Aspire allocator and the same excluded control-plane range."
+    }
+  ],
+  "sourceHashes": {
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "21bc49ccd06de7b8b97f5e219d9b0f3f68c8529ad87dc14d0beed85d51df1b3a",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixture.cs": "d49dd55bbef4f5cbf7672e04385f57ae66b071b2129960cd9a34ece9331a901b",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs": "84c2e0642fba754528849b7f16b4d53ca1b144d2c8db32c172e435c55631e17e",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "2d6bf5dc207e6193530cdc9ddeddc47c451a6ea73418ddc18d8857a7c44136f7",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "d870a03a195f2d683d802e94955c232dd41c9ee9e61d76e7860edba3e12e74d6"
+  }
+}

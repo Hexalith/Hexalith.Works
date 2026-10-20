@@ -27,20 +27,12 @@
     <!-- EventStore domain-service SDK (pulls Client/Contracts/ServiceDefaults transitively). The platform
          service defaults are supplied by AddEventStoreDomainService(); per the EventStore domain-module
          contract (Hexalith.EventStore/CLAUDE.md) a domain module must NOT fork its own ServiceDefaults,
-         so the host does not reference Hexalith.Works.ServiceDefaults. -->
+         so Works owns no service-default project. -->
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.DomainService" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
     <ProjectReference Include="$(HexalithPartiesRoot)\src\Hexalith.Parties.Client\Hexalith.Parties.Client.csproj" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
     <PackageReference Include="Hexalith.Parties.Client" Condition="'$(UseHexalithProjectReferences)' != 'true'" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Story 4.5 owns the Dapr command/event pipeline; Story 4.6 adds Dapr actor reminders (date-resume
-         recovery) and the actor-runtime endpoints. These actor packages live ONLY in the runnable host,
-         never in the pure kernel (Contracts/Server/Projections/Reactor) — fitness-asserted. -->
-    <PackageReference Include="Dapr.AspNetCore" />
-    <PackageReference Include="Dapr.Actors" />
-    <PackageReference Include="Dapr.Actors.AspNetCore" />
-  </ItemGroup>
 
 </Project>

@@ -28,8 +28,8 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
         // SDK route discovery reads this property while Build maps endpoints. Leave validated options to
         // ValidateOnStart so an invalid projection budget fails at host startup as configured.
         _useSdkDelivery = configuration is null
-            ? options?.Value.UseSdkDelivery ?? false
-            : configuration.GetValue<bool>($"{WorksProjectionOptions.SectionName}:UseSdkDelivery");
+            ? options?.Value.UseSdkDelivery ?? true
+            : configuration.GetValue<bool?>($"{WorksProjectionOptions.SectionName}:UseSdkDelivery") ?? true;
     }
 
     /// <inheritdoc/>

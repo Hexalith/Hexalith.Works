@@ -62,7 +62,7 @@ public sealed class WorksPlatformHostingCompositionTests
         values.Select(value => value.Name).ShouldBe([
             "DOTNET_ENVIRONMENT", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Authentication__JwtBearer__Authority", "Authentication__JwtBearer__SigningKey",
             "Authentication__Workload__AllowedCallers__0", "Authentication__Workload__AllowedCallers__1", "Authentication__Workload__Audience",
-            "Authentication__WorkloadIssuer__Workload", "DOTNET_STARTUP_HOOKS", "Works__Projection__UseSdkDelivery",
+            "Authentication__WorkloadIssuer__Workload", "DOTNET_STARTUP_HOOKS", "Dapr__DeclarativeSubscriptions", "Works__Projection__UseSdkDelivery",
             "Works__Query__GatewayWorkloadId", "Works__Recovery__UseSdkRuntime", "WORKS_PLATFORM_RUNTIME"], ignoreOrder: true);
         values.ShouldContain(("DOTNET_STARTUP_HOOKS", PlatformHook));
         values.ShouldContain(("Authentication__Workload__AllowedCallers__1", "eventstore-admin"));
@@ -73,6 +73,7 @@ public sealed class WorksPlatformHostingCompositionTests
     [Theory]
     [InlineData("DOTNET_ENVIRONMENT")]
     [InlineData("WORKS_PLATFORM_RUNTIME")]
+    [InlineData("Dapr__DeclarativeSubscriptions")]
     [InlineData("DOTNET_STARTUP_HOOKS")]
     [InlineData("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES")]
     [InlineData("Authentication__Workload__AllowedCallers__0")]
@@ -120,6 +121,7 @@ public sealed class WorksPlatformHostingCompositionTests
         ["WORKS_PLATFORM_RUNTIME"] = "1",
         ["DOTNET_STARTUP_HOOKS"] = PlatformHook,
         ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Hexalith.Platform.Works.Runtime",
+        ["Dapr__DeclarativeSubscriptions"] = "true",
         ["Works__Projection__UseSdkDelivery"] = "true",
         ["Works__Recovery__UseSdkRuntime"] = "true",
         ["Works__Query__GatewayWorkloadId"] = "eventstore",

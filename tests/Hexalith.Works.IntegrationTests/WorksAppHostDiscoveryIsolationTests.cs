@@ -7,6 +7,32 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Proves that live-start discovery isolation adds only an owned SQLite registry to each committed policy.</summary>
 public sealed class WorksAppHostDiscoveryIsolationTests
 {
+    /// <summary>An isolated host port changes only the Sentry endpoint alongside the owned discovery block.</summary>
+    [Fact]
+    public void IsolatedSentryPortPreservesEveryTrustAndAccessPolicyLine()
+    {
+        string rendered = WorksAppHostDiscoveryIsolation.Render(Policy.ReplaceLineEndings("\n"), Registry, 61001);
+        string expected = Policy.ReplaceLineEndings("\n").Replace("127.0.0.1:50001", "127.0.0.1:61001", StringComparison.Ordinal);
+        rendered.Split('\n').Where(line => !IsDiscoveryLine(line)).ShouldBe(expected.Split('\n'));
+        rendered.ShouldContain("enabled: true");
+        rendered.ShouldContain("defaultAction: deny");
+        rendered.ShouldContain("trustDomain: \"public\"");
+    }
+
+    /// <summary>Unsafe ports and an endpoint outside mTLS cannot be silently admitted.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1023)]
+    [InlineData(65536)]
+    public void UnsafeSentryPortsAreRefused(int port)
+        => Should.Throw<InvalidOperationException>(() => WorksAppHostDiscoveryIsolation.Render(Policy, Registry, port));
+
+    /// <summary>The address must remain in the mTLS mapping, rather than a same-shaped unrelated policy.</summary>
+    [Fact]
+    public void ForeignSentryAddressMappingIsRefused()
+        => Should.Throw<InvalidOperationException>(() => WorksAppHostDiscoveryIsolation.Render(
+            Policy.Replace("  mtls:", "  unrelated:", StringComparison.Ordinal), Registry, 61001));
+
     private const string Registry = "/tmp/works-sdk416-discovery-fixture/name-resolution.db";
 
     private const string Policy = """

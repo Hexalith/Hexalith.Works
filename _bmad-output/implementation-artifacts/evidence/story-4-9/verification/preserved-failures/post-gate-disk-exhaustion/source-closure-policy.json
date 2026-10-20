@@ -1,0 +1,18 @@
+{
+  "scope": "Canonical drift exclusions are confined to audited boundaries outside every gate import/read/invocation/Compile graph. Complete immutable export files remain bound.",
+  "excludedBoundaries": [
+    "eng/recovery-contract/",
+    "eng/ext-secrets-1/",
+    "tests/Hexalith.Platform.Secrets.Runtime.Tests/",
+    "schemas/hexalith.recovery-hook.v1.json"
+  ],
+  "invariant": "Any new import/read/invocation/Compile reference into these boundaries changes a bound used helper/project/source input and refuses current relevant source closure. Unknown inputs outside those boundaries also refuse. No production or actually executed source is excluded.",
+  "executedRefusalTests": [
+    "test_works_host_snapshot.WorksHostSnapshotTests.test_new_import_or_compile_reference_into_an_excluded_boundary_refuses",
+    "test_works_host_snapshot.WorksHostSnapshotTests.test_executed_helper_used_schema_and_new_unlisted_inputs_still_refuse",
+    "test_works_host_snapshot.WorksHostSnapshotTests.test_only_demonstrated_unrelated_canonical_inputs_may_drift_and_are_recorded",
+    "test_works_host_snapshot.WorksHostSnapshotTests.test_selected_root_dependency_catalog_bytes_remain_bound"
+  ],
+  "manifest": "/tmp/story49-platform-final-source.json",
+  "gate": "/tmp/story49-post-cutover-20261020-attempt2/ledger.json"
+}

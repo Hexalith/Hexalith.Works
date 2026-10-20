@@ -17,7 +17,7 @@ public sealed class WorksRecoveryOptions
     public const string SectionName = "Works:Recovery";
 
     /// <summary>Opts into SDK reminder/process mechanics together; SDK projection delivery is required.</summary>
-    public bool UseSdkRuntime { get; init; }
+    public bool UseSdkRuntime { get; init; } = true;
 
     /// <summary>Whether the startup reconciliation pass runs. Defaults to enabled.</summary>
     public bool RunReconciliationOnStartup { get; init; } = true;

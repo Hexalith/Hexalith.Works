@@ -1,0 +1,32 @@
+{
+  "command": [
+    "timeout",
+    "--signal=INT",
+    "--kill-after=90s",
+    "75m",
+    "bash",
+    "/tmp/story49-platform-final-source/eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/tmp/story416-sdk-3.126.0-public-source",
+    "--platform-source-binding",
+    "/tmp/story49-platform-final-source.json",
+    "--artifacts-path",
+    "/tmp/story49-post-cutover-20261020-attempt2"
+  ],
+  "environment": {
+    "HexalithBuildsRoot": "/tmp/story416-builds-b435f2e-public-source",
+    "HexalithEventStoreRoot": "/tmp/story416-sdk-3.126.0-public-source"
+  },
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "canonicalRevisionsAtObservation": {
+    "Works": "696781961155d764ed805843f55b40dc5882e887",
+    "Platform": "4f036ced45aa40700948c19949bb874881c960b5"
+  },
+  "selectedPlatformOriginRevision": "4f036ced45aa40700948c19949bb874881c960b5",
+  "resultPending": false,
+  "observedExitCode": 1,
+  "failure": "OSError: [Errno 28] No space left on device. Recovery failed with System.InvalidOperationException appending host-starts.jsonl; the final ledger save also failed. ledger.json and platform-recovery.xml remain exactly zero length. No acceptance is claimed.",
+  "ledgerSize": 0
+}

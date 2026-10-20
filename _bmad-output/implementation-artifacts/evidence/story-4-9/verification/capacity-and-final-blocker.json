@@ -1,0 +1,47 @@
+{
+  "observedAt": "2026-10-20T16:01:44.978455+00:00",
+  "decision": "Stop further gate retries under established memory and Docker capacity pressure. Final post-cutover gate and acceptance remain incomplete. No system restart or foreign cleanup authorized or performed.",
+  "earlierMemoryObservationKiB": {
+    "MemAvailable": 5988180,
+    "SwapFree": 0,
+    "ActiveAnon": 81869484
+  },
+  "earlierTopProcess": {
+    "pid": 1079,
+    "comm": "docker-desktop-",
+    "rssKiB": 70738080
+  },
+  "memoryCurrent": {
+    "MemTotal": "94747284 kB",
+    "MemFree": "77670316 kB",
+    "MemAvailable": "85621856 kB",
+    "Active(anon)": "5047388 kB",
+    "SwapTotal": "33554432 kB",
+    "SwapFree": "26195004 kB",
+    "Shmem": "4276488 kB"
+  },
+  "filesystems": {
+    "/": {
+      "totalBytes": 1081101176832,
+      "usedBytes": 1015405268992,
+      "freeBytes": 10703552512,
+      "freeInodes": 54984805,
+      "totalInodes": 67108864
+    },
+    "/mnt/wsl": {
+      "totalBytes": 48510607360,
+      "usedBytes": 2060464128,
+      "freeBytes": 46450143232,
+      "freeInodes": 11826131,
+      "totalInodes": 11843410
+    }
+  },
+  "commands": {
+    "capacity": "cat /proc/meminfo; ps -eo pid,ppid,comm,rss --sort=-rss",
+    "focused": "python3 /mnt/wsl/story49-run-mtls-outside-ephemeral.py",
+    "focusedResult": "exit 1; Sentry FailedToStart; Docker empty error during connect to /containers/a2500e0a5e8817a399582c93e97b935e35b9a84158698d41b0614504ed939f8d/start; mTLS 1 failed in 39.605 s; security assertions never ran",
+    "fullGate": "/mnt/wsl/story49-gate-final-20261020-attempt2/gate-command.json",
+    "fullGateResult": "exit 1; mTLS gateway startup timeout; Scheduler endpoint and gateway app port 38043 collide inside kernel ephemeral range; prior recovery 4/4, historical 1/1, HA 1/1 passed"
+  },
+  "sourceFix": "Run-owned control-plane complement selection added; all 87 Python tests pass. No C# or production input changed for this fix."
+}

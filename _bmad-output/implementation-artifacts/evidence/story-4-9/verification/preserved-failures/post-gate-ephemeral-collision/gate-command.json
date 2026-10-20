@@ -1,0 +1,30 @@
+{
+  "command": [
+    "timeout",
+    "--signal=INT",
+    "--kill-after=90s",
+    "75m",
+    "bash",
+    "/mnt/wsl/story49-platform-final-source/eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/tmp/story416-sdk-3.126.0-public-source",
+    "--platform-source-binding",
+    "/mnt/wsl/story49-platform-source-after-debugger.json",
+    "--artifacts-path",
+    "/mnt/wsl/story49-gate-final-20261020-attempt2"
+  ],
+  "environment": {
+    "TMPDIR": "/mnt/wsl/story49-gate-final-20261020-temp",
+    "HexalithBuildsRoot": "/tmp/story416-builds-b435f2e-public-source",
+    "HexalithEventStoreRoot": "/tmp/story416-sdk-3.126.0-public-source"
+  },
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "canonicalRevisionsAtObservation": {
+    "Works": "696781961155d764ed805843f55b40dc5882e887",
+    "Platform": "642b5bdbdf33ec1588eeef3b9a7e9f1a02aebc40"
+  },
+  "selectedPlatformOriginRevision": "642b5bdbdf33ec1588eeef3b9a7e9f1a02aebc40",
+  "resultPending": true
+}

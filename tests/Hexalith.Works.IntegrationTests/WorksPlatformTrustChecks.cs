@@ -128,7 +128,15 @@ internal static partial class WorksPlatformTrustChecks
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(TimeSpan.FromSeconds(15));
         using var tcp = new TcpClient();
-        await tcp.ConnectAsync(IPAddress.Loopback, port, deadline.Token).ConfigureAwait(false);
+        try
+        {
+            await tcp.ConnectAsync(IPAddress.Loopback, port, deadline.Token).ConfigureAwait(false);
+        }
+        catch (SocketException exception)
+        {
+            // A refused/reset TCP connection authenticated no server and cannot prove certificate refusal.
+            return new WorksPlatformTrustProbeResult(null, true, false, exception.GetType().Name + ": " + exception.Message);
+        }
         string? serverIdentity = null;
         bool clientRejected = true;
         using var tls = new SslStream(tcp.GetStream(), leaveInnerStreamOpen: false, (_, certificate, _, errors) =>

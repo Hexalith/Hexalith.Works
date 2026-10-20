@@ -371,94 +371,7 @@ public sealed class DependencyDirectionTests
         }
     }
 
-    [Fact]
-    public void P0_AppHostReferencesOnlyWorksTopologyProjects()
-    {
-        string root = RepositoryRoot.Locate();
-        string eventStoreRoot = RepositoryRoot.DependencyRoot("Hexalith.EventStore");
-        string appHostPath = Path.Combine(root, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj");
-        string[] worksTopology =
-        [
-            Path.Combine(root, "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"),
-            Path.Combine(root, "src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj"),
-            Path.Combine(root, "src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj"),
-            Path.Combine(root, "src/Hexalith.Works.Server/Hexalith.Works.Server.csproj"),
-            Path.Combine(root, "src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj"),
-        ];
 
-        // Assert both modes: a Debug-only conditional ProjectReference would otherwise satisfy a
-        // single Release evaluation while silently changing the topology developers actually run.
-        AssertExactProjectReferences(
-            EvaluateProject(appHostPath, "Release"),
-            worksTopology,
-            "Release AppHost should use the EventStore Aspire package and represent external runtime hosts only through project metadata.");
-
-        AssertExactProjectReferences(
-            EvaluateProject(appHostPath, "Debug"),
-            [
-                .. worksTopology,
-                Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Aspire", "Hexalith.EventStore.Aspire.csproj"),
-            ],
-            "Debug AppHost should wire the Works topology plus the source-backed EventStore Aspire library; external hosts remain runtime-only metadata paths.");
-    }
-
-    [Fact]
-    public void P0_EventStoreRuntimeHostsAreMetadataNotCompileGraphProjects()
-    {
-        string root = RepositoryRoot.Locate();
-        string[] runtimeProjects =
-        [
-            "Hexalith.EventStore.csproj",
-            "Hexalith.EventStore.Admin.Server.Host.csproj",
-            "Hexalith.EventStore.Operations.csproj",
-        ];
-        string solution = File.ReadAllText(Path.Combine(root, "Hexalith.Works.slnx"));
-        string appHost = File.ReadAllText(Path.Combine(
-            root,
-            "src",
-            "Hexalith.Works.AppHost",
-            "Hexalith.Works.AppHost.csproj"));
-        string integration = File.ReadAllText(Path.Combine(
-            root,
-            "tests",
-            "Hexalith.Works.IntegrationTests",
-            "Hexalith.Works.IntegrationTests.csproj"));
-        string[] metadataFiles =
-        [
-            "HexalithEventStore.cs",
-            "HexalithEventStoreAdminServerHost.cs",
-            "HexalithEventStoreOperations.cs",
-        ];
-
-        foreach ((string runtimeProject, string metadataFile) in runtimeProjects.Zip(metadataFiles))
-        {
-            string metadata = File.ReadAllText(Path.Combine(
-                root,
-                "src",
-                "Hexalith.Works.AppHost",
-                metadataFile));
-
-            solution.ShouldNotContain(runtimeProject, Case.Sensitive);
-            appHost.ShouldNotContain(runtimeProject, Case.Sensitive);
-            integration.ShouldNotContain(runtimeProject, Case.Sensitive);
-            metadata.ShouldContain(runtimeProject, Case.Sensitive);
-            metadata.ShouldContain("SuppressBuild => false", Case.Sensitive);
-        }
-
-        string metadataProbe = File.ReadAllText(Path.Combine(
-            root,
-            "tests",
-            "Hexalith.Works.IntegrationTests",
-            "EventStoreOperationsTests.cs"));
-        metadataProbe.ShouldContain("System.Reflection.Metadata", Case.Sensitive);
-        metadataProbe.ShouldContain("Hexalith.EventStore.Operations.csproj", Case.Sensitive);
-        metadataProbe.ShouldContain("Dapr.Actors:Dapr.Actors.Runtime.IRemindable", Case.Sensitive);
-        metadataProbe.ShouldContain(
-            "Hexalith.EventStore.Operations:Hexalith.EventStore.Operations.Actors.IDeadLetterDrainActor",
-            Case.Sensitive);
-        metadataProbe.ShouldContain("recordProperties.ShouldContain(\"Body\")", Case.Sensitive);
-        metadataProbe.ShouldNotContain("using Hexalith.EventStore.Operations", Case.Sensitive);
-    }
 
     [Fact]
     public void P0_ContractsDoesNotReferenceSiblingImplementationProjects()
@@ -544,24 +457,18 @@ public sealed class DependencyDirectionTests
                 ReleaseProjects: Array.Empty<string>(),
                 ReleasePackages: new[] { "Hexalith.EventStore.DomainService", "Hexalith.Parties.Client" }),
             (
-                Project: "src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj",
-                DebugProjects: new[]
-                {
-                    Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Aspire", "Hexalith.EventStore.Aspire.csproj"),
-                },
-                ReleaseProjects: Array.Empty<string>(),
-                ReleasePackages: new[] { "Hexalith.EventStore.Aspire" }),
-            (
                 Project: "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
                 DebugProjects: new[]
                 {
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Admin.Abstractions", "Hexalith.EventStore.Admin.Abstractions.csproj"),
                     Path.Combine(eventStoreRoot, "src", "Hexalith.EventStore.Testing", "Hexalith.EventStore.Testing.csproj"),
                     Path.Combine(platformRoot, "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj"),
+                    Path.Combine(platformRoot, "src", "Hexalith.Platform.Composition", "Hexalith.Platform.Composition.csproj"),
                 },
                 ReleaseProjects: new[]
                 {
                     Path.Combine(platformRoot, "src", "Hexalith.Platform.Identity", "Hexalith.Platform.Identity.csproj"),
+                    Path.Combine(platformRoot, "src", "Hexalith.Platform.Composition", "Hexalith.Platform.Composition.csproj"),
                 },
                 ReleasePackages: new[]
                 {

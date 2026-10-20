@@ -57,7 +57,8 @@ public sealed class WorksSdkDaprConfigCopyTests
         for (DirectoryInfo? directory = new(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
         {
             if (File.Exists(Path.Combine(directory.FullName, "Hexalith.Works.slnx")))
-                return File.ReadAllLines(Path.Combine(directory.FullName, "src", "Hexalith.Works.AppHost", "DaprComponents", fileName));
+                return File.ReadAllLines(Path.Combine(Environment.GetEnvironmentVariable("WORKS_PLATFORM_ROOT")
+                    ?? Path.Combine(directory.FullName, "references", "Hexalith.Platform"), "DaprComponents", fileName));
         }
         throw new DirectoryNotFoundException("Could not locate the committed Works Dapr configurations.");
     }

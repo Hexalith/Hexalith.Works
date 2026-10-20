@@ -28,7 +28,7 @@ namespace Hexalith.Works.IntegrationTests;
 public sealed class WorksPlatformHaPipelineSmokeTests
 {
     /// <summary>One Works host fails after a lost firing; its surviving peer recovers and rejects a stale firing.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect()
     {
         if (!WorksAppHostSelection.IsPlatform)
@@ -170,8 +170,14 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         replica.WithEnvironment("EventStore__CommandGateway__BaseAddress", resources.EventStore.GetEndpoint("http"));
         replica.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://localhost:{replica.GetEndpoint("http").Property(EndpointProperty.TargetPort)}"));
         replica.AddEventStoreDomainModule(resources, "works", Path.Combine(platform, "DaprComponents", "accesscontrol.works.yaml"),
-            daprPlacementHostAddress: "localhost:51005", daprSchedulerHostAddress: "localhost:51006");
-        Hexalith.Works.AppHost.DaprSelfHostedMtls.ConfigureSidecar(replica,
+            daprPlacementHostAddress: "localhost:" + WorksAppHostSelection.ControlPlanePorts.Placement.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            daprSchedulerHostAddress: "localhost:" + WorksAppHostSelection.ControlPlanePorts.Scheduler.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        IDaprSidecarResource replicaSidecar = replica.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar;
+        DaprSidecarOptionsAnnotation replicaOptions = replicaSidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+        DaprSidecarOptions primaryOptions = primary.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options;
+        replicaSidecar.Annotations.Remove(replicaOptions);
+        replicaSidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(replicaOptions.Options with { ResourcesPaths = primaryOptions.ResourcesPaths }));
+        DaprSelfHostedMtls.ConfigureSidecar(replica,
             replica.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar,
             builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-sentry")),
             certificateDirectory,
@@ -189,7 +195,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
     {
         // DOTNET_ENVIRONMENT too: on an actual Platform start the fixture no longer sets it, so the replica takes Platform's value.
         string[] required = ["DOTNET_ENVIRONMENT", "WORKS_PLATFORM_RUNTIME", "DOTNET_STARTUP_HOOKS", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
-            "Works__Projection__UseSdkDelivery", "Works__Recovery__UseSdkRuntime", "Works__Query__GatewayWorkloadId",
+            "Dapr__DeclarativeSubscriptions", "Works__Projection__UseSdkDelivery", "Works__Recovery__UseSdkRuntime", "Works__Query__GatewayWorkloadId",
             "Authentication__Workload__Audience", "Authentication__WorkloadIssuer__Workload", "Authentication__Workload__AllowedCallers__0"];
         string[] prefixed = [.. composed.Keys.Where(name => name.StartsWith("Authentication__Workload__AllowedCallers__", StringComparison.Ordinal)
             || name.StartsWith("Authentication__JwtBearer__", StringComparison.Ordinal))];

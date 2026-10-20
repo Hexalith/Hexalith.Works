@@ -1,0 +1,215 @@
+{
+  "runtime-release-prebuild-3.log": {
+    "sha256": "f236bdd884b16a28d27253c3e38a09ce29fb3536b3d5f904bfbefe9eb98add5b",
+    "uncompressedSha256": "f236bdd884b16a28d27253c3e38a09ce29fb3536b3d5f904bfbefe9eb98add5b",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/runtime-release-prebuild-3.log"
+  },
+  "platform-projection.xml": {
+    "sha256": "888e8fd2337bdbec4b5c1520a9b6bea918e1843952db95729b4b5bf5945a765a",
+    "uncompressedSha256": "888e8fd2337bdbec4b5c1520a9b6bea918e1843952db95729b4b5bf5945a765a",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-projection.xml"
+  },
+  "platform-tests-build-debug.log": {
+    "sha256": "a81a0b310f7ba830f4c911ff3811fa81550fd8ac6b577be445ada0a592b95896",
+    "uncompressedSha256": "a81a0b310f7ba830f4c911ff3811fa81550fd8ac6b577be445ada0a592b95896",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-tests-build-debug.log"
+  },
+  "works-consumer-debug.log": {
+    "sha256": "d637002acdad32402297d3320ec63bc747a7a9110b1d1b1228aa243c137cfde7",
+    "uncompressedSha256": "d637002acdad32402297d3320ec63bc747a7a9110b1d1b1228aa243c137cfde7",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-debug.log"
+  },
+  "platform-historical.log": {
+    "sha256": "37c0c92e279c19694ba23c4267215a25a5849cafb533f3a5d50e032d0100f7c0",
+    "uncompressedSha256": "37c0c92e279c19694ba23c4267215a25a5849cafb533f3a5d50e032d0100f7c0",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-historical.log"
+  },
+  "platform-projection.log": {
+    "sha256": "db0fc741846bf28226cbc15d6adc7f8b4bc0d6aab5bc64d2dc25a2ecce4a9939",
+    "uncompressedSha256": "db0fc741846bf28226cbc15d6adc7f8b4bc0d6aab5bc64d2dc25a2ecce4a9939",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-projection.log"
+  },
+  "platform-tests-release.log": {
+    "sha256": "b7cf844972bc2547e631505249e53515b193f509150c68fee314587c8b94df58",
+    "uncompressedSha256": "b7cf844972bc2547e631505249e53515b193f509150c68fee314587c8b94df58",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-tests-release.log"
+  },
+  "runtime-release-prebuild-1.log": {
+    "sha256": "c8b273474eb95f46e4cd1c5a588762747a65c3ea7060b7ecb55a968083e9b9a0",
+    "uncompressedSha256": "c8b273474eb95f46e4cd1c5a588762747a65c3ea7060b7ecb55a968083e9b9a0",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/runtime-release-prebuild-1.log"
+  },
+  "platform-tests-debug.log": {
+    "sha256": "ff5b11ee98afbdb171effb6a73901f80393fbe1a659edd06c7239687afb9275a",
+    "uncompressedSha256": "ff5b11ee98afbdb171effb6a73901f80393fbe1a659edd06c7239687afb9275a",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-tests-debug.log"
+  },
+  "platform-historical.xml": {
+    "sha256": "8da102b35869f13a3971ba93a3746978bdc41ce88b8a9e977292e9e1a2a03ad1",
+    "uncompressedSha256": "8da102b35869f13a3971ba93a3746978bdc41ce88b8a9e977292e9e1a2a03ad1",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-historical.xml"
+  },
+  "agents-full-refusal.log": {
+    "sha256": "3732eb8b17e4017a7a8e26224b40e264e226aaaeb41b09d083210d0d904b6e4f",
+    "uncompressedSha256": "3732eb8b17e4017a7a8e26224b40e264e226aaaeb41b09d083210d0d904b6e4f",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/agents-full-refusal.log"
+  },
+  "works-consumer-release.log": {
+    "sha256": "6918045bc2098158e3f9ed2c7b3e8bb272c961f4b3abd730d5dd67461454c56d",
+    "uncompressedSha256": "6918045bc2098158e3f9ed2c7b3e8bb272c961f4b3abd730d5dd67461454c56d",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-release.log"
+  },
+  "canonical-revisions.json": {
+    "sha256": "9ac1d7e0000328acff071c3b7a2c50c017db4ca5081325321218d235248f5a80",
+    "uncompressedSha256": "9ac1d7e0000328acff071c3b7a2c50c017db4ca5081325321218d235248f5a80",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/canonical-revisions.json"
+  },
+  "canonical-revisions-complete.json": {
+    "sha256": "7cd4752378cf3681a4cf4f849202c2d13446565880f5ad93c261e7dba6dd4996",
+    "uncompressedSha256": "7cd4752378cf3681a4cf4f849202c2d13446565880f5ad93c261e7dba6dd4996",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/canonical-revisions-complete.json"
+  },
+  "platform-release.xml": {
+    "sha256": "305d3ba55beb336e5cd3ff6177f9fbbb7fe0382379d97441dc5b4ab2debf1c85",
+    "uncompressedSha256": "305d3ba55beb336e5cd3ff6177f9fbbb7fe0382379d97441dc5b4ab2debf1c85",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-release.xml"
+  },
+  "platform-debug.xml": {
+    "sha256": "10150462d1df1570c81ba307bec5c65c074059bbf71d480ab7448216318c3194",
+    "uncompressedSha256": "10150462d1df1570c81ba307bec5c65c074059bbf71d480ab7448216318c3194",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-debug.xml"
+  },
+  "persisted-states.jsonl.gz": {
+    "sha256": "3fb7a7d14afcf9bc12c7c2dca9a70b95f168c5454efdfec5510fad04bcde1617",
+    "uncompressedSha256": "d83d4f1c7f70f29c2d310c4e0ba223464c6f3b9ffccc6fd31d98bae99e435291",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/persisted-states.jsonl"
+  },
+  "ledger.json": {
+    "sha256": "1797b853ae0ce449325d4f665a77f2e3e4c0527ccb3f087cfbb702f7a5ea922a",
+    "uncompressedSha256": "1797b853ae0ce449325d4f665a77f2e3e4c0527ccb3f087cfbb702f7a5ea922a",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/ledger.json"
+  },
+  "runtime-release-prebuild-0.log": {
+    "sha256": "a29e68553d68c63a08e6d98a26752cc781996da7fcfce2a133aa6fd0bc311d29",
+    "uncompressedSha256": "a29e68553d68c63a08e6d98a26752cc781996da7fcfce2a133aa6fd0bc311d29",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/runtime-release-prebuild-0.log"
+  },
+  "agents-local-scaffold.log": {
+    "sha256": "308cf69f434292ac70f5d8aedbe82563e81b2efd583f98f25385351e8fd4b37e",
+    "uncompressedSha256": "308cf69f434292ac70f5d8aedbe82563e81b2efd583f98f25385351e8fd4b37e",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/agents-local-scaffold.log"
+  },
+  "evidence-gate-tests.log": {
+    "sha256": "6f2a9f03709e33321443a110cadb2b157db3ccc76399efa28b594c07922da10a",
+    "uncompressedSha256": "6f2a9f03709e33321443a110cadb2b157db3ccc76399efa28b594c07922da10a",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/evidence-gate-tests.log"
+  },
+  "platform-ha.log": {
+    "sha256": "baa69b56b2d7fc67f3409c7ba085a9fe4b11eebf99ff5b1d6878c84b91c2ba3f",
+    "uncompressedSha256": "baa69b56b2d7fc67f3409c7ba085a9fe4b11eebf99ff5b1d6878c84b91c2ba3f",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-ha.log"
+  },
+  "linked-test-fixtures.json": {
+    "sha256": "7aff943ad0ce957bd084c525145ee2bf972d9c7d9d9322da14f071b96ac6a094",
+    "uncompressedSha256": "7aff943ad0ce957bd084c525145ee2bf972d9c7d9d9322da14f071b96ac6a094",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/linked-test-fixtures.json"
+  },
+  "runtime-release-prebuild-2.log": {
+    "sha256": "eda5ed8434e2a8779d73bf14c5407f53636da3386a9c50d6a0c2b0389f91d2a7",
+    "uncompressedSha256": "eda5ed8434e2a8779d73bf14c5407f53636da3386a9c50d6a0c2b0389f91d2a7",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/runtime-release-prebuild-2.log"
+  },
+  "works-consumer-supporting.xml": {
+    "sha256": "ccfd05c652898989c6cc662cfd5d6506ad9432bab5ede2ef903ff563ea33245c",
+    "uncompressedSha256": "ccfd05c652898989c6cc662cfd5d6506ad9432bab5ede2ef903ff563ea33245c",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+  },
+  "works-consumer-supporting.log": {
+    "sha256": "bf25f25e7efbc644ecda9daea240d630b4797b2d81ca2a321e4748f750f9eeeb",
+    "uncompressedSha256": "bf25f25e7efbc644ecda9daea240d630b4797b2d81ca2a321e4748f750f9eeeb",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.log"
+  },
+  "platform-ha.xml": {
+    "sha256": "0e88748ada63c20181807d103aa91a7f5286ce5a3accb262f21f711cb9da70cf",
+    "uncompressedSha256": "0e88748ada63c20181807d103aa91a7f5286ce5a3accb262f21f711cb9da70cf",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-ha.xml"
+  },
+  "platform-tests-build-release.log": {
+    "sha256": "3284072239dcef731a5b8833eae6ee07db2bc9e7fc7454b0314974c6c2c50663",
+    "uncompressedSha256": "3284072239dcef731a5b8833eae6ee07db2bc9e7fc7454b0314974c6c2c50663",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-tests-build-release.log"
+  },
+  "platform-file-host-release.log": {
+    "sha256": "c81e8042746fa31316d3961affb2d6bb2bea2e3cdfcd4536c80d79e282a236a0",
+    "uncompressedSha256": "c81e8042746fa31316d3961affb2d6bb2bea2e3cdfcd4536c80d79e282a236a0",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-file-host-release.log"
+  },
+  "runtime-release-prebuild-4.log": {
+    "sha256": "becf31c91e92970e6991aa4a47d7f3228f263284b2eefffd17743789b158c465",
+    "uncompressedSha256": "becf31c91e92970e6991aa4a47d7f3228f263284b2eefffd17743789b158c465",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/runtime-release-prebuild-4.log"
+  },
+  "platform-recovery.log": {
+    "sha256": "5f8d442473c4c2f71a4c1efab3366ccde60eae5a63c3c4f351c98a5615242601",
+    "uncompressedSha256": "5f8d442473c4c2f71a4c1efab3366ccde60eae5a63c3c4f351c98a5615242601",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.log"
+  },
+  "host-starts.jsonl.gz": {
+    "sha256": "302fc95a753d629b7359268c7b53ae352e9c099433317a0795052f889d246779",
+    "uncompressedSha256": "e836a7042b673c41685dd9ba9eff79f03690e471269be28fc0e276c0ab3f5c6d",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/host-starts.jsonl"
+  },
+  "platform-recovery.xml": {
+    "sha256": "8e677ccb008345e4d660338bd096edf4496559c27e95310a6a685e951aaaae19",
+    "uncompressedSha256": "8e677ccb008345e4d660338bd096edf4496559c27e95310a6a685e951aaaae19",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.xml"
+  },
+  "isolated-daprd/binding.json": {
+    "sha256": "2a0924baddb6f08c5032e5eb5ce290a0f4b6008918c3b4d822ce2e0a0c5107f7",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/isolated-daprd/binding.json"
+  },
+  "isolated-daprd/launches.jsonl": {
+    "sha256": "75720b76651b26e518ab7363e6687ec712ddf0ee30fa8ee8a2b5f21014188d92",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/isolated-daprd/launches.jsonl"
+  },
+  "isolated-daprd/.dapr/bin/daprd": {
+    "sha256": "19deafab4f6cf18ab2a7df81e81b58b765f173abb5822e0608403cca541d40a2",
+    "source": "/tmp/story49-pre-cutover-20261020-isolated/isolated-daprd/.dapr/bin/daprd"
+  },
+  "verifier-inputs/verify-works-host.sh": {
+    "sha256": "84583500b5bc110d15bbbc61c7777ab2072e7b1e07f559931ce878428d054bc2",
+    "source": "/home/administrator/projects/hexalith/platform/eng/verify-works-host.sh"
+  },
+  "verifier-inputs/verify_works_host.py": {
+    "sha256": "29c43875f3ef050ec85525736e6eaee39af0cca1a1f1bdf65060a79d88fadfc6",
+    "source": "/home/administrator/projects/hexalith/platform/eng/verify_works_host.py"
+  },
+  "verifier-inputs/verify_works_producer.py": {
+    "sha256": "625dabafd5dd51b9ed932297eda31809a8f321749a2047ab6669ec56314d710f",
+    "source": "/home/administrator/projects/hexalith/platform/eng/verify_works_producer.py"
+  },
+  "verifier-inputs/test_verify_works_host.py": {
+    "sha256": "fe8eb059b402e49ff8d62ac4bea8107940712c005086fed1b1f66ce65473b57d",
+    "source": "/home/administrator/projects/hexalith/platform/eng/test_verify_works_host.py"
+  },
+  "verifier-inputs/test_verify_works_producer.py": {
+    "sha256": "95ce15e8d5a6e0cd8a2ce85516f515aaf2512f64afd524d9e7cfb85613dc05e5",
+    "source": "/home/administrator/projects/hexalith/platform/eng/test_verify_works_producer.py"
+  },
+  "verifier-inputs/isolated_daprd.py": {
+    "sha256": "19deafab4f6cf18ab2a7df81e81b58b765f173abb5822e0608403cca541d40a2",
+    "source": "/home/administrator/projects/hexalith/platform/eng/isolated_daprd.py"
+  },
+  "verifier-inputs/test_isolated_daprd.py": {
+    "sha256": "fdf80e5ad2899ff94a99e5ef7fdb5f183f8c1f1bbbbd448f3ada5bbda3b54f5f",
+    "source": "/home/administrator/projects/hexalith/platform/eng/test_isolated_daprd.py"
+  },
+  "closure-tools/story49-check-canonical-revisions.py": {
+    "sha256": "d80593b7f90079daaf3906b3e1a32beba0fea8402bce77079c2589dd2edd8c79",
+    "source": "/tmp/story49-check-canonical-revisions.py"
+  },
+  "closure-tools/story49-check-linked-fixtures.py": {
+    "sha256": "4d987c12a7f9704d3990a81f1d85a0b0ea75aef4c7f3d6bc0f64f0cbf210eb71",
+    "source": "/tmp/story49-check-linked-fixtures.py"
+  }
+}

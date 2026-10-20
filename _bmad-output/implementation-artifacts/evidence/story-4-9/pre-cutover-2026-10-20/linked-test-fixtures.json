@@ -1,0 +1,62 @@
+{
+  "observedAt": "2026-10-20T12:57:24.171112+00:00",
+  "scope": "Exact existing test-only Parties linked Compile sources and root-declared Platform.Identity source graph; no production authority",
+  "heads": {
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties": "500bcc7d143c12a995eae886ff9c706024da25af",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform": "a9ac6640944efd8c581aaad70b335b7117b932b5"
+  },
+  "sourceFiles": {
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Authorization/IPartyIdentityAuthority.cs": "ac2beb2290021f958a9fd4da423f06ed5518cfd6d62e9d006151e4ff1f163827",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Authorization/PartyIdentityAdmissionResult.cs": "fa6573f5ff563043360a6d96d3f9e58c44a7426f60024c525b8b69358acddea3",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Authorization/PartyIdentityAuthority.cs": "73743d1799e8b8d6df246c2d027b67fbf5729d96dbc1f21273ab9c4960954e71",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Authorization/PartyIdentityOptions.cs": "13d53019d103f379159aa91371930d1504e8f95cdb8ca2941d88ec5b32e46689",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/PartyIdentityQueryDeadline.cs": "ce91ab42c8ef445a6955975582ca16f27826522d5c09085c238bcb66de3e809b",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/PartyIdentityQueryService.cs": "88aca1d2fe18260b7ed4393c30e348fcd75c7c03fa699b37af656e6abacdaa38",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/PartyIdentitySourceFold.cs": "c28ff35167ee411a41f178a78809e9e6dff216e1d015257cab2cf483ddb997b6",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/RetainedHumanActorBinding.cs": "8f5bd2a7de7fa65a54a2134efa33dfc62a03d7c212449f5f9c1230dc911d7349",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/RetainedHumanActorHistoryFold.cs": "9dbb51ce5afc84e8e14fea9e061602e5a0c6cedb9a2911f1246f16646e02423e",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/AssemblyInfo.cs": "36f655c33b500b7e1c3d233a1f43adc1f9a36fddfee21b92fd149e32a329dd4d",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/FixedOptionsMonitor.cs": "c7b69f00d82f63ae76bd308dc595ff956007ba158f6b28cb771ae338a61ba093",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/Hexalith.Platform.Identity.csproj": "4572f6cfb0d6b5fe5c2349ff9947ebee1829d53f0875b2411e3e825080489e13",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1AuthenticatedEnrollment.cs": "909e5659d8a116ab247c063f57a3e3fb5ed29664a2c8fde8d407864b9a227442",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1BootTimeClock.cs": "f2555852e4e9934e10e9d56ca0318743ceea1ea6e5e2a1deeb9fce57a2ae7bb3",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1BootstrapClaims.cs": "8dd6847c8c8bc125fc7727d98ff4a6fb052d2c9dfdeb17112cfbff7cea87cc14",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1BootstrapPin.cs": "4a2a5565d5cee6b23aea5bbe81a431216ebf9ce6fd3b433e0731b51241ada1f2",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1BootstrapVerifier.cs": "9d0c1c20a209b6996e6ca887e31a7d9063f2eef3be2c8766df91e241516f7704",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1BootstrapWireV1.cs": "6007b3e1ad4796509bd601631db4bb97579f7b0855655dccf2e41a162ac548c3",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptClaims.cs": "2b707dd7e7e37f23f6b8f133327809c444221883b47e0d4dbbf8091ecf650266",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptEnrollment.cs": "362936a3921827a0bf86354f5a99a54da6f2e97c1d6f1201da287ab65ae36d41",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpAdapter.cs": "2af5886066e1d42e320491360927abc0b48c1dffd90bcac4886b41da973c1c8e",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpDeadline.cs": "01066aadd0d505d588446aa8b3e7054996946fe2658fe409e247fdbf6affa980",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpDeadlineMonitor.cs": "f94ebb079eee10377e6df7ece293b51578d870197bbb35d35387cbbbe98b3376",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpFailure.cs": "b81d341cd82d15004f55ce8795e333d75a726c3ccc9d9ff911f17ae7f10b94fe",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpHistory.cs": "35d761249fce8742a77ba8cb41be9f028a8a3bda205f6474561d134f736978a8",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpObservation.cs": "d462b17025072ad68ee50ddb0b25a9d5b15dacf53137e97d2706392a05e8782b",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpResult.cs": "96eb7352131bf15fbd9124c36c53356413c74d2f4e810718f4268b379ca46129",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptHttpTrust.cs": "b311c7622422a27e381b0180ca9962cdf932ff6e5ce0d4b2942412a0932a4c72",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptTransportV1.cs": "12a6a49bac0093267e4a483f852ac3d7df65472d5d5642653e53f845de6febc5",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptVerifier.cs": "99988c0fd8142d7b7ac7d9ce4716977542fd900f80fc7128abf09b79f452493e",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1ReceiptWireV1.cs": "538e5f98a88131c134f0a6a483861ae7d82095295cedaee20657c5d32663ed42",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1SignedDocument.cs": "985d79350285d977456127460bddcf00e8bf913235f921b0b297ab0129a0fea8",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1SignedEnvelopeV1.cs": "825e4b36c1e9de135c0c5659c23e44dd9d2fd8340887bfc8602ab23de02dc63a",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1StatusClaims.cs": "541c3993a420fcb8888113cbec993e8f50807a7b4664652f00a7ab077aca6d11",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/P1VerifiedReceiptEvidence.cs": "0cbb80b2b6321829fb496f818aa35703ae5ce965b7dd1b2b747b79429d444152",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformActorRegistry.cs": "5c8703107ce7712049929b797a035233a057273566241fdc67bc19fb4d88033d",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformBootstrapVerifier.cs": "19ea88be398c15bea76e222af47a79152782dcb3df710e13487e364ffd1d2c15",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformIdentityEnrollmentService.cs": "4d24094905029c8e03e214fbae08d898344a3746b6e3657bfc3d88659dc7fc27",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformIdentityGatewayAdmission.cs": "a223db2240ca1e048f9934e714e439969aea215b071f523cf1535e53e5e0ef0a",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformIdentityJwtReader.cs": "3f2dc90cfe430c19bb695b07902e7a2f8d3e7ef1905f69683840f549cf1348e1",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformIdentityOptions.cs": "72ec0ce3418ae1cdf4d1152c14eff1e739ef41fe742eadd4ef35d19d8bb5edd3",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformIdentityServiceCollectionExtensions.cs": "0a2414ee733a0727bbc5122714354e0676f057520640d39beff7c2fa355d7d0d",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformLoginAliasDigest.cs": "38dd33c9c3725dcd747fa368a37a5447b67fa64d7082221c1bdea13db760b224",
+    "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/PlatformOperatorProvenanceVerifier.cs": "0cbae0cb829c4968942aed000e3047b2c30a37c964dcf5fe92c46352959cca17"
+  },
+  "finalObservation": {
+    "observedAt": "2026-10-20T13:05:26.240631+00:00",
+    "heads": {
+      "/home/administrator/projects/hexalith/works/references/Hexalith.Parties": "500bcc7d143c12a995eae886ff9c706024da25af",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.Platform": "a9ac6640944efd8c581aaad70b335b7117b932b5"
+    },
+    "unchanged": true
+  }
+}

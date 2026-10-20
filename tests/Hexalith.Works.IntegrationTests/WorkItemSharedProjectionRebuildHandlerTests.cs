@@ -13,15 +13,17 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Queries;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Exercises the real EventStore shared lifecycle against the Works reconciliation handler.</summary>
+/// <summary>Exercises legacy persisted-family compatibility through the canonical SDK shared lifecycle.</summary>
 public sealed class WorkItemSharedProjectionRebuildHandlerTests
 {
     private const string ChildId = "child";
@@ -75,7 +77,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             RollUp(Tenant, ChildId, 88m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-parented-create");
         DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity)).ConfigureAwait(true);
@@ -402,7 +404,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     public async Task Abort_retry_and_colliding_tenant_ids_preserve_atomicity_and_tenant_isolation()
     {
         var store = new InMemoryReadModelStore();
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity abortedIdentity = Identity(Tenant, "rebuild-aborted");
         DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(abortedIdentity)).ConfigureAwait(true);
@@ -438,154 +440,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await QueryWorkItemAsync(store, otherTenant, ParentId).ConfigureAwait(true)).Estimated.ShouldBe(3m);
     }
 
-    [Fact]
-    public async Task Committed_reconciliation_survives_later_ordinary_dispatches_of_the_reconciled_streams()
-    {
-        var store = new InMemoryReadModelStore();
-        await RebuildAsync(
-            store,
-            Tenant,
-            "rebuild-durable-parented-create",
-            [
-                (ChildId, ChildHistory(Tenant)),
-                (ParentId, ParentHistory(Tenant)),
-            ]).ConfigureAwait(true);
-        (await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true))
-            .RolledRemaining.ShouldBe(new RolledRemaining(13m, Hour));
 
-        var dispatcher = new WorkItemProjectionDispatcher(
-            store,
-            notifier: null,
-            NullLogger<WorkItemProjectionDispatcher>.Instance);
-        _ = await dispatcher.DispatchAsync(
-            new ProjectionRequest(Tenant, "work", ParentId, ParentHistory(Tenant)),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-
-        WorkItemRollUp parent = await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true);
-        parent.RolledRemaining.ShouldBeNull();
-        parent.RolledRemainingByUnit.ShouldBeEmpty();
-        parent.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-        parent.ExposedChildCount.ShouldBe(1);
-        parent.OwnEffort.ShouldBe(new WorkItemEffort(10m, Hour));
-        parent.Status.ShouldBe(WorkItemStatus.Assigned);
-
-        // The dispatch writes the current generation, keeps authoritative membership, and stays queryable.
-        WorksWhatsNextTenantIndex index = await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true);
-        index.SchemaVersion.ShouldBe(WorksReadModelKeys.CurrentSchemaVersion);
-        index.MemberWorkItemIds.ShouldBe([ChildId, ParentId]);
-        index.Items[ParentId].RolledRemaining.ShouldBeNull();
-        (await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true)).Found.ShouldBeTrue();
-        (await store.GetAsync<WorkItemRollUp>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
-
-        // A second dispatch of the same stream must not lose the retained evidence and re-expose a total.
-        _ = await dispatcher.DispatchAsync(
-            new ProjectionRequest(Tenant, "work", ParentId, ParentHistory(Tenant)),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        WorkItemRollUp repeated = await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true);
-        repeated.RolledRemaining.ShouldBeNull();
-        repeated.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-    }
-
-    [Fact]
-    public async Task Later_child_spawn_merges_with_reconciled_children_instead_of_replacing_them()
-    {
-        const string spawnedId = "child-2";
-        var store = new InMemoryReadModelStore();
-        await RebuildAsync(
-            store,
-            Tenant,
-            "rebuild-before-later-spawn",
-            [
-                (ChildId, ChildHistory(Tenant)),
-                (ParentId, ParentHistory(Tenant)),
-            ]).ConfigureAwait(true);
-        (await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true))
-            .ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-
-        // The parent's own stream never carried the reconciled child, and now carries a different one. The
-        // replayed and the reconciled evidence are each incomplete, so neither may replace the other.
-        var tenant = new TenantId(Tenant);
-        var parent = new WorkItemId(ParentId);
-        var dispatcher = new WorkItemProjectionDispatcher(
-            store,
-            notifier: null,
-            NullLogger<WorkItemProjectionDispatcher>.Instance);
-        _ = await dispatcher.DispatchAsync(
-            new ProjectionRequest(
-                Tenant,
-                "work",
-                ParentId,
-                [
-                    .. ParentHistory(Tenant),
-                    Dto(
-                        new ChildSpawned(
-                            ParentId,
-                            3,
-                            tenant,
-                            parent,
-                            new WorkItemId(spawnedId),
-                            new Obligation("Later child"),
-                            new WorkItemEffort(2m, Hour)),
-                        3),
-                ]),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-
-        WorkItemRollUp merged = await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true);
-        merged.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId), new WorkItemId(spawnedId)]);
-        merged.ExposedChildCount.ShouldBe(2);
-        merged.RolledRemaining.ShouldBeNull();
-        merged.RolledRemainingByUnit.ShouldBeEmpty();
-        merged.OwnEffort.ShouldBe(new WorkItemEffort(10m, Hour));
-
-        WorksWhatsNextTenantIndex index = await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true);
-        index.Items[ParentId].RolledRemaining.ShouldBeNull();
-    }
-
-    [Fact]
-    public async Task Dispatch_after_commit_admits_a_new_aggregate_to_the_current_generation()
-    {
-        const string newId = "new-work";
-        var store = new InMemoryReadModelStore();
-        await RebuildAsync(
-            store,
-            Tenant,
-            "rebuild-before-new-aggregate",
-            [(ParentId, ParentHistory(Tenant))]).ConfigureAwait(true);
-
-        var tenant = new TenantId(Tenant);
-        var workItemId = new WorkItemId(newId);
-        var dispatcher = new WorkItemProjectionDispatcher(
-            store,
-            notifier: null,
-            NullLogger<WorkItemProjectionDispatcher>.Instance);
-        _ = await dispatcher.DispatchAsync(
-            new ProjectionRequest(
-                Tenant,
-                "work",
-                newId,
-                [
-                    Dto(new WorkItemCreated(newId, 1, tenant, workItemId, new Obligation("New"), new WorkItemEffort(6m, Hour)), 1),
-                    Dto(new WorkItemAssigned(newId, 2, tenant, workItemId, Binding), 2),
-                ]),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-
-        WorksWhatsNextTenantIndex index = await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true);
-        index.SchemaVersion.ShouldBe(WorksReadModelKeys.CurrentSchemaVersion);
-        index.MemberWorkItemIds.ShouldBe([newId, ParentId]);
-        WorkItemRollUp created = await ReadCurrentRollUpAsync(store, Tenant, newId).ConfigureAwait(true);
-        created.RolledRemaining.ShouldBe(new RolledRemaining(6m, Hour));
-        (await store.GetAsync<WorkItemRollUp>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(Tenant, newId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
-        (await QueryWorkItemAsync(store, Tenant, newId).ConfigureAwait(true)).Found.ShouldBeTrue();
-        (await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true))
-            .Select(static item => item.WorkItemId.Value)
-            .ShouldBe([newId, ParentId], ignoreOrder: true);
-    }
 
     [Fact]
     public async Task Empty_authoritative_inventory_is_refused_instead_of_blanking_the_tenant()
@@ -597,7 +452,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             RollUp(Tenant, ParentId, 42m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-empty-inventory");
         DomainSharedProjectionRebuildCandidate empty = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -624,7 +479,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [Fact]
     public async Task Accumulate_replaces_a_redelivered_aggregate_and_refuses_an_unidentified_history()
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-redelivery");
         DomainSharedProjectionRebuildCandidate candidate = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -668,7 +523,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData("party", "some-other-projection")]
     public async Task Every_lifecycle_step_refuses_an_identity_outside_the_works_rollup_route(string domain, string projectionType)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         DomainSharedProjectionRebuildIdentity valid = Identity(Tenant, "rebuild-identity");
         var foreign = new DomainSharedProjectionRebuildIdentity(
             Tenant,
@@ -698,7 +553,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData(Tenant, "party")]
     public async Task Accumulate_refuses_history_from_another_tenant_or_domain(string historyTenant, string historyDomain)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-cross-tenant");
         DomainSharedProjectionRebuildCandidate candidate = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -716,7 +571,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [Fact]
     public async Task Single_aggregate_projection_dispatch_is_refused_as_an_unsupported_capability()
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
 
         // This handler only serves the shared-rebuild lifecycle; the ordinary /project dispatch belongs to
         // WorkItemProjectionDispatcher and must be refused here rather than silently succeeding.
@@ -803,7 +658,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         // Rebuild-only Works routes advertise an empty ordinary subset. Consume the real advertised
         // fingerprint so every reconciliation assertion exercises the supported legacy admission contract.
         string fingerprint = AdminOperationalIndexMetadata.Create(new DiscoveryResult([], []), ["work"], [],
-            [new WorkItemSharedProjectionRebuildHandler()], "works-test", "v1", new ProjectionDispatchOptions(), ["work"])
+            [new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }))], "works-test", "v1", new ProjectionDispatchOptions(), ["work"])
             .CatalogFingerprint!;
         return new DomainSharedProjectionRebuildIdentity(
             tenantId,
@@ -887,7 +742,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         string operationId,
         IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity identity = Identity(tenantId, operationId);
         DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity)).ConfigureAwait(false);

@@ -74,7 +74,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     }
 
     /// <summary>Real protected event callbacks persist reminder witnesses and process membership with both periodic writers disabled.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
@@ -162,7 +162,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     }
 
     /// <summary>Lost wakeups and scheduler firing recover; target-commit response loss replays its receipt across restart.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart()
     {
         CancellationToken ct = TestContext.Current.CancellationToken;

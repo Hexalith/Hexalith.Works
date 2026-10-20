@@ -1,0 +1,62 @@
+{
+  "cancelled-unowned-mtls/run-cancellation.json": {
+    "source": "/mnt/wsl/story49-gate-20261020/run-cancellation.json",
+    "sourceSha256": "7c8349bf49f91a5ec06c6ce9876fd3b58c00c2616fa52dcf1e0022941aee993d",
+    "sha256": "7c8349bf49f91a5ec06c6ce9876fd3b58c00c2616fa52dcf1e0022941aee993d"
+  },
+  "cancelled-unowned-mtls/gate-command.json": {
+    "source": "/mnt/wsl/story49-gate-20261020/gate-command.json",
+    "sourceSha256": "ed019ac426d4845df4080945829a12ea46694e2a74deeda53680d228cdae5afc",
+    "sha256": "ed019ac426d4845df4080945829a12ea46694e2a74deeda53680d228cdae5afc"
+  },
+  "cancelled-unowned-mtls/ledger.json": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/ledger.json",
+    "sourceSha256": "730dfd0bb89cbe2207d0dd5fe0548cf6ceec9134e0debce3cf0af30a8362f899",
+    "sha256": "730dfd0bb89cbe2207d0dd5fe0548cf6ceec9134e0debce3cf0af30a8362f899"
+  },
+  "cancelled-unowned-mtls/platform-recovery.log": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/platform-recovery.log",
+    "sourceSha256": "4d81d50d2b2ba54f22f537089c94cd40dce4699f011026c5c643b26701ff7ad5",
+    "sha256": "4d81d50d2b2ba54f22f537089c94cd40dce4699f011026c5c643b26701ff7ad5"
+  },
+  "cancelled-unowned-mtls/platform-recovery.xml": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/platform-recovery.xml",
+    "sourceSha256": "c7f3ae7c0af849570f67a407100290651040af180420dd31f027cb92a48d6caa",
+    "sha256": "c7f3ae7c0af849570f67a407100290651040af180420dd31f027cb92a48d6caa"
+  },
+  "cancelled-unowned-mtls/retained-preflight.xml": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/retained-preflight.xml",
+    "sourceSha256": "c3d26ad9ce6cf8ff6be3baf38bf6b5c170b419e9593480b142ec023d78011631",
+    "sha256": "c3d26ad9ce6cf8ff6be3baf38bf6b5c170b419e9593480b142ec023d78011631"
+  },
+  "cancelled-unowned-mtls/host-starts.jsonl.gz": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/host-starts.jsonl",
+    "sourceSha256": "ea8fc649aed8cb130bc30c3e721a4f21c95c91fb43c11e18e1571c8913a75f29",
+    "sha256": "b0831377aa87f80d743d2fd00510d3a9fbcda62a63d15f2a6d00496c195c07ac"
+  },
+  "cancelled-unowned-mtls/persisted-states.jsonl.gz": {
+    "source": "/mnt/wsl/story49-gate-20261020/artifacts/persisted-states.jsonl",
+    "sourceSha256": "874196d925584aff76a02a2cb8013fae121e5c33340d89369db4eeb8080bbdcb",
+    "sha256": "98c1b9fcab575e27fdb111d09035a527fce7f0da8f1f944158c0b4da19738b56"
+  },
+  "missing-tmpdir/ledger.json": {
+    "source": "/mnt/wsl/story49-gate-final-20261020/ledger.json",
+    "sourceSha256": "f27d963e8b369884a1fecba28f84f34510e6672f9a3964324062aa59465610a1",
+    "sha256": "f27d963e8b369884a1fecba28f84f34510e6672f9a3964324062aa59465610a1"
+  },
+  "missing-tmpdir/agents-local-scaffold.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020/agents-local-scaffold.log",
+    "sourceSha256": "e017d336da7a199288e731b900775fadc4ede11542444cb533729a0d3bdecc6b",
+    "sha256": "e017d336da7a199288e731b900775fadc4ede11542444cb533729a0d3bdecc6b"
+  },
+  "missing-tmpdir/agents-full-refusal.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020/agents-full-refusal.log",
+    "sourceSha256": "366493a455c0c92e322c80bec90e45663c9e16394cdbed47c7ce820da217f9cc",
+    "sha256": "366493a455c0c92e322c80bec90e45663c9e16394cdbed47c7ce820da217f9cc"
+  },
+  "missing-tmpdir/evidence-gate-tests.log": {
+    "source": "/mnt/wsl/story49-gate-final-20261020/evidence-gate-tests.log",
+    "sourceSha256": "30d1e597d61ec5e3efe7c1769648bea19f1d27c8d27d98217986854645e10cbf",
+    "sha256": "30d1e597d61ec5e3efe7c1769648bea19f1d27c8d27d98217986854645e10cbf"
+  }
+}

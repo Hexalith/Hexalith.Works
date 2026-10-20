@@ -35,7 +35,7 @@ item, identity, or payload. Every other path on the app channel requires the tok
 
 `deadletter.work.events` is the last queue in the chain: it has no dead-letter destination of its own. A delivery
 the capture endpoint does not acknowledge is redelivered under the sidecar's inbound pub/sub retry policy
-(`pubsubRetryInbound` in `src/Hexalith.Works.AppHost/DaprComponents/resiliency/resiliency.yaml`, exponential,
+(`pubsubRetryInbound` in `Hexalith.Platform/DaprComponents/resiliency/resiliency.yaml`, exponential,
 `maxRetries: 10`) and is then **dropped with nothing retained**. The retry budget is finite, so refusing a
 delivery only postpones the same loss unless the refusal is one a retry can actually clear.
 
@@ -120,6 +120,8 @@ rather than a real tenant. Query that scope to review them. Treat `unidentified`
 real tenant with that id, or its operators would share a scope with unidentified envelopes.
 
 ## Works date-reminder recovery warnings
+
+The warning IDs below describe the retained historical host only. Since Story 4.9, the active Platform host uses SDK reminder/process health, quarantine and disposition diagnostics; use the Platform recovery runbook and the persisted SDK counters. Historical warnings remain documented for archived rollback investigations.
 
 Works reminder recovery logs bounded identity/count fields and attaches the original cause through the structured
 exception slot. Do not copy exception details into tickets or metrics; use them only in the protected log system.

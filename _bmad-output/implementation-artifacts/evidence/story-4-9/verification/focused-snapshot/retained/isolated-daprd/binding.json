@@ -1,0 +1,6 @@
+{
+  "runtime": "/home/administrator/.dapr/bin/daprd",
+  "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+  "shimSha256": "19deafab4f6cf18ab2a7df81e81b58b765f173abb5822e0608403cca541d40a2",
+  "sentryAddress": "127.0.0.1:42415"
+}

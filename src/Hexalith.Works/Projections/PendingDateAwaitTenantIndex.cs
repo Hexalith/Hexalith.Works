@@ -5,7 +5,7 @@ namespace Hexalith.Works.Projections;
 /// <summary>
 /// The persisted tenant-scoped index of pending <c>DateReached</c> awaits (Story 4.8). A single entry per tenant
 /// maps a work item's raw id (<c>WorkItemId.Value</c>) to its currently-pending date awaits. The runtime
-/// projection adapter (<see cref="WorkItemProjectionDispatcher"/>) upserts an aggregate's entry while it holds
+/// projection adapter (the SDK projection delivery adapter) upserts an aggregate's entry while it holds
 /// pending date awaits and removes it once a resume/terminal event clears them, so re-applying the same replayed
 /// stream is idempotent (last-write-wins per work item). This index is <em>discovery</em> only — recovery re-folds
 /// each candidate's per-aggregate stream for truth (DD-3), so a stale entry can never cause a wrong reissue.

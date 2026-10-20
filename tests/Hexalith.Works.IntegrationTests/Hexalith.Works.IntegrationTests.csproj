@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <WorksPlatformTestRoot Condition="'$(PlatformWorksRuntimeRoot)' != ''">$(PlatformWorksRuntimeRoot)</WorksPlatformTestRoot>
+    <WorksPlatformTestRoot Condition="'$(WorksPlatformTestRoot)' == ''">$(HexalithPlatformRoot)</WorksPlatformTestRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,15 +26,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hexalith.Works\Hexalith.Works.csproj" />
-    <ProjectReference Include="..\..\src\Hexalith.Works.AppHost\Hexalith.Works.AppHost.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Reactor\Hexalith.Works.Reactor.csproj" />
     <ProjectReference Include="..\..\src\Hexalith.Works.Server\Hexalith.Works.Server.csproj" />
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Admin.Abstractions\Hexalith.EventStore.Admin.Abstractions.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.Admin.Abstractions" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.Testing\Hexalith.EventStore.Testing.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.Testing" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
-    <!-- Platform.Identity has no published package, so both dependency modes use the sibling project. -->
+    <!-- Platform test adapters are source-only; neither is a Works production dependency. -->
     <ProjectReference Include="$(HexalithPlatformRoot)\src\Hexalith.Platform.Identity\Hexalith.Platform.Identity.csproj" />
+    <ProjectReference Include="$(WorksPlatformTestRoot)\src\Hexalith.Platform.Composition\Hexalith.Platform.Composition.csproj" />
     <ProjectReference Include="..\Hexalith.Works.Testing\Hexalith.Works.Testing.csproj" />
   </ItemGroup>
   <PropertyGroup Condition="'$(PlatformWorksRuntimeRoot)' != ''">

@@ -1,0 +1,83 @@
+{
+  "scope": "All seven required explicit live entry points use the existing owned Redis/SDK authority/Scheduler/certificate fixture before starting; no default provider path is used. Runtime pre-start guard refuses missing/foreign/default scope parameters. Source audit plus actual focused security/contract execution, not source-text assertions substituted for live proof.",
+  "entryPoints": [
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+      "sourceSha256": "ab98622bd102498a56fc790a2ccb011dbc67c3ef1471204684d00e63fa66eb54",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+      "sourceSha256": "ab98622bd102498a56fc790a2ccb011dbc67c3ef1471204684d00e63fa66eb54",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs",
+      "sourceSha256": "9ebb19cff9af79b80e5972c4f8738ed93d57fe4c304cc1cbb73e963d11dcc9f0",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs",
+      "sourceSha256": "d870a03a195f2d683d802e94955c232dd41c9ee9e61d76e7860edba3e12e74d6",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs",
+      "sourceSha256": "48db59b18b6bfd0681e6b57310be9dea6558d3cd5850f18f806e5486209bd72e",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs",
+      "sourceSha256": "c3f5a59000543e25297829f8297f6b317ab9f0e7194b363444f32802149e8b8b",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    },
+    {
+      "test": "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+      "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformRetainedHostPreflightTests.cs",
+      "sourceSha256": "96be32c1b3ee3215f68be0beab0ddfdd8ab5f21b58b42632514596774232f6a8",
+      "auditedSetup": {
+        "ownedRedis": true,
+        "sdkConfiguration": true,
+        "ownedScheduler": true,
+        "ownedCertificates": true
+      }
+    }
+  ],
+  "focusedEvidence": "/mnt/wsl/story49-mtls-focused-20261020-attempt2/command-result.json"
+}

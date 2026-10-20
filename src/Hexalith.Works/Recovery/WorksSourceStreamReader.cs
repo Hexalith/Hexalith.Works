@@ -64,7 +64,7 @@ internal sealed class WorksSourceStreamReader(
         for (int pageNumber = 0; pageNumber < _options.EffectiveMaxStreamPagesPerAggregate; pageNumber++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var request = new StreamReadRequest(tenant, WorkCommandSubmission.WorkDomain, aggregate, from, PageSize: 200);
+            var request = new StreamReadRequest(tenant, "work", aggregate, from, PageSize: 200);
             StreamReadPage page;
             try
             {

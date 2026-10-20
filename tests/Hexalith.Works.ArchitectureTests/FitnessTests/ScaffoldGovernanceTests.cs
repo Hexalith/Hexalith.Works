@@ -171,7 +171,6 @@ public sealed class ScaffoldGovernanceTests
 
         string[] filesWithMisplacedReminderBehavior = [.. sourceFiles
             .Where(path => !Path.GetFileName(path).EndsWith("Assembly.cs", StringComparison.Ordinal))
-            .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.ServiceDefaults", "Extensions.cs"), StringComparison.Ordinal))
             .Where(path => !IsOwnedReminderRecoveryLocation(root, path))
             // Story 4.15 permits the pure Contracts schedule-token codec, never scheduling/runtime.
             .Where(path => !path.EndsWith(Path.Combine("Hexalith.Works.Contracts", "ValueObjects", "WorkItemExpirySchedule.cs"), StringComparison.Ordinal))
@@ -635,7 +634,6 @@ public sealed class ScaffoldGovernanceTests
     private static bool IsOwnedReminderRecoveryLocation(string root, string path)
     {
         string relative = Path.GetRelativePath(root, path);
-        return relative.StartsWith(Path.Combine("src", "Hexalith.Works") + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-            || relative.StartsWith(Path.Combine("src", "Hexalith.Works.AppHost") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+        return relative.StartsWith(Path.Combine("src", "Hexalith.Works") + Path.DirectorySeparatorChar, StringComparison.Ordinal);
     }
 }

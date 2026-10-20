@@ -9,7 +9,7 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 public sealed class BuildConfigurationTests
 {
     [Fact]
-    public void P0_GlobalJsonPinsSdkTestRunnerAndAspireSdk()
+    public void P0_GlobalJsonPinsSdkAndTestRunnerWithoutPlatformHostingSdk()
     {
         string root = RepositoryRoot.Locate();
         JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
@@ -17,33 +17,10 @@ public sealed class BuildConfigurationTests
         globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.402");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
-        // Keep the selected SDK aligned with global.json and the centrally pinned hosting packages.
-        globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>().ShouldBe("13.6.1");
+        globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"].ShouldBeNull("Platform owns the hosting SDK pin after cutover.");
     }
 
-    /// <summary>
-    /// The AppHost project must carry the same pinned Aspire SDK version and the CLI bundle the live lanes need.
-    /// Pinning only <c>global.json</c> leaves the project's own <c>Sdk</c> attribute free to drift, which is what
-    /// actually decides the AppHost build.
-    /// </summary>
-    [Fact]
-    public void P0_AppHostProjectPinsTheSameAspireSdkAndCliBundle()
-    {
-        string root = RepositoryRoot.Locate();
-        string appHostProjectPath = Path.Combine(root, "src", "Hexalith.Works.AppHost", "Hexalith.Works.AppHost.csproj");
-        XDocument appHostProject = XDocument.Load(appHostProjectPath);
-        JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
 
-        string pinnedAspireSdk = globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"]?.GetValue<string>()
-            ?? throw new InvalidOperationException("global.json must pin Aspire.AppHost.Sdk.");
-
-        appHostProject.Root.ShouldNotBeNull().Attribute("Sdk")?.Value.ShouldBe(
-            $"Aspire.AppHost.Sdk/{pinnedAspireSdk}",
-            "The AppHost project Sdk attribute must pin the same Aspire version as global.json.");
-        PropertyValue(appHostProject, "AspireUseCliBundle").ShouldBe(
-            "true",
-            "The AppHost must keep the Aspire CLI bundle enabled for the live lanes.");
-    }
 
     [Fact]
     public void P0_RootBuildConfigurationKeepsWarningsAsErrorsAndCentralPackages()
@@ -252,15 +229,7 @@ public sealed class BuildConfigurationTests
             "A narrow path declaration must not satisfy the explicit root C# analyzer policy.");
     }
 
-    [Fact]
-    public void P0_AspireConfigPointsAtWorksAppHost()
-    {
-        string root = RepositoryRoot.Locate();
-        JsonNode aspireConfig = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "aspire.config.json")))!;
 
-        aspireConfig["appHost"]?["path"]?.GetValue<string>()
-            .ShouldBe("src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj");
-    }
 
     [Fact]
     public void P1_EventStoreImplementationConstraintsAreRecorded()
