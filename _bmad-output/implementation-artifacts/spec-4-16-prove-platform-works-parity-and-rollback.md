@@ -2,8 +2,8 @@
 title: 'Prove Platform Works Parity and Rollback'
 type: 'feature'
 created: '2026-09-23'
-updated: '2026-10-19'
-status: 'done'
+updated: '2026-10-20'
+status: 'in-progress'
 baseline_commit: '11628b7198e79def65f43f3c8cdf876184417830'
 platform_baseline_commit: 'b2890d20575356239555df5b113e3100c1d594c1'
 route: 'dispatch'
@@ -153,6 +153,39 @@ context:
 - Given named published producers and Works consumers, when Platform verification runs, then all applicable R1–R11 rows pass with persisted, negative, restart and rollback evidence and zero skips.
 - Given unauthorized traffic or missing production configuration, when startup/requests occur, then admission fails closed before effect/disclosure.
 - Given Platform writes and complete rollback, when the prior Works host resumes, then usable queries and replay converge without duplicate logical effects.
+
+### Review Findings
+
+Review iteration 6, 2026-10-20. Four layers (blind, edge-case, verification-gap, acceptance) reviewed the 13-file interdiff between the archived iteration 5 reviewed diff and the qualified final diff: the root-applied corrections T200, T201/T208, T203, T204 and T209 plus the owner-approved 3.126.0 pin move, never independently reviewed before. Works HEAD `d74f955` and Platform HEAD `6664e2a` equal the qualified final tree on all 128 story paths. Severity and route are root triage.
+
+- [ ] [Review][Patch] T213 (medium) The end-of-run fixture check misses fixture files added or removed after the pre-command inventory, and its message still names the consumer build [P/eng/verify_works_host.py:1031] — verification-gap other 2, blind, edge E3/E11, acceptance 6. T203 moved the baseline before the first command, but the final loop re-hashes only recorded keys. A `.cs` file added before compilation is compiled in and never bound, so the claim that the final comparison detects any intervening edit does not hold. Compare the complete `fixture_sources(works)` result with the recorded inventory, name the pre-command baseline in the message, and add a regression.
+- [ ] [Review][Patch] T214 (medium) The parity runbook diverges from the qualified command and links the live, unbound Works Builds checkout [P/docs/works-host-parity.md:58-67] — blind, edge E10/E12, verification-gap other 3, acceptance 2. The qualified run used an isolated Platform worktree, `HexalithBuildsRoot` and an SDK export linked to an ordinary-source export of `b435f2e3`. The runbook links `../works/references/Hexalith.Builds`, which moved to `cf978100` in `d74f955`. Mirror the packet README: export the bound catalog commit, link the SDK export to it, and set the recorded environment.
+- [ ] [Review][Patch] T215 (medium) The T204 archive binding is never exercised where `run_verification` calls it [P/eng/verify_works_host.py:927] — verification-gap (pre-verified). The helper test calls `require_archive_assembly` directly; no test reaches the published-producer loop, so deleting the call leaves all 52 evidence-gate tests green. Extract the loop and test it with synthetic `project.assets.json`, `.nupkg`/`.nupkg.metadata` and an altered consumer DLL that must be refused.
+- [ ] [Review][Patch] T216 (low) The edited adoption paragraph still says "Story 4.16 qualifies public 3.125.1" [W/docs/sdk-reminder-process-adoption.md:9] — verification-gap other 4, blind, edge E14, acceptance 5. The same paragraph now names 3.126.0 as the current pin; 3.125.1 evidence is historical.
+- [ ] [Review][Patch] T217 (low) Gitlink statements went stale after `d74f955` [P/docs/works-host-parity.md:70-71; W/docs/sdk-reminder-process-adoption.md:11] — blind, edge E13, acceptance 7. The Works EventStore gitlink is now `b16be635` (`v3.126.0-11`), whose `src/**` and root build files equal `v3.126.0`. State the condition as "the gitlink is not exactly the selected tag commit" instead of naming `v3.125.0`/`f43b121c`.
+- [ ] [Review][Patch] T218 (low) `ClientRejectedServer` documentation no longer matches its semantics [W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs:5] — blind. After T201 the flag starts true and remains true when no server certificate is validated; the comment still says only that validation refused the server.
+- [ ] [Review][Patch] T219 (low) The alert-predicate tests never isolate the receipt-time clause [P/eng/test_verify_works_host.py:582] — blind. `state()` derives the exporter time from the receipt time, so deleting the `ReceivedAt` clause keeps every case green. Add a late-export/early-receipt case and boolean/float exporter-time cases.
+- [x] [Review][Defer] T220 (low) The fixture inventory omits the IntegrationTests project file, `Hexalith.Works.Testing`, `xunit.runner.json` and golden JSON [P/eng/verify_works_host.py:149-154] — deferred: pre-existing `fixture_sources` scope, unchanged by this diff; compiled project-file effects are bound through the consumer binary hash.
+- [x] [Review][Defer] T221 (medium) The verifier does not bind the runtime SDK export's linked Builds catalog [P/eng/verify_works_producer.py:32-41] — deferred: pre-existing `runtime_source_snapshot` scope (`src/**` and three root build files). The qualified run's catalog is bound only by the packet's `builds-source-provenance.json`; enforcement adds verifier state.
+- [x] [Review][Defer] T222 (medium) The end-of-run "changed during execution" checks have no executing test [P/eng/verify_works_host.py:1007-1033] — deferred: pre-verified gap shared by every end-of-run check; covering them needs an end-of-pipeline extraction better done as its own refactor.
+
+**Rejected:**
+- Alert raise cannot prove a reaction to Degraded (blind, edge E1, acceptance note): false, carried T181. An Unavailable-only publisher cannot produce R2's restart clear, which requires real Healthy samples.
+- An exporter time after receipt, or in the future, passes (edge E2): low. Both clocks are the same host clock; this guards an unobserved state.
+- The archive match uses the file name across any `lib/` folder, binds only the package-named DLL, and the docstring overstates (blind): false. A match requires identical bytes, each selected EventStore package ships one assembly named for its id, and the bin copy is what is compared.
+- A package without a package-named `lib/` DLL aborts with FileNotFoundError (edge E5): false. This is a loud refusal for a graph never shown; all nine selected packages bind.
+- The cached `.nupkg` SHA-512 is not recomputed against the restore record (edge E6): low. Local cache tampering was not demonstrated, and the fix adds a guard.
+- Archive-bound consumer DLLs are not re-hashed at the end of the run (verification-gap other 1, edge E7, blind): low. They live in the verifier's fresh private output; the fix adds a guard against an unobserved writer.
+- Package DLLs in the live host outputs are not archive-bound (acceptance 3): low. The auditor confirmed every host copy matched its archive entry in the canonical run; extending the binding to each host output is beyond a direct correction.
+- R6 trusts the self-reported `primaryStoppedBeforeDue` and lacks wrong-value cases (blind, edge E8, acceptance 4): low. The test derives the flag from the recorded timestamps and asserts it before persisting. The R6 negative already uses its only whole-state predicate slot, so a two-field check needs new predicate machinery.
+- The HA due margin can flake (blind): low. The canonical run kept a 38-second margin, the stop waits are capped at 30 seconds, and a failure is loud.
+- A close after authentication for an unrelated reason counts as server refusal, and no trusted-then-close test exists (blind, edge E9): low. This was not observed; asserting the TLS alert needs platform-specific error parsing. Both refusals now require the exact server identity.
+- Tag `v3.126.0` pins Builds `1dfc39e3`, not the `b435f2e3` catalog used (blind): false. `owner-decision.json` records the deliberate `b435f2e3` selection for Commons 2.30.3, and SDK `b16be635` itself now pins `b435f2e3`.
+- Status wording ("qualified", "must qualify", "under Story 4.16 verification") contradicts review (blind, verification-gap other 4): false. It is consistent with sprint `review`; the table describes required evidence.
+- The Platform doc links into Works by relative path (blind): false as a new defect. The same doc already has eight `../../works/` links under the documented sibling layout.
+- Spec `done`, "root-reviewed" and `review_loop_iteration: 3` conflict with "ready for review" (acceptance 1): rejected. The fix edits the spec under review, and this iteration is the independent review of the root corrections.
+- The Platform ACL comment and policy test cite the `v3.125.1` template (acceptance 5): false. The citations name the template's source tag, and the template is identical at `v3.126.0`.
+- The T61 rationale is stale, and Debug compiled unqualified code at `c485d93` (acceptance 7, blind): rejected. Correcting T61 edits the spec. At HEAD, the gitlink `b16be635` has `src/**` and root build files identical to `v3.126.0`, so current Debug compiles qualified source.
 
 ## Implementation Notes
 

@@ -1646,3 +1646,17 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Verify suspension callback discovery-write failure and successful redelivery using the real handler through WorksDomainEventProcessor.
   evidence: Review T212; the accepted Story 4.15 discovery write (07e23a6fc54fca9644e844de5d1dff6f49b58b22) has healthy persistence coverage, while its processor retry test substitutes another handler. Inject registry/tenant-index failure after reminder scheduling, require retryable delivery, then restore the store and assert persisted discovery before completed deduplication.
+
+## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md (2026-10-20)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Extend the Platform verifier's Works fixture inventory beyond IntegrationTests C# sources.
+  evidence: Review T220; `fixture_sources` (`P/eng/verify_works_host.py:149-154`) hashes only `tests/Hexalith.Works.IntegrationTests/**/*.cs` plus `ProjectMetadataPaths.cs`. The IntegrationTests project file, `tests/Hexalith.Works.Testing`, `xunit.runner.json` and copied golden JSON are unbound. This scope predates the iteration 5 corrections; compiled project-file effects are bound through the consumer binary hash.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Bind the runtime SDK export's linked Builds catalog in the verifier ledger.
+  evidence: Review T221; `runtime_source_snapshot` (`P/eng/verify_works_producer.py:32-41`) records only `src/**` and three root build files, while the export's `references/Hexalith.Builds` link selects the SDK dependency graph. The 3.126.0 run's `b435f2e3` catalog is bound only by the packet's `builds-source-provenance.json`. Record the resolved catalog commit or Props hashes and re-check them at the end of the run.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Give the verifier's end-of-run "changed during execution" checks an executing regression.
+  evidence: Review T222 (pre-verified gap); no test reaches `P/eng/verify_works_host.py:1007-1033`, so removing or weakening any final source, artifact, verifier or fixture re-check leaves the evidence-gate tests green. Extract the end-of-pipeline checks into a testable function.

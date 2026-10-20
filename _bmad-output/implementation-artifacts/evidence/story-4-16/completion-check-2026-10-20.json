@@ -1,0 +1,66 @@
+{
+  "checkedUtc": "2026-10-20T02:42:27.552442+00:00",
+  "worksCommit": "d74f955bb6bc13c036ff6ea938719c621e03fa14",
+  "scope": "Retained 2026-10-19 public 3.126.0 evidence integrity and current Works source binding; no live rerun or current Platform requalification",
+  "verificationCommand": "python3 _bmad-output/implementation-artifacts/evidence/story-4-16/completion-check-2026-10-20.py",
+  "checkerSourceSha256": "feb3e25385f2016c84d3421cb162a9c7ef9e5f8bb00c065e77db563c2d7e057e",
+  "packet": "_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19",
+  "packetManifestSha256": "c43743ffbaa632b2bd3886f4a3e9548550cb40970b8aa9f73a4d631443fcd2a5",
+  "packetFilesVerified": 147,
+  "currentWorksSourceBindings": {
+    "consumer": 211,
+    "fixture": 141
+  },
+  "canonicalExitCode": 0,
+  "canonicalStatus": "passed-disposable-synthetic-parity-and-rollback",
+  "parityRows": 11,
+  "requiredProofsVerified": 44,
+  "persistedProofRecordBindings": 48,
+  "persistedPhases": 32,
+  "completeRollback": true,
+  "retainedGates": {
+    "agents-full-refusal": {
+      "exitCode": 1,
+      "logSha256": "9f0cfebf4c80f9558d2d3d0711cbe3f30e701d6c713e2ca899923a473b8631da",
+      "outcomeMarker": "DependencyNotAvailable: EXT-HOST-1"
+    },
+    "agents-local-scaffold": {
+      "exitCode": 0,
+      "logSha256": "973fb3b55e22f50f8f94af2bbfe8613d06b33342105c9668def9a7ad364b14e5",
+      "outcomeMarker": "LocalScaffold build succeeded."
+    },
+    "evidence-gate-tests": {
+      "exitCode": 0,
+      "logSha256": "5e38aace37d61b03a1f0f854e38998c0d7bb45804275a0c2a18f5ca0272cff04",
+      "outcomeMarker": "Ran 52 tests"
+    }
+  },
+  "retainedXmlPassCounts": {
+    "canonical-admission/platform-debug.xml": 112,
+    "canonical-admission/platform-release.xml": 112,
+    "canonical-admission/works-consumer-supporting.xml": 241,
+    "canonical-admission/platform-recovery.xml": 4,
+    "canonical-admission/platform-historical.xml": 1,
+    "canonical-admission/platform-ha.xml": 1,
+    "canonical-admission/platform-projection.xml": 1,
+    "retained-source-debug/retained-recovery.xml": 4,
+    "deterministic-suites/debug-suites/UnitTests.xml": 589,
+    "deterministic-suites/debug-suites/PropertyTests.xml": 3,
+    "deterministic-suites/debug-suites/ArchitectureTests.xml": 269,
+    "deterministic-suites/debug-suites/IntegrationTests.xml": 908,
+    "deterministic-suites/release-suites/UnitTests.xml": 589,
+    "deterministic-suites/release-suites/PropertyTests.xml": 3,
+    "deterministic-suites/release-after-restore/ArchitectureTests.xml": 269,
+    "deterministic-suites/release-integration-repo/IntegrationTests.xml": 908,
+    "supporting-checks/story416-31260-isolated-composition.xml": 3
+  },
+  "storySpecStatus": "done",
+  "sprintStatus": "review",
+  "trackingDecision": "Preserve review: build completion targets review; no tracking inconsistency",
+  "workflowRules": {
+    "_bmad/render/bmad-build/works-f2b4635042f0/a5b668c72d9d564936a3/step-oneshot.md": "with `{target_status}` = `review`.",
+    "_bmad/render/bmad-build/works-f2b4635042f0/a5b668c72d9d564936a3/sync-sprint-status.md": "If the story is already at `{target_status}` or later, stop."
+  },
+  "newLiveTestsRun": false,
+  "status": "passed"
+}
