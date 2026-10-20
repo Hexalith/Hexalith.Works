@@ -1,0 +1,21 @@
+{
+  "command": [
+    "bash",
+    "eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/tmp/story416-sdk-3.126.0-public-source",
+    "--artifacts-path",
+    "/tmp/story416-review6-69hay8nu/canonical-admission-attempt2"
+  ],
+  "cwd": "/tmp/story416-review6-69hay8nu/workspace/platform",
+  "environment": {
+    "HexalithBuildsRoot": "/tmp/story416-builds-b435f2e-public-source",
+    "HexalithEventStoreRoot": "/tmp/story416-sdk-3.126.0-public-source"
+  },
+  "startedAt": "2026-10-20T07:34:24.125576+00:00",
+  "artifacts": "/tmp/story416-review6-69hay8nu/canonical-admission-attempt2",
+  "exitCode": 0,
+  "completedAt": "2026-10-20T08:07:24.884579+00:00"
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj",
+      "-c",
+      "Release",
+      "--artifacts-path",
+      "/tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition",
+      "-m:1",
+      "-p:TreatWarningsAsErrors=true",
+      "-p:NuGetAudit=false",
+      "-p:Version=3.126.0",
+      "-p:MinVerVersionOverride=3.126.0",
+      "-p:UseHexalithProjectReferences=false",
+      "-p:UseNuGetDeps=true"
+    ],
+    "cwd": "/tmp/story416-review6-69hay8nu/workspace/platform",
+    "startedAt": "2026-10-20T08:08:15.331522+00:00",
+    "exitCode": 0,
+    "completedAt": "2026-10-20T08:08:36.504630+00:00"
+  },
+  {
+    "command": [
+      "/tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Composition.Tests/release/Hexalith.Platform.Composition.Tests",
+      "-noLogo",
+      "-method",
+      "Hexalith.Platform.Composition.Tests.PlatformAppModelTests.WorksPreview*",
+      "-method",
+      "Hexalith.Platform.Composition.Tests.TimesheetsHostBindingTests.FileEntryRefusesMixedWorksAndTimesheetsBeforeSelectingEitherGraph",
+      "-result-xml",
+      "/tmp/story416-review6-69hay8nu/composition/results.xml"
+    ],
+    "cwd": "/tmp/story416-review6-69hay8nu/workspace/platform",
+    "startedAt": "2026-10-20T08:08:36.504918+00:00",
+    "exitCode": 0,
+    "completedAt": "2026-10-20T08:08:36.946066+00:00"
+  }
+]

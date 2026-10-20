@@ -1,0 +1,29 @@
+  Determining projects to restore...
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj (in 229 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/Hexalith.Platform.Identity.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Server/Hexalith.Works.Server.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works/Hexalith.Works.csproj (in 229 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj (in 256 ms).
+  Restored /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj (in 259 ms).
+  Hexalith.Works.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.Contracts/release/Hexalith.Works.Contracts.dll
+  Hexalith.Works.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.Server/release/Hexalith.Works.Server.dll
+  Hexalith.Works.Projections -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.Projections/release/Hexalith.Works.Projections.dll
+  Hexalith.Works.Reactor -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.Reactor/release/Hexalith.Works.Reactor.dll
+  Hexalith.Works -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works/release/Hexalith.Works.dll
+  Hexalith.Works.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.ServiceDefaults/release/Hexalith.Works.ServiceDefaults.dll
+  Hexalith.Works.AppHost -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.AppHost/release/Hexalith.Works.AppHost.dll
+  Hexalith.Platform.Identity -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Platform.Identity/release/Hexalith.Platform.Identity.dll
+  Hexalith.Works.Testing -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.Testing/release/Hexalith.Works.Testing.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Platform.Works.Runtime/release/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Works.IntegrationTests -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:22.44

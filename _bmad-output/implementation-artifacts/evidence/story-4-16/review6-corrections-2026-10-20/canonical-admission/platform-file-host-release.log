@@ -1,0 +1,12 @@
+  Determining projects to restore...
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 266 ms).
+  Restored /tmp/story416-builds-b435f2e-public-source/src/libraries/Hexalith.Builds.Tooling/Hexalith.Builds.Tooling.csproj (in 266 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Custody/Hexalith.Platform.Custody.csproj (in 266 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/apphost.cs.csproj (in 275 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj (in 288 ms).
+  Platform version catalog validated: Hexalith.EventStore.Aspire/3.126.0, CommunityToolkit.Aspire.Hosting.Dapr/13.6.1-beta.935, required range 13.6.1-beta.935 for net10.0.
+  Hexalith.Builds.Tooling -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/host/bin/Hexalith.Builds.Tooling/release/Hexalith.Builds.Tooling.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/host/bin/Hexalith.Platform.Works.Runtime/release/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Platform.Custody -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/host/bin/Hexalith.Platform.Custody/release/Hexalith.Platform.Custody.dll
+  Hexalith.Platform.Composition -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/host/bin/Hexalith.Platform.Composition/release/Hexalith.Platform.Composition.dll
+  apphost.cs -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/host/bin/release/apphost.dll

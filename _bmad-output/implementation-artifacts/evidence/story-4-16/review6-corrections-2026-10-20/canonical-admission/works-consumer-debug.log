@@ -1,0 +1,63 @@
+  Determining projects to restore...
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Commons/src/libraries/Hexalith.Commons.Http/Hexalith.Commons.Http.csproj (in 76 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations/Hexalith.PolymorphicSerializations.csproj (in 132 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties.Contracts/Hexalith.Parties.Contracts.csproj (in 130 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Commons/src/libraries/Hexalith.Commons.UniqueIds/Hexalith.Commons.UniqueIds.csproj (in 130 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Server/Hexalith.Works.Server.csproj (in 131 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj (in 130 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.ServiceDefaults/Hexalith.Works.ServiceDefaults.csproj (in 35 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.ServiceDefaults/Hexalith.EventStore.ServiceDefaults.csproj (in 138 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Admin.Abstractions/Hexalith.EventStore.Admin.Abstractions.csproj (in 2 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Gateway/Hexalith.EventStore.Gateway.csproj (in 138 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.DomainService/Hexalith.EventStore.DomainService.csproj (in 138 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Platform/src/Hexalith.Platform.Identity/Hexalith.Platform.Identity.csproj (in 139 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties.Client/Hexalith.Parties.Client.csproj (in 9 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj (in 3 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Client/Hexalith.EventStore.Client.csproj (in 5 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Server/Hexalith.EventStore.Server.csproj (in 148 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works/Hexalith.Works.csproj (in 138 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj (in 68 ms).
+  Restored /home/administrator/projects/hexalith/works/tests/Hexalith.Works.Testing/Hexalith.Works.Testing.csproj (in 69 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 73 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj (in 223 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj (in 70 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj (in 223 ms).
+  Restored /home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations/src/libraries/Hexalith.PolymorphicSerializations.CodeGenerators/Hexalith.PolymorphicSerializations.CodeGenerators.csproj (in 87 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Testing/Hexalith.EventStore.Testing.csproj (in 78 ms).
+  Restored /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj (in 141 ms).
+  Hexalith.EventStore.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Contracts/debug/Hexalith.EventStore.Contracts.dll
+  Hexalith.PolymorphicSerializations -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.PolymorphicSerializations/debug/Hexalith.PolymorphicSerializations.dll
+  Hexalith.PolymorphicSerializations.CodeGenerators -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.PolymorphicSerializations.CodeGenerators/debug/Hexalith.PolymorphicSerializations.CodeGenerators.dll
+  Hexalith.Works.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.Contracts/debug/Hexalith.Works.Contracts.dll
+  Hexalith.Works.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.Server/debug/Hexalith.Works.Server.dll
+  Hexalith.Works.Projections -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.Projections/debug/Hexalith.Works.Projections.dll
+  Hexalith.Works.Reactor -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.Reactor/debug/Hexalith.Works.Reactor.dll
+  Hexalith.EventStore.Client -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Client/debug/Hexalith.EventStore.Client.dll
+  Hexalith.EventStore.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.ServiceDefaults/debug/Hexalith.EventStore.ServiceDefaults.dll
+  Hexalith.EventStore.DomainService -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.DomainService/debug/Hexalith.EventStore.DomainService.dll
+  Hexalith.Commons.Http -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Commons.Http/debug/Hexalith.Commons.Http.dll
+  Successfully created package '/tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/package/debug/Hexalith.Commons.Http.3.126.0.nupkg'.
+  Successfully created package '/tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/package/debug/Hexalith.Commons.Http.3.126.0.snupkg'.
+  Hexalith.Commons.UniqueIds -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Commons.UniqueIds/debug/Hexalith.Commons.UniqueIds.dll
+  Successfully created package '/tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/package/debug/Hexalith.Commons.UniqueIds.3.126.0.nupkg'.
+  Successfully created package '/tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/package/debug/Hexalith.Commons.UniqueIds.3.126.0.snupkg'.
+  Hexalith.Parties.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Parties.Contracts/debug/Hexalith.Parties.Contracts.dll
+  Hexalith.Parties.Client -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Parties.Client/debug/Hexalith.Parties.Client.dll
+  Hexalith.Works -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works/debug/Hexalith.Works.dll
+  Hexalith.Works.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.ServiceDefaults/debug/Hexalith.Works.ServiceDefaults.dll
+  Hexalith.EventStore.Aspire -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Aspire/debug/Hexalith.EventStore.Aspire.dll
+  Hexalith.Works.AppHost -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.AppHost/debug/Hexalith.Works.AppHost.dll
+  Hexalith.EventStore.Admin.Abstractions -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Admin.Abstractions/debug/Hexalith.EventStore.Admin.Abstractions.dll
+  Hexalith.EventStore.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Server/debug/Hexalith.EventStore.Server.dll
+  Hexalith.EventStore.Testing -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Testing/debug/Hexalith.EventStore.Testing.dll
+  Hexalith.EventStore.Gateway -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.EventStore.Gateway/debug/Hexalith.EventStore.Gateway.dll
+  Hexalith.Platform.Identity -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Platform.Identity/debug/Hexalith.Platform.Identity.dll
+  Hexalith.Works.Testing -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.Testing/debug/Hexalith.Works.Testing.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Platform.Works.Runtime/debug/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Works.IntegrationTests -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/consumer-debug/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:03:06.01

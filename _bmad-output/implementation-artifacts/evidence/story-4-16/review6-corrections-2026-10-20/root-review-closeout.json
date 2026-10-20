@@ -1,0 +1,51 @@
+{
+  "completedUtc": "2026-10-20T08:27:32.523920+00:00",
+  "worksHead": "64602575b902c0f8d3bfaa41a27565eee5682639",
+  "platformHead": "fd7c7c166d101adc8b1f0fa8f126707abc2caa01",
+  "specStatus": "done",
+  "sprintStatus": "review",
+  "reviewLayers": [
+    "blind-hunter",
+    "edge-case-hunter",
+    "verification-gap"
+  ],
+  "reviewFindings": 13,
+  "patchApplied": "T232",
+  "newDeferredFollowup": "T235 (accepted Story 4.15 test coverage)",
+  "canonicalStatus": "passed-disposable-synthetic-parity-and-rollback",
+  "requiredProofs": 44,
+  "persistedRecordBindings": 48,
+  "persistedPhases": 32,
+  "completeRollback": true,
+  "scannerTestsPassed": 5,
+  "finalInputBinding": {
+    "checkedAt": "2026-10-20T08:26:13.755415+00:00",
+    "isolatedPlatformBaseCommit": "f0e33167fcdb5f539da159c54f7505b72a65c9b2",
+    "currentPlatformHead": "fd7c7c166d101adc8b1f0fa8f126707abc2caa01",
+    "worksHead": "64602575b902c0f8d3bfaa41a27565eee5682639",
+    "fixtureCount": 141,
+    "isolatedPlatformSourceCount": 261,
+    "currentPlatformDifferencesOutsideReviewedOverlays": [
+      "src/Hexalith.Platform.Composition/PlatformServerBindings.cs",
+      "src/Hexalith.Platform.Secrets.Runtime/DaprCapabilityAdapters.cs",
+      "src/Hexalith.Platform.Secrets.Runtime/SecretsDapr.cs",
+      "src/Hexalith.Platform.Secrets.Runtime/SecretsDependency.cs",
+      "src/Hexalith.Platform.Secrets.Runtime/SecretsRuntimeConfiguration.cs",
+      "src/Hexalith.Platform.Secrets.Runtime/SecretsRuntimeServiceCollectionExtensions.cs"
+    ],
+    "mismatches": [],
+    "scope": "Complete isolated Platform input comparison, unchanged current Works source/fixture membership and bytes, and current reviewed overlays/configuration/helpers. Unrelated current Platform source differences remain explicit and unqualified."
+  },
+  "matrixCoverage": {
+    "Startup/restart": "platform-recovery.xml: 4 passing cases",
+    "Historical scenarios": "platform-historical.xml and platform-projection.xml: 1 passing case each",
+    "Wrong origin/policy": "platform-historical.xml, platform-ha.xml and platform-debug/release.xml: all pass",
+    "Complete fleet rollback": "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart passed; 684 keys and 1070 runtime entries restored"
+  },
+  "trackingBindings": {
+    "_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md": "1b677f3eee189ee3d29ef37d66f9d6e080513b2576adfadf8ffb0944486605d1",
+    "_bmad-output/implementation-artifacts/sprint-status.yaml": "958f685d8d2483717ceb8424cc2c101e7fc4e615f55e97dec696b27f738dfaef",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "e7bc5853c90ab1b12ea72abf0ae74bc6b1d146a209a418cc0c1960940fad45bf"
+  },
+  "localCommitCreated": false
+}

@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj (in 156 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Server/Hexalith.Works.Server.csproj (in 155 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Projections/Hexalith.Works.Projections.csproj (in 155 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works.Reactor/Hexalith.Works.Reactor.csproj (in 155 ms).
+  Restored /home/administrator/projects/hexalith/works/src/Hexalith.Works/Hexalith.Works.csproj (in 155 ms).
+  Hexalith.Works.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.Works.Contracts/release/Hexalith.Works.Contracts.dll
+  Hexalith.Works.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.Works.Server/release/Hexalith.Works.Server.dll
+  Hexalith.Works.Projections -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.Works.Projections/release/Hexalith.Works.Projections.dll
+  Hexalith.Works.Reactor -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.Works.Reactor/release/Hexalith.Works.Reactor.dll
+  Hexalith.Works -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.Works/release/Hexalith.Works.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:02.06

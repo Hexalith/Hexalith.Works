@@ -1,0 +1,24 @@
+  Determining projects to restore...
+  Restored /tmp/story416-builds-b435f2e-public-source/src/libraries/Hexalith.Builds.Tooling/Hexalith.Builds.Tooling.csproj (in 175 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.EventStoreHost/Hexalith.Platform.EventStoreHost.csproj (in 173 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 175 ms).
+  Restored /tmp/story416-builds-b435f2e-public-source/src/hosts/Hexalith.Builds.Module.EventStoreHost/Hexalith.Builds.Module.EventStoreHost.csproj (in 176 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Identity/Hexalith.Platform.Identity.csproj (in 177 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Custody/Hexalith.Platform.Custody.csproj (in 177 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj (in 249 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj (in 251 ms).
+  Platform version catalog validated: Hexalith.EventStore.Aspire/3.126.0, CommunityToolkit.Aspire.Hosting.Dapr/13.6.1-beta.935, required range 13.6.1-beta.935 for net10.0.
+  Hexalith.Builds.Tooling -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Builds.Tooling/release/Hexalith.Builds.Tooling.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Works.Runtime/release/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Platform.Custody -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Custody/release/Hexalith.Platform.Custody.dll
+  Hexalith.Platform.Composition -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Composition/release/Hexalith.Platform.Composition.dll
+  Hexalith.Platform.Identity -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Identity/release/Hexalith.Platform.Identity.dll
+  Hexalith.Platform.EventStoreHost -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.EventStoreHost/release/Hexalith.Platform.EventStoreHost.dll
+  Hexalith.Builds.Module.EventStoreHost -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Builds.Module.EventStoreHost/release/Hexalith.Builds.Module.EventStoreHost.dll
+  Hexalith.Platform.Composition.Tests -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/story416-review6-composition/bin/Hexalith.Platform.Composition.Tests/release/Hexalith.Platform.Composition.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:20.89

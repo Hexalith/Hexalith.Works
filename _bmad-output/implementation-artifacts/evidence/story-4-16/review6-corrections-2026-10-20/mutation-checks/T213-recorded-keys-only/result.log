@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_fixture_inventory_refuses_additions_removals_and_changed_bytes (test_verify_works_host.WorksEvidenceGateTests.test_fixture_inventory_refuses_additions_removals_and_changed_bytes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/story416-review6-69hay8nu/mutations/T213-recorded-keys-only/test_verify_works_host.py", line 694, in test_fixture_inventory_refuses_additions_removals_and_changed_bytes
+    with self.assertRaisesRegex(ValueError, 'pre-command baseline: .*AddedBeforeCompilation.cs'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.002s
+
+FAILED (failures=1)

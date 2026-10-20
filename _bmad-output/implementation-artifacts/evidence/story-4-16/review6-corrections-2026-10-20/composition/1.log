@@ -1,0 +1,6 @@
+  Discovering: Hexalith.Platform.Composition.Tests
+  Discovered:  Hexalith.Platform.Composition.Tests
+  Starting:    Hexalith.Platform.Composition.Tests
+  Finished:    Hexalith.Platform.Composition.Tests (ID = 'c86e784dc03780cfa2ec0d85e92f249d16b3859c3fc97a9413026cf6d3999bb4')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Platform.Composition.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0.237s

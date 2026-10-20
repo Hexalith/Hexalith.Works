@@ -1,0 +1,7 @@
+evidence-gate-tests: /tmp/story416-review6-69hay8nu/canonical-admission/evidence-gate-tests.log
+agents-full-refusal: /tmp/story416-review6-69hay8nu/canonical-admission/agents-full-refusal.log
+agents-local-scaffold: /tmp/story416-review6-69hay8nu/canonical-admission/agents-local-scaffold.log
+platform-tests-build-debug: /tmp/story416-review6-69hay8nu/canonical-admission/platform-tests-build-debug.log
+platform-tests-debug: /tmp/story416-review6-69hay8nu/canonical-admission/platform-tests-debug.log
+platform-tests-debug failed; see /tmp/story416-review6-69hay8nu/canonical-admission/platform-tests-debug.log
+Evidence: /tmp/story416-review6-69hay8nu/canonical-admission/ledger.json

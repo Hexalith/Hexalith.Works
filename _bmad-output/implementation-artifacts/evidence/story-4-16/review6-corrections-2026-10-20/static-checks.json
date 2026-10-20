@@ -1,0 +1,11 @@
+{
+  "frozenIntentByteIdentical": true,
+  "runbookBashSyntax": {
+    "command": [
+      "bash",
+      "-n"
+    ],
+    "exitCode": 0,
+    "output": ""
+  }
+}

@@ -1,0 +1,15 @@
+  Determining projects to restore...
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Admin.Server/Hexalith.EventStore.Admin.Server.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Admin.Server.Host/Hexalith.EventStore.Admin.Server.Host.csproj (in 162 ms).
+  3 of 5 projects are up-to-date for restore.
+  Hexalith.EventStore.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Contracts/release/Hexalith.EventStore.Contracts.dll
+  Hexalith.EventStore.Admin.Abstractions -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Admin.Abstractions/release/Hexalith.EventStore.Admin.Abstractions.dll
+  Hexalith.EventStore.Admin.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Admin.Server/release/Hexalith.EventStore.Admin.Server.dll
+  Hexalith.EventStore.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.ServiceDefaults/release/Hexalith.EventStore.ServiceDefaults.dll
+  Hexalith.EventStore.Admin.Server.Host -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Admin.Server.Host/release/Hexalith.EventStore.Admin.Server.Host.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.82

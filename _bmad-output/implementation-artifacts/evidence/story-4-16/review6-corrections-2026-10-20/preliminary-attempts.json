@@ -1,0 +1,7 @@
+[
+  {
+    "scope": "operator edit helper, before final tests",
+    "result": "FileNotFoundError: eng/test_verify_works_host.py because the command ran from platform/eng; no source edited",
+    "resolution": "corrected helper path to test_verify_works_host.py; fresh final 54-case suite passed"
+  }
+]

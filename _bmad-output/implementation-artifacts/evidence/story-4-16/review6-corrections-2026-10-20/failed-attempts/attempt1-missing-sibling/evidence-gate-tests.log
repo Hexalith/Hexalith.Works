@@ -1,0 +1,20 @@
+................evidence-gate-tests: /tmp/tmpvkum6svk/evidence/evidence-gate-tests.log
+RuntimeError: stopped after checking the pre-command inventory
+Evidence: /tmp/tmpvkum6svk/evidence/ledger.json
+......................evidence-gate-tests: /tmp/tmpu5f6ztsi/evidence/evidence-gate-tests.log
+KeyError: 'unexpected-ledger-key'
+Evidence: /tmp/tmpu5f6ztsi/evidence/ledger.json
+evidence-gate-tests: /tmp/tmpnewjj7ba/evidence/evidence-gate-tests.log
+RuntimeError: unexpected runtime failure
+Evidence: /tmp/tmpnewjj7ba/evidence/ledger.json
+evidence-gate-tests: /tmp/tmp2bhxbmjb/evidence/evidence-gate-tests.log
+IncompleteRead: IncompleteRead(7 bytes read, 10 more expected)
+Evidence: /tmp/tmp2bhxbmjb/evidence/ledger.json
+RuntimeError: unreadable consumer source
+Evidence: /tmp/tmp8frno1fj/evidence/ledger.json
+RuntimeError: unreadable catalog
+................
+----------------------------------------------------------------------
+Ran 54 tests in 0.171s
+
+OK

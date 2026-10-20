@@ -1,0 +1,324 @@
+diff --git a/works/_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md b/works/_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md
+index b1ec804..cd1846f 100644
+--- a/works/_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md
++++ b/works/_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md
+@@ -158,13 +158,13 @@ context:
+ 
+ Review iteration 6, 2026-10-20. Four layers (blind, edge-case, verification-gap, acceptance) reviewed the 13-file interdiff between the archived iteration 5 reviewed diff and the qualified final diff: the root-applied corrections T200, T201/T208, T203, T204 and T209 plus the owner-approved 3.126.0 pin move, never independently reviewed before. Works HEAD `d74f955` and Platform HEAD `6664e2a` equal the qualified final tree on all 128 story paths. Severity and route are root triage.
+ 
+-- [ ] [Review][Patch] T213 (medium) The end-of-run fixture check misses fixture files added or removed after the pre-command inventory, and its message still names the consumer build [P/eng/verify_works_host.py:1031] — verification-gap other 2, blind, edge E3/E11, acceptance 6. T203 moved the baseline before the first command, but the final loop re-hashes only recorded keys. A `.cs` file added before compilation is compiled in and never bound, so the claim that the final comparison detects any intervening edit does not hold. Compare the complete `fixture_sources(works)` result with the recorded inventory, name the pre-command baseline in the message, and add a regression.
+-- [ ] [Review][Patch] T214 (medium) The parity runbook diverges from the qualified command and links the live, unbound Works Builds checkout [P/docs/works-host-parity.md:58-67] — blind, edge E10/E12, verification-gap other 3, acceptance 2. The qualified run used an isolated Platform worktree, `HexalithBuildsRoot` and an SDK export linked to an ordinary-source export of `b435f2e3`. The runbook links `../works/references/Hexalith.Builds`, which moved to `cf978100` in `d74f955`. Mirror the packet README: export the bound catalog commit, link the SDK export to it, and set the recorded environment.
+-- [ ] [Review][Patch] T215 (medium) The T204 archive binding is never exercised where `run_verification` calls it [P/eng/verify_works_host.py:927] — verification-gap (pre-verified). The helper test calls `require_archive_assembly` directly; no test reaches the published-producer loop, so deleting the call leaves all 52 evidence-gate tests green. Extract the loop and test it with synthetic `project.assets.json`, `.nupkg`/`.nupkg.metadata` and an altered consumer DLL that must be refused.
+-- [ ] [Review][Patch] T216 (low) The edited adoption paragraph still says "Story 4.16 qualifies public 3.125.1" [W/docs/sdk-reminder-process-adoption.md:9] — verification-gap other 4, blind, edge E14, acceptance 5. The same paragraph now names 3.126.0 as the current pin; 3.125.1 evidence is historical.
+-- [ ] [Review][Patch] T217 (low) Gitlink statements went stale after `d74f955` [P/docs/works-host-parity.md:70-71; W/docs/sdk-reminder-process-adoption.md:11] — blind, edge E13, acceptance 7. The Works EventStore gitlink is now `b16be635` (`v3.126.0-11`), whose `src/**` and root build files equal `v3.126.0`. State the condition as "the gitlink is not exactly the selected tag commit" instead of naming `v3.125.0`/`f43b121c`.
+-- [ ] [Review][Patch] T218 (low) `ClientRejectedServer` documentation no longer matches its semantics [W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs:5] — blind. After T201 the flag starts true and remains true when no server certificate is validated; the comment still says only that validation refused the server.
+-- [ ] [Review][Patch] T219 (low) The alert-predicate tests never isolate the receipt-time clause [P/eng/test_verify_works_host.py:582] — blind. `state()` derives the exporter time from the receipt time, so deleting the `ReceivedAt` clause keeps every case green. Add a late-export/early-receipt case and boolean/float exporter-time cases.
++- [x] [Review][Patch] T213 (medium) The end-of-run fixture check misses fixture files added or removed after the pre-command inventory, and its message still names the consumer build [P/eng/verify_works_host.py:1031] — verification-gap other 2, blind, edge E3/E11, acceptance 6. T203 moved the baseline before the first command, but the final loop re-hashes only recorded keys. A `.cs` file added before compilation is compiled in and never bound, so the claim that the final comparison detects any intervening edit does not hold. Compare the complete `fixture_sources(works)` result with the recorded inventory, name the pre-command baseline in the message, and add a regression.
++- [x] [Review][Patch] T214 (medium) The parity runbook diverges from the qualified command and links the live, unbound Works Builds checkout [P/docs/works-host-parity.md:58-67] — blind, edge E10/E12, verification-gap other 3, acceptance 2. The qualified run used an isolated Platform worktree, `HexalithBuildsRoot` and an SDK export linked to an ordinary-source export of `b435f2e3`. The runbook links `../works/references/Hexalith.Builds`, which moved to `cf978100` in `d74f955`. Mirror the packet README: export the bound catalog commit, link the SDK export to it, and set the recorded environment.
++- [x] [Review][Patch] T215 (medium) The T204 archive binding is never exercised where `run_verification` calls it [P/eng/verify_works_host.py:927] — verification-gap (pre-verified). The helper test calls `require_archive_assembly` directly; no test reaches the published-producer loop, so deleting the call leaves all 52 evidence-gate tests green. Extract the loop and test it with synthetic `project.assets.json`, `.nupkg`/`.nupkg.metadata` and an altered consumer DLL that must be refused.
++- [x] [Review][Patch] T216 (low) The edited adoption paragraph still says "Story 4.16 qualifies public 3.125.1" [W/docs/sdk-reminder-process-adoption.md:9] — verification-gap other 4, blind, edge E14, acceptance 5. The same paragraph now names 3.126.0 as the current pin; 3.125.1 evidence is historical.
++- [x] [Review][Patch] T217 (low) Gitlink statements went stale after `d74f955` [P/docs/works-host-parity.md:70-71; W/docs/sdk-reminder-process-adoption.md:11] — blind, edge E13, acceptance 7. The Works EventStore gitlink is now `b16be635` (`v3.126.0-11`), whose `src/**` and root build files equal `v3.126.0`. State the condition as "the gitlink is not exactly the selected tag commit" instead of naming `v3.125.0`/`f43b121c`.
++- [x] [Review][Patch] T218 (low) `ClientRejectedServer` documentation no longer matches its semantics [W/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs:5] — blind. After T201 the flag starts true and remains true when no server certificate is validated; the comment still says only that validation refused the server.
++- [x] [Review][Patch] T219 (low) The alert-predicate tests never isolate the receipt-time clause [P/eng/test_verify_works_host.py:582] — blind. `state()` derives the exporter time from the receipt time, so deleting the `ReceivedAt` clause keeps every case green. Add a late-export/early-receipt case and boolean/float exporter-time cases.
+ - [x] [Review][Defer] T220 (low) The fixture inventory omits the IntegrationTests project file, `Hexalith.Works.Testing`, `xunit.runner.json` and golden JSON [P/eng/verify_works_host.py:149-154] — deferred: pre-existing `fixture_sources` scope, unchanged by this diff; compiled project-file effects are bound through the consumer binary hash.
+ - [x] [Review][Defer] T221 (medium) The verifier does not bind the runtime SDK export's linked Builds catalog [P/eng/verify_works_producer.py:32-41] — deferred: pre-existing `runtime_source_snapshot` scope (`src/**` and three root build files). The qualified run's catalog is bound only by the packet's `builds-source-provenance.json`; enforcement adds verifier state.
+ - [x] [Review][Defer] T222 (medium) The end-of-run "changed during execution" checks have no executing test [P/eng/verify_works_host.py:1007-1033] — deferred: pre-verified gap shared by every end-of-run check; covering them needs an end-of-pipeline extraction better done as its own refactor.
+@@ -249,6 +249,12 @@ Root applied T200/T201/T203/T204/T208/T209: require fresh export and receipt tim
+ 
+ The [public 3.126.0 packet](evidence/story-4-16/public-3.126.0-2026-10-19/README.md) preserves exact commands, qualified inputs, outcomes, test XML, failed/cancelled attempts and their reasons. Initial blockers were concurrent catalog/source changes and the Commons dependency downgrade; preliminary deterministic failures were stale restore assets and repository-discovery tests run from an unsupported temporary binary layout. The first retained Debug attempt passed its body but failed the 30-second disposal bound; its unchanged retry passed all four cases. These failures are not relabeled. The input recheck has zero mismatches; no nested submodule, staging, commit, push or publication was performed. Qualification remains synthetic; AD-28, production admission, Full Agents qualification and Story 4.9 cutover stay separate.
+ 
++Review iteration 6 corrections, 2026-10-20 (implementation complete; final independent review remains with root): T213–T219 are applied. The verifier compares the complete fixture membership and hashes with its pre-command baseline; the extracted public-producer loop refuses an altered consumer DLL using synthetic restore assets, metadata and archives; the alert tests independently enforce receipt time and integer exporter timestamps. The runbook binds the ordinary-source Builds export, both isolated catalog paths, the required Works sibling link and both build environment variables. Adoption and trust-probe comments now describe the selected 3.126.0 graph and observed semantics.
++
++The fresh canonical run exits 0 with `passed-disposable-synthetic-parity-and-rollback` (07:34:24–08:07:24 UTC, 33.0 minutes). All eleven rows derive all four proofs from 32 unique phases with zero skips, nine Platform starts and one retained rollback start. Complete restore reproduces 684 Redis keys and 1,070 runtime entries; delegated queries and original receipt replay remain usable, with exactly one date resume, child cancellation and child expiry. Results: 54 evidence-gate tests; all three targeted mutations refused; Agents Full expected exit 1 `EXT-HOST-1` and LocalScaffold exit 0; Platform 112 per mode; both Works consumer builds; supporting Release 241; live recovery 4/4 (811.212 s), historical 1/1 (137.906 s), HA 1/1 (103.186 s), focused projection 1/1 (164.085 s); focused composition 3/3. Nine package DLLs bind to their selected archives, and 2,103 runtime/build source files match official producer `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288` and tag `v3.126.0`.
++
++The [corrections packet](evidence/story-4-16/review6-corrections-2026-10-20/README.md) retains exact commands, executed results, source bindings, mutation failures and the independent root evidence audit. Attempt 1 failed eight topology tests because the fresh isolated workspace omitted `../works`; no live parity executed. Adding the owned sibling link and documenting it resolved the setup; attempt 2 used a new empty artifacts directory and unchanged verifier/fixture bytes. The ordinary-source Platform export preserves the preceding qualified base plus the four reviewed overlays, leaving six unrelated current Platform source differences explicit and untouched. The input recheck has zero mismatches for the isolated inputs, current Works sources and fixture membership, and current reviewed Platform inputs. No host limit, nested submodule, branch, staging, commit, push or publication was changed by this run. T220–T222 and the existing synthetic/AD-28/Full Agents/4.9 boundaries remain unchanged.
++
+ ## Design Notes
+ 
+ The user resolved the Agents preservation contract; no intent question remains. Changes are reversible and use disposable synthetic resources. Reuse SDK recovery/defaults/disposition; retain complete stream, family/journal, reminder/catalog, process/disposition, receipt/audit/key state and compatible fleet for rollback.
+diff --git a/works/docs/sdk-reminder-process-adoption.md b/works/docs/sdk-reminder-process-adoption.md
+index 2c848d3..b130a32 100644
+--- a/works/docs/sdk-reminder-process-adoption.md
++++ b/works/docs/sdk-reminder-process-adoption.md
+@@ -6,9 +6,9 @@ On 2026-10-19 the [public 3.126.0 qualification](../_bmad-output/implementation-
+ 
+ ## Producers and authority
+ 
+-The 2026-10-18 reopened verification corrects a shared SDK adapter defect: Redis reports an empty-ETag create collision as a transport error, so a persisted shared-projection receipt could prevent journal closeout on every replay. The adapter now resolves only failed create-only writes with a strong read of the same key; existing-key proof returns a CAS rejection, while missing/unreadable evidence and caller cancellation retain failure. Typed, expiring and raw batch writes use the same provider-neutral rule. The immutable local verification candidate is `3.124.1-story415.20261018.1`, built from SDK checkout `77d9af18a54d92506e310fe5a45021a395e66f60` (`v3.124.0-3`) plus the recorded correction. That checkout includes three unpublished commits after public 3.124.0, including Story 6.4 batch-protocol and applied-receipt recovery changes; the candidate is public 3.124.0 plus those three commits plus the correction. It is unpublished. The faithful native Redis replay control uses public 3.124.0, so that comparison does not isolate the correction from the three intervening commits. The SDK regression `ReconstructedCatchUpDequeuesAppliedReceiptAfterCloseoutCancellation` isolates the correction on the same source base and carries the causal claim. At that time the default Release pin was public `3.124.0`, which does **not** include this correction; the current pin, public `3.126.0`, does; candidate package verification explicitly overrides `HexalithEventStoreVersion`, supplies its exact local feed and opts into the package-contract exception with `-p:WorksAllowLocalEventStoreCandidate=true`. The Release package-contract gate otherwise requires the selected packages to equal the separately emitted static public pin; the opt-in permits only a `-story415.` local candidate. Source Debug and overridden package results are separate evidence. The source Debug and explicitly selected candidate Release restart proofs both pass all ten persisted phases; their commands, raw evidence, consumer bindings and separate preliminary failures are retained in `_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/implementation.md`. Publication and qualification of the default dependency were separate gates; Story 4.16 qualifies public 3.125.1. The historical root-closeout source and candidate integration lanes passed 848 tests each; their restart/callback proofs bind the decoder and SDK source recorded in that packet. The later [source requalification](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/implementation.md) binds restart and callback specifically to SDK `216b7906` and the pre-patch decoder. Subsequent decoder and SDK changes are outside those live proofs. The [post-reopen review packet](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/post-reopen-review/implementation.md) supersedes the earlier integration totals with 865 passing cases per mode and records no current-source live rerun. Its adjacent `verify.py` validates that portable historical packet. Live requalification of the final decoder and the current SDK was deferred to Story 4.16 under the approved deterministic-only closure decision. On 2026-10-18 the source Debug restart and callback facts passed on the retained host at exact `v3.125.1` source ([qualification packet](../_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.125.1-2026-10-18/README.md)).
++The 2026-10-18 reopened verification corrects a shared SDK adapter defect: Redis reports an empty-ETag create collision as a transport error, so a persisted shared-projection receipt could prevent journal closeout on every replay. The adapter now resolves only failed create-only writes with a strong read of the same key; existing-key proof returns a CAS rejection, while missing/unreadable evidence and caller cancellation retain failure. Typed, expiring and raw batch writes use the same provider-neutral rule. The immutable local verification candidate is `3.124.1-story415.20261018.1`, built from SDK checkout `77d9af18a54d92506e310fe5a45021a395e66f60` (`v3.124.0-3`) plus the recorded correction. That checkout includes three unpublished commits after public 3.124.0, including Story 6.4 batch-protocol and applied-receipt recovery changes; the candidate is public 3.124.0 plus those three commits plus the correction. It is unpublished. The faithful native Redis replay control uses public 3.124.0, so that comparison does not isolate the correction from the three intervening commits. The SDK regression `ReconstructedCatchUpDequeuesAppliedReceiptAfterCloseoutCancellation` isolates the correction on the same source base and carries the causal claim. At that time the default Release pin was public `3.124.0`, which does **not** include this correction; the current pin, public `3.126.0`, does; candidate package verification explicitly overrides `HexalithEventStoreVersion`, supplies its exact local feed and opts into the package-contract exception with `-p:WorksAllowLocalEventStoreCandidate=true`. The Release package-contract gate otherwise requires the selected packages to equal the separately emitted static public pin; the opt-in permits only a `-story415.` local candidate. Source Debug and overridden package results are separate evidence. The source Debug and explicitly selected candidate Release restart proofs both pass all ten persisted phases; their commands, raw evidence, consumer bindings and separate preliminary failures are retained in `_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/implementation.md`. Publication and qualification of the default dependency were separate gates; Story 4.16 qualifies public 3.126.0; the earlier public 3.125.1 qualification is historical evidence. The historical root-closeout source and candidate integration lanes passed 848 tests each; their restart/callback proofs bind the decoder and SDK source recorded in that packet. The later [source requalification](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/implementation.md) binds restart and callback specifically to SDK `216b7906` and the pre-patch decoder. Subsequent decoder and SDK changes are outside those live proofs. The [post-reopen review packet](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/post-reopen-review/implementation.md) supersedes the earlier integration totals with 865 passing cases per mode and records no current-source live rerun. Its adjacent `verify.py` validates that portable historical packet. Live requalification of the final decoder and the current SDK was deferred to Story 4.16 under the approved deterministic-only closure decision. On 2026-10-18 the source Debug restart and callback facts passed on the retained host at exact `v3.125.1` source ([qualification packet](../_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.125.1-2026-10-18/README.md)).
+ 
+-The current dependency target is published EventStore **3.126.0**, tag `v3.126.0`, from source commit `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`, under Story 4.16 verification. It contains the Story 4.15 journal-closeout correction and both Story 4.16 producer corrections. Historical Story 4.15 acceptance used public **3.123.0**, producer `f78916d9534a72ba1515d97cfd51408e6eb809f1`; its immutable evidence does not qualify subsequent dependency updates. `Directory.Packages.props` now pins all nine SDK packages to 3.126.0. Debug uses the checked-out SDK source; Release restores the public packages from NuGet.org. The SDK gitlink remains `v3.125.0` (`f43b121c`), which is historical and does not qualify the current producer; Story 4.16 qualification selects an exact isolated `v3.126.0` source export for both modes. The prior unpublished local candidate `3.122.1-story415.20261016.10`, built before publication from `a2016e88f4d0da9b953fe6f4394f8b8fd4e27f72` on public base 3.122.0, remains immutable historical evidence. Its verification is not relabeled as public 3.123.0 verification. `scripts/build-story415-sdk-candidate.sh` is the historical packer for that candidate and exits 1 by design once the pin is a published version. The user's test-only Platform.Identity sibling reference is preserved in both modes; its earlier Story 4.14 package proof is historical. The current Parties.Client dependency is package 1.4.0 in Release and its sibling source in Debug.
++The current dependency target is published EventStore **3.126.0**, tag `v3.126.0`, from source commit `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`, under Story 4.16 verification. It contains the Story 4.15 journal-closeout correction and both Story 4.16 producer corrections. Historical Story 4.15 acceptance used public **3.123.0**, producer `f78916d9534a72ba1515d97cfd51408e6eb809f1`; its immutable evidence does not qualify subsequent dependency updates. `Directory.Packages.props` now pins all nine SDK packages to 3.126.0. Debug uses the checked-out SDK source; Release restores the public packages from NuGet.org. When the SDK gitlink is not exactly the selected tag commit, Story 4.16 qualification selects an exact isolated `v3.126.0` source export for both modes; the verifier compares its runtime/build files with the named public producer. The prior unpublished local candidate `3.122.1-story415.20261016.10`, built before publication from `a2016e88f4d0da9b953fe6f4394f8b8fd4e27f72` on public base 3.122.0, remains immutable historical evidence. Its verification is not relabeled as public 3.123.0 verification. `scripts/build-story415-sdk-candidate.sh` is the historical packer for that candidate and exits 1 by design once the pin is a published version. The user's test-only Platform.Identity sibling reference is preserved in both modes; its earlier Story 4.14 package proof is historical. The current Parties.Client dependency is package 1.4.0 in Release and its sibling source in Debug.
+ 
+ The SDK correction clarifies bounded cancellable read-only contextual translation and adds `ProcessEvidenceUnavailableException`. An unavailable dependency retries and eventually parks using the existing runner state; malformed, foreign, missing or undecodable evidence quarantines without advancing a checkpoint. Additive `ReminderIntent.Ordinal` preserves default-zero identities while distinguishing all date witnesses from one suspension. Both additions are non-positional init properties, preserving the original eleven-parameter CLR constructor and eleven-value deconstruction. Optional `SourceMessageId` carries the committed envelope causation. Nondefault ordinal/message fields have distinct tags in intent and persisted-entry quarantine evidence; zero/null historical evidence hashes remain unchanged. Optional `IReminderTargetCatalog` lets SDK reconciliation discover initial registration losses, including expiry-only items, through existing Works family membership.
+ 
+diff --git a/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs b/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs
+index e645754..e256a81 100644
+--- a/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs
++++ b/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustProbeResult.cs
+@@ -2,7 +2,7 @@ namespace Hexalith.Works.IntegrationTests;
+ 
+ /// <summary>One mutual-TLS probe handshake against an owned sidecar endpoint.</summary>
+ /// <param name="ServerIdentity">The single SPIFFE identity the server presented, when one was observed.</param>
+-/// <param name="ClientRejectedServer">Whether the probe's own configured-root and identity validation refused the server.</param>
++/// <param name="ClientRejectedServer">Whether the server remains untrusted because configured-root and identity validation refused it or no server certificate was validated.</param>
+ /// <param name="ServerAccepted">Whether the server completed HTTP/2 setup by sending its SETTINGS frame.</param>
+ /// <param name="Failure">The observed refusal, or <see langword="null"/> when the server accepted the probe.</param>
+ internal sealed record WorksPlatformTrustProbeResult(string? ServerIdentity, bool ClientRejectedServer, bool ServerAccepted, string? Failure);
+diff --git a/platform/docs/works-host-parity.md b/platform/docs/works-host-parity.md
+index 9e22001..748eb0e 100644
+--- a/platform/docs/works-host-parity.md
++++ b/platform/docs/works-host-parity.md
+@@ -51,27 +51,49 @@ The owner selected public **3.126.0** for fresh requalification on 2026-10-19. E
+ 
+ The fresh [3.126.0 packet](../../works/_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/README.md) records canonical exit 0, all eleven rows, complete rollback, zero skips, and a separate 4/4 retained-host source Debug pass. Concurrent Platform and Builds edits were preserved by running from the recorded isolated source snapshot. Story 4.9 cutover remains separate.
+ 
+-Run from the Platform checkout with a complete Works source checkout and an exact
+-export of the qualified producer tag:
++Run from an isolated Platform checkout containing the reviewed Works changes,
++with a complete Works source checkout. The [recorded command](../../works/_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/README.md)
++used Platform base `f0e33167fcdb5f539da159c54f7505b72a65c9b2` plus the four
++reviewed overlays listed in that packet. Export the same bound Builds catalog
++commit as ordinary source; the live Builds checkout may have moved since qualification.
++The isolated Platform's root-declared `references/Hexalith.Builds` path must expose
++the same bound catalog export. The isolated workspace must also expose Works at `../works`: topology tests use
++that sibling path before the live verifier applies `--works-root`. In a fresh
++isolated workspace, create the link shown below (an existing matching Works
++checkout or link already satisfies it). Select fresh export and evidence directories:
+ 
+ ```bash
++export WORKS_PARITY_WORKS_ROOT=/home/administrator/projects/hexalith/works
++export WORKS_PARITY_PLATFORM_ROOT=/absolute/isolated/workspace/platform
++export WORKS_PARITY_BUILDS_ROOT=/tmp/works-parity-builds-b435f2e-source
+ export WORKS_PARITY_SDK_ROOT=/tmp/works-parity-sdk-3.126.0
+-mkdir "$WORKS_PARITY_SDK_ROOT"
+-git -C ../works/references/Hexalith.EventStore archive v3.126.0 | tar -x -C "$WORKS_PARITY_SDK_ROOT"
+-# git archive applies eol attributes; restore the one rewritten blob byte for byte.
+-git -C ../works/references/Hexalith.EventStore cat-file blob v3.126.0:global.json > "$WORKS_PARITY_SDK_ROOT/global.json"
+-# Reuse the already initialized root-declared Builds dependency in the ordinary source export.
+-# This creates no nested Git checkout.
++# Required by the Platform topology tests as well as the explicit live selection.
++ln -s "$WORKS_PARITY_WORKS_ROOT" "$(dirname "$WORKS_PARITY_PLATFORM_ROOT")/works"
++mkdir "$WORKS_PARITY_BUILDS_ROOT" "$WORKS_PARITY_SDK_ROOT"
++git -C "$WORKS_PARITY_WORKS_ROOT/references/Hexalith.Builds" archive b435f2e3b3892e03f69322d24de6003b0baf7a7d | tar -x -C "$WORKS_PARITY_BUILDS_ROOT"
++git -C "$WORKS_PARITY_WORKS_ROOT/references/Hexalith.EventStore" archive v3.126.0 | tar -x -C "$WORKS_PARITY_SDK_ROOT"
++# git archive applies eol attributes; restore the one rewritten SDK blob byte for byte.
++git -C "$WORKS_PARITY_WORKS_ROOT/references/Hexalith.EventStore" cat-file blob v3.126.0:global.json > "$WORKS_PARITY_SDK_ROOT/global.json"
++# Link the empty root-declared Builds paths in both isolated exports to the same catalog.
++# These directories are empty after source export; no nested Git checkout is created.
++rmdir "$WORKS_PARITY_PLATFORM_ROOT/references/Hexalith.Builds"
++ln -s "$WORKS_PARITY_BUILDS_ROOT" "$WORKS_PARITY_PLATFORM_ROOT/references/Hexalith.Builds"
+ rmdir "$WORKS_PARITY_SDK_ROOT/references/Hexalith.Builds"
+-ln -s "$(realpath ../works/references/Hexalith.Builds)" "$WORKS_PARITY_SDK_ROOT/references/Hexalith.Builds"
+-./eng/verify-works-host.sh --works-root ../works --runtime-sdk-root "$WORKS_PARITY_SDK_ROOT" --artifacts-path /tmp/works-parity-new-run
++ln -s "$WORKS_PARITY_BUILDS_ROOT" "$WORKS_PARITY_SDK_ROOT/references/Hexalith.Builds"
++cd "$WORKS_PARITY_PLATFORM_ROOT"
++HexalithBuildsRoot="$WORKS_PARITY_BUILDS_ROOT" \
++HexalithEventStoreRoot="$WORKS_PARITY_SDK_ROOT" \
++bash eng/verify-works-host.sh --works-root "$WORKS_PARITY_WORKS_ROOT" --runtime-sdk-root "$WORKS_PARITY_SDK_ROOT" --artifacts-path /tmp/works-parity-new-run
+ ```
+ 
+-`--runtime-sdk-root` is required while the Works EventStore gitlink is `v3.125.0`
+-(`f43b121c`): without it the verifier qualifies the gitlink source against the
+-3.126.0 archives and refuses any differing runtime/build files. The export
+-must come from the root-declared SDK checkout's object store. Its ordinary source link reuses Works' root-declared Builds catalog, which must select the same SDK and compatible dependency versions. It never checks out
+-or mutates that shared checkout.
++`--runtime-sdk-root` is required when the Works EventStore gitlink is not exactly
++the selected tag commit: without it the verifier qualifies the gitlink source
++against the selected public archives and refuses any differing runtime/build files.
++The export must come from the root-declared SDK checkout's object store. The
++ordinary-source Builds export pins the qualified catalog and compatible dependency
++versions independently of subsequent shared-checkout changes. `HexalithBuildsRoot`
++and `HexalithEventStoreRoot` preserve those same selections in child builds. No
++shared checkout is mutated.
+ 
+ Choose a fresh, empty artifacts directory for each attempt. The verifier records
+ each exact command, working directory, exit result and log hash in `ledger.json`,
+diff --git a/platform/eng/test_verify_works_host.py b/platform/eng/test_verify_works_host.py
+index ac85bc8..ff118c4 100644
+--- a/platform/eng/test_verify_works_host.py
++++ b/platform/eng/test_verify_works_host.py
+@@ -14,7 +14,7 @@ from unittest.mock import patch
+ import verify_works_host
+ from verify_works_host import (CROSS_CHECKS, DUMP_INVENTORY, PROOF_NAMES, PROOFS, RESTORE_PHASE, ROWS, SNAPSHOT_PHASE, SUPPORTING_CLASSES,
+                                alert_cleared_after_raise, alert_raised_after, bind_persisted_outcomes, delegated_identity, fixture_sources,
+-                               platform_composition_literals, utc_ticks,
++                               platform_composition_literals, published_producers, require_unchanged_fixture_sources, utc_ticks,
+                                require_archive_assembly, require_consumer_pin, require_consumer_pins, require_host_package_pins, require_identical_runtime,
+                                require_passed_tests, require_published_runtime_source, required_phases, restored_fleet_matches,
+                                selected_sdk_version, sha256, verify_host_records)
+@@ -595,6 +595,14 @@ class WorksEvidenceGateTests(unittest.TestCase):
+         self.assertFalse(check(delayed), 'An export at the same observed tick must not qualify')
+         del delayed['points'][0]['UnixTimeNanoseconds']
+         self.assertFalse(check(delayed), 'A missing exporter timestamp must not qualify')
++        early_receipt = state((1, '2026-10-19T07:00:01Z'))
++        early_receipt['points'][0]['UnixTimeNanoseconds'] = utc_ticks('2026-10-19T07:00:06Z') * 100
++        self.assertFalse(check(early_receipt), 'A late export with an early receipt must not qualify')
++        for invalid_export_time in [True, False, float(utc_ticks('2026-10-19T07:00:06Z') * 100)]:
++            invalid_export = state((1, '2026-10-19T07:00:06Z'))
++            invalid_export['points'][0]['UnixTimeNanoseconds'] = invalid_export_time
++            with self.subTest(invalid_export_time=invalid_export_time):
++                self.assertFalse(check(invalid_export), 'Exporter time must be an integer, never a boolean or float')
+         for name, refused in [
+                 ('startup point only', state((1, '2026-10-19T07:00:01+00:00'))),
+                 ('same tick', state((1, observed))),
+@@ -670,6 +678,66 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                                                           'tests/Hexalith.Works.IntegrationTests/Nested/WorksSdkProofProducer.cs',
+                                                           'tests/Hexalith.Works.IntegrationTests/WorksSdkProofResponseHandler.cs'])
+ 
++    def test_fixture_inventory_refuses_additions_removals_and_changed_bytes(self):
++        works = self.directory()
++        root = works / 'tests/Hexalith.Works.IntegrationTests'
++        root.mkdir(parents=True)
++        fixture = root / 'Fixture.cs'
++        fixture.write_text('// original fixture')
++        resolver = works / 'src/Hexalith.Works.AppHost/ProjectMetadataPaths.cs'
++        resolver.parent.mkdir(parents=True)
++        resolver.write_text('// paths')
++        baseline = fixture_sources(works)
++        require_unchanged_fixture_sources(works, baseline)
++        added = root / 'AddedBeforeCompilation.cs'
++        added.write_text('// compiled without an original binding')
++        with self.assertRaisesRegex(ValueError, 'pre-command baseline: .*AddedBeforeCompilation.cs'):
++            require_unchanged_fixture_sources(works, baseline)
++        added.unlink()
++        fixture.unlink()
++        with self.assertRaisesRegex(ValueError, 'pre-command baseline: .*Fixture.cs'):
++            require_unchanged_fixture_sources(works, baseline)
++        fixture.write_text('// changed fixture')
++        with self.assertRaisesRegex(ValueError, 'pre-command baseline: .*Fixture.cs'):
++            require_unchanged_fixture_sources(works, baseline)
++        fixture.write_text('// original fixture')
++        require_unchanged_fixture_sources(works, baseline)
++
++    def test_published_producer_loop_binds_the_consumer_dll_to_its_archive(self):
++        root = self.directory()
++        cache = root / 'packages'
++        consumer = root / 'consumer'
++        consumer.mkdir()
++        package = 'Hexalith.EventStore.Client'
++        restored = VERSION
++        relative = package.lower() + '/' + restored
++        folder = cache / relative
++        folder.mkdir(parents=True)
++        artifact = folder / (package.lower() + '.' + restored + '.nupkg')
++        entry = 'lib/net10.0/' + package + '.dll'
++        contents = b'official-package-assembly'
++        commit = 'b' * 40
++        repository = 'https://github.com/Hexalith/Hexalith.EventStore'
++        with zipfile.ZipFile(artifact, 'w') as archive:
++            archive.writestr(package + '.nuspec',
++                             '<package><metadata><repository url="' + repository + '" commit="' + commit + '" /></metadata></package>')
++            archive.writestr(entry, contents)
++        (folder / '.nupkg.metadata').write_text(json.dumps({'source': 'https://api.nuget.org/v3/index.json'}))
++        assets = root / 'project.assets.json'
++        assets.write_text(json.dumps({'libraries': {
++            package + '/' + restored: {'type': 'package', 'path': relative, 'sha512': 'restore-sha512'},
++            'Hexalith.EventStore.Source/' + restored: {'type': 'project'},
++            'Other.Package/1.0.0': {'type': 'package'}}, 'packageFolders': {str(cache): {}}}))
++        assembly = consumer / (package + '.dll')
++        assembly.write_bytes(contents)
++        self.assertEqual(published_producers(assets, consumer, restored), {package: {
++            'version': restored, 'sha256': sha256(artifact), 'source': 'https://api.nuget.org/v3/index.json',
++            'nugetSha512': 'restore-sha512', 'repositoryCommit': commit, 'repositoryUrl': repository,
++            'consumerAssemblySha256': sha256(assembly), 'archiveAssemblyEntry': entry}})
++        assembly.write_bytes(b'altered-extracted-consumer-dll')
++        with self.assertRaisesRegex(ValueError, 'Consumer assembly differs from its selected public archive'):
++            published_producers(assets, consumer, restored)
++
+     def test_extracted_package_assembly_must_match_the_selected_archive(self):
+         root = self.directory()
+         assembly = root / 'Hexalith.EventStore.Client.dll'
+diff --git a/platform/eng/verify_works_host.py b/platform/eng/verify_works_host.py
+index 97bf948..928f779 100644
+--- a/platform/eng/verify_works_host.py
++++ b/platform/eng/verify_works_host.py
+@@ -49,6 +49,32 @@ def require_archive_assembly(artifact, assembly):
+     return {"consumerAssemblySha256": digest, "archiveAssemblyEntry": matches[0]}
+ 
+ 
++def published_producers(assets_path, consumer_directory, version):
++    """Bind every selected public SDK package and its consumer DLL to the restored NuGet archive."""
++    packages = json.loads(Path(assets_path).read_text())
++    producer_evidence = {}
++    for key, library in packages["libraries"].items():
++        if not key.startswith("Hexalith.EventStore.") or library["type"] != "package":
++            continue
++        package, restored = key.split("/")
++        if restored != version:
++            raise ValueError("Unexpected published producer: " + key)
++        folder = next(Path(root) / library["path"] for root in packages["packageFolders"] if (Path(root) / library["path"]).exists())
++        artifact = folder / (package.lower() + "." + restored + ".nupkg")
++        metadata = json.loads((folder / ".nupkg.metadata").read_text())
++        if metadata.get("source") != "https://api.nuget.org/v3/index.json":
++            raise ValueError("Published producer lacks public NuGet provenance: " + package)
++        with zipfile.ZipFile(artifact) as archive:
++            nuspec_name = next(name for name in archive.namelist() if name.endswith(".nuspec"))
++            repository = ET.fromstring(archive.read(nuspec_name)).find(".//{*}repository")
++        if repository is None or not repository.get("commit"):
++            raise ValueError("Published producer lacks a repository commit: " + package)
++        producer_evidence[package] = {"version": restored, "sha256": sha256(artifact), "source": metadata["source"],
++            "nugetSha512": library.get("sha512"), "repositoryCommit": repository.get("commit"), "repositoryUrl": repository.get("url")}
++        producer_evidence[package].update(require_archive_assembly(artifact, consumer_directory / (package + ".dll")))
++    return producer_evidence
++
++
+ def selected_sdk_version(catalog):
+     """Read the one stable public EventStore version selected by the authoritative Builds catalog."""
+     values = [item.text for item in ET.parse(catalog).getroot().iter("HexalithEventStoreVersion")]
+@@ -154,6 +180,14 @@ def fixture_sources(works):
+     return {str(path.relative_to(works)): sha256(path) for path in sorted(files)}
+ 
+ 
++def require_unchanged_fixture_sources(works, baseline):
++    """Refuse changed bytes, added files and removed files since the pre-command fixture inventory."""
++    current = fixture_sources(works)
++    if current != baseline:
++        changed = sorted(name for name in current.keys() | baseline.keys() if current.get(name) != baseline.get(name))
++        raise ValueError("Qualified fixtures changed since the pre-command baseline: " + ", ".join(changed))
++
++
+ # Deterministic Works consumer classes the admission gate runs on the Release qualification consumer. They support,
+ # and never substitute for, the live target phases.
+ SUPPORTING_CLASSES = ("WorksSdkPartitionedRebuildTests", "WorksSdkProjectionQueryTests",
+@@ -904,27 +938,8 @@ def run_verification(args):
+         summary["platformAdapterAssemblies"] = {str(path): sha256(path) for path in [
+             assembly.parent / "Hexalith.Platform.Composition.dll", assembly.parent / "Hexalith.Platform.Works.Runtime.dll",
+             consumer_output / "bin/Hexalith.Works.IntegrationTests/release/Hexalith.Platform.Works.Runtime.dll"]}
+-        packages = json.loads((consumer_output / "obj/Hexalith.Works.IntegrationTests/project.assets.json").read_text())
+-        producer_evidence = {}
+-        for key, library in packages["libraries"].items():
+-            if not key.startswith("Hexalith.EventStore.") or library["type"] != "package":
+-                continue
+-            package, restored = key.split("/")
+-            if restored != version:
+-                raise ValueError("Unexpected published producer: " + key)
+-            folder = next(Path(root) / library["path"] for root in packages["packageFolders"] if (Path(root) / library["path"]).exists())
+-            artifact = folder / (package.lower() + "." + restored + ".nupkg")
+-            metadata = json.loads((folder / ".nupkg.metadata").read_text())
+-            if metadata.get("source") != "https://api.nuget.org/v3/index.json":
+-                raise ValueError("Published producer lacks public NuGet provenance: " + package)
+-            with zipfile.ZipFile(artifact) as archive:
+-                nuspec_name = next(name for name in archive.namelist() if name.endswith(".nuspec"))
+-                repository = ET.fromstring(archive.read(nuspec_name)).find(".//{*}repository")
+-            if repository is None or not repository.get("commit"):
+-                raise ValueError("Published producer lacks a repository commit: " + package)
+-            producer_evidence[package] = {"version": restored, "sha256": sha256(artifact), "source": metadata["source"],
+-                "nugetSha512": library.get("sha512"), "repositoryCommit": repository.get("commit"), "repositoryUrl": repository.get("url")}
+-            producer_evidence[package].update(require_archive_assembly(artifact, consumer_directory / (package + ".dll")))
++        producer_evidence = published_producers(
++            consumer_output / "obj/Hexalith.Works.IntegrationTests/project.assets.json", consumer_directory, version)
+         summary["publishedProducers"] = producer_evidence
+         identity_root = works / "references/Hexalith.Platform/src/Hexalith.Platform.Identity"
+         summary["identityProvenance"] = {"scope": "explicit-test-only-source; no published Platform.Identity package",
+@@ -1028,9 +1043,7 @@ def run_verification(args):
+         for name, digest in summary["verifierHelpers"].items():
+             if sha256(Path(__file__).with_name(name)) != digest:
+                 raise ValueError("A verifier helper changed during execution: " + name)
+-        for source, digest in summary["fixtureSources"].items():
+-            if sha256(works / source) != digest:
+-                raise ValueError("A qualified fixture changed after the consumer build: " + source)
++        require_unchanged_fixture_sources(works, summary["fixtureSources"])
+         summary["rollback"] = bind_persisted_outcomes(artifacts / "persisted-states.jsonl", summary["rows"], summary["actualStarts"])
+         summary["status"] = "passed-disposable-synthetic-parity-and-rollback"
+         return 0

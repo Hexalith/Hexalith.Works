@@ -1,0 +1,6 @@
+  Discovering: Hexalith.Works.IntegrationTests
+  Discovered:  Hexalith.Works.IntegrationTests
+  Starting:    Hexalith.Works.IntegrationTests
+  Finished:    Hexalith.Works.IntegrationTests (ID = '6b90cb03535cf0802e668aeea295d773a71b2cc61c4f319f685413f8d9d66478')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Works.IntegrationTests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 811.212s

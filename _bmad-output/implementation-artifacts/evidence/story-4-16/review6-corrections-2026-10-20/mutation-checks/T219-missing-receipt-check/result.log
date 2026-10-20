@@ -1,0 +1,14 @@
+F
+======================================================================
+FAIL: test_alert_raise_must_follow_the_observed_degraded_state (test_verify_works_host.WorksEvidenceGateTests.test_alert_raise_must_follow_the_observed_degraded_state)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/story416-review6-69hay8nu/mutations/T219-missing-receipt-check/test_verify_works_host.py", line 600, in test_alert_raise_must_follow_the_observed_degraded_state
+    self.assertFalse(check(early_receipt), 'A late export with an early receipt must not qualify')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false : A late export with an early receipt must not qualify
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

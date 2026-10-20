@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "rows": 11,
+  "proofs": 44,
+  "bindings": 48,
+  "phases": 32,
+  "consumerFiles": 211,
+  "fixtureFiles": 141,
+  "commandLogsVerified": 20,
+  "publicPackages": 9,
+  "rollbackComplete": true,
+  "xmlPassCounts": {
+    "platform-debug.xml": 112,
+    "platform-ha.xml": 1,
+    "platform-historical.xml": 1,
+    "platform-projection.xml": 1,
+    "platform-recovery.xml": 4,
+    "platform-release.xml": 112,
+    "works-consumer-supporting.xml": 241
+  }
+}

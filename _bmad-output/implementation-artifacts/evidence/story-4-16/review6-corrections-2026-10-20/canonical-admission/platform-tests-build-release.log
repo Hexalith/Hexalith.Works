@@ -1,0 +1,18 @@
+  Determining projects to restore...
+  Restored /tmp/story416-builds-b435f2e-public-source/src/libraries/Hexalith.Builds.Tooling/Hexalith.Builds.Tooling.csproj (in 226 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 226 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Custody/Hexalith.Platform.Custody.csproj (in 226 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj (in 247 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj (in 247 ms).
+  Platform version catalog validated: Hexalith.EventStore.Aspire/3.126.0, CommunityToolkit.Aspire.Hosting.Dapr/13.6.1-beta.935, required range 13.6.1-beta.935 for net10.0.
+  Hexalith.Builds.Tooling -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/works-parity-tests-wmv_0be1/release/bin/Hexalith.Builds.Tooling/release/Hexalith.Builds.Tooling.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/works-parity-tests-wmv_0be1/release/bin/Hexalith.Platform.Works.Runtime/release/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Platform.Custody -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/works-parity-tests-wmv_0be1/release/bin/Hexalith.Platform.Custody/release/Hexalith.Platform.Custody.dll
+  Hexalith.Platform.Composition -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/works-parity-tests-wmv_0be1/release/bin/Hexalith.Platform.Composition/release/Hexalith.Platform.Composition.dll
+  Hexalith.Platform.Works.Tests -> /tmp/story416-review6-69hay8nu/workspace/platform/artifacts/works-parity-tests-wmv_0be1/release/bin/Hexalith.Platform.Works.Tests/release/Hexalith.Platform.Works.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:01:06.81

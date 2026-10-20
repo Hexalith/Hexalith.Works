@@ -1,0 +1,8 @@
+Platform file AppHost SDK, EventStore.Aspire and Dapr pins match Builds.
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.505s
+
+OK
+ERROR: EXT-HOST-1 evidence suites failed.
+ERROR: DependencyNotAvailable: EXT-HOST-1. Complete H1-H4 composition, production providers, accepted targets/commands and persisted qualification are unavailable.

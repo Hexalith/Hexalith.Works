@@ -1,0 +1,23 @@
+  Determining projects to restore...
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.ServiceDefaults/Hexalith.EventStore.ServiceDefaults.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Admin.Abstractions/Hexalith.EventStore.Admin.Abstractions.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Client/Hexalith.EventStore.Client.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.DomainService/Hexalith.EventStore.DomainService.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Server/Hexalith.EventStore.Server.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Gateway/Hexalith.EventStore.Gateway.csproj (in 162 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore/Hexalith.EventStore.csproj (in 162 ms).
+  Hexalith.EventStore.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Contracts/release/Hexalith.EventStore.Contracts.dll
+  Hexalith.EventStore.Admin.Abstractions -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Admin.Abstractions/release/Hexalith.EventStore.Admin.Abstractions.dll
+  Hexalith.EventStore.Client -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Client/release/Hexalith.EventStore.Client.dll
+  Hexalith.EventStore.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.ServiceDefaults/release/Hexalith.EventStore.ServiceDefaults.dll
+  Hexalith.EventStore.DomainService -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.DomainService/release/Hexalith.EventStore.DomainService.dll
+  Hexalith.EventStore.Server -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Server/release/Hexalith.EventStore.Server.dll
+  Hexalith.EventStore.Gateway -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Gateway/release/Hexalith.EventStore.Gateway.dll
+  Hexalith.EventStore -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore/release/Hexalith.EventStore.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:06.23

@@ -1,0 +1,30 @@
+Platform file AppHost SDK, EventStore.Aspire and Dapr pins match Builds.
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 0.492s
+
+OK
+Building local Platform scaffold (Debug)...
+  Determining projects to restore...
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Client/Hexalith.EventStore.Client.csproj (in 247 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Custody/Hexalith.Platform.Custody.csproj (in 247 ms).
+  Restored /tmp/story416-builds-b435f2e-public-source/src/libraries/Hexalith.Builds.Tooling/Hexalith.Builds.Tooling.csproj (in 247 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.ServiceDefaults/Hexalith.EventStore.ServiceDefaults.csproj (in 247 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Contracts/Hexalith.EventStore.Contracts.csproj (in 247 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Aspire/Hexalith.EventStore.Aspire.csproj (in 279 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj (in 247 ms).
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.DomainService/Hexalith.EventStore.DomainService.csproj (in 247 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj (in 279 ms).
+  Restored /tmp/story416-review6-69hay8nu/workspace/platform/apphost.cs.csproj (in 290 ms).
+  Hexalith.EventStore.Aspire -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.EventStore.Aspire/debug/Hexalith.EventStore.Aspire.dll
+  Hexalith.EventStore.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.EventStore.Contracts/debug/Hexalith.EventStore.Contracts.dll
+  Hexalith.EventStore.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.EventStore.ServiceDefaults/debug/Hexalith.EventStore.ServiceDefaults.dll
+  Platform version catalog validated: Hexalith.EventStore.Aspire/3.126.0, CommunityToolkit.Aspire.Hosting.Dapr/13.6.1-beta.935, required range 13.6.1-beta.935 for net10.0.
+  Hexalith.Builds.Tooling -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll
+  Hexalith.EventStore.Client -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.EventStore.Client/debug/Hexalith.EventStore.Client.dll
+  Hexalith.EventStore.DomainService -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.EventStore.DomainService/debug/Hexalith.EventStore.DomainService.dll
+  Hexalith.Platform.Works.Runtime -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.Platform.Works.Runtime/debug/Hexalith.Platform.Works.Runtime.dll
+  Hexalith.Platform.Custody -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.Platform.Custody/debug/Hexalith.Platform.Custody.dll
+  Hexalith.Platform.Composition -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/Hexalith.Platform.Composition/debug/Hexalith.Platform.Composition.dll
+  apphost.cs -> /tmp/story416-review6-69hay8nu/canonical-admission/agents-local/bin/debug/apphost.dll
+LocalScaffold build succeeded. Full EXT-HOST-1 qualification remains unavailable.

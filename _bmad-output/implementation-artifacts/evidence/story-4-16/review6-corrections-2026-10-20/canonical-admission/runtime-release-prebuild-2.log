@@ -1,0 +1,13 @@
+  Determining projects to restore...
+  Restored /tmp/story416-sdk-3.126.0-public-source/src/Hexalith.EventStore.Operations/Hexalith.EventStore.Operations.csproj (in 132 ms).
+  3 of 4 projects are up-to-date for restore.
+  Hexalith.EventStore.Contracts -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Contracts/release/Hexalith.EventStore.Contracts.dll
+  Hexalith.EventStore.Admin.Abstractions -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Admin.Abstractions/release/Hexalith.EventStore.Admin.Abstractions.dll
+  Hexalith.EventStore.ServiceDefaults -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.ServiceDefaults/release/Hexalith.EventStore.ServiceDefaults.dll
+  Hexalith.EventStore.Operations -> /tmp/story416-review6-69hay8nu/canonical-admission-attempt2/runtime/bin/Hexalith.EventStore.Operations/release/Hexalith.EventStore.Operations.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.43

@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-20T07:37:18.719757+00:00",
+  "commands": [
+    {
+      "command": [
+        "dotnet",
+        "--version"
+      ],
+      "exitCode": 0,
+      "output": "10.0.402"
+    },
+    {
+      "command": [
+        "aspire",
+        "--version"
+      ],
+      "exitCode": 0,
+      "output": "13.6.1+3751e615ad660621f2a7aa4c390ef48e08a0eed8"
+    },
+    {
+      "command": [
+        "dapr",
+        "--version"
+      ],
+      "exitCode": 0,
+      "output": "CLI version: 1.18.2 \nRuntime version: 1.18.7"
+    },
+    {
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Client.Version}} / {{.Server.Version}}"
+      ],
+      "exitCode": 0,
+      "output": "29.8.2 / 29.8.2"
+    }
+  ],
+  "inotify": {
+    "max_user_watches": "8388608",
+    "max_user_instances": "16384"
+  },
+  "environmentChangedByThisRun": false
+}

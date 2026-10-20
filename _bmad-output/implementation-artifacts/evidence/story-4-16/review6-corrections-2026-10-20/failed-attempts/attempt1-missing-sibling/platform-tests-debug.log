@@ -1,0 +1,70 @@
+  Discovering: Hexalith.Platform.Works.Tests
+  Discovered:  Hexalith.Platform.Works.Tests
+  Starting:    Hexalith.Platform.Works.Tests
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.OperationsWaitsOnlyForWorksToStart [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(105,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.OperationsWaitsOnlyForWorksToStart()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.GatewayComposesExplicitDevelopmentRateLimits [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(116,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.GatewayComposesExplicitDevelopmentRateLimits()
+        --- End of stack trace from previous location ---
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.ExplicitSdkSourceRootSelectsEverySdkEntryProject [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(178,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.ExplicitSdkSourceRootSelectsEverySdkEntryProject()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.WorksConsumesSdkReadinessWithoutGatewayStartupCycle [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(59,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.WorksConsumesSdkReadinessWithoutGatewayStartupCycle()
+        --- End of stack trace from previous location ---
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.MissingExplicitSdkSourceRootRefusesBeforeResources [FAIL]
+      Shouldly.ShouldAssertException : Should.Throw<FileNotFoundException>(WorksPreviewModel.Compose(builder)).FileName
+          should start with
+      "/tmp/platform-sdk-missing-5ab1efabc02e45c4b05aafb0d910757c"
+          but was
+      "/tmp/story416-review6-69hay8nu/workspace/works/src/Hexalith.Works/Hexalith.Works.csproj"
+      Stack Trace:
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(192,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.MissingExplicitSdkSourceRootRefusesBeforeResources()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.ProductionIsRefusedBeforeComposingAnyResource [FAIL]
+      Shouldly.ShouldAssertException : `WorksPreviewModel.Compose(builder)`
+          should throw
+      System.InvalidOperationException
+          but threw
+      System.IO.FileNotFoundException
+      ---- System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(21,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.ProductionIsRefusedBeforeComposingAnyResource()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+        ----- Inner Stack Trace -----
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(21,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.<>c__DisplayClass0_0.<ProductionIsRefusedBeforeComposingAnyResource>b__0()
+        /_/src/Shouldly/ShouldStaticClasses/ShouldThrow.cs(23,0): at Shouldly.Should.ThrowInternal[TException](Action actual, String customMessage, String shouldlyMethod)
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.OnlyTheGatewaySidecarReferencesTheConfigurationStore [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(92,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.OnlyTheGatewaySidecarReferencesTheConfigurationStore()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Hexalith.Platform.Works.Tests.WorksPreviewModelTests.EachReceiverRequiresItsOwnSecretAppChannelToken [FAIL]
+      System.IO.FileNotFoundException : Works Platform composition requires the sibling Works source checkout.
+      Stack Trace:
+        src/Hexalith.Platform.Composition/WorksPreviewModel.cs(49,0): at Hexalith.Platform.Composition.WorksPreviewModel.Compose(IDistributedApplicationBuilder builder)
+        tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs(144,0): at Hexalith.Platform.Works.Tests.WorksPreviewModelTests.EachReceiverRequiresItsOwnSecretAppChannelToken()
+        --- End of stack trace from previous location ---
+  Finished:    Hexalith.Platform.Works.Tests (ID = 'dc3569dad2d5ad111c6c7ca2b1cbb6901a14522d55abad8e16d3d5267476bb06')
+=== TEST EXECUTION SUMMARY ===
+   Hexalith.Platform.Works.Tests  Total: 112, Errors: 0, Failed: 8, Skipped: 0, Not Run: 0, Time: 5.300s

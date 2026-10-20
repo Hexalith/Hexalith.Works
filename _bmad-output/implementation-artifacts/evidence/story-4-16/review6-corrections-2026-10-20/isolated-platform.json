@@ -1,0 +1,18 @@
+{
+  "root": "/tmp/story416-review6-69hay8nu",
+  "platform": "/tmp/story416-review6-69hay8nu/workspace/platform",
+  "platformBaseCommit": "f0e33167fcdb5f539da159c54f7505b72a65c9b2",
+  "works": "/home/administrator/projects/hexalith/works",
+  "sdk": "/tmp/story416-sdk-3.126.0-public-source",
+  "builds": "/tmp/story416-builds-b435f2e-public-source",
+  "buildsCommit": "b435f2e3b3892e03f69322d24de6003b0baf7a7d",
+  "overlays": {
+    "apphost.cs": "fba5766a243cf9d4c4a9baf87e3ebd5a03ab8f99ca61cf6068b04c92a317d918",
+    "eng/verify_works_host.py": "add0f90ecff77237eb5bc4ce4321270c98b4fecc9d768def7113bb460e8ee7a1",
+    "eng/test_verify_works_host.py": "ae2cbce1e0c830b470597a2355befd9616617cd3f6df881cac424ae7a911ac09",
+    "docs/works-host-parity.md": "922fd4034d12944407cbe1566a2c3a708bf06e27c2b0fffc9407727cadc6c2f2"
+  },
+  "createdAt": "2026-10-20T07:30:14.502350+00:00",
+  "kind": "ordinary-source-export; no Git worktree or nested submodule mutation",
+  "siblingWorksLink": "/tmp/story416-review6-69hay8nu/workspace/works"
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "name": "T213-recorded-keys-only",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host.WorksEvidenceGateTests.test_fixture_inventory_refuses_additions_removals_and_changed_bytes"
+    ],
+    "exitCode": 1,
+    "testRejectedMutation": true
+  },
+  {
+    "name": "T215-missing-archive-call",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host.WorksEvidenceGateTests.test_published_producer_loop_binds_the_consumer_dll_to_its_archive"
+    ],
+    "exitCode": 1,
+    "testRejectedMutation": true
+  },
+  {
+    "name": "T219-missing-receipt-check",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host.WorksEvidenceGateTests.test_alert_raise_must_follow_the_observed_degraded_state"
+    ],
+    "exitCode": 1,
+    "testRejectedMutation": true
+  }
+]

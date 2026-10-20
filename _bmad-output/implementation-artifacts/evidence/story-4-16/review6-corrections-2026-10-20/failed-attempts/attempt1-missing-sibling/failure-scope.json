@@ -1,0 +1,5 @@
+{
+  "result": "failed; no live parity executed",
+  "failure": "8 of 112 Platform source Debug topology tests could not find ../works in the ordinary-source isolation workspace",
+  "resolution": "added an owned ../works symlink to the explicitly selected Works source; documented the prerequisite in T214; reran the unchanged verifier/fixture into a new empty artifacts directory"
+}
