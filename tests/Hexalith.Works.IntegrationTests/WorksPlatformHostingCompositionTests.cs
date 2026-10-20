@@ -88,6 +88,32 @@ public sealed class WorksPlatformHostingCompositionTests
         Should.Throw<InvalidOperationException>(() => WorksPlatformHaPipelineSmokeTests.PlatformComposedValues(composed));
     }
 
+    /// <summary>A reset before any server certificate is received cannot count as a server-side mTLS refusal.</summary>
+    [Fact]
+    public async Task CloseBeforeServerAuthenticationCannotQualifyAsCertificateRefusal()
+    {
+        using var key = System.Security.Cryptography.RSA.Create(2048);
+        var request = new System.Security.Cryptography.X509Certificates.CertificateRequest("CN=unreached-test-server", key,
+            System.Security.Cryptography.HashAlgorithmName.SHA256, System.Security.Cryptography.RSASignaturePadding.Pkcs1);
+        using var root = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddMinutes(5));
+        var listener = new System.Net.Sockets.TcpListener(System.Net.IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            int port = ((System.Net.IPEndPoint)listener.LocalEndpoint).Port;
+            Task<WorksPlatformTrustProbeResult> probing = WorksPlatformTrustChecks.ProbeAsync(port, root, root,
+                "spiffe://public/ns/default/works", null, null, TestContext.Current.CancellationToken);
+            using System.Net.Sockets.TcpClient connection = await listener.AcceptTcpClientAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+            connection.Client.LingerState = new System.Net.Sockets.LingerOption(true, 0);
+            connection.Close();
+            WorksPlatformTrustProbeResult result = await probing.ConfigureAwait(true);
+            result.ServerIdentity.ShouldBeNull();
+            result.ClientRejectedServer.ShouldBeTrue();
+            result.ServerAccepted.ShouldBeFalse();
+        }
+        finally { listener.Stop(); }
+    }
+
     private static Dictionary<string, object> Composed() => new(StringComparer.Ordinal)
     {
         ["DOTNET_ENVIRONMENT"] = "Development",

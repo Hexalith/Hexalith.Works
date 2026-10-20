@@ -58,9 +58,11 @@ internal static partial class WorksPlatformTrustChecks
 
         // The probe accepted the server in both refusals, so the refusal is the sidecar's own decision.
         WorksPlatformTrustProbeResult none = await ProbeAsync(port, root, issuer, expected, null, null, cancellationToken).ConfigureAwait(false);
+        none.ServerIdentity.ShouldBe(expected, none.Failure);
         none.ClientRejectedServer.ShouldBeFalse(none.Failure);
         none.ServerAccepted.ShouldBeFalse("The mTLS sidecar must refuse a client that presents no certificate.");
         WorksPlatformTrustProbeResult foreign = await ProbeAsync(port, root, issuer, expected, foreignClient, foreignRoot, cancellationToken).ConfigureAwait(false);
+        foreign.ServerIdentity.ShouldBe(expected, foreign.Failure);
         foreign.ClientRejectedServer.ShouldBeFalse(foreign.Failure);
         foreign.ServerAccepted.ShouldBeFalse("The mTLS sidecar must refuse a client certificate from a foreign CA.");
 
@@ -111,7 +113,16 @@ internal static partial class WorksPlatformTrustChecks
         throw new InvalidOperationException("The owned sidecar '" + resource + "' did not report its internal mTLS gRPC endpoint.");
     }
 
-    private static async Task<WorksPlatformTrustProbeResult> ProbeAsync(int port, X509Certificate2 root, X509Certificate2 issuer, string expectedIdentity,
+    /// <summary>Probes one owned TLS endpoint; a close before server authentication never qualifies as server-side refusal.</summary>
+    /// <param name="port">The owned loopback port.</param>
+    /// <param name="root">The configured trust root.</param>
+    /// <param name="issuer">The configured issuing certificate.</param>
+    /// <param name="expectedIdentity">The exact server SPIFFE identity.</param>
+    /// <param name="clientCertificate">The optional client certificate.</param>
+    /// <param name="clientIssuer">The optional client issuing certificate.</param>
+    /// <param name="cancellationToken">The caller cancellation token.</param>
+    /// <returns>The observed server authentication and acceptance.</returns>
+    internal static async Task<WorksPlatformTrustProbeResult> ProbeAsync(int port, X509Certificate2 root, X509Certificate2 issuer, string expectedIdentity,
         X509Certificate2? clientCertificate, X509Certificate2? clientIssuer, CancellationToken cancellationToken)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -119,7 +130,7 @@ internal static partial class WorksPlatformTrustChecks
         using var tcp = new TcpClient();
         await tcp.ConnectAsync(IPAddress.Loopback, port, deadline.Token).ConfigureAwait(false);
         string? serverIdentity = null;
-        bool clientRejected = false;
+        bool clientRejected = true;
         using var tls = new SslStream(tcp.GetStream(), leaveInnerStreamOpen: false, (_, certificate, _, errors) =>
         {
             // Dapr workload certificates carry SPIFFE identities, not this loopback host name. The probe therefore
@@ -138,7 +149,7 @@ internal static partial class WorksPlatformTrustChecks
                 trusted = chain.Build(presented) && string.Equals(serverIdentity, expectedIdentity, StringComparison.Ordinal);
             }
 
-            clientRejected |= !trusted;
+            clientRejected = !trusted;
             return trusted;
         });
         var options = new SslClientAuthenticationOptions

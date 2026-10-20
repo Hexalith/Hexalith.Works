@@ -1,0 +1,13 @@
+{
+  "implementationDiffSha256": "03b752891ec730062fa2645bbb957d30dd59ebdf4063957c005980ad31a6a3fc",
+  "implementationDiffBytes": 1221759,
+  "qualifiedExecutableOverlaysMatchAuthoringCheckout": {
+    "apphost.cs": true,
+    "eng/verify_works_host.py": true,
+    "eng/test_verify_works_host.py": true
+  },
+  "specStatus": "done",
+  "sprintStatus": "review",
+  "localCommit": "not-created; retained story scope excludes staging, commits and pushes",
+  "unrelatedPlatformChanges": "preserved; outside the isolated qualified snapshot"
+}

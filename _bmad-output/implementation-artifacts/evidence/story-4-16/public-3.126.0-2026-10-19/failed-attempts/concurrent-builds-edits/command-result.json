@@ -1,0 +1,16 @@
+{
+  "command": [
+    "bash",
+    "eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/tmp/story416-sdk-3.126.0-public-source",
+    "--artifacts-path",
+    "/tmp/story416-31260-canonical-d84b9a5b"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/platform",
+  "startedUtc": "2026-10-19T15:48:24.348173+00:00",
+  "exitCode": 1,
+  "finishedUtc": "2026-10-19T15:50:44.059637+00:00"
+}

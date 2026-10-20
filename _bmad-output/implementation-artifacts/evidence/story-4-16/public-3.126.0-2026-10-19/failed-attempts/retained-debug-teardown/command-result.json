@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/tools/run-retained-recovery-lane.py",
+    "/tmp/story416-31260-retained-final"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "startedUtc": "2026-10-19T16:34:52.751608+00:00",
+  "exitCode": 1,
+  "finishedUtc": "2026-10-19T16:43:05.034018+00:00"
+}

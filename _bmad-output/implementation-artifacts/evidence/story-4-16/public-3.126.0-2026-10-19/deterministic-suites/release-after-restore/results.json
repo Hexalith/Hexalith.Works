@@ -1,0 +1,48 @@
+[
+  {
+    "suite": "ArchitectureTests",
+    "configuration": "Release",
+    "command": [
+      "/home/administrator/projects/hexalith/works/.artifacts/story416-31260-deterministic-release/bin/Hexalith.Works.ArchitectureTests/release/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-31260-release-after-restore/ArchitectureTests.xml"
+    ],
+    "exitCode": 0,
+    "seconds": 11.911,
+    "tests": {
+      "total": "269",
+      "passed": "269",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "c0cc5bc66d0294b746fe1321140cf65118ae4981e33864d4a0ad4047ab0f11ab"
+  },
+  {
+    "suite": "IntegrationTests",
+    "configuration": "Release",
+    "command": [
+      "/tmp/story416-31260-focused3/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-31260-release-after-restore/IntegrationTests.xml",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*"
+    ],
+    "exitCode": 1,
+    "seconds": 18.32,
+    "tests": {
+      "total": "908",
+      "passed": "886",
+      "failed": "22",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "791bce45050331d91034d3331e292325d2dbc4ac4821fe08d55c677a2135c8a4"
+  }
+]

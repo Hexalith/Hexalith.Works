@@ -74,6 +74,11 @@ public sealed class WorksPlatformHaPipelineSmokeTests
                 await app.ResourceNotifications.WaitForResourceAsync("works-dapr-cli",
                     [KnownResourceStates.Exited, KnownResourceStates.Finished], stopDeadline.Token).ConfigureAwait(false);
             }
+            DateTimeOffset primaryStoppedAt = DateTimeOffset.UtcNow;
+            bool primaryStoppedBeforeDue = primaryStoppedAt < due;
+            primaryStoppedBeforeDue.ShouldBeTrue("The primary must be stopped before the scheduled date can fire.");
+            int resumeCountAtPrimaryStop = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, token).ConfigureAwait(false);
+            resumeCountAtPrimaryStop.ShouldBe(0, "Recovery must occur only after the primary has stopped.");
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
             deadline.CancelAfter(TimeSpan.FromMinutes(3));
             int resumed;
@@ -123,6 +128,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
                     state = new { primary = primary.ResourceId, secondary = secondary.ResourceId,
                         primarySidecar = Endpoint(primary, "DAPR_HTTP_ENDPOINT"), secondarySidecar = Endpoint(secondary, "DAPR_HTTP_ENDPOINT"),
                         actor, reminderName, firedReminder, trust, stoppedPrimary = stopped.Success, stoppedPrimarySidecar = sidecarStopped.Success, resumed,
+                        due, primaryStoppedAt, primaryStoppedBeforeDue, resumeCountAtPrimaryStop,
                         retiredReminderRemovedAfterFiring, beforeCallbacks, afterCallbacks, actualStaleCallbackObserved, staleSchedulerFireResumed },
                 }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>

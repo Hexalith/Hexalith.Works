@@ -1,0 +1,15 @@
+{
+  "scope": "Isolated Platform f0e33167fcdb5f539da159c54f7505b72a65c9b2 plus only the four Works-owned changes; unrelated concurrent Platform/Builds edits preserved in their original worktrees",
+  "baseCommit": "f0e33167fcdb5f539da159c54f7505b72a65c9b2",
+  "root": "/tmp/story416-31260-isolated/workspace/platform",
+  "worksRoot": "/home/administrator/projects/hexalith/works",
+  "overlays": {
+    "apphost.cs": "fba5766a243cf9d4c4a9baf87e3ebd5a03ab8f99ca61cf6068b04c92a317d918",
+    "eng/verify_works_host.py": "53f9c07e78640784b9fbff23a46cea050d83e38e52879c74c865988d97ae2e4a",
+    "eng/test_verify_works_host.py": "f57a147e2a4e0e53f19f722d86f1870c2a929b6ace086a0ec439fe140e3ca08b",
+    "docs/works-host-parity.md": "91fb09e59e9416d45423a9a8fb6aeca3d19453f945c97fd55171d2c7b2e206ad"
+  },
+  "buildsSource": "/tmp/story416-builds-b435f2e-public-source",
+  "sdkSource": "/tmp/story416-sdk-3.126.0-public-source",
+  "nestedSubmodulesInitializedByThisRun": false
+}

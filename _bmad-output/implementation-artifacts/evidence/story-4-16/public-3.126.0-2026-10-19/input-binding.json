@@ -1,0 +1,13 @@
+{
+  "checkedUtc": "2026-10-19T16:35:29.377003+00:00",
+  "platformHead": "f0e33167fcdb5f539da159c54f7505b72a65c9b2",
+  "platformSourceRoot": "/tmp/story416-31260-isolated/workspace/platform",
+  "worksHead": "e1a8541ea8beed2966b4b446964f2ed4b144d977",
+  "platformConsumerSources": 261,
+  "configurationConsumers": 21,
+  "verifierAndHelpers": 4,
+  "fixtureSources": 141,
+  "worksConsumerSourceFiles": 211,
+  "mismatches": [],
+  "note": "Current working-tree bytes compared with the hashes the canonical run recorded; both repositories carry these inputs as uncommitted changes."
+}

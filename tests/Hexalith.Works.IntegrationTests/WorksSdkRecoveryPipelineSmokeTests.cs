@@ -891,8 +891,9 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         CancellationToken token)
     {
         WorksPlatformMetricPoint? raised = null;
+        ulong observedNanoseconds = checked((ulong)(degradedObservedAt - DateTimeOffset.UnixEpoch).Ticks * 100UL);
         await WaitAsync(() => Task.FromResult((raised = telemetry.Points.FirstOrDefault(point => point.Name == "eventstore.domain.recovery.alert"
-            && point.Value == 1 && point.ReceivedAt > degradedObservedAt)) is not null), token).ConfigureAwait(false);
+            && point.Value == 1 && point.ReceivedAt > degradedObservedAt && point.UnixTimeNanoseconds > observedNanoseconds)) is not null), token).ConfigureAwait(false);
         return raised!;
     }
 

@@ -1,0 +1,12 @@
+{
+  "reason": "PlatformServerBindings.cs changed in the shared Platform checkout after its source inventory was captured. Stop the obsolete live run and restart from an isolated f0e33167fcdb5f539da159c54f7505b72a65c9b2 worktree plus the Works-owned changes.",
+  "signal": "SIGINT to owned test runner PID 744457",
+  "result": "runner cancelled; command exit 1; not accepted parity",
+  "ownedContainersAfterStop": [
+    "dapr_placement",
+    "dapr_scheduler",
+    "dapr_redis",
+    "dapr_zipkin"
+  ],
+  "note": "The four remaining Dapr containers are pre-existing shared prerequisites. No acceptance fixture container remained."
+}

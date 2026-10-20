@@ -3,7 +3,7 @@ title: 'Prove Platform Works Parity and Rollback'
 type: 'feature'
 created: '2026-09-23'
 updated: '2026-10-19'
-status: 'in-review'
+status: 'done'
 baseline_commit: '11628b7198e79def65f43f3c8cdf876184417830'
 platform_baseline_commit: 'b2890d20575356239555df5b113e3100c1d594c1'
 route: 'dispatch'
@@ -59,7 +59,7 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [x] `P/apphost.cs`, `P/src/Hexalith.Platform.Composition/WorksPreviewModel.cs` — verify the latest public producer's artifacts (3.125.1; 3.124.0 superseded), enable both SDK modes and bind exact consumers; preserve Agents composition.
+- [x] `P/apphost.cs`, `P/src/Hexalith.Platform.Composition/WorksPreviewModel.cs` — verify the owner-selected public producer's artifacts (3.126.0; earlier pins superseded), enable both SDK modes and bind exact consumers; preserve Agents composition.
 - [x] `P/DaprComponents/` and profile paths above — validate required trust/caller, broker/network, secrets/delegation, Scheduler/state/audit configuration; test refusal branches.
 - [x] `P/src/Hexalith.Platform.Composition/WorksPreviewModel.cs`, `P/tests/Hexalith.Platform.Works.Tests/` — SDK readiness/metrics/alerts and scoped disposition; durable audit precedes mutation and outage refuses.
 - [x] `W/tests/Hexalith.Works.IntegrationTests/` and Platform tests — reuse fixtures under actual Platform; execute redelivery, HA/lost firing, pages/reissue, capture-through-Commit and receipt replay without skips.
@@ -142,6 +142,13 @@ context:
   - The spec, sprint and deferred-work notes record the results.
   - Acceptance stays with root review.
 
+**Owner-approved 3.126.0 requalification, 2026-10-19:**
+- [x] Update Works' two dependency defaults and static package-contract metadata, and Platform's file-host package pins, to public EventStore 3.126.0, matching Platform's Builds catalog.
+- [x] Qualify all selected public archives and exact isolated `v3.126.0` runtime source against the named producer; preserve every earlier evidence packet as historical.
+- [x] Run fresh canonical Platform R1–R11 parity and complete retained-host rollback with zero skips on 3.126.0.
+- [x] Run the retained Works AppHost's own source Debug recovery class on 3.126.0 (T159), the focused composition checks, and relevant deterministic suites.
+- [x] Finish independent review, record all results and failures, and synchronize story and sprint status.
+
 **Acceptance Criteria:**
 - Given named published producers and Works consumers, when Platform verification runs, then all applicable R1–R11 rows pass with persisted, negative, restart and rollback evidence and zero skips.
 - Given unauthorized traffic or missing production configuration, when startup/requests occur, then admission fails closed before effect/disclosure.
@@ -198,6 +205,16 @@ Review iteration 3 corrections, 2026-10-19 (implementation complete; independent
 - **Failed attempts.** None. The first canonical attempt on the corrected graph is the admission run, and no inotify change was needed.
 
 The [corrections packet](evidence/story-4-16/review3-corrections-2026-10-19/README.md) binds every command and result. The corrections are uncommitted working-tree changes in Works (HEAD `1ab960c`) and Platform (HEAD `049e7bc`, which the owner committed with the iteration 2 corrections). Not claimed: 4.16 acceptance, 4.9 resumption, qualification of public EventStore 3.126.0, production or real-data admission (AD-28) and Full Agents qualification.
+
+Public 3.126.0 requalification, 2026-10-19 (root-reviewed and verified): the owner selected public EventStore 3.126.0, producer `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`, after the shared Builds catalog moved. Works' root-declared Builds dependency now selects compatible committed catalog `b435f2e3b3892e03f69322d24de6003b0baf7a7d`, including the SDK-required Commons 2.30.3. All nine package-consumer DLLs match their selected NuGet archives, and 2,103 runtime/build source files match the official producer commit and tag `v3.126.0`.
+
+The fresh canonical run exits 0 with `passed-disposable-synthetic-parity-and-rollback` (16:09:49–16:34:06 UTC, 24.3 minutes). It runs the actual Platform file host from an isolated detached worktree at `f0e33167fcdb5f539da159c54f7505b72a65c9b2` plus the four Works-owned overlays. Concurrent Platform/MCP CLI/Builds edits remain untouched in their original worktrees. Every R1–R11 row has field-bound persisted, negative, restart and rollback proofs, with zero skips. Nine Platform starts and one retained rollback start produce 32 unique phases. Complete restore reproduces 723 Redis keys and 1,070 runtime entries, with independent re-observation. Delegated Executor queries and the original NoOp receipt remain usable after rollback; date resume, child cancellation and child expiry each count one.
+
+Results: 52 evidence-gate tests; Agents Full retains expected exit 1 `EXT-HOST-1`, LocalScaffold exits 0; Platform 112 tests per mode; supporting Release 241 in 16 classes; live recovery 4/4 (791.534 s), historical 1/1 (138.956 s), HA 1/1 (89.429 s), focused projection 1/1 (142.688 s); focused composition 3/3. Works deterministic suites pass per mode with zero skips: Unit 589, Property 3, Architecture 269 and Integration 908. The retained Works AppHost's own exact-source Debug recovery class passes 4/4 (415.446 s), eleven persisted phases, with source and runtime hashes unchanged, closing T159.
+
+Root applied T200/T201/T203/T204/T208/T209: require fresh export and receipt timestamps after degradation; authenticate the expected server before attributing client-certificate refusal; snapshot fixture bytes before commands/compilation; bind package-consumed DLL bytes to their archive entries; and prove primary shutdown before any HA resume. The reset-before-certificate, buffered-startup-export, pre-command-inventory and altered-extracted-DLL regressions pass. T207 and T212 are pre-existing Story 4.15 follow-ups recorded in the deferred-work ledger.
+
+The [public 3.126.0 packet](evidence/story-4-16/public-3.126.0-2026-10-19/README.md) preserves exact commands, qualified inputs, outcomes, test XML, failed/cancelled attempts and their reasons. Initial blockers were concurrent catalog/source changes and the Commons dependency downgrade; preliminary deterministic failures were stale restore assets and repository-discovery tests run from an unsupported temporary binary layout. The first retained Debug attempt passed its body but failed the 30-second disposal bound; its unchanged retry passed all four cases. These failures are not relabeled. The input recheck has zero mismatches; no nested submodule, staging, commit, push or publication was performed. Qualification remains synthetic; AD-28, production admission, Full Agents qualification and Story 4.9 cutover stay separate.
 
 ## Design Notes
 
@@ -278,6 +295,14 @@ The user resolved the Agents preservation contract; no intent question remains. 
     - path-mapped byte-identical runtime DLLs;
     - patches T58–T102.
   - The `review2-corrections-2026-10-19` packet as historical supporting evidence.
+
+### 2026-10-19 — owner-approved public 3.126.0 requalification
+
+- During the resumed canonical run, another session advanced Platform's shared Builds catalog from 3.125.1 to 3.126.0. Agents Full retained its expected EXT-HOST-1 refusal; LocalScaffold then correctly refused the differing file-host pins. The attempt is failed, not accepted parity.
+- The owner selected: "Update the story and consumer pins to 3.126.0, then requalify". This authorizes the version change and fresh qualification. Earlier 3.125.1 evidence remains historical; it does not qualify 3.126.0.
+- The selected tag `v3.126.0` resolves to full producer `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`. Fetching that tag and exporting its exact source does not change the shared SDK checkout or initialize nested submodules.
+- Default Release restore then exposed NU1109: Commons.UniqueIds 2.30.1 was below the new SDK minimum 2.30.3. Move only Works' root-declared Builds dependency to committed catalog `b435f2e3b3892e03f69322d24de6003b0baf7a7d`; no nested checkout is updated. Platform verification uses an ordinary-source export of that same commit to avoid another session's in-flight Builds source edits. Its catalog bytes remain bound. Temporary individual Commons overrides were removed once the authoritative catalog supplied the compatible graph.
+- KEEP: every preceding review KEEP instruction, complete rollback, zero skips, independent published-producer qualification, the retained host, synthetic-only authority, and no staging/commit/push/publication.
 
 ## Review Triage Log
 
@@ -504,6 +529,29 @@ Review iteration 4, 2026-10-19. The same three lenses reviewed `story-4-16-revie
 | T196 | edge E20 | `WorksSdkRecoveryPipelineSmokeTests.cs:644-668,770` | Rollback runs the retained binary under Platform's configuration | carried false | carried T56. | reject |
 
 Routing: no intent_gap or bad_spec entry exists, so patches T158, T159, T160, T166 and T172–T176 are applied by re-engaging the iteration 3 implementation subagent, and the Verification checks are re-run afterwards. No new defer is appended.
+
+Review iteration 5, 2026-10-19. Three context-free reviewers inspected `/tmp/story416-review-current-b_8tzumq.diff` (1,210,048 bytes), archived in the public 3.126.0 packet. It contains Works source/configuration/adoption changes since `11628b7198e79def65f43f3c8cdf876184417830` and Platform Works composition/runtime/policy/verifier changes since `b2890d20575356239555df5b113e3100c1d594c1`, including the preceding correction sites. Claims were supplied only to the edge lens. This broader Works source diff also includes already accepted Story 4.15 changes, which are identified below. The owner subsequently authorized the mechanical 3.126.0 pin update; the implementation corrections below are covered by fresh verification on that graph.
+
+| ID | Lens | Location | Claim | Verdict | Evidence | Route |
+| --- | --- | --- | --- | --- | --- | --- |
+| T197 | blind B1 | `WorksAppHostSmokeHarness.cs:143` | Admin's gateway-sidecar endpoint does not exercise the new receiver grant with the admin caller identity | low | The harness preserves the SDK-composed gateway HTTP endpoint while changing its port. The packet already explicitly disclaims a live Admin.Server-to-EventStore invocation; exact callers and routes are pinned by policy tests. No broken admin operation was demonstrated. Adding another live phase and changing SDK endpoint semantics exceeds a direct correction. | reject |
+| T198 | blind B2 | `WorksAppHostSmokeHarness.cs` guard/isolation order | The guard runs before harness endpoint callbacks | carried low | carried T178: harness isolation re-points the SDK's endpoint to the same owned sidecar after randomizing ports. | reject |
+| T199 | blind B3 | `WorksPlatformCompositionGuard.cs` | Differently cased or colon-separated environment aliases evade the ordinal key guard | low | The callback dictionaries do compare exact environment names, while .NET configuration normalizes them. Every current callback uses the canonical keys and is source-bound; no alias occurs in an actual start. Normalizing and reconciling every alias adds guards for an unobserved fixture shape. | reject |
+| T200 | blind B4 | `verify_works_host.py` alert predicate; recovery alert wait | An old export received after degradation can qualify | medium | Confirmed: ReceivedAt alone cannot distinguish a buffered startup point. Compare both receipt and exporter nanoseconds with the Degraded observation; the delayed-export regression exercises this exact state. | patch |
+| T201 | blind B5 | `WorksPlatformTrustChecks.cs` | A close before server validation can qualify as a server-side refusal | medium | Confirmed: clientRejected began false and remained false when the callback never ran. Start untrusted, change that state only after validation, and require each negative handshake's exact server identity. Add a real loopback reset-before-certificate regression. | patch |
+| T202 | blind B6 | `verify_works_producer.py` BUILD_FILES | global.json and imported catalogs are outside the producer source inventory | low | The qualifier deliberately binds all src blobs and the three central build files; actual SDK/runtime binaries, selected catalog and compatibility are recorded separately. A different runtime produced by an unbound global.json was not demonstrated. Extending effective-import provenance adds machinery beyond a direct correction. | reject |
+| T203 | blind B7 | `verify_works_host.py` fixture inventory timing | A fixture edit during compilation can be bound to earlier binaries | medium | Confirmed: the fixture inventory was first captured after compilation/supporting execution, and Works' earlier consumer inventory omits test sources. Move it before the first command; the existing final comparison then detects any intervening edit. A regression reads the ledger at the first command. | patch |
+| T204 | blind B8 | `verify_works_host.py` package binding | Consumer package DLL bytes are not compared with their archive | low | Confirmed: independent hashes did not establish that relationship. Bind each package-consumed SDK DLL to a matching lib entry in its selected archive, and record that entry/hash; a temporary extracted-DLL mutation must be refused. Source-built runtime DLLs keep their independent exact-source provenance. | patch |
+| T205 | blind B9 | `WorksSdkProofRedis.cs` repeated capture | A second capture includes stale scheduler.tar | carried false | carried T37: no acceptance flow captures twice on one fixture. | reject |
+| T206 | blind B10 | `WorksAppHostSmokeHarness.RuntimeModules` | Calculated output hashes do not independently report entry/SDK assembly paths from each process | low | Runtime projects, output root and build configuration are explicitly selected and validated; the harness launches those projects using that owned output. No alternate executed assembly was demonstrated. Additional process instrumentation exceeds a direct correction. | reject |
+| T207 | blind B11 | `WorksRecoveryEventDecoder.cs:22` | Explicit zero/negative domain Sequence still decodes | medium | The decoder checks presence only, and the stream reader separately checks envelope sequencing. This implementation predates 4.16: decoder last changed in accepted 4.15 commit `d8f254e865477fadb694ad3b8f843ccf3ab86427`. A domain-sequence validation follow-up is independent of host parity. | defer |
+| T208 | edge E1 | `WorksPlatformTrustChecks.cs:60-65` | Pre-certificate closure falsely qualifies as server-side refusal | medium | Same demonstrated defect as T201; preserve this separate finding and apply the same correction. | patch (T201 group) |
+| T209 | edge E2 | `WorksPlatformHaPipelineSmokeTests.cs:57-80` | A resume committed before primary shutdown can satisfy the HA test | medium | Confirmed: the old test checked only the eventual count. After both primary and sidecar exit, require that the due date remains future and the durable resume count is zero; record those observations and require them in R6. Existing field-mutation coverage now includes them. | patch |
+| T210 | edge E3 | `verify_works_host.py` restored_fleet_matches | Natural TTL expiry makes the original count/logical fingerprint differ | low | A legitimately elapsed key makes this strict comparator fail loudly after restoration. No selected acceptance snapshot was shown to contain a key expiring during the stopped restore. Normalizing per-key expiry in the cross-language fleet record adds state and policy beyond a direct correction. | reject |
+| T211 | edge E4 | `WorksPlatformHistoricalPipelineSmokeTests.cs` WaitAsync | An in-flight condition can exceed the poll deadline | carried low | carried T44/T149: outer test cancellation remains; making each condition independently cancellable adds a guard for an unobserved hang. | reject |
+| T212 | verification-gap V1 | `WorkItemSuspendedReminderHandler.cs`; processor tests | Discovery-write failure/redelivery after reminder scheduling lacks a regression | medium | Pre-verified gap. The callback/index addition predates 4.16 in accepted 4.15 commit `07e23a6fc54fca9644e844de5d1dff6f49b58b22`. Its healthy persistence test and substituted-handler retry test do not cover this failure boundary. | defer |
+
+Routing: T201/T208 share one root cause. No intent_gap or bad_spec remains. Root applies T200, T201/T208, T203, T204 and T209 because the original implementation agent cannot be re-engaged in this session. T207 and T212 are appended as independent pre-existing follow-ups. All qualification is re-run on the owner-selected 3.126.0 graph; no earlier pass is relabeled.
 
 ## Verification
 

@@ -1,0 +1,27 @@
+[
+  {
+    "suite": "IntegrationTests",
+    "configuration": "Release",
+    "command": [
+      "/home/administrator/projects/hexalith/works/.artifacts/story416-31260-deterministic-release/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story416-31260-release-integration-repo/IntegrationTests.xml",
+      "-class-",
+      "*SmokeTests",
+      "-class-",
+      "*Platform*"
+    ],
+    "exitCode": 0,
+    "seconds": 17.532,
+    "tests": {
+      "total": "908",
+      "passed": "908",
+      "failed": "0",
+      "errors": "0",
+      "skipped": "0",
+      "not-run": "0"
+    },
+    "xmlSha256": "c43db989e20013e722364df336b24e3bf4d0e6006e1c47ac75e509f28283e8f7"
+  }
+]

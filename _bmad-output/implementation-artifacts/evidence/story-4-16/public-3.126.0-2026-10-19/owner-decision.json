@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-19",
+  "decision": "Update the story and consumer pins to 3.126.0, then requalify",
+  "selectedVersion": "3.126.0",
+  "producer": "fcf78d6cafb6c0c9f52dc350a9a09aff54ded288",
+  "supersededAttempt": {
+    "status": "failed",
+    "reason": "Concurrent Platform Builds catalog move during verification; LocalScaffold refused differing host pins"
+  },
+  "retained31251Attempt": {
+    "status": "cancelled",
+    "reason": "Owner selected 3.126.0 during initial Debug build; stopped the owned process group before live tests"
+  },
+  "buildCatalog": {
+    "worksRootDeclaredDependency": "b435f2e3b3892e03f69322d24de6003b0baf7a7d",
+    "platformOwnedExport": "/tmp/story416-builds-b435f2e-public-source",
+    "reason": "Match the selected 3.126.0 public catalog and its required Commons 2.30.3; preserve concurrent edits in Platform Builds sources."
+  }
+}
