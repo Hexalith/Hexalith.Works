@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-20 (Story 4.16 T213-T219 and T232 complete; independent review and fresh R1-R11/rollback passed; ready for review)
+# last_updated: 2026-10-20 (Story 4.16 code review iteration 8: 5 patches applied (T236-T240), 1 deferred (T241); story done)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -86,7 +86,7 @@ development_status:
   4-13-publish-eventstore-trusted-effect-submission: done
   4-14-adopt-sdk-projection-and-query-seams-in-works: done
   4-15-adopt-sdk-reminder-process-and-command-seams-in-works: done
-  4-16-prove-platform-works-parity-and-rollback: review
+  4-16-prove-platform-works-parity-and-rollback: done
   epic-4-retrospective: done
 action_items:
   - id: "epic-1-retro-item-1-restore-the-kernel-source-not-package-gu"

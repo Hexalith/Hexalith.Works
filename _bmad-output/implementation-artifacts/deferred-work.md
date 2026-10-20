@@ -1659,8 +1659,14 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Give the verifier's end-of-run "changed during execution" checks an executing regression.
-  evidence: Review T222 (pre-verified gap); no test reaches `P/eng/verify_works_host.py:1007-1033`, so removing or weakening any final source, artifact, verifier or fixture re-check leaves the evidence-gate tests green. Extract the end-of-pipeline checks into a testable function.
+  evidence: Review T222 (pre-verified gap); no test reaches `P/eng/verify_works_host.py:1022-1046`, so removing or weakening any final source, artifact, verifier or fixture re-check leaves the evidence-gate tests green. Extract the end-of-pipeline checks into a testable function.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Add cross-tenant registry preservation and ETag-conflict coverage for the accepted Story 4.15 suspend-subscription discovery writer (review T235).
   evidence: The pre-verified review found that WorkItemSuspendedReminderHandlerTests only registers one tenant, while dispatcher preservation tests execute a different writer. PendingDateAwaitDiscoveryIndex and the handler test were introduced by accepted 4.15 commit 07e23a6fc54fca9644e844de5d1dff6f49b58b22. Seed tenant A, handle tenant B with a forced registry conflict, and assert both remain in persisted discovery state; no runtime defect is claimed.
+
+## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md, iteration 8 (2026-10-20)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
+  summary: Compare complete Platform consumer source membership at the end of a verifier run, and make the packet input recheck's scope claim match what it compares (review T241).
+  evidence: The end-of-run loop at `P/eng/verify_works_host.py:1029-1031` re-hashes only the paths recorded at `:875-878`, so a Platform `src/**/*.cs` added after that baseline compiles into self-consistent DLL hashes without being bound; iteration 7 rejected the same gap as T225. The review6 `tools/bind_inputs.py:26-29,44-45` also re-hashes recorded keys only, while `input-binding.json` calls it a "complete" comparison with Works source "membership". Fold into the T222 end-of-pipeline extraction; the verifier's Works consumer end check already compares the full inventory.
