@@ -1706,3 +1706,27 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Bound outstanding noncooperative identity-provider operations across repeated authorization timeouts.
   evidence: Review R2B9: WorksQueryPolicyDeadlineTests proves the provider task can remain incomplete after the fail-closed response, and WorksQueryPolicy has no concurrency bound on subsequent calls. The policy is unchanged from pre-cutover 696781961155d764ed805843f55b40dc5882e887. Fix in the owning identity-client boundary and verify repeated noncooperative calls.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Reject unsupported Parties gateway schemes at host startup.
+  evidence: R3B3: pre-cutover 696781961155d764ed805843f55b40dc5882e887 already used absolute-only validation and HttpClient BaseAddress assignment; validate HTTP/HTTPS for both address sources and prove refusal before requests.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Align or validate the Works and SDK query gateway identities for custom deployments.
+  evidence: R3B4: pre-cutover Works policy uses Works:Query:GatewayWorkloadId while already-selected SDK 3.126.0 uses Authentication:QueryAuthority:GatewayWorkloadId; prove paired settings with a nondefault caller-authority host request.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Record safe structured diagnostics for projection query failures.
+  evidence: R3B7: both SDK query catch blocks discard exceptions, identically to pre-cutover 696781961155d764ed805843f55b40dc5882e887; preserve safe responses and test bounded correlation/scope/category diagnostics without payload disclosure.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Record bounded tenant discovery diagnostics while retaining incomplete-scan retry.
+  evidence: R3B8: WorksProcessSourceCatalog is byte-identical to pre-cutover and loses invalid-membership/store-outage causes in its catch; add safe scoped diagnostics without returning partial invalid families.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Qualify unpaged authorized queue responses at real invocation limits before defining paging behavior.
+  evidence: R3B9, unverified medium: pre-existing WhatsNextQueryHandler ignores Paging; no response-size/deadline failure is demonstrated. Real-store and real-invocation tests at admitted item/byte limits would settle the claim.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Define and document the Parties service-bearer rotation boundary.
+  evidence: R3B10: pre-cutover and current typed clients capture IOptions.Value headers; in-process secret changes do not refresh authority. Document/rehearse restart with replacement authority or separately specify/test a refreshable provider.

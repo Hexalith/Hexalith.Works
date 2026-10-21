@@ -8,6 +8,9 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class BuildConfigurationTests
 {
+    /// <summary>Verifies that solution and project references use one global property set for each Works project.</summary>
+    /// <param name="configuration">The solution build configuration to evaluate.</param>
+    /// <param name="explicitSdkVersion">Whether the caller explicitly supplies the EventStore SDK version.</param>
     [Theory]
     [InlineData("Debug", false)]
     [InlineData("Debug", true)]
