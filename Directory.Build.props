@@ -81,12 +81,6 @@
     <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <ProjectReference>
-      <AdditionalProperties>HexalithEventStoreVersion=$(HexalithEventStoreVersion)</AdditionalProperties>
-    </ProjectReference>
-  </ItemDefinitionGroup>
-
   <ItemGroup>
     <PackageReference Include="MinVer" PrivateAssets="All" />
   </ItemGroup>

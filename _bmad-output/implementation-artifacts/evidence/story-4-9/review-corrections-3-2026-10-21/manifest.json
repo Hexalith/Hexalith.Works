@@ -1,0 +1,1832 @@
+{
+  "ordinary/ArchitectureTests-final.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ArchitectureTests-final.log",
+    "sha256": "6eadf5c8b325fd99614d3fca0661985bd1f7264d45d9ea0ddbeb37a569cbfb56",
+    "uncompressedSha256": "e0359bfeb47f222ba9c3cb0c4dc685c78698c7ea19c4e207d5b60b2de00ffc64",
+    "uncompressedBytes": 406
+  },
+  "ordinary/ArchitectureTests-final.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ArchitectureTests-final.xml",
+    "sha256": "cf9e597823bde7dab54faa7c057e13abf2726565f50c5125a69656fbd20698d1",
+    "uncompressedSha256": "ce14f3ac5df427405854ddfe95c9e9c477400ebade868b22f07273ca88776041",
+    "uncompressedBytes": 198391
+  },
+  "ordinary/ArchitectureTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ArchitectureTests.log",
+    "sha256": "3c26e84ce0339a742cd147b33eebed92c63fbfc779bd950682712a20c2b8df62",
+    "uncompressedSha256": "77cc8a8026fa4cb1ca8f9d182221b756bcfb2185ac9540899d8994e933efacd8",
+    "uncompressedBytes": 2665
+  },
+  "ordinary/ArchitectureTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ArchitectureTests.xml",
+    "sha256": "989a901f6098ef20cd3f22a045692c8f29cd470dad77464f0684e22cff08174f",
+    "uncompressedSha256": "b97f702891149a2423a5d36f650efdbd4fba9da0543dd7f32de796741a2c5bae",
+    "uncompressedBytes": 200624
+  },
+  "ordinary/IntegrationTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/IntegrationTests.log",
+    "sha256": "bd421e454376025d59f46c938dac16f2489272f5599a538d81eb0009f3ee4df7",
+    "uncompressedSha256": "cc442a9b6ec30a341c6ecfe4b0ec3786c40518f8c862e0b330f1f5ac07d119ed",
+    "uncompressedBytes": 38330
+  },
+  "ordinary/IntegrationTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/IntegrationTests.xml",
+    "sha256": "0dfaa22ad82ab01857e8e7493e35d7c940156c58c9de5a89196c4459b467a648",
+    "uncompressedSha256": "6ee9e72be5ca16a9f078c85ff2761c7dd5ad271bf7a7f5d5b2b5da9808c3cc98",
+    "uncompressedBytes": 548133
+  },
+  "ordinary/PropertyTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/PropertyTests.log",
+    "sha256": "dc8346e11a9110496185312d10b1d345b5f75a97eab65186df4ee717143e06f2",
+    "uncompressedSha256": "8f28e7320efed35d7c0f6c64ef730f002417f5e3597101b4259284dbfe98f491",
+    "uncompressedBytes": 449
+  },
+  "ordinary/PropertyTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/PropertyTests.xml",
+    "sha256": "514afedf712769e7d7442ac3cbdc7147e0df37b1dc78d606e8ff6a5c12512260",
+    "uncompressedSha256": "392445caed8a9cb7db362d931782086e1c2f50b32c1367d83edd38c2e07ca76c",
+    "uncompressedBytes": 3979
+  },
+  "ordinary/UnitTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/UnitTests.log",
+    "sha256": "b5736572cbee3c9224a4497deaea2b1e1afe27a4ba2f7cbf70f044b144456b6e",
+    "uncompressedSha256": "de95b02c44736065d0310bd0b47b6078e63b924cd3a6264153b39e69bcd0c537",
+    "uncompressedBytes": 365
+  },
+  "ordinary/UnitTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/UnitTests.xml",
+    "sha256": "5bfa8491c079ee18f1ccb42b77683953a9aa73ed6d4bedc97ce542cd463626f8",
+    "uncompressedSha256": "1aa5225a1ac381f4ca14b4cb39f712d0c9f9376067094407b7090a8a630fc21f",
+    "uncompressedBytes": 373488
+  },
+  "ordinary/architecture-build-final.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/architecture-build-final.log",
+    "sha256": "84fdc9c2c1ba05ebc1269b631684261361e4240c8a956f554b5484a6109a1fdc",
+    "uncompressedSha256": "e6e41ccae599f4e26f29209bacb972df9cd28ac53c1593121fa1198a3bd1476e",
+    "uncompressedBytes": 2936
+  },
+  "ordinary/build-config-after.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-config-after.xml",
+    "sha256": "21f6823ddc82757792c861948c6b28209447649e884e7745d9c4ed1d5c873a8f",
+    "uncompressedSha256": "e4f8d0b5a3e920ae8d5721114ea97c821c0c8688024c8166e5c951688fad0ab4",
+    "uncompressedBytes": 15943
+  },
+  "ordinary/build-config-duplicate-edge-mutation.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-config-duplicate-edge-mutation.xml",
+    "sha256": "ddcf299798346a61a853a5a34987b4e5cece578340e91c23e685bc644443a6df",
+    "uncompressedSha256": "5f6918c7aa23cd70da559cf1288f6ed03e4c063aa0848e6c48bbaf1d8c0cfb4f",
+    "uncompressedBytes": 6497
+  },
+  "ordinary/build-config-original-mutation.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-config-original-mutation.xml",
+    "sha256": "43e1320195aee073fdf972cbfc9cc1a665f90272a94e646949a80efb1774f69c",
+    "uncompressedSha256": "39ff33824c496a9bf4707c59d3e96b161e4703c90c9819280069f3495fa923e8",
+    "uncompressedBytes": 9075
+  },
+  "ordinary/build-config-outside-root-failure.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-config-outside-root-failure.xml",
+    "sha256": "be9e286c565a5d24d70705e50a272ba8d1744826c4487b5f9075b0bf043d0632",
+    "uncompressedSha256": "640fd74645e09f826624a459d2c9d74322d4ed33952847a86ec8113c8fe71753",
+    "uncompressedBytes": 34581
+  },
+  "ordinary/build-correction-qualification-input-delta.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-correction-qualification-input-delta.json",
+    "sha256": "855a32a5131835cb3f8a2858902388b24a7629a3540881337b3ef76f098e85f2",
+    "uncompressedSha256": "fc33ef49e1e950611fa5a4529eacdf996ab36b52f5fe0080dce0490c34bb0c97",
+    "uncompressedBytes": 443
+  },
+  "ordinary/build-graph-cleanup-retry-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-cleanup-retry-results.json",
+    "sha256": "fbe3949b3714d67ee9834275812c67b92c581ec96756f4210ec491cdb5ba1b7b",
+    "uncompressedSha256": "974c1cb9b88d33dcc24bfe3b5d066c30236e2381d4c253a595997d06554b126d",
+    "uncompressedBytes": 1051
+  },
+  "ordinary/build-graph-debug-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-debug-results.json",
+    "sha256": "1e61832cbbbaf559c2cc0ec7726600f4dcd60b46eb3bea377353c42ebc31bcd2",
+    "uncompressedSha256": "4e63efece33449d5cb8e2e1ddf2fb489478379fbf3c607b0ec27b92a7b5f6293",
+    "uncompressedBytes": 1600
+  },
+  "ordinary/build-graph-fix-summary.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-fix-summary.json",
+    "sha256": "99f08000282453dfae474e249cc3e332de4bc95368694f8226ecce23251a2137",
+    "uncompressedSha256": "ed3c107424bdce133b17928b73eb841a4a0ab88ca48e6e0ca1db58a1100c87cc",
+    "uncompressedBytes": 2318
+  },
+  "ordinary/build-graph-frozen-matrix-audit.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-frozen-matrix-audit.json",
+    "sha256": "5c6118796b259f2acd4d8c5a73a4f628230d49ee29cf7d9680f3e30efb7caa2f",
+    "uncompressedSha256": "fe7b1b09098bd4d0b5ea255606b36da9054b056f04ab5d5bf384723f0b9748e1",
+    "uncompressedBytes": 5077
+  },
+  "ordinary/build-graph-full-acceptance.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-full-acceptance.json",
+    "sha256": "775746cb4cd7cebd86414dbb314f1a2aa008ece206419a781f4700fb78088cc6",
+    "uncompressedSha256": "ad42ea6b8952d62fb5967b658fe07c7a72e77f3971275cc6c3773be6fd45deb6",
+    "uncompressedBytes": 81150
+  },
+  "ordinary/build-graph-full-invocation.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-full-invocation.json",
+    "sha256": "e862072695a6fcc847c057ace40727865521173e84c7e6ccbe1303ecf9d1312f",
+    "uncompressedSha256": "a98f004363b43f14435e8e1d4e7578d99d38a381b9210a8f9e5dcab5c819179c",
+    "uncompressedBytes": 1532
+  },
+  "ordinary/build-graph-full.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-full.log",
+    "sha256": "dc6d6548992c355f33fcb908f380517ea3bd13883926c1721d72b1c3ffe3ebd1",
+    "uncompressedSha256": "c096e8df6821890e73eb3edf8696cc6c537e193fceaa80164308d0ea8e011f2d",
+    "uncompressedBytes": 2685
+  },
+  "ordinary/build-graph-inotify-recheck.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-inotify-recheck.json",
+    "sha256": "a44d4955913f40fd8f77d772c1cbab2e4585fdff1101155a9e81fc868f9068b4",
+    "uncompressedSha256": "e95091100bec7a6ceee3ffef18dd570ab1d0137ff0a245f9d0ab636979510429",
+    "uncompressedBytes": 377
+  },
+  "ordinary/build-graph-ordinary-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-ordinary-results.json",
+    "sha256": "de4c6f456156366ac6acdaa114f6232e0b753bce4128a5cdc0bba103cea2e743",
+    "uncompressedSha256": "3aeb80de8b673ff279b25a483d56a3f9009452486fee57eefb918b66ad72d5b6",
+    "uncompressedBytes": 1892
+  },
+  "ordinary/build-graph-parent-audit.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-parent-audit.json",
+    "sha256": "ec09a6429c7c97acef81e7085e066ff2e1d5a0f18f25c7ef61ec129b0b1496b8",
+    "uncompressedSha256": "e75d8fec431acfc8a1f195c49c3eb37d2e8ddac6f8beaba032a369331379dc90",
+    "uncompressedBytes": 2179
+  },
+  "ordinary/build-race-after-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-race-after-results.json",
+    "sha256": "e5d473132fd82192a0967f3ba2ab41e585c2e98107e6884ef810865be91eb0da",
+    "uncompressedSha256": "d3758aba3219d15ee3bb72781fbe6a936fbebbc41556b73e2bf9d8af1a52ccaa",
+    "uncompressedBytes": 1029
+  },
+  "ordinary/build-race-before-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-race-before-results.json",
+    "sha256": "b10c6788dbb0d345a6573e6a08aa715b4789ec83bf91af3ba45945d898c85ad6",
+    "uncompressedSha256": "c4c0c608b488094961caa37480d830acf254954d789e26e7e6b5f249411d945b",
+    "uncompressedBytes": 688
+  },
+  "ordinary/build-race-workspace.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-race-workspace.json",
+    "sha256": "4210120ca324d56557f4df0e7db514994e0d4a4390226cb043082079802b1043",
+    "uncompressedSha256": "fa756f4e80cbcdd4d59ce9d37902e171a34f75222b42f99984685338b09e2255",
+    "uncompressedBytes": 228
+  },
+  "ordinary/ci-console.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ci-console.log",
+    "sha256": "af4f6d9fcf67faeeb17b1e75f589a8ff561d3696944b4b66aa1d0d8f71d12355",
+    "uncompressedSha256": "4749d2d0fb71c4ba30d4a4c07629e527b5c12ae08f5bd9798048c0619e3aab22",
+    "uncompressedBytes": 3263
+  },
+  "ordinary/ci-inotify-diagnostic.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ci-inotify-diagnostic.json",
+    "sha256": "b12fcc400e436b3ac8e892a1ccec2bfcbb7aba11882a14afdee3fc91f461dd32",
+    "uncompressedSha256": "846d008062c0623e72f2651929512420ff77f93e2a90b572e542af09a6c25b84",
+    "uncompressedBytes": 332
+  },
+  "ordinary/ci-invocation.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ci-invocation.json",
+    "sha256": "5ac2fc0344884bdee283106edda5a8a60272973cabfe5ec0dfe4b1b466332ef0",
+    "uncompressedSha256": "b771d568a0c653995771976aa21d5207c615a9d7541d6ca3e5463845579332b4",
+    "uncompressedBytes": 370
+  },
+  "ordinary/default-source-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/default-source-restore.log",
+    "sha256": "8d63c20ae1c4fefb6211126b2141667a58210b15483bd29dc6b9fe5bc2fa7f52",
+    "uncompressedSha256": "a3ff7fe7ad1a18c6043613b4e8be1cc96027d97d67efb109eeb6a5763e497510",
+    "uncompressedBytes": 4757
+  },
+  "ordinary/diff-check.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/diff-check.log",
+    "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+    "uncompressedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uncompressedBytes": 0
+  },
+  "ordinary/full-console.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/full-console.log",
+    "sha256": "ae266ea9fd644cce031630f48a76701a4caf9b32b3f5cf27272301d170def912",
+    "uncompressedSha256": "d06d7e4a02924b8ace5ad9b0880e502cb4f2539109dca28befd2417197775070",
+    "uncompressedBytes": 2610
+  },
+  "ordinary/full-invocation.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/full-invocation.json",
+    "sha256": "0028e5c958e9479fed96486b4dc9913bba630883e9361b0f38ad5956cd2ffb31",
+    "uncompressedSha256": "789131ef7d2156ccdbe472795d2105d0d502198f25acee30a2ab778b3c83787e",
+    "uncompressedBytes": 1442
+  },
+  "ordinary/graph-ArchitectureTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-ArchitectureTests.log",
+    "sha256": "203bf845e24468d2bb3115f36fc42e7e6d83da8d2e3734210819931cccd0b098",
+    "uncompressedSha256": "3c6818306c929462861a7e2a8aad9d00d37844bfe4904b6150593e2a218b7ec5",
+    "uncompressedBytes": 405
+  },
+  "ordinary/graph-ArchitectureTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-ArchitectureTests.xml",
+    "sha256": "84d8e72f6712e93d2bf312d5ecb8a53d4f503e00e73dba8ed096fd2c4d29e027",
+    "uncompressedSha256": "ee94351a6392046559a8e6aae176925d062fccb4f3aacd9e469bd18f1a968a56",
+    "uncompressedBytes": 201131
+  },
+  "ordinary/graph-IntegrationTests-retry.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-IntegrationTests-retry.xml",
+    "sha256": "8e1b8a8810585645fd1d5ae4a6ba9b694005ac58832648839e14e81d83b6fdcf",
+    "uncompressedSha256": "b0e1c9948acc110d84de4f301ee2a78b9418781a387adaaa585b932289cc6d60",
+    "uncompressedBytes": 548076
+  },
+  "ordinary/graph-IntegrationTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-IntegrationTests.log",
+    "sha256": "e1716056ffc9b9590b435214827d2fb438fb7c008cbf547f7dcd841cb8928565",
+    "uncompressedSha256": "6ceab7930a77df547ab39c127ba91634fb8024856c945d6b670a9800f896ff80",
+    "uncompressedBytes": 39363
+  },
+  "ordinary/graph-IntegrationTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-IntegrationTests.xml",
+    "sha256": "d62f86b402f15c95bd6a0cb488868a8b3b288cecd4777233138b0b563774ca3a",
+    "uncompressedSha256": "d6ef60253a67b8fba5c64b996bb08abd7a8932f5d2cb0e9932e3e770098998da",
+    "uncompressedBytes": 549185
+  },
+  "ordinary/graph-PropertyTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-PropertyTests.log",
+    "sha256": "be4dd29b68ea5b3645b9be429b52d896c36bb83168e86349b7e7ead48743c5ca",
+    "uncompressedSha256": "b3e329b70e3fcdd1ddefbf716e96a6ad4eab3644374a1034bcb98b1e37f16508",
+    "uncompressedBytes": 449
+  },
+  "ordinary/graph-PropertyTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-PropertyTests.xml",
+    "sha256": "e712f7aa4eebbcfc291e663ac0e4dfa8dafdfbfa9d561e684110b33060d2aba1",
+    "uncompressedSha256": "c60e07bd25ef140f70415e08d266d1651b6968e352b5b76cf54f978b40d0e3bd",
+    "uncompressedBytes": 3991
+  },
+  "ordinary/graph-UnitTests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-UnitTests.log",
+    "sha256": "e5237b35c37d9462d6d07f6301f3e5bb111daabdc82ed665befee9dabbc3fa34",
+    "uncompressedSha256": "362fba06b3baf88dced557b5afd1e05f93cc17c85f4680593ae1899b2b43304a",
+    "uncompressedBytes": 365
+  },
+  "ordinary/graph-UnitTests.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-UnitTests.xml",
+    "sha256": "b1c10e02d261e31a441bee04d466e26679e13179a3299b25e6bee30aeebe591a",
+    "uncompressedSha256": "64b1bd9c7549f0c832ecc9a530c9b975afec42d95504bcd986425dc77d7fb70a",
+    "uncompressedBytes": 373434
+  },
+  "ordinary/graph-after-debug.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-after-debug.json",
+    "sha256": "f67e03aa7bdc7e2e24da2d0b68fb9b6e2f41e114f16b182cd850c744cce3b586",
+    "uncompressedSha256": "c32cf0cc1ef586927c001a285282e36009a33a8f711e17000ee9f2c4112b5898",
+    "uncompressedBytes": 37509
+  },
+  "ordinary/graph-after.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-after.json",
+    "sha256": "39de655c79160bdcf4ec76998d5042b1b89a167b2b2b5909d08d38fbf84f518b",
+    "uncompressedSha256": "f1b5ef0ffe715d9593559050e72cd72b5619b1fbe03a35b72651846264ff66b5",
+    "uncompressedBytes": 14063
+  },
+  "ordinary/graph-before.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-before.json",
+    "sha256": "85a8f22ba86f4df1f4e079e2cb9f5c3b14b48c9f78bbc5c595b1e8d88623a345",
+    "uncompressedSha256": "85756f164a398ac335ef686dd78d5f9c3dd0404e4d46094b511e250d83ce16b0",
+    "uncompressedBytes": 18135
+  },
+  "ordinary/graph-cleanup-focus.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-cleanup-focus.log",
+    "sha256": "dda9548652064c86d2b1a3fdb9deab23fde97c9902a12434015c98d45d8c4cd7",
+    "uncompressedSha256": "33dbfc2330748722ca1915c1d09b95538c0e534701eb3d3dbf61a8a72a303205",
+    "uncompressedBytes": 399
+  },
+  "ordinary/graph-cleanup-focus.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-cleanup-focus.xml",
+    "sha256": "d82ce6786960f1e5e513f09d99dce71284090fa205a3df72dd4d9cc0d71b7388",
+    "uncompressedSha256": "50ecd1e1e47363d68b532ec4067140d58d98898779b042e0785a1114eef94926",
+    "uncompressedBytes": 1871
+  },
+  "ordinary/graph-debug-default-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-debug-default-restore.log",
+    "sha256": "f7cd92d03e494970a04d9e7636e9db293ccb58defaca9f7259c4346e3b57bcb0",
+    "uncompressedSha256": "1ee6ee7ee9012460e94025306cd347246898ff7f0bfa7a5da3acba8f0187a209",
+    "uncompressedBytes": 2835
+  },
+  "ordinary/graph-debug-isolated-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-debug-isolated-restore.log",
+    "sha256": "96d5d5d4081dd91d1a946c58e6d977a5fd4d804ef537171e875c9dcaf9c0801d",
+    "uncompressedSha256": "63ae4e6959e6a8d17c0905219e776fc3b526389ff230ecb2ab6ccc438a509852",
+    "uncompressedBytes": 4749
+  },
+  "ordinary/graph-debug-parallel-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-debug-parallel-build.log",
+    "sha256": "94d7863e47742b8c865028ab9e93302c85b514ff308ef5fbe23842ed58122320",
+    "uncompressedSha256": "a59ae5bbb6e9d40286b4502a2e24686c341aeda80b9311bf51775dd1613debca",
+    "uncompressedBytes": 10916
+  },
+  "ordinary/graph-integration-retry.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-integration-retry.log",
+    "sha256": "36e40d1c14f044a708e17a6038d776153cd20f613446bf5dd3190a0c677d8b36",
+    "uncompressedSha256": "a94c7c5916912ff8da617fcceb9cf0b2e638ed760350d0bdef11a725d9412837",
+    "uncompressedBytes": 38329
+  },
+  "ordinary/hosted-artifacts-attempt1.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-artifacts-attempt1.json",
+    "sha256": "4554a4b514dab6973b139e1c0c7a4079367b4ffc5aadd35073b938978e644b32",
+    "uncompressedSha256": "23528a4cd64e8483d5751f1160f0e920439fb576202f992badabdc32828e8499",
+    "uncompressedBytes": 830
+  },
+  "ordinary/hosted-build-attempt1.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-build-attempt1.log",
+    "sha256": "f17e96260030bb242aeba6309ee9f82adebfda035897c3572b6f5e6cef811ec0",
+    "uncompressedSha256": "8560ce377d73899799c45a43fc7e6eeff5d52a344fc41f7193792dc201df861e",
+    "uncompressedBytes": 52986
+  },
+  "ordinary/hosted-build-attempt2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-build-attempt2.log",
+    "sha256": "d790e2f20b412c8f364e49b0262916692baf2189d7fd9680da42a3c09a45ec4d",
+    "uncompressedSha256": "1b6b3c24723b3f34618c17a04d893f20fb67a2881003247c91c293844299e590",
+    "uncompressedBytes": 55645
+  },
+  "ordinary/hosted-jobs-attempt1.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-jobs-attempt1.json",
+    "sha256": "047628bac486e03b04f962d75a4a2c9040b40d821b83db3b52ced551cf925c40",
+    "uncompressedSha256": "b4fe46f37024a0ebdea0b7a2895f8a8268e0deda9a43e28eebaeff09591775d1",
+    "uncompressedBytes": 10058
+  },
+  "ordinary/hosted-latest-jobs.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-latest-jobs.json",
+    "sha256": "f2df6c5655011467973d7f12b51fe212f4d41e6a86c28715cc330315cee1915b",
+    "uncompressedSha256": "917fcc1503728b4617505243441a5852e7bd3c5626ab78df40664a5db07076d0",
+    "uncompressedBytes": 10058
+  },
+  "ordinary/hosted-rerun-request.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-rerun-request.json",
+    "sha256": "1c068ff0d20d839fc76fc4886a8055b6f1ef5c63fabda11fb44025627e7a75fa",
+    "uncompressedSha256": "74d718cbe8105db47fea3183761cc6295fd6653923081b00c427746dd2bc6628",
+    "uncompressedBytes": 180
+  },
+  "ordinary/hosted-verification.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-verification.json",
+    "sha256": "2fafbae6f8622cc58522dda6e6b4272d7dd39b3ee82caf3cbbcbaa424e237613",
+    "uncompressedSha256": "bddf8da916e38a842fc17d6467c3b335b0d01c11c65001e551846f7697d09b74",
+    "uncompressedBytes": 1641
+  },
+  "ordinary/inotify-limits.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/inotify-limits.json",
+    "sha256": "0536101432250d797d8246399e8acbf6b780c05d8336fc2cc7fdc0f82504b779",
+    "uncompressedSha256": "d36cace8cc7353301f747a23689fbfb2f18603b8c651278847801b9ca20c7782",
+    "uncompressedBytes": 68
+  },
+  "ordinary/integration-build-fourth.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-build-fourth.log",
+    "sha256": "a08f7003a4a460daf2330357dcade04a6e5ae8895cd4db8491f5232258eea43c",
+    "uncompressedSha256": "a038511673ac6b8b7a58cd0d49caba7ab09f7f1ec92acef7933e2e45c3f8baa0",
+    "uncompressedBytes": 5427
+  },
+  "ordinary/integration-build-root-layout.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-build-root-layout.log",
+    "sha256": "0f0b68c68993f41f389be6f6edb26b36f85e899cde00236f033650d0663b77d5",
+    "uncompressedSha256": "cfc064df54700a6d943c477e74ba559eafbdd99c51e8d4dea1b6122818fce187",
+    "uncompressedBytes": 9449
+  },
+  "ordinary/integration-build-second.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-build-second.log",
+    "sha256": "bde0d201f3c23a5dddcf9c607134b535eb0453afefa606ee2e885c302eb1f5b7",
+    "uncompressedSha256": "369c8eb084e1ceb61e484147c52cff1c0bf8f528f9f56a17f9176737cde80f9a",
+    "uncompressedBytes": 5427
+  },
+  "ordinary/integration-build-third.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-build-third.log",
+    "sha256": "37ad4d30974b7df9b0557343d4454daa32fb25084ece11dd03250189f85b2e16",
+    "uncompressedSha256": "bfca4e15bbbb60cb62d8562402a26a605a707f555a8815c90a2e67e5ad336ae3",
+    "uncompressedBytes": 9011
+  },
+  "ordinary/integration-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-build.log",
+    "sha256": "2fdb4d7a875c3ad80c94145d958d551bd8212ba0d0a3bae761b2d84c2e03901d",
+    "uncompressedSha256": "00f775daec1dfd23cfbf74f1141d4ea83cd5d139991ba740c7dc0283363d50e0",
+    "uncompressedBytes": 5713
+  },
+  "ordinary/integration-focus.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus.log",
+    "sha256": "47cd9e240fbd40ce1643f598f01c007c4bd8db11945bf8c60930c2cea6904296",
+    "uncompressedSha256": "dce716465c5b37d0ab8c6e2174b26394afb893e35c4f25984a585e285c0b69c5",
+    "uncompressedBytes": 338
+  },
+  "ordinary/integration-focus.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus.xml",
+    "sha256": "5c62aa69ffc182c400b35167af8f25a4caffcdb93b462024834de58279e38da3",
+    "uncompressedSha256": "f3b1875b5cfd19524b97af6356df2299b08c164f6ce93cfc4d61a78286f6b9b8",
+    "uncompressedBytes": 859
+  },
+  "ordinary/integration-focus2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus2.log",
+    "sha256": "4733fa0c6045f4c8864f2b72f93a0da2acc228e1c0d5863f115a9d182150dc87",
+    "uncompressedSha256": "06bdded97e03ae262efec5fc7e325d7462fefd115317ce99bd7e446a00d4a7c0",
+    "uncompressedBytes": 36492
+  },
+  "ordinary/integration-focus2.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus2.xml",
+    "sha256": "d4ffd037e089a7469396fc11533cb263ff594e0cfd706484818b311d12fe8ff6",
+    "uncompressedSha256": "77b4a8b104ed71f4d0e3ee6f21b42c1871db4a08575ce93b9fc09c375b2277b0",
+    "uncompressedBytes": 87725
+  },
+  "ordinary/integration-focus3.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus3.log",
+    "sha256": "ecd7a92a4c1782177f5d80cd0ef20cee88379a09b5c6826f0418941276853d78",
+    "uncompressedSha256": "421ad22abe56e08e46ceaf7a93926d5f31232a4cd2c7fc2599ed6aa383030d46",
+    "uncompressedBytes": 15181
+  },
+  "ordinary/integration-focus3.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/integration-focus3.xml",
+    "sha256": "f101f97d851cc08cc688f4ea1389e7f80b4b8a89870928df8363c0b1d4d6555c",
+    "uncompressedSha256": "78956a6ce1bc3dfb6ba6484832b29cf3ffd7a418da418b690495dadc64c1bc08",
+    "uncompressedBytes": 66144
+  },
+  "ordinary/local-full-hosted-ci-input-equivalence.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/local-full-hosted-ci-input-equivalence.json",
+    "sha256": "f30edf35e9276ed71079a803b4825b7e98d8d5c8737d2bf7522d3b7ee8c35340",
+    "uncompressedSha256": "c5918cf6ad5e0e29e3d8cd4fc13ffc27e1adb3246b227c2a0dbd08902b7e80c5",
+    "uncompressedBytes": 358
+  },
+  "ordinary/ordinary-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/ordinary-results.json",
+    "sha256": "8929fbaeba64262dbeb1dfb035a1f95c2df71bb4f316d5338be3c37ab1f4c2ae",
+    "uncompressedSha256": "f3f92349ffaede1151de5cc89e084f459f339da6d3e9fa67824aa07dff1bfaa0",
+    "uncompressedBytes": 1495
+  },
+  "ordinary/owned-cleanup-retry.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/owned-cleanup-retry.json",
+    "sha256": "441817140c85b9b2660ec9c50538d039af2ef521df3b4bbf46de45b2758c7c46",
+    "uncompressedSha256": "8d381241ca7a963e437c65fdc0b5cd9fac06a8466d84eb5c597e5d86d42015d6",
+    "uncompressedBytes": 289
+  },
+  "ordinary/packet-readme-draft.md.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/packet-readme-draft.md",
+    "sha256": "c79d7528d81e10000b86a37b580313d774cb6501dbe457f35c70465739697528",
+    "uncompressedSha256": "dc7285ca91e76c7b11b0b1043241c697918f7c75dbdf14fdc1a58c68d32c3e4c",
+    "uncompressedBytes": 5393
+  },
+  "ordinary/parent-acceptance-checks.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/parent-acceptance-checks.json",
+    "sha256": "0f5308c4b3a6b49e54fdd773f4c195aa568292110705dfa58c2105866448294a",
+    "uncompressedSha256": "895bdc16b2ad7582c06dfdd2c01fc55b39fe492d77f7ed689f130afe39d0ffb6",
+    "uncompressedBytes": 16744
+  },
+  "ordinary/platform-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-build.log",
+    "sha256": "740a8e41c17fa54c8862a50fd442e02f37156648ad79f5dba2d085107ea5e75b",
+    "uncompressedSha256": "f72bf4df1de74c79b01c4153cb4f92e46c6d73951f07f1fd09304d8fd8942a34",
+    "uncompressedBytes": 10252
+  },
+  "ordinary/platform-helpers-final.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-helpers-final.log",
+    "sha256": "34a7a5a9760b43095f0492486f728679e33d529d0fc41bcc531facc0cdcf91d4",
+    "uncompressedSha256": "27009010905a64adb1d4efeb48949a8ec8728cead5029fa42d990efdb19b0544",
+    "uncompressedBytes": 1437
+  },
+  "ordinary/platform-new-python-lint.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-new-python-lint.log",
+    "sha256": "61bec78f6dc6b3a75b35b66f162219b12742e00548f041948500f7c39db4c185",
+    "uncompressedSha256": "093c37c33b483f5fe282681468d63a0f124e5eeab030ff107d63da4210264b03",
+    "uncompressedBytes": 3861
+  },
+  "ordinary/platform-owner-export-python-lint.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-owner-export-python-lint.log",
+    "sha256": "f3af4d142827f5aad2eb0c72d556d325488a57fb6219aac10afeb51085667d53",
+    "uncompressedSha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "uncompressedBytes": 19
+  },
+  "ordinary/platform-toolchain.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-toolchain.log",
+    "sha256": "e3a77705ddfc3527eb5ca0609cb8121b712d916c91d74c5897c4d5cef8e2981c",
+    "uncompressedSha256": "b7830e67d61b451b902dcd12e4ef9244bd4afd9ed931be59cf980647e2f2344a",
+    "uncompressedBytes": 100
+  },
+  "ordinary/platform-verifier.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-verifier.log",
+    "sha256": "87303e181c0ce737c782839bd076eb7e531fee7352716ddc7473e86ae4868b57",
+    "uncompressedSha256": "3fc027de44c654aadd4a9361ce5c28c93b835f36f81be5efbfac9949a83a4a32",
+    "uncompressedBytes": 7054
+  },
+  "ordinary/platform-verifier2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-verifier2.log",
+    "sha256": "25a8b3fe880d42a41aa92cb004c7f0b953aaf584bd2dc68df9c2e2b6efb57e43",
+    "uncompressedSha256": "d73d823f442a523dbc392f13566854f66cd48f2f4d1936985619591778ddcc0b",
+    "uncompressedBytes": 1393
+  },
+  "ordinary/probe-daprd-self-caller.py.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/probe-daprd-self-caller.py",
+    "sha256": "42e2358ab8a518ade90bb5bb48bbb9d887abfb460420e941b9e575fc5dd530c1",
+    "uncompressedSha256": "f24964e2eb7ffbb3c6319eca78bccd77c3a3190fd82e156a73f7a6a588e096c0",
+    "uncompressedBytes": 3529
+  },
+  "ordinary/probe-image-identity.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/probe-image-identity.json",
+    "sha256": "f39e9efb35678c4ce37da788f84c119325b065ef363f49884a6c4a92b69e7a3d",
+    "uncompressedSha256": "d6e9266f69cba6cfd78bf870a17e4b1bd22b84292a44751b64d5466c48b98966",
+    "uncompressedBytes": 290
+  },
+  "ordinary/probe-works-self-invocation-initial.py.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/probe-works-self-invocation-initial.py",
+    "sha256": "67cb26d2be77dd25ac50fdb58640003f25c89ed7ad4c2cea18833a8e336aafcc",
+    "uncompressedSha256": "f09895b6bd19e5472e1483b424939cbd99822c117b467b80d155d5457d1fe363",
+    "uncompressedBytes": 4647
+  },
+  "ordinary/probe-works-self-invocation.py.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/probe-works-self-invocation.py",
+    "sha256": "bc0cd4fe613e042597f1abb3ee275ad06399f9e1b289262e155932e518e14769",
+    "uncompressedSha256": "63191cebc7ebbcf75b2f295143dcf92fb243eb06b205c838a33bc03c7a4c3c18",
+    "uncompressedBytes": 4634
+  },
+  "ordinary/race-after-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-after-build.log",
+    "sha256": "78a59b2baa62f498a0039485bca8b8c1935d4e8f7d93835edc56dbda9d673011",
+    "uncompressedSha256": "0ded95dcfdae1ef7a6a9addc7c5b50c012d97f19af27a1e55e980880fd8931da",
+    "uncompressedBytes": 2769
+  },
+  "ordinary/race-after-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-after-restore.log",
+    "sha256": "e45ae105fdd53760dce678af6db096a579d722b3113d46295b626dada3a99f2c",
+    "uncompressedSha256": "7f6b24ee6a0bbc706f8c67812cb0eaa0a67ba3f47f428e74d4e9441b1a3886eb",
+    "uncompressedBytes": 2237
+  },
+  "ordinary/race-before-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-before-build.log",
+    "sha256": "ca60be22795793ce911cd144e30a75645c7361b3d5ec9da97dcf7f22ab227e85",
+    "uncompressedSha256": "918908505fc54bf54839cc1a689fbd3bb1aac6abdc52aada59ba7ee0648569b5",
+    "uncompressedBytes": 4322
+  },
+  "ordinary/race-before-override-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-before-override-build.log",
+    "sha256": "500d076cb0467555e18330e95a4a02b43f8056e0fa2b7d6ab9858059da7bd2c2",
+    "uncompressedSha256": "df2d6e6afada576c7c875d3bb967a80091c8cb307a27776cec7701a790b9e110",
+    "uncompressedBytes": 3440
+  },
+  "ordinary/race-before-override-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-before-override-restore.log",
+    "sha256": "a889bfbf18ad9f324c315da6d86d4ed98de2b85bac0930e7f9e9071f295834bf",
+    "uncompressedSha256": "56cd4055d7c228f5da5bd48db9f4fed9a8b0f9756e9b7ea99702ae842f4eac55",
+    "uncompressedBytes": 2237
+  },
+  "ordinary/race-before-override-results.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-before-override-results.json",
+    "sha256": "f81ba731bc1f08c685ac8cf537ec33da24f3b68f5e5ba859214465ce6a30094e",
+    "uncompressedSha256": "771a7990a40f8c257cac69dd325167c36f4de4aa7626e33f64ba7a597e9db472",
+    "uncompressedBytes": 800
+  },
+  "ordinary/race-restore.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/race-restore.log",
+    "sha256": "03c634ad4efa9ac820073e35aaa6a25ec7dab7d625be8112c75675b79f82fbfa",
+    "uncompressedSha256": "cc5c50bdbb1212853b753ae52846f06e79288283697f08fec737d076ee749829",
+    "uncompressedBytes": 2237
+  },
+  "ordinary/scripts-lint.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/scripts-lint.log",
+    "sha256": "932570018101a5a7624f64a903f0564f18d937770a2d546b8682e7570a10d22e",
+    "uncompressedSha256": "12fcd66412a6e16027acbf70d5244cbec04082d3f9145a8708aa5b4e60f2d160",
+    "uncompressedBytes": 143
+  },
+  "ordinary/self-caller-1.18.3.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/self-caller-1.18.3.log",
+    "sha256": "50963b1b0358cc4b0e431746e50969f9a4b22783e86079b7b9994f6735558b77",
+    "uncompressedSha256": "6d333229104416114ad7c9ceec1e77c47f856f2780d5ac6a475d6317d8456471",
+    "uncompressedBytes": 12906
+  },
+  "ordinary/self-caller-1.18.7.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/self-caller-1.18.7.log",
+    "sha256": "0be9f95e8ef92ade4c30907e232d603c10f918dcc15f61e6a17abb23360a1533",
+    "uncompressedSha256": "d0e281482b284296249451ffc66baba109b322fb17be23ea1b53489beda6933c",
+    "uncompressedBytes": 12908
+  },
+  "ordinary/self-caller-comparison.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/self-caller-comparison.json",
+    "sha256": "f38bf8edea1f86281980724609a2be5167f712adc32f1c1c626a5f801a17cc9b",
+    "uncompressedSha256": "cd718b6cb40ff153ccb5dd453fcb2c63b2d8e48239417342910fff2252cb5893",
+    "uncompressedBytes": 4223
+  },
+  "ordinary/self-caller-probe.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/self-caller-probe.log",
+    "sha256": "aff7070906b2afa0fcd3533d1d97e35ff5b03f7eb5331455ef6d4dee7d18d08c",
+    "uncompressedSha256": "b2216f608ffb0f9cc59728a547e017c208ebe0fd899c106070f70ea9b6e0d50a",
+    "uncompressedBytes": 719
+  },
+  "ordinary/self-caller-probe2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/self-caller-probe2.log",
+    "sha256": "fb34f0468d1dc20de7ff25e0d85fa6c471af210179c6205412b0fc603781a2dc",
+    "uncompressedSha256": "2b0f00a378aa6359bc5122403f67059a56d3ee34fc87c0eb3b8ae644517e011e",
+    "uncompressedBytes": 2839
+  },
+  "ordinary/solution-build.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/solution-build.log",
+    "sha256": "2da43d64dc3f113d38fef84cb90055d6de48e7533733777f251e0fa1a5f924a6",
+    "uncompressedSha256": "3f73a4a96eea165f59fd4cfa1e2d43f662e8ae4bf82d0200ea362014b3546a0d",
+    "uncompressedBytes": 11777
+  },
+  "ordinary/tooling-final.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/tooling-final.log",
+    "sha256": "049e8046ae9a8d8bf0ae3bd2061a3aa35b6f5a0ec6a75743eb24c45127947c34",
+    "uncompressedSha256": "5280d4bc3d2a2579a1f594eab2565524b245f42211f69a49bfaf340a9c96bad5",
+    "uncompressedBytes": 460
+  },
+  "ordinary/tooling-initial.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/tooling-initial.log",
+    "sha256": "2b7723596e790481e02f05220573bba379820cfdc5c072d7cfb3df4c640074c1",
+    "uncompressedSha256": "e94e4ff04ada6fba461e050e1be1c357998fa0aafd72391fa206fee58f32dee3",
+    "uncompressedBytes": 257
+  },
+  "ordinary/tooling.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/tooling.log",
+    "sha256": "8a88565075ffeeb6e2346805ebb52ee46c487d3970df48c315eba8f6a4430508",
+    "uncompressedSha256": "e4850b6007bc5acf2d8eeb2dd27af14612f5caedb985b7e7ec769b032994c409",
+    "uncompressedBytes": 460
+  },
+  "ordinary/verification-inputs.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/verification-inputs.json",
+    "sha256": "ed1431b4a4931c05dcdd3be4862c63621eb71bab9d8aab199e2e3de33a08b0e3",
+    "uncompressedSha256": "ade9f7f85d963dbd9d4d8486e901658bfc649301f1be30cd6e76a491f6cea3b2",
+    "uncompressedBytes": 1052
+  },
+  "ordinary/wakeup-http.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/wakeup-http.log",
+    "sha256": "323c27d63ac0198c9fa4b2892c68b7504ed796ff1f391f3e21d0d4f094b47ec7",
+    "uncompressedSha256": "a0386d531738ec98f325c6430aff64b8da54a55ee2075c664497af9b22f73925",
+    "uncompressedBytes": 23690
+  },
+  "ordinary/wakeup-http.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/wakeup-http.xml",
+    "sha256": "9b8933679c4b7c30c4b8e0fbf138aabb5820150a2f2a0fb3bfdc5cbb5992e7c3",
+    "uncompressedSha256": "4841eab114649b9f4ef845e7094b493965c82ead8d5d0a44fa4c340744bdb613",
+    "uncompressedBytes": 3725
+  },
+  "ordinary/works-self-app.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-app.log",
+    "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+    "uncompressedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uncompressedBytes": 0
+  },
+  "ordinary/works-self-daprd-1.18.3.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-daprd-1.18.3.log",
+    "sha256": "10a9d3182e63cfe323d8f00c6f32ac7e176b967bcb319c118c0ac94906229f01",
+    "uncompressedSha256": "232fc74ffb911fd836b205a357bbfb8efb57e1731596d2e92c549f6d444fdccd",
+    "uncompressedBytes": 12882
+  },
+  "ordinary/works-self-daprd-1.18.7.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-daprd-1.18.7.log",
+    "sha256": "7b196afd72cb174f842169b804a8c5eacb26182180672f7fdae0b778fa720031",
+    "uncompressedSha256": "75a02fa1aacd2b9868a284b957d70b3d73a90da626ac789764bc27d60d419f28",
+    "uncompressedBytes": 12882
+  },
+  "ordinary/works-self-invocation-comparison.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-invocation-comparison.json",
+    "sha256": "1d561ba4def202261e10612d7a522c4d1bf949c16479a7034833be6801442ec2",
+    "uncompressedSha256": "d340a3503a87320390c3309c859d1d05434720355a192016c2502dbaa9d843ed",
+    "uncompressedBytes": 2411
+  },
+  "ordinary/works-self-invocation-probe.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-invocation-probe.log",
+    "sha256": "6f97eb9f26048e2d17edf6b001223ba885d1237796d554a30166568244721aa7",
+    "uncompressedSha256": "cb4fa1a9ead9fbfa98989bcdb7e42db64290530861538c5fedaae3127684da2f",
+    "uncompressedBytes": 385
+  },
+  "ordinary/works-self-invocation-probe2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/works-self-invocation-probe2.log",
+    "sha256": "1d561ba4def202261e10612d7a522c4d1bf949c16479a7034833be6801442ec2",
+    "uncompressedSha256": "d340a3503a87320390c3309c859d1d05434720355a192016c2502dbaa9d843ed",
+    "uncompressedBytes": 2411
+  },
+  "full/bootstrap.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/bootstrap.json",
+    "sha256": "9a7b484716aaaed4d8ac38d89a7da5cefe15e389ba4c0634025bc8567323d7a1",
+    "uncompressedSha256": "12f13294ede6f893eb40994ed2cb87b000d83bc3e52ddced6eed015419b3feaa",
+    "uncompressedBytes": 90063
+  },
+  "full/platform-source-binding.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/platform-source-binding.json",
+    "sha256": "c8dc00dc47658bde8deaf8fa83968e9cc23cdae09858531c4634a4260c4e0f5e",
+    "uncompressedSha256": "129c8abe22899b80d60f527e3fa6fce2e921f3e3e8f1218e3b4744c477e32129",
+    "uncompressedBytes": 179355
+  },
+  "full/gate/agents-full-refusal.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full-refusal.log",
+    "sha256": "0538aeade0fa525e392875d23027822d59cd5f674b84d5d3bbc84a3c15da0a04",
+    "uncompressedSha256": "113c04ea49b938529e595d8a258de431eaaf7d1d922fd72eb661ca457e6ab258",
+    "uncompressedBytes": 391
+  },
+  "full/gate/agents-local-scaffold.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-local-scaffold.log",
+    "sha256": "f8270145a40ef72cd9350db451ee16f0e8a1dc029d73a34556c99c695341be5d",
+    "uncompressedSha256": "38ad2741387e2c7f0fda93f51764963cd184153b28fdffa849af841c16f8b169",
+    "uncompressedBytes": 4481
+  },
+  "full/gate/component-evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/component-evidence-gate-tests.log",
+    "sha256": "790a04f5876293a7bab8f99d3229b691a0630e692eff952e75a8a72fc34e9c74",
+    "uncompressedSha256": "8185129b9df08df51603cf42adc16a937a4c7ae43c53d7e7fe8e0cb8d63702b8",
+    "uncompressedBytes": 546
+  },
+  "full/gate/evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/evidence-gate-tests.log",
+    "sha256": "21ccf050e7ea71b6500066bda9d0409871ab03370860e0b014dfd6e7bdb60a9e",
+    "uncompressedSha256": "aa6d2aac4916558161e32dc83441da44227f6dc0eae351a4f9ff6602ef7501aa",
+    "uncompressedBytes": 1437
+  },
+  "full/gate/host-starts.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/host-starts.jsonl",
+    "sha256": "98672ba2d9c71dca14c6a12990637947d230aff853d2f2fe98bb4b463a959c1b",
+    "uncompressedSha256": "68086d452ea8493493480cc26ef6158c155f3d6576fa7a398c6e5dbe2de7efb8",
+    "uncompressedBytes": 242872
+  },
+  "full/gate/ledger.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/ledger.json",
+    "sha256": "2cbd1df27e43831b3af326b1fe8f8eadf57f792e976f7f5984597cc129369b7a",
+    "uncompressedSha256": "a4abc6049f6168979a19a0fae4ffdffef365f02966fe42d23a1f7a67997f86d7",
+    "uncompressedBytes": 2248169
+  },
+  "full/gate/persisted-states.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/persisted-states.jsonl",
+    "sha256": "eb17eb3616e9383b43b35969d39c980f2d056820c1886feeda58c4d61985988e",
+    "uncompressedSha256": "0e7cd2cc79e9221c2e05edb17f0916f925b946f99ab2b3b117643fecc1e6e8a7",
+    "uncompressedBytes": 3614866
+  },
+  "full/gate/platform-debug.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-debug.xml",
+    "sha256": "d6419371f3ac5a5e4393ff769d9919e024c5e2db2ef8dc78f3156e4569fc519e",
+    "uncompressedSha256": "da883c97add4a9f8916bd5309c637c61f47a5b1fb70ff83492f0bd58afcdbd1e",
+    "uncompressedBytes": 76347
+  },
+  "full/gate/platform-file-host-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-file-host-release.log",
+    "sha256": "d7f5e1df8f537a855999495ef5e0780c5642542017bacca339e35ddaf3901fc4",
+    "uncompressedSha256": "614058ca69133ee2f65f0b7f6df4f0937f4758a3f9ac3188da2d2b61dc4491b0",
+    "uncompressedBytes": 1723
+  },
+  "full/gate/platform-ha.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-ha.log",
+    "sha256": "456589ac29088585e4c3203fe9e8863cb9fc2f63058a51268a4e5edb212a53f7",
+    "uncompressedSha256": "b509ee97c99e58c1036a1970deb152752a155032bed0f6c12e20aa55a2ef40f9",
+    "uncompressedBytes": 399
+  },
+  "full/gate/platform-ha.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-ha.xml",
+    "sha256": "383c24b19083c3d99505f96e70e6fed2e300cf1c5a9a5fb3ed0a349e1839eb50",
+    "uncompressedSha256": "72495b3e83a055f7bfc3170d56886d2a3f7781282f7e397569eb982dbe1f50c2",
+    "uncompressedBytes": 1751
+  },
+  "full/gate/platform-historical.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-historical.log",
+    "sha256": "32076773819d1439c1a02408ebace0e0eed714f7d282c92845d138ba16935c2a",
+    "uncompressedSha256": "50356678c4a7eb80fcc484cb4198c9444c4f0b08eca4ceafdbff89c116022f08",
+    "uncompressedBytes": 400
+  },
+  "full/gate/platform-historical.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-historical.xml",
+    "sha256": "53ccee0158312bcc39c0657e29705a088c58be5b000d2a1b25ad696bbe594453",
+    "uncompressedSha256": "fdde772baafdfd533656e0bc7e406f1269fdbfa214b23aea8b9bcdef0d92fbfa",
+    "uncompressedBytes": 1760
+  },
+  "full/gate/platform-mtls.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-mtls.log",
+    "sha256": "5a2406db6210931a842a9775ceab08059e9d367df783e16715cf43ac318bca1f",
+    "uncompressedSha256": "0fce1d8a13e1a7d1e5cdd86e53321b094ecd4d593d4374d9e8ab1b91464afe5b",
+    "uncompressedBytes": 399
+  },
+  "full/gate/platform-mtls.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-mtls.xml",
+    "sha256": "4e0f18e055d48cfe6c714062db887e1fcb3d873f24140aadea1c1d69c8fb4af4",
+    "uncompressedSha256": "36b394fee6cc5d4b135f39a12cecf8c856c553e622ef7a60b0c865eedcadd460",
+    "uncompressedBytes": 1758
+  },
+  "full/gate/platform-projection.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-projection.log",
+    "sha256": "8de94662903eb7ca3af137be1239487594d183f61257635f93569b8666306086",
+    "uncompressedSha256": "2e0347964ec24f5e52963c00170ef1d1844441c6d5eb419e7ae735da5db22b81",
+    "uncompressedBytes": 400
+  },
+  "full/gate/platform-projection.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-projection.xml",
+    "sha256": "f8474f9d3c13bf39a70322961c878eaaef149e07e40e52786ab6254631880024",
+    "uncompressedSha256": "e73bb342e2612d3ec8cabcb7d8b13100869990c7e2c560050b53ef473c4d5c5c",
+    "uncompressedBytes": 1778
+  },
+  "full/gate/platform-recovery.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-recovery.log",
+    "sha256": "594f82f9499ff8b7a299b7b0df42e163aeb5cd8238771fdc00cf110f44274de2",
+    "uncompressedSha256": "4a5a9f4419e2af9ba0adf9ed8ac741c762771614830822a5d4a21a8082b43477",
+    "uncompressedBytes": 400
+  },
+  "full/gate/platform-recovery.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-recovery.xml",
+    "sha256": "1f2347027c7f4dc52f9231a279988ac2f3fd4c10f1ee49a666a01379f074b578",
+    "uncompressedSha256": "f784162b1559f982f8471f921e2eb05024b6c226d7e3f12aa5bd4c6c402f9ba7",
+    "uncompressedBytes": 3616
+  },
+  "full/gate/platform-release.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-release.xml",
+    "sha256": "d0a94d04dd56836cc688da0f30c9e210652c3f3a1c16957fd86b6364a11dbc38",
+    "uncompressedSha256": "93bacb8a52e87311b1c71f3c0cc7f98def8dc554d457ca26f0126879ceca7e68",
+    "uncompressedBytes": 76374
+  },
+  "full/gate/platform-tests-build-debug.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-tests-build-debug.log",
+    "sha256": "312b4ca180821e5005958dd17031c5b67968b853d74db6ab64547ad43b4394bd",
+    "uncompressedSha256": "36f380a86ebea938e852842c7b9efb307ddd19b36d352e26e7d02b412be3c5a3",
+    "uncompressedBytes": 4961
+  },
+  "full/gate/platform-tests-build-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-tests-build-release.log",
+    "sha256": "620bce1dcb1e78c310d8861a4b5cf4707e3ce6e217ba60157761bc8b8e3b49a4",
+    "uncompressedSha256": "46c75026962a8c7d17d34325bf9c695d5cd29f2fa13d27735e9338b7e20b9863",
+    "uncompressedBytes": 2200
+  },
+  "full/gate/platform-tests-debug.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-tests-debug.log",
+    "sha256": "f62848ed819d8f8fc89e7659fecda430d9d64edd9b57096063acd40bc5a47d90",
+    "uncompressedSha256": "6b8717244fb81f24fcc4f0f31d68d04285b8367a37f51f803e1d9910ae7bb35b",
+    "uncompressedBytes": 390
+  },
+  "full/gate/platform-tests-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/platform-tests-release.log",
+    "sha256": "a1cd29eae243ae3ac6b7ee60eb8d6dee0b5d0be1769da6364b5a27b04847d565",
+    "uncompressedSha256": "c5a53f50bb2f63c8063674ed2755bd200a6cd03dfeee3638c3714d0674d4f3b2",
+    "uncompressedBytes": 390
+  },
+  "full/gate/retained-host-preflight.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/retained-host-preflight.log",
+    "sha256": "3470a29162e964d3646ed0425ccb093d9ade5580cbcb40818795445e7095c487",
+    "uncompressedSha256": "44c59a2d7bef5d28c2adbaf1a773266010067fc8418295f7025d0dcdf16adc60",
+    "uncompressedBytes": 399
+  },
+  "full/gate/retained-preflight-starts.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/retained-preflight-starts.jsonl",
+    "sha256": "224fe3d6293479b23bfc30a48eb7ce3908e9bda2f30455eaf3d2b86eaf5616b7",
+    "uncompressedSha256": "cd51c50a090b46757536994baada698774992025d242e23b62c311560b221c22",
+    "uncompressedBytes": 13274
+  },
+  "full/gate/retained-preflight.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/retained-preflight.xml",
+    "sha256": "ac58b654d56f58e24d767e7026d5401af670392d8180fc3e5a7d739f954524c2",
+    "uncompressedSha256": "57178246c5b95001bb306a861e0f68ce4d0b3e4dda4e3aa5d305692ffbb40057",
+    "uncompressedBytes": 1844
+  },
+  "full/gate/runtime-release-prebuild-0.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-0.log",
+    "sha256": "6660df545c06bd03dc303e150c8a70e9f0c9f2c8e059fca2e73859214137435a",
+    "uncompressedSha256": "7a596a0542e2d5c234f6ef4c220c994a7d9b4881c550b49c1970a145ae75631c",
+    "uncompressedBytes": 1483
+  },
+  "full/gate/runtime-release-prebuild-1.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-1.log",
+    "sha256": "7a3bae1d521a4aef224c2fd07500cc0568ef014caada3172598285d9ce08b266",
+    "uncompressedSha256": "0f07f96e877f55c5dc870b8bf62ff0c8e35b74f69c78fa5c237c37eb265cfd89",
+    "uncompressedBytes": 2894
+  },
+  "full/gate/runtime-release-prebuild-2.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-2.log",
+    "sha256": "0af7b4f02f444fc00ad4fb0f81bab34af776aa9bb2e3b3f49652ec237c488265",
+    "uncompressedSha256": "3255ac3144545f9d063eb7af412f4bf905af1a3be8ead82f635ecb3696d879e2",
+    "uncompressedBytes": 1075
+  },
+  "full/gate/runtime-release-prebuild-3.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-3.log",
+    "sha256": "b568dd2d94742fe0c14719f44559180e51467cce8b26ff419817e9f2749526a8",
+    "uncompressedSha256": "34da7e47458ba78a6e252da9eefb430f9be5dd018de5a1100634eb7b31310df5",
+    "uncompressedBytes": 1472
+  },
+  "full/gate/runtime-release-prebuild-4.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-4.log",
+    "sha256": "ab698880e06a9e4ef7da1802af67478145a5609b5b5b9ea28f31b2d3fc25d4ab",
+    "uncompressedSha256": "32601567614cc8868070152884e419fc3b7cafd869e78d0cd39eff471499fc5e",
+    "uncompressedBytes": 462
+  },
+  "full/gate/runtime-release-prebuild-5.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/runtime-release-prebuild-5.log",
+    "sha256": "7a5f148a9f287176ed473f3f1554d1738952904c32a91711557398a08d35d5a2",
+    "uncompressedSha256": "25a62b69a2f2c0681fabfa1e220f344d889c45cbafe28f3ad5ddcd11dc3a0590",
+    "uncompressedBytes": 1106
+  },
+  "full/gate/works-consumer-debug.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/works-consumer-debug.log",
+    "sha256": "1e9874178af90e07f6e01a5fd260cbee20d0021551db0a62a559f8ed6504151a",
+    "uncompressedSha256": "f1dc88c09582e1825ef72f6571c3dace022279c74f1d301f03a1d181c44571a1",
+    "uncompressedBytes": 9323
+  },
+  "full/gate/works-consumer-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/works-consumer-release.log",
+    "sha256": "b18ffb60ce079bd1dfddcb21ac3b8eaba6048bd5eefdd41032de7964875182a1",
+    "uncompressedSha256": "8d34c0e2f2a719639563aa38df42246ea2cffec4f69cdbba9c681fb21ce349fc",
+    "uncompressedBytes": 3913
+  },
+  "full/gate/works-consumer-supporting.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/works-consumer-supporting.log",
+    "sha256": "e06cb75df2c5bdfe9226ae319d158d5853a188e744bcd15eb0e0deaf45bea5fc",
+    "uncompressedSha256": "8c5efe59c7d85d9f4db8e9617fb727d295520f65c295f5dbc63315043eb38ff8",
+    "uncompressedBytes": 20644
+  },
+  "full/gate/works-consumer-supporting.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/works-consumer-supporting.xml",
+    "sha256": "8ec8b2ea008fa6f33fc1f20b9e8aa95ec7ac9853981c7e56114609d4a2e23e16",
+    "uncompressedSha256": "24eb87f981a2e3ec09f030d9689efb121bf26e92c8e943d29c7af31634a7721f",
+    "uncompressedBytes": 176147
+  },
+  "full/gate/agents-full/custody/command.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/custody/command.json",
+    "sha256": "63c3b07d62464d4e83effa04fb4d86b2e36f4b92befaafe7160f27cb8e28d63d",
+    "uncompressedSha256": "bdd9067615804a74d1ec39507d95a852a00ff9491cc89ec24b8f512fd9c13ea4",
+    "uncompressedBytes": 777
+  },
+  "full/gate/agents-full/custody/custody.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/custody/custody.log",
+    "sha256": "07851bd9db3bdfb3461e9d6d8c910f4ff48c5875303d91a349885169c9ed8253",
+    "uncompressedSha256": "78faf9ed5af6a6b46cc5cc5d4bff60d51bd3a131666244edf6666a2ed0035650",
+    "uncompressedBytes": 628
+  },
+  "full/gate/agents-full/evidence/acl.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/acl.json",
+    "sha256": "a9589e01ddbbfdc287193be3a37303d84f6d1c401905ced56c6b6e3b6a3c0654",
+    "uncompressedSha256": "12b63286539b50a9dee86cdca680efa18f9082fb4d651382fed2ac706d1a573e",
+    "uncompressedBytes": 2358
+  },
+  "full/gate/agents-full/evidence/blocked.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/blocked.json",
+    "sha256": "21887ef94b69a6b9f127cea098359f42d5006a30364beef4d3ce89e6d12f6117",
+    "uncompressedSha256": "9f968681a978ee342e5d5e82e3b6a7188c6f7633a8cd6d832047e06dc1fc12b3",
+    "uncompressedBytes": 2047
+  },
+  "full/gate/agents-full/evidence/isolation.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/isolation.json",
+    "sha256": "e87f0f85770eecb20212ccf1e66f833ebeed5e1f9c79545077b055b9262de75d",
+    "uncompressedSha256": "e576363f2f7c08f9d1eb51613cc82dfe6f95eddea61ed12b9dd465f005ca750b",
+    "uncompressedBytes": 2377
+  },
+  "full/gate/agents-full/evidence/lost-ack.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/lost-ack.json",
+    "sha256": "a07178739fcf5b3046bd12b25f8ab1472f63854cc2e7af8aa49a794b65e4156d",
+    "uncompressedSha256": "601f852bbfa4ce2ee1749c5d4176b59f025a061273193d68faed2e5e4d73dadf",
+    "uncompressedBytes": 2531
+  },
+  "full/gate/agents-full/evidence/outage.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/outage.json",
+    "sha256": "5e02747bfd2f25d01069426464add192233d9ddb8cb902165395f504c249213c",
+    "uncompressedSha256": "3588c78c84301cd1c7e7932fbe33400d59f0ecd2f8c83ce6531ff884cb6ecc69",
+    "uncompressedBytes": 4509
+  },
+  "full/gate/agents-full/evidence/restart.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/restart.json",
+    "sha256": "cb936384264f5edf3499b3e638a80c6d5112fce2b1ac337ba148ced08bafa190",
+    "uncompressedSha256": "32eaab7596f28b9ded652c06dbace6ac8546b8a877ee4f53058864d8e0182a33",
+    "uncompressedBytes": 3715
+  },
+  "full/gate/agents-full/evidence/restore.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/evidence/restore.json",
+    "sha256": "32e069f75ed359b91149f6f629d84a2f0c4c3046046c774db3c0d581ff32f4ca",
+    "uncompressedSha256": "8a935931d3f3d9149467a27d4c9ec6d26840b630ada9acaf1916111e279dde28",
+    "uncompressedBytes": 10069
+  },
+  "full/gate/agents-full/guard/command.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/guard/command.json",
+    "sha256": "3b474381bed2a07734f294a3bf172aa55a9302fdc94b92298a88882f434eba2e",
+    "uncompressedSha256": "cd1e39cf7854e9681bf8faee8dcc87cba3dadba19838d90242e5d25f97f162fb",
+    "uncompressedBytes": 577
+  },
+  "full/gate/agents-full/guard/guard.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/agents-full/guard/guard.log",
+    "sha256": "2ec829fb430b5b9d4b079c0726ebf76e579ce8bf0df6f51a9e8d7af461cff488",
+    "uncompressedSha256": "1a9f7e060bc10cb813d0bff8d7b7968a069e4752ff7ec030092dd21c62d66e12",
+    "uncompressedBytes": 458
+  },
+  "full/gate/isolated-daprd-retained-preflight/binding.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/isolated-daprd-retained-preflight/binding.json",
+    "sha256": "2dad5fd7470e2145eb59bbb8b0b48b9b26aeb658be51bdf3b0228595f1d6ca67",
+    "uncompressedSha256": "4f68f6e2069c42c698108a0650fa67702e061822bea3c13ad373d07badae4df4",
+    "uncompressedBytes": 264
+  },
+  "full/gate/isolated-daprd-retained-preflight/launches.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/isolated-daprd-retained-preflight/launches.jsonl",
+    "sha256": "3373152e3f62b52d524d17d88c3faa6e05989542865503d730082c285de903ea",
+    "uncompressedSha256": "50c87b9b91a66a4c67361069de30e24d8fbcf177d9cacc0dc810fabb5189618b",
+    "uncompressedBytes": 2301
+  },
+  "full/gate/isolated-daprd/binding.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/isolated-daprd/binding.json",
+    "sha256": "2dad5fd7470e2145eb59bbb8b0b48b9b26aeb658be51bdf3b0228595f1d6ca67",
+    "uncompressedSha256": "4f68f6e2069c42c698108a0650fa67702e061822bea3c13ad373d07badae4df4",
+    "uncompressedBytes": 264
+  },
+  "full/gate/isolated-daprd/launches.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/full/gate/isolated-daprd/launches.jsonl",
+    "sha256": "1c014ed6be1906366dd66f8573eca0bb693a864293bba83fc52950484742a83d",
+    "uncompressedSha256": "24e71b11b85052f79cd4c700aab530df36cb5d6d84738cea9c060eb9ba25dc16",
+    "uncompressedBytes": 25873
+  },
+  "ci/bootstrap.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/bootstrap.json",
+    "sha256": "2bc9525d51ae482fdcf776aebd03a33da3e5b132228ac3dccf508d27335a00e5",
+    "uncompressedSha256": "ac144f4df1746a1a686455ac3cd5ee36e7fb267f135251580c70442fe0e3727c",
+    "uncompressedBytes": 90107
+  },
+  "ci/platform-source-binding.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/platform-source-binding.json",
+    "sha256": "7ff71d80eb7f0c9d595b86eaf8f8a8fc1c33bdcd50ab369ddaf0f36144bb9fb2",
+    "uncompressedSha256": "90bbcd74c67bbb8ffb62d348f1ce653f2fded0157ea7145d64ce6854de7c7c18",
+    "uncompressedBytes": 179351
+  },
+  "ci/gate/agents-full-refusal.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full-refusal.log",
+    "sha256": "91dfa4dfe077ccd045c84df25283a9192440bb65e545d0895c82c4149588984a",
+    "uncompressedSha256": "695dd02fc5de06c36c03133702dc7fc6d9c18b63a42586fd7d7ea19337edb458",
+    "uncompressedBytes": 391
+  },
+  "ci/gate/agents-local-scaffold.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-local-scaffold.log",
+    "sha256": "36be407c7f23d3e8c987cb659fde6b68e07ce99408e7147d6658672bfd88074b",
+    "uncompressedSha256": "25b26fab2a64d2979ff491f208010885d9d08f1f4186a276d45d269180dd8392",
+    "uncompressedBytes": 2059
+  },
+  "ci/gate/component-evidence-gate-tests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/component-evidence-gate-tests.log",
+    "sha256": "a4c2a5bf9ec15e0808c07a2451e6d7b479aa31040cc20f05c6beeb5d62196215",
+    "uncompressedSha256": "62678e65cdc9bf240a8e3c5581343a4d7c24a06aa78493f959c3944f0edacb7c",
+    "uncompressedBytes": 546
+  },
+  "ci/gate/evidence-gate-tests.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/evidence-gate-tests.log",
+    "sha256": "8fa64f94de3a65276d1d8e4c0a4c46fa0e6b85a81af8cc5da30356a86ba967ad",
+    "uncompressedSha256": "b1954929ba7f8b8c9cf93a84e4977beaaadd2a8c14766f62209440aaee4bcce7",
+    "uncompressedBytes": 1437
+  },
+  "ci/gate/host-starts.jsonl.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/host-starts.jsonl",
+    "sha256": "7800302a2552fcebf22ec39038b785c96f1c40b82004dae2857bad5239beaf73",
+    "uncompressedSha256": "bb2067c103a117e409ba15e441891604dfc09b321404805dee91cfe3a4f3f139",
+    "uncompressedBytes": 242719
+  },
+  "ci/gate/ledger.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/ledger.json",
+    "sha256": "d646163df2d2773fe4fde172a05d81ecd02dab6f08e5af29e53184f3681b7926",
+    "uncompressedSha256": "65ae265f3e77cf2ebf4a460481bf89f364e1a0fafda91327b421b6a1e36104a4",
+    "uncompressedBytes": 1920004
+  },
+  "ci/gate/persisted-states.jsonl.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/persisted-states.jsonl",
+    "sha256": "d0d884ace7375d26f8c4d8aa659599662fcd66151a919503296c75cce8a0e670",
+    "uncompressedSha256": "b7118d8960df1480cb4887dbe855a2b10402f4773a595b5c7791be8982dd27d4",
+    "uncompressedBytes": 3534991
+  },
+  "ci/gate/platform-file-host-release.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-file-host-release.log",
+    "sha256": "0b41f5c5dc3b822771924a1d2d4ee8d13b2e34806ea5c1834e2ae22045964d52",
+    "uncompressedSha256": "c7ccd37cb69269452ec3eda279f1fe9788ca0df7c97228dc48bf2ee7bcf643ec",
+    "uncompressedBytes": 1699
+  },
+  "ci/gate/platform-ha.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-ha.log",
+    "sha256": "62e5964ba56d7de3b1e735fda874ddc882897332cd2a9dfb5b646b7fc8890746",
+    "uncompressedSha256": "826c5f0c80109c2c2e3643f39906ba117f4d80326c14aeb52a5e62b71e021631",
+    "uncompressedBytes": 458
+  },
+  "ci/gate/platform-ha.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-ha.xml",
+    "sha256": "768739207270b20e671e82fd56529deca80c80ca51df8872408702ab7e0f1c92",
+    "uncompressedSha256": "6674ea13632de5b7081649038fa46b60f75bc35ffb2dcb31bda485edc1b7175a",
+    "uncompressedBytes": 1718
+  },
+  "ci/gate/platform-historical.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-historical.log",
+    "sha256": "9deecae4712202f29e705f07c9c249d6f8cf1a6b356c4f28c65baf092cd27214",
+    "uncompressedSha256": "a97633389f9326acbe4d2683539c049626eabc612b0966d39d9439c7f59b46a5",
+    "uncompressedBytes": 458
+  },
+  "ci/gate/platform-historical.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-historical.xml",
+    "sha256": "84fa968cdbdf16bd08be5035ec06cfe21280537496739ec068a065be88766330",
+    "uncompressedSha256": "86220168ac16c9218307f7e0822e4f000d6d765a0f9deefcc1e40842c96bfa8d",
+    "uncompressedBytes": 1725
+  },
+  "ci/gate/platform-mtls.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-mtls.log",
+    "sha256": "8de40cd6a731ff22a8f2a96ed443f7d3a4432eb5727265722c1a18458732eeb0",
+    "uncompressedSha256": "b5adba315649c753379b84c4beabbdb418abba2b0de802975ab054f7766afcc5",
+    "uncompressedBytes": 457
+  },
+  "ci/gate/platform-mtls.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-mtls.xml",
+    "sha256": "392d407b72bbcc150a6a7eff207d609e5ea05756b9f76f4c84de9977e3279877",
+    "uncompressedSha256": "56c08c1c1542dd9913017b1da85159add931d6de1c37fb5b50a0419cf0177175",
+    "uncompressedBytes": 1724
+  },
+  "ci/gate/platform-projection.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-projection.log",
+    "sha256": "60496a106f8ed3ef143ea76d3e0fc9850a70fa0cc6c595761556b1a3c02e2666",
+    "uncompressedSha256": "953973c6ec3fb8dd5c23bdd122c4c1d0820c4cdc90e41846b7f99c6dac225b29",
+    "uncompressedBytes": 458
+  },
+  "ci/gate/platform-projection.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-projection.xml",
+    "sha256": "6380e25b8d398ef54964d7f9338acfe741c8d307554ecf8783a49a689c290da2",
+    "uncompressedSha256": "2b8898dc3c9c74e0da2b3a63031099fe99b472c467edec2bd74fd0d928c24df3",
+    "uncompressedBytes": 1744
+  },
+  "ci/gate/platform-recovery.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-recovery.log",
+    "sha256": "f38dbb6ba8650a150bc5c02a5075c8a094277f66926b94dc3ab75bbd7e51ad17",
+    "uncompressedSha256": "b7216b6bca8d47b5c676bc900c2ec34b4ea0c43a0cfac7731cb7b224e3d8cbe8",
+    "uncompressedBytes": 458
+  },
+  "ci/gate/platform-recovery.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-recovery.xml",
+    "sha256": "1d545329b2188dc684c7106c08949a90f46dbf4b29ea0b854bd4b11420729e61",
+    "uncompressedSha256": "448da36a400e418cc184a12b014ed0913f06dd14b823bdafc06e3d338a681d50",
+    "uncompressedBytes": 3594
+  },
+  "ci/gate/platform-release.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-release.xml",
+    "sha256": "82f831e6f6985556c156ea31ecc4c05d34613a616b1f04c709cffd0096b8603e",
+    "uncompressedSha256": "70d4eb0a5cc728c59035b249e3e68d628978b4b09b4362ecdce26db8e16bf59e",
+    "uncompressedBytes": 75963
+  },
+  "ci/gate/platform-tests-build-release.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-tests-build-release.log",
+    "sha256": "7cc8616efdcf7b6a4fdafe1f182af6ba9cb1548633a9396828bbfd0e8ff70093",
+    "uncompressedSha256": "a7344c821059789de2bbd2db52a9363216904660099c1a9fab125c5a58c585af",
+    "uncompressedBytes": 2176
+  },
+  "ci/gate/platform-tests-release.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/platform-tests-release.log",
+    "sha256": "d2eee52b206134056bdc62e7f5c1a827064366887c974fd6c3b87178a0a5e273",
+    "uncompressedSha256": "9417af6e19ffc42e780e5a30f0fad8eef80f110d0a46de064a9ff8855aa3051b",
+    "uncompressedBytes": 448
+  },
+  "ci/gate/retained-host-preflight.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/retained-host-preflight.log",
+    "sha256": "35ff49507dbe4988d4e0b2d9134a721aeb6b243087d08833fc1b645d9c9c7ab4",
+    "uncompressedSha256": "d178684b4e80b99140ff809780c46fda6fbaa002e8d708d3893af5d33ba7b189",
+    "uncompressedBytes": 457
+  },
+  "ci/gate/retained-preflight-starts.jsonl.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/retained-preflight-starts.jsonl",
+    "sha256": "a1aca1578cb6c53874cc48b7834119d83e11102d0fd0b4b94896848b1efdd039",
+    "uncompressedSha256": "f2e6d3cbb8847ca06a3f56b82da7d1e3acbc41805992800e27ad8ef25c984291",
+    "uncompressedBytes": 13167
+  },
+  "ci/gate/retained-preflight.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/retained-preflight.xml",
+    "sha256": "e559474e483e3d7b5f147d227abdf7207298cd2831f84bc23be98e345b15297e",
+    "uncompressedSha256": "5015233cb1ec6c528b49053cda3b6d69efdc22fb2e257525c5eb6f908f5aa58f",
+    "uncompressedBytes": 1810
+  },
+  "ci/gate/runtime-release-prebuild-0.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-0.log",
+    "sha256": "49012da39408f407edc926fc90fa1d35d10e86e46fba52026283b122e2a489b5",
+    "uncompressedSha256": "5a4d2d8f3f08573ca05aab360ec86d335be5de4bf93a9f7e3e4b8eb26e1e8660",
+    "uncompressedBytes": 1486
+  },
+  "ci/gate/runtime-release-prebuild-1.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-1.log",
+    "sha256": "cd847bf52827717fffe3007a8a6c35461cb9121c17cb14c3f1db85b9acf98020",
+    "uncompressedSha256": "88987b801a995d576e569eb310fd7fcf220b98962ccfc5fe35eee335be907214",
+    "uncompressedBytes": 2840
+  },
+  "ci/gate/runtime-release-prebuild-2.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-2.log",
+    "sha256": "219029c925ecafc59c232909bcd249b34a92c8e3c2101eadccab5d2254ef1a29",
+    "uncompressedSha256": "7928e48cb69dfeb9c223da0c4f3b0ba7ed093d87e7ee8a81c74226949e94c4dd",
+    "uncompressedBytes": 1060
+  },
+  "ci/gate/runtime-release-prebuild-3.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-3.log",
+    "sha256": "7bf4cc299fb9713bf9137f26e37d9e501e5a7e591396a730faaffb2012d23557",
+    "uncompressedSha256": "306c5d35842deeb25609a26be418f6c6fc67950f36a9d37fed103416514d50f7",
+    "uncompressedBytes": 1451
+  },
+  "ci/gate/runtime-release-prebuild-4.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-4.log",
+    "sha256": "60dc9c3b6505b76a6a43d63df596c334a2ff02cfe5bef48ae9783e781433ed17",
+    "uncompressedSha256": "800de48b28af88894f6b0e44adcbc906b24530af5acd70980e4db35008b0aad9",
+    "uncompressedBytes": 456
+  },
+  "ci/gate/runtime-release-prebuild-5.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/runtime-release-prebuild-5.log",
+    "sha256": "32afe4493b6e180ac3a9d7d5664d3bb073649575c6e560f4a102df4b0859f28f",
+    "uncompressedSha256": "4c602378533168701c56e561a1c7aef8393c36fe626f1a0d540a0410681e6ec9",
+    "uncompressedBytes": 1086
+  },
+  "ci/gate/works-consumer-release.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/works-consumer-release.log",
+    "sha256": "442345b68efed1f533776594f85401a275b862f6c2371bee9fa14f7d540a10a1",
+    "uncompressedSha256": "914548a4b85c270e7eaa53f7753264ee92c22dfdff1e262d8d7116d00f4e4bc3",
+    "uncompressedBytes": 3897
+  },
+  "ci/gate/works-consumer-supporting.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/works-consumer-supporting.log",
+    "sha256": "77c1f93184e6f198153f86d296a291e103084c066c9bba3727379a8467e5c285",
+    "uncompressedSha256": "ecc772d8469a3feec7cfea10907aee1b091b5722a870da1ae3a032881adf5806",
+    "uncompressedBytes": 25225
+  },
+  "ci/gate/works-consumer-supporting.xml.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/works-consumer-supporting.xml",
+    "sha256": "fc55d774a84b4acc077056bb25348ef4f034bbc65b5b3d632847a74757f26d98",
+    "uncompressedSha256": "ec8bfd9f6890c0cce68650623d42639e3aa78dbd223e9fd7730131191daa33e4",
+    "uncompressedBytes": 177140
+  },
+  "ci/gate/agents-full/custody/command.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/custody/command.json",
+    "sha256": "2e086439fd67b54240f4fe53c9a6f20285b26f8c1059150a498df6c9547da28c",
+    "uncompressedSha256": "b0ef0a7019d2609c3cd5e0106b39c17aaf027f34475143874eb4ffb90b005e43",
+    "uncompressedBytes": 775
+  },
+  "ci/gate/agents-full/custody/custody.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/custody/custody.log",
+    "sha256": "baffbb7a4c810fe3d786e8aaa56d5820d2a96727f1626375934330f2e361e300",
+    "uncompressedSha256": "8275dcc35a83991edd7069df15c06422821ec0ff35827782cf0d4253585d39f9",
+    "uncompressedBytes": 658
+  },
+  "ci/gate/agents-full/evidence/acl.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/acl.json",
+    "sha256": "e1fd889c1af2cb2a3fb050e028431959a12a6038cf3eaa168a44036a5f54b400",
+    "uncompressedSha256": "3ca01fd0f7143cca608e9205aa34f35a0d8f9133756dd635f65065585026e16a",
+    "uncompressedBytes": 2360
+  },
+  "ci/gate/agents-full/evidence/blocked.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/blocked.json",
+    "sha256": "3f5291cc526ac78f5707fe584a214445f429da3316e2b574a06cff6c16846a8f",
+    "uncompressedSha256": "76f7997ec05159eee0631ac5866036a5d7941e7f65183f314c637e381a54b4f0",
+    "uncompressedBytes": 2049
+  },
+  "ci/gate/agents-full/evidence/isolation.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/isolation.json",
+    "sha256": "82b9f6c22757ddbd4ba814a2e650c387b0b3afffd3d5707cef5b742bf60dbce0",
+    "uncompressedSha256": "15b348aad20e4c28405460fae127bba3749f3d6e2688799b0bc3a5fe2ea3c98a",
+    "uncompressedBytes": 2379
+  },
+  "ci/gate/agents-full/evidence/lost-ack.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/lost-ack.json",
+    "sha256": "743a977c3a1601737b2aeb3b0bfba83702adb1ab312d5e19aecd81dafd6d0d6a",
+    "uncompressedSha256": "938bf4ae73615a535aafe973b80386b78d5e41dd535545c65f20cf09c9927e1a",
+    "uncompressedBytes": 2533
+  },
+  "ci/gate/agents-full/evidence/outage.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/outage.json",
+    "sha256": "49ec95ed06af122e13f435c693c714a29a97047736bf9ba7628091fb092cac7e",
+    "uncompressedSha256": "960698993ca806b03340e3c990a0dd06879935673f87af8e2d88db27ccf0a308",
+    "uncompressedBytes": 4511
+  },
+  "ci/gate/agents-full/evidence/restart.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/restart.json",
+    "sha256": "43859ec85172e4a2a9d0ceca4b05a706a5376a2880eab155a26d8bb9df1e234c",
+    "uncompressedSha256": "79711d0d4a69adbb94eb75c757ba74c11bef67199f306c47002c3848b1f3be5c",
+    "uncompressedBytes": 3717
+  },
+  "ci/gate/agents-full/evidence/restore.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/evidence/restore.json",
+    "sha256": "55849399a0022efca1854b7d49a663c89980abb7f8d4d871a5ba3ce9f2577ebb",
+    "uncompressedSha256": "5d012a155e3ada70a68e2d06c3371fad4a5f2907b7d0eccf0032132b7ae0bba0",
+    "uncompressedBytes": 10071
+  },
+  "ci/gate/agents-full/guard/command.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/guard/command.json",
+    "sha256": "1b768e79112674357f1caec6aaae35125ba1f33f368637fa500cd436e18e5b30",
+    "uncompressedSha256": "d02b7cd3845c496b1fb604caa7e2197b7493ac0526e2d5bf5b9c6ed9a0b1176e",
+    "uncompressedBytes": 575
+  },
+  "ci/gate/agents-full/guard/guard.log.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/agents-full/guard/guard.log",
+    "sha256": "3003f2fde5c5d7286fc2cd0875943e66b2530de1ab7057ec65c92fff3b0c57ac",
+    "uncompressedSha256": "586182c337bfbc35b15fe452681f740e34a38e7431a1f202491dbbad904290b7",
+    "uncompressedBytes": 463037
+  },
+  "ci/gate/isolated-daprd-retained-preflight/binding.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/isolated-daprd-retained-preflight/binding.json",
+    "sha256": "ff394844c3dfdc6f3e9f0da729d77a3ca3fa6d56a37b843fa2bf97b2db1eb249",
+    "uncompressedSha256": "77003f05e42f3728beba5272eae10bdfa5978a25ca5917965a1ba62c2ce24777",
+    "uncompressedBytes": 257
+  },
+  "ci/gate/isolated-daprd-retained-preflight/launches.jsonl.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/isolated-daprd-retained-preflight/launches.jsonl",
+    "sha256": "9287e1e20afd91f3672ba418f5864d47d5a8acada520c7b5757b2f45412a09e8",
+    "uncompressedSha256": "146410a4070585aa0123b3bb133c4326415bfbeab70bcdec012098fd08364fab",
+    "uncompressedBytes": 2273
+  },
+  "ci/gate/isolated-daprd/binding.json.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/isolated-daprd/binding.json",
+    "sha256": "ff394844c3dfdc6f3e9f0da729d77a3ca3fa6d56a37b843fa2bf97b2db1eb249",
+    "uncompressedSha256": "77003f05e42f3728beba5272eae10bdfa5978a25ca5917965a1ba62c2ce24777",
+    "uncompressedBytes": 257
+  },
+  "ci/gate/isolated-daprd/launches.jsonl.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517/gate/isolated-daprd/launches.jsonl",
+    "sha256": "a4eeead86e1a878669c414cf6b562dd53f31fce73bb77b59835317b03fe36c92",
+    "uncompressedSha256": "99de214d274a163fbe6c8892800a37be25d24b0d7dafbc2f1d5baa0a55e12215",
+    "uncompressedBytes": 25558
+  },
+  "build-graph-full/gate/agents-full-refusal.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full-refusal.log",
+    "sha256": "3e4fc969f39d0b954aab62ff1487c6b60290189c130adc02f2400b19a5168283",
+    "uncompressedSha256": "29b743f4afe4b08b47844dd71e95b68d332a209aeaf3d952c3574144534b054e",
+    "uncompressedBytes": 391
+  },
+  "build-graph-full/gate/agents-local-scaffold.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-local-scaffold.log",
+    "sha256": "4b37cf28cd8d0eb4638d2f8b08220092f07257f01dd6b5a2756af2a1e85b348a",
+    "uncompressedSha256": "9f99cb7a29456d3f4d05d772ce6f7b9ecd9f217d82cc2f3f455254b23d6f4da7",
+    "uncompressedBytes": 4520
+  },
+  "build-graph-full/gate/component-evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/component-evidence-gate-tests.log",
+    "sha256": "09b3f03eedcf0d99a8a3c35f78b7e9be67a1ac58c54ae3c0bbfb25f59fd39d65",
+    "uncompressedSha256": "ce7ef2cdcef3f9ee89bdec6c5d6bd8a4d7513201e32f3480d90fb9c837dd594b",
+    "uncompressedBytes": 546
+  },
+  "build-graph-full/gate/evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/evidence-gate-tests.log",
+    "sha256": "b8ba0e690309aea659e4b20eb439f8717c0c8506e9910f55b18863c5da2d1f1c",
+    "uncompressedSha256": "c1bce953564acb05371d25376ab4095237f04815bd1c7b0b3ba10cb7d43c7840",
+    "uncompressedBytes": 1437
+  },
+  "build-graph-full/gate/host-starts.jsonl.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/host-starts.jsonl",
+    "sha256": "4a4c53acf27c2c7240460a643d13a053a62a344b19cc5566d90b4945b7c146fa",
+    "uncompressedSha256": "dca25975d602088c57998e81dc9b6a2628f465be40a0723616aff4c71e845656",
+    "uncompressedBytes": 243791
+  },
+  "build-graph-full/gate/ledger.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/ledger.json",
+    "sha256": "87d415e2510de1f1071863d7e270629eab40ae2018dbbc2ed2273c9e3ed16271",
+    "uncompressedSha256": "6b6ed1e186ab8f71ae73831895c1cc6af7a859f07274283a62b4db405a1a5809",
+    "uncompressedBytes": 2254673
+  },
+  "build-graph-full/gate/persisted-states.jsonl.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/persisted-states.jsonl",
+    "sha256": "01a56554b889bd40dd6e024b7c334c72e567f30d449092f36d4ca3ddc63ffd35",
+    "uncompressedSha256": "3987ee255670694795b30301a128efd03334ef711214a077b75e7faa72fcdb9c",
+    "uncompressedBytes": 3110452
+  },
+  "build-graph-full/gate/platform-debug.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-debug.xml",
+    "sha256": "40a9e6eef587a68a3ca19e5173069df939596894ac12e245cd290b034990a3a1",
+    "uncompressedSha256": "057d2afe9c460d1e7a50475f3e82fb1814f714c353091677a6f2d503fb483e12",
+    "uncompressedBytes": 76359
+  },
+  "build-graph-full/gate/platform-file-host-release.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-file-host-release.log",
+    "sha256": "58a40b30392ddec3cdf8f4d0230862cf725ba61eaf81c3972484b9d91dcbf6ef",
+    "uncompressedSha256": "8f78d8c83b1fa0de43c40908836d9be4a9f3b045e708f159d71dd49143366ab2",
+    "uncompressedBytes": 1738
+  },
+  "build-graph-full/gate/platform-ha.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-ha.log",
+    "sha256": "e5109cae4ae6569d1facd24193e526016381aa2e77b107e5e3de589df1e9f6cb",
+    "uncompressedSha256": "4886837fd4768d372674507291db8e37b48bab00b4a4bcc45b4364f7433475d1",
+    "uncompressedBytes": 399
+  },
+  "build-graph-full/gate/platform-ha.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-ha.xml",
+    "sha256": "d7b5471437a568561190320348b0027a3175f499253ea168fe2716e36f3772fe",
+    "uncompressedSha256": "18d1005985530492832f9c522c72b31bc4c450fe1722dfb45a1e74706f3ada2e",
+    "uncompressedBytes": 1754
+  },
+  "build-graph-full/gate/platform-historical.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-historical.log",
+    "sha256": "5f71650eb8eec5c7485449306468364cf0b9fb2b60a1ad7a3eca90fe0b14a919",
+    "uncompressedSha256": "889867c78c3750111275d723d1f8aa2cb1f239acdf36ef2e34431982c78e23ec",
+    "uncompressedBytes": 400
+  },
+  "build-graph-full/gate/platform-historical.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-historical.xml",
+    "sha256": "9c147ca30163cc507274318f858b28405304cdd64564dd318ae5bc890ee6dd62",
+    "uncompressedSha256": "91523a2cea5483316b9567046ec76aca246329942bf023fb8a544dc21dfd1bf6",
+    "uncompressedBytes": 1763
+  },
+  "build-graph-full/gate/platform-mtls.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-mtls.log",
+    "sha256": "a19bc5ce0fc80a4fa585a1302d3db52d864fbbd9fa499f35877c0d19c13c85a6",
+    "uncompressedSha256": "7cfc01e67d984ec3440d293786e9a9d02910b05856b4a1a4f1bc503487e2696d",
+    "uncompressedBytes": 399
+  },
+  "build-graph-full/gate/platform-mtls.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-mtls.xml",
+    "sha256": "d2eb35b5e6ef88f0105d28609a2c759e1e25c075d3773c3485ad76fafff06a6b",
+    "uncompressedSha256": "ce7184ad1f17e6809f92220488cf604b18f6e8cd937337df1eb878795efa82f0",
+    "uncompressedBytes": 1761
+  },
+  "build-graph-full/gate/platform-projection.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-projection.log",
+    "sha256": "19c048a8b20f6d51e7dd8e9fd604a3e142187f2e5e055b4b2c0a0a5fd56ddd04",
+    "uncompressedSha256": "c272323dfe74d325150e4c5442c97d0afd7b20164e1cb9238153e1853b88c8e1",
+    "uncompressedBytes": 400
+  },
+  "build-graph-full/gate/platform-projection.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-projection.xml",
+    "sha256": "0a0d68a3e8ade2c95141c5bc2a5962f2c733040b52fac9de23355dc31fe1f131",
+    "uncompressedSha256": "cf9c3d51b669057111e69607e73d26e09e70958536a23fae2e4d1fc633f02639",
+    "uncompressedBytes": 1781
+  },
+  "build-graph-full/gate/platform-recovery.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-recovery.log",
+    "sha256": "af7c0c1e9b42682eca3b41ed3f6b5d34643f4d20cbef5a27c655da3f21605beb",
+    "uncompressedSha256": "3e280961e64ae2a18b2ee27d60a675455962970db3e7a040e6206411db4747d2",
+    "uncompressedBytes": 400
+  },
+  "build-graph-full/gate/platform-recovery.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-recovery.xml",
+    "sha256": "d82583b5cf5ef1981d0f9aed45e32d7cff021315daa21fcfd2c02a11fb79ca2a",
+    "uncompressedSha256": "c4c2150a2c5e307ed8476f70a5dfd70a14380d4496f4d3d54cacec380930787d",
+    "uncompressedBytes": 3619
+  },
+  "build-graph-full/gate/platform-release.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-release.xml",
+    "sha256": "4275d2f2154b30a73a7dd5e9d9c69e6169277d7bd4c419703026b8fccc75116c",
+    "uncompressedSha256": "b7ffd99539560ecce788c83362035c7a51f42ed3627ec3adfade83d0bc7b47da",
+    "uncompressedBytes": 76367
+  },
+  "build-graph-full/gate/platform-tests-build-debug.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-tests-build-debug.log",
+    "sha256": "ec8b5dee03f9a854f08f084bb25ee3b4450ce0de7ddb16b9bb6c21e3b58a6589",
+    "uncompressedSha256": "ff77370df8d350faaa024a7dfff5aea3954e6e307d3a197a4e0b59bd0531dfef",
+    "uncompressedBytes": 4961
+  },
+  "build-graph-full/gate/platform-tests-build-release.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-tests-build-release.log",
+    "sha256": "a0c94e691ba42b095071708d16aa347474c83f9974b327efb52d84e62c6cfed5",
+    "uncompressedSha256": "47d189387f1b1157120003c3fb275956902947cad0eed774ca04e27dfc8d3372",
+    "uncompressedBytes": 2200
+  },
+  "build-graph-full/gate/platform-tests-debug.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-tests-debug.log",
+    "sha256": "92e0faa6066a23ce1d68c82e0dfc07325687c83288572c35fd7fa5bc18e5d7d8",
+    "uncompressedSha256": "06a269e81bda373f2c62c82253e021191b26229409073c9e5b8c9b0f114599c1",
+    "uncompressedBytes": 390
+  },
+  "build-graph-full/gate/platform-tests-release.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/platform-tests-release.log",
+    "sha256": "06adc746b775f0f45d07bc49a87e0ff0b7367bcbe95a3b51b5aceb480d7b3d5e",
+    "uncompressedSha256": "945cc78da2398dad0e53a2c0064d0f094861e68f435d0eeed739977554c0276d",
+    "uncompressedBytes": 390
+  },
+  "build-graph-full/gate/retained-host-preflight.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/retained-host-preflight.log",
+    "sha256": "eb73429e76632b8600fbcf704bb03e147c141e94bae3dc92b1e9fc53e460ea56",
+    "uncompressedSha256": "3aee4bd1429f13d7262bb2433e215256c3d150cce19af6ce051121332966023c",
+    "uncompressedBytes": 399
+  },
+  "build-graph-full/gate/retained-preflight-starts.jsonl.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/retained-preflight-starts.jsonl",
+    "sha256": "3cb58b6d03bd778dd382feb5e1bb5d139a76a11de7b32ec908dcc068b99990cc",
+    "uncompressedSha256": "f06648c0a89794816c350e586b9e41661026a50fb8219b0488db4da669fa27b9",
+    "uncompressedBytes": 13376
+  },
+  "build-graph-full/gate/retained-preflight.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/retained-preflight.xml",
+    "sha256": "60a0c2439f9b54ebb56287f990e2c0cec862e9db55d46ba5392e260c764fa47b",
+    "uncompressedSha256": "fe752280a057a5c163b301b388a92eedb05cf0ecf96693820a02f7faa3ffb068",
+    "uncompressedBytes": 1847
+  },
+  "build-graph-full/gate/runtime-release-prebuild-0.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-0.log",
+    "sha256": "ec412d93fd49dd5283bb1839a78dbd64f0c3757937780bc58003e54fe7afbda7",
+    "uncompressedSha256": "a245f260d3e3e584e69b17e4258cf9eb1b29149a953b93a39390a5804fddf492",
+    "uncompressedBytes": 1498
+  },
+  "build-graph-full/gate/runtime-release-prebuild-1.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-1.log",
+    "sha256": "bf804ab37370fa8ba0fcdff705057607ce88ab9593e8d0c926ccd21a7c1db87e",
+    "uncompressedSha256": "ad319495cc0347a4933cec44a72fdc669e29554d343382073267dc3206903a28",
+    "uncompressedBytes": 2918
+  },
+  "build-graph-full/gate/runtime-release-prebuild-2.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-2.log",
+    "sha256": "09b718f763a37cbab1bc2c7e58a9af01cc0ddb8009a32fc8bd0c63dce8c18568",
+    "uncompressedSha256": "1127fac3833cfd39420893270e5c139c37ee476c7f4c59e3989d92c581887062",
+    "uncompressedBytes": 1087
+  },
+  "build-graph-full/gate/runtime-release-prebuild-3.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-3.log",
+    "sha256": "11d9e17177a62bfbc3486bcbd91f883517cd57282d50c2b5352f3ea996008a2e",
+    "uncompressedSha256": "66683dcb195fdb05c7e8e4916303224c944dd1631b74cdb2d7689adfae049833",
+    "uncompressedBytes": 1487
+  },
+  "build-graph-full/gate/runtime-release-prebuild-4.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-4.log",
+    "sha256": "13a2e2f145dffb3537c4badb9720e09992f015a687a0aee8ea4a6c55ab30e93d",
+    "uncompressedSha256": "0a237cd0aa3a681be5cac81436996d0e331de846fad5cc27e6f4dd927f7e3f63",
+    "uncompressedBytes": 468
+  },
+  "build-graph-full/gate/runtime-release-prebuild-5.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/runtime-release-prebuild-5.log",
+    "sha256": "31564e6cf71d1f540d08256b054eb6c050747f8c4b49f73440e27734b12bccb4",
+    "uncompressedSha256": "8753c0b1bc0e6f7de4d59582b3a916ad55cda2c2bd9a9fdbbc6ed62b17108e80",
+    "uncompressedBytes": 1124
+  },
+  "build-graph-full/gate/works-consumer-debug.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/works-consumer-debug.log",
+    "sha256": "64963ad4ce54178271573139a75267f511c0f310a0bb6ffe582a4f09d4e95247",
+    "uncompressedSha256": "439470283edd01796fa1d2a883d63a20854666c50a572252f5c3748e0b23c84f",
+    "uncompressedBytes": 12078
+  },
+  "build-graph-full/gate/works-consumer-release.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/works-consumer-release.log",
+    "sha256": "24a58a6cd605de85b204ff6c0e590f86e919c292a682f854257c8ead7e766e73",
+    "uncompressedSha256": "53faf7745c4316ae4d2e6f94da85df403a5e0bdbd93f1c559a9b8883045d8a32",
+    "uncompressedBytes": 4445
+  },
+  "build-graph-full/gate/works-consumer-supporting.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/works-consumer-supporting.log",
+    "sha256": "a49ce6afc065e6bf0aac7f81a2b3e63275d7989d63d7bdffe1d642f5454d096a",
+    "uncompressedSha256": "c328b077c5561a8bb95d0f07e9ab994aa8052548f36788e8c8a38bced0e61b18",
+    "uncompressedBytes": 20642
+  },
+  "build-graph-full/gate/works-consumer-supporting.xml.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/works-consumer-supporting.xml",
+    "sha256": "87bdf149a0895ce2d74c9cf82611983c9652607f654407b0f4f87cd44a306c14",
+    "uncompressedSha256": "c52dd531bfc51ea4a361d3d23c822ea5cb05504a61477e580e07e7a84855ea47",
+    "uncompressedBytes": 176140
+  },
+  "build-graph-full/gate/agents-full/custody/command.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/custody/command.json",
+    "sha256": "788f88e35b940f818189f7a2f98a97a99bb315749510f865ddbfc807e87b748e",
+    "uncompressedSha256": "e417ab1c95c8f48e867cbe5d8de8efcdf3874bba503625f6b893c1295f3b430d",
+    "uncompressedBytes": 780
+  },
+  "build-graph-full/gate/agents-full/custody/custody.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/custody/custody.log",
+    "sha256": "5e011993109710a60fc6c69c9250becb6276b3ee38d535ac913b5909aa3df00d",
+    "uncompressedSha256": "abae075f85e558367f64b04aff263366505920d1d7d9564fa8aecf476e783b99",
+    "uncompressedBytes": 631
+  },
+  "build-graph-full/gate/agents-full/evidence/acl.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/acl.json",
+    "sha256": "a9589e01ddbbfdc287193be3a37303d84f6d1c401905ced56c6b6e3b6a3c0654",
+    "uncompressedSha256": "12b63286539b50a9dee86cdca680efa18f9082fb4d651382fed2ac706d1a573e",
+    "uncompressedBytes": 2358
+  },
+  "build-graph-full/gate/agents-full/evidence/blocked.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/blocked.json",
+    "sha256": "21887ef94b69a6b9f127cea098359f42d5006a30364beef4d3ce89e6d12f6117",
+    "uncompressedSha256": "9f968681a978ee342e5d5e82e3b6a7188c6f7633a8cd6d832047e06dc1fc12b3",
+    "uncompressedBytes": 2047
+  },
+  "build-graph-full/gate/agents-full/evidence/isolation.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/isolation.json",
+    "sha256": "e87f0f85770eecb20212ccf1e66f833ebeed5e1f9c79545077b055b9262de75d",
+    "uncompressedSha256": "e576363f2f7c08f9d1eb51613cc82dfe6f95eddea61ed12b9dd465f005ca750b",
+    "uncompressedBytes": 2377
+  },
+  "build-graph-full/gate/agents-full/evidence/lost-ack.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/lost-ack.json",
+    "sha256": "a07178739fcf5b3046bd12b25f8ab1472f63854cc2e7af8aa49a794b65e4156d",
+    "uncompressedSha256": "601f852bbfa4ce2ee1749c5d4176b59f025a061273193d68faed2e5e4d73dadf",
+    "uncompressedBytes": 2531
+  },
+  "build-graph-full/gate/agents-full/evidence/outage.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/outage.json",
+    "sha256": "5e02747bfd2f25d01069426464add192233d9ddb8cb902165395f504c249213c",
+    "uncompressedSha256": "3588c78c84301cd1c7e7932fbe33400d59f0ecd2f8c83ce6531ff884cb6ecc69",
+    "uncompressedBytes": 4509
+  },
+  "build-graph-full/gate/agents-full/evidence/restart.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/restart.json",
+    "sha256": "cb936384264f5edf3499b3e638a80c6d5112fce2b1ac337ba148ced08bafa190",
+    "uncompressedSha256": "32eaab7596f28b9ded652c06dbace6ac8546b8a877ee4f53058864d8e0182a33",
+    "uncompressedBytes": 3715
+  },
+  "build-graph-full/gate/agents-full/evidence/restore.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/evidence/restore.json",
+    "sha256": "e604ffb4c62f15c4edea2a05bd1d64c1fa2c879dea04cc263adcb46c1d9c4191",
+    "uncompressedSha256": "64fda8f1fe410a6d5536aff36a805063481485a3ad97382010948c86539c26f6",
+    "uncompressedBytes": 10069
+  },
+  "build-graph-full/gate/agents-full/guard/command.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/guard/command.json",
+    "sha256": "58dadf8779e8434e5c5e4b7d5556d0a656cb6c1e9a2b8469dfb64558f4b8cb86",
+    "uncompressedSha256": "fa0151184dfcf706db83eab78c527587bb2cdd11e6bbc4c34444ca2c374984c7",
+    "uncompressedBytes": 580
+  },
+  "build-graph-full/gate/agents-full/guard/guard.log.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/agents-full/guard/guard.log",
+    "sha256": "2ec829fb430b5b9d4b079c0726ebf76e579ce8bf0df6f51a9e8d7af461cff488",
+    "uncompressedSha256": "1a9f7e060bc10cb813d0bff8d7b7968a069e4752ff7ec030092dd21c62d66e12",
+    "uncompressedBytes": 458
+  },
+  "build-graph-full/gate/isolated-daprd-retained-preflight/binding.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/isolated-daprd-retained-preflight/binding.json",
+    "sha256": "2dad5fd7470e2145eb59bbb8b0b48b9b26aeb658be51bdf3b0228595f1d6ca67",
+    "uncompressedSha256": "4f68f6e2069c42c698108a0650fa67702e061822bea3c13ad373d07badae4df4",
+    "uncompressedBytes": 264
+  },
+  "build-graph-full/gate/isolated-daprd-retained-preflight/launches.jsonl.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/isolated-daprd-retained-preflight/launches.jsonl",
+    "sha256": "7cd29ac068dadd07d4ccea2d8120d6f940a60da49f0feab3cdf46d30b5124a0b",
+    "uncompressedSha256": "d3a8d5f48b41adb16654ebc44ec98e7de252250510fcb097305ddb52aec13760",
+    "uncompressedBytes": 2301
+  },
+  "build-graph-full/gate/isolated-daprd/binding.json.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/isolated-daprd/binding.json",
+    "sha256": "2dad5fd7470e2145eb59bbb8b0b48b9b26aeb658be51bdf3b0228595f1d6ca67",
+    "uncompressedSha256": "4f68f6e2069c42c698108a0650fa67702e061822bea3c13ad373d07badae4df4",
+    "uncompressedBytes": 264
+  },
+  "build-graph-full/gate/isolated-daprd/launches.jsonl.gz": {
+    "source": "/tmp/story49-buildgraph-qualification-20261021/full/gate/isolated-daprd/launches.jsonl",
+    "sha256": "bd5cc569b9a59b0ed934ad6389771cd9afb1ef276ecdaaac2bbd497f4dfa2865",
+    "uncompressedSha256": "03b15a9f538d5684e1ef753d90d889f6d52a156e4db5575183b1ca4507b5423c",
+    "uncompressedBytes": 25873
+  },
+  "local-ci-inotify-failure/bootstrap.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/bootstrap.json",
+    "sha256": "98c4c9f11ae16df63821e329706028a03dac7d790488ca32a7c96721f6f663bd",
+    "uncompressedSha256": "4a7c9459ea46038e09bd3de89b55eeda8e0a5b5c5391ca48d09cba76b6b59cc1",
+    "uncompressedBytes": 90057
+  },
+  "local-ci-inotify-failure/platform-source-binding.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/platform-source-binding.json",
+    "sha256": "3880dea26fcb439195474d39d44e7f065a5d5660f2fb2a2222b8a5a864c15fbd",
+    "uncompressedSha256": "be79ae44a45dd9e9a2078bb2ac4a5d8b6437020d496137edd34ef57b83a8ddc2",
+    "uncompressedBytes": 179331
+  },
+  "local-ci-inotify-failure/gate/agents-full-refusal.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/agents-full-refusal.log",
+    "sha256": "a7fe4897bb3692a137ce9df4b980448b4b1403e2b813033a3718fbd483a8c8ab",
+    "uncompressedSha256": "4ce2aeaf8fe85c64c6388fa4e882b440f241e89316957dd119c8a2b9c8e34133",
+    "uncompressedBytes": 391
+  },
+  "local-ci-inotify-failure/gate/agents-local-scaffold.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/agents-local-scaffold.log",
+    "sha256": "249b36e596bb78ba91647e27c2c8e0087bde69be9694717f2903a1c4b9da6d3d",
+    "uncompressedSha256": "4eb2e5737655aed7508566426b608c5fdde8fc5cdea65c60a3f1d18652c79e17",
+    "uncompressedBytes": 2058
+  },
+  "local-ci-inotify-failure/gate/component-evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/component-evidence-gate-tests.log",
+    "sha256": "fa73bdd41bce0416c1c0895b876678699b7ced3bae250a70a3ab6a61b4b90c26",
+    "uncompressedSha256": "532fc035a2bd21090de8c58a8d44bfc5566e16dbbe69d966c56a4f5d8d812f50",
+    "uncompressedBytes": 546
+  },
+  "local-ci-inotify-failure/gate/evidence-gate-tests.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/evidence-gate-tests.log",
+    "sha256": "a339a3c4b46587a709b4a462543aa2d70da8de5dcc04e7ae7e2e4d4bada54ada",
+    "uncompressedSha256": "eaf197c628cd4233d42fb2f8948104909bb18952793b6a986415787208f07bfc",
+    "uncompressedBytes": 1437
+  },
+  "local-ci-inotify-failure/gate/host-starts.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/host-starts.jsonl",
+    "sha256": "69711b01ce653225983b2b95fa88d5a265f9952338f8c0b915ea8d6f3cb6d3b3",
+    "uncompressedSha256": "b983f335a330fc75115f8b269b01f7ddc8b3b04e405c7096173b19f5bb98472c",
+    "uncompressedBytes": 90830
+  },
+  "local-ci-inotify-failure/gate/ledger.json.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/ledger.json",
+    "sha256": "17a15452e3e390416cd4e0ae3d3dd9125ebcbc2a43414a546e9356a6b31d7f50",
+    "uncompressedSha256": "8a6a4b89d870991dc779f37e7b5a4d9ca5e593e00c7b06f06973998e5b5f477e",
+    "uncompressedBytes": 976886
+  },
+  "local-ci-inotify-failure/gate/persisted-states.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/persisted-states.jsonl",
+    "sha256": "762beda1d55aa6874394c3c4a85395aea1d151bed2f63c8b6f94ef5179a5cbdf",
+    "uncompressedSha256": "20366fed0f1e0308ce55035c5c26006817d0764a65c2b69a6b3f7fab9282dcae",
+    "uncompressedBytes": 3075860
+  },
+  "local-ci-inotify-failure/gate/platform-file-host-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-file-host-release.log",
+    "sha256": "05e9d7e41f502b01c6ed7357fa36a523dfe82ab1cc8b98bcd3509abc199db13e",
+    "uncompressedSha256": "2ef08da02495508ff1d4d823ff64215b3a318e868cd68efb332945f3e80d9080",
+    "uncompressedBytes": 1705
+  },
+  "local-ci-inotify-failure/gate/platform-recovery.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-recovery.log",
+    "sha256": "6fcc619b33713b9215c0743cf56d6799945ba3adfb53457f6c68017df9e6e527",
+    "uncompressedSha256": "dfc69667c52c51fee0ac9b323dab84be9b8ac015484b49baa435247cdd66d521",
+    "uncompressedBytes": 54264
+  },
+  "local-ci-inotify-failure/gate/platform-recovery.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-recovery.xml",
+    "sha256": "056166e447ca0d5a3f45c946e9bfeb11e297dba8bd0f1029313a5e26c39b6a75",
+    "uncompressedSha256": "b3870d7d4181474716e74f203719d06dbdde7a99f211d2d9b379fadbc53d64fb",
+    "uncompressedBytes": 56681
+  },
+  "local-ci-inotify-failure/gate/platform-release.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-release.xml",
+    "sha256": "26f83f11625c4f7ac53c7c52339e4db9f102c407e06bfb9307a141d6d125bfaa",
+    "uncompressedSha256": "6756f8ec906e36e13d75ed723d97306dff55663a011190b32c32fd996d13a07c",
+    "uncompressedBytes": 76119
+  },
+  "local-ci-inotify-failure/gate/platform-tests-build-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-tests-build-release.log",
+    "sha256": "5859ff756e01c7c354cd75f27dc0e8c6b5ebace3f96a5f7033e73dd20c86bfdf",
+    "uncompressedSha256": "460a2a9c9ca8162436845137df5c3a292b3e1df6cb9e0083119bea469858d0f9",
+    "uncompressedBytes": 2182
+  },
+  "local-ci-inotify-failure/gate/platform-tests-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/platform-tests-release.log",
+    "sha256": "4653e2ad0e506426a99c83e25f1884bd813fab9a75e69246bb42d8a1094b04a2",
+    "uncompressedSha256": "f4ecb9d842562f5addca75891c4f0359973b61e2a0f1cd5c093af8cbe22aa258",
+    "uncompressedBytes": 390
+  },
+  "local-ci-inotify-failure/gate/retained-host-preflight.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/retained-host-preflight.log",
+    "sha256": "a1bce57b59c583a470ecee59a814bd14f5c89060754d7ba408c1207522dd3072",
+    "uncompressedSha256": "99d071fdbfb3fe5f171a2a1650ecb0efc6932b9bf6f70c492c45a03a2dbfd3c5",
+    "uncompressedBytes": 399
+  },
+  "local-ci-inotify-failure/gate/retained-preflight-starts.jsonl.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/retained-preflight-starts.jsonl",
+    "sha256": "8dd1cf3e0718cefd4ece3d2008a85666e153fa1b49dc7ee61ac374aca41dc773",
+    "uncompressedSha256": "fe31f2e691c166753fc2d6d5bf5151795179402c2f02e60ecd132e5a0e91e1e2",
+    "uncompressedBytes": 13200
+  },
+  "local-ci-inotify-failure/gate/retained-preflight.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/retained-preflight.xml",
+    "sha256": "6be24ec3ee946955cda9d366569110e408bd629f56d20a0ca75cd40adff495b1",
+    "uncompressedSha256": "cfa10dd48123e2f286b04ca985dccdd8245f770b5fd4d62e614457a09a1755e3",
+    "uncompressedBytes": 1842
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-0.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-0.log",
+    "sha256": "2fcfeef22441d62dcb7e5079530681a8dfd7d823945e9a5f8001a7f3b11fb605",
+    "uncompressedSha256": "3e025766585648e07e4e09bc42e6f6f04af255d2bc096afacc7bbafe834e9d8b",
+    "uncompressedBytes": 1473
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-1.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-1.log",
+    "sha256": "805ea51afe96a330ba6fab0bb1baeb688c2410a0e21c0c7166076e128b25ef07",
+    "uncompressedSha256": "77a2baec3c22202c6c656824f650bfc3e1202890f5a6534a4fe1739cbb868e6e",
+    "uncompressedBytes": 2862
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-2.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-2.log",
+    "sha256": "181df6a20a69ae90cfa2ab9ebb7bb601c9ab5ed9412c72652169fcf799935ee2",
+    "uncompressedSha256": "5a8a88e79787b5f7e311237dc040c1c25660b94fd2e97a96c7cfd2aaf4ad757d",
+    "uncompressedBytes": 1065
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-3.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-3.log",
+    "sha256": "fcd91a5d370d35d46f256a20fe248164bc5c5ce9194e550b5d6282b1a4390c35",
+    "uncompressedSha256": "dbd3d5aa1380ae9c682669389c4794cd76242303ff8db85729636c4dcb9cadc8",
+    "uncompressedBytes": 1458
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-4.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-4.log",
+    "sha256": "e12353fbca037ceba027519692865b9e9ba227af94cf17f6be901d65f9683da2",
+    "uncompressedSha256": "974fe4734b8f59156770f39ff221f3bfd1213b612df3685287994243cf218c19",
+    "uncompressedBytes": 458
+  },
+  "local-ci-inotify-failure/gate/runtime-release-prebuild-5.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/runtime-release-prebuild-5.log",
+    "sha256": "fd275c2fa842a328e36f1283bb7dc06eb0ca9bd5332d4b16cc76673cbf5ac300",
+    "uncompressedSha256": "4456c6d16a6574f3e2b748e5f955ea3502184c063ec172fb73b8451b21990b65",
+    "uncompressedBytes": 1094
+  },
+  "local-ci-inotify-failure/gate/works-consumer-release.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/works-consumer-release.log",
+    "sha256": "0222d209ccef345e60157dfaf7abbbe9584eb8e6179f0b304e6862f996761917",
+    "uncompressedSha256": "58e853e9edaa7d5c1cda9f171f3e9f66032c16525e1b99aa096f4a210ddc1fad",
+    "uncompressedBytes": 3883
+  },
+  "local-ci-inotify-failure/gate/works-consumer-supporting.log.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/works-consumer-supporting.log",
+    "sha256": "83f3044d7b28dd4c5d8fd125a2002989c2f68ba03e4e9f0e54b482f9c3a7670f",
+    "uncompressedSha256": "52b4c478fcbe9f39df7d7486d524940ebaf00e42128a39710d55852f3c545805",
+    "uncompressedBytes": 20643
+  },
+  "local-ci-inotify-failure/gate/works-consumer-supporting.xml.gz": {
+    "source": "/tmp/story49-review3-qualification-20261021/ci/gate/works-consumer-supporting.xml",
+    "sha256": "bf75c351fbd6dd95fddf1897a7a4809855a56a3cb4a4a2297f79e7575a418a59",
+    "uncompressedSha256": "81f847aab7c350920028cb6356f14ecd4456e3e9b25ddba30042b0a8453c4e95",
+    "uncompressedBytes": 176139
+  },
+  "hosted/original-artifact.zip.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/hosted-parity-39656915517.zip",
+    "sha256": "30a8ba4b7eb52ebe36e09dc2239f70282be2e587fd30fb00c5f324628bef286f",
+    "uncompressedSha256": "3ea4df236be062b10a5b7be78dbf8311d63f1f399f8e8089914c885a4b54d5da",
+    "uncompressedBytes": 817084
+  },
+  "source/works-corrections.diff.gz": {
+    "source": "/tmp/works-story49-corrections-tcq8y0as.diff",
+    "sha256": "b059be94fa8e59b0e796e9ca105ef3e55fc3679fa64f86bd7a579e7f1d509e1f",
+    "uncompressedSha256": "d3af80d3169ecb6537aa84f5aeefd43fa486a28961adb3d344fc516234f72380",
+    "uncompressedBytes": 108031
+  },
+  "source/platform-corrections.diff.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/platform-corrections.diff",
+    "sha256": "764ff6b8268589edb0819573c065a59afecabc4367e49fe1925123b2fb6a850b",
+    "uncompressedSha256": "627260e63b92b424135c5a06bdb1e3086541fc3de738fefed42bb246e1fb1d92",
+    "uncompressedBytes": 25605
+  },
+  "source/assemble-packet.py.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/assemble-packet.py",
+    "sha256": "e9f3a2ef73bfb4fe4a942fccf126070fb21249cf6d2279e0e3ddb8c4e4effc18",
+    "uncompressedSha256": "c1c2617d2b8408f7ac6bf46991a432bd0a390fa70530dd6b780f339c62d1aafd",
+    "uncompressedBytes": 9183
+  },
+  "source/build-graph-fix.diff.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/build-graph-fix.diff",
+    "sha256": "ac6682526cb4721f37dd5313f421774538fe75e8c97bbf45d548167fd197f673",
+    "uncompressedSha256": "e59b36860073cb77755924f82efe4ec2019e2ffd7f762f580a8e47a9af4588d6",
+    "uncompressedBytes": 6122
+  },
+  "source/graph-inspector/Program.cs.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-inspector-Program.cs",
+    "sha256": "68904bd38538c60d07ff3b9ebd5111bc512da60466a7a5687218bdb0068ff5d0",
+    "uncompressedSha256": "6b5d2bcdee781855a7ee1fc2031201cc37be128d3e70329bb91ba26cc9a37da4",
+    "uncompressedBytes": 1848
+  },
+  "source/graph-inspector/graph-inspector.csproj.gz": {
+    "source": "/home/administrator/projects/hexalith/works/.artifacts/story49-review3/graph-inspector-graph-inspector.csproj",
+    "sha256": "acb3323675c241dcf8739f83845c81f7520c50839c85a09ffdb4f14f04352f43",
+    "uncompressedSha256": "b79a9a5e0b464441e5206c4a5da6be29253ee7f95d9c0ccf453d8301798a8ed7",
+    "uncompressedBytes": 655
+  }
+}

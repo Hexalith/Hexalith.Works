@@ -1,2 +1,15 @@
 <Project>
+  <PropertyGroup>
+    <!-- Source-only dependencies are absent from the solution configuration map. Keep the
+         caller's configuration instead of letting those projects fall back to Debug. -->
+    <ShouldUnsetParentConfigurationAndPlatform>false</ShouldUnsetParentConfigurationAndPlatform>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Internal solution projects inherit the same global properties as their direct solution
+         entries. Adding an SDK version to those edges creates duplicate builds with shared outputs.
+         External source dependencies still need the selected SDK version and solution configuration. -->
+    <ProjectReference Update="@(ProjectReference)">
+      <AdditionalProperties Condition="'%(ProjectReference.Filename)' != 'Hexalith.Works' and !$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Hexalith.Works.'))">%(ProjectReference.AdditionalProperties);HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

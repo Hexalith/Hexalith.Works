@@ -8,6 +8,63 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class BuildConfigurationTests
 {
+    [Theory]
+    [InlineData("Debug", false)]
+    [InlineData("Debug", true)]
+    [InlineData("Release", false)]
+    [InlineData("Release", true)]
+    public void P0_SolutionReferencesKeepOneGlobalPropertySetPerWorksProject(string configuration, bool explicitSdkVersion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(configuration);
+
+        string root = RepositoryRoot.Locate();
+        string sdkVersion = XDocument.Load(Path.Combine(root, "Directory.Build.props"))
+            .Descendants("HexalithEventStoreVersion").Single().Value;
+        var globals = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Configuration"] = configuration,
+        };
+        if (explicitSdkVersion)
+        {
+            globals["HexalithEventStoreVersion"] = sdkVersion;
+        }
+
+        string[] solutionProjects = XDocument.Load(Path.Combine(root, "Hexalith.Works.slnx"))
+            .Descendants("Project")
+            .Select(project => Path.GetFullPath(Path.Combine(root, project.Attribute("Path")!.Value)))
+            .ToArray();
+        var internalProjects = solutionProjects.ToHashSet(MsBuildProjectEvaluation.PathComparer);
+        int internalEdges = 0;
+        int externalEdges = 0;
+        foreach (string project in solutionProjects)
+        {
+            MsBuildProjectEvaluation.TryEvaluate(project, globals, out MsBuildProjectSnapshot? snapshot, out string diagnostic)
+                .ShouldBeTrue(diagnostic);
+            snapshot.ShouldNotBeNull().PropertyValue("ShouldUnsetParentConfigurationAndPlatform").ShouldBe("false",
+                "Source-only dependencies must retain the solution's selected configuration.");
+            foreach (MsBuildEvaluatedItem reference in snapshot.ItemsOfType("ProjectReference"))
+            {
+                if (internalProjects.Contains(reference.CanonicalPath!))
+                {
+                    internalEdges++;
+                    reference.ProjectReferenceGlobalProperties.OrderBy(property => property.Key)
+                        .ShouldBe(globals.OrderBy(property => property.Key),
+                            $"{reference.CanonicalPath} must have the same build identity through the solution and a project reference.");
+                }
+                else
+                {
+                    externalEdges++;
+                    reference.ProjectReferenceGlobalProperties["HexalithEventStoreVersion"].ShouldBe(sdkVersion);
+                    reference.ProjectReferenceGlobalProperties["Configuration"].ShouldBe(configuration);
+                    reference.ProjectReferenceGlobalProperties["ShouldUnsetParentConfigurationAndPlatform"].ShouldBe("false");
+                }
+            }
+        }
+
+        internalEdges.ShouldBeGreaterThan(0);
+        externalEdges.ShouldBeGreaterThan(0);
+    }
+
     [Fact]
     public void P0_GlobalJsonPinsSdkAndTestRunnerWithoutPlatformHostingSdk()
     {

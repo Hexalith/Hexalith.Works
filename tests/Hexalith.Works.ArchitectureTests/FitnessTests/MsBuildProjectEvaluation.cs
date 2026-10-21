@@ -27,6 +27,7 @@ internal static class MsBuildProjectEvaluation
         "HexalithTenantsRoot",
         "IsPackable",
         "PackageId",
+        "ShouldUnsetParentConfigurationAndPlatform",
         "UseHexalithProjectReferences",
         "UseNuGetDeps",
     ];
