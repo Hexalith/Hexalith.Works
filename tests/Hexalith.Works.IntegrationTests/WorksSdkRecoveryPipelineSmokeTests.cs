@@ -88,6 +88,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         string suffix = Guid.NewGuid().ToString("N")[..10];
         string tenant = "sdk415-callback-" + suffix;
         string item = "work-sdk415-callback-" + suffix;
+        string dateItem = "work-sdk415-callback-date-" + suffix;
         using RSA rsa = RSA.Create(2048);
         string key = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
@@ -131,7 +132,30 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             bool processCandidate = await checkpoints.ContainsCandidateAsync(source, token).ConfigureAwait(false);
             processCandidate.ShouldBeTrue();
             (await checkpoints.GetAsync(source, token).ConfigureAwait(false)).Checkpoint.ShouldBe(0);
-            await EvidenceAsync("successful-callback-no-periodic-recovery", new { source, witness, processCandidate }, token).ConfigureAwait(false);
+            DateTimeOffset dateDue = DateTimeOffset.UtcNow.AddHours(2);
+            await WorksAppHostSmokeHarness.ParkSuspendedOnDateAsync(client, tenant, dateItem, dateDue, token).ConfigureAwait(false);
+            (await CountAsync(client, tenant, dateItem, nameof(WorkItemSuspended), token).ConfigureAwait(false)).ShouldBe(1);
+            string dateKey = "eventstore:reminders:v1:WorksSdkReminderActor:item:" + ReminderIdentityCodec.ComputeActorId(tenant, dateItem);
+            JsonObject? dateWitness = null;
+            await WaitAsync(async () =>
+            {
+                dateWitness = (await store.GetAsync<JsonObject>("statestore", dateKey, token).ConfigureAwait(false)).Value;
+                return dateWitness?["entries"]?.AsArray().Count == 1;
+            }, token).ConfigureAwait(false);
+            dateWitness.ShouldNotBeNull()["tenant"]!.GetValue<string>().ShouldBe(tenant);
+            dateWitness["domain"]!.GetValue<string>().ShouldBe("work");
+            dateWitness["aggregate"]!.GetValue<string>().ShouldBe(dateItem);
+            JsonNode dateEntry = dateWitness["entries"]![0].ShouldNotBeNull();
+            dateEntry["kind"]!.GetValue<string>().ShouldBe(EffectKindCatalog.DateResume);
+            dateEntry["dueUtc"]!.GetValue<DateTimeOffset>().ShouldBe(dateDue);
+            dateEntry["sourceDomain"]!.GetValue<string>().ShouldBe("work");
+            dateEntry["sourceAggregate"]!.GetValue<string>().ShouldBe(dateItem);
+            dateEntry["reminderName"]!.GetValue<string>().ShouldStartWith("date-");
+            (await CountAsync(client, tenant, dateItem, nameof(WorkItemResumed), token).ConfigureAwait(false)).ShouldBe(0);
+            var dateSource = new ProcessSource(tenant, "work", dateItem);
+            (await checkpoints.ContainsCandidateAsync(dateSource, token).ConfigureAwait(false)).ShouldBeTrue();
+            (await checkpoints.GetAsync(dateSource, token).ConfigureAwait(false)).Checkpoint.ShouldBe(0);
+            await EvidenceAsync("successful-callback-no-periodic-recovery", new { source, witness, processCandidate, dateSource, dateDue, dateWitness }, token).ConfigureAwait(false);
             if (WorksAppHostSelection.IsPlatform)
             {
                 _ = await WaitForAlertRaisedAfterAsync(telemetry, degradedObservedAt, token).ConfigureAwait(false);
@@ -151,7 +175,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             }
         }, builder =>
         {
-            Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, [new ProcessSource(tenant, "work", item)],
+            Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, [new ProcessSource(tenant, "work", item), new ProcessSource(tenant, "work", dateItem)],
                 WorksAppHostSelection.IsPlatform ? telemetry.Endpoint : null, identity);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works"))
                 .WithEnvironment("WORKS_SDK_PROOF_CALLBACKS", "1")

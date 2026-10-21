@@ -1,0 +1,23 @@
+{
+  "command": [
+    "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source/eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.EventStore-source",
+    "--platform-source-binding",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source.json",
+    "--artifacts-path",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/attempt3"
+  ],
+  "environmentOverrides": {
+    "HexalithBuildsRoot": "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.Builds-source",
+    "HexalithEventStoreRoot": "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.EventStore-source",
+    "TMPDIR": "/mnt/wsl/story49-qualification-20261021T072935Z/tmp",
+    "XDG_DATA_HOME": "/mnt/wsl/story49-qualification-20261021T072935Z/xdg-data",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "startedAt": "2026-10-21T07:34:38.742641+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-10-21T07:39:56.074502+00:00"
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/home/administrator/projects/hexalith/works/artifacts/story49-ordinary-20261021T073855Z/bin/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-result-xml",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/integration-fresh.xml"
+  ],
+  "startedAt": "2026-10-21T07:38:55.636004+00:00",
+  "sourceMatchesCanonicalGate": true,
+  "exitCode": 58,
+  "finishedAt": "2026-10-21T07:39:47.434688+00:00"
+}

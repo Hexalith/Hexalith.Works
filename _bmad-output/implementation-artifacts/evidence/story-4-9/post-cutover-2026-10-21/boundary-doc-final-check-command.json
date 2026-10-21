@@ -1,0 +1,33 @@
+{
+  "command": [
+    "/home/administrator/projects/hexalith/works/artifacts/story49-fresh-ordinary-20261021T080214Z/Hexalith.Works.ArchitectureTests/debug/Hexalith.Works.ArchitectureTests",
+    "-noLogo",
+    "-class",
+    "Hexalith.Works.ArchitectureTests.FitnessTests.BoundaryDecisionRecordTests",
+    "-result-xml",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/boundary-doc-final-check.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "startedAt": "2026-10-21T10:34:20.482089+00:00",
+  "environmentOverrides": {
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+    "TMPDIR": "/mnt/wsl/story49-qualification-20261021T072935Z/tmp",
+    "XDG_DATA_HOME": "/mnt/wsl/story49-qualification-20261021T072935Z/xdg-data"
+  },
+  "runnerEnvironmentRemoved": [
+    "HexalithEventStoreRoot"
+  ],
+  "assemblySha256": "b2d8798916250240378d0439cbe363414d176b3357263f8f815e5e5c3700d2c8",
+  "exitCode": 0,
+  "finishedAt": "2026-10-21T10:34:20.787533+00:00",
+  "result": {
+    "total": "1",
+    "passed": "1",
+    "failed": "0",
+    "skipped": "0",
+    "not-run": "0",
+    "time": "0.092"
+  },
+  "logSha256": "115720abdce5169fcd51fff465e7b03aecd97187d736a55df59795f23f1954a7",
+  "resultXmlSha256": "ea2aca307ba798062a4771d6f2586cfd3b08015e27a6282695f3eb7dc95426fd"
+}

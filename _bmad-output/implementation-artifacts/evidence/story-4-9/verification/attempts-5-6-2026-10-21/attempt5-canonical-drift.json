@@ -1,0 +1,24 @@
+{
+  "selectedRevision": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "currentRevision": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "changes": [
+    {
+      "path": ".config/dotnet-tools.json",
+      "selectedSha256": "3dda23cc6569b8c4fde0a6efcdece1077f1df05c359f0602a378f65b67ca52ca",
+      "currentCanonicalSha256": "9e21fa262e48d20f4a29b9de40c6544c95bd14e2fd9e624f8d23ab73d419e25a"
+    },
+    {
+      "path": "README.md",
+      "selectedSha256": "d3eea1fe803e85f8239f4e0f696dc93cd4972b16424a0a8863a1f0043333321c",
+      "currentCanonicalSha256": "3807494245b06e398555c5f39a5646dbe7cd0c44a76dcbd490b010e678c69041"
+    },
+    {
+      "path": "hexalith-platform.json",
+      "selectedSha256": "6b8551032063b13ef5c3f40f79e4a454c0a3c335a8ef22ea43924b2af97a4998",
+      "currentCanonicalSha256": "a2bef51e9bb0f11ccc6b49757a9cf28a7d71692ed588448a73b12f0a3d0db103"
+    }
+  ],
+  "oldExportUnchanged": true,
+  "dependencyLinksUnchanged": true,
+  "selectedCatalogUnchanged": true
+}

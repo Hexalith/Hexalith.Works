@@ -1,0 +1,12 @@
+{
+  "originCommit": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "observedOriginCommit": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "root": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt7",
+  "manifest": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt7.json",
+  "manifestSha256": "c5628ce5656a0bfccab81d1cff9a2ae6ce0d98c6a6a1f3f429524c3339597114",
+  "sourceInputCount": 636,
+  "inventorySha256": "a26a48d2e903d9c480181527d0cffa4fec4d32d7fe641f76e655cf91ef59f536",
+  "workingOverlayPaths": [],
+  "readmeSha256": "f03caf11a08e2f7b6cdda3042f11d8f5e7fd44ed67369a7d833bfb83c7213f5d",
+  "priorExportsPreserved": true
+}

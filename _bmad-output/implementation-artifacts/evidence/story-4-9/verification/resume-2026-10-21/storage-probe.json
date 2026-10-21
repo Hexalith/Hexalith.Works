@@ -1,0 +1,23 @@
+{
+  "time": "2026-10-21T07:29:50.128095+00:00",
+  "command": [
+    "docker",
+    "run",
+    "--rm",
+    "--network",
+    "none",
+    "--mount",
+    "type=bind,source=/mnt/wsl/story49-qualification-20261021T072935Z,target=/story49,readonly",
+    "alpine:3.22",
+    "cat",
+    "/story49/probe.sh"
+  ],
+  "exitCode": 0,
+  "stdout": "#!/bin/sh\nprintf story49-owned-storage-ok\\n\n",
+  "stderr": "",
+  "storage": {
+    "total": 48510607360,
+    "used": 23543808,
+    "free": 48487063552
+  }
+}

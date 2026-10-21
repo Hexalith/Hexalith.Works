@@ -1,0 +1,26 @@
+{
+  "/proc/sys/fs/inotify/max_user_watches": {
+    "value": "1048576",
+    "mode": "-rw-r--r--",
+    "uid": 0,
+    "gid": 0,
+    "currentUid": 1000,
+    "writableByCurrentProcess": false
+  },
+  "/proc/sys/fs/inotify/max_user_instances": {
+    "value": "8192",
+    "mode": "-rw-r--r--",
+    "uid": 0,
+    "gid": 0,
+    "currentUid": 1000,
+    "writableByCurrentProcess": false
+  },
+  "/proc/sys/fs/inotify/max_queued_events": {
+    "value": "65536",
+    "mode": "-rw-r--r--",
+    "uid": 0,
+    "gid": 0,
+    "currentUid": 1000,
+    "writableByCurrentProcess": false
+  }
+}

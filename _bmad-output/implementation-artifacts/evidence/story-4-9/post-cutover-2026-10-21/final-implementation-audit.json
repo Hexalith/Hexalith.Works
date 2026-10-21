@@ -1,0 +1,70 @@
+{
+  "verifiedAt": "2026-10-21T10:36:15.453826+00:00",
+  "frozenBlockSha256": "de1c74eee26581eab23b760d595d93951471cad0074b3b57eb45a35058f7ef5d",
+  "matchesTrackedFrozenBlock": true,
+  "baselineCommitUnchanged": "18e94d388ab0abd8be363b361d0b2fee762359e7",
+  "storyStatus": "in-progress",
+  "completedExecutionTasks": 4,
+  "postGatePending": false,
+  "historicalPreLaneUnchanged": true,
+  "historicalRetiredGroupsUnchanged": true,
+  "historicalPacketEntriesVerified": {
+    "pre-cutover-2026-10-20": {
+      "storedFiles": 45,
+      "externalBindings": 0
+    },
+    "verification/resume-2026-10-21": {
+      "storedFiles": 93,
+      "externalBindings": 2
+    },
+    "verification/attempts-5-6-2026-10-21": {
+      "storedFiles": 46,
+      "externalBindings": 0
+    }
+  },
+  "postRows": 11,
+  "postProofKinds": 44,
+  "retiredGroups": 35,
+  "passingReplacementMethods": 28,
+  "finalBoundaryDocumentCheck": {
+    "command": [
+      "/home/administrator/projects/hexalith/works/artifacts/story49-fresh-ordinary-20261021T080214Z/Hexalith.Works.ArchitectureTests/debug/Hexalith.Works.ArchitectureTests",
+      "-noLogo",
+      "-class",
+      "Hexalith.Works.ArchitectureTests.FitnessTests.BoundaryDecisionRecordTests",
+      "-result-xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/boundary-doc-final-check.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "startedAt": "2026-10-21T10:34:20.482089+00:00",
+    "environmentOverrides": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1",
+      "TMPDIR": "/mnt/wsl/story49-qualification-20261021T072935Z/tmp",
+      "XDG_DATA_HOME": "/mnt/wsl/story49-qualification-20261021T072935Z/xdg-data"
+    },
+    "runnerEnvironmentRemoved": [
+      "HexalithEventStoreRoot"
+    ],
+    "assemblySha256": "b2d8798916250240378d0439cbe363414d176b3357263f8f815e5e5c3700d2c8",
+    "exitCode": 0,
+    "finishedAt": "2026-10-21T10:34:20.787533+00:00",
+    "result": {
+      "total": "1",
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "0.092"
+    },
+    "logSha256": "115720abdce5169fcd51fff465e7b03aecd97187d736a55df59795f23f1954a7",
+    "resultXmlSha256": "ea2aca307ba798062a4771d6f2586cfd3b08015e27a6282695f3eb7dc95426fd"
+  },
+  "artifactHashes": {
+    "_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md": "40c9a0c25755c92a1e55eacf5e58991271941679769a5b5241f36ea61891350b",
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/verification/matrix-and-frozen-row-audit.json": "b8043b7acb8a9facf611a55b371557e79e31d6edc783797ec88bd688a61420da",
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/verification/retired-test-replacements.json": "ef870c059adf553fa6a5bf09d028fc94fefa4f67f8c38aa5e5f6c4e763930434",
+    "docs/boundary-decision-record.md": "6dfb778bc483e9cd95ebfa760e42d1ab80de661d4d2ccd864cb7bff18af89222",
+    "docs/platform-hosting-cutover.md": "b654f8d1d09987193e30504e2fca8e6e5b697ec93babdab70fb30d0a1ea6d029"
+  },
+  "scope": "Implementation verification complete; acceptance audit and review remain owned by parent workflow."
+}

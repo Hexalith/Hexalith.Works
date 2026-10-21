@@ -1,0 +1,29 @@
+{
+  "status": "passed-disposable-synthetic-parity-and-rollback",
+  "fullGateExitCode": 0,
+  "rowsPassed": 11,
+  "proofKindsPassed": 44,
+  "completeFleetRollback": true,
+  "persistedPhases": 32,
+  "actualFleetStarts": 11,
+  "runtimeArtifacts": 439,
+  "sidecarLaunches": 45,
+  "sidecarConfigurations": 44,
+  "selectedPlatformRevision": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "finalObservedPlatformRevision": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "worksRevision": "9dbd2f07d3313b6df3c491e9cf3510b87b32fe65",
+  "publicEventStoreVersion": "3.126.0",
+  "publicEventStoreRevision": "fcf78d6cafb6c0c9f52dc350a9a09aff54ded288",
+  "quotaRestored": true,
+  "restoredWatchLimit": 1048576,
+  "allRequiredXmlPassedWithoutSkips": true,
+  "freshOrdinaryEvidence": "../verification/resume-2026-10-21/fresh-ordinary/",
+  "freshOrdinaryCounts": {
+    "unit": 589,
+    "property": 3,
+    "architecture": 270,
+    "integrationOrdinary": 728,
+    "explicitFactsSeparatelyPassed": 7
+  },
+  "reviewStatus": "Implementation verification complete; story remains in-progress pending parent review."
+}

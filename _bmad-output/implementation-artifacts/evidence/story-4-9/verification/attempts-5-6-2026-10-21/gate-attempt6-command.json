@@ -1,0 +1,40 @@
+{
+  "command": [
+    "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt6/eng/verify-works-host.sh",
+    "--works-root",
+    "/home/administrator/projects/hexalith/works",
+    "--runtime-sdk-root",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.EventStore-source",
+    "--platform-source-binding",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt6.json",
+    "--artifacts-path",
+    "/mnt/wsl/story49-qualification-20261021T072935Z/attempt6"
+  ],
+  "environmentOverrides": {
+    "HexalithBuildsRoot": "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.Builds-source",
+    "HexalithEventStoreRoot": "/mnt/wsl/story49-qualification-20261021T072935Z/Hexalith.EventStore-source",
+    "TMPDIR": "/mnt/wsl/story49-qualification-20261021T072935Z/tmp",
+    "XDG_DATA_HOME": "/mnt/wsl/story49-qualification-20261021T072935Z/xdg-data",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+  },
+  "startedAt": "2026-10-21T09:32:10.551896+00:00",
+  "wrapperPid": 63903,
+  "executionPolicy": "Complete sequential gate; no overlapping test suites.",
+  "quota": {
+    "userApprovedTemporaryChangeAndRestore": true,
+    "previouslyRecordedOriginal": 1048576,
+    "observedBeforeWrapper": 1048576,
+    "temporary": 2097152,
+    "raisedByWrapper": true,
+    "activeBeforeGate": 2097152,
+    "observedAfterGate": 2097152,
+    "restoreExitCode": 0,
+    "restoreOutput": "fs.inotify.max_user_watches = 1048576\n",
+    "observedAfterRestore": 1048576,
+    "restored": true
+  },
+  "gatePid": 63908,
+  "exitCode": 1,
+  "finishedAt": "2026-10-21T09:59:03.621772+00:00"
+}

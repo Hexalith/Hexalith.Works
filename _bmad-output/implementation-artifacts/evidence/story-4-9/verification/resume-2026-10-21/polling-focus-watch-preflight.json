@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-10-21T07:58:08.731021+00:00",
+  "observedTotalWatches": 1047950,
+  "maxUserWatches": 1048576,
+  "observedHeadroom": 626,
+  "ownSingleWatchProbe": {
+    "watchDescriptor": 1,
+    "errno": 0,
+    "successful": true
+  },
+  "environmentOverride": {
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+  },
+  "systemLimitsUnchanged": true
+}

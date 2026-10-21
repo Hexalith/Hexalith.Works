@@ -14,6 +14,7 @@ public sealed class PlatformHostingBoundaryTests
     {
         string root = RepositoryRoot.Locate();
         HostingProjects(root).ShouldBeEmpty("Boundary violation: AppHost, Aspire and ServiceDefaults belong to Platform.");
+        RootFileHosts(root).ShouldBeEmpty("Boundary violation: file-based Aspire AppHosts belong to Platform.");
         File.Exists(Path.Combine(root, "aspire.config.json")).ShouldBeFalse("Platform owns Aspire configuration.");
         string solution = File.ReadAllText(Path.Combine(root, "Hexalith.Works.slnx"));
         solution.ShouldNotContain(".AppHost");
@@ -21,6 +22,23 @@ public sealed class PlatformHostingBoundaryTests
         XDocument integration = XDocument.Load(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"));
         integration.Descendants("ProjectReference").Select(item => item.Attribute("Include")?.Value ?? string.Empty)
             .ShouldNotContain(path => Regex.IsMatch(path, @"Hexalith\.Works\.(AppHost|Aspire|ServiceDefaults)", RegexOptions.IgnoreCase));
+    }
+
+    /// <summary>Root file hosts cannot bypass the source-project classifier, even under another filename.</summary>
+    [Theory]
+    [InlineData("apphost.cs", "var builder = DistributedApplication.CreateBuilder(args);")]
+    [InlineData("AppHost.cs", "// root hosting entry point")]
+    [InlineData("main.cs", "#:sdk Aspire.AppHost.Sdk\nvar builder = DistributedApplication.CreateBuilder(args);")]
+    [InlineData("main.cs", "#!/usr/bin/env dotnet\n#:sdk Aspire.AppHost.Sdk@13.6.1\n")]
+    public void ReintroducedRootFileHostsAreDetected(string filename, string contents)
+    {
+        string root = Directory.CreateTempSubdirectory("works-file-host-boundary-").FullName;
+        try
+        {
+            File.WriteAllText(Path.Combine(root, filename), contents);
+            RootFileHosts(root).ShouldHaveSingleItem();
+        }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
     /// <summary>Renamed or newly nested hosting projects are still rejected by the boundary policy.</summary>
@@ -66,4 +84,9 @@ public sealed class PlatformHostingBoundaryTests
         => [.. Directory.EnumerateFiles(Path.Combine(root, "src"), "*.csproj", SearchOption.AllDirectories)
             .Where(path => !KernelDependencyPolicy.IsBuildOutput(path))
             .Where(path => Regex.IsMatch(Path.GetFileNameWithoutExtension(path), @"(^|\.)(AppHost|Aspire|ServiceDefaults)($|\.)", RegexOptions.IgnoreCase))];
+
+    private static string[] RootFileHosts(string root)
+        => [.. Directory.EnumerateFiles(root, "*.cs", SearchOption.TopDirectoryOnly)
+            .Where(path => string.Equals(Path.GetFileName(path), "apphost.cs", StringComparison.OrdinalIgnoreCase)
+                || Regex.IsMatch(File.ReadAllText(path), @"^\s*#:sdk\s+Aspire\.AppHost\.Sdk(?:@\S+)?\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase))];
 }

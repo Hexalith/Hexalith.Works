@@ -1,0 +1,14 @@
+{
+  "preCutoverLedgerSha256": "1797b853ae0ce449325d4f665a77f2e3e4c0527ccb3f087cfbb702f7a5ea922a",
+  "preCutoverStatus": "passed-disposable-synthetic-parity-and-rollback",
+  "preCutoverRows": 11,
+  "preCutoverProofKindsPassed": 44,
+  "preCutoverRollbackComplete": true,
+  "preCutoverPacketFilesVerified": 45,
+  "currentHostingSourceFiles": [],
+  "rootAspireConfigurationAbsent": true,
+  "currentSdkComposition": true,
+  "worksRevision": "9dbd2f07d3313b6df3c491e9cf3510b87b32fe65",
+  "platformRevision": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "ignoredHistoricalBuildOutputsPreserved": true
+}

@@ -1670,3 +1670,39 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Compare complete Platform consumer source membership at the end of a verifier run, and make the packet input recheck's scope claim match what it compares (review T241).
   evidence: The end-of-run loop at `P/eng/verify_works_host.py:1029-1031` re-hashes only the paths recorded at `:875-878`, so a Platform `src/**/*.cs` added after that baseline compiles into self-consistent DLL hashes without being bound; iteration 7 rejected the same gap as T225. The review6 `tools/bind_inputs.py:26-29,44-45` also re-hashes recorded keys only, while `input-binding.json` calls it a "complete" comparison with Works source "membership". Fold into the T222 end-of-pipeline extraction; the verifier's Works consumer end check already compares the full inventory.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Align release README authentication instructions with the independently committed OIDC release workflow.
+  evidence: Review B2: README still requests a stored NuGet API key, while the release migration in 9dbd2f07d3313b6df3c491e9cf3510b87b32fe65 obtains a key using NUGET_USER. This was not introduced by the hosting cutover.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Tighten the pre-existing mTLS refusal probe against post-authentication transport resets.
+  evidence: Review B8: VerifyAsync can count authenticated-server/no-SETTINGS transport failure as refusal; comparison with pre-cutover 696781961155d764ed805843f55b40dc5882e887 confirms the behavior predates this change. Add a post-authentication reset control while preserving fail-closed behavior.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Require serverAuth application policy in the pre-existing custom certificate trust proof.
+  evidence: Review B9: the X509Chain policy omits application policy before and after cutover. Verify with a clientAuth-only certificate negative control in the owning proof.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Measure ordinary family-fold latency and capacity against real store budgets (unverified medium).
+  evidence: Review B10: family-wide reads predate cutover; no admitted-population latency or operational-budget failure has been demonstrated. Settle with real-store population/capacity measurements under the selected SDK profile.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Extend Platform canonical source closure to consumed root-dependency build and source inputs.
+  evidence: Review R2B3: a temporary fixture changed Hexalith.Builds/Props/Hexalith.Build.props without changing dependency_inputs, which binds only Directory.Packages.props. This unchanged owner policy predates the CI bootstrap; current qualification independently captures all 1,779 Builds inputs. Record dependency revisions and consumed overlays and test drift refusal in the owner.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Terminate owned command descendants when the Platform verifier times out or is cancelled.
+  evidence: Review R2B5: subprocess.run(timeout=1800) only kills the direct process; a temporary owned fixture confirmed its sleep descendant survives timeout and explicitly cleaned that PID. The helper is unchanged from the pre-existing verifier. Use an owned process group and a descendant-cleanup regression.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Bind reusable EXT-HOST-1 component attempts to actual suite and dependency inputs.
+  evidence: Review R2B7: the pre-existing attempt key contains HEAD, plan and profile (now also Release mode), and a matching key returns stored success without inspecting dirty suite or external guard sources. The fresh Works gate does not reuse this complete-profile success path; fix and test cache source identity in EXT-HOST-1.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Assess Debug-only runtime coverage of Works supporting conformance facts (unverified medium).
+  evidence: Review R2B8: the pre-existing full gate builds the Debug Works consumer and runs 114 Platform Debug tests, but executes the 255 supporting Works facts only in Release. No current source-only runtime defect is identified. Execute those methods against Debug plus a controlled Debug-only failing mutation to settle whether this omission hides behavior before changing the declared requirement.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Bound outstanding noncooperative identity-provider operations across repeated authorization timeouts.
+  evidence: Review R2B9: WorksQueryPolicyDeadlineTests proves the provider task can remain incomplete after the fail-closed response, and WorksQueryPolicy has no concurrency bound on subsequent calls. The policy is unchanged from pre-cutover 696781961155d764ed805843f55b40dc5882e887. Fix in the owning identity-client boundary and verify repeated noncooperative calls.

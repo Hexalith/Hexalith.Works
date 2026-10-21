@@ -1,0 +1,332 @@
+{
+  "status": "incomplete",
+  "scope": "disposable-synthetic",
+  "commands": [],
+  "checks": {},
+  "rows": {
+    "R1": {
+      "title": "Aspire/Dapr composition",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.Aspire",
+        "version": "3.126.0",
+        "api": "AddHexalithEventStore/AddEventStoreDomainModule"
+      },
+      "consumer": "P/src/Hexalith.Platform.Composition/WorksPreviewModel.cs",
+      "consumerRoot": "Platform",
+      "consumerSha256": "f1a5a00ff506c3798f285f927276f9c90a25bdf14cb6b0db79aa536ddf0628f5",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R2": {
+      "title": "SDK defaults, readiness and telemetry",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "AddEventStoreDomainService"
+      },
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "76c9e9ab14c52d8735034f465d8a356dbb07322ca6964c3c287c1512daf9648e",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R3": {
+      "title": "Origin, redelivery and quarantine",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "UseEventStoreDomainService"
+      },
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "76c9e9ab14c52d8735034f465d8a356dbb07322ca6964c3c287c1512daf9648e",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R4": {
+      "title": "Projection family and fenced rebuild",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.Client",
+        "version": "3.126.0",
+        "api": "SharedProjectionEpochCoordinator"
+      },
+      "consumer": "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "7c99b0ed3addd580c56a3b305b622588fb6371eb9acc4edb80db1092fcc7a57f",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R5": {
+      "title": "Authorized and filtered queries",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "IDomainQueryHandler"
+      },
+      "consumer": "src/Hexalith.Works/Queries/WhatsNextQueryHandler.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "e04a8feae524e9bc608c98611d154d159b32b240f10101d8161c1d9bdd4274f2",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R6": {
+      "title": "Typed reminders and lost firing/HA",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "AddEventStoreReminders"
+      },
+      "consumer": "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "60fa7d61062690e03d581ecc2f0fa5ce257fced1e06021b5b389a3d7f5315bf4",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R7": {
+      "title": "Paged process, reissue and restart",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "AddEventStoreProcesses"
+      },
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessTranslator.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "e3a19f59ac28e09ec4afdd026fd96265a82b2133c3df9de82df4aa8ff0debd3a",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R8": {
+      "title": "Recovery operations, audit and alerts",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "ProcessDispositionService"
+      },
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessDispositionEndpoints.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "5227e0d7f7402f06e0c8af3918d0a8d4da4ccd8d72d02424d75daef7ae69dcb4",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      },
+      "additionalSeams": {
+        "package": "Hexalith.EventStore.Client",
+        "version": "3.126.0",
+        "api": "IProcessDispositionAuthorizer/IProcessDispositionAuditSink"
+      }
+    },
+    "R9": {
+      "title": "Works SDK consumption",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.DomainService",
+        "version": "3.126.0",
+        "api": "AddEventStoreDomainService/UseEventStoreDomainService"
+      },
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "76c9e9ab14c52d8735034f465d8a356dbb07322ca6964c3c287c1512daf9648e",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    },
+    "R10": {
+      "title": "AD-24 transport and production admission",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.ServiceDefaults",
+        "version": "3.126.0",
+        "api": "EventStoreWorkloadAuthenticationDefaults"
+      },
+      "consumer": "src/Hexalith.Works/Runtime/WorksHost.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "76c9e9ab14c52d8735034f465d8a356dbb07322ca6964c3c287c1512daf9648e",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      },
+      "configurationConsumers": [
+        {
+          "path": "DaprComponents/accesscontrol.eventstore-admin.yaml",
+          "sha256": "f8db9ef9ed77525c29c57df29b2e098f9585ab998da074bd99aa9cab2fde07ce"
+        },
+        {
+          "path": "DaprComponents/accesscontrol.eventstore-operations.yaml",
+          "sha256": "157c01878405f7e29d418b3225b84ff4fedc17929533455746d83fb8ea275963"
+        },
+        {
+          "path": "DaprComponents/accesscontrol.works.yaml",
+          "sha256": "750d940c5d3019e930183bcf405a18534eeb563c371a8da27e4fa522f28d84b7"
+        },
+        {
+          "path": "DaprComponents/accesscontrol.yaml",
+          "sha256": "c6076e9d8454dc10891db90b74d813c5959cf9a98e862d837223cd106017e0b8"
+        },
+        {
+          "path": "DaprComponents/configstore.yaml",
+          "sha256": "f3d92daa6b46baf0e9044d74d97c807f4d8dfd0867a4014acebcafe4586e31f5"
+        },
+        {
+          "path": "DaprComponents/pubsub.yaml",
+          "sha256": "43894aff9b7090b01a9015cdecaeb8b339d7f6b2db7fe24499b777ca7bccdb51"
+        },
+        {
+          "path": "DaprComponents/reference/accesscontrol.eventstore.yaml",
+          "sha256": "610f44e2b39e81c0a9c7b711e40bebba69c801a0082ad9859ace0947922d8e26"
+        },
+        {
+          "path": "DaprComponents/reference/accesscontrol.tenants.yaml",
+          "sha256": "e48f49a46c88a203207d4b95b2e3fc83d2142a3418520aadd236b5de3ea67559"
+        },
+        {
+          "path": "DaprComponents/reference/configstore.yaml",
+          "sha256": "93db3eb48b7d83a8747421078bb1c3b99f9c70fa1903e3c3219775c794912034"
+        },
+        {
+          "path": "DaprComponents/reference/llm.yaml",
+          "sha256": "44ac82937d333518bcee4289ae2b9facdf06bc5ce88654b2ca6e548839fba229"
+        },
+        {
+          "path": "DaprComponents/reference/pubsub.yaml",
+          "sha256": "aa525ff11544e4662feb55449842b5dce527cb4f234a560c821295796f088b8e"
+        },
+        {
+          "path": "DaprComponents/reference/secretstore.yaml",
+          "sha256": "8d58f4c8c1fcf071f602f213599dafeb890061e34eda174e2b74a89dc92f5131"
+        },
+        {
+          "path": "DaprComponents/reference/statestore.yaml",
+          "sha256": "f22f71da0cac8737c0ace7651b5529db47c942765f62a4c858984931e5a09627"
+        },
+        {
+          "path": "DaprComponents/reference/telemetry-config.yaml",
+          "sha256": "bdc2f0a6eea28fc625e3f34e5689c1958a06e4e42b2c9cace612e1b6b2619e86"
+        },
+        {
+          "path": "DaprComponents/reference/telemetry-state.yaml",
+          "sha256": "4ce8c049b6990a01a046ac372aa9ec1ebb93527afcef155232127a3b4a89c303"
+        },
+        {
+          "path": "DaprComponents/reference/timesheets-readmodels.yaml",
+          "sha256": "c4451cdb7904a65b6d604b77f89915d2c6890d6bab975f7de2ce951bfae3fdf2"
+        },
+        {
+          "path": "DaprComponents/resiliency/resiliency.yaml",
+          "sha256": "c4013aa88c1a6612c89f0e84782583b82d1e559e6166789a41831cebafbd0f94"
+        },
+        {
+          "path": "DaprComponents/sentry.yaml",
+          "sha256": "82db2264612d23c7cc37eb237cc803ecd9d82c59372d6e134d2433de257446c3"
+        },
+        {
+          "path": "DaprComponents/statestore.yaml",
+          "sha256": "a1bc5d0c8a7f4a198c72ebac8f8981f1cf092f0558f234bdad381fea18a09781"
+        },
+        {
+          "path": "DaprComponents/works/subscription.work.events.yaml",
+          "sha256": "9cf991d94277e6aa3f4bf307ab89a781a9237c21757814ce9ff899ae6a17b9c5"
+        },
+        {
+          "path": "config/works-production-profile.schema.json",
+          "sha256": "8b01c4ba06de32b12c83a857eeb60dbc91f4bb6e885b9b3c6df92134f7fb98dd"
+        },
+        {
+          "path": "src/Hexalith.Platform.Composition/WorksProductionProfile.cs",
+          "sha256": "f3ecb0d9294b6f7146c24a8dc907e27c6343c2a0bcd33d76cf270b14228235a4"
+        }
+      ]
+    },
+    "R11": {
+      "title": "Trusted submission and receipt replay",
+      "status": "open",
+      "producer": {
+        "package": "Hexalith.EventStore.Client",
+        "version": "3.126.0",
+        "api": "HttpTrustedEffectSubmitter"
+      },
+      "consumer": "src/Hexalith.Works/Recovery/WorksProcessDelegationProvider.cs",
+      "consumerRoot": "Works",
+      "consumerSha256": "05a8e7ed4152897c868193c885474aa5c593fdd648d937045426a00e3d0276c1",
+      "requiredProofs": {
+        "persisted": false,
+        "negative": false,
+        "restart": false,
+        "rollback": false
+      }
+    }
+  },
+  "rollback": {
+    "complete": false,
+    "missing": "Platform-write -> complete fleet restore -> retained Works host queries and receipt replay"
+  },
+  "selectedSdk": {
+    "version": "3.126.0",
+    "catalog": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source/references/Hexalith.Builds/Props/Directory.Packages.props",
+    "catalogSha256": "806922385b3209e0f396ccb8478870bfca59a60ac9432fd6c97c63a22b34f337",
+    "worksConsumerPins": {
+      "Directory.Build.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Build.props",
+        "version": "3.126.0",
+        "sha256": "ca0995d82be6ebc96815114de8c0c0ceeaf3bb78607c21c8cf7849d816096598"
+      },
+      "Directory.Packages.props": {
+        "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+        "version": "3.126.0",
+        "sha256": "6c7f64234d95e0fa1d49d41329b0d04d51457e1b9f644ae37bdc659a3a8ce42d"
+      }
+    },
+    "hostPackagePins": {
+      "path": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source/apphost.cs",
+      "version": "3.126.0",
+      "packages": [
+        "Hexalith.EventStore.Aspire",
+        "Hexalith.EventStore.ServiceDefaults"
+      ],
+      "sha256": "fba5766a243cf9d4c4a9baf87e3ebd5a03ab8f99ca61cf6068b04c92a317d918"
+    }
+  },
+  "failure": "Selected SDK root lacks its runtime source or central build files"
+}

@@ -1,5 +1,25 @@
 # SDK reminder and process adoption
 
+## Current configuration after Story 4.9
+
+Works now requires the canonical SDK runtime. `Works:Recovery:UseSdkRuntime` and `Works:Projection:UseSdkDelivery` default to `true`; explicitly setting either to `false` rejects startup. Platform owns the topology and service defaults; EventStore owns reminder registration, periodic reconciliation, process leases, checkpoints, receipts, retry, quarantine and readiness. Initialize the [root source dependencies](../README.md#local-debug-development), including the Platform and Parties test inputs, before building locally.
+
+`Works:Recovery:MaxStreamPagesPerAggregate`, `MaxContextBytes` and `ContextReadTimeout` still bound Works contextual reads. The deprecated `MaxStreamPagesPerTenant` alias still overrides the per-aggregate page setting when supplied. The five settings below are retained for configuration compatibility and explicitly obsolete in `WorksRecoveryOptions`; SDK recovery ignores them:
+
+| Historical `Works:Recovery` setting | Supported SDK configuration and semantic limits |
+| --- | --- |
+| `RunReconciliationOnStartup` | `EventStore:Reminders:ReconciliationEnabled` and `EventStore:Processes:ReconciliationEnabled` enable their periodic workers, including the initial pass. Disabling them degrades readiness; this is not a startup-only switch. |
+| `ReminderReconciliationMaxAttempts` | No equivalent startup attempt budget. SDK periodic discovery continues according to its bounded reconciliation and retry policies. |
+| `ReminderReconciliationRetryDelayMilliseconds` | Reminder `ReconciliationInterval`, `RetryInitialDelay` and `RetryMaxDelay` control separate periodic cadence and unresolved-submission backoff; they do not reproduce legacy startup retries. Process cadence uses `EventStore:Processes:ReconciliationInterval`. |
+| `CascadeTargetIntervalMilliseconds` | No equivalent per-target delay. Process `OperationTimeout`, `SourceServiceQuantum` and `MaxEffectsPerEnvelope` bound supported work and must satisfy SDK validation together. |
+| `CascadeCheckpointIndexStaleAfterHours` | No equivalent orphan-index pruning control. Process `LeaseDuration` and `ReadinessMaxAge` control ownership and freshness, not permission to discard retained candidates. |
+
+Use the [Platform recovery runbook](../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations) for `/ready` status, bounded `eventstore.domain.recovery.*` metrics, alerts and protected, audited `POST /work/processes/revalidate`. Current production authorization and audit providers remain required. [Cutover and rollback](platform-hosting-cutover.md) describes complete-fleet restore; changing a configuration switch cannot restore the archived host.
+
+## Historical Story 4.15 migration qualification
+
+The remaining sections preserve exact earlier modes, candidates, commands and qualification limits. References to the legacy default, opt-in SDK mode or a retained local AppHost describe those historical inputs. They are not instructions for the current canonical executable. The current public SDK pin is 3.126.0; Story 4.9 removed the transitional projects after complete Platform qualification.
+
 Story 4.15 adds an exclusive opt-in recovery runtime. The default remains the legacy host. Enable both `Works:Projection:UseSdkDelivery=true` and `Works:Recovery:UseSdkRuntime=true` together. SDK mode validates the final service graph after host customization and the actual resolved hosted services in the generic host lifecycle before any hosted StartAsync, including instance and factory registrations, refusing legacy reminder actors, schedulers, dispatchers and hosted writers in either registration order. EventStore owns actor reminders, periodic discovery, leases, checkpoints, receipts, retry/parking, quarantine and readiness. Works supplies read-only adapters and clock-free domain decisions.
 
 On 2026-10-19 the [public 3.126.0 qualification](../_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/README.md) passed every Platform R1–R11 row and complete retained-host rollback with zero skips. The retained Works AppHost’s own exact-source Debug recovery class passed 4/4 on the final twelve-source fixture. Earlier version packets retain their historical scope.

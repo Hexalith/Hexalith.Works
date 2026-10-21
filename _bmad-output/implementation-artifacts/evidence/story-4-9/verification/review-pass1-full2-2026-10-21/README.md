@@ -1,0 +1,7 @@
+# Review pass 1 full gate, attempt 2 — nonqualifying
+
+The canonical full-profile verifier exited 1 after its recovery class reported 3 passed and 1 failed facts. The callback fact timed out during EventStore startup: actor placement remained disconnected and readiness stayed Unhealthy. Its body, including the new date-suspension assertion, did not run. The other recovery fact completed 20 persisted phases, including protected operations, capture-through-Commit rebuild, complete fleet snapshot, stopped-fleet restore and retained-host query/receipt replay. These partial outcomes never qualify the incomplete gate.
+
+Before that failure, both Platform suites passed 114/114, supporting Works checks passed 255/255, exact public EventStore 3.126.0 producer qualification passed, all six runtime builds completed and retained readiness passed 1/1. Both mandatory Python groups passed (97+13). The gate stopped at the failed recovery class; later historical, HA, mTLS and focused rebuild lanes did not run in this attempt.
+
+`closure/review-pass1-full2-command.json.gz` records the exact command, environment, exit 1 and successful restoration/read-back of the original 1,048,576 watch limit. The execution export, isolated Git origin and original owner overlay still matched binding `dc69918c3a20c57eb1ef7de9b980cb257d6c2b0bcd97413e5843f2f8e2c5a8fc` before an unchanged fresh retry. No source or readiness deadline was changed to bypass the failure. Raw logs, XML, state/start records and nested component commands remain hash-bound in `packet-manifest.json`.

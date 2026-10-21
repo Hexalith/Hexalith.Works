@@ -1,0 +1,116 @@
+{
+  "selectedRevision": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "currentRevision": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "changedInputs": [
+    {
+      "path": "README.md",
+      "selectedSha256": "3807494245b06e398555c5f39a5646dbe7cd0c44a76dcbd490b010e678c69041",
+      "currentCanonicalSha256": "f03caf11a08e2f7b6cdda3042f11d8f5e7fd44ed67369a7d833bfb83c7213f5d"
+    }
+  ],
+  "checks": {
+    "runtimeArtifacts": {
+      "count": 439,
+      "unchanged": true
+    },
+    "platformAdapterAssemblies": {
+      "count": 3,
+      "unchanged": true
+    },
+    "consumer": {
+      "count": 4,
+      "unchanged": true
+    },
+    "host": {
+      "unchanged": true
+    },
+    "immutablePlatformExport": {
+      "count": 636,
+      "unchanged": true
+    },
+    "canonicalWorks": {
+      "unchanged": true
+    }
+  },
+  "status": "incomplete",
+  "failure": "Snapshot or current canonical ordinary source inputs changed",
+  "results": {
+    "platform-projection.xml": {
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "165.969"
+    },
+    "platform-mtls.xml": {
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "27.411"
+    },
+    "platform-ha.xml": {
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "91.700"
+    },
+    "platform-historical.xml": {
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "129.649"
+    },
+    "platform-recovery.xml": {
+      "passed": "4",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "815.663"
+    },
+    "retained-preflight.xml": {
+      "passed": "1",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "32.434"
+    },
+    "works-consumer-supporting.xml": {
+      "passed": "255",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "74.714"
+    },
+    "platform-release.xml": {
+      "passed": "114",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "5.348"
+    },
+    "platform-debug.xml": {
+      "passed": "114",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "time": "5.317"
+    }
+  },
+  "quotaLifecycle": {
+    "userApprovedTemporaryChangeAndRestore": true,
+    "previouslyRecordedOriginal": 1048576,
+    "observedBeforeWrapper": 1048576,
+    "temporary": 2097152,
+    "raisedByWrapper": true,
+    "activeBeforeGate": 2097152,
+    "observedAfterGate": 2097152,
+    "restoreExitCode": 0,
+    "restoreOutput": "fs.inotify.max_user_watches = 1048576\n",
+    "observedAfterRestore": 1048576,
+    "restored": true
+  },
+  "currentWatchLimit": "1048576"
+}

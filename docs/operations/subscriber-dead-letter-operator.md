@@ -121,7 +121,7 @@ real tenant with that id, or its operators would share a scope with unidentified
 
 ## Works date-reminder recovery warnings
 
-The warning IDs below describe the retained historical host only. Since Story 4.9, the active Platform host uses SDK reminder/process health, quarantine and disposition diagnostics; use the Platform recovery runbook and the persisted SDK counters. Historical warnings remain documented for archived rollback investigations.
+The warning IDs below describe the retained historical host only. Since Story 4.9, use the active [Platform recovery runbook](../../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations). Inspect Works `/ready` and its Healthy/Degraded/Unhealthy status rather than interpreting HTTP 200 as healthy. Correlate the bounded `eventstore.domain.recovery.*` gauges, including unresolved and pending counts, completeness, availability, readiness and `alert`; `alert=1` includes degraded, unavailable or stale recovery. Protected `POST /work/processes/revalidate` requires current source-scoped operator authority and durable attributed audit before mutation. The runbook identifies the synthetic proof's limits and the production provider requirements. The [current SDK settings](../sdk-reminder-process-adoption.md#current-configuration-after-story-49) list ignored legacy recovery controls. Historical warnings remain documented for archived rollback investigations.
 
 Works reminder recovery logs bounded identity/count fields and attaches the original cause through the structured
 exception slot. Do not copy exception details into tickets or metrics; use them only in the protected log system.

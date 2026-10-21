@@ -1,0 +1,175 @@
+{
+  "observedAt": "2026-10-21T08:07:27.580779+00:00",
+  "status": "post-cutover-acceptance-blocked",
+  "postGatePending": true,
+  "scope": "Disposable synthetic verification only; no production cutover acceptance.",
+  "worksRevision": "9dbd2f07d3313b6df3c491e9cf3510b87b32fe65",
+  "platformRevision": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "eventStoreRevision": "fcf78d6cafb6c0c9f52dc350a9a09aff54ded288",
+  "buildsRevision": "b435f2e3b3892e03f69322d24de6003b0baf7a7d",
+  "selectedPublicEventStoreVersion": "3.126.0",
+  "sourceBindings": {
+    "platform-source.json": {
+      "path": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source.json",
+      "sha256": "1b54888f226d68df84375ee8114d3d3741c8c52cd5430e28ab36b0a88732a3c4"
+    },
+    "immutable-producer-exports.json": {
+      "path": "/mnt/wsl/story49-qualification-20261021T072935Z/immutable-producer-exports.json",
+      "sha256": "707c7aca46d5e711b40ae8bf71b03de5a931b193b040e92d8310fd2506b6daf5"
+    }
+  },
+  "fullGate": {
+    "commandRecord": "gate-attempt4-command.json",
+    "ledger": "attempt4/ledger.json.gz",
+    "status": "incomplete",
+    "failure": "platform-recovery failed; see /mnt/wsl/story49-qualification-20261021T072935Z/attempt4/platform-recovery.log",
+    "allRowsStillOpen": true,
+    "persistedPhaseCount": 13,
+    "persistedPhases": [
+      "rescheduled-expiry-committed-current-witness",
+      "cascade-expiry-target-commit-before-checkpoint",
+      "cascade-expiry-restart-receipt-and-checkpoint",
+      "concurrent-sdk-reminder-reissue-after-lost-scheduler-wakeup",
+      "canonical-related-child-creation-gap",
+      "cascade-target-commit-before-checkpoint",
+      "five-child-persisted-target-receipts",
+      "cascade-restart-receipt-and-checkpoint",
+      "child-resume-noop-receipt-before-checkpoint",
+      "paged-process-candidates-pre-restart",
+      "complete-supported-process-coverage",
+      "child-resume-noop-restart-receipt-and-checkpoint",
+      "paged-process-restart-and-shared-store-owner-fencing"
+    ],
+    "runtimeArtifactCount": 439,
+    "runtimeProducerQualification": {
+      "repositoryCommit": "fcf78d6cafb6c0c9f52dc350a9a09aff54ded288",
+      "matchesPublishedProducer": true
+    },
+    "platformSuiteResults": {
+      "agentsFull": "expected-unavailable; not a Works prerequisite",
+      "Debug": {
+        "total": 114,
+        "passed": 114,
+        "skipped": 0,
+        "sha256": "64efce57526b830f4656336fd518071f1df932bd21eb342ef7c874af9e0a66de"
+      },
+      "Release": {
+        "total": 114,
+        "passed": 114,
+        "skipped": 0,
+        "sha256": "6bd40ba70bacb106c1291a572b1214e0d943da3cd0f35c10780b73a2d62bddd4"
+      },
+      "supportingConsumer": {
+        "total": 255,
+        "passed": 255,
+        "skipped": 0,
+        "sha256": "4163d0991ff3f6991568c4dd89486d169022e014cb12947d5fa2ac6d1383fef8"
+      },
+      "retainedStartupPreflight": {
+        "total": 1,
+        "passed": 1,
+        "skipped": 0,
+        "sha256": "72bd29a4035650005ef978fbea6b6bbdcea7fd76557356620a9bbfc5df164b7d"
+      }
+    },
+    "recoveryResult": {
+      "total": 4,
+      "passed": 2,
+      "failed": 2,
+      "skipped": 0,
+      "timeSeconds": 377.308
+    },
+    "failures": [
+      {
+        "fact": "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "cause": "No correlated actual receiver refusal before 65-second transport deadline; kind=wrong-purpose; HTTP=0.",
+        "assertionsPreserved": true,
+        "rootCause": "Unresolved; later startup watch exhaustion does not establish causation."
+      },
+      {
+        "fact": "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "cause": "Dapr Sentry fatal: failed to add credentials filesystem watch: no space left on device.",
+        "assertionsPreserved": true
+      }
+    ]
+  },
+  "focusedPolling": {
+    "status": "failed",
+    "environmentOverride": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    },
+    "result": {
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
+      "skipped": 0,
+      "timeSeconds": 17.492
+    },
+    "cause": "Go Placement and Scheduler could not add credentials/ca.crt filesystem watches.",
+    "originalRuntimeConsumerAndSourcesUnchanged": true,
+    "doesNotQualifyFullGate": true
+  },
+  "capacity": {
+    "watchLimit": 1048576,
+    "observedWatchesBeforeFocus": 1047950,
+    "observedWatchesAfterFocus": 1048546,
+    "observedHeadroomAfterFocus": 30,
+    "hostAndContainerWatchLimitsMatch": true,
+    "containerFilesystemUsedPercent": 15,
+    "sysctlWritableByCurrentUid": false,
+    "systemLimitsChanged": false,
+    "foreignProcessesChanged": false
+  },
+  "freshOrdinary": {
+    "restoreExitCode": 0,
+    "buildExitCode": 0,
+    "results": {
+      "UnitTests": {
+        "total": "589",
+        "passed": "589",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "time": "0.310"
+      },
+      "PropertyTests": {
+        "total": "3",
+        "passed": "3",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "time": "0.228"
+      },
+      "ArchitectureTests": {
+        "total": "270",
+        "passed": "270",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "time": "7.670"
+      },
+      "IntegrationTests": {
+        "total": "735",
+        "passed": "728",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "7",
+        "time": "77.610"
+      }
+    },
+    "initialArchitectureEnvironmentMismatchPreserved": true,
+    "defaultLayoutArchitectureRunnerRemovedEnvironment": [
+      "HexalithEventStoreRoot"
+    ],
+    "freshBinariesByteIdenticalAfterRelocation": true,
+    "explicitFactsAssignedToUnpassedFullGate": 7
+  },
+  "earlierAttempts": {
+    "attempt1": "Nonqualifying: .NET file-host cache ENOSPC before cache relocation.",
+    "attempt2": "Nonqualifying: external SDK export disappeared; refused before builds.",
+    "attempt3": "Nonqualifying: 253/255 supporting facts, two owned Redis host readiness timeouts; exact focused theory passed 14/14.",
+    "staleExistingConsumer": "Nonqualifying: old 1000-fact binary included retired live fixtures; run stopped and replaced with fresh source builds.",
+    "overlappingOrdinary": "Nonqualifying: overlapping fixture run stopped; complete attempt4 and final ordinary suites ran sequentially."
+  },
+  "requiredNextStep": "Restore sufficient inotify headroom, then rerun complete canonical verifier with all required lanes and rollback; do not promote partial/focused results."
+}

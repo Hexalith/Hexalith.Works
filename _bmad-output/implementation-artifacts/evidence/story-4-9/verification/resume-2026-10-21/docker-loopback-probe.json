@@ -1,0 +1,36 @@
+{
+  "name": "story49-connectivity-40397ac105e444de933a8d01b235082d",
+  "startedAt": "2026-10-21T07:40:07.516799+00:00",
+  "attempts": [
+    {
+      "execExitCode": 0,
+      "execOutput": "PONG",
+      "hostPong": "+PONG\r\n"
+    }
+  ],
+  "create": {
+    "command": [
+      "docker",
+      "run",
+      "--rm",
+      "-d",
+      "--name",
+      "story49-connectivity-40397ac105e444de933a8d01b235082d",
+      "--label",
+      "hexalith.works.story49-probe=story49-connectivity-40397ac105e444de933a8d01b235082d",
+      "-p",
+      "127.0.0.1::6379",
+      "redis:7.4-alpine"
+    ],
+    "exitCode": 0,
+    "stdout": "58a4121b6ecd94741dbcd0033e786aaa1146f30b5b9f723d218513a353ed4043\n",
+    "stderr": ""
+  },
+  "binding": "127.0.0.1:57532",
+  "cleanup": {
+    "exitCode": 0,
+    "stdout": "story49-connectivity-40397ac105e444de933a8d01b235082d\n",
+    "stderr": ""
+  },
+  "finishedAt": "2026-10-21T07:40:08.255515+00:00"
+}

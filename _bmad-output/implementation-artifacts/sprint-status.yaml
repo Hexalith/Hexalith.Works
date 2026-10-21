@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-20 (Story 4.16 code review iteration 8: 5 patches applied (T236-T240), 1 deferred (T241); story done)
+# last_updated: 2026-10-21 (Story 4.9 implementation and review complete; full/CI parity and rollback passed; ready for review)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-06-15T18:47:50+02:00
-last_updated: 2026-10-19
+last_updated: 2026-10-21
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
@@ -78,7 +78,7 @@ development_status:
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
-  4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
+  4-9-migrate-works-hosting-to-the-platform-boundary: review
   # Complete 4.15, then 4.16, before resuming 4.9.
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: done

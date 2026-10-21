@@ -1,0 +1,47 @@
+{
+  "status": "failed",
+  "scope": "Focused retained readiness and actual callback/operations proofs; never substitutes for full gate.",
+  "environmentOverride": {
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+  },
+  "commands": [
+    {
+      "name": "retained-preflight",
+      "command": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt4/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+        "-noLogo",
+        "-explicit",
+        "on",
+        "-class",
+        "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests",
+        "-result-xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/focused-polling/retained-preflight.xml"
+      ],
+      "environmentOverrides": {
+        "WORKS_PLATFORM_HOST_EVIDENCE": "/mnt/wsl/story49-qualification-20261021T072935Z/focused-polling/retained-preflight-starts.jsonl",
+        "WORKS_SDK_PROOF_EVIDENCE_PATH": "/mnt/wsl/story49-qualification-20261021T072935Z/focused-polling/retained-preflight-states.jsonl",
+        "WORKS_PLATFORM_DAPRD_RUNTIME_PATH": "/mnt/wsl/story49-qualification-20261021T072935Z/focused-polling/isolated-daprd-retained-preflight",
+        "WORKS_PLATFORM_SENTRY_PORT": "65534",
+        "WORKS_PLATFORM_PLACEMENT_PORT": "65533",
+        "WORKS_PLATFORM_SCHEDULER_PORT": "65532",
+        "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+      },
+      "startedAt": "2026-10-21T07:59:07.298468+00:00",
+      "isolatedRuntime": {
+        "runtime": "/home/administrator/.dapr/bin/daprd",
+        "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+        "shimSha256": "19deafab4f6cf18ab2a7df81e81b58b765f173abb5822e0608403cca541d40a2",
+        "sentryAddress": "127.0.0.1:65534"
+      },
+      "exitCode": 1,
+      "finishedAt": "2026-10-21T07:59:25.061075+00:00",
+      "runtimeConsumerAndSourcesUnchanged": true
+    }
+  ],
+  "initialBytesUnchanged": true,
+  "controlPlanePorts": {
+    "sentry": 65534,
+    "placement": 65533,
+    "scheduler": 65532
+  }
+}

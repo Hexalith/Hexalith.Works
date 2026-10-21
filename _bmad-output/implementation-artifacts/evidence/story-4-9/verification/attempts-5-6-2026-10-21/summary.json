@@ -1,0 +1,13 @@
+{
+  "status": "nonqualifying-preserved-attempts",
+  "attempt5": "Refused before commands because three canonical ordinary inputs changed; quota restored.",
+  "attempt6": "Every required live fact and complete rollback passed, but final canonical closure refused an external README change; quota restored.",
+  "selectedRevisionAttempt6": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "observedRevisionAttempt6": "69d46d59dcf138db2d60756142bc943cd63533bd",
+  "changedCanonicalReadmeSha256": {
+    "selected": "3807494245b06e398555c5f39a5646dbe7cd0c44a76dcbd490b010e678c69041",
+    "observed": "f03caf11a08e2f7b6cdda3042f11d8f5e7fd44ed67369a7d833bfb83c7213f5d"
+  },
+  "unchangedExecutedBytes": "439 runtime artifacts, three adapters, four consumer artifacts, host assembly and 636 ordinary exported inputs independently rechecked.",
+  "qualifiesAcceptance": false
+}

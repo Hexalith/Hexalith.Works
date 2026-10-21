@@ -799,108 +799,105 @@
   ],
   "executedReplacementEvidence": {
     "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
-      "/tmp/story49-architecture-final.xml",
-      "/tmp/story49-architecture-final.xml",
-      "/tmp/story49-architecture-final.xml",
-      "/tmp/story49-architecture-final.xml"
+      "/tmp/story49-corrections-architecture-all.xml"
     ],
     "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
-      "/tmp/story49-architecture-final.xml"
+      "/tmp/story49-corrections-architecture-all.xml"
     ],
     "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
-      "/tmp/story49-architecture-final.xml"
+      "/tmp/story49-corrections-architecture-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
-      "/tmp/story49-integration-final2.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
-      "/tmp/story49-pre-cutover-20261020-isolated/platform-ha.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-ha.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-ha.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
-      "/tmp/story49-pre-cutover-20261020-isolated/platform-historical.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-historical.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-historical.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
-      "/tmp/story49-pre-cutover-20261020-isolated/platform-projection.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-projection.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-projection.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-pre-cutover-20261020-isolated/works-consumer-supporting.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
-      "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-recovery.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
-      "/tmp/story49-pre-cutover-20261020-isolated/platform-recovery.xml"
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-recovery.xml",
+      "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ],
     "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml",
-      "/tmp/story49-integration-final2.xml"
+      "/tmp/story49-corrections-integration-all.xml"
     ]
   },
   "archiveRefusalTests": [
@@ -908,5 +905,911 @@
     "test_retained_works_host.RetainedWorksHostTests.test_unsafe_or_duplicate_members_refuse_even_with_an_updated_archive_digest",
     "test_retained_works_host.RetainedWorksHostTests.test_later_source_changes_additions_and_symlinks_refuse",
     "test_retained_works_host.RetainedWorksHostTests.test_later_dependency_substitution_refuses"
-  ]
+  ],
+  "verification": {
+    "postGate": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/ledger.json",
+    "ciGate": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/ledger.json",
+    "postGateStatus": "passed-disposable-synthetic-parity-and-rollback",
+    "ciGateStatus": "passed-disposable-synthetic-parity-and-rollback",
+    "replacementMethods": 28,
+    "retiredGroups": 35,
+    "freshOrdinaryXml": [
+      "/tmp/story49-corrections-integration-all.xml",
+      "/tmp/story49-corrections-architecture-all.xml"
+    ],
+    "pythonHelperChecksPerProfile": 110,
+    "archiveRefusalsExecutedInBothProfiles": true
+  },
+  "historicalEvidenceBeforeReview1": {
+    "executedReplacementEvidence": {
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml"
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml"
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/ArchitectureTests-default-layout.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/platform-ha.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/platform-historical.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/platform-projection.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/platform-recovery.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/platform-recovery.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary/IntegrationTests.xml"
+      ]
+    },
+    "verification": {
+      "postGate": "/mnt/wsl/story49-qualification-20261021T072935Z/attempt7/ledger.json",
+      "postGateStatus": "passed-disposable-synthetic-parity-and-rollback",
+      "replacementMethods": 28,
+      "retiredGroups": 35,
+      "freshOrdinaryXml": "/mnt/wsl/story49-qualification-20261021T072935Z/fresh-ordinary",
+      "archiveRefusalsExecutedIn90TestHelperSuite": true
+    }
+  },
+  "archivedReplacementEvidence": {
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+        "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+        "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+      }
+    ],
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+        "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+        "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+      }
+    ],
+    "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+        "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+        "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-ha.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-ha.xml.gz",
+        "storedSha256": "53c4c0ee82b110a83dd2b592364248bf36da7ebce027f7ae2acc7f41ccd6e344",
+        "uncompressedSha256": "54f75ef1233943af7b31939fc085f4308ced92d9b68b4e0b413aa0150d78a98d"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-ha.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-ha.xml.gz",
+        "storedSha256": "6a8a2a206a17fc8b5105d7915dc0056c3c5ec8f037f9de235e7a5e07481e2fb1",
+        "uncompressedSha256": "8bea7277fe1c959d3e0e1b2bac4b09fcb367ba8fd3c27f9e79229fe13a0a2d44"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-historical.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-historical.xml.gz",
+        "storedSha256": "aea465d41cfc74a650400706c0a7a25b2fc060cbc840f8d2494d64b008ec2cd6",
+        "uncompressedSha256": "0f01a1f02490b7862ac36e843bf17329bd6df4602c5aa4b792963fef205ed401"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-historical.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-historical.xml.gz",
+        "storedSha256": "9f349dda6ecc73b533a708599dfda3fb3af07bfc170935dd3468909a586a1181",
+        "uncompressedSha256": "73b5c21817a303dc6a2ff60b2b6f880fcc90ea105c02de390639dd2f076c4962"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-projection.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-projection.xml.gz",
+        "storedSha256": "bbd9b4f0bf30b946f6f023d2cd12464ed5b04a6b2f7ef3f7eaec825fa4502f39",
+        "uncompressedSha256": "789e5bc107f8434f66d867be8920adbd68513ff4cde9476a4ae21fc343f61734"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-projection.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-projection.xml.gz",
+        "storedSha256": "9c8a3be251df8cf31cbbb75b0a6ff6fae6ccf058d3541777ab52b221b0657526",
+        "uncompressedSha256": "e3083e8d77548c9fc4cb5da2245fb790dcf8667e1fe108ebe0112b6eae25dfc9"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/works-consumer-supporting.xml.gz",
+        "storedSha256": "ca4974309fe3fc65e71aed44c1a441db64b27716d4ebb0617456c29b33154811",
+        "uncompressedSha256": "eec287acda75d79f9ccf869c1a275c3c1e63986dcdff1b61a98f07d7055d8d19"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+        "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+        "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+      },
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-recovery.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-recovery.xml.gz",
+        "storedSha256": "3364f9a2ad06b50d2b96ca2f300231f70fe8931ae0bab0bd403bdd572662576c",
+        "uncompressedSha256": "ae02b99b7abc4d88010baa5a313c2f9389c5e3377ffcdb9bfe68a3e29a871633"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-recovery.xml.gz",
+        "storedSha256": "5b1b9628723640a5514dbd7c40d977830ba74e62eee68c218e3ea0a85c24e54d",
+        "uncompressedSha256": "cad9752c81892b8ae5461f62236a1b61c74a159ac977c52cbcdfca742b12b870"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass2-ci5/gate/platform-recovery.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-recovery.xml.gz",
+        "storedSha256": "3364f9a2ad06b50d2b96ca2f300231f70fe8931ae0bab0bd403bdd572662576c",
+        "uncompressedSha256": "ae02b99b7abc4d88010baa5a313c2f9389c5e3377ffcdb9bfe68a3e29a871633"
+      },
+      {
+        "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-recovery.xml.gz",
+        "storedSha256": "5b1b9628723640a5514dbd7c40d977830ba74e62eee68c218e3ea0a85c24e54d",
+        "uncompressedSha256": "cad9752c81892b8ae5461f62236a1b61c74a159ac977c52cbcdfca742b12b870"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ],
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
+      {
+        "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+        "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+        "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+        "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+      }
+    ]
+  },
+  "historicalEvidenceBeforeReview2": {
+    "executedReplacementEvidence": {
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
+        "/tmp/story49-corrections-architecture-all.xml"
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
+        "/tmp/story49-corrections-architecture-all.xml"
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
+        "/tmp/story49-corrections-architecture-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-ha.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-ha.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-historical.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-historical.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-projection.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-projection.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-recovery.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-recovery.xml",
+        "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
+        "/tmp/story49-corrections-integration-all.xml"
+      ]
+    },
+    "archivedReplacementEvidence": {
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.ReintroducedHostingProjectsAreDetected": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+          "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+          "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+        }
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotImplementGenericRuntimeMechanics": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+          "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+          "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+        }
+      ],
+      "Hexalith.Works.ArchitectureTests.FitnessTests.PlatformHostingBoundaryTests.WorksDoesNotOwnTopologyOrServiceDefaults": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-architecture-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-architecture-all.xml.gz",
+          "storedSha256": "42a7d371729601bc9d6c072517ee2845b7c1b502fdfa2156109e6a14a39aa54a",
+          "uncompressedSha256": "9354841fdccd5e47d21cc81a97b1af915cb6830bdbd68df479500ba2d5ba4518"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests.UnselectedLaneRequiresPlatformHost": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-ha.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/platform-ha.xml.gz",
+          "storedSha256": "27fabd4ee8de9a8653b36769ba3a4fe84d4a20cd22d6b4229720d56b1dea117c",
+          "uncompressedSha256": "13877c5c2c957a97eac83ae88b2a69a98bdb16906fb2d6f7f2f378f86f1d7111"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-ha.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-ha.xml.gz",
+          "storedSha256": "6a8a2a206a17fc8b5105d7915dc0056c3c5ec8f037f9de235e7a5e07481e2fb1",
+          "uncompressedSha256": "8bea7277fe1c959d3e0e1b2bac4b09fcb367ba8fd3c27f9e79229fe13a0a2d44"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-historical.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/platform-historical.xml.gz",
+          "storedSha256": "c411c093c3ee946ce204fd94d6ab30280e84dd4b4b1e45aefdf1abbcd9bbc96c",
+          "uncompressedSha256": "4af3d15e8736facc2103718f5b3afa7b88ebce3acceaf5ff318811ee4ee9d54b"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-historical.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-historical.xml.gz",
+          "storedSha256": "9f349dda6ecc73b533a708599dfda3fb3af07bfc170935dd3468909a586a1181",
+          "uncompressedSha256": "73b5c21817a303dc6a2ff60b2b6f880fcc90ea105c02de390639dd2f076c4962"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-projection.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/platform-projection.xml.gz",
+          "storedSha256": "56f503a2af179b69fd4d9be3435ae01cf03e379bb6941c618c39301937275a18",
+          "uncompressedSha256": "2702d16ac2f61de1e6f845d450686ba19837470ce3fde8691e1b65d3b6b192d1"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-projection.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-projection.xml.gz",
+          "storedSha256": "9c8a3be251df8cf31cbbb75b0a6ff6fae6ccf058d3541777ab52b221b0657526",
+          "uncompressedSha256": "e3083e8d77548c9fc4cb5da2245fb790dcf8667e1fe108ebe0112b6eae25dfc9"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.AllCurrentDatesAndExpiryHaveCommittedWitnesses": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.ExpiredParentMapsChildrenToCascadeExpiry": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.MixedAwaitSuspensionEmitsOnlyExactDateAndIndependentExpiry": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests.TerminalTranslationUsesEnvelopeAndRetainsPlanAfterChildTerminates": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Capture_stages_complete_family_and_commit_changes_stale_selection_to_current": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Verified_executor_sees_own_assigned_and_tenant_queued_but_not_foreign_assigned": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/works-consumer-supporting.xml.gz",
+          "storedSha256": "0bf5af80640726a67e2fe28c75394899b1f25379e2963e62b5bc80045e1cce68",
+          "uncompressedSha256": "a7894cbf32181c39d01d371b981693119923ea03872f84ccb3dca6386682152a"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/works-consumer-supporting.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/works-consumer-supporting.xml.gz",
+          "storedSha256": "9503e062339c83ce9480f5a28943e7eaf98cb75af389bfee07b348e929ddc8c9",
+          "uncompressedSha256": "6241edc88e2edae60a133a33e38801408d984fded96d1ae68dd85027c4e9f0e7"
+        },
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.DefaultCompositionSelectsSdkProjectionAndRecovery": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.ForeignWakeupIdentityIsRefusedBeforeDiscovery": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.LegacyRuntimeSelectionIsRefused": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkCapacityOverrideRequiresCoupledBudgets": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.SdkTransportsShareValidatedEffectiveAddress": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryCompositionTests.WakeupPreservesSdkQuarantineAndCheckpoint": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-recovery.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/platform-recovery.xml.gz",
+          "storedSha256": "4c89c7849e6ea3725f77b2f2dbf4b2f0121273cd65b556205570b7fc20c307e8",
+          "uncompressedSha256": "454099417d174db690cc03f15effb2ea2a5efe69202cbc55da1da78171520ea5"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-recovery.xml.gz",
+          "storedSha256": "5b1b9628723640a5514dbd7c40d977830ba74e62eee68c218e3ea0a85c24e54d",
+          "uncompressedSha256": "cad9752c81892b8ae5461f62236a1b61c74a159ac977c52cbcdfca742b12b870"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": [
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/platform-recovery.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/ci/platform-recovery.xml.gz",
+          "storedSha256": "4c89c7849e6ea3725f77b2f2dbf4b2f0121273cd65b556205570b7fc20c307e8",
+          "uncompressedSha256": "454099417d174db690cc03f15effb2ea2a5efe69202cbc55da1da78171520ea5"
+        },
+        {
+          "sourceResultXml": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/platform-recovery.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/platform-recovery.xml.gz",
+          "storedSha256": "5b1b9628723640a5514dbd7c40d977830ba74e62eee68c218e3ea0a85c24e54d",
+          "uncompressedSha256": "cad9752c81892b8ae5461f62236a1b61c74a159ac977c52cbcdfca742b12b870"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.MissingFamilyMembershipRetainsIncompleteDiscovery": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.ProcessCatalogReturnsHealthyMembershipAndIncompleteDegradedScopeAfterRestart": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ],
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoverySourceTests.TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart": [
+        {
+          "sourceResultXml": "/tmp/story49-corrections-integration-all.xml",
+          "packetResultXml": "_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-1-2026-10-21/full/closure/story49-corrections-integration-all.xml.gz",
+          "storedSha256": "1c20a07b042063fd763d924d1bf66cfd0598ef70211557c03c24916bf73c5a66",
+          "uncompressedSha256": "8792119f18315b57322bb59a62d536c93c3a6ea084b69e9dbf409a1c96ce84fd"
+        }
+      ]
+    },
+    "verification": {
+      "postGate": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-full4/ledger.json",
+      "ciGate": "/mnt/wsl/story49-qualification-20261021T072935Z/review-pass1-ci4/gate/ledger.json",
+      "postGateStatus": "passed-disposable-synthetic-parity-and-rollback",
+      "ciGateStatus": "passed-disposable-synthetic-parity-and-rollback",
+      "replacementMethods": 28,
+      "retiredGroups": 35,
+      "freshOrdinaryXml": [
+        "/tmp/story49-corrections-integration-all.xml",
+        "/tmp/story49-corrections-architecture-all.xml"
+      ],
+      "pythonHelperChecksPerProfile": 110,
+      "archiveRefusalsExecutedInBothProfiles": true
+    }
+  }
 }

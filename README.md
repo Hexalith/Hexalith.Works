@@ -4,10 +4,11 @@ Hexalith.Works is the Hexalith work-item domain module. The repository is an umb
 
 ## Local Debug development
 
-Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. Initialize only the root-declared dependencies needed by Works:
+Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
 
 ```bash
-git submodule update --init references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants
+git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
 dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
 ```
@@ -18,16 +19,19 @@ Do not use recursive submodule initialization.
 
 CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
 
-Platform owns the live Works topology, its SDK executable source inputs, health, telemetry, declarative subscriptions, and complete-fleet rollback. Run its verifier from the owning Platform checkout after initializing only required root-declared dependencies:
+The blocking `platform-parity` CI job runs Platform's canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. Run the same CI profile locally after initializing the dependencies above:
 
 ```bash
-../platform/eng/verify-works-host.sh --works-root "$PWD" --artifacts-path /tmp/works-platform-proof
+bash scripts/verify-platform-parity-ci.sh --artifacts-path /tmp/works-platform-proof
 ```
 
 Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
 
+The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
+
 ```bash
-git submodule update --init references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants
+git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx
 dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1
 python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test

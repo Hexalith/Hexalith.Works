@@ -43,7 +43,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             fixture.RedisEndpoint = binding;
             using (var readiness = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             {
-                readiness.CancelAfter(TimeSpan.FromSeconds(15));
+                readiness.CancelAfter(TimeSpan.FromSeconds(60));
                 while (true)
                 {
                     try

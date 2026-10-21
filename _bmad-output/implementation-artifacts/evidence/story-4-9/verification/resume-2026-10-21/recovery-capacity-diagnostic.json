@@ -1,0 +1,501 @@
+{
+  "observedAt": "2026-10-21T07:55:35.606963+00:00",
+  "filesystems": {
+    "/": {
+      "freeBytes": 46967488512,
+      "freeInodes": 55422141,
+      "totalBytes": 1081101176832
+    },
+    "/tmp": {
+      "freeBytes": 46967488512,
+      "freeInodes": 55422141,
+      "totalBytes": 1081101176832
+    },
+    "/mnt/wsl": {
+      "freeBytes": 46750097408,
+      "freeInodes": 11827654,
+      "totalBytes": 48510607360
+    },
+    "/dev/shm": {
+      "freeBytes": 48507969536,
+      "freeInodes": 11843402,
+      "totalBytes": 48510607360
+    }
+  },
+  "inotifyLimits": {
+    "max_queued_events": "65536",
+    "max_user_instances": "8192",
+    "max_user_watches": "1048576"
+  },
+  "inotifyProcesses": [
+    {
+      "pid": 14185,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 45830
+    },
+    {
+      "pid": 72399,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 45830
+    },
+    {
+      "pid": 53447,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 38582
+    },
+    {
+      "pid": 60728,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 38582
+    },
+    {
+      "pid": 69596,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 38582
+    },
+    {
+      "pid": 31805,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 38208
+    },
+    {
+      "pid": 47941,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 38208
+    },
+    {
+      "pid": 17952,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 35816
+    },
+    {
+      "pid": 37536,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 35816
+    },
+    {
+      "pid": 17991,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 33029
+    },
+    {
+      "pid": 18321,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 31728
+    },
+    {
+      "pid": 83108,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 31728
+    },
+    {
+      "pid": 41946,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 31665
+    },
+    {
+      "pid": 51170,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 31665
+    },
+    {
+      "pid": 17120,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 29815
+    },
+    {
+      "pid": 4139,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 28090
+    },
+    {
+      "pid": 18062,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 28090
+    },
+    {
+      "pid": 52665,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 27583
+    },
+    {
+      "pid": 87597,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 27583
+    },
+    {
+      "pid": 74802,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 26755
+    },
+    {
+      "pid": 17333,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 26029
+    },
+    {
+      "pid": 22502,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 26029
+    },
+    {
+      "pid": 82111,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 26029
+    },
+    {
+      "pid": 91528,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 26029
+    },
+    {
+      "pid": 17585,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 25133
+    },
+    {
+      "pid": 29047,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 25133
+    },
+    {
+      "pid": 29125,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 25133
+    },
+    {
+      "pid": 44473,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 25133
+    },
+    {
+      "pid": 29289,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 20315
+    },
+    {
+      "pid": 28667,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 17881
+    },
+    {
+      "pid": 29285,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 17148
+    },
+    {
+      "pid": 29263,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 17021
+    },
+    {
+      "pid": 28895,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 15392
+    },
+    {
+      "pid": 51957,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 15171
+    },
+    {
+      "pid": 29581,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 14488
+    },
+    {
+      "pid": 28740,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 12551
+    },
+    {
+      "pid": 29361,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 11489
+    },
+    {
+      "pid": 29877,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 8125
+    },
+    {
+      "pid": 29407,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 5552
+    },
+    {
+      "pid": 22927,
+      "comm": "fluentui-mcp",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 2515
+    },
+    {
+      "pid": 50840,
+      "comm": "codex",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 2396
+    },
+    {
+      "pid": 16415,
+      "comm": "agy",
+      "uid": 1000,
+      "instances": 6,
+      "watches": 8
+    },
+    {
+      "pid": 16545,
+      "comm": "agy",
+      "uid": 1000,
+      "instances": 6,
+      "watches": 8
+    },
+    {
+      "pid": 13393,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 5
+    },
+    {
+      "pid": 14717,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 5
+    },
+    {
+      "pid": 15539,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 5
+    },
+    {
+      "pid": 71819,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 5
+    },
+    {
+      "pid": 13682,
+      "comm": "dbus-daemon",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 13877,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 15082,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 16416,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 16489,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 60366,
+      "comm": "claude",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 4
+    },
+    {
+      "pid": 13090,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 13285,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 13655,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 14079,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 14315,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 14657,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 14876,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 15176,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 15251,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 15462,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 16577,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 79863,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    },
+    {
+      "pid": 90415,
+      "comm": "MainThread",
+      "uid": 1000,
+      "instances": 1,
+      "watches": 1
+    }
+  ],
+  "totalObservedWatches": 1047950,
+  "totalObservedInstances": 76,
+  "memory": {
+    "MemAvailable": "68936076 kB",
+    "SwapFree": "33552372 kB",
+    "Shmem": "2908432 kB"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "originCommit": "cec03d32adfce691155b2e7c85bba434e6294da2",
+  "originRoot": "/home/administrator/projects/hexalith/platform",
+  "root": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt6",
+  "manifest": "/mnt/wsl/story49-qualification-20261021T072935Z/platform-source-attempt6.json",
+  "manifestSha256": "08634027d52583910b15576d1ee78834f723520d0c41d37da4cba81c81ac3e3f",
+  "sourceInputCount": 636,
+  "inventorySha256": "09177eef36993e11a1c2ea8e65e56e745f370b37d7bd6fc2976e459007a23201",
+  "workingOverlayPaths": [
+    ".config/dotnet-tools.json",
+    "README.md",
+    "hexalith-platform.json"
+  ],
+  "changedInputsFromPreviousBinding": [
+    {
+      "path": ".config/dotnet-tools.json",
+      "selectedSha256": "3dda23cc6569b8c4fde0a6efcdece1077f1df05c359f0602a378f65b67ca52ca",
+      "currentCanonicalSha256": "9e21fa262e48d20f4a29b9de40c6544c95bd14e2fd9e624f8d23ab73d419e25a"
+    },
+    {
+      "path": "README.md",
+      "selectedSha256": "d3eea1fe803e85f8239f4e0f696dc93cd4972b16424a0a8863a1f0043333321c",
+      "currentCanonicalSha256": "3807494245b06e398555c5f39a5646dbe7cd0c44a76dcbd490b010e678c69041"
+    },
+    {
+      "path": "hexalith-platform.json",
+      "selectedSha256": "6b8551032063b13ef5c3f40f79e4a454c0a3c335a8ef22ea43924b2af97a4998",
+      "currentCanonicalSha256": "a2bef51e9bb0f11ccc6b49757a9cf28a7d71692ed588448a73b12f0a3d0db103"
+    }
+  ],
+  "oldBindingPreserved": true
+}

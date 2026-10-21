@@ -1,0 +1,68 @@
+{
+  "status": "parent-acceptance-audit-passed",
+  "tasks": 10,
+  "frozenIntentUnchanged": true,
+  "prerequisitesDone": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "profiles": {
+    "full": {
+      "members": 67,
+      "ledgerSha256": "2c8fc365d0a10314002fc51f123718bedeacd4467c16a943b15b4aa79ef002ef"
+    },
+    "ci": {
+      "members": 81,
+      "ledgerSha256": "5105e008c6d60054c15a73e8a145edecc94b5241db737021bf9c36487674d084"
+    }
+  },
+  "frozenScenarios": [
+    "Migration gate",
+    "Shared rebuild",
+    "Redelivery/restart",
+    "Unauthorized request"
+  ],
+  "retiredGroups": 35,
+  "replacementMethods": 28,
+  "sameWorksPlatformFixtureAndHelperBytesInBothProfiles": true,
+  "ordinarySuites": {
+    "unit": {
+      "total": 589,
+      "passed": 589,
+      "notRun": 0
+    },
+    "property": {
+      "total": 3,
+      "passed": 3,
+      "notRun": 0
+    },
+    "architecture-all": {
+      "total": 275,
+      "passed": 275,
+      "notRun": 0
+    },
+    "integration-all": {
+      "total": 735,
+      "passed": 728,
+      "notRun": 7
+    },
+    "redis-ownership-cancellation": {
+      "total": 47,
+      "passed": 47,
+      "notRun": 0
+    },
+    "architecture-profile-focused": {
+      "total": 27,
+      "passed": 27,
+      "notRun": 0
+    }
+  },
+  "allSevenExplicitFactsPassedInEachCompleteGate": true,
+  "buildsOrdinaryInputsRechecked": 1779,
+  "watchQuotaRestored": 1048576
+}

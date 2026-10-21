@@ -1,5 +1,15 @@
 # Works SDK projection and query adoption (Story 4.14)
 
+## Current configuration after Story 4.9
+
+The canonical Works executable always uses SDK projection delivery and SDK reminder/process mechanics. `Works:Projection:UseSdkDelivery` and `Works:Recovery:UseSdkRuntime` both default to `true`; explicitly setting either to `false` rejects startup. There is no active legacy writer or selectable legacy mode. Platform owns hosting, Dapr and service defaults. Follow the [root dependency setup](../README.md#local-debug-development) for source builds, including Platform and Parties test inputs.
+
+Configure Works projection bounds under `Works:Projection` and contextual reads under `Works:Recovery`; configure SDK reminder/process workers under `EventStore:Reminders` and `EventStore:Processes`. The [current recovery configuration](sdk-reminder-process-adoption.md#current-configuration-after-story-49) distinguishes supported settings from ignored legacy switches. The [Platform recovery runbook](../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations) names readiness, recovery metrics and protected disposition diagnostics. [Cutover and complete-fleet rollback](platform-hosting-cutover.md) records the accepted boundary and retained archive.
+
+## Historical Story 4.14 migration qualification
+
+The sections below preserve the earlier opt-in, candidate and legacy-host qualification record. Their mode defaults, candidate pins, commands and remaining gates describe those historical inputs; they are not current deployment instructions. The current public SDK pin is EventStore 3.126.0, and Story 4.9 removed the transitional hosting projects after complete Platform qualification.
+
 ## Mode and ownership
 
 `Works:Projection:UseSdkDelivery` defaults to `false`. In that mode Works keeps its existing `/project` writer, schema-v2 and legacy readers, and reminder and Reactor composition. Set it to `true` only in an isolated migration fixture: the host disables the bespoke writer, exposes the EventStore named epoch handler for `works-runtime-v3`, and selects SDK generation reads for queries, reminder discovery, and cascade descendants. The handler's projection type, scope family, and control index all identify that one runtime family. EventStore owns lease fencing, journal, physical generation keys, checkpoints, promotion, abort, and read selection. Works returns logical batch operations after folding domain evidence.

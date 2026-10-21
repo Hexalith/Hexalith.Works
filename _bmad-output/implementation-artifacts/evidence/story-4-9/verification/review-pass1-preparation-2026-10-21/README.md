@@ -1,0 +1,9 @@
+# Review pass 1 preparation and ordinary verification
+
+This packet is **not live parity acceptance**. It preserves the parent-interrupted first full-profile attempt, its automatic watch-quota restoration, and the export-incompatible helper fixture failure found before restart. No live Platform topology ran in that interrupted attempt. A later source export includes the corrected fixtures and nested Release/package command propagation; it requires fresh complete qualification.
+
+The current linked export passes 97 owner tests and 13 component helper tests. Works tooling passes 45 tests. Ordinary Works verification passed 589 unit tests, 3 property tests (300 generated cases), 275 architecture tests and 728 integration tests. Seven explicit integration facts were not run in the ordinary suite; the canonical live gate must execute them. The latest architecture/CI focus passes 27 tests after the profile assertions changed. XML and original logs remain exact compressed bytes with their source paths and hashes in `packet-manifest.json`.
+
+The initial 96-test owner suite failed five checks because root-only dependency initialization leaves nested Builds props absent. Those commands did not initialize nested submodules. Running from the correctly linked export passed. Bootstrap2 subsequently exposed three component-test fixtures that assumed a Git checkout; the fixtures now create temporary owning repositories while the production Git-target check remains intact. Both nonqualifying logs are preserved.
+
+The interrupted attempt ended on the parent signal after detecting the nested Debug CI path. Its command record reports exit -15 and successful read-back of the restored 1,048,576 watch limit. It is never promoted into a passing parity lane. All historical pre/post-cutover packets remain unchanged.

@@ -23,6 +23,38 @@ public sealed class CiCdConfigurationTests
     ];
 
     [Fact]
+    public void P0_PlatformParityIsAnUnconditionalBlockingCanonicalGate()
+    {
+        string root = RepositoryRoot.Locate();
+        string workflow = Read(root, ".github/workflows/ci.yml");
+        int start = workflow.IndexOf("  platform-parity:", StringComparison.Ordinal);
+        int end = workflow.IndexOf("\n  ci:", start, StringComparison.Ordinal);
+        start.ShouldBeGreaterThanOrEqualTo(0);
+        end.ShouldBeGreaterThan(start);
+        string job = workflow[start..end];
+        job.ShouldContain("bash scripts/verify-platform-parity-ci.sh --artifacts-path", Case.Sensitive);
+        job.ShouldContain("git submodule update --init --", Case.Sensitive);
+        job.ShouldContain("fetch-depth: 0", Case.Sensitive);
+        job.ShouldNotContain("continue-on-error", Case.Sensitive);
+        job.ShouldNotContain("--prepare-only", Case.Sensitive);
+        job.ShouldNotContain("--bootstrap-only", Case.Sensitive);
+        job.ShouldNotContain("--recursive", Case.Sensitive);
+        job.ShouldNotContain("--remote", Case.Sensitive);
+        job.ShouldNotMatch(@"(?m)^    if:");
+        foreach (string dependency in new[] { "AI.Tools", "Builds", "Commons", "EventStore", "PolymorphicSerializations", "Tenants", "Parties", "Platform" })
+            job.ShouldContain("references/Hexalith." + dependency, Case.Sensitive);
+        string bootstrap = Read(root, "scripts/verify-platform-parity-ci.py");
+        bootstrap.ShouldContain("eng/verify-works-host.sh", Case.Sensitive);
+        bootstrap.ShouldContain("--runtime-sdk-root", Case.Sensitive);
+        bootstrap.ShouldContain("\"--profile\"", Case.Sensitive);
+        bootstrap.ShouldContain("\"ci\"", Case.Sensitive);
+        bootstrap.ShouldContain("Release/package CI profile", Case.Sensitive);
+        bootstrap.ShouldContain("require_complete_gate(artifacts)", Case.Sensitive);
+        bootstrap.ShouldContain("passed-disposable-synthetic-parity-and-rollback", Case.Sensitive);
+        bootstrap.ShouldContain("matchesPublishedProducer", Case.Sensitive);
+    }
+
+    [Fact]
     public void P0_CiPinsTheApprovedContractAndRunsPackageValidationAndFourBlockingProjects()
     {
         string root = RepositoryRoot.Locate();
