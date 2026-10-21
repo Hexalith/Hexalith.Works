@@ -17,23 +17,16 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
 
     private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
     private readonly IOptions<WorksProjectionOptions>? _options;
-    private readonly bool _useSdkDelivery;
 
-    /// <summary>Creates the rebuild and optional SDK epoch handler.</summary>
+    /// <summary>Creates the SDK epoch rebuild handler.</summary>
     public WorkItemSharedProjectionRebuildHandler(
-        IOptions<WorksProjectionOptions>? options = null,
-        IConfiguration? configuration = null)
+        IOptions<WorksProjectionOptions>? options = null)
     {
         _options = options;
-        // SDK route discovery reads this property while Build maps endpoints. Leave validated options to
-        // ValidateOnStart so an invalid projection budget fails at host startup as configured.
-        _useSdkDelivery = configuration is null
-            ? options?.Value.UseSdkDelivery ?? true
-            : configuration.GetValue<bool?>($"{WorksProjectionOptions.SectionName}:UseSdkDelivery") ?? true;
     }
 
     /// <inheritdoc/>
-    public bool EpochEnabled => _useSdkDelivery;
+    public bool EpochEnabled => true;
 
     /// <inheritdoc/>
     public bool OrdinaryDeliveryEnabled => EpochEnabled;
@@ -42,7 +35,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
     public string OrdinaryWriterId => "works-runtime-v3-writer";
 
     /// <inheritdoc/>
-    public string? ControlIndexName => EpochEnabled ? WorksReadModelKeys.RuntimeControlIndex : null;
+    public string? ControlIndexName => WorksReadModelKeys.RuntimeControlIndex;
 
     /// <inheritdoc/>
     public SharedProjectionScope CreateScope(string tenantId)
@@ -60,7 +53,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
     public string Domain => "work";
 
     /// <inheritdoc/>
-    public string ProjectionType => EpochEnabled ? WorksReadModelKeys.RuntimeFamily : ProjectionTypeName;
+    public string ProjectionType => WorksReadModelKeys.RuntimeFamily;
 
     /// <inheritdoc/>
     public string RebuildStoreName => WorksReadModelKeys.StateStoreName;
@@ -118,9 +111,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
         ValidateIdentity(identity);
         ArgumentNullException.ThrowIfNull(candidate);
         cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult(EpochEnabled
-            ? WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, FromCandidate(candidate), cancellationToken)
-            : WorkItemSharedRebuildManifestBuilder.Build(identity, FromCandidate(candidate), cancellationToken));
+        return Task.FromResult(WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, FromCandidate(candidate), cancellationToken));
     }
 
     /// <inheritdoc/>
@@ -132,11 +123,6 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
     {
         ArgumentNullException.ThrowIfNull(delivery);
         ArgumentNullException.ThrowIfNull(coordinator);
-        if (!EpochEnabled)
-        {
-            throw new InvalidOperationException("The Works SDK projection mode is disabled.");
-        }
-
         ProjectionRequest? request;
         try
         {

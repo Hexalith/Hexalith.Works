@@ -1,6 +1,8 @@
 using System.Security.Cryptography;
 using System.Security.Claims;
 using Hexalith.EventStore.Client.Gateway;
+using Hexalith.EventStore.Client.Subscriptions;
+using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.Client.Effects;
 using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.EventStore.Client.Processes;
@@ -120,6 +122,44 @@ public sealed class WorksSdkProtectedHttpTests
             (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)
                 .ConfigureAwait(true)).PendingDeliveryCount.ShouldBe(0);
         }
+    }
+
+    /// <summary>Invalid wakeups remain retryable and never commit discovery, reminders or completion markers.</summary>
+    [Theory]
+    [InlineData("foreign-domain")]
+    [InlineData("foreign-tenant")]
+    [InlineData("foreign-aggregate")]
+    [InlineData("reserved-tenant")]
+    public async Task RefusedWakeupReturnsRetryableFailureWithoutStateWrites(string scenario)
+    {
+        var store = new InMemoryReadModelStore();
+        var markers = new InMemoryEventStoreDomainEventMarkerStore();
+        IReminderRegistrar reminders = Substitute.For<IReminderRegistrar>();
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--EventStore:Reminders:ReconciliationEnabled=false", "--EventStore:Processes:ReconciliationEnabled=false"], configure: services =>
+        {
+            services.RemoveAll<IEventStoreDomainEventMarkerStore>();
+            services.AddSingleton<IEventStoreDomainEventMarkerStore>(markers);
+            services.RemoveAll<IReminderRegistrar>();
+            services.AddSingleton(reminders);
+        });
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        string tenant = scenario == "reserved-tenant" ? "tenants" : Tenant;
+        var created = new WorkItemCreated("wakeup", 1, new TenantId(tenant), new WorkItemId("wakeup"), new Obligation("synthetic"));
+        var envelope = new EventStoreDomainEventEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAV",
+            scenario == "foreign-aggregate" ? "foreign-item" : "wakeup", scenario == "foreign-tenant" ? "foreign-tenant" : tenant,
+            typeof(WorkItemCreated).FullName!, 1, DateTimeOffset.UnixEpoch, "wakeup-proof", "json",
+            JsonSerializer.SerializeToUtf8Bytes(created)) { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            using HttpResponseMessage response = await client.SendAsync(Request("/work/events", envelope, channel: true, assertion: null),
+                TestContext.Current.CancellationToken).ConfigureAwait(true);
+            response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+            store.Count.ShouldBe(0);
+            reminders.ReceivedCalls().ShouldBeEmpty();
+        }
+        (await markers.TryAcquireAsync(envelope.MessageId, TestContext.Current.CancellationToken)).ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
     }
 
     [Fact]
@@ -556,6 +596,7 @@ public sealed class WorksSdkProtectedHttpTests
                 "--environment=Development",
                 "--Logging:LogLevel:Default=Error",
                 "--Works:Recovery:RunReconciliationOnStartup=false",
+                "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999",
                 $"--{DaprAppChannelToken.ConfigurationKey}={ChannelToken}",
                 $"--EventStore:DomainService:AppId={AppId}",
                 $"--Authentication:JwtBearer:Issuer={Issuer}",

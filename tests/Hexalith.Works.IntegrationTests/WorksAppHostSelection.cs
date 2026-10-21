@@ -18,7 +18,7 @@ internal static class WorksAppHostSelection
         if (sentry is null && placement is null && scheduler is null) return (50001, 51005, 51006);
         int Parse(string? value)
             => int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int port)
-                && port is >= 1024 and <= 65535 ? port
+                && port is >= 1024 and < 65535 ? port
                 : throw new InvalidOperationException("A Platform proof requires three explicit unprivileged control-plane ports.");
         var selected = (Sentry: Parse(sentry), Placement: Parse(placement), Scheduler: Parse(scheduler));
         if (selected.Sentry == selected.Placement || selected.Sentry == selected.Scheduler || selected.Placement == selected.Scheduler)

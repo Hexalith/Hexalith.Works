@@ -11,9 +11,9 @@ through the other workflow.
 The two topic names are one edit apart. EventStore derives its command dead-letter topic as
 `{EventStore__Publisher__DeadLetterTopicPrefix}.{domain topic}`, and this composition overrides the work domain's
 topic to `work.events`; with the shipped default prefix (`deadletter`) that derivation lands on
-`deadletter.work.events` -- the subscriber queue. The AppHost therefore sets the prefix to `commanddeadletter`
+`deadletter.work.events` -- the subscriber queue. The Platform-owned Works topology therefore sets the prefix to `commanddeadletter`
 and grants the `eventstore` app id publish on exactly that topic. If you change either the prefix or the domain
-topic override, change the publish scope in `pubsub.yaml` with it: a mismatch either merges the two queues or
+topic override, change the publish scope in Platform’s `DaprComponents/pubsub.yaml` with it: a mismatch either merges the two queues or
 makes the scoped component reject every command dead letter, and `DeadLetterPublisher` only logs that failure.
 
 Works has no component or subscription access to `deadletter.work.events`, and the Works application never

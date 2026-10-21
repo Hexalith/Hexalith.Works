@@ -31,10 +31,8 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
 
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly IReadModelStore _store;
     private readonly SharedProjectionEpochCoordinator? _coordinator;
     private readonly WorksQueryPolicy? _policy;
-    private readonly IOptions<WorksProjectionOptions>? _options;
 
     /// <summary>Initializes a new instance of the <see cref="GetWorkItemQueryHandler"/> class.</summary>
     /// <param name="store">The persisted read-model store.</param>
@@ -45,8 +43,6 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         SharedProjectionEpochCoordinator? coordinator = null)
     {
         ArgumentNullException.ThrowIfNull(store);
-        _store = store;
-        _options = options;
         _policy = policy;
         _coordinator = coordinator;
     }
@@ -68,56 +64,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         var tenantId = new TenantId(query.TenantId);
         var workItemId = new WorkItemId(query.AggregateId);
 
-        if (_options?.Value.UseSdkDelivery == true)
-        {
-            return await ExecuteSdkAsync(query, tenantId, workItemId, cancellationToken).ConfigureAwait(false);
-        }
-
-        ReadModelEntry<WorksWhatsNextTenantIndex> currentIndexEntry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.CurrentWhatsNextIndexKey(query.TenantId),
-                cancellationToken)
-            .ConfigureAwait(false);
-        if (currentIndexEntry.Value is not null)
-        {
-            return await ReadCurrentAsync(
-                query.TenantId,
-                query.AggregateId,
-                tenantId,
-                workItemId,
-                currentIndexEntry.Value,
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        ReadModelEntry<WorkItemRollUp> legacyEntry = await _store
-            .GetAsync<WorkItemRollUp>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.RollUpKey(query.TenantId, query.AggregateId),
-                cancellationToken)
-            .ConfigureAwait(false);
-        if (MatchesIdentity(legacyEntry.Value, query.TenantId, query.AggregateId))
-        {
-            return Found(legacyEntry.Value!);
-        }
-
-        // A rebuild can atomically delete the legacy roll-up and publish the current manifest between the
-        // two reads above. Re-read the current manifest once to close that commit window.
-        currentIndexEntry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.CurrentWhatsNextIndexKey(query.TenantId),
-                cancellationToken)
-            .ConfigureAwait(false);
-        return currentIndexEntry.Value is not null
-            ? await ReadCurrentAsync(
-                query.TenantId,
-                query.AggregateId,
-                tenantId,
-                workItemId,
-                currentIndexEntry.Value,
-                cancellationToken).ConfigureAwait(false)
-            : NotFound(tenantId, workItemId);
+        return await ExecuteSdkAsync(query, tenantId, workItemId, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<QueryResult> ExecuteSdkAsync(
@@ -251,31 +198,6 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                 Provenance = QueryResponseProvenance.ProjectionBacked,
                 Lifecycle = ProjectionLifecycleState.Unavailable,
             });
-
-    private async Task<QueryResult> ReadCurrentAsync(
-        string tenantIdValue,
-        string workItemIdValue,
-        TenantId tenantId,
-        WorkItemId workItemId,
-        WorksWhatsNextTenantIndex index,
-        CancellationToken cancellationToken)
-    {
-        if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index)
-            || !index.MemberWorkItemIds.Contains(workItemIdValue, StringComparer.Ordinal))
-        {
-            return NotFound(tenantId, workItemId);
-        }
-
-        ReadModelEntry<WorkItemRollUp> entry = await _store
-            .GetAsync<WorkItemRollUp>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.CurrentRollUpKey(tenantIdValue, workItemIdValue),
-                cancellationToken)
-            .ConfigureAwait(false);
-        return MatchesIdentity(entry.Value, tenantIdValue, workItemIdValue)
-            ? Found(entry.Value!)
-            : NotFound(tenantId, workItemId);
-    }
 
     private static bool MatchesIdentity(WorkItemRollUp? rollUp, string tenantId, string workItemId)
         => rollUp is not null

@@ -43,15 +43,16 @@ public sealed class WorksSdkProjectionQueryTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter(bool sdkMode)
+    [InlineData(null)]
+    public async Task HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter(bool? sdkMode)
     {
-        if (!sdkMode)
+        if (sdkMode == false)
         {
             Should.Throw<InvalidOperationException>(() => WorksHost.Build(["--Works:Projection:UseSdkDelivery=false"]));
             return;
         }
         await using WebApplication app = WorksHost.Build([
-            $"--Works:Projection:UseSdkDelivery={sdkMode}",
+            .. sdkMode.HasValue ? new[] { $"--Works:Projection:UseSdkDelivery={sdkMode}" } : Array.Empty<string>(),
             "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999",
             "--Works:Recovery:RunReconciliationOnStartup=false",
         ]);
@@ -59,15 +60,17 @@ public sealed class WorksSdkProjectionQueryTests
         IAsyncDomainProjectionHandler[] handlers = [.. scope.ServiceProvider.GetServices<IAsyncDomainProjectionHandler>()];
         WorkItemSharedProjectionRebuildHandler shared = handlers.OfType<WorkItemSharedProjectionRebuildHandler>().ShouldHaveSingleItem();
         shared.ShouldBeAssignableTo<IAsyncDomainSharedProjectionRebuildHandler>();
-        shared.OrdinaryDeliveryEnabled.ShouldBe(sdkMode);
+        shared.OrdinaryDeliveryEnabled.ShouldBeTrue();
+        shared.EpochEnabled.ShouldBeTrue();
+        shared.ProjectionType.ShouldBe(WorksReadModelKeys.RuntimeFamily);
         AdminOperationalIndexMetadata.Response metadata = AdminOperationalIndexMetadata.Create(
             app.Services.GetRequiredService<DiscoveryResult>(), ["work"], [], handlers, "works", "v1", new ProjectionDispatchOptions());
         AdminOperationalIndexMetadata.DomainMetadata domain = metadata.Domains.Single();
         domain.NamedProjectionTypes.ShouldNotBeNull().ShouldBe([shared.ProjectionType]);
-        domain.OrdinaryProjectionTypes.ShouldNotBeNull().ShouldBe(sdkMode ? [WorksReadModelKeys.RuntimeFamily] : []);
+        domain.OrdinaryProjectionTypes.ShouldNotBeNull().ShouldBe([WorksReadModelKeys.RuntimeFamily]);
         ProjectionDispatchRoute route = new("work", shared.ProjectionType);
         metadata.CatalogFingerprint.ShouldBe(ProjectionRouteCatalogFingerprint.Compute("works", "v1", [route],
-            sdkMode ? [route] : []));
+            [route]));
         RouteEndpoint[] routes = [.. ((IEndpointRouteBuilder)app).DataSources.SelectMany(source => source.Endpoints).OfType<RouteEndpoint>()];
         routes.ShouldContain(route => route.RoutePattern.RawText == "/project/rebuild/shared/v1");
     }

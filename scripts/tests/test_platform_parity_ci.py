@@ -43,42 +43,47 @@ def modules(names):
     )
 
 
+def bootstrap_fixture(directory):
+    works = Path(directory) / "works"
+    works.mkdir()
+    (works / ".gitmodules").write_text(modules(PARITY.DEPENDENCIES))
+    (works / "Directory.Packages.props").write_text(
+        "<Project><PropertyGroup><HexalithEventStoreVersion>3.126.0</HexalithEventStoreVersion></PropertyGroup></Project>"
+    )
+    for name in PARITY.DEPENDENCIES:
+        dependency = works / "references" / name
+        dependency.mkdir(parents=True)
+        (dependency / ".git").mkdir()
+    catalog = works / "references/Hexalith.Builds/Props/Directory.Packages.props"
+    catalog.parent.mkdir()
+    catalog.write_text(
+        "<Project><PropertyGroup><HexalithEventStoreVersion>3.126.0</HexalithEventStoreVersion></PropertyGroup></Project>"
+    )
+    sdk = works / "references/Hexalith.EventStore"
+    (sdk / ".gitmodules").write_text(modules(["Hexalith.Builds", "Hexalith.Commons"]))
+    (sdk / "global.json").write_bytes(b'{"sdk":{"version":"10.0.402"}}\r\n')
+    commit(sdk)
+    subprocess.run(["git", "-C", str(sdk), "tag", "v3.126.0"], check=True)
+    platform = works / "references/Hexalith.Platform"
+    (platform / ".gitmodules").write_text(
+        modules([*PARITY.DEPENDENCIES, "Hexalith.Works", "Not.Root.Declared"])
+    )
+    (platform / "eng").mkdir()
+    shutil.copyfile(
+        ROOT / "references/Hexalith.Platform/eng/works_host_snapshot.py",
+        platform / "eng/works_host_snapshot.py",
+    )
+    (platform / "eng/verify-works-host.sh").write_text(
+        '#!/usr/bin/env bash\nset -euo pipefail\n[[ "$1" == "--help" ]]\n'
+    )
+    commit(platform)
+    return works, sdk, platform
+
+
 class PlatformParityBootstrapTests(unittest.TestCase):
     def test_real_snapshot_helper_and_local_git_bootstrap_use_only_root_sources(self):
         with tempfile.TemporaryDirectory() as directory:
-            works = Path(directory) / "works"
-            works.mkdir()
-            (works / ".gitmodules").write_text(modules(PARITY.DEPENDENCIES))
-            (works / "Directory.Packages.props").write_text(
-                "<Project><PropertyGroup><HexalithEventStoreVersion>3.126.0</HexalithEventStoreVersion></PropertyGroup></Project>"
-            )
-            for name in PARITY.DEPENDENCIES:
-                dependency = works / "references" / name
-                dependency.mkdir(parents=True)
-                (dependency / ".git").mkdir()
-            catalog = works / "references/Hexalith.Builds/Props/Directory.Packages.props"
-            catalog.parent.mkdir()
-            catalog.write_text(
-                "<Project><PropertyGroup><HexalithEventStoreVersion>3.126.0</HexalithEventStoreVersion></PropertyGroup></Project>"
-            )
-            sdk = works / "references/Hexalith.EventStore"
-            (sdk / ".gitmodules").write_text(modules(["Hexalith.Builds", "Hexalith.Commons"]))
-            (sdk / "global.json").write_bytes(b'{"sdk":{"version":"10.0.402"}}\r\n')
-            commit(sdk)
-            subprocess.run(["git", "-C", str(sdk), "tag", "v3.126.0"], check=True)
-            platform = works / "references/Hexalith.Platform"
-            (platform / ".gitmodules").write_text(
-                modules([*PARITY.DEPENDENCIES, "Hexalith.Works", "Not.Root.Declared"])
-            )
-            (platform / "eng").mkdir()
-            shutil.copyfile(
-                ROOT / "references/Hexalith.Platform/eng/works_host_snapshot.py",
-                platform / "eng/works_host_snapshot.py",
-            )
-            (platform / "eng/verify-works-host.sh").write_text(
-                '#!/usr/bin/env bash\nset -euo pipefail\n[[ "$1" == "--help" ]]\n'
-            )
-            commit(platform)
+            works, sdk, platform = bootstrap_fixture(directory)
             # Preserve an ordinary working overlay without changing any dependency's Git index.
             (platform / "apphost.cs").write_text("// synthetic source overlay\n")
             artifacts = Path(directory) / "attempt"
@@ -111,6 +116,62 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                 PARITY.bootstrap(root, root / "attempt")
             self.assertFalse((root / "attempt").exists())
 
+    def test_nested_or_parent_dependency_declarations_refuse(self):
+        for path in ("references/owner/nested", "references/../owner", "../references/owner"):
+            with self.subTest(path=path), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                (root / ".gitmodules").write_text('[submodule "bad"]\n path = ' + path + '\n')
+                with self.assertRaisesRegex(ValueError, "directly under"):
+                    PARITY.declared(root)
+
+    def test_populated_link_target_is_preserved_and_refused(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "references/Hexalith.Builds"
+            target.mkdir(parents=True)
+            marker = target / "owned.txt"
+            marker.write_text("preserve")
+            with self.assertRaises(OSError):
+                PARITY.link_roots(root, {"Hexalith.Builds": root / "source"}, {"references/Hexalith.Builds"})
+            self.assertEqual(marker.read_text(), "preserve")
+
+    def test_nonstable_version_or_missing_public_tag_refuses_before_creating_evidence(self):
+        for mutation in ("nonstable", "missing-tag"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory() as directory:
+                works, sdk, _ = bootstrap_fixture(directory)
+                if mutation == "nonstable":
+                    (works / "Directory.Packages.props").write_text(
+                        "<Project><PropertyGroup><HexalithEventStoreVersion>3.126.0-preview</HexalithEventStoreVersion></PropertyGroup></Project>")
+                    exception = ValueError
+                else:
+                    subprocess.run(["git", "-C", str(sdk), "tag", "-d", "v3.126.0"], check=True, capture_output=True)
+                    exception = subprocess.CalledProcessError
+                artifacts = Path(directory) / "attempt"
+                with self.assertRaises(exception):
+                    PARITY.bootstrap(works, artifacts)
+                self.assertFalse(artifacts.exists())
+
+    def test_platform_drift_refuses_final_acceptance_and_preserves_bootstrap(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            artifacts = root / "attempt"
+            artifacts.mkdir()
+            bootstrap = artifacts / "bootstrap.json"
+            bootstrap.write_text('{"status":"bootstrap-validated; parity-incomplete"}')
+            original = bootstrap.read_bytes()
+            record = {"platformOrigin": str(root), "platformSourceFiles": {"source.cs": "original"}}
+            snapshot = Mock()
+            snapshot.origin_files.return_value = {"source.cs": "changed"}
+            with (
+                patch("sys.argv", ["parity", "--artifacts-path", str(artifacts)]),
+                patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+                patch.object(PARITY.subprocess, "run"),
+                patch.object(PARITY, "require_complete_gate"),
+                self.assertRaisesRegex(ValueError, "Platform inputs changed"),
+            ):
+                PARITY.main()
+            self.assertEqual(bootstrap.read_bytes(), original)
+
     def test_mutated_python_or_shell_coordinator_refuses_final_acceptance(self):
         for filename in PARITY.COORDINATORS:
             with self.subTest(coordinator=filename), tempfile.TemporaryDirectory() as directory:
@@ -122,13 +183,18 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                 with patch.object(PARITY, "__file__", str(scripts / "verify-platform-parity-ci.py")):
                     expected = PARITY.coordinator_hashes()
                     PARITY.require_unchanged_coordinators(expected)
+                    artifacts = root / "attempt"
+                    artifacts.mkdir()
+                    bootstrap = artifacts / "bootstrap.json"
+                    bootstrap.write_text('{"status":"bootstrap-validated; parity-incomplete"}')
+                    original = bootstrap.read_bytes()
                     record = {
                         "coordinatorSha256": expected,
                         "platformOrigin": str(root),
-                        "platformSourceFiles": {},
+                        "platformSourceFiles": {"source.cs": "original"},
                     }
                     snapshot = Mock()
-                    snapshot.origin_files.return_value = {}
+                    snapshot.origin_files.return_value = {"source.cs": "original"}
 
                     def mutate(*_args, path=scripts / filename, **_kwargs):
                         path.write_text("mutated coordinator")
@@ -141,7 +207,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                         self.assertRaisesRegex(ValueError, "coordinator changed"),
                     ):
                         PARITY.main()
-                    self.assertFalse((root / "attempt/bootstrap.json").exists())
+                    self.assertEqual(bootstrap.read_bytes(), original)
 
 
 class PlatformParityAcceptanceTests(unittest.TestCase):
@@ -213,12 +279,28 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
             lambda ledger: ledger["rollback"].update(complete=False),
             lambda ledger: ledger["runtimeProducerQualification"].update(matchesPublishedProducer=False),
             lambda ledger: ledger["publishedProducers"]["SDK"].update(source="local-feed"),
+            lambda ledger: ledger["publishedProducers"].clear(),
+            lambda ledger: ledger["publishedProducers"]["SDK"].update(repositoryCommit="different"),
         ]
         for mutation in mutations:
             ledger = copy.deepcopy(self.ledger)
             mutation(ledger)
             with self.assertRaises(ValueError):
                 self.require(ledger)
+
+    def test_each_failed_row_or_incomplete_proof_refuses(self):
+        for row in self.ledger["rows"]:
+            for mutation in ("failed", "false-proof", "empty-evidence"):
+                with self.subTest(row=row, mutation=mutation):
+                    ledger = copy.deepcopy(self.ledger)
+                    if mutation == "failed":
+                        ledger["rows"][row]["status"] = "failed"
+                    elif mutation == "false-proof":
+                        ledger["rows"][row]["requiredProofs"]["negative"]["passed"] = False
+                    else:
+                        ledger["rows"][row]["requiredProofs"]["negative"]["evidence"] = []
+                    with self.assertRaisesRegex(ValueError, "every proof"):
+                        self.require(ledger)
 
     def test_missing_or_changed_xml_refuses(self):
         result = self.gate / PARITY.REQUIRED_CHECKS["liveRecovery"]

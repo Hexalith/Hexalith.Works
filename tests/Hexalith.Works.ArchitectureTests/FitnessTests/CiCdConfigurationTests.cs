@@ -35,6 +35,10 @@ public sealed class CiCdConfigurationTests
         job.ShouldContain("bash scripts/verify-platform-parity-ci.sh --artifacts-path", Case.Sensitive);
         job.ShouldContain("git submodule update --init --", Case.Sensitive);
         job.ShouldContain("fetch-depth: 0", Case.Sensitive);
+        job.ShouldContain("references/Hexalith.Platform/eng/works_toolchain.py --github-output", Case.Sensitive);
+        job.ShouldContain("runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}", Case.Sensitive);
+        job.ShouldContain("version: ${{ steps.platform-toolchain.outputs.dapr-cli }}", Case.Sensitive);
+        job.ShouldNotMatch(@"runtime-version:\s*['""0-9]");
         job.ShouldNotContain("continue-on-error", Case.Sensitive);
         job.ShouldNotContain("--prepare-only", Case.Sensitive);
         job.ShouldNotContain("--bootstrap-only", Case.Sensitive);
@@ -64,6 +68,8 @@ public sealed class CiCdConfigurationTests
             $"Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@{ApprovedBuildsSha}",
             Case.Sensitive);
         workflow.ShouldContain("run-consumer-validation: true", Case.Sensitive);
+        workflow.ShouldContain("dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}", Case.Sensitive);
+        workflow.ShouldNotContain("1.18.3", Case.Sensitive);
         workflow.ShouldContain("test-platform: microsoft-testing-platform", Case.Sensitive);
         workflow.ShouldContain("build-timeout-minutes: 60", Case.Sensitive);
         workflow.ShouldContain("actionlint/cmd/actionlint@v1.7.12", Case.Sensitive);

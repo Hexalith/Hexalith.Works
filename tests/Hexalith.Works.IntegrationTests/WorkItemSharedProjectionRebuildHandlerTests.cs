@@ -23,7 +23,7 @@ using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Exercises legacy persisted-family compatibility through the canonical SDK shared lifecycle.</summary>
+/// <summary>Exercises SDK generation rebuilds, retained rollback documents and strict evidence admission.</summary>
 public sealed class WorkItemSharedProjectionRebuildHandlerTests
 {
     private const string ChildId = "child";
@@ -38,7 +38,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
     [Fact]
-    public async Task Legacy_parented_create_rebuild_stages_without_visibility_then_atomically_converges_and_retires_legacy_keys()
+    public async Task Sdk_rebuild_stages_without_visibility_then_atomically_converges_and_preserves_rollback_keys()
     {
         var store = new InMemoryReadModelStore();
         WorkItemRollUp staleParent = RollUp(Tenant, ParentId, 99m);
@@ -77,26 +77,27 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             RollUp(Tenant, ChildId, 88m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-parented-create");
-        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity)).ConfigureAwait(true);
+        await RebuildAsync(store, Tenant, "seed-last-committed", [(ParentId, ParentHistory(Tenant, estimate: 99m))]);
+        ProjectionEventDto[] parentCapture = [.. ParentHistory(Tenant, estimate: 99m),
+            Dto(new ReEstimated(ParentId, 3, new TenantId(Tenant), new WorkItemId(ParentId), 10m, Hour), 3)];
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity,
+            [(ChildId, ChildHistory(Tenant)), (ParentId, parentCapture)])).ConfigureAwait(true);
         current = await DispatchAsync(provider, Accumulate(identity, 0, ChildId, ChildHistory(Tenant))).ConfigureAwait(true);
         DomainSharedProjectionRebuildResponse duplicate = await DispatchAsync(
             provider,
             Accumulate(identity, 0, ChildId, ChildHistory(Tenant))).ConfigureAwait(true);
         duplicate.Status.ShouldBe(ProjectionDispatchStatus.AlreadyCompleted);
-        current = await DispatchAsync(provider, Accumulate(identity, 1, ParentId, ParentHistory(Tenant))).ConfigureAwait(true);
+        current = await DispatchAsync(provider, Accumulate(identity, 1, ParentId, parentCapture)).ConfigureAwait(true);
         current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(true);
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Finalized);
 
         current = await DispatchAsync(provider, Lifecycle(identity, DomainSharedProjectionRebuildAction.Stage)).ConfigureAwait(true);
 
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Prepared);
-        (await store.GetAsync<WorksWhatsNextTenantIndex>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+        (await ReadCurrentIndexAsync(store, Tenant)).MemberWorkItemIds.ShouldBe([ParentId]);
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.RollUpKey(Tenant, ParentId),
@@ -106,7 +107,8 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         stagedView.Estimated.ShouldBe(99m);
         IReadOnlyList<WhatsNextItem> stagedQueue = await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true);
         stagedQueue.ShouldHaveSingleItem().RolledRemaining.ShouldBe(new RolledRemaining(99m, Hour));
-        store.HasPendingEnvelope(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant)).ShouldBeTrue();
+        (await provider.GetRequiredService<SharedProjectionEpochCoordinator>().GetStatusAsync(handler.CreateScope(Tenant),
+            TestContext.Current.CancellationToken)).IsBuilding.ShouldBeTrue();
 
         current = await DispatchAsync(provider, Lifecycle(identity, DomainSharedProjectionRebuildAction.Commit)).ConfigureAwait(true);
 
@@ -134,11 +136,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.RollUpKey(Tenant, ParentId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
         (await store.GetAsync<WorksWhatsNextTenantIndex>(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.WhatsNextIndexKey(Tenant),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
         store.HasPendingEnvelope(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant)).ShouldBeFalse();
     }
 
@@ -167,7 +169,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             1,
             DateTimeOffset.UnixEpoch,
             "corr-1");
-        await RebuildAsync(
+        await RefuseRebuildAsync(
             retryStore,
             Tenant,
             "rebuild-malformed-child",
@@ -175,17 +177,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
                 (ChildId, new[] { malformedCreate }),
                 (ParentId, ParentWithSpawnHistory(Tenant)),
             ]).ConfigureAwait(true);
-
-        WorkItemRollUp malformedParent = await ReadCurrentRollUpAsync(retryStore, Tenant, ParentId).ConfigureAwait(true);
-        malformedParent.OwnRemaining.ShouldBe(new OwnRemaining(10m, Hour));
-        malformedParent.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
-        malformedParent.RolledRemaining.ShouldBeNull();
-        malformedParent.RolledRemainingByUnit.ShouldBeEmpty();
-        WorkItemRollUp malformedChild = await ReadCurrentRollUpAsync(retryStore, Tenant, ChildId).ConfigureAwait(true);
-        malformedChild.Status.ShouldBe(WorkItemStatus.Created);
-        malformedChild.OwnEffort.ShouldBe(new WorkItemEffort(4m, Hour));
-        malformedChild.RolledRemaining.ShouldBeNull();
-        malformedChild.RolledRemainingByUnit.ShouldBeEmpty();
+        retryStore.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -225,12 +217,12 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     }
 
     [Fact]
-    public async Task Foreign_payload_identity_marks_the_affected_shared_rebuild_roll_up_incomplete()
+    public async Task Foreign_payload_identity_refuses_sdk_rebuild_before_any_generation_is_written()
     {
         var tenant = new TenantId(Tenant);
         var item = new WorkItemId(ChildId);
         var store = new InMemoryReadModelStore();
-        await RebuildAsync(
+        await RefuseRebuildAsync(
             store,
             Tenant,
             "rebuild-foreign-payload-identity",
@@ -253,14 +245,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
                     Hour), 3),
             ])]).ConfigureAwait(true);
 
-        // The logger-free shared builder degrades only this aggregate: reliable local fields survive, while
-        // the rolled shapes are unavailable because the foreign event cannot be trusted as complete evidence.
-        WorkItemRollUp result = await ReadCurrentRollUpAsync(store, Tenant, ChildId).ConfigureAwait(true);
-        result.Status.ShouldBe(WorkItemStatus.Assigned);
-        result.OwnEffort.ShouldBe(new WorkItemEffort(4m, Hour));
-        result.OwnRemaining.ShouldBe(new OwnRemaining(4m, Hour));
-        result.RolledRemaining.ShouldBeNull();
-        result.RolledRemainingByUnit.ShouldBeEmpty();
+        store.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -404,10 +389,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     public async Task Abort_retry_and_colliding_tenant_ids_preserve_atomicity_and_tenant_isolation()
     {
         var store = new InMemoryReadModelStore();
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity abortedIdentity = Identity(Tenant, "rebuild-aborted");
-        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(abortedIdentity)).ConfigureAwait(true);
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(abortedIdentity, [(ParentId, ParentHistory(Tenant))])).ConfigureAwait(true);
         current = await DispatchAsync(provider, Accumulate(abortedIdentity, 0, ParentId, ParentHistory(Tenant))).ConfigureAwait(true);
         current = await DispatchAsync(provider, Finalize(abortedIdentity, current)).ConfigureAwait(true);
         _ = await DispatchAsync(provider, Lifecycle(abortedIdentity, DomainSharedProjectionRebuildAction.Stage)).ConfigureAwait(true);
@@ -452,7 +437,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             RollUp(Tenant, ParentId, 42m),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-empty-inventory");
         DomainSharedProjectionRebuildCandidate empty = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -462,10 +447,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             () => handler.FinalizeAsync(identity, empty, TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
         using ServiceProvider provider = BuildProvider(store, handler);
-        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity)).ConfigureAwait(true);
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity, [])).ConfigureAwait(true);
         current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(true);
-
         current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
+        current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
+        current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
         (await store.GetAsync<WorksWhatsNextTenantIndex>(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant),
@@ -479,7 +465,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [Fact]
     public async Task Accumulate_replaces_a_redelivered_aggregate_and_refuses_an_unidentified_history()
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-redelivery");
         DomainSharedProjectionRebuildCandidate candidate = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -523,7 +509,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData("party", "some-other-projection")]
     public async Task Every_lifecycle_step_refuses_an_identity_outside_the_works_rollup_route(string domain, string projectionType)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         DomainSharedProjectionRebuildIdentity valid = Identity(Tenant, "rebuild-identity");
         var foreign = new DomainSharedProjectionRebuildIdentity(
             Tenant,
@@ -553,7 +539,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData(Tenant, "party")]
     public async Task Accumulate_refuses_history_from_another_tenant_or_domain(string historyTenant, string historyDomain)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-cross-tenant");
         DomainSharedProjectionRebuildCandidate candidate = await handler
             .CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken)
@@ -571,10 +557,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [Fact]
     public async Task Single_aggregate_projection_dispatch_is_refused_as_an_unsupported_capability()
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
 
-        // This handler only serves the shared-rebuild lifecycle; the ordinary /project dispatch belongs to
-        // WorkItemProjectionDispatcher and must be refused here rather than silently succeeding.
+        // Ordinary delivery enters through the SDK epoch dispatcher; the direct single-history method
+        // cannot bypass its capture, checkpoint and fencing protocol.
         DomainProjectionHandlerResult result = await handler.ProjectAsync(
             new ProjectionRequest(Tenant, "work", ParentId, ParentHistory(Tenant)),
             "dispatch-1",
@@ -597,8 +583,21 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             aggregateId,
             Events: events);
 
-    private static DomainSharedProjectionRebuildRequest Begin(DomainSharedProjectionRebuildIdentity identity)
-        => Lifecycle(identity, DomainSharedProjectionRebuildAction.Begin);
+    private static DomainSharedProjectionRebuildRequest Begin(DomainSharedProjectionRebuildIdentity identity,
+        IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
+    {
+        string fingerprint = DomainSharedProjectionRebuildFingerprint.EmptyInventory;
+        long ordinal = 0;
+        foreach (var history in histories.OrderBy(item => item.AggregateId, StringComparer.Ordinal))
+            fingerprint = DomainSharedProjectionRebuildFingerprint.AppendInventory(fingerprint, ordinal++,
+                DomainSharedProjectionRebuildFingerprint.ComputeHistory(history.AggregateId, false, history.Events));
+        return Lifecycle(identity, DomainSharedProjectionRebuildAction.Begin) with
+        {
+            CaptureInventoryFingerprint = fingerprint,
+            SourceHighWatermarks = histories.ToDictionary(item => item.AggregateId,
+                item => item.Events.LastOrDefault()?.GlobalPosition ?? 0, StringComparer.Ordinal),
+        };
+    }
 
     private static ServiceProvider BuildProvider(
         InMemoryReadModelStore store,
@@ -606,7 +605,9 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     {
         var services = new ServiceCollection();
         _ = services.AddSingleton<IReadModelStore>(store);
+        _ = services.AddSingleton<IReadModelBatchStore>(store);
         _ = services.AddSingleton<IReadModelBatchStagingStore>(store);
+        _ = services.AddSingleton(new SharedProjectionEpochCoordinator(store, store));
         _ = services.AddScoped<IAsyncDomainProjectionHandler>(_ => handler);
         return services.BuildServiceProvider();
     }
@@ -624,15 +625,21 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         ];
     }
 
-    private static Task<DomainSharedProjectionRebuildResponse> DispatchAsync(
+    private static async Task<DomainSharedProjectionRebuildResponse> DispatchAsync(
         IServiceProvider provider,
         DomainSharedProjectionRebuildRequest request)
-        => DomainSharedProjectionRebuildDispatcher.DispatchAsync(
+    {
+        if (request.Action == DomainSharedProjectionRebuildAction.Begin)
+            _ = await provider.GetRequiredService<SharedProjectionEpochCoordinator>().RegisterWriterAsync(
+                new WorkItemSharedProjectionRebuildHandler().CreateScope(request.Identity.TenantId),
+                "works-runtime-v3-writer", TestContext.Current.CancellationToken).ConfigureAwait(false);
+        return await DomainSharedProjectionRebuildDispatcher.DispatchAsync(
             provider,
             request,
             new ProjectionDispatchOptions(),
             new DomainProjectionIdentityOptions { AppId = "works-test", ServiceVersion = "v1" },
-            TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken).ConfigureAwait(false);
+    }
 
     private static ProjectionEventDto Dto(IEventPayload payload, long sequence)
         => new(
@@ -641,7 +648,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "json",
             sequence,
             DateTimeOffset.UnixEpoch,
-            "corr-1");
+            "corr-1") { GlobalPosition = sequence };
 
     private static DomainSharedProjectionRebuildRequest Finalize(
         DomainSharedProjectionRebuildIdentity identity,
@@ -655,15 +662,14 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
     private static DomainSharedProjectionRebuildIdentity Identity(string tenantId, string operationId)
     {
-        // Rebuild-only Works routes advertise an empty ordinary subset. Consume the real advertised
-        // fingerprint so every reconciliation assertion exercises the supported legacy admission contract.
+        // Bind rebuild admission to the SDK's advertised ordinary writer and shared family.
         string fingerprint = AdminOperationalIndexMetadata.Create(new DiscoveryResult([], []), ["work"], [],
-            [new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }))], "works-test", "v1", new ProjectionDispatchOptions(), ["work"])
+            [new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }))], "works-test", "v1", new ProjectionDispatchOptions(), ["work"])
             .CatalogFingerprint!;
         return new DomainSharedProjectionRebuildIdentity(
             tenantId,
             "work",
-            WorkItemSharedProjectionRebuildHandler.ProjectionTypeName,
+            WorksReadModelKeys.RuntimeFamily,
             operationId,
             fingerprint);
     }
@@ -700,9 +706,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         IReadModelStore store,
         string tenantId)
     {
-        var handler = new WhatsNextQueryHandler(store);
+        var handler = new WhatsNextQueryHandler(store, policy: CoordinatorPolicy(),
+            coordinator: new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store));
         QueryResult result = await handler.ExecuteAsync(
-            new QueryEnvelope(tenantId, "work", ParentId, WhatsNextQueryHandler.WhatsNextQueryType, [], "corr-1", "user-1"),
+            new QueryEnvelope(tenantId, "work", ParentId, WhatsNextQueryHandler.WhatsNextQueryType, [], "corr-1", "user-1") { AuthenticatedWorkloadId = "sdk-test" },
             TestContext.Current.CancellationToken).ConfigureAwait(false);
         return result.GetPayload().Deserialize<IReadOnlyList<WhatsNextItem>>(Web).ShouldNotBeNull();
     }
@@ -712,9 +719,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         string tenantId,
         string aggregateId)
     {
-        var handler = new GetWorkItemQueryHandler(store);
+        var handler = new GetWorkItemQueryHandler(store, policy: CoordinatorPolicy(),
+            coordinator: new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store));
         QueryResult result = await handler.ExecuteAsync(
-            new QueryEnvelope(tenantId, "work", aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "corr-1", "user-1"),
+            new QueryEnvelope(tenantId, "work", aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "corr-1", "user-1") { AuthenticatedWorkloadId = "sdk-test" },
             TestContext.Current.CancellationToken).ConfigureAwait(false);
         return result.GetPayload().Deserialize<WorkItemView>(Web).ShouldNotBeNull();
     }
@@ -722,19 +730,21 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     private static async Task<WorksWhatsNextTenantIndex> ReadCurrentIndexAsync(
         IReadModelStore store,
         string tenantId)
-        => (await store.GetAsync<WorksWhatsNextTenantIndex>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId),
-            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();
+        => (await new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store).ReadAsync<WorksRuntimeDocument>(
+            new WorkItemSharedProjectionRebuildHandler().CreateScope(tenantId), WorksReadModelKeys.RuntimeQueueKey,
+            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>();
 
     private static async Task<WorkItemRollUp> ReadCurrentRollUpAsync(
         IReadModelStore store,
         string tenantId,
         string aggregateId)
-        => (await store.GetAsync<WorkItemRollUp>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.CurrentRollUpKey(tenantId, aggregateId),
-            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();
+        => (await new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store).ReadAsync<WorksRuntimeDocument>(
+            new WorkItemSharedProjectionRebuildHandler().CreateScope(tenantId), WorksReadModelKeys.RuntimeRollUpKey(aggregateId),
+            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull().As<WorkItemRollUp>();
+
+    private static WorksQueryPolicy CoordinatorPolicy()
+        => new(NSubstitute.Substitute.For<Hexalith.Parties.Client.Abstractions.IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["sdk-test"] }));
 
     private static async Task RebuildAsync(
         InMemoryReadModelStore store,
@@ -742,10 +752,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         string operationId,
         IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = false }));
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         using ServiceProvider provider = BuildProvider(store, handler);
         DomainSharedProjectionRebuildIdentity identity = Identity(tenantId, operationId);
-        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity)).ConfigureAwait(false);
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity, histories)).ConfigureAwait(false);
         long ordinal = 0;
         foreach ((string aggregateId, ProjectionEventDto[] events) in histories.OrderBy(static history => history.AggregateId, StringComparer.Ordinal))
         {
@@ -757,6 +767,20 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         _ = await DispatchAsync(provider, Lifecycle(identity, DomainSharedProjectionRebuildAction.Stage)).ConfigureAwait(false);
         current = await DispatchAsync(provider, Lifecycle(identity, DomainSharedProjectionRebuildAction.Commit)).ConfigureAwait(false);
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
+    }
+
+    private static async Task RefuseRebuildAsync(InMemoryReadModelStore store, string tenant, string operation,
+        IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var identity = Identity(tenant, operation);
+        var candidate = await handler.CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        foreach (var history in histories)
+            candidate = await handler.AccumulateAsync(identity, candidate, new ProjectionRequest(tenant, "work", history.AggregateId, history.Events),
+                TestContext.Current.CancellationToken).ConfigureAwait(false);
+        await Should.ThrowAsync<InvalidOperationException>(() => handler.FinalizeAsync(identity, candidate,
+            TestContext.Current.CancellationToken)).ConfigureAwait(false);
+        store.Count.ShouldBe(0);
     }
 
     private static WorkItemRollUp RollUp(string tenantId, string aggregateId, decimal remaining)

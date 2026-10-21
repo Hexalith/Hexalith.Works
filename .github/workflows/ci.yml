@@ -16,6 +16,23 @@ permissions:
   contents: read
 
 jobs:
+  platform-toolchain:
+    name: Platform-owned Works proof toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dapr-runtime: ${{ steps.pins.outputs.dapr-runtime }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Initialize root Platform toolchain owner
+        run: git submodule update --init -- references/Hexalith.Platform
+      - name: Read Platform-owned toolchain
+        id: pins
+        run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
+
   platform-parity:
     name: Platform R1–R11 parity and rollback
     runs-on: ubuntu-latest
@@ -37,11 +54,14 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+      - name: Read Platform-owned Works proof toolchain
+        id: platform-toolchain
+        run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
       - name: Initialize Dapr proof prerequisites
         uses: Hexalith/Hexalith.Builds/Github/dapr-init@04d961759994396132bb2b113ee465b64740a543
         with:
-          version: '1.18.2'
-          runtime-version: '1.18.3'
+          version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
+          runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
       - name: Run complete canonical Platform gate
         run: bash scripts/verify-platform-parity-ci.sh --artifacts-path "$RUNNER_TEMP/works-platform-parity"
       - name: Preserve parity results
@@ -67,11 +87,12 @@ jobs:
             ${{ runner.temp }}/works-platform-parity/gate/isolated-daprd*/launches.jsonl
 
   ci:
+    needs: platform-toolchain
     uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@04d961759994396132bb2b113ee465b64740a543
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
-      dapr-runtime-version: '1.18.3'
+      dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}
       build-timeout-minutes: 60
       run-consumer-validation: true
       unit-test-projects: |

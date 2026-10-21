@@ -37,6 +37,8 @@ internal static class WorksDomainAdapters
         _ = services.AddOptions<WorksQueryOptions>()
             .Bind(configuration.GetSection(WorksQueryOptions.SectionName))
             .Validate(static options => !string.IsNullOrWhiteSpace(options.GatewayWorkloadId), "GatewayWorkloadId is required.")
+            .Validate(options => Uri.TryCreate(PartiesGatewayAddress(options, configuration), UriKind.Absolute, out _),
+                "Works requires an absolute Parties gateway address in Works:Query:PartiesGatewayBaseAddress or EventStore:CommandGateway:BaseAddress.")
             .ValidateOnStart();
         // Retain Works' gateway-only query boundary by strengthening the SDK's own policy.
         // The SDK still owns channel authentication, operation assertions and endpoint routing.
@@ -51,10 +53,7 @@ internal static class WorksDomainAdapters
         _ = services.AddHttpClient<IPartiesIdentityClient, HttpPartiesIdentityClient>((provider, client) =>
         {
             WorksQueryOptions options = provider.GetRequiredService<IOptions<WorksQueryOptions>>().Value;
-            string address = options.PartiesGatewayBaseAddress ?? configuration["EventStore:CommandGateway:BaseAddress"] ?? "http://eventstore";
-            if (!Uri.TryCreate(address, UriKind.Absolute, out Uri? uri))
-                throw new InvalidOperationException("Works requires an absolute Parties gateway address.");
-            client.BaseAddress = uri;
+            client.BaseAddress = new Uri(PartiesGatewayAddress(options, configuration)!, UriKind.Absolute);
             if (!string.IsNullOrWhiteSpace(options.PartiesGatewayBearerToken))
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.PartiesGatewayBearerToken);
         }).AddHttpMessageHandler<WorksPartiesGatewayAuthorizationHandler>();
@@ -83,4 +82,7 @@ internal static class WorksDomainAdapters
         _ = services.AddWorksReminderAndCascadeRecovery(configuration);
         return services;
     }
+
+    private static string? PartiesGatewayAddress(WorksQueryOptions options, IConfiguration configuration)
+        => options.PartiesGatewayBaseAddress ?? configuration["EventStore:CommandGateway:BaseAddress"];
 }

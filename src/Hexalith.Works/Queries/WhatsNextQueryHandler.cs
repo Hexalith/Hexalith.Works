@@ -31,10 +31,8 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
 
     private static readonly JsonSerializerOptions s_jsonOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly IReadModelStore _store;
     private readonly SharedProjectionEpochCoordinator? _coordinator;
     private readonly WorksQueryPolicy? _policy;
-    private readonly IOptions<WorksProjectionOptions>? _options;
 
     /// <summary>Initializes a new instance of the <see cref="WhatsNextQueryHandler"/> class.</summary>
     /// <param name="store">The persisted read-model store.</param>
@@ -45,8 +43,6 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
         SharedProjectionEpochCoordinator? coordinator = null)
     {
         ArgumentNullException.ThrowIfNull(store);
-        _store = store;
-        _options = options;
         _policy = policy;
         _coordinator = coordinator;
     }
@@ -62,52 +58,7 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
     {
         ArgumentNullException.ThrowIfNull(query);
 
-        if (_options?.Value.UseSdkDelivery == true)
-        {
-            return await ExecuteSdkAsync(query, cancellationToken).ConfigureAwait(false);
-        }
-
-        string tenantId = query.TenantId;
-        if (string.IsNullOrWhiteSpace(tenantId))
-        {
-            // Fail closed: no authoritative tenant context means an empty result, never a cross-tenant read.
-            return Success([]);
-        }
-
-        ReadModelEntry<WorksWhatsNextTenantIndex> currentEntry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId), cancellationToken)
-            .ConfigureAwait(false);
-        if (currentEntry.Value is not null)
-        {
-            return WorksWhatsNextTenantIndexValidation.IsValidCurrent(currentEntry.Value)
-                ? Success(CurrentItems(tenantId, currentEntry.Value))
-                : Success([]);
-        }
-
-        ReadModelEntry<WorksWhatsNextTenantIndex> legacyEntry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.WhatsNextIndexKey(tenantId),
-                cancellationToken)
-            .ConfigureAwait(false);
-        if (legacyEntry.Value is not null)
-        {
-            return WorksWhatsNextTenantIndexValidation.IsUsableLegacy(legacyEntry.Value)
-                ? Success(AuthorizedItems(tenantId, legacyEntry.Value.Items.Values))
-                : Success([]);
-        }
-
-        // A rebuild can commit between the first current-schema miss and this legacy miss. Re-read the
-        // authoritative key once so that the atomic legacy-delete/current-write switch cannot look empty.
-        currentEntry = await _store
-            .GetAsync<WorksWhatsNextTenantIndex>(
-                WorksReadModelKeys.StateStoreName,
-                WorksReadModelKeys.CurrentWhatsNextIndexKey(tenantId),
-                cancellationToken)
-            .ConfigureAwait(false);
-        return currentEntry.Value is not null && WorksWhatsNextTenantIndexValidation.IsValidCurrent(currentEntry.Value)
-            ? Success(CurrentItems(tenantId, currentEntry.Value))
-            : Success([]);
+        return await ExecuteSdkAsync(query, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<QueryResult> ExecuteSdkAsync(QueryEnvelope query, CancellationToken cancellationToken)
@@ -262,19 +213,4 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
                 Lifecycle = ProjectionLifecycleState.Unavailable,
             });
 
-    private static IReadOnlyList<WhatsNextItem> CurrentItems(string tenantId, WorksWhatsNextTenantIndex index)
-    {
-        var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
-        return AuthorizedItems(
-            tenantId,
-            index.Items.Values.Where(item => item?.WorkItemId is not null && members.Contains(item.WorkItemId.Value)));
-    }
-
-    private static IReadOnlyList<WhatsNextItem> AuthorizedItems(string tenantId, IEnumerable<WhatsNextItem> items)
-        => WhatsNextQueryAuthorization.FilterList(
-            tenantId,
-            items.OrderBy(static item => item, WhatsNextOrdering.Instance));
-
-    private static QueryResult Success(IReadOnlyList<WhatsNextItem> items)
-        => QueryResult.FromPayload(JsonSerializer.SerializeToElement(items, s_jsonOptions), WorksReadModelKeys.WhatsNextProjectionType);
 }

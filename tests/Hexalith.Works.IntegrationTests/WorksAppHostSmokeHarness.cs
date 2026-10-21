@@ -469,7 +469,7 @@ internal static class WorksAppHostSmokeHarness
             using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
             await WorksAppHostTestReadiness
                 .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token,
-                    WorksAppHostSelection.IsPlatform && actorTypeName == "WorksSdkReminderActor" ? "WorksSdkReminderActor" : actorTypeName)
+                    actorTypeName)
                 .ConfigureAwait(true);
             if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
             {
@@ -504,7 +504,7 @@ internal static class WorksAppHostSmokeHarness
                     // fixture wrote, and each module's effective launched environment, for independent comparison.
                     compositionGuard,
                     effectiveEnvironment = EffectiveEnvironment(app),
-                    actorType = actorTypeName == "WorksSdkReminderActor" ? "WorksSdkReminderActor" : actorTypeName,
+                    actorType = actorTypeName,
                     // The test runner's loaded SDK assemblies; each host's deployed SDK assemblies are bound per
                     // module in runtimeModules.
                     sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()

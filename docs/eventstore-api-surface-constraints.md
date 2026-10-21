@@ -73,7 +73,7 @@ histories. Its Begin/Accumulate/Finalize/Stage/Commit protocol validates bounded
 single-store `IReadModelBatchStagingStore` manifest atomically. Works uses that shared lifecycle for tenant-wide
 roll-up reconciliation while retaining the checkpoint path for independent aggregate projections.
 
-## Story 4.5 — Command/Event Pipeline Under Aspire (runtime adapter proof)
+## Story 4.5 — Command/Event Pipeline Under Aspire (historical runtime adapter proof)
 
 Story 4.5 wired the first runnable adapter edge (`src/Hexalith.Works`) and the Works AppHost topology. The
 verified EventStore domain-service surface is:
@@ -90,12 +90,12 @@ verified EventStore domain-service surface is:
   payload. No EventStore runtime inheritance leaks into `Server` — the
   `Server -> Contracts` direction
   is preserved (fitness-asserted).
-- **Canonical host shape.** A domain module is two lines — `builder.AddEventStoreDomainService(assembly)` then
+- **Canonical host shape (current cutover).** A domain module is two lines — `builder.AddEventStoreDomainService(assembly)` then
   `app.UseEventStoreDomainService()`. The SDK supplies the platform service defaults (health/OpenTelemetry),
   convention discovery/registration of aggregates + `IDomainQueryHandler`s, runtime activation, and the canonical
   `/process`, `/replay-state`, `/query`, `/project`, and `/admin/operational-index-metadata` endpoints. Per the
-  EventStore domain-module contract a domain must **not** fork its own ServiceDefaults, so the host does not
-  reference `Hexalith.Works.ServiceDefaults`.
+  EventStore domain-module contract delegates service defaults to EventStore and Platform. Story 4.9
+  removed the transitional `Hexalith.Works.ServiceDefaults` and AppHost projects after the complete parity gate.
 - **Polymorphic registration is required at the host edge.** Commands arrive at `/process` through the shared
   static `PolymorphicSerializationResolver` registry, so the host calls
   `HexalithWorksContractsSerialization.RegisterPolymorphicMappers()` (plus the DI registration) at startup.
@@ -164,17 +164,17 @@ Aspire package pins were reconciled from 13.4.3 to **13.4.6** (and `Aspire.AppHo
 checked-out `Hexalith.EventStore` submodule, which `Hexalith.EventStore.Aspire` requires. This is a submodule-drift
 alignment forced by the ProjectReference rule, not a discretionary upgrade.
 
-## Story 4.6 — Reminder and Reactor Recovery (adapter-edge proof)
+## Story 4.6 — Reminder and Reactor Recovery (historical adapter-edge proof)
 
 Story 4.6 keeps the Works kernel clock-free and infrastructure-free while proving two recovery concerns at the
 runnable host edge:
 
-- **Date resumes use Dapr actor reminders.** `src/Hexalith.Works` registers a `DateReminderActor` through
-  `AddActors`/`MapActorsHandlers`; reminder names are deterministic from `(tenantId, workItemId,
-  AwaitCondition.CorrelationKey)`. A fired reminder rebuilds `ResumeWorkItem(TenantId, WorkItemId,
-  AwaitCondition.DateReached(instant))` and submits it through the EventStore command gateway. Duplicate
-  reminder registration targets the same actor/reminder name; duplicate firings reissue the same deterministic
-  command and converge through EventStore/aggregate idempotency.
+- **Current date resumes use SDK typed reminder intents.** Works registers `WorksReminderIntentSource`
+  through `AddEventStoreReminders`; EventStore owns actor registration, callbacks and reconciliation.
+  `WorksSdkReminderActor` persists typed `DateResume`/expiry intents and submits deterministic trusted
+  effects through the EventStore gateway. The retired Story 4.6 `DateReminderActor`, `AddActors` and
+  `MapActorsHandlers` implementation is historical evidence only. Platform owns Scheduler, placement,
+  state-store composition and callback policy; see [the cutover record](platform-hosting-cutover.md).
 - **Scheduler/state-store dependency is explicit.** Local proof uses the existing Redis-backed `statestore`
   component with `actorStateStore: "true"` and `works` in scope. Dapr Scheduler, placement, and Redis are
   prerequisites for the live Tier-3 lane; deterministic tests cover the adapter logic without those services.

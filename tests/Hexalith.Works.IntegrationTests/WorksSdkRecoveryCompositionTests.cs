@@ -88,6 +88,83 @@ public sealed class WorksSdkRecoveryCompositionTests
         Should.Throw<InvalidOperationException>(() => new ServiceCollection().AddWorksReminderAndCascadeRecovery(configuration));
     }
 
+    /// <summary>Every committed lifecycle event resolves its wakeup adapter from the actual host.</summary>
+    [Fact]
+    public async Task RecoveryWakeupInventoryCoversEverySequencedEvent()
+    {
+        await using var app = WorksHost.Build(["--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"]);
+        using var scope = app.Services.CreateScope();
+        Type[] events = [.. typeof(WorkItemCreated).Assembly.GetTypes().Where(type => !type.IsAbstract
+            && typeof(Hexalith.EventStore.Contracts.Events.IEventPayload).IsAssignableFrom(type)
+            && type.GetProperty(nameof(WorkItemCreated.Sequence)) is not null)];
+        events.ShouldNotBeEmpty();
+        foreach (Type eventType in events)
+        {
+            Type service = typeof(IEventStoreDomainEventHandler<>).MakeGenericType(eventType);
+            scope.ServiceProvider.GetServices(service).ShouldHaveSingleItem().ShouldNotBeNull()
+                .GetType().ShouldBe(typeof(WorksRecoveryWakeupHandler<>).MakeGenericType(eventType));
+        }
+    }
+
+    /// <summary>Missing, blank and relative Parties addresses are rejected by host startup validation.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("relative/gateway")]
+    public async Task InvalidPartiesGatewayRefusesStartup(string? address)
+    {
+        string[] settings = address is null ? [] : [$"--Works:Query:PartiesGatewayBaseAddress={address}"];
+        // SDK route discovery resolves query handlers while building, so invalid options may fail
+        // even before StartAsync. Both paths refuse before any request or recovery work.
+        var exception = await Should.ThrowAsync<OptionsValidationException>(async () =>
+        {
+            var app = WorksHost.Build(settings);
+            await using (app.ConfigureAwait(false))
+                await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+        });
+        exception.Message.ShouldContain("absolute Parties gateway address");
+    }
+
+    /// <summary>The explicitly configured command gateway also supplies Parties identity queries.</summary>
+    [Fact]
+    public async Task CommandGatewaySuppliesPartiesAddress()
+    {
+        await using var app = WorksHost.Build(["--EventStore:CommandGateway:BaseAddress=https://gateway.example.invalid"]);
+        using var scope = app.Services.CreateScope();
+        scope.ServiceProvider.GetRequiredService<Hexalith.Parties.Client.Abstractions.IPartiesIdentityClient>().ShouldNotBeNull();
+        app.Services.GetRequiredService<IHttpClientFactory>().CreateClient("IPartiesIdentityClient").BaseAddress
+            .ShouldBe(new Uri("https://gateway.example.invalid"));
+    }
+
+    /// <summary>Invalid page budgets and projection parking limits fail startup before recovery runs.</summary>
+    [Theory]
+    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "0")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "-1")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "0")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "-1")]
+    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "0")]
+    public async Task InvalidRecoveryBudgetsRefuseStartup(string key, string value)
+    {
+        await using var app = WorksHost.Build([$"--{key}={value}", "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"]);
+        await Should.ThrowAsync<OptionsValidationException>(() => app.StartAsync(TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>The historical alias keeps its documented precedence over the aggregate budget.</summary>
+    [Theory]
+    [InlineData(null, 7)]
+    [InlineData(3, 3)]
+    public void StreamPageBudgetAliasBindsAndTakesPrecedence(int? alias, int expected)
+    {
+        var values = new Dictionary<string, string?> { ["Works:Recovery:MaxStreamPagesPerAggregate"] = "7" };
+        if (alias.HasValue) values["Works:Recovery:MaxStreamPagesPerTenant"] = alias.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
+        var services = new ServiceCollection().AddLogging();
+        services.AddWorksReminderAndCascadeRecovery(configuration);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<IOptions<WorksRecoveryOptions>>().Value.EffectiveMaxStreamPagesPerAggregate.ShouldBe(expected);
+    }
+
     /// <summary>Inconsistent wakeup metadata never discovers a source or schedules an effect.</summary>
     [Theory]
     [InlineData("foreign-domain")]
@@ -105,7 +182,7 @@ public sealed class WorksSdkRecoveryCompositionTests
         var context = new EventStoreDomainEventContext(scenario == "foreign-tenant" ? "foreign-tenant" : tenant,
             scenario == "foreign-aggregate" ? "other-work" : "work-49", "01ARZ3NDEKTSV4RRFFQ69G5FAV", 1,
             DateTimeOffset.UnixEpoch, "correlation-49") { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
-        await Should.ThrowAsync<Exception>(() => handler.HandleAsync(created, context, TestContext.Current.CancellationToken));
+        await Should.ThrowAsync<InvalidOperationException>(() => handler.HandleAsync(created, context, TestContext.Current.CancellationToken));
         store.Count.ShouldBe(0);
         reminders.ReceivedCalls().ShouldBeEmpty();
     }

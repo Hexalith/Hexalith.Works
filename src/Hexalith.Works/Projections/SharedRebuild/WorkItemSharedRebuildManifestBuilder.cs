@@ -14,24 +14,10 @@ namespace Hexalith.Works.Projections.SharedRebuild;
 /// <summary>Builds the complete deterministic current-schema replacement for one sealed tenant candidate.</summary>
 internal static class WorkItemSharedRebuildManifestBuilder
 {
-    /// <summary>Folds all histories through one pure relationship-aware graph and creates the atomic manifest.</summary>
-    public static DomainProjectionRebuildPlan Build(
-        DomainSharedProjectionRebuildIdentity identity,
-        WorkItemSharedRebuildCandidateState candidate,
-        CancellationToken cancellationToken)
-        => BuildCore(identity, candidate, epoch: false, cancellationToken);
-
     /// <summary>Builds the complete SDK generation without touching recoverable legacy keys.</summary>
     public static DomainProjectionRebuildPlan BuildEpoch(
         DomainSharedProjectionRebuildIdentity identity,
         WorkItemSharedRebuildCandidateState candidate,
-        CancellationToken cancellationToken)
-        => BuildCore(identity, candidate, epoch: true, cancellationToken);
-
-    private static DomainProjectionRebuildPlan BuildCore(
-        DomainSharedProjectionRebuildIdentity identity,
-        WorkItemSharedRebuildCandidateState candidate,
-        bool epoch,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(identity);
@@ -39,9 +25,8 @@ internal static class WorkItemSharedRebuildManifestBuilder
 
         if (candidate.Histories.Count == 0)
         {
-            // Committing an empty inventory would delete the legacy index and publish an authoritative
-            // manifest with no members, making the whole tenant unreachable. An inventory that accumulated
-            // nothing is a failed capture, not a proof that the tenant is empty.
+            // An inventory that accumulated nothing is a failed capture, not a proof that the tenant is empty.
+            // Never promote it over the last committed readable generation.
             throw new InvalidOperationException("The Works shared rebuild candidate carries no authoritative tenant history.");
         }
 
@@ -62,10 +47,7 @@ internal static class WorkItemSharedRebuildManifestBuilder
         foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (epoch)
-            {
-                ValidateHistory(history);
-            }
+            ValidateHistory(history);
 
             var workItemId = new WorkItemId(history.AggregateId);
             string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(history.Events);
@@ -74,15 +56,7 @@ internal static class WorkItemSharedRebuildManifestBuilder
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 if (dto is null)
-                {
-                    if (epoch)
-                    {
-                        throw new InvalidOperationException("The Works runtime history contains a null envelope.");
-                    }
-
-                    relationships.MarkIncomplete(history.AggregateId);
-                    continue;
-                }
+                    throw new InvalidOperationException("The Works runtime history contains a null envelope.");
 
                 WorkItemProjectionEventDecodeResult decoded = WorkItemProjectionEventDecoder.Decode(
                     dto,
@@ -91,15 +65,7 @@ internal static class WorkItemSharedRebuildManifestBuilder
                     correlationId,
                     logger: null);
                 if (!decoded.KnownEventType || decoded.Malformed)
-                {
-                    if (epoch)
-                    {
-                        throw new InvalidOperationException("The Works runtime history contains undecodable evidence.");
-                    }
-
-                    relationships.MarkIncomplete(history.AggregateId);
-                    continue;
-                }
+                    throw new InvalidOperationException("The Works runtime history contains undecodable evidence.");
 
                 if (decoded.Payload is not { } payload
                     || PrepareRelationshipPayload(
@@ -117,7 +83,6 @@ internal static class WorkItemSharedRebuildManifestBuilder
                 decodedPayloads.Add(safePayload);
             }
 
-            if (epoch)
             {
                 IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(decodedPayloads);
                 if (pending.Count > 0)
@@ -173,7 +138,6 @@ internal static class WorkItemSharedRebuildManifestBuilder
             MemberWorkItemIds = [.. members.OrderBy(static id => id, StringComparer.Ordinal)],
         };
 
-        if (epoch)
         {
             List<ReadModelBatchOperation> generationOperations =
             [
@@ -215,36 +179,6 @@ internal static class WorkItemSharedRebuildManifestBuilder
             return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, generationOperations);
         }
 
-        List<ReadModelBatchOperation> operations =
-        [
-            ReadModelBatchOperation.Write(
-                WorksReadModelKeys.CurrentWhatsNextIndexKey(identity.TenantId),
-                index,
-                ReadModelBatchConcurrency.LastWrite),
-        ];
-        foreach ((string aggregateId, WorkItemRollUp rollUp) in rollUps.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            operations.Add(ReadModelBatchOperation.Write(
-                WorksReadModelKeys.CurrentRollUpKey(identity.TenantId, aggregateId),
-                rollUp,
-                ReadModelBatchConcurrency.LastWrite));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        operations.Add(ReadModelBatchOperation.Delete(
-            WorksReadModelKeys.WhatsNextIndexKey(identity.TenantId),
-            ReadModelBatchConcurrency.IdempotentAbsent));
-        foreach (string member in members.OrderBy(static id => id, StringComparer.Ordinal))
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            operations.Add(ReadModelBatchOperation.Delete(
-                WorksReadModelKeys.RollUpKey(identity.TenantId, member),
-                ReadModelBatchConcurrency.IdempotentAbsent));
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, operations);
     }
 
     private static void ValidateHistory(WorkItemSharedRebuildAggregateHistory history)
