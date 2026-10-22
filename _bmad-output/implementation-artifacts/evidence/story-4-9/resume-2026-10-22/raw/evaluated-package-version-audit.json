@@ -1,0 +1,32 @@
+{
+  "Microsoft.AspNetCore.SignalR.Common": [
+    {
+      "version": "10.0.13",
+      "source": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds/Props/Directory.Packages.props"
+    }
+  ],
+  "System.Security.Cryptography.Pkcs": [
+    {
+      "version": "10.0.13",
+      "source": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/Directory.Packages.props"
+    }
+  ],
+  "System.Security.Cryptography.Xml": [
+    {
+      "version": "10.0.13",
+      "source": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/Directory.Packages.props"
+    }
+  ],
+  "Microsoft.Extensions.DependencyInjection.Abstractions": [
+    {
+      "version": "10.0.13",
+      "source": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds/Props/Directory.Packages.props"
+    }
+  ],
+  "Microsoft.Extensions.Options": [
+    {
+      "version": "10.0.13",
+      "source": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds/Props/Directory.Packages.props"
+    }
+  ]
+}

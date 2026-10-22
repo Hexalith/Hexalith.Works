@@ -1,0 +1,84 @@
+{
+  "observedAt": "2026-10-22T17:55:05.205551+00:00",
+  "status": "nonqualifying; fixed producer is not published",
+  "repositoryHeads": {
+    "Works": "25ea5969daef6431777254e0c8602ec2f720ff18",
+    "Builds": "29d3c42d01af38ab8a7574ac2b8968c158cec544",
+    "Platform": "6fbe5a024650382e25bac7d47ac919457e8d393c",
+    "EventStore": "61122209dea0fcdd2d64bf5eaa903c4a8242df4f"
+  },
+  "nugetIndexes": {
+    "hexalith.eventstore.client": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+      "responseSha256": "a406ae4f115f41a221a21fc84f24da6bf88d0497c153aabe53e162136ab73eaf",
+      "latestStable": "3.126.1",
+      "stableTail": [
+        "3.121.0",
+        "3.122.0",
+        "3.123.0",
+        "3.124.0",
+        "3.125.0",
+        "3.125.1",
+        "3.126.0",
+        "3.126.1"
+      ]
+    },
+    "hexalith.eventstore.domainservice": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+      "responseSha256": "9c0f11c70c8e2a4f0eeb79ec9e5801afaa1dfdb8258a61ef4f677a3864160128",
+      "latestStable": "3.126.1",
+      "stableTail": [
+        "3.121.0",
+        "3.122.0",
+        "3.123.0",
+        "3.124.0",
+        "3.125.0",
+        "3.125.1",
+        "3.126.0",
+        "3.126.1"
+      ]
+    },
+    "hexalith.eventstore.aspire": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+      "responseSha256": "a406ae4f115f41a221a21fc84f24da6bf88d0497c153aabe53e162136ab73eaf",
+      "latestStable": "3.126.1",
+      "stableTail": [
+        "3.121.0",
+        "3.122.0",
+        "3.123.0",
+        "3.124.0",
+        "3.125.0",
+        "3.125.1",
+        "3.126.0",
+        "3.126.1"
+      ]
+    }
+  },
+  "publishedProducer": {
+    "repositoryCommit": "1748b16b11fb63b885dfa2fd4a9c7a420ea103a9",
+    "repositoryUrl": "https://github.com/Hexalith/Hexalith.EventStore",
+    "version": "3.126.1",
+    "archiveSha256": "53fd5f378a997557725fa03e8627074f940b016fd9f5a34aed981e04053b698b",
+    "nuspecSha256": "6ef5528eb0a7a05e16f1d652da5753d4bc877fd6fb20792d2c9f65629b89ac06"
+  },
+  "canonicalHelper": {
+    "path": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/eng/verify_works_producer.py",
+    "sha256": "625dabafd5dd51b9ed932297eda31809a8f321749a2047ab6669ec56314d710f"
+  },
+  "selectedRuntimeSource": {
+    "inventorySha256": "de932500f5817933cce8ac742283795b0d535138c9caade98fcaea7b459a52a4",
+    "fileCount": 2170
+  },
+  "qualification": {
+    "passed": false,
+    "exceptionType": "ValueError",
+    "error": "Runtime SDK differs from published producer 1748b16b11fb63b885dfa2fd4a9c7a420ea103a9: Directory.Packages.props, src/Hexalith.EventStore.Admin.Server.Host/Middleware/AdminRequestBodySizeMiddleware.cs, src/Hexalith.EventStore.Admin.UI/Pages/Consistency.razor, src/Hexalith.EventStore.AppHost/Program.cs, src/Hexalith.EventStore.Aspire/HexalithEventStoreExtensions.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchImmutableRecord.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchParticipantProof.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchTerminalFence.cs, src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs, src/Hexalith.EventStore.PayloadProtection/IInteractionOccurrenceKeyDelivery.cs, src/Hexalith.EventStore.PayloadProtection/IInteractionProtectionBindingSource.cs, src/Hexalith.EventStore.PayloadProtection/InteractionOccurrenceKeyDeliveryResult.cs, src/Hexalith.EventStore.PayloadProtection/InteractionOccurrenceKeyProvider.cs, src/Hexalith.EventStore.PayloadProtection/InteractionProtectionBindingProvider.cs, src/Hexalith.EventStore.PayloadProtection/InteractionProtectionErasureWitness.cs, src/Hexalith.EventStore.Server/Configuration/InteractionProtectionBindingServiceCollectionExtensions.cs, src/Hexalith.EventStore.Server/Security/GovernanceGuardAuthority.cs, src/Hexalith.EventStore.Server/Security/GuardedCellHistory.cs, src/Hexalith.EventStore.Server/Security/GuardedStateTransactionAuthority.cs, src/Hexalith.EventStore.Server/Security/IGovernanceGuardInstallation.cs, src/Hexalith.EventStore.Server/Security/IGuardedStateInstallation.cs, src/Hexalith.EventStore.Server/Security/IInteractionOccurrenceInstallation.cs, src/Hexalith.EventStore.Server/Security/IProtectionAnchorStore.cs, src/Hexalith.EventStore.Server/Security/IPublishedTrustRevocationEvidence.cs, src/Hexalith.EventStore.Server/Security/InteractionOccurrenceAuthority.cs, src/Hexalith.EventStore.Server/Security/ProtectionAnchorDisposition.cs, src/Hexalith.EventStore.Server/Security/ProtectionAnchorRecord.cs, src/Hexalith.EventStore.Server/Security/ProtectionCurrentAnchorJournal.cs, src/Hexalith.EventStore.Server/Security/PublishedTrustDeletionConsumptionAuthority.cs, src/Hexalith.EventStore.Testing/Fakes/TestServiceOverrides.cs, src/Hexalith.EventStore/Extensions/EventStoreActorCallbackEndpointMetadata.cs, src/Hexalith.EventStore/Extensions/EventStoreRateLimitPartition.cs, src/Hexalith.EventStore/Extensions/ServiceCollectionExtensions.cs, src/Hexalith.EventStore/Program.cs"
+  },
+  "releaseFixMembership": {
+    "path": "src/Hexalith.EventStore.Client/Projections/ReadModelBatchImmutableRecord.cs",
+    "tag": "v3.126.1",
+    "exitCode": 128,
+    "stderr": "fatal: path 'src/Hexalith.EventStore.Client/Projections/ReadModelBatchImmutableRecord.cs' exists on disk, but not in 'v3.126.1'",
+    "fixCommit": "da8451f335aded9e813987a01077697ada133da7"
+  }
+}

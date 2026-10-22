@@ -1,0 +1,8 @@
+{
+  "helper": "/home/administrator/projects/hexalith/works/references/Hexalith.Parties/src/Hexalith.Parties/Queries/PartyIdentityBindingSelection.cs",
+  "sha256": "ca577fcf20d595ccb6b180e4e446cc234e392d9cab301ee8b11a3ac0d8f44e12",
+  "boundSha256": "ca577fcf20d595ccb6b180e4e446cc234e392d9cab301ee8b11a3ac0d8f44e12",
+  "linkedFixtureFileCount": 70,
+  "owner": "Platform linked_fixture_snapshot",
+  "passed": true
+}

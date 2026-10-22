@@ -1,0 +1,15 @@
+{
+  "Works": {
+    "_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md": "fe1c03d47a1cc3199a1dc89cfea641ae3560612e17bffe24a05bf1cebac92642",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "20436e28b2df89931891d79b9e518c5d4fb1ed4fa2c648c2abb41e6826d12399"
+  },
+  "EventStore": {
+    "Directory.Packages.props": "2c153504f1bb69cb28798fcae71dbf735850a36a2911d8879c7bf02e7bf0281e",
+    "scripts/validate-eventstore-package-authority.ps1": "d7eac51575a3b4840933e224beb35bec6f27d52d0af4f61edfc42861f1db3054",
+    "tests/Hexalith.EventStore.Contracts.Tests/Packaging/ContractsPackageDependencyTests.SecurityException.cs": "f9ba4461a033e9a8be4ca4e437263b19af06532c4055ece5e0d3b4c075c91ce8"
+  },
+  "Platform": {
+    "src/Hexalith.Platform.Custody/PrivateCustodyBindingAuthority.cs": "2306e8fb5ac74e6fac32d4da22c071afe2a0a4ec9a791eaaf7704638becea779",
+    "src/Hexalith.Platform.Custody/PrivateReplicatedSpoolAuthority.cs": "02f45b90f5e65388b28f0d5f0242f88e6feaafa969f612cfdada198aa89e9c81"
+  }
+}

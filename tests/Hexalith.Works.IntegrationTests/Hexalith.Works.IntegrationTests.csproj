@@ -55,6 +55,7 @@
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentitySourceFold.cs" Link="PartiesAuthority/PartyIdentitySourceFold.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryDeadline.cs" Link="PartiesAuthority/PartyIdentityQueryDeadline.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryWorkLimiter.cs" Link="PartiesAuthority/PartyIdentityQueryWorkLimiter.cs" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityBindingSelection.cs" Link="PartiesAuthority/PartyIdentityBindingSelection.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/RetainedHumanActorHistoryFold.cs" Link="PartiesAuthority/RetainedHumanActorHistoryFold.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/RetainedHumanActorBinding.cs" Link="PartiesAuthority/RetainedHumanActorBinding.cs" />
   </ItemGroup>

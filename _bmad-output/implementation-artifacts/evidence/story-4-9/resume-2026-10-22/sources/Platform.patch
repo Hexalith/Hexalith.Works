@@ -1,0 +1,58 @@
+diff --git a/src/Hexalith.Platform.Custody/PrivateCustodyBindingAuthority.cs b/src/Hexalith.Platform.Custody/PrivateCustodyBindingAuthority.cs
+index 3150b91..b35752b 100644
+--- a/src/Hexalith.Platform.Custody/PrivateCustodyBindingAuthority.cs
++++ b/src/Hexalith.Platform.Custody/PrivateCustodyBindingAuthority.cs
+@@ -33,7 +33,7 @@ internal sealed class PrivateCustodyBindingAuthority
+     internal long Revision { get; }
+     internal string KeyVersion { get; } = "capability-v1";
+     internal string PublicAnchorId => Convert.ToHexString(SHA256.HashData(_spki))[..32];
+-    internal string PublicAnchorVersion => "v1";
++    internal string PublicAnchorVersion { get; } = "v1";
+     internal string ArtifactDigest => Convert.ToHexString(SHA256.HashData(_spki));
+     internal DeletionCapabilityTrustProfile Profile => new(Issuer, Audience, TenantId, KeyVersion, PublicAnchorId, PublicAnchorVersion);
+ 
+diff --git a/src/Hexalith.Platform.Custody/PrivateReplicatedSpoolAuthority.cs b/src/Hexalith.Platform.Custody/PrivateReplicatedSpoolAuthority.cs
+index c781181..ad53ae5 100644
+--- a/src/Hexalith.Platform.Custody/PrivateReplicatedSpoolAuthority.cs
++++ b/src/Hexalith.Platform.Custody/PrivateReplicatedSpoolAuthority.cs
+@@ -30,7 +30,7 @@ public sealed class PrivateReplicatedSpoolAuthority : IReplicatedSecuritySpoolAu
+     /// <summary>Captures one credential beside one current installation. An absent credential, an endpoint, or a non-positive binding captures nothing.</summary>
+     public static PrivateReplicatedSpoolAuthority? Create(string? credential, ReplicatedSecuritySpoolTarget? target, TimeProvider? clock)
+     {
+-        if (target is null || clock is null || !Credential(credential) || string.Equals(credential, target.ComponentName, StringComparison.Ordinal)
++        if (credential is null || target is null || clock is null || !Credential(credential) || string.Equals(credential, target.ComponentName, StringComparison.Ordinal)
+             || IsEndpoint(credential!) || target.ValidUntil.Offset != TimeSpan.Zero || clock.GetUtcNow() >= target.ValidUntil
+             || string.IsNullOrWhiteSpace(target.AuthorityRevision)) { return null; }
+         string digest = ReplicatedSecurityObservationSpool.StateDigest(new(target.InstallationEpoch, 0, []));
+@@ -47,19 +47,19 @@ public sealed class PrivateReplicatedSpoolAuthority : IReplicatedSecuritySpoolAu
+     /// <inheritdoc/>
+     public Task<bool> AuthorizeAsync(ReplicatedSecuritySpoolTarget target, string method, SecurityObservationIntent? intent, CancellationToken cancellationToken = default)
+     {
+-        if (!Matches(target) || method is not ("Observe" or "Lookup" or "Drain" or "Readiness" or "RecoverOriginal")) { return Task.FromResult(false); }
++        if (target is null || !Matches(target) || method is not ("Observe" or "Lookup" or "Drain" or "Readiness" or "RecoverOriginal")) { return Task.FromResult(false); }
+         if (method is "Observe" or "Lookup" or "RecoverOriginal" && intent is null) { return Task.FromResult(false); }
+         return Task.FromResult(true);
+     }
+ 
+     /// <inheritdoc/>
+     public Task<bool> AuthorizeOriginalLookupAsync(ReplicatedSecuritySpoolTarget target, SecurityObservationOriginalLookup lookup, CancellationToken cancellationToken = default)
+-        => Task.FromResult(Matches(target) && lookup is not null);
++        => Task.FromResult(target is not null && Matches(target) && lookup is not null);
+ 
+     /// <inheritdoc/>
+     public Task<SecurityObservationRecoveryGrant?> AuthorizeAgedOriginalRecoveryAsync(ReplicatedSecuritySpoolTarget target, SecurityObservationRecord original, SecurityEventRecorderLookup proof, CancellationToken cancellationToken = default)
+     {
+-        if (!Matches(target) || original is null || original.Receipt is not null || proof is null || proof.State == SecurityEventRecorderLookupState.Unknown) { return Task.FromResult<SecurityObservationRecoveryGrant?>(null); }
++        if (target is null || !Matches(target) || original is null || original.Receipt is not null || proof is null || proof.State == SecurityEventRecorderLookupState.Unknown) { return Task.FromResult<SecurityObservationRecoveryGrant?>(null); }
+         if (proof.State == SecurityEventRecorderLookupState.NotRecorded && proof.Receipt is not null) { return Task.FromResult<SecurityObservationRecoveryGrant?>(null); }
+         if (proof.State == SecurityEventRecorderLookupState.Recorded && proof.Receipt is null) { return Task.FromResult<SecurityObservationRecoveryGrant?>(null); }
+         DateTimeOffset now = _clock.GetUtcNow();
+@@ -90,7 +90,7 @@ public sealed class PrivateReplicatedSpoolAuthority : IReplicatedSecuritySpoolAu
+ 
+     /// <inheritdoc/>
+     public Task<bool> ValidateStateAsync(ReplicatedSecuritySpoolTarget target, long revision, string exactStateDigest, CancellationToken cancellationToken = default)
+-        => Task.FromResult(Matches(target) && revision == _anchorRevision && exactStateDigest == _anchorDigest);
++        => Task.FromResult(target is not null && Matches(target) && revision == _anchorRevision && exactStateDigest == _anchorDigest);
+ 
+     /// <inheritdoc/>
+     public Task<bool> AdmitTransitionAsync(AnchoredStateTransition transition, CancellationToken cancellationToken = default)

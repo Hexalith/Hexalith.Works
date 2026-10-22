@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-22T18:07:21.821366+00:00",
+  "status": "nonqualifying; public fixed producer unavailable",
+  "tests": {
+    "architecture": [
+      {
+        "total": "308",
+        "passed": "308",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "errors": "0",
+        "time": "15.375"
+      }
+    ],
+    "integration": [
+      {
+        "total": "760",
+        "passed": "753",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "7",
+        "errors": "0",
+        "time": "149.214"
+      }
+    ],
+    "eventstore-authority": [
+      {
+        "total": "27",
+        "passed": "27",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "errors": "0",
+        "time": "168.832"
+      }
+    ],
+    "platform-custody": [
+      {
+        "total": "3",
+        "passed": "3",
+        "failed": "0",
+        "skipped": "0",
+        "not-run": "0",
+        "errors": "0",
+        "time": "2.405"
+      }
+    ]
+  },
+  "sourceMode": "Debug/source; no public-producer qualification claimed",
+  "fullAndCiProfilesRun": false,
+  "pending": [
+    "Published EventStore producer containing retained-seal fix",
+    "Owner commits and dependency adoption as applicable",
+    "Fresh full canonical gate followed by actual CI profile on the same unchanged inputs"
+  ]
+}

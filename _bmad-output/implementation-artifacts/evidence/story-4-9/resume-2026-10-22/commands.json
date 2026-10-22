@@ -1,0 +1,255 @@
+[
+  {
+    "name": "works-tooling",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests",
+      "-v"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {}
+  },
+  {
+    "name": "integration-build-initial",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1",
+      "--no-incremental"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "environment": {}
+  },
+  {
+    "name": "integration-build-fixed",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1",
+      "--no-incremental"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "integration-build-final",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "integration-build-complete",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "architecture-focused-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1",
+      "--no-dependencies",
+      "--no-restore"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {}
+  },
+  {
+    "name": "architecture-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "eventstore-contracts-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Contracts.Tests/Hexalith.EventStore.Contracts.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "environment": {}
+  },
+  {
+    "name": "eventstore-authority",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.EventStore.Contracts.Tests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.Tests.dll",
+      "-class",
+      "Hexalith.EventStore.Contracts.Tests.Packaging.ContractsPackageDependencyTests",
+      "-method",
+      "*AuthorizedRootPackage*",
+      "-method",
+      "*AuthorizedCryptography*",
+      "-xml",
+      "/tmp/story49-current-eventstore-authority.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "environment": {}
+  },
+  {
+    "name": "architecture-stale-assets",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-xml",
+      "/tmp/story49-current-architecture.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    },
+    "archiveNote": "Original output was copied to story49-current-architecture-stale-assets.xml before the passing retry reused the original output path."
+  },
+  {
+    "name": "architecture",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-xml",
+      "/tmp/story49-current-architecture.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "integration",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-xml",
+      "/tmp/story49-current-integration.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "platform-custody-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Platform.Custody.Tests/Hexalith.Platform.Custody.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform",
+    "exitCode": 1,
+    "environment": {}
+  },
+  {
+    "name": "platform-custody-copy-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Platform.Custody.Tests/Hexalith.Platform.Custody.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-m:1"
+    ],
+    "cwd": "/tmp/story49-custody-owner-4vg62b2c",
+    "exitCode": 0,
+    "environment": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds",
+      "HexalithEventStoreRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "platform-custody",
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Platform.Custody.Tests/bin/Debug/net10.0/Hexalith.Platform.Custody.Tests.dll",
+      "-class",
+      "Hexalith.Platform.Custody.Tests.PrivateStory54AuthorityTests",
+      "-xml",
+      "/tmp/story49-current-platform-custody.xml"
+    ],
+    "cwd": "/tmp/story49-custody-owner-4vg62b2c",
+    "exitCode": 0,
+    "environment": {
+      "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+    }
+  },
+  {
+    "name": "public-producer-probe",
+    "command": [
+      "python3",
+      "/tmp/story49-resume-20261022-b5dnz4kb/probe_public_producer.py"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "environment": {}
+  }
+]

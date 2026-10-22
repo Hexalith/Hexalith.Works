@@ -1,0 +1,214 @@
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index cff04ae13..a6ac37968 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -14,6 +14,9 @@
+   <Import Project="$(Hexalith3BuildPackageProps)" Condition="Exists('$(Hexalith3BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
+   <Import Project="$(Hexalith4BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
+   <ItemGroup>
++    <!-- Older Builds catalogs omit these pins; newer ones declare them. Replace only these
++         two imported entries so the approved overrides remain single-valued in either layout. -->
++    <PackageVersion Remove="System.Security.Cryptography.Pkcs;System.Security.Cryptography.Xml" />
+     <PackageVersion Update="Microsoft.AspNetCore.SignalR.Common" Version="10.0.13" />
+     <PackageVersion Include="System.Security.Cryptography.Pkcs" Version="10.0.13" />
+     <PackageVersion Include="System.Security.Cryptography.Xml" Version="10.0.13" />
+diff --git a/scripts/validate-eventstore-package-authority.ps1 b/scripts/validate-eventstore-package-authority.ps1
+index f7f35b252..923ec5b37 100644
+--- a/scripts/validate-eventstore-package-authority.ps1
++++ b/scripts/validate-eventstore-package-authority.ps1
+@@ -17,6 +17,8 @@ $ErrorActionPreference = 'Stop'
+ # The owner approved precisely these five EventStore overrides on 2026-10-16.
+ # This adapter leaves the shared authority files and every other check intact.
+ # SignalR.Common uses Update because the current shared catalog already declares it.
++# Remove only imported Pkcs/Xml entries before the approved Include overrides, because
++# older supported Builds catalogs omit them and newer catalogs already declare them.
+ function Get-EventStoreApprovedPackagePins {
+     $pins = [System.Collections.Generic.Dictionary[string, string]]::new([StringComparer]::Ordinal)
+     $pins.Add('Microsoft.AspNetCore.SignalR.Common', 'Update')
+@@ -32,11 +34,7 @@ function Test-EventStoreApprovedPackagePin {
+ 
+     if ($Node.LocalName -cne 'PackageVersion' -or
+         $Node.NamespaceURI.Length -ne 0 -or
+-        $Node.Attributes.Count -ne 2 -or
+-        $Node.ChildNodes.Count -ne 0 -or
+-        -not $Node.HasAttribute('Version') -or
+-        $Node.GetAttribute('Version') -cne '10.0.13' -or
+-        $Node.HasAttribute('Include') -eq $Node.HasAttribute('Update')) {
++        $Node.ChildNodes.Count -ne 0) {
+         return $false
+     }
+ 
+@@ -50,6 +48,18 @@ function Test-EventStoreApprovedPackagePin {
+         return $false
+     }
+ 
++    if ($Node.HasAttribute('Remove')) {
++        return $Node.Attributes.Count -eq 1 -and $Node.GetAttribute('Remove') -ceq (
++            'System.Security.Cryptography.Pkcs;System.Security.Cryptography.Xml')
++    }
++
++    if ($Node.Attributes.Count -ne 2 -or
++        -not $Node.HasAttribute('Version') -or
++        $Node.GetAttribute('Version') -cne '10.0.13' -or
++        $Node.HasAttribute('Include') -eq $Node.HasAttribute('Update')) {
++        return $false
++    }
++
+     $action = if ($Node.HasAttribute('Include')) { 'Include' } else { 'Update' }
+     $identity = $Node.GetAttribute($action)
+     $pins = Get-EventStoreApprovedPackagePins
+@@ -61,7 +71,8 @@ function Assert-EventStoreApprovedRootPackagePins {
+ 
+     [xml] $wrapper = Get-Content -LiteralPath $Path -Raw
+     $nodes = @($wrapper.SelectNodes("//*[local-name()='PackageVersion']"))
+-    if ($nodes.Count -ne 5) {
++    if ($nodes.Count -ne 6 -or $nodes[0].GetAttribute('Remove') -cne (
++            'System.Security.Cryptography.Pkcs;System.Security.Cryptography.Xml')) {
+         throw 'eventstore_package_exception_invalid'
+     }
+ 
+@@ -71,6 +82,13 @@ function Assert-EventStoreApprovedRootPackagePins {
+             throw 'eventstore_package_exception_invalid'
+         }
+ 
++        if ($node.HasAttribute('Remove')) {
++            if (-not [object]::ReferenceEquals($node, $nodes[0])) {
++                throw 'eventstore_package_exception_invalid'
++            }
++            continue
++        }
++
+         $action = if ($node.HasAttribute('Include')) { 'Include' } else { 'Update' }
+         if (-not $seen.Add($node.GetAttribute($action))) {
+             throw 'eventstore_package_exception_invalid'
+diff --git a/tests/Hexalith.EventStore.Contracts.Tests/Packaging/ContractsPackageDependencyTests.SecurityException.cs b/tests/Hexalith.EventStore.Contracts.Tests/Packaging/ContractsPackageDependencyTests.SecurityException.cs
+index 8c38d2b2a..10f88d01e 100644
+--- a/tests/Hexalith.EventStore.Contracts.Tests/Packaging/ContractsPackageDependencyTests.SecurityException.cs
++++ b/tests/Hexalith.EventStore.Contracts.Tests/Packaging/ContractsPackageDependencyTests.SecurityException.cs
+@@ -1,4 +1,5 @@
+ using System.Diagnostics;
++using System.Text.Json;
+ using System.Xml.Linq;
+ 
+ namespace Hexalith.EventStore.Contracts.Tests.Packaging;
+@@ -149,11 +150,18 @@ public sealed partial class ContractsPackageDependencyTests
+     [InlineData("unexpected-attribute")]
+     [InlineData("nested-version")]
+     [InlineData("namespace")]
++    [InlineData("cleanup-missing")]
++    [InlineData("cleanup-extra-package")]
++    [InlineData("cleanup-attribute")]
++    [InlineData("cleanup-condition")]
++    [InlineData("cleanup-late")]
++    [InlineData("cleanup-duplicate")]
+     public async Task AuthorizedRootPackageExceptionRejectsChangedDeclarationAsync(string mutation)
+     {
+         string root = FindRepositoryRoot();
+         XDocument wrapper = XDocument.Load(Path.Combine(root, "Directory.Packages.props"));
+-        XElement first = wrapper.Descendants("PackageVersion").First();
++        XElement first = wrapper.Descendants("PackageVersion").First(element => element.Attribute("Remove") is null);
++        XElement cleanup = wrapper.Descendants("PackageVersion").Single(element => element.Attribute("Remove") is not null);
+         switch (mutation)
+         {
+             case "missing":
+@@ -192,6 +200,25 @@ public sealed partial class ContractsPackageDependencyTests
+                 first.Attribute("Version")!.Remove();
+                 first.Add(new XElement("Version", "10.0.13"));
+                 break;
++            case "cleanup-missing":
++                cleanup.Remove();
++                break;
++            case "cleanup-extra-package":
++                cleanup.SetAttributeValue("Remove", cleanup.Attribute("Remove")!.Value + ";Unapproved.Package");
++                break;
++            case "cleanup-attribute":
++                cleanup.SetAttributeValue("Label", "unapproved");
++                break;
++            case "cleanup-condition":
++                cleanup.SetAttributeValue("Condition", "'$(Configuration)' == 'Release'");
++                break;
++            case "cleanup-late":
++                cleanup.Remove();
++                first.Parent!.Add(cleanup);
++                break;
++            case "cleanup-duplicate":
++                first.ReplaceWith(new XElement(cleanup));
++                break;
+             case "namespace":
+                 first.Name = XName.Get("PackageVersion", "urn:unapproved");
+                 break;
+@@ -216,6 +243,74 @@ public sealed partial class ContractsPackageDependencyTests
+         }
+     }
+ 
++    /// <summary>Old and new shared catalogs retain exactly one approved cryptography pin at the unchanged servicing version.</summary>
++    /// <param name="catalogDeclaresPins">Whether the shared catalog already declares both cryptography packages.</param>
++    [Theory]
++    [InlineData(false)]
++    [InlineData(true)]
++    public async Task AuthorizedCryptographyPinsRemainUniqueAcrossCatalogShapesAsync(bool catalogDeclaresPins)
++    {
++        string root = FindRepositoryRoot();
++        string fixture = Directory.CreateTempSubdirectory("eventstore-cryptography-pins-").FullName;
++        try
++        {
++            string catalog = Path.Combine(fixture, "catalog.props");
++            string[] identities = ["System.Security.Cryptography.Pkcs", "System.Security.Cryptography.Xml"];
++            new XDocument(new XElement("Project", new XElement("ItemGroup", catalogDeclaresPins
++                ? identities.Select(identity => new XElement("PackageVersion", new XAttribute("Include", identity),
++                    new XAttribute("Version", "10.0.12"))) : []))).Save(catalog);
++            XElement pins = new(XDocument.Load(Path.Combine(root, "Directory.Packages.props"))
++                .Root!.Elements("ItemGroup").Single());
++            new XDocument(new XElement("Project", new XElement("Import", new XAttribute("Project", catalog)), pins))
++                .Save(Path.Combine(fixture, "Directory.Packages.props"));
++            string probe = Path.Combine(fixture, "Probe.proj");
++            new XDocument(new XElement("Project", new XElement("Import",
++                new XAttribute("Project", Path.Combine(fixture, "Directory.Packages.props"))))).Save(probe);
++            (int exitCode, string output, string error) = await RunEventStorePackageAuthorityAsync(
++                fixture, catalog, validateWrapperOnly: true).ConfigureAwait(true);
++            exitCode.ShouldBe(0, output + error);
++
++            using Process process = new()
++            {
++                StartInfo = new ProcessStartInfo("dotnet")
++                {
++                    WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true,
++                    UseShellExecute = false,
++                },
++            };
++            PackagingRepositoryPaths.RemoveRepositorySelectors(process.StartInfo);
++            foreach (string argument in new[] { "msbuild", probe, "-nologo", "-getItem:PackageVersion" })
++            {
++                process.StartInfo.ArgumentList.Add(argument);
++            }
++            process.Start().ShouldBeTrue();
++            Task<string> evaluationTask = process.StandardOutput.ReadToEndAsync();
++            Task<string> errorTask = process.StandardError.ReadToEndAsync();
++            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
++            try
++            {
++                await process.WaitForExitAsync(timeout.Token).ConfigureAwait(true);
++            }
++            catch (OperationCanceledException)
++            {
++                process.Kill(entireProcessTree: true);
++                throw;
++            }
++            process.ExitCode.ShouldBe(0, await errorTask.ConfigureAwait(true));
++            using JsonDocument evaluation = JsonDocument.Parse(await evaluationTask.ConfigureAwait(true));
++            JsonElement[] items = [.. evaluation.RootElement.GetProperty("Items").GetProperty("PackageVersion").EnumerateArray()];
++            foreach (string identity in identities)
++            {
++                JsonElement item = items.Single(item => item.GetProperty("Identity").GetString() == identity);
++                item.GetProperty("Version").GetString().ShouldBe("10.0.13");
++            }
++        }
++        finally
++        {
++            Directory.Delete(fixture, recursive: true);
++        }
++    }
++
+     private static async Task<(int ExitCode, string Output, string Error)> RunEventStorePackageAuthorityAsync(
+         string root, string catalogPath, bool validateWrapperOnly)
+     {

@@ -1,0 +1,12 @@
+{
+  "frozenIntentUnchanged": true,
+  "frozenIntentSha256": "13ccc88ab99f14c314234c55d855f60c7603280214ca5df5b3a14807e1e4720f",
+  "baselineUnchanged": true,
+  "baseline": "baseline_commit: '18e94d388ab0abd8be363b361d0b2fee762359e7'",
+  "specSha256": "fe1c03d47a1cc3199a1dc89cfea641ae3560612e17bffe24a05bf1cebac92642",
+  "statusInProgress": true,
+  "uncheckedExecutionTasks": [
+    "- [ ] `references/Hexalith.Platform/eng/verify_works_host.py`, its producer/snapshot helpers, `eng/verify-agents-host.sh`, `eng/ext-host-1/verify_full.py` and focused tests, `.github/workflows/ci.yml`, `scripts/verify-platform-parity-ci.{sh,py}`, and CI configuration checks \u2014 add the missing explicit Release/package CI profile in Platform first and consume it as a blocking Works job. Respect the Hexalith baseline: CI consumer checks use published external NuGet packages and Release only, with only existing unpublished Platform test-source exceptions; the full default local source/Debug plus package/Release gate remains unchanged. Both profiles require all explicit live R1\u2013R11 facts, public producer qualification, strict source/runtime/archive/launcher closure and complete rollback; fail on a missing, skipped, unexecuted or failed required lane and record the selected profile truthfully. Use only root-declared dependencies, keep topology/verifier ownership in Platform, validate owner contracts and bootstrap locally, then qualify the changed default gate and the actual CI profile sequentially.",
+    "- [ ] `tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs` \u2014 use a bounded 60-second infrastructure readiness budget for the disposable Docker Redis fixture. The real host-bound TCP connection and Redis PING must still succeed before admission; preserve caller cancellation, owned-resource cleanup, application readiness limits and every parity assertion. Verify existing fixture ownership/cancellation coverage, then qualify both profiles from fresh unchanged inputs."
+  ]
+}
