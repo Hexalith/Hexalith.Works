@@ -7,10 +7,13 @@ using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Identity;
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.EventStore.Contracts.Serialization;
+using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.EventStore.Server.Events;
 using Hexalith.EventStore.Testing.Fakes;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
+using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
 
@@ -37,21 +40,21 @@ public sealed class EventPersisterGoldenCorpusTests
     public void ExactCorpusMembershipMatchesEveryFrozenV1EventPayloadBidirectionally()
     {
         IReadOnlyDictionary<string, IEventPayload> catalog = CatalogByFileName();
-        string[] fixtures = Directory
-            .GetFiles(GoldenDirectory, "*.json", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(GoldenDirectory, path).Replace('\\', '/'))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
         catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
-        GoldenCorpusFiles.SourceFileNames("EventPersisterGolden").ShouldBe(
-            catalog.Keys.Order(StringComparer.Ordinal),
-            ignoreOrder: false,
-            customMessage: "Exact-corpus source filenames must match the catalog even when stale copied fixtures remain.");
-        fixtures.ShouldBe(
-            catalog.Keys.Order(StringComparer.Ordinal),
-            ignoreOrder: false,
-            customMessage: "Exact-corpus filenames must match the frozen v1 event catalog in both directions.");
+        GoldenCorpusFiles.AssertMembership(catalog.Keys, GoldenCorpusFiles.SourceDirectory("EventPersisterGolden"), GoldenDirectory);
+    }
+
+    [Fact]
+    public void HistoricalMinimalCreatedWriterPayloadRemainsReadable()
+    {
+        // Original writer snapshot before the catalog sample was enriched; retain its null optional values.
+        const string historicalPayload = """{"AggregateId":"work-001","Sequence":1,"TenantId":{"Value":"tenant-alpha"},"WorkItemId":{"Value":"work-001"},"Obligation":{"Description":"Prepare the first tenant-scoped work item","Reference":null},"InitialEffort":null,"Schedule":null,"Parent":null,"ExecutorBinding":null,"ConversationCorrelationId":null}""";
+        var expected = new WorkItemCreated("work-001", 1, WorkItemV1Catalog.Tenant, WorkItemV1Catalog.Item,
+            new Obligation("Prepare the first tenant-scoped work item"));
+        byte[] bytes = Encoding.UTF8.GetBytes(historicalPayload);
+
+        JsonSerializer.Deserialize<WorkItemCreated>(bytes, EventStorePayloadSerialization.Options).ShouldBe(expected);
+        WorksEventDecoder.Decode(typeof(WorkItemCreated).FullName!, bytes).ShouldBe(expected);
     }
 
     [Fact]
@@ -88,11 +91,11 @@ public sealed class EventPersisterGoldenCorpusTests
         foreach ((string fileName, IEventPayload payload) in CatalogByFileName())
         {
             byte[] fixture = File.ReadAllBytes(Path.Combine(GoldenDirectory, fileName));
-            byte[] streamPayload = Story48Streams.Page(WorkItemV1Catalog.Tenant.Value, WorkItemV1Catalog.Item.Value, payload)
-                .Events.ShouldHaveSingleItem().Payload;
+            StreamReadEvent streamEvent = Story48Streams.Page(WorkItemV1Catalog.Tenant.Value, WorkItemV1Catalog.Item.Value, payload)
+                .Events.ShouldHaveSingleItem();
 
-            streamPayload.ShouldBe(fixture, $"{fileName} stream evidence must use the frozen EventStore writer bytes.");
-            JsonSerializer.Deserialize(streamPayload, payload.GetType(), EventStorePayloadSerialization.Options).ShouldBe(payload);
+            streamEvent.Payload.ShouldBe(fixture, $"{fileName} stream evidence must use the frozen EventStore writer bytes.");
+            WorksEventDecoder.Decode(streamEvent.EventTypeName, streamEvent.Payload).ShouldBe(payload);
         }
     }
 

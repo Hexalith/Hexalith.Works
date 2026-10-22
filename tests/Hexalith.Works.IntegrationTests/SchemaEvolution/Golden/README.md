@@ -26,3 +26,4 @@ be available above the test output or working directory; missing source is an er
 fixtures remain. On 2026-10-22, the cross-tenant rejection sample's erroneous same-tenant parent was
 corrected to `tenant-beta`. Its contract shape is unchanged, and all other historical Web fixtures,
 including the rich Created sample, remain unchanged.
+Conflicting checkouts above the output and working directories are refused.

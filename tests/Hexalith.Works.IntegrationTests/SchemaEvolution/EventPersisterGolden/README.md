@@ -18,6 +18,7 @@ corpus.
 Membership checks inspect both repository source and copied test output, so stale build output cannot
 conceal a removed source fixture. Run from a repository checkout; for output outside the repository,
 use a working directory inside the checkout.
+Conflicting checkouts above the output and working directories are refused.
 
 On 2026-10-22, the Created sample was enriched with a non-null expectation reference, initial effort,
 and conversation correlation, and the cross-tenant rejection sample was corrected to name a
@@ -25,6 +26,8 @@ and conversation correlation, and the cross-tenant rejection sample was correcte
 from the C# catalog. These sample corrections change no production contract. Explicit value assertions
 retain the nested-shape and foreign-parent evidence, and stream fixture payloads are also compared
 against this corpus.
+The original minimal Created writer snapshot is retained verbatim in
+`HistoricalMinimalCreatedWriterPayloadRemainsReadable` to preserve its reader-compatibility evidence.
 
 To add a new event to the exact corpus, add its sample to `WorkItemV1Catalog` and freeze the bytes the
 writer actually produces — `JsonSerializer.SerializeToUtf8Bytes(sample, sample.GetType())`, with no

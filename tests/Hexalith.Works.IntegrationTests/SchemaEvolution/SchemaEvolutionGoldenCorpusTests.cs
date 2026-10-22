@@ -47,21 +47,8 @@ public sealed class SchemaEvolutionGoldenCorpusTests
             static payload => $"{payload.GetType().Name}.v1.json",
             static payload => payload,
             StringComparer.Ordinal);
-        string[] fixtures = Directory
-            .GetFiles(GoldenDirectory, "*.json", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(GoldenDirectory, path).Replace('\\', '/'))
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-
         catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
-        GoldenCorpusFiles.SourceFileNames("Golden").ShouldBe(
-            catalog.Keys.Order(StringComparer.Ordinal),
-            ignoreOrder: false,
-            customMessage: "Web-corpus source filenames must match the catalog even when stale copied fixtures remain.");
-        fixtures.ShouldBe(
-            catalog.Keys.Order(StringComparer.Ordinal),
-            ignoreOrder: false,
-            customMessage: "Web-corpus filenames must match the frozen v1 event catalog in both directions.");
+        GoldenCorpusFiles.AssertMembership(catalog.Keys, GoldenCorpusFiles.SourceDirectory("Golden"), GoldenDirectory);
 
         foreach ((string fileName, IEventPayload catalogPayload) in catalog)
         {
