@@ -1406,6 +1406,104 @@ public sealed class WorksSdkProjectionQueryTests
         (await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, ct)).IsAvailable.ShouldBeFalse();
     }
 
+    /// <summary>Both query adapters retain safe unavailable responses and bounded diagnostics for corrupt persisted documents.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task QueryFailureDiagnosticsAreBoundedAndExcludePrivateEvidence(bool detail, bool invalidMembership)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        var scope = projection.CreateScope(Tenant);
+        var lease = await coordinator.RegisterWriterAsync(scope, projection.OrdinaryWriterId, ct);
+        const string secret = "private-document-and-bearer-secret";
+        var corrupt = invalidMembership
+            ? WorksRuntimeDocument.From(new WorksWhatsNextTenantIndex
+            { SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion, MemberWorkItemIds = null! })
+            : new WorksRuntimeDocument(typeof(WorksWhatsNextTenantIndex).FullName!, JsonSerializer.SerializeToElement(secret));
+        _ = await coordinator.JournalAsync(scope, lease, new SharedProjectionDelivery("diagnostic-fault", 1, [1], [1]), ct);
+        _ = await coordinator.CatchUpAsync(scope, (_, _, _) => Task.FromResult<IReadOnlyList<ReadModelBatchOperation>>([
+            ReadModelBatchOperation.Write(WorksReadModelKeys.RuntimeQueueKey, corrupt, ReadModelBatchConcurrency.LastWrite)]), ct);
+        string persistedBefore = (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(
+            scope, 0, WorksReadModelKeys.RuntimeQueueKey, ct)).Value!.Value.GetRawText();
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        var detailLogger = new Story48RecordingLogger<GetWorkItemQueryHandler>();
+        var queueLogger = new Story48RecordingLogger<WhatsNextQueryHandler>();
+        QueryEnvelope query = CoordinatorQuery("scheduler") with
+        {
+            CorrelationId = "correlation\n\u2028" + new string('c', 200),
+            Payload = System.Text.Encoding.UTF8.GetBytes(secret),
+            QueryType = secret,
+        };
+        IDomainQueryHandler handler = detail
+            ? new GetWorkItemQueryHandler(policy, coordinator, detailLogger)
+            : new WhatsNextQueryHandler(policy, coordinator, queueLogger);
+
+        QueryResult result = await handler.ExecuteAsync(query, ct);
+
+        result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldBe("projection-unavailable");
+        result.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
+        var entry = (detail ? detailLogger.Entries : queueLogger.Entries).ShouldHaveSingleItem();
+        entry.EventId.Id.ShouldBe(4510);
+        entry.Level.ShouldBe(Microsoft.Extensions.Logging.LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+        entry.Properties["FailureCategory"].ShouldBe(invalidMembership ? "invalid-membership" : "invalid-document");
+        entry.Properties["TenantId"].ShouldBe(Tenant);
+        entry.Properties["QueryType"].ShouldBe(detail ? GetWorkItemQueryHandler.GetWorkItemQueryType : WhatsNextQueryHandler.WhatsNextQueryType);
+        ((string)entry.Properties["CorrelationId"]!).Length.ShouldBe(128);
+        entry.Message.ShouldNotContain(secret);
+        entry.Message.ShouldNotContain("\n");
+        entry.Message.ShouldNotContain("\u2028");
+        (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, 0, WorksReadModelKeys.RuntimeQueueKey, ct))
+            .Value!.Value.GetRawText().ShouldBe(persistedBefore);
+
+        IDomainQueryHandler throwing = detail
+            ? new GetWorkItemQueryHandler(policy, coordinator, new ThrowingDiagnosticLogger<GetWorkItemQueryHandler>())
+            : new WhatsNextQueryHandler(policy, coordinator, new ThrowingDiagnosticLogger<WhatsNextQueryHandler>());
+        (await throwing.ExecuteAsync(query, ct)).ErrorMessage.ShouldBe("projection-unavailable");
+
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => handler.ExecuteAsync(query, cancelled.Token));
+        (detail ? detailLogger.Entries : queueLogger.Entries).Count.ShouldBe(1);
+        var refused = await handler.ExecuteAsync(query with { AuthenticatedWorkloadId = "unlisted" }, ct);
+        refused.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        (detail ? detailLogger.Entries : queueLogger.Entries).Count.ShouldBe(1);
+    }
+
+    /// <summary>SDK-wrapped and ordinary store failures retain useful finite categories in both adapters.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task QueryDependencyFailuresUseSafeCategoriesThroughTheSdk(bool detail, bool timeout)
+    {
+        Exception failure = timeout ? new TimeoutException("private-provider-secret") : new IOException("private-provider-secret");
+        var store = new DiagnosticUnavailableReadModelStore(failure);
+        var coordinator = new SharedProjectionEpochCoordinator(store, new InMemoryReadModelStore());
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        var detailLogger = new Story48RecordingLogger<GetWorkItemQueryHandler>();
+        var queueLogger = new Story48RecordingLogger<WhatsNextQueryHandler>();
+        IDomainQueryHandler handler = detail ? new GetWorkItemQueryHandler(policy, coordinator, detailLogger)
+            : new WhatsNextQueryHandler(policy, coordinator, queueLogger);
+        QueryResult result = await handler.ExecuteAsync(CoordinatorQuery("scheduler"), TestContext.Current.CancellationToken);
+
+        result.ErrorMessage.ShouldBe("projection-unavailable");
+        var entry = (detail ? detailLogger.Entries : queueLogger.Entries).ShouldHaveSingleItem();
+        entry.Properties["FailureCategory"].ShouldBe(timeout ? "timeout" : "dependency-unavailable");
+        entry.Exception.ShouldBeNull();
+        entry.Message.ShouldNotContain("private-provider-secret");
+        store.ReadCount.ShouldBeGreaterThan(0);
+    }
+
     private static QueryEnvelope CoordinatorQuery(string workload)
         => new(
             Tenant,

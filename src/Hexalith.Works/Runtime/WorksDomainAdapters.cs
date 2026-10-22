@@ -37,8 +37,9 @@ internal static class WorksDomainAdapters
         _ = services.AddOptions<WorksQueryOptions>()
             .Bind(configuration.GetSection(WorksQueryOptions.SectionName))
             .Validate(static options => !string.IsNullOrWhiteSpace(options.GatewayWorkloadId), "GatewayWorkloadId is required.")
-            .Validate(options => Uri.TryCreate(PartiesGatewayAddress(options, configuration), UriKind.Absolute, out _),
-                "Works requires an absolute Parties gateway address in Works:Query:PartiesGatewayBaseAddress or EventStore:CommandGateway:BaseAddress.")
+            .Validate(options => Uri.TryCreate(PartiesGatewayAddress(options, configuration), UriKind.Absolute, out Uri? address)
+                    && (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps),
+                "Works requires an absolute Parties gateway address using HTTP or HTTPS in Works:Query:PartiesGatewayBaseAddress or EventStore:CommandGateway:BaseAddress.")
             .ValidateOnStart();
         // Retain Works' gateway-only query boundary by strengthening the SDK's own policy.
         // The SDK still owns channel authentication, operation assertions and endpoint routing.

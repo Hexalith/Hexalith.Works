@@ -170,16 +170,17 @@ public sealed class WorksSdkIteration4Tests
             .OrderBy(type => type.FullName, StringComparer.Ordinal).ShouldBe(sequenced);
     }
 
-    /// <summary>Recovery requires all payload sequences and additional scalars while preserving explicit defaults and historical readers.</summary>
+    /// <summary>Recovery requires positive payload sequences and explicit additional scalars; historical readers still accept defaults.</summary>
     [Theory]
     [MemberData(nameof(RequiredValueMembers))]
-    public async Task RequiredValueMemberPresenceDoesNotRejectExplicitDefaults(string kind, string field, bool present)
+    public async Task RequiredValueMembersPreserveScalarDefaultsButRequirePositiveSequences(string kind, string field, bool present)
     {
         ArgumentNullException.ThrowIfNull(field);
         IEventPayload payload = kind == "transition"
             ? new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(s_tenant, s_item, WorkItemStatus.Unknown, "proof")
             : StateChangingPayloads().Single(fact => fact.GetType().Name == kind);
         JsonObject json = JsonSerializer.SerializeToNode(payload, payload.GetType())!.AsObject();
+        if (field != "Sequence" && json.ContainsKey("Sequence")) json["Sequence"] = 1;
         JsonNode? value = json[field]?.DeepClone();
         json.Remove(field);
         if (present) json[char.ToLowerInvariant(field[0]) + field[1..]] = value;
@@ -205,17 +206,18 @@ public sealed class WorksSdkIteration4Tests
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
             .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
         var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
-        if (present) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).Count.ShouldBe(target + 1);
+        bool valid = present && field != "Sequence";
+        if (valid) (await streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken)).Count.ShouldBe(target + 1);
         else await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
         var store = new InMemoryReadModelStore();
         var options = Options.Create(new EventStoreProcessOptions());
         var submitter = Substitute.For<ITrustedEffectSubmitter>();
         var source = new ProcessSource(Tenant, "work", "item");
         (await Runner(gateway, streams, store, options, submitter).RunAsync(source, TestContext.Current.CancellationToken))
-            .Status.ShouldBe(present ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
+            .Status.ShouldBe(valid ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
         var retained = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
-        retained.Checkpoint.ShouldBe(present ? target + 1 : target);
-        if (!present)
+        retained.Checkpoint.ShouldBe(valid ? target + 1 : target);
+        if (!valid)
         {
             retained.FailureSequence.ShouldBe(target + 1);
             retained.ReasonCode.ShouldBe("invalid-evidence");

@@ -149,12 +149,8 @@ internal static partial class WorksPlatformTrustChecks
                 using X509Certificate2 presented = X509CertificateLoader.LoadCertificate(certificate.GetRawCertData());
                 string[] identities = [.. SpiffeIds(presented)];
                 serverIdentity = identities.Length == 1 ? identities[0] : null;
-                using var chain = new X509Chain();
-                chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-                chain.ChainPolicy.CustomTrustStore.Add(root);
-                chain.ChainPolicy.ExtraStore.Add(issuer);
-                chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                trusted = chain.Build(presented) && string.Equals(serverIdentity, expectedIdentity, StringComparison.Ordinal);
+                trusted = HasServerAuthenticationTrust(presented, root, issuer)
+                    && string.Equals(serverIdentity, expectedIdentity, StringComparison.Ordinal);
             }
 
             clientRejected = !trusted;
@@ -201,6 +197,22 @@ internal static partial class WorksPlatformTrustChecks
             return new WorksPlatformTrustProbeResult(serverIdentity, clientRejected, false, exception.GetType().Name + ": " + exception.Message
                 + (ReferenceEquals(cause, exception) ? string.Empty : " | " + cause.GetType().Name + ": " + cause.Message));
         }
+    }
+
+    /// <summary>Requires configured-root trust and TLS server authentication purpose for a presented certificate.</summary>
+    /// <param name="presented">The certificate being authenticated as the server.</param>
+    /// <param name="root">The configured trust root.</param>
+    /// <param name="issuer">The configured issuing certificate.</param>
+    /// <returns>Whether the chain permits server authentication under the configured root.</returns>
+    internal static bool HasServerAuthenticationTrust(X509Certificate2 presented, X509Certificate2 root, X509Certificate2 issuer)
+    {
+        using var chain = new X509Chain();
+        chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+        chain.ChainPolicy.CustomTrustStore.Add(root);
+        chain.ChainPolicy.ExtraStore.Add(issuer);
+        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+        chain.ChainPolicy.ApplicationPolicy.Add(new Oid("1.3.6.1.5.5.7.3.1"));
+        return chain.Build(presented);
     }
 
     /// <summary>Has the owned Sentry issuer sign a probe SVID with the host OpenSSL CLI.</summary>

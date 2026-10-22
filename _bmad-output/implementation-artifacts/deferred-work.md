@@ -1646,6 +1646,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Validate positive domain event Sequence values during Works recovery decoding without conflating them with EventStore envelope sequence numbers.
+  status: done 2026-10-22
+  resolution: `spec-five-deferred-runtime-safeguards.md` requires positive recovery ordinals while preserving historical decoding, unsequenced rejections, and separate envelope positions. Catalog, paged-reader, and persisted process quarantine/checkpoint regressions pass.
   evidence: Review T207; WorksRecoveryEventDecoder checks field presence only and WorksSourceStreamReader checks envelope ordering separately. The decoder last changed in accepted Story 4.15 commit d8f254e865477fadb694ad3b8f843ccf3ab86427; add explicit zero/negative and domain progression regressions before deciding the compatible validation rule.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
@@ -1686,6 +1688,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Require serverAuth application policy in the pre-existing custom certificate trust proof.
+  status: done 2026-10-22
+  resolution: `spec-five-deferred-runtime-safeguards.md` adds serverAuth to the custom-root chain and proves client-only refusal with otherwise trusted chains and the actual matching-SPIFFE loopback TLS probe.
   evidence: Review B9: the X509Chain policy omits application policy before and after cutover. Verify with a clientAuth-only certificate negative control in the owning proof.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1714,6 +1718,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Reject unsupported Parties gateway schemes at host startup.
+  status: done 2026-10-22
+  resolution: `spec-five-deferred-runtime-safeguards.md` restricts the effective Parties address to HTTP/HTTPS and verifies startup refusal for override and fallback schemes, preserving valid explicit-override precedence.
   evidence: R3B3: pre-cutover 696781961155d764ed805843f55b40dc5882e887 already used absolute-only validation and HttpClient BaseAddress assignment; validate HTTP/HTTPS for both address sources and prove refusal before requests.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1722,10 +1728,14 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Record safe structured diagnostics for projection query failures.
+  status: done 2026-10-22
+  resolution: `spec-five-deferred-runtime-safeguards.md` emits source-generated event 4510 with bounded tenant/correlation and finite categories. Both adapters cover corrupt documents, invalid manifest shape, SDK outages, cancellation, forbidden queries, and throwing loggers without payload or exception-text disclosure.
   evidence: R3B7: both SDK query catch blocks discard exceptions, identically to pre-cutover 696781961155d764ed805843f55b40dc5882e887; preserve safe responses and test bounded correlation/scope/category diagnostics without payload disclosure.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Record bounded tenant discovery diagnostics while retaining incomplete-scan retry.
+  status: done 2026-10-22
+  resolution: `spec-five-deferred-runtime-safeguards.md` emits event 4511 for global acquisition and tenant-local discovery failures, preserving incomplete retry, healthy tenants, caller cancellation, persisted membership, and the original global failure contract even when logging fails.
   evidence: R3B8: WorksProcessSourceCatalog is byte-identical to pre-cutover and loses invalid-membership/store-outage causes in its catch; add safe scoped diagnostics without returning partial invalid families.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`

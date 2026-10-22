@@ -7,6 +7,10 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.Strategies;
+using Hexalith.Works.Runtime;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hexalith.Works.Queries;
 
@@ -30,6 +34,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
 
     private readonly SharedProjectionEpochCoordinator? _coordinator;
     private readonly WorksQueryPolicy? _policy;
+    private readonly ILogger<GetWorkItemQueryHandler> _logger;
 
     /// <summary>Initializes a new instance of the <see cref="GetWorkItemQueryHandler"/> class.</summary>
     /// <param name="policy">The Works query authority policy; when absent every query is refused.</param>
@@ -37,9 +42,20 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
     public GetWorkItemQueryHandler(
         WorksQueryPolicy? policy = null,
         SharedProjectionEpochCoordinator? coordinator = null)
+        : this(policy, coordinator, NullLogger<GetWorkItemQueryHandler>.Instance)
+    {
+    }
+
+    /// <summary>Initializes the query adapter with safe operational diagnostics.</summary>
+    /// <param name="policy">The Works query authority policy.</param>
+    /// <param name="coordinator">The SDK shared-projection reader.</param>
+    /// <param name="logger">The diagnostic logger.</param>
+    public GetWorkItemQueryHandler(WorksQueryPolicy? policy, SharedProjectionEpochCoordinator? coordinator,
+        ILogger<GetWorkItemQueryHandler> logger)
     {
         _policy = policy;
         _coordinator = coordinator;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <inheritdoc/>
@@ -115,6 +131,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             WorksWhatsNextTenantIndex index = queueDocument.As<WorksWhatsNextTenantIndex>();
             if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
             {
+                WorksFailureDiagnostics.QueryUnavailable(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, "invalid-membership");
                 return SdkUnavailable(read.Generation, stale);
             }
 
@@ -156,6 +173,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                     && (rollUp.Status != authorizedItem.Status
                         || rollUp.LatestAcceptedSourceSequence != authorizedItem.LatestAcceptedSourceSequence))
             {
+                WorksFailureDiagnostics.QueryUnavailable(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, "invalid-rollup");
                 return SdkUnavailable(read.Generation, stale);
             }
 
@@ -165,8 +183,9 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         {
             throw;
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            WorksFailureDiagnostics.QueryFailed(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, exception);
             return SdkUnavailable(0, false);
         }
     }

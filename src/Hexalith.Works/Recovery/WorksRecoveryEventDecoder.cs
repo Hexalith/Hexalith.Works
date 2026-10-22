@@ -19,9 +19,10 @@ internal static class WorksRecoveryEventDecoder
             && !string.Equals(eventType, payload.GetType().FullName, StringComparison.Ordinal))
             throw new InvalidOperationException("Works source evidence has a foreign event type.");
         // State-changing payloads declare Sequence; command-rejection payloads do not.
-        if (payload.GetType().GetProperty(nameof(WorkItemCreated.Sequence)) is not null
-            && !HasProperty(bytes, nameof(WorkItemCreated.Sequence)))
-            throw new InvalidOperationException("Works source evidence has missing required members.");
+        if (payload.GetType().GetProperty(nameof(WorkItemCreated.Sequence)) is { } sequence
+            && (!HasProperty(bytes, nameof(WorkItemCreated.Sequence))
+                || sequence.GetValue(payload) is not long ordinal || ordinal <= 0))
+            throw new InvalidOperationException("Works source evidence requires a positive domain sequence.");
         bool valid = payload switch
         {
             WorkItemCreated fact => fact.Obligation is not null,

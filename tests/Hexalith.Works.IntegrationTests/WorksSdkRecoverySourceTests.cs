@@ -291,6 +291,91 @@ public sealed class WorksSdkRecoverySourceTests
         page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
     }
 
+    /// <summary>Invalid documents and store outages remain retryable, preserve healthy tenants, and emit safe diagnostics.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DiscoveryDiagnosticsPreserveIncompleteRetryAndHealthyTenants(bool corruptDocument)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "retained", Suspended(TenantA, "retained"));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
+        long generation = (await coordinator.GetStatusAsync(scope, ct)).ActiveGeneration;
+        string queueHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeQueueKey)));
+        string key = "shared-generation:" + scope.ComputeHash() + ":" + generation + ":" + queueHash;
+        WorksRuntimeDocument original = (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(
+            scope, generation, WorksReadModelKeys.RuntimeQueueKey, ct)).Value!;
+        const string secret = "private-tenant-membership-secret";
+        if (corruptDocument)
+            await store.SaveAsync(WorksReadModelKeys.StateStoreName, key,
+                new WorksRuntimeDocument(typeof(WorksWhatsNextTenantIndex).FullName!, JsonSerializer.SerializeToElement(secret)), ct);
+        var fault = new TombstoneUnavailableReadModelStore(store, TenantA) { Unavailable = !corruptDocument };
+        var logger = new Story48RecordingLogger<WorksProcessSourceCatalog>();
+        var catalog = new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(fault, store), logger);
+
+        var page = await catalog.ListAsync(null, 256, ct);
+
+        page.IsIncomplete.ShouldBeTrue();
+        page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+        logger.Entries.ShouldNotBeEmpty();
+        foreach (var entry in logger.Entries)
+        {
+            entry.EventId.Id.ShouldBe(4511);
+            entry.Level.ShouldBe(Microsoft.Extensions.Logging.LogLevel.Warning);
+            entry.Exception.ShouldBeNull();
+            entry.Message.ShouldNotContain(secret);
+            entry.Message.ShouldNotContain("synthetic tenant-local tombstone outage");
+        }
+        if (corruptDocument)
+        {
+            var entry = logger.Entries.ShouldHaveSingleItem();
+            entry.Properties["TenantId"].ShouldBe(TenantA);
+            entry.Properties["FailureCategory"].ShouldBe("invalid-document");
+        }
+        else logger.Entries.ShouldContain(entry => Equals(entry.Properties["FailureCategory"], "control-index-unavailable"));
+
+        var throwing = new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(fault, store),
+            new ThrowingDiagnosticLogger<WorksProcessSourceCatalog>());
+        var despiteLoggerFailure = await throwing.ListAsync(null, 256, ct);
+        despiteLoggerFailure.IsIncomplete.ShouldBeTrue();
+        despiteLoggerFailure.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, original, ct);
+        fault.Unavailable = false;
+        int failures = logger.Entries.Count;
+        var repaired = await catalog.ListAsync(null, 256, ct);
+        repaired.IsIncomplete.ShouldBeFalse();
+        repaired.Sources.Select(source => source.Tenant).Order(StringComparer.Ordinal).ShouldBe([TenantA, TenantB]);
+        logger.Entries.Count.ShouldBe(failures);
+        (await store.GetAsync<WorksRuntimeDocument>(WorksReadModelKeys.StateStoreName, key, ct)).Value!.Value.GetRawText()
+            .ShouldBe(original.Value.GetRawText());
+    }
+
+    /// <summary>A global index outage keeps the SDK failure contract and reports content-free scope diagnostics.</summary>
+    [Fact]
+    public async Task GlobalDiscoveryFailureIsDiagnosedWithoutChangingCancellationOrFailure()
+    {
+        var store = new DiagnosticUnavailableReadModelStore(new IOException("private-global-registry-secret"));
+        var logger = new Story48RecordingLogger<WorksProcessSourceCatalog>();
+        var coordinator = new SharedProjectionEpochCoordinator(store, new InMemoryReadModelStore());
+        var catalog = new WorksProcessSourceCatalog(coordinator, logger);
+        await Should.ThrowAsync<IOException>(() => catalog.ListAsync(null, 256, TestContext.Current.CancellationToken));
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.Properties["TenantId"].ShouldBe(string.Empty);
+        entry.Properties["FailureCategory"].ShouldBe("control-index-dependency-unavailable");
+        entry.Exception.ShouldBeNull();
+        entry.Message.ShouldNotContain("private-global-registry-secret");
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+        await Should.ThrowAsync<OperationCanceledException>(() => catalog.ListAsync(null, 256, cancelled.Token));
+        logger.Entries.Count.ShouldBe(1);
+        var throwing = new WorksProcessSourceCatalog(coordinator, new ThrowingDiagnosticLogger<WorksProcessSourceCatalog>());
+        await Should.ThrowAsync<IOException>(() => throwing.ListAsync(null, 256, TestContext.Current.CancellationToken));
+    }
+
     private static async Task DegradeAsync(SharedProjectionEpochCoordinator coordinator, string source, bool parking)
     {
         var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions

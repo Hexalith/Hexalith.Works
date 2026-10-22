@@ -2,6 +2,7 @@ using System.Text.Json;
 
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Processes;
+using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
@@ -21,6 +22,70 @@ public sealed class WorksSourceStreamReaderTests
 {
     private const string Tenant = "tenant-415";
     private const string Item = "work-415";
+
+    /// <summary>Every state-changing contract requires a positive domain ordinal under both retained JSON casings.</summary>
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(-1, true)]
+    public void RecoveryRejectsNonpositiveDomainSequences(long sequence, bool web)
+    {
+        IEventPayload[] facts = [.. WorkItemV1Catalog.All.OfType<IEventPayload>()
+            .Where(fact => fact.GetType().GetProperty(nameof(WorkItemCreated.Sequence)) is not null)];
+        facts.Length.ShouldBe(15);
+        foreach (IEventPayload fact in facts)
+        {
+            var options = web ? new JsonSerializerOptions(JsonSerializerDefaults.Web) : new JsonSerializerOptions();
+            var node = JsonSerializer.SerializeToNode(fact, fact.GetType(), options)!.AsObject();
+            node[web ? "sequence" : "Sequence"] = sequence;
+            Should.Throw<InvalidOperationException>(() => WorksRecoveryEventDecoder.Decode(fact.GetType().Name,
+                JsonSerializer.SerializeToUtf8Bytes(node))).Message.ShouldContain("positive domain sequence");
+        }
+    }
+
+    /// <summary>Positive domain ordinals need not equal envelope offsets, and rejections have no domain ordinal.</summary>
+    [Fact]
+    public void RecoveryPreservesPositiveOrdinalsAndUnsequencedRejections()
+    {
+        foreach (IEventPayload fact in WorkItemV1Catalog.All.OfType<IEventPayload>())
+        {
+            byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(fact, fact.GetType());
+            WorksRecoveryEventDecoder.Decode(fact.GetType().FullName!, bytes).ShouldBe(fact);
+        }
+        var created = new WorkItemCreated(Item, 97, new TenantId(Tenant), new WorkItemId(Item), new Obligation("proof"));
+        ((WorkItemCreated)WorksRecoveryEventDecoder.Decode(nameof(WorkItemCreated), JsonSerializer.SerializeToUtf8Bytes(created)))
+            .Sequence.ShouldBe(97);
+    }
+
+    /// <summary>A bad domain ordinal after valid committed evidence prevents any recovery context from escaping.</summary>
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(-1, true)]
+    public async Task InvalidOrdinalAfterValidPrefixRefusesWholeRead(long ordinal, bool paged)
+    {
+        var created = new WorkItemCreated(Item, 1, new TenantId(Tenant), new WorkItemId(Item), new Obligation("proof"));
+        var suspended = new WorkItemSuspended(Item, ordinal, new TenantId(Tenant), new WorkItemId(Item),
+            [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)]);
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            if (!paged) return Story48Streams.Page(Tenant, Item, created, suspended);
+            return call.Arg<StreamReadRequest>().FromSequence == 0
+                ? Story48Streams.Page(Tenant, Item, created) with
+                { Metadata = new StreamReadMetadata(0, null, 1, 2, 1, true, null) }
+                : Story48Streams.PageAt(Tenant, Item, 2, false, suspended);
+        });
+        IReadOnlyList<WorksCommittedEvent>? context = null;
+        var exception = await Should.ThrowAsync<InvalidOperationException>(async () => context = await new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken).ConfigureAwait(false));
+        exception.Message.ShouldContain("positive domain sequence");
+        context.ShouldBeNull();
+        if (paged)
+            await gateway.Received(1).ReadWorkloadStreamAsync(Arg.Is<StreamReadRequest>(request => request.FromSequence == 1), Arg.Any<CancellationToken>());
+    }
 
     /// <summary>Envelope coordinates remain authoritative when a rejection makes payload ordinals diverge.</summary>
     [Fact]

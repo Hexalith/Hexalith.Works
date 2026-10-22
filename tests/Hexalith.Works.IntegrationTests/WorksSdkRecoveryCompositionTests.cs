@@ -112,6 +112,9 @@ public sealed class WorksSdkRecoveryCompositionTests
     [InlineData("")]
     [InlineData(" ")]
     [InlineData("relative/gateway")]
+    [InlineData("ftp://gateway.example.invalid")]
+    [InlineData("file:///tmp/parties")]
+    [InlineData("mailto:parties@example.invalid")]
     public async Task InvalidPartiesGatewayRefusesStartup(string? address)
     {
         string[] settings = address is null ? [] : [$"--Works:Query:PartiesGatewayBaseAddress={address}"];
@@ -124,6 +127,34 @@ public sealed class WorksSdkRecoveryCompositionTests
                 await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
         });
         exception.Message.ShouldContain("absolute Parties gateway address");
+    }
+
+    /// <summary>Invalid fallback schemes fail before requests, while a valid explicit Parties address takes precedence.</summary>
+    [Theory]
+    [InlineData("ftp://gateway.example.invalid", false)]
+    [InlineData("file:///tmp/parties", false)]
+    [InlineData("mailto:parties@example.invalid", false)]
+    [InlineData("ftp://gateway.example.invalid", true)]
+    public async Task PartiesGatewaySchemeValidationUsesEffectiveAddress(string gateway, bool validOverride)
+    {
+        List<string> settings = [$"--EventStore:CommandGateway:BaseAddress={gateway}"];
+        if (validOverride) settings.Add("--Works:Query:PartiesGatewayBaseAddress=https://parties.example.invalid");
+        if (validOverride)
+        {
+            await using var app = WorksHost.Build([.. settings]);
+            app.Services.GetRequiredService<IHttpClientFactory>().CreateClient("IPartiesIdentityClient")
+                .BaseAddress.ShouldBe(new Uri("https://parties.example.invalid"));
+        }
+        else
+        {
+            var exception = await Should.ThrowAsync<OptionsValidationException>(async () =>
+            {
+                var app = WorksHost.Build([.. settings]);
+                await using (app.ConfigureAwait(false))
+                    await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+            });
+            exception.Message.ShouldContain("HTTP or HTTPS");
+        }
     }
 
     /// <summary>

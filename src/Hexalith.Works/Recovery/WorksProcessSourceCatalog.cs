@@ -2,23 +2,40 @@ using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Reminders;
 using Hexalith.Works.Projections;
+using Hexalith.Works.Runtime;
+
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Hexalith.Works.Recovery;
 
 /// <summary>Discovers every retained Works member, including terminal and expiry-only streams.</summary>
-internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator coordinator) : IProcessSourceCatalog, IReminderTargetCatalog
+internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator coordinator,
+    ILogger<WorksProcessSourceCatalog>? logger = null) : IProcessSourceCatalog, IReminderTargetCatalog
 {
     private readonly SharedProjectionEpochCoordinator _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
+    private readonly ILogger<WorksProcessSourceCatalog> _logger = logger ?? NullLogger<WorksProcessSourceCatalog>.Instance;
 
     /// <inheritdoc/>
     public async Task<ProcessSourcePage> ListAsync(string? afterKey, int limit, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(limit, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(limit, 256);
-        SharedProjectionControlIndexReadResult membershipRead = await _coordinator.GetAvailableControlIndexTenantsAsync(
-            WorksReadModelKeys.StateStoreName, WorksReadModelKeys.RuntimeControlIndex, cancellationToken).ConfigureAwait(false);
+        SharedProjectionControlIndexReadResult membershipRead;
+        try
+        {
+            membershipRead = await _coordinator.GetAvailableControlIndexTenantsAsync(
+                WorksReadModelKeys.StateStoreName, WorksReadModelKeys.RuntimeControlIndex, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+        catch (Exception exception)
+        {
+            WorksFailureDiagnostics.DiscoveryIncomplete(_logger, string.Empty, "control-index-" + WorksFailureDiagnostics.Category(exception));
+            throw;
+        }
         var sources = new SortedDictionary<string, ProcessSource>(StringComparer.Ordinal);
         bool incomplete = membershipRead.IsIncomplete;
+        if (incomplete) WorksFailureDiagnostics.DiscoveryIncomplete(_logger, string.Empty, "control-index-unavailable");
         foreach (string[] batch in membershipRead.Tenants.Chunk(16))
         {
             var results = await Task.WhenAll(batch.Select(async tenant =>
@@ -31,7 +48,10 @@ internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator
                     SharedProjectionReadResult<WorksRuntimeDocument> read = await _coordinator.ReadDiscoveryAsync<WorksRuntimeDocument>(
                         scope, WorksReadModelKeys.RuntimeQueueKey, cancellationToken).ConfigureAwait(false);
                     if (!read.IsAvailable || read.IsDegraded || read.IsStale || read.Value is null)
+                    {
+                        WorksFailureDiagnostics.DiscoveryIncomplete(_logger, tenant, "projection-unavailable");
                         return (Members: Array.Empty<ProcessSource>(), Incomplete: true);
+                    }
                     WorksWhatsNextTenantIndex membership = read.Value.As<WorksWhatsNextTenantIndex>();
                     if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(membership))
                         throw new InvalidOperationException("Works process source membership is invalid.");
@@ -46,8 +66,9 @@ internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator
                     return (Members: members, Incomplete: false);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
-                catch (Exception)
+                catch (Exception exception)
                 {
+                    WorksFailureDiagnostics.DiscoveryIncomplete(_logger, tenant, WorksFailureDiagnostics.Category(exception));
                     // No part of an invalid family escapes. SDK discovery retains incompleteness for retry.
                     return (Members: Array.Empty<ProcessSource>(), Incomplete: true);
                 }
