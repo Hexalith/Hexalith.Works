@@ -12,10 +12,4 @@
   <Import Project="$(Hexalith1BuildPackageProps)" Condition="Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith2BuildPackageProps)" Condition="Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
-  <!-- Source Contracts already enters through explicit project edges. Pinning a newer package here
-       promotes that transitive package over the source project when sibling release metadata trails.
-       Keep all other transitive pins (including security dependencies) and every Release pin intact. -->
-  <ItemGroup Condition="'$(UseHexalithProjectReferences)' == 'true'">
-    <PackageVersion Remove="Hexalith.EventStore.Contracts" />
-  </ItemGroup>
 </Project>
