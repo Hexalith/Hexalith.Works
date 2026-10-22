@@ -12,7 +12,10 @@ namespace Hexalith.Works.Projections.SharedRebuild;
 /// <summary>Reconciles the complete authoritative Works tenant inventory as one shared roll-up projection.</summary>
 public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomainSharedProjectionPartitionedRebuildHandler
 {
-    /// <summary>The named internal shared-projection route.</summary>
+    /// <summary>
+    /// The retired pre-SDK shared roll-up projection type. It is no longer a served route: the SDK family is
+    /// <see cref="WorksReadModelKeys.RuntimeFamily"/>, and rebuild identities naming this type are refused.
+    /// </summary>
     public const string ProjectionTypeName = "works-shared-rollup";
 
     private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);

@@ -53,7 +53,8 @@ public sealed class CiCdConfigurationTests
         bootstrap.ShouldContain("\"--profile\"", Case.Sensitive);
         bootstrap.ShouldContain("\"ci\"", Case.Sensitive);
         bootstrap.ShouldContain("Release/package CI profile", Case.Sensitive);
-        bootstrap.ShouldContain("require_complete_gate(artifacts)", Case.Sensitive);
+        bootstrap.ShouldContain("require_complete_gate(artifacts, toolchain_runtime_sha256(record[\"platformRoot\"]))", Case.Sensitive);
+        bootstrap.ShouldContain("require_qualified_runtime(ledger, pinned_runtime_sha256)", Case.Sensitive);
         bootstrap.ShouldContain("passed-disposable-synthetic-parity-and-rollback", Case.Sensitive);
         bootstrap.ShouldContain("matchesPublishedProducer", Case.Sensitive);
     }
@@ -68,8 +69,27 @@ public sealed class CiCdConfigurationTests
             $"Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@{ApprovedBuildsSha}",
             Case.Sensitive);
         workflow.ShouldContain("run-consumer-validation: true", Case.Sensitive);
-        workflow.ShouldContain("dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}", Case.Sensitive);
         workflow.ShouldNotContain("1.18.3", Case.Sensitive);
+
+        // The ordinary lane installs both Dapr tools from the Platform-owned toolchain, never the reusable defaults.
+        int toolchainStart = workflow.IndexOf("  platform-toolchain:", StringComparison.Ordinal);
+        int toolchainEnd = workflow.IndexOf("\n  platform-parity:", toolchainStart, StringComparison.Ordinal);
+        toolchainStart.ShouldBeGreaterThanOrEqualTo(0);
+        toolchainEnd.ShouldBeGreaterThan(toolchainStart);
+        string toolchain = workflow[toolchainStart..toolchainEnd];
+        toolchain.ShouldContain("dapr-cli: ${{ steps.pins.outputs.dapr-cli }}", Case.Sensitive);
+        toolchain.ShouldContain("dapr-runtime: ${{ steps.pins.outputs.dapr-runtime }}", Case.Sensitive);
+        toolchain.ShouldContain("references/Hexalith.Platform/eng/works_toolchain.py --github-output", Case.Sensitive);
+        toolchain.ShouldContain("git submodule update --init -- references/Hexalith.Builds references/Hexalith.Platform", Case.Sensitive);
+        int ciStart = workflow.IndexOf("\n  ci:", StringComparison.Ordinal);
+        int ciEnd = workflow.IndexOf("\n  scripts-lint:", ciStart, StringComparison.Ordinal);
+        ciStart.ShouldBeGreaterThanOrEqualTo(0);
+        ciEnd.ShouldBeGreaterThan(ciStart);
+        string ci = workflow[ciStart..ciEnd];
+        ci.ShouldContain("needs: platform-toolchain", Case.Sensitive);
+        ci.ShouldContain("dapr-version: ${{ needs.platform-toolchain.outputs.dapr-cli }}", Case.Sensitive);
+        ci.ShouldContain("dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}", Case.Sensitive);
+        ci.ShouldNotMatch(@"dapr-(runtime-)?version:\s*['""0-9]");
         workflow.ShouldContain("test-platform: microsoft-testing-platform", Case.Sensitive);
         workflow.ShouldContain("build-timeout-minutes: 60", Case.Sensitive);
         workflow.ShouldContain("actionlint/cmd/actionlint@v1.7.12", Case.Sensitive);

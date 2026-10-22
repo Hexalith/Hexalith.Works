@@ -12,13 +12,4 @@ internal static class WorksWhatsNextTenantIndexValidation
             LastSequences: not null,
             MemberWorkItemIds: not null,
         };
-
-    /// <summary>Returns whether a legacy index has the collections needed for safe use.</summary>
-    public static bool IsUsableLegacy(WorksWhatsNextTenantIndex? index)
-        => index is
-        {
-            Items: not null,
-            LastSequences: not null,
-            MemberWorkItemIds: not null,
-        };
 }

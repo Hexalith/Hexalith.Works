@@ -86,7 +86,12 @@ public sealed class WorksSdkPartitionedRebuildTests
             var cold = new SharedProjectionEpochCoordinator(store, store);
             SharedProjectionCheckpoint checkpoint = (await cold.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull();
             checkpoint.OwnerSequenceNumber.ShouldBe(1);
-            checkpoint.CapturedEventDigests.ShouldNotBeNull().Length.ShouldBe(32);
+            // EventStore 3.126.1 retains each captured owner identity as a sealed paged reference, never inline.
+            checkpoint.CapturedEventDigests.ShouldBeNull();
+            SharedProjectionCapturedIdentityReference identityReference = checkpoint.CapturedIdentityReference.ShouldNotBeNull();
+            identityReference.Count.ShouldBe(1);
+            identityReference.RootDigest.ShouldNotBeNullOrWhiteSpace();
+            identityReference.LastPosition.ShouldBe(captured[^1].GlobalPosition);
             (await cold.GetStatusAsync(scope, ct)).ActiveGeneration.ShouldBe(epoch);
         }
         coordinator = new SharedProjectionEpochCoordinator(store, store);

@@ -77,7 +77,7 @@ public sealed class WorksQueryPolicyDeadlineTests
             JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-deadline" }), "correlation-deadline", "actor-deadline",
             null, false, null, "actor-deadline", "eventstore", true, null, null);
         return detail
-            ? new GetWorkItemQueryHandler(store, options, policy).ExecuteAsync(query, token)
-            : new WhatsNextQueryHandler(store, options, policy).ExecuteAsync(query, token);
+            ? new GetWorkItemQueryHandler(policy).ExecuteAsync(query, token)
+            : new WhatsNextQueryHandler(policy).ExecuteAsync(query, token);
     }
 }

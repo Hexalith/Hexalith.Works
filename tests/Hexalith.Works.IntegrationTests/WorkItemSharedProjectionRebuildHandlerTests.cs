@@ -79,8 +79,13 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
         var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         using ServiceProvider provider = BuildProvider(store, handler);
+        SharedProjectionEpochCoordinator coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
         DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "rebuild-parented-create");
         await RebuildAsync(store, Tenant, "seed-last-committed", [(ParentId, ParentHistory(Tenant, estimate: 99m))]);
+        SharedProjectionEpochStatus seeded = await coordinator.GetStatusAsync(handler.CreateScope(Tenant),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        seeded.IsBuilding.ShouldBeFalse();
+        seeded.ActiveGeneration.ShouldBeGreaterThan(0);
         ProjectionEventDto[] parentCapture = [.. ParentHistory(Tenant, estimate: 99m),
             Dto(new ReEstimated(ParentId, 3, new TenantId(Tenant), new WorkItemId(ParentId), 10m, Hour), 3)];
         DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity,
@@ -98,17 +103,16 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Prepared);
         (await ReadCurrentIndexAsync(store, Tenant)).MemberWorkItemIds.ShouldBe([ParentId]);
-        (await store.GetAsync<WorkItemRollUp>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
+        await AssertRetainedRollbackDocumentsAsync(store).ConfigureAwait(true);
         WorkItemView stagedView = await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true);
         stagedView.Found.ShouldBeTrue();
         stagedView.Estimated.ShouldBe(99m);
         IReadOnlyList<WhatsNextItem> stagedQueue = await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true);
         stagedQueue.ShouldHaveSingleItem().RolledRemaining.ShouldBe(new RolledRemaining(99m, Hour));
-        (await provider.GetRequiredService<SharedProjectionEpochCoordinator>().GetStatusAsync(handler.CreateScope(Tenant),
-            TestContext.Current.CancellationToken)).IsBuilding.ShouldBeTrue();
+        SharedProjectionEpochStatus staged = await coordinator.GetStatusAsync(handler.CreateScope(Tenant),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        staged.IsBuilding.ShouldBeTrue();
+        staged.ActiveGeneration.ShouldBe(seeded.ActiveGeneration);
 
         current = await DispatchAsync(provider, Lifecycle(identity, DomainSharedProjectionRebuildAction.Commit)).ConfigureAwait(true);
 
@@ -133,19 +137,38 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true)).Count.ShouldBe(2);
         (await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true)).Found.ShouldBeTrue();
 
-        (await store.GetAsync<WorkItemRollUp>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.RollUpKey(Tenant, ParentId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
-        (await store.GetAsync<WorksWhatsNextTenantIndex>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.WhatsNextIndexKey(Tenant),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
-        store.HasPendingEnvelope(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant)).ShouldBeFalse();
+        // The SDK promotion never rewrites the retained-host rollback documents, and leaves no capture pending.
+        await AssertRetainedRollbackDocumentsAsync(store).ConfigureAwait(true);
+        SharedProjectionEpochStatus committed = await coordinator.GetStatusAsync(handler.CreateScope(Tenant),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        committed.IsBuilding.ShouldBeFalse();
+        committed.IsAborting.ShouldBeFalse();
+        committed.PendingDeliveryCount.ShouldBe(0);
+        committed.ActiveGeneration.ShouldBeGreaterThan(seeded.ActiveGeneration);
+
+        async Task AssertRetainedRollbackDocumentsAsync(InMemoryReadModelStore retained)
+        {
+            (await retained.GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(Tenant, ParentId),
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
+                .RolledRemaining.ShouldBe(new RolledRemaining(99m, Hour));
+            (await retained.GetAsync<WorkItemRollUp>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.RollUpKey(Tenant, ChildId),
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
+                .RolledRemaining.ShouldBe(new RolledRemaining(88m, Hour));
+            WorksWhatsNextTenantIndex retainedIndex = (await retained.GetAsync<WorksWhatsNextTenantIndex>(
+                WorksReadModelKeys.StateStoreName,
+                WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+                TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
+            retainedIndex.Items[ParentId].RolledRemaining.ShouldBe(new RolledRemaining(99m, Hour));
+            retainedIndex.LastSequences[ParentId].ShouldBe(1);
+        }
     }
 
     [Fact]
-    public async Task Missing_or_malformed_child_keeps_reliable_local_shapes_but_refuses_both_rolled_shapes()
+    public async Task Missing_child_keeps_reliable_local_shapes_but_refuses_both_rolled_shapes()
     {
         var store = new InMemoryReadModelStore();
         await RebuildAsync(
@@ -160,24 +183,27 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         missing.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
         missing.RolledRemaining.ShouldBeNull();
         missing.RolledRemainingByUnit.ShouldBeEmpty();
+    }
 
-        var retryStore = new InMemoryReadModelStore();
+    [Fact]
+    public async Task Malformed_child_refuses_the_rebuild_and_keeps_the_last_committed_generation_served()
+    {
+        var store = new InMemoryReadModelStore();
         ProjectionEventDto malformedCreate = new(
             nameof(WorkItemCreated),
             [0x7B],
             "json",
             1,
             DateTimeOffset.UnixEpoch,
-            "corr-1");
+            "corr-1") { GlobalPosition = 1 };
         await RefuseRebuildAsync(
-            retryStore,
+            store,
             Tenant,
             "rebuild-malformed-child",
             [
                 (ChildId, new[] { malformedCreate }),
                 (ParentId, ParentWithSpawnHistory(Tenant)),
             ]).ConfigureAwait(true);
-        retryStore.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -217,7 +243,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     }
 
     [Fact]
-    public async Task Foreign_payload_identity_refuses_sdk_rebuild_before_any_generation_is_written()
+    public async Task Foreign_payload_identity_refuses_sdk_rebuild_and_keeps_the_last_committed_generation_served()
     {
         var tenant = new TenantId(Tenant);
         var item = new WorkItemId(ChildId);
@@ -244,8 +270,6 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
                     1m,
                     Hour), 3),
             ])]).ConfigureAwait(true);
-
-        store.Count.ShouldBe(0);
     }
 
     [Fact]
@@ -398,9 +422,12 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         _ = await DispatchAsync(provider, Lifecycle(abortedIdentity, DomainSharedProjectionRebuildAction.Stage)).ConfigureAwait(true);
         current = await DispatchAsync(provider, Lifecycle(abortedIdentity, DomainSharedProjectionRebuildAction.Abort)).ConfigureAwait(true);
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Aborted);
-        (await store.GetAsync<WorksWhatsNextTenantIndex>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant),
+        SharedProjectionEpochCoordinator coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
+        SharedProjectionEpochStatus aborted = await coordinator.GetStatusAsync(handler.CreateScope(Tenant),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        aborted.IsBuilding.ShouldBeFalse();
+        aborted.ActiveGeneration.ShouldBe(0);
+        (await coordinator.ReadAsync<WorksRuntimeDocument>(handler.CreateScope(Tenant), WorksReadModelKeys.RuntimeQueueKey,
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
 
         await RebuildAsync(
@@ -446,20 +473,13 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         _ = await Should.ThrowAsync<InvalidOperationException>(
             () => handler.FinalizeAsync(identity, empty, TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
-        using ServiceProvider provider = BuildProvider(store, handler);
-        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity, [])).ConfigureAwait(true);
-        current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(true);
-        current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
-        current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
-        current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
-        (await store.GetAsync<WorksWhatsNextTenantIndex>(
-            WorksReadModelKeys.StateStoreName,
-            WorksReadModelKeys.CurrentWhatsNextIndexKey(Tenant),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldBeNull();
+        // Through the SDK dispatcher, an empty inventory cannot replace the last committed generation.
+        await RefuseRebuildAsync(store, Tenant, "rebuild-empty-inventory", []).ConfigureAwait(true);
         (await store.GetAsync<WorkItemRollUp>(
             WorksReadModelKeys.StateStoreName,
             WorksReadModelKeys.RollUpKey(Tenant, ParentId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
+            .RolledRemaining.ShouldBe(new RolledRemaining(42m, Hour));
     }
 
     [Fact]
@@ -504,7 +524,8 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     }
 
     [Theory]
-    [InlineData("party", WorkItemSharedProjectionRebuildHandler.ProjectionTypeName)]
+    [InlineData("party", WorksReadModelKeys.RuntimeFamily)]
+    [InlineData("work", WorkItemSharedProjectionRebuildHandler.ProjectionTypeName)]
     [InlineData("work", "some-other-projection")]
     [InlineData("party", "some-other-projection")]
     public async Task Every_lifecycle_step_refuses_an_identity_outside_the_works_rollup_route(string domain, string projectionType)
@@ -706,7 +727,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         IReadModelStore store,
         string tenantId)
     {
-        var handler = new WhatsNextQueryHandler(store, policy: CoordinatorPolicy(),
+        var handler = new WhatsNextQueryHandler(policy: CoordinatorPolicy(),
             coordinator: new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store));
         QueryResult result = await handler.ExecuteAsync(
             new QueryEnvelope(tenantId, "work", ParentId, WhatsNextQueryHandler.WhatsNextQueryType, [], "corr-1", "user-1") { AuthenticatedWorkloadId = "sdk-test" },
@@ -719,7 +740,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         string tenantId,
         string aggregateId)
     {
-        var handler = new GetWorkItemQueryHandler(store, policy: CoordinatorPolicy(),
+        var handler = new GetWorkItemQueryHandler(policy: CoordinatorPolicy(),
             coordinator: new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store));
         QueryResult result = await handler.ExecuteAsync(
             new QueryEnvelope(tenantId, "work", aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "corr-1", "user-1") { AuthenticatedWorkloadId = "sdk-test" },
@@ -769,18 +790,63 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
     }
 
+    /// <summary>
+    /// Seeds a committed SDK generation, then drives a refused capture through the SDK rebuild dispatcher and proves
+    /// that finalization fails as a handler failure while readers keep the last committed generation.
+    /// </summary>
     private static async Task RefuseRebuildAsync(InMemoryReadModelStore store, string tenant, string operation,
         IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
     {
-        var handler = new WorkItemSharedProjectionRebuildHandler();
-        var identity = Identity(tenant, operation);
-        var candidate = await handler.CreateEmptyCandidateAsync(identity, TestContext.Current.CancellationToken).ConfigureAwait(false);
-        foreach (var history in histories)
-            candidate = await handler.AccumulateAsync(identity, candidate, new ProjectionRequest(tenant, "work", history.AggregateId, history.Events),
-                TestContext.Current.CancellationToken).ConfigureAwait(false);
-        await Should.ThrowAsync<InvalidOperationException>(() => handler.FinalizeAsync(identity, candidate,
-            TestContext.Current.CancellationToken)).ConfigureAwait(false);
-        store.Count.ShouldBe(0);
+        const string seededId = "seeded-committed";
+        var seededItem = new WorkItemId(seededId);
+        await RebuildAsync(store, tenant, operation + "-seed", [(seededId,
+        [
+            Dto(new WorkItemCreated(seededId, 1, new TenantId(tenant), seededItem, new Obligation("Seeded"), new WorkItemEffort(21m, Hour)), 1),
+            Dto(new WorkItemAssigned(seededId, 2, new TenantId(tenant), seededItem, Binding), 2),
+        ])]).ConfigureAwait(false);
+
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        using ServiceProvider provider = BuildProvider(store, handler);
+        SharedProjectionEpochCoordinator coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
+        SharedProjectionScope scope = handler.CreateScope(tenant);
+        string[] served = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(seededId)];
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> before = await coordinator
+            .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        before.IsAvailable.ShouldBeTrue();
+        long committedGeneration = (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)
+            .ConfigureAwait(false)).ActiveGeneration;
+        committedGeneration.ShouldBeGreaterThan(0);
+
+        DomainSharedProjectionRebuildIdentity identity = Identity(tenant, operation);
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity, histories)).ConfigureAwait(false);
+        long ordinal = 0;
+        foreach ((string aggregateId, ProjectionEventDto[] events) in histories.OrderBy(static history => history.AggregateId, StringComparer.Ordinal))
+        {
+            current = await DispatchAsync(provider, Accumulate(identity, ordinal, aggregateId, events)).ConfigureAwait(false);
+            ordinal++;
+        }
+
+        current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(false);
+        current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
+        current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
+        current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
+
+        // The refused capture promoted nothing: the active generation and every served document are unchanged.
+        (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken).ConfigureAwait(false))
+            .ActiveGeneration.ShouldBe(committedGeneration);
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await coordinator
+            .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        after.IsAvailable.ShouldBeTrue();
+        after.Generation.ShouldBe(before.Generation);
+        foreach (string key in served)
+        {
+            after.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText()
+                .ShouldBe(before.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText());
+        }
+
+        WorkItemView view = await QueryWorkItemAsync(store, tenant, seededId).ConfigureAwait(false);
+        view.Found.ShouldBeTrue();
+        view.Estimated.ShouldBe(21m);
     }
 
     private static WorkItemRollUp RollUp(string tenantId, string aggregateId, decimal remaining)

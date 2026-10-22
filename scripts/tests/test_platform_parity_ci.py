@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location("platform_parity_ci", ROOT / "scripts/verify-platform-parity-ci.py")
 PARITY = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(PARITY)
+RUNTIME = "e" * 64
 
 
 def commit(root):
@@ -159,13 +160,14 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             bootstrap = artifacts / "bootstrap.json"
             bootstrap.write_text('{"status":"bootstrap-validated; parity-incomplete"}')
             original = bootstrap.read_bytes()
-            record = {"platformOrigin": str(root), "platformSourceFiles": {"source.cs": "original"}}
+            record = {"platformOrigin": str(root), "platformRoot": str(root), "platformSourceFiles": {"source.cs": "original"}}
             snapshot = Mock()
             snapshot.origin_files.return_value = {"source.cs": "changed"}
             with (
                 patch("sys.argv", ["parity", "--artifacts-path", str(artifacts)]),
                 patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
                 patch.object(PARITY.subprocess, "run"),
+                patch.object(PARITY, "toolchain_runtime_sha256", return_value=RUNTIME),
                 patch.object(PARITY, "require_complete_gate"),
                 self.assertRaisesRegex(ValueError, "Platform inputs changed"),
             ):
@@ -191,6 +193,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                     record = {
                         "coordinatorSha256": expected,
                         "platformOrigin": str(root),
+                        "platformRoot": str(root),
                         "platformSourceFiles": {"source.cs": "original"},
                     }
                     snapshot = Mock()
@@ -203,6 +206,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                         patch("sys.argv", ["parity", "--artifacts-path", str(root / "attempt")]),
                         patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
                         patch.object(PARITY.subprocess, "run", side_effect=mutate),
+                        patch.object(PARITY, "toolchain_runtime_sha256", return_value=RUNTIME),
                         patch.object(PARITY, "require_complete_gate"),
                         self.assertRaisesRegex(ValueError, "coordinator changed"),
                     ):
@@ -246,11 +250,49 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
             "publishedProducers": {
                 "SDK": {"source": "https://api.nuget.org/v3/index.json", "repositoryCommit": "fixture"}
             },
+            "qualifiedToolchain": {"linuxAmd64DaprdSha256": RUNTIME, "runtimeSha256": RUNTIME},
+            "isolatedRuntime": {"runtimeSha256": RUNTIME},
+            "retainedPreflightRuntime": {"runtimeSha256": RUNTIME},
         }
 
-    def require(self, ledger):
+    def require(self, ledger, pinned=RUNTIME):
         (self.gate / "ledger.json").write_text(json.dumps(ledger))
-        return PARITY.require_complete_gate(self.artifacts)
+        return PARITY.require_complete_gate(self.artifacts, pinned)
+
+    def test_runtime_other_than_the_platform_pin_refuses(self):
+        other = "f" * 64
+        mutations = {
+            "qualified-runtime": lambda ledger: ledger["qualifiedToolchain"].update(runtimeSha256=other),
+            "ledger-pin": lambda ledger: ledger["qualifiedToolchain"].update(linuxAmd64DaprdSha256=other),
+            "isolated-runtime": lambda ledger: ledger["isolatedRuntime"].update(runtimeSha256=other),
+            "retained-preflight-runtime": lambda ledger: ledger["retainedPreflightRuntime"].update(runtimeSha256=other),
+            "missing-qualification": lambda ledger: ledger.pop("qualifiedToolchain"),
+            "missing-isolated-runtime": lambda ledger: ledger.pop("isolatedRuntime"),
+        }
+        for name, mutation in mutations.items():
+            with self.subTest(mutation=name):
+                ledger = copy.deepcopy(self.ledger)
+                mutation(ledger)
+                with self.assertRaisesRegex(ValueError, "Platform-qualified Dapr runtime"):
+                    self.require(ledger)
+        with self.subTest(mutation="platform-source-pin"), self.assertRaisesRegex(ValueError, "Platform-qualified Dapr runtime"):
+            self.require(self.ledger, pinned=other)
+
+    def test_platform_toolchain_pin_is_read_from_the_bootstrapped_owner(self):
+        with tempfile.TemporaryDirectory() as directory:
+            platform = Path(directory)
+            (platform / "config").mkdir()
+            pin = platform / "config/works-proof-toolchain.json"
+            pin.write_text(json.dumps({"qualifiedDaprRuntime": "1.18.7", "linuxAmd64DaprdSha256": RUNTIME}))
+            self.assertEqual(PARITY.toolchain_runtime_sha256(platform), RUNTIME)
+            for value in ("E" * 64, "e" * 63, None, ["e" * 64]):
+                with self.subTest(value=value):
+                    pin.write_text(json.dumps({"linuxAmd64DaprdSha256": value}))
+                    with self.assertRaisesRegex(ValueError, "qualified Linux runtime hash"):
+                        PARITY.toolchain_runtime_sha256(platform)
+            pin.write_text("[]")
+            with self.assertRaisesRegex(ValueError, "qualified Linux runtime hash"):
+                PARITY.toolchain_runtime_sha256(platform)
 
     def test_accepts_the_complete_canonical_result(self):
         self.assertEqual(self.require(self.ledger), self.ledger)

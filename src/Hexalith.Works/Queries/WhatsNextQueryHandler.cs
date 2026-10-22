@@ -7,9 +7,6 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.Strategies;
-using Hexalith.Works.Runtime;
-
-using Microsoft.Extensions.Options;
 
 namespace Hexalith.Works.Queries;
 
@@ -35,14 +32,12 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
     private readonly WorksQueryPolicy? _policy;
 
     /// <summary>Initializes a new instance of the <see cref="WhatsNextQueryHandler"/> class.</summary>
-    /// <param name="store">The persisted read-model store.</param>
+    /// <param name="policy">The Works query authority policy; when absent every query is refused.</param>
+    /// <param name="coordinator">The SDK shared-projection reader; when absent every query reports the projection unavailable.</param>
     public WhatsNextQueryHandler(
-        IReadModelStore store,
-        IOptions<WorksProjectionOptions>? options = null,
         WorksQueryPolicy? policy = null,
         SharedProjectionEpochCoordinator? coordinator = null)
     {
-        ArgumentNullException.ThrowIfNull(store);
         _policy = policy;
         _coordinator = coordinator;
     }

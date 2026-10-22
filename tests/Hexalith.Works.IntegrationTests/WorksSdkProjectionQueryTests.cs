@@ -1,7 +1,5 @@
 using System.Text.Json;
 
-using Dapr.Client;
-
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Contracts.Events;
@@ -196,14 +194,14 @@ public sealed class WorksSdkProjectionQueryTests
         IPartiesIdentityClient parties = Substitute.For<IPartiesIdentityClient>();
         var policy = new WorksQueryPolicy(parties,
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        var whatsNext = new WhatsNextQueryHandler(store, projectionOptions, policy, coordinator);
+        var whatsNext = new WhatsNextQueryHandler(policy, coordinator);
         QueryResult permitted = await whatsNext.ExecuteAsync(CoordinatorQuery("scheduler"),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         permitted.Success.ShouldBeTrue();
         permitted.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
         permitted.GetPayload().GetArrayLength().ShouldBe(1);
 
-        QueryResult denied = await new WhatsNextQueryHandler(store, projectionOptions, policy)
+        QueryResult denied = await new WhatsNextQueryHandler(policy)
             .ExecuteAsync(CoordinatorQuery("unlisted") with { IsGlobalAdmin = true },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         denied.Success.ShouldBeFalse();
@@ -267,7 +265,7 @@ public sealed class WorksSdkProjectionQueryTests
                 new PartyIdentityEvidence(1, Tenant, "party-mine", PartyIdentityClassification.Human,
                     true, false, false, 2, observedAt, "observation", binding))));
         var policy = new WorksQueryPolicy(parties, Options.Create(new WorksQueryOptions()));
-        var list = new WhatsNextQueryHandler(store, projectionOptions, policy, coordinator);
+        var list = new WhatsNextQueryHandler(policy, coordinator);
         QueryEnvelope query = new(Tenant, "work", "mine", WhatsNextQueryHandler.WhatsNextQueryType,
             JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-mine" }), "corr-sdk", "actor-mine",
             null, false, null, "actor-mine", "eventstore", true, null, null);
@@ -276,7 +274,7 @@ public sealed class WorksSdkProjectionQueryTests
         string[] ids = [.. result.GetPayload().EnumerateArray()
             .Select(item => item.GetProperty("workItemId").GetProperty("value").GetString()!)];
         ids.ShouldBe(["mine", "queue"], ignoreOrder: true);
-        QueryResult hidden = await new GetWorkItemQueryHandler(store, projectionOptions, policy, coordinator)
+        QueryResult hidden = await new GetWorkItemQueryHandler(policy, coordinator)
             .ExecuteAsync(query with { AggregateId = "foreign", QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         hidden.Success.ShouldBeTrue();
@@ -349,8 +347,7 @@ public sealed class WorksSdkProjectionQueryTests
         stale.IsAvailable.ShouldBeTrue();
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        var whatsNext = new WhatsNextQueryHandler(store,
-            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }), policy, coordinator);
+        var whatsNext = new WhatsNextQueryHandler(policy, coordinator);
         QueryResult rebuilding = await whatsNext.ExecuteAsync(CoordinatorQuery("scheduler"),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         rebuilding.Success.ShouldBeTrue();
@@ -454,11 +451,11 @@ public sealed class WorksSdkProjectionQueryTests
         ];
         foreach (QueryEnvelope query in denied)
         {
-            QueryResult list = await new WhatsNextQueryHandler(store, options, policy)
+            QueryResult list = await new WhatsNextQueryHandler(policy)
                 .ExecuteAsync(query, TestContext.Current.CancellationToken).ConfigureAwait(true);
             list.Success.ShouldBeFalse();
             list.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
-            QueryResult detail = await new GetWorkItemQueryHandler(store, options, policy)
+            QueryResult detail = await new GetWorkItemQueryHandler(policy)
                 .ExecuteAsync(query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                     TestContext.Current.CancellationToken).ConfigureAwait(true);
             detail.Success.ShouldBeFalse();
@@ -471,14 +468,12 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task Restart_recovers_checkpoint_and_rejects_conflicting_redelivery()
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null
-            : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        // Durable restart against a real Dapr store is proved by the Platform live projection and recovery lanes;
+        // this deterministic fact keeps the same coordinator/handler semantics over one persisted in-memory store.
         var memory = new InMemoryReadModelStore();
-        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore store = durable is null ? memory : durable;
-        IReadModelBatchStore batches = durable is null ? memory : durable;
-        string tenantId = client is null ? Tenant : "works-sdk-position-conflict-" + Guid.NewGuid().ToString("N");
+        IReadModelStore store = memory;
+        IReadModelBatchStore batches = memory;
+        string tenantId = Tenant;
         var first = new SharedProjectionEpochCoordinator(store, batches);
         var handler = new WorkItemSharedProjectionRebuildHandler(
             Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
@@ -539,14 +534,12 @@ public sealed class WorksSdkProjectionQueryTests
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
         QueryEnvelope coordinatorQuery = CoordinatorQuery("scheduler") with { TenantId = tenantId };
-        QueryResult query = await new WhatsNextQueryHandler(store,
-            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }), policy, afterRestart)
+        QueryResult query = await new WhatsNextQueryHandler(policy, afterRestart)
             .ExecuteAsync(coordinatorQuery, TestContext.Current.CancellationToken).ConfigureAwait(true);
         query.Success.ShouldBeFalse();
         query.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
         query.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
-        QueryResult detail = await new GetWorkItemQueryHandler(store,
-            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }), policy, afterRestart)
+        QueryResult detail = await new GetWorkItemQueryHandler(policy, afterRestart)
             .ExecuteAsync(coordinatorQuery with { AggregateId = Aggregate, QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         detail.Success.ShouldBeFalse();
@@ -556,14 +549,13 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task NamedOwnerSequenceGapKeepsDurableReadinessDegradedUntilMissingDeliveryConverges()
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        // Durable restart against a real Dapr store is proved by the Platform live projection and recovery lanes;
+        // this deterministic fact keeps the same coordinator/handler semantics over one persisted in-memory store.
         var memory = new InMemoryReadModelStore();
-        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore store = durable is null ? memory : durable;
-        IReadModelBatchStore batches = durable is null ? memory : durable;
+        IReadModelStore store = memory;
+        IReadModelBatchStore batches = memory;
         var coordinator = new SharedProjectionEpochCoordinator(store, batches);
-        string tenantId = client is null ? Tenant : "works-sdk-named-gap-" + Guid.NewGuid().ToString("N");
+        string tenantId = Tenant;
         var tenant = new TenantId(tenantId);
         var item = new WorkItemId(Aggregate);
         var options = Options.Create(new WorksProjectionOptions { UseSdkDelivery = true });
@@ -583,10 +575,9 @@ public sealed class WorksSdkProjectionQueryTests
             new ExecutorBinding(new PartyId("party-mine"), Channel.Mcp, AuthorityLevel.Coordinate)), 3);
         (await DomainProjectionDispatcher.DispatchAsync(provider, future, new ProjectionDispatchOptions(), identity,
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Outcomes.Single().Status.ShouldBe(ProjectionDispatchStatus.Retryable);
-        using DaprClient? restartedClient = client is null ? null : new DaprClientBuilder().UseGrpcEndpoint(endpoint!).Build();
-        var persisted = restartedClient is null ? null : new DaprReadModelStore(restartedClient, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore currentStore = persisted is null ? store : persisted;
-        IReadModelBatchStore currentBatches = persisted is null ? batches : persisted;
+        // A restarted coordinator instance re-reads the same persisted store.
+        IReadModelStore currentStore = store;
+        IReadModelBatchStore currentBatches = batches;
         var restarted = new SharedProjectionEpochCoordinator(currentStore, currentBatches);
         using ServiceProvider currentProvider = NamedProjectionProvider(currentStore, currentBatches, restarted, handler);
         var status = await restarted.GetStatusAsync(scope, TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -598,8 +589,8 @@ public sealed class WorksSdkProjectionQueryTests
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
         QueryEnvelope query = CoordinatorQuery("scheduler") with { TenantId = tenantId, AggregateId = Aggregate };
-        var list = new WhatsNextQueryHandler(currentStore, options, policy, restarted);
-        var detail = new GetWorkItemQueryHandler(currentStore, options, policy, restarted);
+        var list = new WhatsNextQueryHandler(policy, restarted);
+        var detail = new GetWorkItemQueryHandler(policy, restarted);
         (await list.ExecuteAsync(query, TestContext.Current.CancellationToken).ConfigureAwait(true))
             .Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
         (await detail.ExecuteAsync(query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
@@ -732,8 +723,7 @@ public sealed class WorksSdkProjectionQueryTests
             .ConfigureAwait(true))!.Position.ShouldBe(3);
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        QueryResult result = await new WhatsNextQueryHandler(store,
-            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }), policy, coordinator)
+        QueryResult result = await new WhatsNextQueryHandler(policy, coordinator)
             .ExecuteAsync(CoordinatorQuery("scheduler"), TestContext.Current.CancellationToken)
             .ConfigureAwait(true);
         result.Success.ShouldBeFalse();
@@ -746,15 +736,13 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery()
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null
-            : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        // Durable restart against a real Dapr store is proved by the Platform live projection and recovery lanes;
+        // this deterministic fact keeps the same coordinator/handler semantics over one persisted in-memory store.
         var memory = new InMemoryReadModelStore();
-        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore store = durable is null ? memory : durable;
-        IReadModelBatchStore batches = durable is null ? memory : durable;
+        IReadModelStore store = memory;
+        IReadModelBatchStore batches = memory;
         var coordinator = new SharedProjectionEpochCoordinator(store, batches);
-        string tenantId = client is null ? Tenant : "works-sdk-overlap-" + Guid.NewGuid().ToString("N");
+        string tenantId = Tenant;
         var tenant = new TenantId(tenantId);
         var parentId = new WorkItemId("parent");
         var childId = new WorkItemId("child");
@@ -785,7 +773,7 @@ public sealed class WorksSdkProjectionQueryTests
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
         QueryEnvelope query = CoordinatorQuery("scheduler") with { TenantId = tenantId };
-        var whatsNext = new WhatsNextQueryHandler(store, options, policy, coordinator);
+        var whatsNext = new WhatsNextQueryHandler(policy, coordinator);
         const string rebuild = "two-aggregate-rebuild";
         _ = await coordinator.BeginAsync(scope, rebuild, fingerprint,
             new Dictionary<string, long> { ["parent"] = 2, ["child"] = 2 },
@@ -835,7 +823,7 @@ public sealed class WorksSdkProjectionQueryTests
         staleList.GetPayload().GetArrayLength().ShouldBe(2);
         staleList.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Stale);
         staleList.Metadata.ProjectionVersion.ShouldBe(previousGeneration);
-        QueryResult staleDetail = await new GetWorkItemQueryHandler(store, options, policy, coordinator)
+        QueryResult staleDetail = await new GetWorkItemQueryHandler(policy, coordinator)
             .ExecuteAsync(query with { AggregateId = "parent", QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         staleDetail.Success.ShouldBeTrue();
@@ -860,19 +848,17 @@ public sealed class WorksSdkProjectionQueryTests
         await coordinator.CommitAsync(scope, rebuild, TestContext.Current.CancellationToken,
             requireOwnerSequenceHandoff: true).ConfigureAwait(true);
 
-        using DaprClient? restartedClient = client is null ? null : new DaprClientBuilder().UseGrpcEndpoint(endpoint!).Build();
-        var restartedStore = restartedClient is null ? null
-            : new DaprReadModelStore(restartedClient, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore currentStore = restartedStore is null ? store : restartedStore;
-        IReadModelBatchStore currentBatches = restartedStore is null ? batches : restartedStore;
+        // A restarted coordinator instance re-reads the same persisted store.
+        IReadModelStore currentStore = store;
+        IReadModelBatchStore currentBatches = batches;
         var restarted = new SharedProjectionEpochCoordinator(currentStore, currentBatches);
-        var currentQuery = new WhatsNextQueryHandler(currentStore, options, policy, restarted);
+        var currentQuery = new WhatsNextQueryHandler(policy, restarted);
         QueryResult awaitingCatchUp = await currentQuery.ExecuteAsync(query, TestContext.Current.CancellationToken).ConfigureAwait(true);
         awaitingCatchUp.Success.ShouldBeFalse();
         awaitingCatchUp.ErrorMessage.ShouldBe("projection-unavailable");
         awaitingCatchUp.Metadata.ShouldNotBeNull().IsStale.ShouldBe(true);
         awaitingCatchUp.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
-        QueryResult unavailableDetail = await new GetWorkItemQueryHandler(currentStore, options, policy, restarted)
+        QueryResult unavailableDetail = await new GetWorkItemQueryHandler(policy, restarted)
             .ExecuteAsync(query with { AggregateId = "parent", QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         unavailableDetail.Success.ShouldBeFalse();
@@ -933,7 +919,7 @@ public sealed class WorksSdkProjectionQueryTests
         current.Metadata.IsDegraded.ShouldBe(false);
         current.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
         current.Metadata.ProjectionVersion.ShouldBe("1");
-        QueryResult currentDetail = await new GetWorkItemQueryHandler(currentStore, options, policy, restarted)
+        QueryResult currentDetail = await new GetWorkItemQueryHandler(policy, restarted)
             .ExecuteAsync(query with { AggregateId = "parent", QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         currentDetail.Success.ShouldBeTrue();
@@ -964,15 +950,13 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task OrdinaryDeliveryOnAnotherAggregatePreservesTerminalParkingAndDegradedQueries()
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null
-            : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        // Durable restart against a real Dapr store is proved by the Platform live projection and recovery lanes;
+        // this deterministic fact keeps the same coordinator/handler semantics over one persisted in-memory store.
         var memory = new InMemoryReadModelStore();
-        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore store = durable is null ? memory : durable;
-        IReadModelBatchStore batches = durable is null ? memory : durable;
+        IReadModelStore store = memory;
+        IReadModelBatchStore batches = memory;
         var coordinator = new SharedProjectionEpochCoordinator(store, batches);
-        string tenantId = client is null ? Tenant : "works-sdk-parking-" + Guid.NewGuid().ToString("N");
+        string tenantId = Tenant;
         var tenant = new TenantId(tenantId);
         var projectionOptions = Options.Create(new WorksProjectionOptions
         {
@@ -1031,7 +1015,7 @@ public sealed class WorksSdkProjectionQueryTests
             .ConfigureAwait(true)).PendingDeliveryCount.ShouldBe(0);
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        QueryResult result = await new WhatsNextQueryHandler(store, projectionOptions, policy, restarted)
+        QueryResult result = await new WhatsNextQueryHandler(policy, restarted)
             .ExecuteAsync(CoordinatorQuery("scheduler") with { TenantId = tenantId },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         result.Success.ShouldBeFalse();
@@ -1044,15 +1028,13 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task ConflictingSourceSequenceAtNewEnvelopePositionIsDurablyParkedAcrossRestart()
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        using DaprClient? client = string.IsNullOrWhiteSpace(endpoint) ? null
-            : new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
+        // Durable restart against a real Dapr store is proved by the Platform live projection and recovery lanes;
+        // this deterministic fact keeps the same coordinator/handler semantics over one persisted in-memory store.
         var memory = new InMemoryReadModelStore();
-        var durable = client is null ? null : new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore store = durable is null ? memory : durable;
-        IReadModelBatchStore batches = durable is null ? memory : durable;
+        IReadModelStore store = memory;
+        IReadModelBatchStore batches = memory;
         var coordinator = new SharedProjectionEpochCoordinator(store, batches);
-        string tenantId = client is null ? Tenant : "works-sdk-source-conflict-" + Guid.NewGuid().ToString("N");
+        string tenantId = Tenant;
         var tenant = new TenantId(tenantId);
         var workItem = new WorkItemId(Aggregate);
         var options = Options.Create(new WorksProjectionOptions
@@ -1099,11 +1081,9 @@ public sealed class WorksSdkProjectionQueryTests
             (current, generation, token) => handler.FoldCatchUpAsync(current, generation, coordinator, token),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
 
-        using DaprClient? restartedClient = client is null ? null : new DaprClientBuilder().UseGrpcEndpoint(endpoint!).Build();
-        var restartedStore = restartedClient is null ? null : new DaprReadModelStore(restartedClient,
-            Options.Create(new ReadModelBatchOptions()));
-        IReadModelStore currentStore = restartedStore is null ? store : restartedStore;
-        IReadModelBatchStore currentBatches = restartedStore is null ? batches : restartedStore;
+        // A restarted coordinator instance re-reads the same persisted store.
+        IReadModelStore currentStore = store;
+        IReadModelBatchStore currentBatches = batches;
         var restarted = new SharedProjectionEpochCoordinator(currentStore, currentBatches);
         SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await restarted
             .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -1125,7 +1105,7 @@ public sealed class WorksSdkProjectionQueryTests
             .ConfigureAwait(true)).PendingDeliveryCount.ShouldBe(0);
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        QueryResult result = await new WhatsNextQueryHandler(currentStore, options, policy, restarted)
+        QueryResult result = await new WhatsNextQueryHandler(policy, restarted)
             .ExecuteAsync(CoordinatorQuery("scheduler") with { TenantId = tenantId },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         result.Success.ShouldBeFalse();
@@ -1133,79 +1113,6 @@ public sealed class WorksSdkProjectionQueryTests
         result.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
         result.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
         result.Metadata.WarningCodes.ShouldNotBeNull().ShouldContain("works-runtime-unavailable");
-    }
-
-    [Fact]
-    public async Task Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled()
-    {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_SDK_DAPR_GRPC_ENDPOINT");
-        if (string.IsNullOrWhiteSpace(endpoint))
-        {
-            return;
-        }
-
-        string tenantId = "works-sdk-live-" + Guid.NewGuid().ToString("N");
-        var tenant = new TenantId(tenantId);
-        var workItem = new WorkItemId(Aggregate);
-        var handler = new WorkItemSharedProjectionRebuildHandler(
-            Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
-        SharedProjectionScope scope = handler.CreateScope(tenantId);
-        using DaprClient firstClient = new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
-        var firstStore = new DaprReadModelStore(firstClient, Options.Create(new ReadModelBatchOptions()));
-        var first = new SharedProjectionEpochCoordinator(firstStore, firstStore);
-        SharedProjectionLease lease = await first.RegisterWriterAsync(scope, handler.OrdinaryWriterId,
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        IEventPayload created = new WorkItemCreated(Aggregate, 1, tenant, workItem, new Obligation("Persisted"));
-        (await first.JournalAsync(scope, lease, Delivery(created, 1, tenantId: tenantId),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.Journaled);
-        (await first.CatchUpAsync(scope,
-            (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, first, token),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
-        _ = await first.BeginAsync(scope, "redis-rebuild", "sealed-inventory",
-            new Dictionary<string, long> { [Aggregate] = 1 }, TestContext.Current.CancellationToken)
-            .ConfigureAwait(true);
-        lease = await first.RefreshLeaseAsync(scope, handler.OrdinaryWriterId,
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        (await first.JournalAsync(scope, lease, Delivery(new WorkItemQueued(Aggregate, 2, tenant, workItem), 2,
-                tenantId: tenantId), TestContext.Current.CancellationToken).ConfigureAwait(true))
-            .ShouldBe(SharedProjectionJournalResult.Journaled);
-
-        var identity = new DomainSharedProjectionRebuildIdentity(tenantId, "work", WorksReadModelKeys.RuntimeFamily,
-            "redis-rebuild", "sealed-inventory");
-        DomainSharedProjectionRebuildCandidate candidate = await handler.CreateEmptyCandidateAsync(identity,
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        candidate = await handler.AccumulateAsync(identity, candidate,
-            new ProjectionRequest(tenantId, "work", Aggregate, [Dto(created, 1)]),
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        DomainProjectionRebuildPlan plan = await handler.FinalizeAsync(identity, candidate,
-            TestContext.Current.CancellationToken).ConfigureAwait(true);
-        _ = await first.StageAsync(scope, "redis-rebuild", plan.Operations,
-            TestContext.Current.CancellationToken,
-            new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex)).ConfigureAwait(true);
-        await first.CommitAsync(scope, "redis-rebuild", TestContext.Current.CancellationToken).ConfigureAwait(true);
-
-        using DaprClient restartedClient = new DaprClientBuilder().UseGrpcEndpoint(endpoint).Build();
-        var restartedStore = new DaprReadModelStore(restartedClient, Options.Create(new ReadModelBatchOptions()));
-        var restarted = new SharedProjectionEpochCoordinator(restartedStore, restartedStore);
-        (await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey,
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).IsStale.ShouldBeTrue();
-        (await restarted.CatchUpAsync(scope,
-            (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, restarted, token),
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> family = await restarted
-            .ReadManyAsync<WorksRuntimeDocument>(scope,
-                [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(Aggregate),
-                    WorksReadModelKeys.RuntimeTopologyKey, WorksReadModelKeys.RuntimePendingDateKey,
-                    WorksReadModelKeys.RuntimeParkingKey(Aggregate), WorksReadModelKeys.RuntimeHistoryKey(Aggregate)],
-                TestContext.Current.CancellationToken).ConfigureAwait(true);
-        family.IsAvailable.ShouldBeTrue();
-        family.IsStale.ShouldBeFalse();
-        family.Generation.ShouldBe(1);
-        family.Value.ShouldNotBeNull().Values.ShouldAllBe(value => value != null);
-        family.Value[WorksReadModelKeys.RuntimeQueueKey]!.As<WorksWhatsNextTenantIndex>()
-            .Items[Aggregate].Status.ShouldBe(WorkItemStatus.Queued);
-        (await restarted.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken)
-            .ConfigureAwait(true))!.Position.ShouldBe(2);
     }
 
     [Fact]
@@ -1365,8 +1272,8 @@ public sealed class WorksSdkProjectionQueryTests
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
         var query = CoordinatorQuery("scheduler") with { AggregateId = bad };
-        var list = await new WhatsNextQueryHandler(store, options, policy, restarted).ExecuteAsync(query, TestContext.Current.CancellationToken);
-        var detail = await new GetWorkItemQueryHandler(store, options, policy, restarted)
+        var list = await new WhatsNextQueryHandler(policy, restarted).ExecuteAsync(query, TestContext.Current.CancellationToken);
+        var detail = await new GetWorkItemQueryHandler(policy, restarted)
             .ExecuteAsync(query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, TestContext.Current.CancellationToken);
         list.Metadata!.IsDegraded.ShouldBe(true); detail.Metadata!.IsDegraded.ShouldBe(true);
         list.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable); detail.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
@@ -1409,8 +1316,8 @@ public sealed class WorksSdkProjectionQueryTests
         (await coordinator.GetCheckpointAsync(scope, Aggregate, ct))!.Position.ShouldBe(3);
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(), Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
         var query = CoordinatorQuery("scheduler");
-        QueryResult list = await new WhatsNextQueryHandler(store, options, policy, coordinator).ExecuteAsync(query, ct);
-        QueryResult detail = await new GetWorkItemQueryHandler(store, options, policy, coordinator)
+        QueryResult list = await new WhatsNextQueryHandler(policy, coordinator).ExecuteAsync(query, ct);
+        QueryResult detail = await new GetWorkItemQueryHandler(policy, coordinator)
             .ExecuteAsync(query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ct);
         foreach (QueryResult result in new[] { list, detail })
         {

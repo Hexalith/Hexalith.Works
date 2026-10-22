@@ -1,0 +1,211 @@
+{
+  "status": "nonqualifying: full gate requires a published producer; the EventStore SealAsync fix is uncommitted in works/references/Hexalith.EventStore and verified by unit tests, a standalone Dapr/Redis repro and the focused projection lane on a source-mode runtime",
+  "archives": {
+    "full-gate/ledger.json.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/ledger.json",
+      "uncompressedSha256": "8d5eea3992f80bc9742d11f7bae28b3ad2c10ee1a1a2dbd105f30a93beed5baa",
+      "storedSha256": "7c4117cab697872c3750ba39fca5689bc62dbf108e2506a9d685743b91aedac0"
+    },
+    "full-gate/bootstrap.json.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/bootstrap.json",
+      "uncompressedSha256": "fc6b45f1c77a84dfa6c172252fb98a95d2324dc8f1f445c901aef4aee2771f51",
+      "storedSha256": "56c13f1907e5bd1b96b0779310738f625f1e9354b7dc2aae6e7c575341c25a1d"
+    },
+    "full-gate/platform-recovery.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/platform-recovery.xml",
+      "uncompressedSha256": "26894669930ba5892f1770b518a741aa67b3eb716ee0dceb78c34350ad27b28b",
+      "storedSha256": "b47c0b609442e23f3bf83b635a9652ca9f723c4ef5a0bf68e857d11b1f13740c"
+    },
+    "full-gate/platform-recovery.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/platform-recovery.log",
+      "uncompressedSha256": "222ad4e6172a4dd2120b98a4e28b049c88ed22bf3d6b5f8864c07b070ca0bdf5",
+      "storedSha256": "4c2f3b0db91ec0e64c9b1244121022c61267be1f5ab96737e824cd96d7ee22da"
+    },
+    "full-gate/persisted-states.jsonl.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/persisted-states.jsonl",
+      "uncompressedSha256": "46b9948f1ca4fb5bf47000e4643c24328d63c9848c9375ac9783611a0d9076fe",
+      "storedSha256": "9933c311b308c78a05e4f88de83770ddfc161692dad3a02ed7c329ff0b3a29bf"
+    },
+    "full-gate/platform-debug.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/platform-debug.xml",
+      "uncompressedSha256": "d5441f890a857a8c7e69475752e65f9cad1c470180807f16ba6c8e569ac9e82d",
+      "storedSha256": "3d49e1a4059b3353c3850d3ebd4f219775ecef9bf80213c37e41e1e5cfd80c3e"
+    },
+    "full-gate/platform-release.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/platform-release.xml",
+      "uncompressedSha256": "dab4df2211f557409da244139cfd39d72a0ec8c242dca17f5860c79e17c09164",
+      "storedSha256": "ef0fa21b32d761bd4a47544b0e2b78a7fa4044fb35d38696c4092e9f9a0e07a4"
+    },
+    "full-gate/works-consumer-supporting.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/works-consumer-supporting.xml",
+      "uncompressedSha256": "a73400ba40a3852e257c3fe5df5baed530acb3cd972e22c79fa0a95963e5a975",
+      "storedSha256": "c6637c65c04d2fce61c52f53338d70cc3c6cc1d78799912de38cde9f2692a738"
+    },
+    "full-gate/retained-preflight.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/gate-full-1/gate/retained-preflight.xml",
+      "uncompressedSha256": "70117a41d12f09038222a185d3d597d3017c1aa04ab26bccc91d66d66199ce18",
+      "storedSha256": "6da1a251ca88928a957b9e59f61a0522ff5efd1e4dcb92a9984d49cbecc277ab"
+    },
+    "focused/recovery-cp-1.18.7.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/focus-recovery-1/recovery.xml",
+      "uncompressedSha256": "0e210ec400b79595ffb764fdb21aebdc076124caf9a6bfd3a26fe07f046220ac",
+      "storedSha256": "42213cb1870a275a4e617777a111caa25ae1ea4e50eb69453b214e7f374a1cd2"
+    },
+    "focused/projection-cp-1.18.7.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/focus-projection-1/projection.xml",
+      "uncompressedSha256": "1aa2d49d5caa0a0de9243783e39d191469b1bc00a9086397ae183fc138ac7fc5",
+      "storedSha256": "c068410f55568e4b0a972c2db39a4f0c5834977770e72743f50420ad44ba876d"
+    },
+    "focused/projection-cp-1.18.2.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/exp-cp1182/run/projection.xml",
+      "uncompressedSha256": "4092d3211162afe0e87b3844e0251a1edffbee05ac0c2b357765f58f7577e321",
+      "storedSha256": "9424bc549fe1f95fb82ce69bd64e990cf23468c3b0534c8a58c193cd83d5bddb"
+    },
+    "ordinary/integration-debug.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/integration-debug-final.xml",
+      "uncompressedSha256": "89ffe32065c365966fd6ebdf803070570d00673adfdd8e299e86a507f2b3129f",
+      "storedSha256": "29d924aab899f30f260d7ba12bfb5d4aa6d81efd1cc4e7e455c15f36dfadb6cc"
+    },
+    "ordinary/integration-release.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/integration-release.xml",
+      "uncompressedSha256": "1a9d986525de6bdb8da6929901f8c073e144795f4bd7087dc75ebeb19dc5aad0",
+      "storedSha256": "b38b412b216d8c42df7be1ac01aad9ea3a27766ce7d70fe3c32ddb45f7e21952"
+    },
+    "ordinary/architecture-debug.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/arch-debug-final.xml",
+      "uncompressedSha256": "c17e1be979119bf351ab4b4c7c1e05148ee6d920ba9a8f20b7d2b7f14e901e90",
+      "storedSha256": "aa607328d7772297e9f8486c16cbc7f051a28d7c053381af0b00616c6f5cb4ae"
+    },
+    "ordinary/architecture-release.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/ArchitectureTests-release.xml",
+      "uncompressedSha256": "9f3198c2e4476861ab1635c12f9752a8c78538b790f14bce5d44552ab8fdd262",
+      "storedSha256": "60a58c1bef43aa8f87f32426fa36b139aaba6335d416ae99ed276ccfdce8da47"
+    },
+    "ordinary/unit-release.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/UnitTests-release.xml",
+      "uncompressedSha256": "d5e1e29c1bd0b5c3ad9952ff4bc00bdd3e3862342cc54b1167a9ea315bd8f03b",
+      "storedSha256": "3102276dd6958b90a9a344d45c8150eb34b66377db781345da649023f66a8985"
+    },
+    "ordinary/property-release.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/PropertyTests-release.xml",
+      "uncompressedSha256": "e68c211e4513d9db851768304ed906ba693a8133492fcd8f431bb5377d5ed3d3",
+      "storedSha256": "cd74a6fb173b728f4c3bfac61a42efe044593a8d3355b02d6cd1afb9a2d297b8"
+    }
+  },
+  "rootCauseArchives": {
+    "root-cause/focused-projection-works-daprd-debug.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run1/isolated-daprd/logs/works-16703.log",
+      "uncompressedSha256": "3a731d3dba39c7a4a1a89b29985f8ec8d9ace7f5ad10fc2a799cfce8cb44a80c"
+    },
+    "root-cause/focused-projection-sidecar-failure-lines.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run1/sidecar-failure-lines.log",
+      "uncompressedSha256": "d1cc772a5cfce90590806b6e5715c8a477b0c886a9a21e68dc65200f9540cceb"
+    },
+    "root-cause/focused-projection-redis-retired-key-commands.monitor.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run1/redis/retired-key-commands.monitor",
+      "uncompressedSha256": "a8e3fc3d641a83f341c6bf7beafc23c6fc362e1d5ec5fb0840d0f80b5873e49a"
+    },
+    "root-cause/focused-projection-redis-info.txt.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run1/redis/works-sdk415-08531bf9bbd641af981cef81b3c7730d.info",
+      "uncompressedSha256": "acd6a5d11e66951829b176b0a58e19127ef9003eb2bc3a952fe981ad4ac5b439"
+    },
+    "root-cause/focused-projection.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run1/projection.xml",
+      "uncompressedSha256": "6af9a233ec8b7802e0fe073f104e601684bd838e5df3a74046abb03df729001c"
+    },
+    "root-cause/repro/Program.cs.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/console/Program.cs",
+      "uncompressedSha256": "5c5dac32255259e11492257758eb4b88b5e8e9f8cbf6261f44961dfc4f30e0fd"
+    },
+    "root-cause/repro/Repro.csproj.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/console/Repro.csproj",
+      "uncompressedSha256": "ef32c9a158acada5e3bb99fd66d729b4146ab440b4718e68e8b32be7126719fe"
+    },
+    "root-cause/repro/output.txt.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/repro-output.txt",
+      "uncompressedSha256": "1e444b2b2e29acb6e95958729e5370541406e02cdc061bd80139bb0d9f281cd3"
+    },
+    "root-cause/repro/daprd-with-platform-resiliency.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/daprd.log",
+      "uncompressedSha256": "df77d6e044754f973b95e0b10dd0996a8f34586245378d525c4f84f4e7733be3"
+    },
+    "root-cause/repro/daprd-without-statestore-resiliency.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/daprd-noresiliency.log",
+      "uncompressedSha256": "54b8e070f8ded41a3bcbae9a78e1f06c8729c9723dd3c63fdc40e1c59793e128"
+    },
+    "root-cause/diagnostic-tee-daprd-shim-generator.py.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/make_diag_runtime.py",
+      "uncompressedSha256": "61c53554f7e1053f114d12851320bd74416f8787740ec7f2530c6f59d3b2cc07"
+    },
+    "root-cause/redis-watch.sh.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/redis_watch.sh",
+      "uncompressedSha256": "14aa27fca7cd2bc6e4b7264faaf102c9b2fc732555f8df82d47175fda50e5396"
+    }
+  },
+  "eventStoreFixArchives": {
+    "eventstore-fix/eventstore-sealasync-fix.patch.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/eventstore-sealasync-fix.patch",
+      "uncompressedSha256": "2585717dd9863c0841b902880d5b4381dfeb62f4ab6d3cf307e9e1e81b3fc994"
+    },
+    "eventstore-fix/client-tests-run1.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-client-fixed-1.xml",
+      "uncompressedSha256": "1a63f41b5577e4f8ebb95a3b21ceb7f025c9d729ce0ab721c4b9cca9cb953bcb"
+    },
+    "eventstore-fix/client-tests-run2.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-client-fixed-2.xml",
+      "uncompressedSha256": "b148f74ab3038246934c773bdd006005f9d43e07e7017ad481fcc5bb5272a285"
+    },
+    "eventstore-fix/client-tests-first-run-out-of-tree.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-client-tests-fixed.xml",
+      "uncompressedSha256": "89cdfb80a88dd1fb06ba2549ea6fe2a48e348ad09010a59150b9004272ae8901"
+    },
+    "eventstore-fix/domainservice-tests.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-domainservice-fixed.xml",
+      "uncompressedSha256": "be4d693c4ec8aeaa12fe5742ce2864e27bb5a0814a11f70502c5ae6227bea26f"
+    },
+    "eventstore-fix/eventstore-solution-build-release.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-sln-build-default.log",
+      "uncompressedSha256": "3cd22110501b9fbbabd97feee60938b2139cac19f9ddda64d6227d497f195fae"
+    },
+    "eventstore-fix/eventstore-solution-build-artifacts-path-collision.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/es-sln-build.log",
+      "uncompressedSha256": "9959ce9871f5c8a30440a48d575ed5293d81bed32b8ed368beff9da4d131b3ef"
+    },
+    "eventstore-fix/works-integration-debug-on-patched-sdk.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/results/works-integration-debug-patched-es.xml",
+      "uncompressedSha256": "ffa1914a39c8d06314a3acc9d50f0a70fd3098efa11fb683e72b9f5efc87f803"
+    },
+    "eventstore-fix/repro/output.txt.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/repro-patched-output.txt",
+      "uncompressedSha256": "90dfb5fa4d5aab360135e4066c69c5e723c03d5372768136fbd69b94b4070b4b"
+    },
+    "eventstore-fix/repro/ReproSource.csproj.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/console-source/ReproSource.csproj",
+      "uncompressedSha256": "b7361032a85805db50b6d219879d230d7fdb7cf5ac9e32b1dd0060f7e3e721ca"
+    },
+    "eventstore-fix/repro/daprd-with-platform-resiliency.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/repro/daprd-fix.log",
+      "uncompressedSha256": "2d29a67760119836d6390a092690cc3e5e0c42aeb6d0875880fe2c1b5ccea550"
+    },
+    "eventstore-fix/focused-projection/summary.txt.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run2-patched/summary.txt",
+      "uncompressedSha256": "ee6dcbddc724c5a67b344c49923317d644b23fe991f7b7eec6e97fc5b28e553a"
+    },
+    "eventstore-fix/focused-projection/projection.xml.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run2-patched/projection.xml",
+      "uncompressedSha256": "1de7031f564be1c2fbcb215df451c4e9b77c53a1b09248836e8315b3cfd32a05"
+    },
+    "eventstore-fix/focused-projection/works-daprd-debug.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run2-patched/isolated-daprd/logs/works-67351.log",
+      "uncompressedSha256": "f4e869cc85c4315f3e919e02873c0d5e385d13992dc1d821849fd3b0bebe1d96"
+    },
+    "eventstore-fix/focused-projection/eventstore-daprd-debug.log.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run2-patched/isolated-daprd/logs/eventstore-67325.log",
+      "uncompressedSha256": "22d53b56eaffdc078d1b4a37dfc47ad45e68b55081783f79ba0c640ab32adc8e"
+    },
+    "eventstore-fix/focused-projection/redis-info.txt.gz": {
+      "source": "/tmp/claude-1000/-home-administrator-projects-hexalith-works/5e5ee546-a1f2-4de7-9a54-90022cec8c23/scratchpad/diag/run2-patched/redis/works-sdk415-61f0fd3446344f35affe2abcfd172036.info",
+      "uncompressedSha256": "f28af270a15662247a66dc0e721072da8af820f08f45eca671529130118fb57d"
+    }
+  }
+}

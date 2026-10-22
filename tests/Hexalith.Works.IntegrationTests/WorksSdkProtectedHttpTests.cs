@@ -160,6 +160,25 @@ public sealed class WorksSdkProtectedHttpTests
             reminders.ReceivedCalls().ShouldBeEmpty();
         }
         (await markers.TryAcquireAsync(envelope.MessageId, TestContext.Current.CancellationToken)).ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.Acquired);
+
+        // Positive control on the same host: a matching committed fact is accepted and commits its discovery effect.
+        var valid = new WorkItemCreated("wakeup", 1, new TenantId(Tenant), new WorkItemId("wakeup"), new Obligation("synthetic"));
+        var validEnvelope = new EventStoreDomainEventEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAW", "wakeup", Tenant,
+            typeof(WorkItemCreated).FullName!, 1, DateTimeOffset.UnixEpoch, "wakeup-control", "json",
+            JsonSerializer.SerializeToUtf8Bytes(valid)) { Domain = "work" };
+        using (HttpResponseMessage accepted = await client.SendAsync(Request("/work/events", validEnvelope, channel: true, assertion: null),
+            TestContext.Current.CancellationToken).ConfigureAwait(true))
+        {
+            accepted.IsSuccessStatusCode.ShouldBeTrue($"A matching wakeup must be accepted; got {(int)accepted.StatusCode}.");
+        }
+
+        using IServiceScope scope = app.Services.CreateScope();
+        (await scope.ServiceProvider.GetRequiredService<ProcessCheckpointStore>()
+            .ContainsCandidateAsync(new ProcessSource(Tenant, "work", "wakeup"), TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).ShouldBeTrue();
+        store.Count.ShouldBeGreaterThan(0);
+        _ = await reminders.Received(1).ConvergeAsync(new ReminderTarget(Tenant, "work", "wakeup"), Arg.Any<CancellationToken>()).ConfigureAwait(true);
+        (await markers.TryAcquireAsync(validEnvelope.MessageId, TestContext.Current.CancellationToken)).ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.Completed);
     }
 
     [Fact]
@@ -181,7 +200,7 @@ public sealed class WorksSdkProtectedHttpTests
         using HttpClient client = PartiesClient(Address(parties), HumanBearer);
         var policy = new WorksQueryPolicy(new HttpPartiesIdentityClient(client), Options.Create(new WorksQueryOptions()));
         var options = Options.Create(new WorksProjectionOptions { UseSdkDelivery = true });
-        QueryResult list = await new WhatsNextQueryHandler(store, options, policy, coordinator)
+        QueryResult list = await new WhatsNextQueryHandler(policy, coordinator)
             .ExecuteAsync(ExecutorQuery(), TestContext.Current.CancellationToken).ConfigureAwait(true);
         list.Success.ShouldBeTrue();
         list.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
@@ -190,7 +209,7 @@ public sealed class WorksSdkProtectedHttpTests
 
         foreach ((string aggregate, bool expected) in new[] { ("mine", true), ("queue", true), ("foreign", false) })
         {
-            QueryResult detail = await new GetWorkItemQueryHandler(store, options, policy, coordinator)
+            QueryResult detail = await new GetWorkItemQueryHandler(policy, coordinator)
                 .ExecuteAsync(ExecutorQuery() with
                 {
                     AggregateId = aggregate,
@@ -258,7 +277,7 @@ public sealed class WorksSdkProtectedHttpTests
 
         using HttpClient client = PartiesClient(Address(parties), HumanBearer);
         var policy = new WorksQueryPolicy(new HttpPartiesIdentityClient(client), Options.Create(new WorksQueryOptions()));
-        QueryResult result = await new GetWorkItemQueryHandler(store, options, policy, coordinator)
+        QueryResult result = await new GetWorkItemQueryHandler(policy, coordinator)
             .ExecuteAsync(ExecutorQuery() with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         result.Success.ShouldBeFalse();
@@ -331,9 +350,9 @@ public sealed class WorksSdkProtectedHttpTests
         {
             QueryEnvelope query = ExecutorQuery() with { QueryType = queryType };
             QueryResult result = queryType == WhatsNextQueryHandler.WhatsNextQueryType
-                ? await new WhatsNextQueryHandler(store, options, policy).ExecuteAsync(query,
+                ? await new WhatsNextQueryHandler(policy).ExecuteAsync(query,
                     TestContext.Current.CancellationToken).ConfigureAwait(true)
-                : await new GetWorkItemQueryHandler(store, options, policy).ExecuteAsync(query,
+                : await new GetWorkItemQueryHandler(policy).ExecuteAsync(query,
                     TestContext.Current.CancellationToken).ConfigureAwait(true);
             result.Success.ShouldBeFalse();
             result.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);

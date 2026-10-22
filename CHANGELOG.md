@@ -74,11 +74,29 @@ All notable changes to Hexalith.Works will be documented in this file.
 
 ### Changed
 
-- Works projection readers and normal `/project` writes now preserve legacy visibility until a tenant's v2
-  membership index is committed. After that boundary, readers use only v2 keys and authoritative membership,
-  so stale or otherwise unlisted per-item documents cannot be queried. Both roll-up readers also require a
-  stored document's embedded tenant/work-item identity to match the requested key, so a mis-keyed persisted
-  document is refused instead of served.
+- **Breaking (hosting):** Works no longer ships `Hexalith.Works.AppHost`, `Hexalith.Works.ServiceDefaults`,
+  `aspire.config.json` or its own Dapr actor, reminder, event-subscription and recovery plumbing. Hexalith.Platform
+  composes the topology; the `Hexalith.Works` executable uses only the canonical
+  `AddEventStoreDomainService(...)` / `UseEventStoreDomainService()` SDK composition with Works domain adapters
+  (Story 4.9). The archived Works host remains available only as Platform's byte-bound rollback; see
+  `docs/platform-hosting-cutover.md`.
+- **Breaking (configuration):** the historical runtime switches `Works:Recovery:UseSdkRuntime=false` and
+  `Works:Projection:UseSdkDelivery=false` now refuse startup instead of selecting a legacy writer. The five
+  legacy-only recovery settings (`RunReconciliationOnStartup`, `ReminderReconciliationMaxAttempts`,
+  `ReminderReconciliationRetryDelayMilliseconds`, `CascadeTargetIntervalMilliseconds`,
+  `CascadeCheckpointIndexStaleAfterHours`) are deprecated and ignored; SDK-owned reminder/process options apply.
+- **Breaking (configuration):** Parties identity queries require an absolute gateway address at startup, from
+  `Works:Query:PartiesGatewayBaseAddress` or, when that override is absent or blank,
+  `EventStore:CommandGateway:BaseAddress`. A missing, blank or relative address refuses startup; there is no
+  implicit default.
+- The EventStore producer selection follows the Builds catalog to public 3.126.1. Captured owner identities are
+  retained as sealed paged references rather than inline digests.
+- Works projection readers serve only the committed EventStore SDK shared-projection generation of the
+  `works-runtime-v3` family; legacy unversioned and v2 keys are retained solely as rollback documents for the
+  archived host and are never read, served or rewritten by the SDK runtime. A capture that fails finalization
+  leaves the last committed generation served. Both roll-up readers require a stored document's embedded
+  tenant/work-item identity to match the requested key, so a mis-keyed persisted document is refused instead of
+  served.
 - Ordinary `/project` dispatches retain the child identities a shared rebuild reconciled for an aggregate and
   refuse both rolled shapes rather than republishing a single-aggregate substitute total over a reconciled
   document; a known Works event that cannot be decoded is likewise treated as incomplete evidence.

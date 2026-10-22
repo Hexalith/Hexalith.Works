@@ -173,7 +173,30 @@ def bootstrap(works, artifacts):
     return command, environment, record, snapshot
 
 
-def require_complete_gate(artifacts):
+def toolchain_runtime_sha256(platform):
+    """Read the qualified Linux daprd hash from the bootstrapped Platform toolchain owner, not from the ledger."""
+    pins = json.loads((Path(platform) / "config/works-proof-toolchain.json").read_text())
+    digest = pins.get("linuxAmd64DaprdSha256") if isinstance(pins, dict) else None
+    if not isinstance(digest, str) or len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+        raise ValueError("Platform Works proof toolchain lacks a qualified Linux runtime hash")
+    return digest
+
+
+def require_qualified_runtime(ledger, pinned_sha256):
+    """The executed daprd must be the Platform-pinned runtime for both the live fleet and the retained preflight."""
+    qualified = ledger.get("qualifiedToolchain")
+    observed = {
+        "pin": pinned_sha256,
+        "ledgerPin": qualified.get("linuxAmd64DaprdSha256") if isinstance(qualified, dict) else None,
+        "qualified": qualified.get("runtimeSha256") if isinstance(qualified, dict) else None,
+        "isolated": (ledger.get("isolatedRuntime") or {}).get("runtimeSha256"),
+        "retainedPreflight": (ledger.get("retainedPreflightRuntime") or {}).get("runtimeSha256"),
+    }
+    if any(value != pinned_sha256 for value in observed.values()):
+        raise ValueError("Canonical gate did not execute the Platform-qualified Dapr runtime: " + json.dumps(observed, sort_keys=True))
+
+
+def require_complete_gate(artifacts, pinned_runtime_sha256):
     """Accept only the complete result emitted by the owning canonical verifier."""
     gate = artifacts / "gate"
     ledger = json.loads((gate / "ledger.json").read_text())
@@ -225,6 +248,7 @@ def require_complete_gate(artifacts):
         )
     ):
         raise ValueError("Canonical public producer qualification is missing")
+    require_qualified_runtime(ledger, pinned_runtime_sha256)
     return ledger
 
 
@@ -247,7 +271,7 @@ def main():
         print("Bootstrap validated; parity remains incomplete.")
         return
     subprocess.run(command, env=environment, check=True)
-    require_complete_gate(artifacts)
+    require_complete_gate(artifacts, toolchain_runtime_sha256(record["platformRoot"]))
     if snapshot.origin_files(Path(record["platformOrigin"])) != record["platformSourceFiles"]:
         raise ValueError("Canonical Platform inputs changed after bootstrap")
     require_unchanged_coordinators(record["coordinatorSha256"])

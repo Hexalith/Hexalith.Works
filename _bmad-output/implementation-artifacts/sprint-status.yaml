@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-22 (Story 4.9 code review round 2: 14 patch action items open; back to in-progress)
+# last_updated: 2026-10-22 (Story 4.9 review round 2: all 15 patch items implemented; EventStore 3.126.1 defect aa2e4e323 fixed uncommitted in references/Hexalith.EventStore and verified; full gate awaits a published producer; stays in-progress)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system

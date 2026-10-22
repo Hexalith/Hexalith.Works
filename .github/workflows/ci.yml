@@ -21,14 +21,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
+      dapr-cli: ${{ steps.pins.outputs.dapr-cli }}
       dapr-runtime: ${{ steps.pins.outputs.dapr-runtime }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: false
           persist-credentials: false
-      - name: Initialize root Platform toolchain owner
-        run: git submodule update --init -- references/Hexalith.Platform
+      # Platform derives the Works proof toolchain from the root Builds catalog's Dapr pins.
+      - name: Initialize root Platform toolchain owner and Builds version authority
+        run: git submodule update --init -- references/Hexalith.Builds references/Hexalith.Platform
       - name: Read Platform-owned toolchain
         id: pins
         run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
@@ -92,6 +94,7 @@ jobs:
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
+      dapr-version: ${{ needs.platform-toolchain.outputs.dapr-cli }}
       dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}
       build-timeout-minutes: 60
       run-consumer-validation: true

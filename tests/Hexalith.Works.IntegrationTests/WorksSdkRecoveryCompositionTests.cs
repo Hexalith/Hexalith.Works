@@ -126,28 +126,45 @@ public sealed class WorksSdkRecoveryCompositionTests
         exception.Message.ShouldContain("absolute Parties gateway address");
     }
 
-    /// <summary>The explicitly configured command gateway also supplies Parties identity queries.</summary>
-    [Fact]
-    public async Task CommandGatewaySuppliesPartiesAddress()
+    /// <summary>
+    /// The explicitly configured command gateway supplies Parties identity queries when the Works override is
+    /// absent or blank, and a non-blank Works override takes precedence over it.
+    /// </summary>
+    /// <param name="partiesOverride">The Works Parties override, or <see langword="null"/> when absent.</param>
+    /// <param name="expected">The effective Parties client base address.</param>
+    [Theory]
+    [InlineData(null, "https://gateway.example.invalid")]
+    [InlineData("", "https://gateway.example.invalid")]
+    [InlineData(" ", "https://gateway.example.invalid")]
+    [InlineData("https://parties.example.invalid", "https://parties.example.invalid")]
+    public async Task CommandGatewaySuppliesPartiesAddress(string? partiesOverride, string expected)
     {
-        await using var app = WorksHost.Build(["--EventStore:CommandGateway:BaseAddress=https://gateway.example.invalid"]);
+        List<string> settings = ["--EventStore:CommandGateway:BaseAddress=https://gateway.example.invalid"];
+        if (partiesOverride is not null) settings.Add($"--Works:Query:PartiesGatewayBaseAddress={partiesOverride}");
+        await using var app = WorksHost.Build([.. settings]);
+        // Resolving the validated options runs the same validation that ValidateOnStart applies at startup.
+        Should.NotThrow(() => app.Services.GetRequiredService<IOptions<Hexalith.Works.Queries.WorksQueryOptions>>().Value);
         using var scope = app.Services.CreateScope();
         scope.ServiceProvider.GetRequiredService<Hexalith.Parties.Client.Abstractions.IPartiesIdentityClient>().ShouldNotBeNull();
         app.Services.GetRequiredService<IHttpClientFactory>().CreateClient("IPartiesIdentityClient").BaseAddress
-            .ShouldBe(new Uri("https://gateway.example.invalid"));
+            .ShouldBe(new Uri(expected));
     }
 
-    /// <summary>Invalid page budgets and projection parking limits fail startup before recovery runs.</summary>
+    /// <summary>Invalid page budgets and projection parking limits fail startup, naming the violated budget, before recovery runs.</summary>
+    /// <param name="key">The configuration key carrying the invalid budget.</param>
+    /// <param name="value">The invalid budget value.</param>
+    /// <param name="violation">The validation message that names the violated budget.</param>
     [Theory]
-    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "0")]
-    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "-1")]
-    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "0")]
-    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "-1")]
-    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "0")]
-    public async Task InvalidRecoveryBudgetsRefuseStartup(string key, string value)
+    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "0", "The stream page budget must be positive.")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "-1", "The stream page budget must be positive.")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "0", "The stream page budget must be positive.")]
+    [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "-1", "The stream page budget must be positive.")]
+    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "0", "MaxUndecodableEventDispatchesBeforeParking must be positive.")]
+    public async Task InvalidRecoveryBudgetsRefuseStartup(string key, string value, string violation)
     {
         await using var app = WorksHost.Build([$"--{key}={value}", "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"]);
-        await Should.ThrowAsync<OptionsValidationException>(() => app.StartAsync(TestContext.Current.CancellationToken));
+        OptionsValidationException refused = await Should.ThrowAsync<OptionsValidationException>(() => app.StartAsync(TestContext.Current.CancellationToken));
+        refused.Failures.ShouldContain(violation);
     }
 
     /// <summary>The historical alias keeps its documented precedence over the aggregate budget.</summary>

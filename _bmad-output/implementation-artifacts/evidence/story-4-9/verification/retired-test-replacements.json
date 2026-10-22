@@ -795,6 +795,58 @@
         "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
         "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
       ]
+    },
+    {
+      "retiredFile": "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs",
+      "retiredMethodsOnly": [
+        "Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled"
+      ],
+      "retiredDurableBranchesOnly": {
+        "Restart_recovers_checkpoint_and_rejects_conflicting_redelivery": [
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+          "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart"
+        ],
+        "NamedOwnerSequenceGapKeepsDurableReadinessDegradedUntilMissingDeliveryConverges": [
+          "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+        ],
+        "ConcurrentNamedDeliveriesForTwoAggregatesSurviveRebuildPromotionRestartAndRedelivery": [
+          "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+        ],
+        "OrdinaryDeliveryOnAnotherAggregatePreservesTerminalParkingAndDegradedQueries": [
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+        ],
+        "ConflictingSourceSequenceAtNewEnvelopePositionIsDurablyParkedAcrossRestart": [
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+          "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart"
+        ],
+        "Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled": [
+          "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+          "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+          "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+        ]
+      },
+      "replacementPhases": {
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": [
+          "platform-named-redelivery-capture-through-commit-complete-family",
+          "platform-named-conflict-durable-quarantine-with-unchanged-family",
+          "platform-initial-projection-convergence",
+          "complete-restore-retained-host-query-and-receipt-replay"
+        ],
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": [
+          "platform-focused-projection-rebuild"
+        ],
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": [
+          "platform-historical-restart-replay-and-family"
+        ]
+      },
+      "reason": "Story 4.9 review round 2, decision (a), 2026-10-22: the six WORKS_SDK_DAPR_GRPC_ENDPOINT durable Dapr/Redis branches lost their only runner when run-sdk-rollback-restore.sh was deleted and silently passed without a real store. They are superseded by the Platform live projection, recovery and restart lanes, which run against the actual Platform-composed Dapr Redis state store and persist named phases. The five methods keep their deterministic in-memory bodies (same coordinator, handler, restart-by-new-coordinator and conflict/parking assertions); only the env-gated DaprReadModelStore branches and the durable-only fact are retired.",
+      "replacementTests": [
+        "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+        "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart"
+      ]
     }
   ],
   "executedReplacementEvidence": {
@@ -912,7 +964,7 @@
     "postGateStatus": "passed-disposable-synthetic-parity-and-rollback",
     "ciGateStatus": "passed-disposable-synthetic-parity-and-rollback",
     "replacementMethods": 28,
-    "retiredGroups": 35,
+    "retiredGroups": 36,
     "freshOrdinaryXml": [
       "/tmp/story49-corrections-integration-all.xml",
       "/tmp/story49-corrections-architecture-all.xml"

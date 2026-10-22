@@ -52,12 +52,10 @@ internal static class WorkItemSharedRebuildManifestBuilder
             var workItemId = new WorkItemId(history.AggregateId);
             string correlationId = WorkItemProjectionEventDecoder.CorrelationIdOf(history.Events);
             var decodedPayloads = new List<IEventPayload>();
-            foreach (ProjectionEventDto? dto in history.Events)
+            // ValidateHistory has already refused null, gapped or reordered envelopes.
+            foreach (ProjectionEventDto dto in history.Events)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (dto is null)
-                    throw new InvalidOperationException("The Works runtime history contains a null envelope.");
-
                 WorkItemProjectionEventDecodeResult decoded = WorkItemProjectionEventDecoder.Decode(
                     dto,
                     tenantId,
@@ -83,18 +81,16 @@ internal static class WorkItemSharedRebuildManifestBuilder
                 decodedPayloads.Add(safePayload);
             }
 
+            IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(decodedPayloads);
+            if (pending.Count > 0)
             {
-                IReadOnlyList<PendingDateAwait> pending = PendingDateAwaitProjection.PendingDateAwaits(decodedPayloads);
-                if (pending.Count > 0)
-                {
-                    pendingEntries.Add(history.AggregateId, pending);
-                }
+                pendingEntries.Add(history.AggregateId, pending);
+            }
 
-                if (decodedPayloads.OfType<WorkItemSuspended>().Any(static suspended =>
-                        suspended.AwaitConditions.Any(static condition => condition.Kind == AwaitConditionKind.DateReached)))
-                {
-                    pendingLastSequences.Add(history.AggregateId, history.Events[^1].SequenceNumber);
-                }
+            if (decodedPayloads.OfType<WorkItemSuspended>().Any(static suspended =>
+                    suspended.AwaitConditions.Any(static condition => condition.Kind == AwaitConditionKind.DateReached)))
+            {
+                pendingLastSequences.Add(history.AggregateId, history.Events[^1].SequenceNumber);
             }
         }
 
@@ -138,47 +134,44 @@ internal static class WorkItemSharedRebuildManifestBuilder
             MemberWorkItemIds = [.. members.OrderBy(static id => id, StringComparer.Ordinal)],
         };
 
+        List<ReadModelBatchOperation> generationOperations =
+        [
+            ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimeQueueKey,
+                WorksRuntimeDocument.From(index),
+                ReadModelBatchConcurrency.LastWrite),
+            ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimePendingDateKey,
+                WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex
+                {
+                    Entries = pendingEntries,
+                    LastSequences = pendingLastSequences,
+                }),
+                ReadModelBatchConcurrency.LastWrite),
+            ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimeTopologyKey,
+                WorksRuntimeDocument.From(new WorksRuntimeTopology(relationships.ChildrenByParent())),
+                ReadModelBatchConcurrency.LastWrite),
+        ];
+
+        foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories.OrderBy(static item => item.AggregateId, StringComparer.Ordinal))
         {
-            List<ReadModelBatchOperation> generationOperations =
-            [
-                ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimeQueueKey,
-                    WorksRuntimeDocument.From(index),
-                    ReadModelBatchConcurrency.LastWrite),
-                ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimePendingDateKey,
-                    WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex
-                    {
-                        Entries = pendingEntries,
-                        LastSequences = pendingLastSequences,
-                    }),
-                    ReadModelBatchConcurrency.LastWrite),
-                ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimeTopologyKey,
-                    WorksRuntimeDocument.From(new WorksRuntimeTopology(relationships.ChildrenByParent())),
-                    ReadModelBatchConcurrency.LastWrite),
-            ];
-
-            foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories.OrderBy(static item => item.AggregateId, StringComparer.Ordinal))
-            {
-                generationOperations.AddRange(WorkItemRuntimeHistoryStore.CreateOperations(history));
-                generationOperations.Add(ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimeParkingKey(history.AggregateId),
-                    WorksRuntimeDocument.From(new WorkItemProjectionParking()),
-                    ReadModelBatchConcurrency.LastWrite));
-            }
-
-            foreach ((string aggregateId, WorkItemRollUp rollUp) in rollUps.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
-            {
-                generationOperations.Add(ReadModelBatchOperation.Write(
-                    WorksReadModelKeys.RuntimeRollUpKey(aggregateId),
-                    WorksRuntimeDocument.From(rollUp),
-                    ReadModelBatchConcurrency.LastWrite));
-            }
-
-            return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, generationOperations);
+            generationOperations.AddRange(WorkItemRuntimeHistoryStore.CreateOperations(history));
+            generationOperations.Add(ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimeParkingKey(history.AggregateId),
+                WorksRuntimeDocument.From(new WorkItemProjectionParking()),
+                ReadModelBatchConcurrency.LastWrite));
         }
 
+        foreach ((string aggregateId, WorkItemRollUp rollUp) in rollUps.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+        {
+            generationOperations.Add(ReadModelBatchOperation.Write(
+                WorksReadModelKeys.RuntimeRollUpKey(aggregateId),
+                WorksRuntimeDocument.From(rollUp),
+                ReadModelBatchConcurrency.LastWrite));
+        }
+
+        return new DomainProjectionRebuildPlan(WorksReadModelKeys.StateStoreName, generationOperations);
     }
 
     private static void ValidateHistory(WorkItemSharedRebuildAggregateHistory history)

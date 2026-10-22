@@ -83,6 +83,9 @@ internal static class WorksDomainAdapters
         return services;
     }
 
+    // A blank Works override is absent, matching the recovery gateway's handling of the same command-gateway key.
     private static string? PartiesGatewayAddress(WorksQueryOptions options, IConfiguration configuration)
-        => options.PartiesGatewayBaseAddress ?? configuration["EventStore:CommandGateway:BaseAddress"];
+        => !string.IsNullOrWhiteSpace(options.PartiesGatewayBaseAddress) ? options.PartiesGatewayBaseAddress
+            : !string.IsNullOrWhiteSpace(configuration["EventStore:CommandGateway:BaseAddress"]) ? configuration["EventStore:CommandGateway:BaseAddress"]
+            : null;
 }
