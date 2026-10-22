@@ -1730,3 +1730,13 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Define and document the Parties service-bearer rotation boundary.
   evidence: R3B10: pre-cutover and current typed clients capture IOptions.Value headers; in-process secret changes do not refresh authority. Document/rehearse restart with replacement authority or separately specify/test a refreshable provider.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary.md, round 2 (2026-10-22)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Prove no duplicate MSBuild nodes across transitive external reference chains (unverified medium).
+  evidence: `P0_SolutionReferencesKeepOneGlobalPropertySetPerWorksProject` checks only first-hop ProjectReference global properties; hosted run 39674116771 and parallel local Release/Debug builds pass, but the original failure was intermittent. Settle with a graph-build or binlog node-identity assertion over Release and Debug solution builds.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Filter linked-fixture build outputs by path relative to each owning root.
+  evidence: Pre-existing `linked_fixture_snapshot` (`references/Hexalith.Platform/eng/verify_works_host.py:953`) tests `{"bin","obj"}` against absolute `path.parts`; a Works root below a `bin` or `obj` directory would drop every Identity/Composition/Parties source from the binding.
