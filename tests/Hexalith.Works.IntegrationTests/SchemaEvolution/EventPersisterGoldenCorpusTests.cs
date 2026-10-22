@@ -9,6 +9,8 @@ using Hexalith.EventStore.Contracts.Results;
 using Hexalith.EventStore.Contracts.Serialization;
 using Hexalith.EventStore.Server.Events;
 using Hexalith.EventStore.Testing.Fakes;
+using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Events.Rejections;
 
 using Microsoft.Extensions.Logging;
 
@@ -42,10 +44,56 @@ public sealed class EventPersisterGoldenCorpusTests
             .ToArray();
 
         catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
+        GoldenCorpusFiles.SourceFileNames("EventPersisterGolden").ShouldBe(
+            catalog.Keys.Order(StringComparer.Ordinal),
+            ignoreOrder: false,
+            customMessage: "Exact-corpus source filenames must match the catalog even when stale copied fixtures remain.");
         fixtures.ShouldBe(
             catalog.Keys.Order(StringComparer.Ordinal),
             ignoreOrder: false,
             customMessage: "Exact-corpus filenames must match the frozen v1 event catalog in both directions.");
+    }
+
+    [Fact]
+    public void CreatedFixtureFreezesNestedOptionalValues()
+    {
+        byte[] fixture = File.ReadAllBytes(Path.Combine(GoldenDirectory, "WorkItemCreated.v1.json"));
+        WorkItemCreated created = JsonSerializer.Deserialize<WorkItemCreated>(fixture, EventStorePayloadSerialization.Options)
+            .ShouldNotBeNull();
+
+        created.Obligation.Reference.ShouldNotBeNull().Value.ShouldBe("expectation-ref-001");
+        created.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(13m);
+        created.InitialEffort.ShouldNotBeNull().Unit.Value.ShouldBe("point");
+        created.InitialEffort.ShouldNotBeNull().Done.ShouldBe(0m);
+        created.InitialEffort.ShouldNotBeNull().Remaining.ShouldBe(13m);
+        created.ConversationCorrelationId.ShouldNotBeNull().Value.ShouldBe("conversation-456");
+    }
+
+    [Fact]
+    public void CrossTenantRejectionFixtureNamesAForeignParent()
+    {
+        byte[] fixture = File.ReadAllBytes(Path.Combine(GoldenDirectory, "WorkItemCannotReferenceParentFromAnotherTenant.v1.json"));
+        WorkItemCannotReferenceParentFromAnotherTenant rejected = JsonSerializer
+            .Deserialize<WorkItemCannotReferenceParentFromAnotherTenant>(fixture, EventStorePayloadSerialization.Options)
+            .ShouldNotBeNull();
+
+        rejected.TenantId.Value.ShouldBe("tenant-alpha");
+        rejected.Parent.TenantId.Value.ShouldBe("tenant-beta");
+        rejected.Parent.TenantId.ShouldNotBe(rejected.TenantId);
+    }
+
+    [Fact]
+    public void StreamFixturesMatchEveryExactWriterPayload()
+    {
+        foreach ((string fileName, IEventPayload payload) in CatalogByFileName())
+        {
+            byte[] fixture = File.ReadAllBytes(Path.Combine(GoldenDirectory, fileName));
+            byte[] streamPayload = Story48Streams.Page(WorkItemV1Catalog.Tenant.Value, WorkItemV1Catalog.Item.Value, payload)
+                .Events.ShouldHaveSingleItem().Payload;
+
+            streamPayload.ShouldBe(fixture, $"{fileName} stream evidence must use the frozen EventStore writer bytes.");
+            JsonSerializer.Deserialize(streamPayload, payload.GetType(), EventStorePayloadSerialization.Options).ShouldBe(payload);
+        }
     }
 
     [Fact]

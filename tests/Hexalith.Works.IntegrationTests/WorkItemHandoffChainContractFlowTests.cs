@@ -10,9 +10,10 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// Story 4.2 AC #3 (end-to-end) — a human → system → human hand-off chain survives the real write path
-/// (<see cref="WorkItemAggregate"/> command handling) → concrete <see cref="JsonSerializerDefaults.Web"/>
-/// serialization → independent replay. Where <see cref="UniformExecutorBindingLifecycleFlowTests"/>
+/// Story 4.2 AC #3 — a human → system → human hand-off chain survives aggregate command handling,
+/// camelCase <see cref="JsonSerializerDefaults.Web"/> reader-compatibility serialization, and independent
+/// replay. Exact EventStore writer bytes are covered by <see cref="SchemaEvolution.EventPersisterGoldenCorpusTests"/>.
+/// Where <see cref="UniformExecutorBindingLifecycleFlowTests"/>
 /// proves a single reassignment is authoritative through claim/complete, this slice proves the
 /// <em>ordered raw-act history</em> specifically: three contiguous <see cref="WorkItemAssigned"/> events,
 /// each with its own binding, cross the wire in order and are not collapsed; the latest binding is what

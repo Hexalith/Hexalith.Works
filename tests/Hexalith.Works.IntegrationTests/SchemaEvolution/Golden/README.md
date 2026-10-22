@@ -20,3 +20,9 @@ Rules:
 types, deserializes each frozen file, round-trips it, and injects an unknown field to prove additive
 tolerance. To add a new event to the compatibility corpus, serialize a representative instance with
 `new JsonSerializerOptions(JsonSerializerDefaults.Web)` and freeze the output here.
+
+Membership checks inspect both repository source and copied test output. A repository checkout must
+be available above the test output or working directory; missing source is an error, even if copied
+fixtures remain. On 2026-10-22, the cross-tenant rejection sample's erroneous same-tenant parent was
+corrected to `tenant-beta`. Its contract shape is unchanged, and all other historical Web fixtures,
+including the rich Created sample, remain unchanged.

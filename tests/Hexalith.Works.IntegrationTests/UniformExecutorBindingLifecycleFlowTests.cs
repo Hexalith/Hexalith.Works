@@ -12,16 +12,17 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
-/// AC #2–#4 (end-to-end) — every executor (system agent, internal user, external party) is bound through
+/// AC #2–#4 — every executor (system agent, internal user, external party) is bound through
 /// the one <see cref="ExecutorBinding"/> shape, and the carried <see cref="AuthorityLevel"/> survives the
-/// real write path (<see cref="WorkItemAggregate"/> command handling) → concrete
-/// <see cref="JsonSerializerDefaults.Web"/> serialization → independent replay
+/// aggregate command handling → camelCase <see cref="JsonSerializerDefaults.Web"/> reader-compatibility
+/// serialization → independent replay
 /// <see cref="WorkItemState"/> → <see cref="WorkItemExecutorBindingView"/> projection. Where
 /// <see cref="WorkItemLifecycleContractFlowTests"/> proves the generic lifecycle survives serialization
 /// with a single binding, this slice proves the executor-binding data specifically: all three
 /// representative executors flow through identical handlers, reassignment to a different authority is
 /// authoritative on replay, and the latest authority is what the read-model view exposes — with no
-/// executor-kind branch anywhere on the path.
+/// executor-kind branch anywhere on the path. Exact EventStore writer bytes are covered by
+/// <see cref="SchemaEvolution.EventPersisterGoldenCorpusTests"/>.
 /// </summary>
 public sealed class UniformExecutorBindingLifecycleFlowTests
 {

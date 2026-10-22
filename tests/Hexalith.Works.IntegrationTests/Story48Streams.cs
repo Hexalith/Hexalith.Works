@@ -6,11 +6,9 @@ using Hexalith.Works.Runtime;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Builds per-aggregate <see cref="StreamReadPage"/> fakes for Story 4.8 deterministic source/handler tests.</summary>
+/// <summary>Builds per-aggregate <see cref="StreamReadPage"/> fakes with options-free EventStore writer bytes.</summary>
 internal static class Story48Streams
 {
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
-
     /// <summary>A single, non-truncated per-aggregate page carrying the given events in order.</summary>
     public static StreamReadPage Page(string tenant, string aggregateId, params IEventPayload[] events)
         => PageAt(tenant, aggregateId, 1, isTruncated: false, events);
@@ -28,7 +26,7 @@ internal static class Story48Streams
             .. events.Select((value, index) => new StreamReadEvent(
                 firstSequence + index,
                 value.GetType().FullName!,
-                JsonSerializer.SerializeToUtf8Bytes(value, value.GetType(), s_web),
+                JsonSerializer.SerializeToUtf8Bytes(value, value.GetType()),
                 "json",
                 1,
                 $"message-{aggregateId}-{index}",

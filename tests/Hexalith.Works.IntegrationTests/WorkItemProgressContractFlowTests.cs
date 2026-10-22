@@ -54,7 +54,7 @@ public sealed class WorkItemProgressContractFlowTests
     [Fact]
     public void Partial_progress_round_trips_through_json_and_burns_down_without_completing()
     {
-        // AC #1/#2: a single sub-completion report survives concrete EventStore serialization and replays to
+        // AC #1/#2: a single sub-completion report survives camelCase Web reader-compatibility serialization and replays to
         // an accumulated Done / derived Remaining while staying InProgress — the non-completing burn-down path.
         var write = new WorkItemState();
         var replay = new WorkItemState();

@@ -7,7 +7,7 @@
   },
   "parent": {
     "tenantId": {
-      "value": "tenant-alpha"
+      "value": "tenant-beta"
     },
     "workItemId": {
       "value": "parent-001"

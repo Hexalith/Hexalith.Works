@@ -503,7 +503,8 @@ location: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlow
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: medium
 reason: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs:13-14 and UniformExecutorBindingLifecycleFlowTests.cs:17-18 both say "the real write path ... -> concrete JsonSerializerDefaults.Web serialization"; WorkItemProgressContractFlowTests.cs:57 says the event "survives concrete EventStore serialization" while serializing with camelCase JsonOptions. EventPersister writes options-free PascalCase, so the repository now asserts two different things about the same persisted form. These files sit outside the intent's named sweep list, so the omission is deliberate for this story.
-status: open
+status: done 2026-10-22
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
 
 ### DW-62: The frozen WorkItemCannotReferenceParentFromAnotherTenant catalog sample carries a same-tenant parent, so its evidence contradicts the rejection it names.
 origin: spec-deferred fcb2bd62083e
@@ -511,7 +512,8 @@ location: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: low
 reason: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36,81 builds Parent as new ParentWorkItemReference(Tenant, new WorkItemId("parent-001")) with Tenant = "tenant-alpha", the event's own tenant. EnvelopeCanonicalSequencingTests sources "tenant-beta" from its own helper instead. WorkItemV1Catalog is untouched by this change, but both new corpora now freeze those bytes, so correcting the sample later means regenerating two fixtures.
-status: open
+status: done 2026-10-22
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
 
 ### DW-63: Nothing binds the EventStore revision quoted in the maintained docs to the actual checked-out submodule gitlink, so the corrected pin can silently rot on the next bump.
 origin: spec-deferred 7a41b5161f32
@@ -527,7 +529,8 @@ location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGo
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: medium
 reason: All 23 EventPersisterGolden fixtures are produced from WorkItemV1Catalog samples, and those samples leave InitialEffort, Obligation.Reference, and ConversationCorrelationId null on every event that can carry them; the camelCase Golden/WorkItemCreated.v1.json does freeze all three. Those nested contract records therefore have no frozen writer-side form anywhere, so a property rename or shape change inside them cannot turn the exact corpus red. Closing it means changing catalog sample values, which regenerates fixtures in both corpora -- the same coupling DW-62 records.
-status: open
+status: done 2026-10-22
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
 
 ### DW-65: Story48Streams serializes stand-in EventStore stream bytes with camelCase Web options, the same contradiction DW-61 records for three contract-flow tests but at a helper DW-61 does not name.
 origin: spec-deferred e4191a19474f
@@ -535,7 +538,8 @@ location: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: low
 reason: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12,31 builds StreamReadEvent.Payload with new JsonSerializerOptions(JsonSerializerDefaults.Web) while standing in for real per-aggregate stream pages, and feeds the Story 4.8 recovery sources that decode through WorksEventDecoder. EventPersister writes options-free PascalCase. It is not currently an escape hatch, because the shared decoder is separately pinned against PascalCase bytes by WorksDomainEventProcessorTests, but the fixture now contradicts the persisted form the rest of this bundle established. Outside the intent's named sweep list and outside DW-61's three files.
-status: open
+status: done 2026-10-22
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
 
 ### DW-66: Both corpus membership gates enumerate the copied build output, so a fixture deleted from source survives in bin/ and membership still passes on an incremental build.
 origin: spec-deferred 8bfcda99d79e
@@ -543,7 +547,8 @@ location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGo
 source_spec: `spec-envelope-persistence-proof-hardening.md`
 severity: low
 reason: EventPersisterGoldenCorpusTests.cs:32 and SchemaEvolutionGoldenCorpusTests.cs:26 resolve their corpus directory under AppContext.BaseDirectory and enumerate it with SearchOption.AllDirectories, while Hexalith.Works.IntegrationTests.csproj copies both directories with CopyToOutputDirectory PreserveNewest, which never prunes. A fixture deleted from source therefore still satisfies the bidirectional set-equality check until a clean build. The gate fails closed only in CI. Pre-existing for the Web corpus; inherited by the new exact corpus.
-status: open
+status: done 2026-10-22
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
 
 ### DW-67: Pre-change ineligible index state can lack a durable accepted-sequence watermark after the old index-first partial-failure window.
 

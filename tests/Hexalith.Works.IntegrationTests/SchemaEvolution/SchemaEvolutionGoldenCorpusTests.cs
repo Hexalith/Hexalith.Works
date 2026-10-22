@@ -18,7 +18,7 @@ namespace Hexalith.Works.IntegrationTests.SchemaEvolution;
 /// fixtures, not the options-free PascalCase bytes EventPersister writes; the exact writer corpus lives in
 /// <see cref="EventPersisterGoldenCorpusTests"/>. The polymorphic-resolution capability is proven separately in
 /// <see cref="WorkItemSerializationRegistrationTests"/>. Line endings are normalized before reading.
-/// Pure Tier-1 (reads copied-to-output fixtures only).
+/// Pure Tier-1; membership also checks source to reject stale copied fixtures on incremental builds.
 /// </summary>
 public sealed class SchemaEvolutionGoldenCorpusTests
 {
@@ -54,6 +54,10 @@ public sealed class SchemaEvolutionGoldenCorpusTests
             .ToArray();
 
         catalog.Count.ShouldBe(25, "The frozen v1 catalog must contain 15 success and 10 rejection event payloads.");
+        GoldenCorpusFiles.SourceFileNames("Golden").ShouldBe(
+            catalog.Keys.Order(StringComparer.Ordinal),
+            ignoreOrder: false,
+            customMessage: "Web-corpus source filenames must match the catalog even when stale copied fixtures remain.");
         fixtures.ShouldBe(
             catalog.Keys.Order(StringComparer.Ordinal),
             ignoreOrder: false,

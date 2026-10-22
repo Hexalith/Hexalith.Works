@@ -2,6 +2,7 @@ using Hexalith.PolymorphicSerializations;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Events.Rejections;
+using Hexalith.Works.Contracts.Ports;
 using Hexalith.Works.Contracts.ValueObjects;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -31,9 +32,14 @@ internal static class WorkItemV1Catalog
     internal static ExecutorBinding Binding { get; } =
         new(new PartyId("party-123"), Channel.Mcp, AuthorityLevel.Coordinate);
 
-    internal static Obligation Obligation { get; } = new("Prepare the first tenant-scoped work item");
+    internal static Obligation Obligation { get; } =
+        new("Prepare the first tenant-scoped work item", new ExpectationReference("expectation-ref-001"));
 
     internal static ParentWorkItemReference Parent { get; } = new(Tenant, new WorkItemId("parent-001"));
+
+    /// <summary>A foreign parent used only by the cross-tenant rejection sample.</summary>
+    internal static ParentWorkItemReference ForeignParent { get; } =
+        new(new TenantId("tenant-beta"), new WorkItemId("parent-001"));
 
     internal static WorkItemId Child { get; } = new("child-001");
 
@@ -45,7 +51,8 @@ internal static class WorkItemV1Catalog
     internal static IReadOnlyList<Polymorphic> All =>
     [
         // 15 success events.
-        new WorkItemCreated("work-001", 1, Tenant, Item, Obligation),
+        new WorkItemCreated("work-001", 1, Tenant, Item, Obligation,
+            InitialEffort: new WorkItemEffort(13m, new Unit("point")), ConversationCorrelationId: Conversation),
         new WorkItemAssigned("work-001", 2, Tenant, Item, Binding),
         new WorkItemQueued("work-001", 3, Tenant, Item),
         new WorkItemClaimed("work-001", 4, Tenant, Item, Binding),
@@ -84,7 +91,7 @@ internal static class WorkItemV1Catalog
         new WorkItemReEstimateRejected(Tenant, Item, "Re-estimate unit must match the established effort unit."),
         new WorkItemInitialEffortRejected(Tenant, Item, 3m),
         new WorkItemCannotBeCreatedWithoutObligation(Tenant, Item),
-        new WorkItemCannotReferenceParentFromAnotherTenant(Tenant, Item, Parent),
+        new WorkItemCannotReferenceParentFromAnotherTenant(Tenant, Item, ForeignParent),
         new WorkItemCannotReferenceSecondParent(Tenant, Item, Parent, new ParentWorkItemReference(Tenant, new WorkItemId("parent-002"))),
         new WorkItemTreeCycleRejected(Tenant, Item, Parent, Item),
         new WorkItemTreeDepthExceeded(Tenant, Item, Parent, 32, 33),
