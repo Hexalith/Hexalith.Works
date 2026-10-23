@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Hexalith.EventStore.DomainService</id>
+    <version>3.126.1</version>
+    <authors>Hexalith Contributors</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/Hexalith/Hexalith.EventStore</projectUrl>
+    <description>Domain-service host SDK for the Hexalith event store. A domain module references this package and writes only its domain code plus a two-line host (AddEventStoreDomainService / UseEventStoreDomainService) — all hosting, DAPR-endpoint, observability, and discovery boilerplate is provided here.</description>
+    <tags>eventsourcing dapr cqrs eventstore dotnet</tags>
+    <repository type="git" url="https://github.com/Hexalith/Hexalith.EventStore" commit="1748b16b11fb63b885dfa2fd4a9c7a420ea103a9" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="Hexalith.EventStore.Client" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Hexalith.EventStore.ServiceDefaults" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Dapr.Actors.AspNetCore" version="1.18.10" exclude="Build,Analyzers" />
+        <dependency id="Dapr.AspNetCore" version="1.18.10" exclude="Build,Analyzers" />
+        <dependency id="ByteAether.Ulid" version="1.4.2" exclude="Build,Analyzers" />
+        <dependency id="Dapr.Actors" version="1.18.10" exclude="Build,Analyzers" />
+        <dependency id="Dapr.Client" version="1.18.10" exclude="Build,Analyzers" />
+        <dependency id="Hexalith.Commons.UniqueIds" version="2.30.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Authentication.JwtBearer" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http.Resilience" version="10.11.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.ServiceDiscovery" version="10.11.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.Abstractions" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.JsonWebTokens" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.Logging" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.Protocols" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.Protocols.OpenIdConnect" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.IdentityModel.Tokens" version="8.23.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry.Exporter.OpenTelemetryProtocol" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry.Extensions.Hosting" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry.Instrumentation.AspNetCore" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry.Instrumentation.Http" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="OpenTelemetry.Instrumentation.Runtime" version="1.20.0" exclude="Build,Analyzers" />
+        <dependency id="System.IdentityModel.Tokens.Jwt" version="8.23.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+    <frameworkReferences>
+      <group targetFramework="net10.0">
+        <frameworkReference name="Microsoft.AspNetCore.App" />
+      </group>
+    </frameworkReferences>
+  </metadata>
+</package>

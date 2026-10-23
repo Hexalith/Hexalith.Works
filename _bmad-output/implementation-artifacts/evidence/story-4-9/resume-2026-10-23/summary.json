@@ -1,0 +1,39 @@
+{
+  "status": "blocked-public-producer-qualification",
+  "checkedAt": "2026-10-23T08:45:54.056251+00:00",
+  "implementationChanged": false,
+  "latestStable": {
+    "Hexalith.EventStore.Client": "3.126.1",
+    "Hexalith.EventStore.DomainService": "3.126.1",
+    "Hexalith.EventStore.Aspire": "3.126.1"
+  },
+  "qualifierStatus": "refused",
+  "qualifierError": "Runtime SDK differs from published producer 1748b16b11fb63b885dfa2fd4a9c7a420ea103a9: Directory.Packages.props, src/Hexalith.EventStore.Admin.Server.Host/Middleware/AdminRequestBodySizeMiddleware.cs, src/Hexalith.EventStore.Admin.UI/Pages/Consistency.razor, src/Hexalith.EventStore.AppHost/Program.cs, src/Hexalith.EventStore.Aspire/HexalithEventStoreExtensions.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchImmutableRecord.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchParticipantProof.cs, src/Hexalith.EventStore.Client/Projections/ReadModelBatchTerminalFence.cs, src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs, src/Hexalith.EventStore.PayloadProtection/IInteractionOccurrenceKeyDelivery.cs, src/Hexalith.EventStore.PayloadProtection/IInteractionProtectionBindingSource.cs, src/Hexalith.EventStore.PayloadProtection/InteractionOccurrenceKeyDeliveryResult.cs, src/Hexalith.EventStore.PayloadProtection/InteractionOccurrenceKeyProvider.cs, src/Hexalith.EventStore.PayloadProtection/InteractionProtectionBindingProvider.cs, src/Hexalith.EventStore.PayloadProtection/InteractionProtectionErasureWitness.cs, src/Hexalith.EventStore.Server/Configuration/InteractionProtectionBindingServiceCollectionExtensions.cs, src/Hexalith.EventStore.Server/Security/GovernanceGuardAuthority.cs, src/Hexalith.EventStore.Server/Security/GuardedCellHistory.cs, src/Hexalith.EventStore.Server/Security/GuardedStateTransactionAuthority.cs, src/Hexalith.EventStore.Server/Security/IGovernanceGuardInstallation.cs, src/Hexalith.EventStore.Server/Security/IGuardedStateInstallation.cs, src/Hexalith.EventStore.Server/Security/IInteractionOccurrenceInstallation.cs, src/Hexalith.EventStore.Server/Security/IProtectionAnchorStore.cs, src/Hexalith.EventStore.Server/Security/IPublishedTrustRevocationEvidence.cs, src/Hexalith.EventStore.Server/Security/InteractionOccurrenceAuthority.cs, src/Hexalith.EventStore.Server/Security/ProtectionAnchorDisposition.cs, src/Hexalith.EventStore.Server/Security/ProtectionAnchorRecord.cs, src/Hexalith.EventStore.Server/Security/ProtectionCurrentAnchorJournal.cs, src/Hexalith.EventStore.Server/Security/PublishedTrustDeletionConsumptionAuthority.cs, src/Hexalith.EventStore.Testing/Fakes/TestServiceOverrides.cs, src/Hexalith.EventStore/Extensions/EventStoreActorCallbackEndpointMetadata.cs, src/Hexalith.EventStore/Extensions/EventStoreRateLimitPartition.cs, src/Hexalith.EventStore/Extensions/ServiceCollectionExtensions.cs, src/Hexalith.EventStore/Program.cs",
+  "checks": {
+    "worksTooling": {
+      "passed": 53,
+      "failed": 0
+    },
+    "bootstrapOnly": {
+      "exitCode": 0,
+      "parityComplete": false
+    },
+    "platformContractsDirect": {
+      "total": 102,
+      "failed": 3
+    },
+    "platformContractsEnvironmentOverride": {
+      "total": 102,
+      "failed": 3
+    },
+    "platformContractsIsolated": {
+      "passed": 102,
+      "failed": 0
+    }
+  },
+  "fullGateRun": false,
+  "ciParityRun": false,
+  "rollbackProvedForCurrentInputs": false,
+  "productionAdmitted": false,
+  "remaining": "Public producer containing the retained-seal fix, authorized producer adoption, fresh full gate then actual CI profile on unchanged inputs."
+}

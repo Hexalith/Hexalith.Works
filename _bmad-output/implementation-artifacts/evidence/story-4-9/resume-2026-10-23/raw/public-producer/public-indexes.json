@@ -1,0 +1,17 @@
+{
+  "Hexalith.EventStore.Client": {
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/index.json",
+    "latestStable": "3.126.1",
+    "sha256": "a406ae4f115f41a221a21fc84f24da6bf88d0497c153aabe53e162136ab73eaf"
+  },
+  "Hexalith.EventStore.DomainService": {
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/index.json",
+    "latestStable": "3.126.1",
+    "sha256": "9c0f11c70c8e2a4f0eeb79ec9e5801afaa1dfdb8258a61ef4f677a3864160128"
+  },
+  "Hexalith.EventStore.Aspire": {
+    "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/index.json",
+    "latestStable": "3.126.1",
+    "sha256": "a406ae4f115f41a221a21fc84f24da6bf88d0497c153aabe53e162136ab73eaf"
+  }
+}
