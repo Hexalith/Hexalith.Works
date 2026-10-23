@@ -1,3 +1,6 @@
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -7,6 +10,32 @@ public sealed class WorksPlatformHostingCompositionTests
 {
     private const string PlatformHook = "/platform/Hexalith.Platform.Works.Runtime.dll";
     private const string ProofHook = "/consumer/Hexalith.Works.IntegrationTests.dll";
+
+    /// <summary>Two runs with one configured parent resolve only their own mounted issuer child.</summary>
+    [Fact]
+    public void TrustCredentialsUseEachComposedSentryMount()
+    {
+        string parent = Path.Combine(Path.GetTempPath(), "works-trust-mount-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            for (int index = 0; index < 2; index++)
+            {
+                string child = Path.Combine(parent, "dapr-credentials-" + index);
+                Directory.CreateDirectory(child);
+                File.WriteAllText(Path.Combine(child, "issuer.key"), "run-" + index);
+                var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = [], DisableDashboard = true });
+                builder.Configuration["Dapr:Mtls:CertificateDirectory"] = parent;
+                builder.AddContainer("dapr-sentry", "not-started")
+                    .WithBindMount(child, "/var/run/dapr/credentials")
+                    .WithBindMount(parent, "/var/run/dapr/config", isReadOnly: true);
+                string credentials = WorksPlatformTrustChecks.CredentialDirectory(builder.Resources);
+                credentials.ShouldBe(child);
+                File.ReadAllText(Path.Combine(credentials, "issuer.key")).ShouldBe("run-" + index);
+            }
+            File.Exists(Path.Combine(parent, "issuer.key")).ShouldBeFalse();
+        }
+        finally { Directory.Delete(parent, recursive: true); }
+    }
 
     /// <summary>Platform's startup hook and hosting startup stay first; the proof is appended with each list separator.</summary>
     [Fact]

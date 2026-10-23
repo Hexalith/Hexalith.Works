@@ -32,15 +32,15 @@ internal static partial class WorksPlatformTrustChecks
 
     /// <summary>Requires server refusal of absent and foreign-CA client certificates and probe refusal of a wrong identity.</summary>
     /// <param name="app">The running owned topology.</param>
-    /// <param name="certificateDirectory">The owned Sentry trust anchors and issuer credentials.</param>
     /// <param name="sidecarResource">The Dapr CLI resource that owns the probed sidecar.</param>
     /// <param name="appId">The sidecar's Dapr application identity.</param>
     /// <param name="mismatchedAppId">Another application identity the probe must refuse to accept for this endpoint.</param>
     /// <param name="cancellationToken">The test cancellation token.</param>
     /// <returns>Evidence of the four handshakes.</returns>
-    internal static async Task<object> VerifyAsync(DistributedApplication app, string certificateDirectory, string sidecarResource,
+    internal static async Task<object> VerifyAsync(DistributedApplication app, string sidecarResource,
         string appId, string mismatchedAppId, CancellationToken cancellationToken)
     {
+        string certificateDirectory = CredentialDirectory(app.Services.GetRequiredService<DistributedApplicationModel>().Resources);
         int port = await InternalGrpcPortAsync(app, sidecarResource, cancellationToken).ConfigureAwait(false);
         using X509Certificate2 root = X509Certificate2.CreateFromPem(File.ReadAllText(Path.Combine(certificateDirectory, "ca.crt")));
         using X509Certificate2 issuer = X509Certificate2.CreateFromPem(File.ReadAllText(Path.Combine(certificateDirectory, "issuer.crt")));
@@ -89,6 +89,17 @@ internal static partial class WorksPlatformTrustChecks
             refusals = new { noClientCertificate = none.Failure, foreignCaClient = foreign.Failure, nameMismatch = mismatch.Failure },
             refusalAlertReasons = new { noClientCertificate = none.CertificateRefusalAlertReason, foreignCaClient = foreign.CertificateRefusalAlertReason },
         };
+    }
+
+    /// <summary>Resolves issuer material from the actual owned Sentry mount rather than its configured parent.</summary>
+    /// <param name="resources">The composed topology resources.</param>
+    /// <returns>The private credential child mounted by Sentry.</returns>
+    internal static string CredentialDirectory(IEnumerable<IResource> resources)
+    {
+        ArgumentNullException.ThrowIfNull(resources);
+        return resources.Single(resource => resource.Name == "dapr-sentry").Annotations.OfType<ContainerMountAnnotation>()
+            .Single(mount => mount.Target == "/var/run/dapr/credentials" && mount.Type == ContainerMountType.BindMount).Source
+            ?? throw new InvalidOperationException("The owned Sentry credential mount has no host source.");
     }
 
     private static string SpiffeId(string appId) => $"spiffe://{TrustDomain}/ns/{Namespace}/{appId}";

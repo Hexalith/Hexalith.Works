@@ -45,7 +45,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, gateway, sidecar, token) =>
         {
-            object trust = await WorksPlatformTrustChecks.VerifyAsync(app, isolation.CertificateDirectory!, "works-dapr-cli", "works", "eventstore", token).ConfigureAwait(false);
+            object trust = await WorksPlatformTrustChecks.VerifyAsync(app, "works-dapr-cli", "works", "eventstore", token).ConfigureAwait(false);
             ResourceEvent primary = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
             ResourceEvent secondary = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works-ha", token, token).ConfigureAwait(false);
             primary.ResourceId.ShouldNotBe(secondary.ResourceId);
@@ -133,7 +133,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
                 }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>
         {
-            AddIndependentReplica(builder, isolation.CertificateDirectory!);
+            AddIndependentReplica(builder);
             WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint,
                 [new ProcessSource(tenant, "work", item)]);
             foreach (ProjectResource host in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "works-ha"))
@@ -141,7 +141,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
     }
 
-    private static void AddIndependentReplica(IDistributedApplicationTestingBuilder builder, string certificateDirectory)
+    private static void AddIndependentReplica(IDistributedApplicationTestingBuilder builder)
     {
         ProjectResource primary = builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works");
         string platform = Environment.GetEnvironmentVariable("WORKS_PLATFORM_ROOT")!;
@@ -180,7 +180,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         DaprSelfHostedMtls.ConfigureSidecar(replica,
             replica.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar,
             builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-sentry")),
-            certificateDirectory,
+            WorksPlatformTrustChecks.CredentialDirectory(builder.Resources),
             builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-placement-mtls")),
             builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-scheduler-mtls")));
         replica.WaitFor(resources.StateStore).WithHttpHealthCheck("/ready");
