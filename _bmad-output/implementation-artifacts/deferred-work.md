@@ -1481,7 +1481,11 @@ These four items were reconfirmed on the current production code. They do not op
 ## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-15, pass 3)
 
 - `MaxOperations` (40,259) is only checked by a test that restates the formula; add a plan-count test over a few aggregates with forced multi-page histories asserting count ≤ `WorksRebuildOperationBound.MaxOperations` (medium).
+  status: done 2026-10-23
+  resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — Actual SDK plans with three multi-page owners and the 10,000-owner ceiling use 21 and 40,035 operations respectively, within the registered 40,259 limit; unique plan keys and exact history-page counts are asserted. The 10,000-owner case combines 10,032 history pages within the 16 MiB tenant budget; its independent queue-document staging limit is recorded below.
 - Unverified (medium if true): the 40,259-operation ceiling may exceed `MaxCanonicalManifestBytes` (8 × default) first; settle by sizing the canonical manifest of a maximal epoch plan.
+  status: done 2026-10-23
+  resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — A full 16 MiB tenant history produces a logical canonical manifest exceeding 8 MiB, but the real SDK stages it through bounded batches and commits every byte. The unchanged production limits are applied to the actual store, measured on every executed batch, and histories are compared after coordinator reconstruction. This qualifies the tenant-byte ceiling and the separately tested operation-count ceiling, not every possible projection shape.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Benchmark Works recovery catalog enumeration at supported large candidate populations (medium, unverified).
@@ -1533,7 +1537,11 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - `WorksSourceStreamReader` raw-field budget pre-check omits `ProtectionMetadata`; unverified medium — confirm upstream envelope bound.
 - Partitioned rebuild accepts ordinal gaps in the partition inventory; unverified medium — confirm SDK contiguity guarantee.
+  status: done 2026-10-23
+  resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — SDK dispatch validates all authoritative ordinals and omits partitions for erased owners. An executing erased ordinal zero/live ordinal one rebuild commits only the surviving authoritative history; requiring contiguous Works partition ordinals would reject this valid SDK contract.
 - Oversized single-aggregate history not rejected before finalize (`MaxItemBytes`); unverified low-medium.
+  status: done 2026-10-23
+  resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — Both partition preparation APIs already call the bounded history serializer. Executing tests admit exactly 4 MiB as 64 complete pages and refuse one byte beyond that limit before finalization; SDK accumulation also preserves the accepted inventory, creates no owner scratch keys and retains the previous readable generation on refusal.
 - `WorksDomainEventProcessor` ignores `ProcessSource.Validate` ArgumentException (possible endless redelivery); unverified medium.
 - `Directory.Packages.props` Contracts PackageVersion removal lacks `HexalithEventStoreFromSource` condition (possible NU1010); unverified medium — restore in mixed mode.
 - `Directory.Solution.targets` ignores `Targets`/`BuildProjectInSolution` metadata and may double-build; unverified low-medium — binlog.
@@ -1541,6 +1549,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src-only pass)
 
 - `FinalizePartitionsAsync` accepts an empty partition list; unverified medium — confirm the SDK never finalizes an empty inventory.
+  status: done 2026-10-23
+  resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — The shared manifest builder already refuses an empty candidate. Direct partition finalization and the real SDK lifecycle are tested; a cold coordinator observes the same committed generation, roll-up bytes and retained history after refusal.
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, tests/ integration pass)
 
@@ -1862,3 +1872,9 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 - source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-ingress-authority.md`
   summary: Retain shared SDK provider admission and cancellation-source lifetime until both the provider task and initiated cancellation callbacks terminate (medium).
   evidence: An isolated probe compiling the unchanged AuthoritativeStreamReadDeadline source at EventStore `6a0b6441f6d78a3007678a1d0ec336e9cb8ff961` admitted 20 providers while all 20 cancellation callbacks remained blocked, despite its sixteen task slots: each callback canceled its returned task before blocking, and the task-completion continuation released admission. The mechanism predates this consumer change; original Works authority resolution also leaves such callbacks running after provider-task completion. The five-item fix bounds outstanding provider tasks and query response completion, not completed-task callbacks. Correct the technical-module helper to release only after both lifetimes and retain its source accordingly; add an executing combined race control, then publish and qualify a corrected SDK producer before claiming callback-worker admission. Do not duplicate SDK mechanics in Works. Reproducer and output are retained in this spec's verification packet.
+
+## Deferred from: code review of spec-five-deferred-rebuild-admission.md (2026-10-23)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-rebuild-admission.md`
+  summary: Qualify Works tenant population against the SDK individual-document ceiling, or partition the queue document before claiming 10,000-owner staging capacity.
+  evidence: Executing review control: a valid 10,000-owner plan with 64-character IDs and 16 multi-page histories fits the tenant byte budget (10,347,008 bytes) and operation ceiling (40,035 of 40,259), but its queue document is 1,360,142 canonical value bytes. The actual SDK coordinator refuses staging at its independent 256 KiB mutation bound before any candidate write, preserving the seeded generation and exact prior roll-up bytes. This pre-existing document-size limit is separate from the successfully qualified 16 MiB history rebuild over four owners and the canonical batch cap; raising that cap does not partition a single document. A population contract or bounded queue-document partitioning requires a separate domain design. Regression: ActualRebuildPlansFitTheRegisteredOperationCeiling; verification packet in evidence/five-deferred-rebuild-admission-2026-10-23/manifest.json.
