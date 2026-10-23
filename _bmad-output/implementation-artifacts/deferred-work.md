@@ -750,18 +750,26 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Reject null-correlation `ConversationLinked` evidence in the what's-next projection.
+  status: done 2026-10-23
+  resolution: Existing descriptor rejection is confirmed by WorkItemConversationProjectionTests; the extended control proves a valid same-sequence link is still accepted after malformed evidence. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The separately committed Story 1.5 descriptor treats a null correlation as an accepted intentional no-op and can advance the source watermark for malformed evidence; Story 4.8 does not own that projection contract.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Validate persisted `ConversationLinked` identity before applying it to aggregate state.
+  status: done 2026-10-23
+  resolution: WorkItemState.Apply now refuses absent/unestablished or foreign tenant, item and aggregate identities before mutation. Unit and real SDK byte-replay controls preserve state and allow subsequent healthy replay. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The separately committed Story 1.5 replay overload validates the correlation only, so a foreign tenant/work-item/aggregate identity in corrupted persisted evidence could become authoritative and reject a later legitimate link.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add independent domain and tenant mismatch coverage for the Story 1.5 runtime envelope boundary.
+  status: done 2026-10-23
+  resolution: Existing independent domain, tenant and aggregate mismatch facts are retained and executed through the real EventStore aggregate dispatcher. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The pre-verified review found only aggregate-ID mismatch coverage; removing either the domain or tenant comparison currently leaves the focused adapter tests green.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add malformed required-field dispatch coverage for `LinkConversation`.
+  status: done 2026-10-23
+  resolution: Raw dispatch now exercises missing and explicit-null tenant, work-item and correlation fields, preserves supplied persisted state, and proves a later healthy command still emits the expected link. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The pre-verified review found no raw runtime-adapter case with missing/null tenant, work-item, or conversation correlation, so the separately committed Story 1.5 fail-closed guards can regress undetected.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
@@ -824,6 +832,8 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Complete reserved-tenant command-envelope hardening across all aggregate adapters.
+  status: done 2026-10-23
+  resolution: All fifteen command adapters are exercised against canonical and mixed-case reserved envelope tenants and reserved payload tenants with ordinary envelopes; ordinary kernel-result preservation controls remain active. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: Split from the 4,488-token remediation spec after review showed this independently shippable adapter-boundary bundle needs all-command reserved-envelope and retained reserved-payload tests.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`

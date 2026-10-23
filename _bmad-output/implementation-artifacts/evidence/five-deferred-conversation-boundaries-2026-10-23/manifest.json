@@ -1,0 +1,214 @@
+{
+  "baseline": "47c88ee6df42d5d3d2148419afd77a7a2959fade",
+  "scope": "Five conversation and reserved-tenant boundary deferred items; focused fallback does not qualify the full integration or live Platform gates.",
+  "sources": {
+    "src/Hexalith.Works.Contracts/State/WorkItemState.cs": "968aa3264cf92d770799c922b52e436ec8c6aaf7ec45af7af559ab2102cead7e",
+    "src/Hexalith.Works/WorkItemEventStoreAggregate.cs": "1814ec9516c52adc1fe409c71eeb6baacde4af47f47587869458806799e0b81b",
+    "src/Hexalith.Works.Projections/Strategies/WhatsNextPayloadDescriptor.cs": "b6a2d8b5e6922fee078d6a0e36e77ee691ce265e262ad5408db8a4502f017807",
+    "tests/Hexalith.Works.UnitTests/WorkItemLinkConversationTests.cs": "877b099d0c2a6dc50afe2ede3e2c5cb597374e0e6414ce699c7f58d08c287e40",
+    "tests/Hexalith.Works.UnitTests/WorkItemConversationProjectionTests.cs": "b06d79bc2304e532e9c72568406a8bb37aef14d83e8e7b933923a41964291a57",
+    "tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs": "316ae8c2418a79bb59f2bf1aa2ef917f9fed8096fe5c841b3a2f1e4216c52ba6",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs": "81a100ba49b8fd48262bc549fac97e65c1d8ba7df2a6b363f5c357b3114eb350",
+    "_bmad-output/implementation-artifacts/spec-five-deferred-conversation-boundaries.md": "1fcc90868ebaf32a5e0268df2148eac5ee1b390084865cabfc23899ea5b5e142",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "fa7c31180adb89f79d22a013a357004e0558e4814f5f2930466ad487293653f0",
+    "Directory.Build.props": "a9465074b79f3728baeab7b3aa8026ed1ec09a3d48157f63330d786541cc4daa",
+    "Directory.Build.targets": "670554404af97e8845698c8215a6eefab7d5a90f764667798e0d72f54bca9bd1",
+    "Directory.Packages.props": "a9613586311491d229b347d8b339efd22320e023665d13d6ccfe8fa45b2c536f",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7",
+    "xunit.runner.json": "3aaf68ea8927dce2c9ee5404088745084d709c1ff2d00bf41c90d9406d31b8a1",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-conversation-boundaries-2026-10-23/reproduce-focused.py": "f7361ac2179a5b848cac9d56ea8fd388d9d95e1a780f0bad2dd90d9736718c6a"
+  },
+  "assemblies": {
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll": "7d23a9d073b0fee67fcf039da7f8be9289d478a0154181d946e0939a4bbcd805",
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.Contracts.dll": "5796a4de991e5736e86f537fddab9664bc833710302d73c3680799f3836c8750",
+    "/tmp/works-five-conversation-reproduced/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "4657c9c5427e4753c6852647ee79596ec834401830ee6f12eca6578f43b06beb",
+    "/tmp/works-five-conversation-reproduced/bin/Debug/net10.0/Hexalith.Works.Contracts.dll": "5796a4de991e5736e86f537fddab9664bc833710302d73c3680799f3836c8750"
+  },
+  "source_dependency_gitlinks": [
+    "160000 commit 57e4ad57c5d62c2749dc4c76ffd03fdaa7e7ac22\treferences/Hexalith.Builds",
+    "160000 commit 2361e7b6760a7d0065c67661c2e95c2af94bdb4d\treferences/Hexalith.EventStore",
+    "160000 commit 3ace477aa61f6cd936bd9c06d99fd8fe59a205a8\treferences/Hexalith.Parties",
+    "160000 commit b816f59f24c5bd34638fd21b4b70d1b13d84dec4\treferences/Hexalith.Platform",
+    "160000 commit 221ac4592ba908ae7661ba1fa9e2d1fcc23baee0\treferences/Hexalith.PolymorphicSerializations"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "dotnet",
+        "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+        "-result-xml",
+        "/tmp/works-five-conversation-unit.xml"
+      ],
+      "exit": 0,
+      "totals": {
+        "total": 597,
+        "passed": 597,
+        "failed": 0,
+        "skipped": 0,
+        "not-run": 0
+      }
+    },
+    {
+      "argv": [
+        "python3",
+        "_bmad-output/implementation-artifacts/evidence/five-deferred-conversation-boundaries-2026-10-23/reproduce-focused.py",
+        "--work-root",
+        "/tmp/works-five-conversation-reproduced"
+      ],
+      "exit": 0,
+      "totals": {
+        "total": 167,
+        "passed": 167,
+        "failed": 0,
+        "skipped": 0,
+        "not-run": 0
+      }
+    },
+    {
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1"
+      ],
+      "exit": 1,
+      "result": "Pre-existing Platform.Composition compilation blocker; see complete retained log."
+    },
+    {
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "-m:1"
+      ],
+      "exit": 1,
+      "result": "Normal restore did not resolve existing Platform.Composition/Builds API mismatch and CA1062 errors."
+    },
+    {
+      "argv": [
+        "dotnet",
+        "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+        "-method",
+        "*ConversationReplay*",
+        "-result-xml",
+        "/tmp/works-five-conversation-red.xml"
+      ],
+      "exit": 1,
+      "totals": {
+        "total": 8,
+        "passed": 0,
+        "failed": 8,
+        "skipped": 0,
+        "not-run": 0
+      },
+      "result": "Original eight replay cases fail against baseline production code, before the guard."
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "commitlint",
+        "--",
+        "--edit",
+        "/tmp/works-five-conversation-commit.txt"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "core.whitespace=cr-at-eol",
+        "diff",
+        "--check"
+      ],
+      "exit": 0
+    }
+  ],
+  "focused_project_inputs": {
+    "Directory.Build.props": "<Project><Import Project=\"/home/administrator/projects/hexalith/works/Directory.Build.props\" /></Project>\n",
+    "Directory.Build.targets": "<Project><Import Project=\"/home/administrator/projects/hexalith/works/Directory.Build.targets\" /></Project>\n",
+    "Directory.Packages.props": "<Project><Import Project=\"/home/administrator/projects/hexalith/works/Directory.Packages.props\" /></Project>\n",
+    "FocusedAdapters.csproj": "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <IsPackable>false</IsPackable>\n    <OutputType>Exe</OutputType>\n    <IsTestProject>true</IsTestProject>\n    <AssemblyName>Hexalith.Works.IntegrationTests</AssemblyName>\n  </PropertyGroup>\n  <ItemGroup>\n    <PackageReference Include=\"xunit.v3\" />\n    <PackageReference Include=\"Shouldly\" />\n    <Using Include=\"Xunit\" />\n    <ProjectReference Include=\"/home/administrator/projects/hexalith/works/src/Hexalith.Works/Hexalith.Works.csproj\" />\n    <Compile Include=\"/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/LinkConversationRuntimeAdapterTests.cs\" Link=\"LinkConversationRuntimeAdapterTests.cs\" />\n    <Compile Include=\"/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs\" Link=\"WorkItemV1Catalog.cs\" />\n    <None Include=\"/home/administrator/projects/hexalith/works/xunit.runner.json\" Link=\"xunit.runner.json\" CopyToOutputDirectory=\"PreserveNewest\" />\n  </ItemGroup>\n</Project>\n"
+  },
+  "focused_commands": [
+    [
+      "dotnet",
+      "build",
+      "/tmp/works-five-conversation-reproduced/FocusedAdapters.csproj",
+      "--configuration",
+      "Debug",
+      "-m:1"
+    ],
+    [
+      "dotnet",
+      "/tmp/works-five-conversation-reproduced/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-result-xml",
+      "/tmp/works-five-conversation-reproduced/tests.xml"
+    ]
+  ],
+  "artifacts": {
+    "unit-build.log.gz": {
+      "sha256": "419456cc1fceaf1697476b3ead5775284b9f3f9633adac301bdce85320a3cf40",
+      "uncompressed_sha256": "2c1dce0d8075e5fa0c920873c06ae0c5dd98f91fd54e25aac487c3e78090b9a4"
+    },
+    "unit.log.gz": {
+      "sha256": "efbb26cb1ecefbb41d4099dea29fcc7381daccb9a173cdca80145fc427334914",
+      "uncompressed_sha256": "da912b137c28e973673ec726383b17be6008c43e2f64b21a2a90001628e67bbc"
+    },
+    "unit.xml.gz": {
+      "sha256": "2d84222f3edf63c4a9f93351df3c73f66aea01bc79b0c224b97ba86cacc78347",
+      "uncompressed_sha256": "745dd573c75f0be612084c46cacd026faeb00a7ec5e445b5516b40d970919ce3"
+    },
+    "focused-build.log.gz": {
+      "sha256": "8a936c7f941a8d8cda85970997691116deaa50d23c3725dc34b4e824422e9f67",
+      "uncompressed_sha256": "69bd77b9879ff8a6b80da67d6bc47e8f6f561a181ba763f472277f74200de518"
+    },
+    "focused.log.gz": {
+      "sha256": "173994eca8974e9acf0943663cf028fe6e3e2a5633fc7d99bf25a6bbad880cc2",
+      "uncompressed_sha256": "a698a260d573540bf84f1aa511f609ba974ca552d751c7ea2552fba49394824b"
+    },
+    "focused.xml.gz": {
+      "sha256": "6ce7fbb1f888c5d51ce0c690d055fdad6bb8f5d7802ec3fd6666840cda347064",
+      "uncompressed_sha256": "f3591be5306427ed62cf2809d84793e2527026b9210d747ace2538a895c51d24"
+    },
+    "broad-no-restore-blocker.log.gz": {
+      "sha256": "2eabc3fb5048ff32143c8dbeee2efbabbfde9ddeecfd6eb0714df029b02cf3ef",
+      "uncompressed_sha256": "bfa0de6b48868a09e747e201237961d734aea77f9045be48530d6238987f313c"
+    },
+    "broad-restored-blocker.log.gz": {
+      "sha256": "124fe6e110d60a88899882153cec220b8e8da81ecfd73bc924d449f0c74b952a",
+      "uncompressed_sha256": "865d068adc3f45962f28da1cc11f9b1d974c46a31b02dd5db4508d7c2b6021b7"
+    },
+    "red-replay.log.gz": {
+      "sha256": "870ffc0dc75cf4479bed7ebd10433b65fa343bb019cbbccc69a93c30a80d2ad2",
+      "uncompressed_sha256": "0a760fe17c97db9d815c7e8a7b4d43a8652b2e0ce6dd4a8121d4f07da1ec1a33"
+    },
+    "red-replay.xml.gz": {
+      "sha256": "6e216c743990ac3c79c05c18b13d46b2a44345d8cd1b7a795ca50ea51b32ff45",
+      "uncompressed_sha256": "43708fbdf1822632e931b9ec45c0c534e80f84798758963eec97e538a348cf74"
+    },
+    "commitlint.log.gz": {
+      "sha256": "5b2163d43379e3fd6ed4c15eac6fa66878edba7e0b3d96aa603439d76520ecbe",
+      "uncompressed_sha256": "3ca679439b75d6d4adb3e330bd12653a2be397d06ae8a46bba5dcbba3ed701df"
+    }
+  },
+  "review": "Independent blind review followed by a recheck of all four patched findings; no concrete regression found. Original malformed-ordinal concern is pre-existing and retained in the spec triage."
+}

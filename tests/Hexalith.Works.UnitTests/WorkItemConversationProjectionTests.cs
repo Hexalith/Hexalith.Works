@@ -134,6 +134,10 @@ public sealed class WorkItemConversationProjectionTests
         WhatsNextItem item = projection.WhatsNext(Tenant).ShouldHaveSingleItem();
         item.Status.ShouldBe(WorkItemStatus.Assigned);
         item.LatestAcceptedSourceSequence.ShouldBe(2);
+
+        projection.Project(Delivery(3, new ConversationLinked(Item.Value, 3, Tenant, Item, Conversation)))
+            .Changed.ShouldBeFalse();
+        projection.WhatsNext(Tenant).ShouldHaveSingleItem().LatestAcceptedSourceSequence.ShouldBe(3);
     }
 
     private static WorkItemRollUpEvent Delivery(long sequence, Hexalith.EventStore.Contracts.Events.IEventPayload payload)
