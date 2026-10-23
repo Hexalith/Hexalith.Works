@@ -160,7 +160,11 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             bootstrap = artifacts / "bootstrap.json"
             bootstrap.write_text('{"status":"bootstrap-validated; parity-incomplete"}')
             original = bootstrap.read_bytes()
-            record = {"platformOrigin": str(root), "platformRoot": str(root), "platformSourceFiles": {"source.cs": "original"}}
+            record = {
+                "platformOrigin": str(root),
+                "platformRoot": str(root),
+                "platformSourceFiles": {"source.cs": "original"},
+            }
             snapshot = Mock()
             snapshot.origin_files.return_value = {"source.cs": "changed"}
             with (
@@ -275,7 +279,10 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
                 mutation(ledger)
                 with self.assertRaisesRegex(ValueError, "Platform-qualified Dapr runtime"):
                     self.require(ledger)
-        with self.subTest(mutation="platform-source-pin"), self.assertRaisesRegex(ValueError, "Platform-qualified Dapr runtime"):
+        with (
+            self.subTest(mutation="platform-source-pin"),
+            self.assertRaisesRegex(ValueError, "Platform-qualified Dapr runtime"),
+        ):
             self.require(self.ledger, pinned=other)
 
     def test_platform_toolchain_pin_is_read_from_the_bootstrapped_owner(self):

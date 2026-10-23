@@ -177,7 +177,11 @@ def toolchain_runtime_sha256(platform):
     """Read the qualified Linux daprd hash from the bootstrapped Platform toolchain owner, not from the ledger."""
     pins = json.loads((Path(platform) / "config/works-proof-toolchain.json").read_text())
     digest = pins.get("linuxAmd64DaprdSha256") if isinstance(pins, dict) else None
-    if not isinstance(digest, str) or len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
         raise ValueError("Platform Works proof toolchain lacks a qualified Linux runtime hash")
     return digest
 
@@ -193,7 +197,10 @@ def require_qualified_runtime(ledger, pinned_sha256):
         "retainedPreflight": (ledger.get("retainedPreflightRuntime") or {}).get("runtimeSha256"),
     }
     if any(value != pinned_sha256 for value in observed.values()):
-        raise ValueError("Canonical gate did not execute the Platform-qualified Dapr runtime: " + json.dumps(observed, sort_keys=True))
+        raise ValueError(
+            "Canonical gate did not execute the Platform-qualified Dapr runtime: "
+            + json.dumps(observed, sort_keys=True)
+        )
 
 
 def require_complete_gate(artifacts, pinned_runtime_sha256):
