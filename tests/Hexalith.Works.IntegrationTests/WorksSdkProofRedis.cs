@@ -191,7 +191,8 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         }
     }
 
-    /// <summary>Captures every owned Redis key, offline Scheduler file, component and credential byte.</summary>
+    /// <summary>Captures every owned Redis key, offline Scheduler file, component and retained credential byte.</summary>
+    /// <remarks>A stopped Platform host has already removed its run-scoped issuer child, so its fleet retains no credentials.</remarks>
     internal async Task<IReadOnlyDictionary<string, string>> CaptureFleetAsync(CancellationToken cancellationToken)
     {
         await RequireStoppedFleetAsync(cancellationToken).ConfigureAwait(false);

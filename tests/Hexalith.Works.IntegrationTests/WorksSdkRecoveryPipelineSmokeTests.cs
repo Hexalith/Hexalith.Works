@@ -600,6 +600,9 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             using WorksPlatformBinarySnapshot binaries = WorksPlatformBinarySnapshot.Capture(WorksPlatformRollbackChecks.RuntimeBinaryHashes());
             IReadOnlyDictionary<string, string> runtimeHashes = binaries.Hashes;
             IReadOnlyDictionary<string, string> fleet = await isolation.CaptureFleetAsync(ct).ConfigureAwait(true);
+            // Platform trust is run-scoped: the stopped host removed its issuer child from the configured parent,
+            // so the fleet carries no credential bytes and the rollback host issues its own trust.
+            fleet.Keys.Where(relative => relative.StartsWith("certificates" + Path.DirectorySeparatorChar, StringComparison.Ordinal)).ShouldBeEmpty();
             await EvidenceAsync("complete-platform-fleet-snapshot", new { fleet, runtimeHashes, schedulerVolume = isolation.SchedulerVolumeName }, ct).ConfigureAwait(true);
             key = string.Empty;
             digestKey = string.Empty;

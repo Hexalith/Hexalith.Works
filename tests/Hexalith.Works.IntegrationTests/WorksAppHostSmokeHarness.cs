@@ -54,8 +54,8 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>How long a terminated Docker probe may take to exit before teardown continues.</summary>
     private static readonly TimeSpan DockerProbeTerminationWait = TimeSpan.FromSeconds(5);
 
-    /// <summary>The persistent Scheduler volume that must have exactly one owner at a time.</summary>
-    private static string SchedulerVolumeName => WorksAppHostSelection.SchedulerVolumeName;
+    /// <summary>The persistent Scheduler volume that must have exactly one owner at a time, or null for Platform.</summary>
+    private static string? SchedulerVolumeName => WorksAppHostSelection.SchedulerVolumeName;
 
     /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
     private static (int Port, string Name)[] ControlPlanePorts =>
@@ -941,6 +941,8 @@ internal static class WorksAppHostSmokeHarness
 
     private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken, string? schedulerVolumeName = null)
     {
+        // Platform owns no persistent Scheduler volume; without a proof volume there is nothing to own.
+        if ((schedulerVolumeName ?? SchedulerVolumeName) is null) return [];
         ProcessStartInfo startInfo = CreateSchedulerVolumeProbeStartInfo(schedulerVolumeName);
 
         ISchedulerVolumeProbe probe;
