@@ -13,7 +13,7 @@ internal sealed class MsBuildProjectSnapshot
     /// <param name="projectPath">The canonical evaluated project path.</param>
     /// <param name="globalProperties">The effective global properties used for this snapshot.</param>
     /// <param name="items">The final evaluated dependency items.</param>
-    /// <param name="importPaths">The resolved custom import closure, excluding installed-SDK and generated build-output imports.</param>
+    /// <param name="importPaths">The resolved custom import closure, excluding installed-SDK, restored-package and generated build-output imports.</param>
     /// <param name="properties">The evaluated values of the governed dependency-mode properties.</param>
     internal MsBuildProjectSnapshot(
         string projectPath,
@@ -49,8 +49,8 @@ internal sealed class MsBuildProjectSnapshot
     internal IReadOnlyList<MsBuildEvaluatedItem> Items { get; }
 
     /// <summary>
-    /// Gets every resolved direct and transitive custom import path. Installed-SDK imports and imports
-    /// generated under the evaluated project's build output are excluded because they are not governed inputs.
+    /// Gets every resolved direct and transitive custom import path. Installed-SDK, restored-package and
+    /// generated build-output imports are excluded because they are not custom restore-freshness inputs.
     /// </summary>
     internal IReadOnlyList<string> ImportPaths { get; }
 

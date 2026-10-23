@@ -626,7 +626,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: The live source-consumption gate still enumerates projects by basename, so a differently named root-owned project could evade this specific check. This behavior predates the evaluated-input bundle and is outside its four ledger entries.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers every root-owned project filename and exercises both PackageReference and GlobalPackageReference through the live sweep, retaining dependency/evidence/build-output exclusions. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-76: PackageVersion ownership does not trace Works-owned property overrides consumed by the approved shared catalog.
 origin: spec-deferred 61f77899777d
@@ -652,7 +653,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: A project declaring a Platforms set that excludes AnyCPU would be evaluated under a platform it does not support, so platform-conditioned imports and ProjectReference items would silently drop out of the evaluated set the gates trust as complete. No project in the repository declares such a set today.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers declared platforms before strict selected-lane evaluation, revisits framework-specific Platforms and preserves explicit caller/child globals. Unsupported-default and missing-supported-import controls pass. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-79: Restored NuGet package build props enter the custom-import freshness closure.
 origin: spec-deferred c816fd817c7c
@@ -660,7 +662,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: IsCustomImportPath excludes installed-SDK imports and generated build output, but a package's build/buildTransitive props imported from the global packages folder is neither, so it becomes a restore input. Re-extracting or touching the package cache without restoring would report the evaluated dependency artifact stale.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Excludes evaluated NuGetPackageRoot, NuGetPackageFolders and RestorePackagesPath imports only from freshness; custom siblings, dependency contents and malformed-declaration refusals remain covered. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-80: Dependency declarations that only an inactive non-Release condition guards remain invisible when they arrive through an import.
 origin: spec-deferred 65a78e5cf80d
@@ -668,7 +671,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: medium
 reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Applies Debug/Release, declared framework/platform and source-child dependency governance to the union; live direction and package-mode allowlists participate. The Debug-only child regression was demonstrated red before the fix and green afterward. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 
@@ -715,7 +719,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/WorkItemRollUpPayl
 source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
 severity: low
 reason: Pre-existing, not caused by this diff — the overlap was created when `ProjectionPayloadCoverageTests.cs` was added in the prior 4.8 review round (commit `01d527a`), which duplicates `WorkItemRollUpPayloadCoverageTests`'s single coverage assertion (minus `EffectDisposition`/intentional-no-op checks). This diff only updates the older test to compile against the renamed `WorkItemRollUpPayloadDescriptor.Catalog` API. Two overlapping tests must now be kept in sync by hand; consider retiring or consolidating the older, narrower test.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Retires the narrower WorkItemRollUpPayloadCoverageTests; ProjectionPayloadCoverageTests retains every prior assertion plus catalog uniqueness, effect-disposition and intentional-no-op coverage. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ## Deferred from: review remediation of 4-8-register-and-reconcile-date-reminders-durably (2026-09-08)
 

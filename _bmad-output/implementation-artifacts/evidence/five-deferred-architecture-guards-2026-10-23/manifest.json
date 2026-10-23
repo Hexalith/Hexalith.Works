@@ -1,0 +1,136 @@
+{
+  "baselineRevision": "c88003a1200e2487bf45b4b685ee58dd29b53f7b",
+  "selectedDeferredWork": [
+    "DW-75",
+    "DW-78",
+    "DW-79",
+    "DW-80",
+    "DW-85"
+  ],
+  "configuration": "Debug",
+  "sourceSha256": {
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs": "4d5e5e71f6c8a07a52af281e43b803e6533e6c1e97e5fdbea08f4cf29f92149b",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs": "3a15af1a1250c159e74b4bee7e890841af449673747020635002ec12aabd07c1",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicyTests.cs": "2c65a202916af8d5f5ab4fe27b4afc3b4b140ecedc39ebcf7188902e0536a4c6",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs": "b815c34df26ef995336ca10ef807315721d85904ebd849dca817d40ee1465cc8",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectSnapshot.cs": "c9fede91f26f695748ba2ace03d44c1e045a73e32a9304b772b4defb700c7664"
+  },
+  "removedSource": "tests/Hexalith.Works.ArchitectureTests/FitnessTests/WorkItemRollUpPayloadCoverageTests.cs",
+  "assemblySha256": "a8ae972eaa756459268ac19438411993d033664e8e1e09373b89042ff9f03c97",
+  "validation": [
+    {
+      "command": "dotnet build tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --configuration Debug --no-restore -m:1",
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0,
+      "log": "final-build.log.gz"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll -result-xml /tmp/works-five-architecture-final.xml",
+      "exitCode": 0,
+      "results": {
+        "total": 327,
+        "passed": 327,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "not-run": 0
+      },
+      "log": "final.log.gz",
+      "xml": "final.xml.gz"
+    },
+    {
+      "command": "dotnet format whitespace tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --no-restore --verify-no-changes --include tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicyTests.cs tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectSnapshot.cs",
+      "exitCode": 0,
+      "log": "format-verify.log.gz",
+      "note": "Generic workspace-load warning; final build has zero warnings."
+    },
+    {
+      "command": "npm run commitlint -- --edit /tmp/works-five-architecture-commit.txt",
+      "exitCode": 0,
+      "message": "fix: close five deferred architecture guard gaps",
+      "log": "commitlint.log.gz"
+    }
+  ],
+  "attempts": [
+    {
+      "log": "build.log.gz",
+      "exitCode": 1,
+      "reason": "Stale existing restore assets omitted Commons; normal restore repaired this."
+    },
+    {
+      "log": "restored-build.log.gz",
+      "exitCode": 0,
+      "reason": "Normal Debug restore/build of the unchanged dependency graph."
+    },
+    {
+      "log": "focused.log.gz",
+      "exitCode": 1,
+      "reason": "Initial assertion expected only two conservative diagnostics, before Debug evaluation made both actual items visible."
+    },
+    {
+      "log": "full.log.gz",
+      "exitCode": 1,
+      "reason": "Initial automatic platform expansion changed exact-global identities; corrected before final build."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll -method *DebugOnlyChildDependenciesCannotHideBehindReleaseRestoreEvidence -result-xml /tmp/works-five-architecture-debug-child-red.xml",
+      "log": "debug-child-red.log.gz",
+      "xml": "debug-child-red.xml.gz",
+      "exitCode": 1,
+      "reason": "Executing pre-fix negative control: one test, one failure. Final suite includes its green execution."
+    }
+  ],
+  "review": {
+    "findingGroups": 7,
+    "resolved": 7,
+    "newDeferred": 0,
+    "followup": "All seven finding groups resolved within scope; no concrete new regression found."
+  },
+  "artifacts": {
+    "build.log.gz": {
+      "sha256": "fedaca8e34219e821527b2c0cb9d77be0013e66b01378f03fd5a35441f5183f5",
+      "uncompressedSha256": "f48740f35cda53d8857ac3c088e1818e14749ff7f99237b311a9c4de6a0d7f39"
+    },
+    "restored-build.log.gz": {
+      "sha256": "d560e397b886f198cb508c9207533e2d34fbe6cc4042b2e1c19edf39dd94a209",
+      "uncompressedSha256": "bf1c838237a3c43e86a9bdeea257fb706f28aafbdb99ff240e09dc46f1be3150"
+    },
+    "focused.log.gz": {
+      "sha256": "967719f30db2d39846f601fd24f3a486c3acf15af7e3bcb46d86e4dfd8773335",
+      "uncompressedSha256": "74d3ba9b7c7891b02ce1ea06bb68c06dd434ec55ac67186e7204d8119e7f1ac7"
+    },
+    "full.log.gz": {
+      "sha256": "238d97b2c5cd16fee943b35a0fc5070298a7a67e5d2f354df81a36b4a7441ba9",
+      "uncompressedSha256": "88429cb6f2c799b267a0b137e5272453491585ab610553c44627752c32c63486"
+    },
+    "debug-child-red.log.gz": {
+      "sha256": "beefa70c4f24f68a96a32ae1e584434b87798bb989ddd73dddd725f6eb6569fd",
+      "uncompressedSha256": "e74f8d9b5ec66ab056c45017c07ea62c4693bae9b9441f0419e9734f5e04dc0d"
+    },
+    "debug-child-red.xml.gz": {
+      "sha256": "ad306362a0b9fe01c3b46acba0fa2cc2bd35a6d12837217048f98ada1e9ca651",
+      "uncompressedSha256": "dc7ebbbccc573ff0bc0a3b1c55ac75922f314549c23bbe46ea7747e7ef9c8dba"
+    },
+    "final-build.log.gz": {
+      "sha256": "1092187327b92decb03b519bd1a6be45b957df51a0e0ca7794179dd5464aa3d7",
+      "uncompressedSha256": "4e972b4b2b3faf0d30b2dc7920a45ac3f1b3e1bd2d720ac5f6f698e61344285c"
+    },
+    "final.log.gz": {
+      "sha256": "01609c6ec93f3487193786c6cb1e28979d137d36047965cce908723422e3c11c",
+      "uncompressedSha256": "cfc192a02c6537a9513781ba1771c5268fb06d8db7033b52c4c7c8397dfab3df"
+    },
+    "final.xml.gz": {
+      "sha256": "e5bdd574e26d3a7786ef0eb8dbf181a2bccdabfb064b5cac15525e01305e9fcd",
+      "uncompressedSha256": "1306ab35f309a3f80c5296202d95258bcaff91cdefd1931eec1771085c5b9e8c"
+    },
+    "format-verify.log.gz": {
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressedSha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c"
+    },
+    "commitlint.log.gz": {
+      "sha256": "a7828c86357c1a61941f821170e0a2e7d45dfc76127b2e71253e3be63ba95d51",
+      "uncompressedSha256": "32937ff9e7ea4bd16a14c4faf0ed72f6c025292ae981e0a35fffffd98724941c"
+    }
+  }
+}
