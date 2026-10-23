@@ -34,7 +34,8 @@
 # - Developer typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-06-15T18:47:50+02:00
+# Original generation instant: 2026-06-15T18:47:50+02:00; normalized below to the validator's minute precision.
+generated: "2026-06-15 18:47"
 last_updated: 2026-10-22
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.

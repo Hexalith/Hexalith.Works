@@ -1,3 +1,22 @@
+# Deferred Work Archive
+
+Return to the [maintained ledger](deferred-work.md) for current status and outstanding work. Match entries
+by **DW number**; `archived` dates distinguish snapshots when an item was reopened and closed again.
+Locations, counts and resolution claims below describe their recorded revisions and may reference code
+that has since moved or been retired. An archived `done` status does not override a later ledger status.
+
+The initial 2026-09-18 compaction is preserved in commit
+[`5856fab739d37e9d7f34ec9b0f5d2df30fe400e9`](https://github.com/Hexalith/Hexalith.Works/commit/5856fab739d37e9d7f34ec9b0f5d2df30fe400e9).
+Subsequent snapshots retain their own archive dates and resolution evidence. This archive preserves
+historical decisions; it does not authorize new implementation or reverse a human decision.
+
+The [2026-10-23 metadata reconciliation](spec-five-deferred-tracking-integrity.md) restored the DW-20,
+DW-53, DW-54 and DW-55 headings from their surviving source-spec summaries and removed one identical
+`decision` copy within each of DW-6, DW-38, DW-45, DW-46, DW-55, DW-71 and DW-80. Decision text is unchanged;
+the pre-reconciliation copies remain in Git history. DW-56 retains both its
+[2026-09-18 snapshot](#dw-56-2026-09-18) and [2026-10-23 reclosure](#dw-56-2026-10-23), including the intervening
+reopening. Its original decision and later identical reaffirmation have separate dated fields.
+
 ### DW-1: Kernel-purity test is transitive-blind
 
 origin: migrated from legacy ledger ("Deferred from: code review of 1-1-set-up-initial-project-from-starter-template (2026-06-16)"), 2026-08-27
@@ -56,7 +75,6 @@ status: done 2026-09-01
 archived: 2026-09-18
 decision: 2026-09-01 Close as opaque reference — ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 resolution: closed by human decision: ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
-decision: 2026-09-01 Close as opaque reference — ConversationCorrelationId is intentionally an opaque nullable dialogue reference and is not used in any composite key or topic; future key or topic adoption must define validation then.
 
 ### DW-7: Persisted parent roll-up never converges to child progress
 
@@ -189,7 +207,7 @@ archived: 2026-09-18
 resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
 resolution-undo: 2f35c4a103befa876bcf2d0a93acc3a9f57ddefaaea1f9baca85f92d07bb23c6 2026-08-28 7374617475733a206f70656e
 
-### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structur
+### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structured families.
 origin: spec-deferred 57d35d9aaaaf
 location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/ScaffoldGovernanceTests.cs:126
 source_spec: `spec-kernel-transitive-dependency-guard.md`
@@ -401,7 +419,6 @@ archived: 2026-09-18
 resolution: resolved by sweep bundle dw-envelope-persistence-proof-hardening
 resolution-undo: 984d136cda1168d7550a610c0ad1769f6fd7de1e1a60a6905890a5594a1324b8 2026-08-28 7374617475733a206f70656e
 decision: 2026-08-27 Add exact persisted corpus — Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.
-decision: 2026-08-27 Add exact persisted corpus — Preserve current camelCase files as compatibility fixtures, correct their documentation, and add a separate byte-exact PascalCase EventPersister corpus and test tied to shared writer behavior.
 
 ### DW-39: No executable test proves that a rejection DomainResult routed through the EventStore command pipeline reaches persistence; only source-text characterization covers it.
 origin: spec-deferred 4aa7d4178162
@@ -479,7 +496,6 @@ archived: 2026-09-18
 resolution: resolved by sweep bundle dw-shared-rollup-reconciliation
 resolution-undo: 58378fc662e0ae296c6b3166d2b6631fbfb9de554de32a461c8865100db10bdb 2026-08-29 7374617475733a206f70656e
 decision: 2026-08-27 Version and backfill — Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.
-decision: 2026-08-27 Version and backfill — Add an internal read-model schema version and an operator-triggered EventStore projection rebuild/backfill that rewrites tenant-index and per-item documents through the boundary sanitizer, with seeded pre-change migration tests.
 
 ### DW-46: A parent whose children were attached by a parented create still publishes a rolled total that silently omits them.
 origin: spec-deferred 8b641af15c5f
@@ -491,7 +507,6 @@ status: done 2026-08-29
 archived: 2026-09-18
 resolution: resolved by sweep bundle dw-shared-rollup-reconciliation
 resolution-undo: 58378fc662e0ae296c6b3166d2b6631fbfb9de554de32a461c8865100db10bdb 2026-08-29 7374617475733a206f70656e
-decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
 decision: 2026-08-27 Platform reconciliation seam — Extend the EventStore projection/rebuild surface with relationship-aware cross-aggregate reconciliation, then persist a parent model that is unavailable or converged based on authoritative child evidence.
 
 ### DW-47: Follow-up review still recommended for dw-cascade-transition-only-indexing after the damping cap was spent
@@ -561,7 +576,7 @@ resolution: resolved by sweep bundle dw-rollup-exposed-count-invariant
 resolution-undo: 94e3b0b28087e68fc7ca936676f0f4614d1a516c98becc3949cd282a37ac1c48 2026-08-29 7374617475733a206f70656e
 decision: 2026-08-28 Derive exposed count — Remove the independent count input, compute ExposedChildCount from ChildWorkItemIds, preserve the intended exposedChildCount wire output, and update constructors, serialization compatibility tests, consumers, and documentation.
 
-### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no
+### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no state change.
 origin: spec-deferred 96d65c591dec
 location: src/Hexalith.Works.Projections/Strategies/WorkItemRollUpProjection.cs:137
 source_spec: `spec-rollup-contract-drift-hardening.md`
@@ -571,7 +586,7 @@ status: done 2026-09-05
 archived: 2026-09-18
 resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 binds roll-up admission to descriptor-owned effects; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:12-26,41-72 enforces complete Contracts coverage and explicit effects (lines 12-20 derive the shared Contracts-payload universe, 21-26 is the roll-up-specific VerifyCatalog call, 41-72 is the shared VerifyCatalog helper both the roll-up and what's-next assertions call; tightened 2026-09-05 to stop overlapping DW-54's what's-next citation at 27-32).
 
-### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up st
+### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up stays open there.
 origin: spec-deferred 05c45a10513b
 location: src/Hexalith.Works.Projections/Strategies/WhatsNextQueueProjection.cs:91
 source_spec: `spec-rollup-contract-drift-hardening.md`
@@ -581,7 +596,7 @@ status: done 2026-09-05
 archived: 2026-09-18
 resolution: already resolved: Commit df46f716565237074e3c1bd7f09e7eeaf411cc16 replaces the what's-next allowlist with effect-bearing descriptors; tests/Hexalith.Works.ArchitectureTests/FitnessTests/ProjectionPayloadCoverageTests.cs:27-32,41-72 gates it against Contracts.
 
-### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests
+### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests stay green.
 origin: spec-deferred 3bd2f3fc99d1
 location: references/Hexalith.EventStore/src/Hexalith.EventStore.Operations/Capture/DeadLetterEnvelopeParser.cs
 source_spec: `spec-dapr-subscription-operations-hardening.md`
@@ -591,7 +606,8 @@ status: done 2026-09-05
 archived: 2026-09-18
 resolution: already resolved: EventStore commit 5a9b502f7ee59612a9ab393ab93e06f1ff6d0010, pinned by Works commit d9235f5d864404c17baa7e33275ecf280da42726; references/Hexalith.EventStore/tests/Hexalith.EventStore.Operations.Tests/StructuredCloudEventFixture.cs:17-50 now serializes the real Server.Events.EventEnvelope and DeadLetterEnvelopeParserTests.cs:61-74 asserts parser identity against it.
 decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
-decision: 2026-08-28 Direct Server test reference — Add an Operations.Tests-to-EventStore.Server ProjectReference, serialize the real Server.Events.EventEnvelope into a shared structured-CloudEvent test helper, and use it across parser and capture endpoint tests to detect publisher-shape drift.
+
+<a id="dw-56-2026-09-18"></a>
 
 ### DW-56: Completed-marker failure can still be acknowledged as processed
 
@@ -602,8 +618,9 @@ status: done 2026-09-05
 archived: 2026-09-18
 resolution: resolved by sweep bundle dw-domain-event-processing-hardening
 resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
-decision: 2026-09-01 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
 decision: 2026-08-29 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
+decision-reaffirmed: 2026-09-01 Durable completion retry — Extend the EventStore marker protocol with a durable post-dispatch state and a completion-only retry path, then align Works and add failure/redelivery tests proving handlers are not redispatched.
+decision-provenance: Original recorded in [`05583c6c527136523e1ef3d441071c77d9d6aaa9`](https://github.com/Hexalith/Hexalith.Works/commit/05583c6c527136523e1ef3d441071c77d9d6aaa9); identical text re-recorded in [`37da71625afc70506283e8d8f23971c7967ec7a9`](https://github.com/Hexalith/Hexalith.Works/commit/37da71625afc70506283e8d8f23971c7967ec7a9). The later record reaffirms the same decision; it does not amend its meaning.
 
 ### DW-57: Event processor does not reject non-work domains
 
@@ -634,6 +651,8 @@ reason: Out of scope per Dev Notes — Story 4.8's own Dev Notes explicitly plac
 status: done 2026-09-05
 archived: 2026-09-18
 resolution: already resolved: Commits 535d1b464810b5fd5650a386d43a09c2596554b4 and 103dcfde9816706d4f8bd6b2f82654bde27f0f0c separately implemented and completed the ordering and schema-v2/reconciliation work under _bmad-output/implementation-artifacts/spec-projection-write-ordering-guard.md:1-6,87-99 and spec-shared-rollup-reconciliation.md:1-6,70-82.
+
+<a id="dw-56-2026-10-23"></a>
 
 ### DW-56: Completed-marker failure can still be acknowledged as processed
 
@@ -737,7 +756,6 @@ status: done 2026-10-23
 archived: 2026-10-23
 resolution: Superseded by the approved SDK cutover: the retired response shape is not retained. StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState proves AlreadyCompleted with no compatibility state echo and unchanged persisted/query-visible newer state after restart; the unsupported direct projection path also returns no state. See spec-five-deferred-sdk-recovery-replacements.md.
 decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
-decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 
 ### DW-73: The pending-date-await index and tenant registry stay unversioned and are neither rebuilt nor pruned by the shared reconciliation, so a work item dropped from a tenant's authoritative membership can r
 origin: spec-deferred c1087044cae6
@@ -788,7 +806,6 @@ reason: Owning-project XML is scanned condition-agnostically, so a conditional d
 status: done 2026-10-23
 archived: 2026-10-23
 resolution: `spec-five-deferred-architecture-guards.md` Applies Debug/Release, declared framework/platform and source-child dependency governance to the union; live direction and package-mode allowlists participate. The Debug-only child regression was demonstrated red before the fix and green afterward. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
-decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 
 ### DW-85: `WorkItemRollUpPayloadCoverageTests` is now a near-strict subset of `ProjectionPayloadCoverageTests`'s roll-up coverage assertion

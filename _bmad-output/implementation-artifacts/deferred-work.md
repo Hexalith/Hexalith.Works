@@ -1,5 +1,17 @@
 # Deferred Work
 
+This is the maintained work ledger. Entries with an `archived` date retain their lifecycle summary here;
+find the matching **DW number** in the [full archive](deferred-work-archive.md) for the original location,
+reason, decisions and resolution evidence. The ledger's current status takes precedence over an older
+archived snapshot. Entries without DW numbers are identified by their `source_spec` and summary.
+
+The archive was first compacted on 2026-09-18 in commit
+[`5856fab739d37e9d7f34ec9b0f5d2df30fe400e9`](https://github.com/Hexalith/Hexalith.Works/commit/5856fab739d37e9d7f34ec9b0f5d2df30fe400e9).
+Historical findings describe the code at their recorded review, not necessarily the current implementation.
+Keep original evidence and human decisions; append dated corrections or resolutions when rechecking them.
+See the [2026-10-23 tracking reconciliation](spec-five-deferred-tracking-integrity.md) for metadata repairs
+and the [concurrent Story 4.8 review audit](#story-4-8-concurrent-review-audit) for superseded topology claims.
+
 ### DW-1: Kernel-purity test is transitive-blind
 
 status: done 2026-08-27
@@ -141,7 +153,7 @@ origin: spec-deferred 476e642905c2
 source_spec: `spec-kernel-transitive-dependency-guard.md`
 archived: 2026-09-18
 
-### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structur
+### DW-20: The forbidden-family taxonomy exists twice with nothing reconciling the two lists: the direct project-file text scan keeps its own literal string list while the evaluated-closure policy keeps structured families.
 
 status: done 2026-08-28
 resolution: resolved by sweep bundle dw-kernel-governance-drift-hardening
@@ -434,21 +446,21 @@ origin: spec-deferred 124b7489f14f
 source_spec: `spec-rollup-contract-drift-hardening.md`
 archived: 2026-09-18
 
-### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no
+### DW-53: The Contracts-derived gate binds payload admission but not roll-up effect, so a new event registered only to green the gate is accepted, consumes its sequence slot, and advances the watermark with no state change.
 
 status: done 2026-09-05
 origin: spec-deferred 96d65c591dec
 source_spec: `spec-rollup-contract-drift-hardening.md`
 archived: 2026-09-18
 
-### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up st
+### DW-54: WhatsNextQueueProjection keeps a structurally identical hand-maintained payload allowlist over the same delivery envelope, with no Contracts-derived gate, so the drift this story closed for roll-up stays open there.
 
 status: done 2026-09-05
 origin: spec-deferred 05c45a10513b
 source_spec: `spec-rollup-contract-drift-hardening.md`
 archived: 2026-09-18
 
-### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests
+### DW-55: The dead-letter capture parser's fixtures are hand-written literals rather than derived from the publisher type, so a rename on the producing side breaks capture in production while both parser tests stay green.
 
 status: done 2026-09-05
 origin: spec-deferred 3bd2f3fc99d1
@@ -721,10 +733,12 @@ archived: 2026-10-23
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Complete deterministic and live verification for the concurrent Story 4.8 AppHost-owned Dapr placement/scheduler path.
   evidence: The default branch composes placement and scheduler on ports 51005/51006, but the topology test forces external endpoints and command/cascade/reminder prerequisites still require the superseded 50005/50006 or 6050/6060 services, so the owned path can remain unasserted or skip.
+  audit: 2026-10-23: See the [concurrent-review reconciliation](#story-4-8-concurrent-review-audit) for superseded deterministic claims and current Platform ownership; original evidence and status are preserved.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Pin configuration- and policy-level Dapr ACL trust domains in the concurrent Story 4.8 topology tests.
   evidence: All four YAML files changed those values to `localhost`, while deterministic tests assert only `spec.mtls.controlPlaneTrustDomain`; restoring `public` on an allow policy would leave tests green and deny the intended Sentry identity.
+  audit: 2026-10-23: See the [concurrent-review reconciliation](#story-4-8-concurrent-review-audit) for superseded deterministic claims and current Platform ownership; original evidence and status are preserved.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Reconcile the concurrent Story 4.8 specification with its current localhost trust domain and the 40-type catalog baseline.
@@ -760,6 +774,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Audit stale concurrent-review records at the end of the deferred-work ledger.
+  status: done 2026-10-23
+  resolution: Completed the [dated concurrent-review audit](#story-4-8-concurrent-review-audit), preserving original findings while identifying superseded default-topology and workload-trust claims and the current Platform ownership. See [spec-five-deferred-tracking-integrity.md](spec-five-deferred-tracking-integrity.md).
   evidence: Two Story 1.5 review entries describe a now-unasserted default control plane and localhost workload ACL domains, but the current Story 4.8 topology asserts the default path and retains `public` for workload/policy trust domains; existing records are append-only in this workflow.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
@@ -897,10 +913,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Add navigation and provenance guidance between the compacted deferred-work ledger and its archive.
+  status: done 2026-10-23
+  resolution: Added reciprocal ledger/archive navigation, the original compaction revision, DW-number lookup guidance and the rule that current ledger status takes precedence over historical snapshots. See [spec-five-deferred-tracking-integrity.md](spec-five-deferred-tracking-integrity.md).
   evidence: The pre-existing 2026-09-18 archive migration leaves active-ledger stubs without an archive link and starts the archive at an H3 entry without a title, policy, backlink, or provenance note, making historical evidence unnecessarily difficult to discover.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Reconcile duplicate and ambiguously dated decision fields in the deferred-work archive.
+  status: done 2026-10-23
+  resolution: Removed exact duplicate decision copies in seven snapshots; DW-56 retains its 2026-08-29 decision and source-backed 2026-09-01 reaffirmation, plus both archive snapshots and its reopening/reclosure history. See [spec-five-deferred-tracking-integrity.md](spec-five-deferred-tracking-integrity.md).
   evidence: Several pre-existing archived entries repeat identical decision fields, while DW-56 records the same decision with two dates and no amendment marker; no runtime parser is affected, but the historical record lacks a clear canonical interpretation.
 
 ## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-9.md (2026-09-18)
@@ -952,6 +972,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Reconstruct the compacted deferred-work entry titles that end mid-word in both the live ledger and archive.
+  status: done 2026-10-23
+  resolution: Restored complete DW-20, DW-53, DW-54 and DW-55 headings in both locations from their surviving source-spec summaries, preserving every original reason and resolution. See [spec-five-deferred-tracking-integrity.md](spec-five-deferred-tracking-integrity.md).
   evidence: DW-20, DW-53, DW-54, and DW-55 retain visibly truncated headings in both locations; the corruption predates the spec-9 close-out and is historical-data hygiene rather than reminder-runtime behavior.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
@@ -1291,6 +1313,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Make the sprint tracker's `generated` stamp pass `sprint_plan.py validate`.
+  status: done 2026-10-23
+  resolution: Normalized the original generation stamp to a supported minute-resolution format; its exact original offset/seconds remain in a comment, all development statuses and action items are preserved, and the existing validator now reports valid=true with no problems. See [spec-five-deferred-tracking-integrity.md](spec-five-deferred-tracking-integrity.md).
   evidence: Story 4.11 review C30-EC5 (2026-10-10), low. `validate` flags only `generated: 2026-06-15T18:47:50+02:00` (`sprint-status.yaml:37`) against `%m-%d-%Y %H:%M`, while `status` accepts it. The sprint-planning generator wrote the ISO form. This is pre-existing: C28-EC1 fixed only `last_updated`.
 
 ## Deferred from: code review of spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md (2026-10-11, C12 chunk 1)
@@ -1803,3 +1827,22 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
   status: done 2026-10-23
   resolution: `spec-five-deferred-verifier-safeguards.md` filters Identity, Composition, explicit Compile links and Parties inputs relative to their owners; bin/obj workspace-parent controls retain source bindings and exclude generated outputs.
   evidence: Pre-existing `linked_fixture_snapshot` (`references/Hexalith.Platform/eng/verify_works_host.py:953`) tests `{"bin","obj"}` against absolute `path.parts`; a Works root below a `bin` or `obj` directory would drop every Identity/Composition/Parties source from the binding.
+
+## Concurrent Story 4.8 review audit (2026-10-23)
+
+<a id="story-4-8-concurrent-review-audit"></a>
+
+The [original Story 1.5 review](https://github.com/Hexalith/Hexalith.Works/blob/ddd571996df3057be39bb337cb0a9a0ff6f983ff/_bmad-output/implementation-artifacts/spec-1-5-link-a-conversation-after-creation.md#L96)
+described a concurrently changing AppHost. The B/V identifiers below refer to that review, whose original
+findings remain historical evidence. The following two claims must not be read as current defects:
+
+| Historical claim | Reconciliation and source evidence |
+| --- | --- |
+| The default placement/scheduler path has no deterministic assertion (B8/V4). | At [`56a235c28753d2f87ef6897b39a032a1989b5610`](https://github.com/Hexalith/Hexalith.Works/blob/56a235c28753d2f87ef6897b39a032a1989b5610/tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs#L235), `DefaultAppHostComposesTheMtlsActorControlPlane` asserts the default resources, mTLS arguments, localhost 51005/51006 endpoints, scheduler storage and sidecar dependencies. The deterministic absence claim was superseded by that source. |
+| All trust domains changed to localhost, so workload/policy ACLs must follow (B14 and the related ACL review context). | At [the same revision's `AssertMtls`](https://github.com/Hexalith/Hexalith.Works/blob/56a235c28753d2f87ef6897b39a032a1989b5610/tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs#L600), the test explicitly pins `controlPlaneTrustDomain` to `localhost`, `accessControl.trustDomain` to `public`, and every policy's `trustDomain` to `public`. [Story 4.8 implementation notes](spec-4-8-register-and-reconcile-date-reminders-durably.md#implementation-notes) record the same distinction. B10/V5's historical absence-of-assertions claim is superseded by these assertions. |
+
+[Current hosting ownership and verification history](../../docs/platform-hosting-cutover.md) place the
+control plane and policies in Platform. The [retired-test replacement inventory](evidence/story-4-9/verification/retired-test-replacements.json)
+maps `WorksAppHostTopologyTests.cs` to its replacement coverage. This audit inspects retained source and
+existing evidence; it does not claim a new live run or close separate live-prerequisite, scheduler-security
+or catalog/specification entries. The historical Story 1.5 review is preserved unchanged.
