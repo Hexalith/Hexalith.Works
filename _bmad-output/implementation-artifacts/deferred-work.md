@@ -1659,14 +1659,20 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Extend the Platform verifier's Works fixture inventory beyond IntegrationTests C# sources.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` binds complete IntegrationTests/Testing inputs, copied resources and runner configuration before execution, with mutation/addition/removal regressions.
   evidence: Review T220; `fixture_sources` (`P/eng/verify_works_host.py:149-154`) hashes only `tests/Hexalith.Works.IntegrationTests/**/*.cs` plus `ProjectMetadataPaths.cs`. The IntegrationTests project file, `tests/Hexalith.Works.Testing`, `xunit.runner.json` and copied golden JSON are unbound. This scope predates the iteration 5 corrections; compiled project-file effects are bound through the consumer binary hash.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Bind the runtime SDK export's linked Builds catalog in the verifier ledger.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` binds the selected SDK Builds location, resolved target and complete Props inventory separately from official producer sources; qualification and final closure reject drift.
   evidence: Review T221; `runtime_source_snapshot` (`P/eng/verify_works_producer.py:32-41`) records only `src/**` and three root build files, while the export's `references/Hexalith.Builds` link selects the SDK dependency graph. The 3.126.0 run's `b435f2e3` catalog is bound only by the packet's `builds-source-provenance.json`. Record the resolved catalog commit or Props hashes and re-check them at the end of the run.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Give the verifier's end-of-run "changed during execution" checks an executing regression.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` extracts the final closure checks and executes unchanged and independent source, artifact, verifier, fixture, retained-host, dependency, manifest and port-drift controls.
   evidence: Review T222 (pre-verified gap); no test reaches `P/eng/verify_works_host.py:1022-1046`, so removing or weakening any final source, artifact, verifier or fixture re-check leaves the evidence-gate tests green. Extract the end-of-pipeline checks into a testable function.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
@@ -1707,6 +1713,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Terminate owned command descendants when the Platform verifier times out or is cancelled.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` runs commands in owned POSIX groups and terminates group members and reaps the leader on timeout, cancellation or completion; real controls cover launch-time signals, cleanup grace and detached-session ownership boundaries.
   evidence: Review R2B5: subprocess.run(timeout=1800) only kills the direct process; a temporary owned fixture confirmed its sleep descendant survives timeout and explicitly cleaned that PID. The helper is unchanged from the pre-existing verifier. Use an owned process group and a descendant-cleanup regression.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1763,4 +1771,6 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Filter linked-fixture build outputs by path relative to each owning root.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` filters Identity, Composition, explicit Compile links and Parties inputs relative to their owners; bin/obj workspace-parent controls retain source bindings and exclude generated outputs.
   evidence: Pre-existing `linked_fixture_snapshot` (`references/Hexalith.Platform/eng/verify_works_host.py:953`) tests `{"bin","obj"}` against absolute `path.parts`; a Works root below a `bin` or `obj` directory would drop every Identity/Composition/Parties source from the binding.
