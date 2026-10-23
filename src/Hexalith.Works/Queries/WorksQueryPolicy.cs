@@ -1,5 +1,6 @@
 using System.Text.Json;
 
+using Hexalith.EventStore.Client.Streams;
 using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.Parties.Client.Abstractions;
 using Hexalith.Parties.Contracts.Queries;
@@ -49,14 +50,14 @@ public sealed class WorksQueryPolicy(
             return new WorksQueryAuthority(false, false, null);
         }
 
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        deadline.CancelAfter(s_identityResolutionTimeout);
+        using var deadline = new AuthoritativeStreamReadDeadline(s_identityResolutionTimeout, TimeProvider.System,
+            cancellationToken, TimeProvider.System.GetTimestamp());
         try
         {
-            var identity = await _parties.ResolvePartyIdentityAsync(
+            var identity = await deadline.ReadWithAdmissionAsync(token => _parties.ResolvePartyIdentityAsync(
                 query.TenantId,
                 new ResolvePartyIdentity(query.TenantId, requestedPartyId!, query.OriginalActorId),
-                deadline.Token).WaitAsync(deadline.Token).ConfigureAwait(false);
+                token)).ConfigureAwait(false);
             return identity.Outcome == PartyIdentityOutcome.Resolved
                 && identity.Evidence is { Classification: PartyIdentityClassification.Human, IsActive: true,
                     IsRestricted: false, IsErasingOrErased: false, HumanBinding: { } binding }
@@ -68,6 +69,7 @@ public sealed class WorksQueryPolicy(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             throw;
         }
         catch (Exception exception)

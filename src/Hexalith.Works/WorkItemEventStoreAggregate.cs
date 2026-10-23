@@ -165,7 +165,8 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
 
     private static void ValidateWitnessAddress(TenantId tenant, WorkItemId item, CommandEnvelope envelope)
     {
-        if (envelope.TenantId != tenant.Value || envelope.Domain != "work" || envelope.AggregateId != item.Value)
+        if (!string.Equals(envelope.TenantId, tenant.Value, StringComparison.OrdinalIgnoreCase)
+            || envelope.Domain != "work" || envelope.AggregateId != item.Value)
             throw new InvalidOperationException("Witnessed payload identity differs from its addressed stream.");
     }
 
@@ -182,7 +183,7 @@ public sealed class WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemSt
         ArgumentNullException.ThrowIfNull(command);
         ArgumentNullException.ThrowIfNull(envelope);
         WorksReadModelKeys.ThrowIfReservedTenantId(tenantId(command)?.Value);
-        WorksReadModelKeys.ThrowIfReservedTenantId(envelope.TenantId?.ToLowerInvariant());
+        WorksReadModelKeys.ThrowIfReservedTenantId(envelope.TenantId);
         if (TrustedEffectOriginScope.Current is { } origin)
         {
             bool allowed = (command, origin.Identity.EffectKind) switch

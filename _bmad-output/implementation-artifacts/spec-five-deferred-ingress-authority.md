@@ -1,0 +1,60 @@
+---
+title: 'Close five deferred ingress and authority safeguards'
+type: 'bugfix'
+created: '2026-10-23'
+status: 'done'
+route: 'oneshot'
+review_loop_iteration: 0
+context: []
+---
+
+<frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
+
+## Intent
+
+**Problem:** Three deferred query-authority findings allow synchronous provider stalls, blocking cancellation callbacks and accumulating noncooperative requests. Two adjacent tenant-identity findings concern mixed-case reserved tenants and expiry-bearing commands whose raw envelope tenant differs from its canonical stream tenant.
+
+**Approach:** Complete exactly those five entries. Reuse the existing SDK admission/deadline boundary for Parties resolution; preserve fail-closed decisions, caller cancellation and existing identity checks. Make the reserved-tenant guard cover every casing and compare witnessed envelope tenants using the SDK's canonical tenant semantics while keeping domain and aggregate isolation. Verify current ingress replacement behavior, independently review, commit and push Works main as requested.
+
+</frozen-after-approval>
+
+## Implementation Notes
+
+- Baseline: `e7a2918ca1e95805b655a749bb329ee79b83581d`; clean Works main. The five selected ledger summaries are the reserved `TENANTS` ingress finding, `ValidateWitnessAddress` casing finding, synchronous/cancellation-ignoring authority acquisition, deadline callback isolation, and outstanding noncooperative identity operations. No epic story key applies.
+- This is a bounded change to three existing runtime files, focused integration coverage, the maintained ledger and this spec. No new production API, dependency update, migration or external mutation is needed before the authorized final push; use the oneshot route.
+- `WorksQueryPolicy.AuthorizeAsync` currently invokes Parties directly and shares its linked deadline token with provider callbacks. Reuse `AuthoritativeStreamReadDeadline.ReadWithAdmissionAsync`, already used by `WorksSourceStreamReader`, with the existing two-second budget and TimeProvider.System. Its sixteen process-wide slots remain occupied until actual provider completion; waiting uses a private token and provider cancellation uses CancelAsync. Do not introduce domain-owned timeout/admission plumbing.
+- `WorksReadModelKeys.IsReservedTenantId` is ordinal; centralize the existing command edge's case-independent refusal in that helper. The original `/project` finding describes a retired route: verify replacement `/process`, current stream acquisition and common key refusal, without claiming the historical route is active.
+- `WorkItemEventStoreAggregate.ValidateWitnessAddress` must accept canonical-equivalent tenant casing. SDK `AggregateIdentity` lowercases ASCII tenant/domain while preserving aggregate case. Normalize tenant comparison only; retain exact work domain and aggregate matching and all trusted-effect checks. Prove expiry-bearing create/reschedule acceptance and foreign tenant/domain/item refusal through ProcessAsync.
+- Extend `WorksQueryPolicyDeadlineTests` with synchronous provider blocking, callback blocking, shared admission across separate policy instances, no post-timeout slot release, eventual release after actual completion, late faults, exact caller cancellation and successful authority controls. Release every test-owned pending operation in finally. Serialize slot-saturation controls against other integration collections using the existing nonparallel collection.
+- Test current reserved ingress and witnessed command normalization in a focused integration class. No store mutation is added: denied queries must perform zero reads, reserved stream requests must never acquire evidence, and emitted accepted events must retain canonical payload identity.
+- Validation: build the integration project explicitly in Debug and invoke its xUnit v3 assembly with class filters, then run the existing deterministic integration lane and relevant architecture/unit coverage as warranted. Use the repository's existing build policy and do not weaken gates. Record exact results and retained evidence; run whitespace checks and commitlint before commit. Works has no owned AppHost, and this batch changes no orchestration.
+
+- Investigation correction: the original custom `/project` handler was retired; the SDK still maps its canonical `/project` endpoint. Replacement checks cover current ProcessAsync and stream ingress, and harden the common key guard rather than recreate the retired custom handler.
+- The initial no-restore compile found conflicting stale source/package serialization references (CS1704). A normal Debug restore repaired the unchanged dependency graph. The full current integration project then fails on two existing Platform.Composition CA1062 errors in PlatformHostedPublishing.Describe and ComposeNativeProbe. The focused BuildProjectReferences=false test build compiles current tests against available dependency outputs, with zero warnings/errors; the changed Works runtime was built separately with the same focused flag. This does not qualify a fresh complete Platform source graph.
+- Red regression baseline: the two focused classes executed 28 tests, 13 failed and 15 passed. Synchronous stalls, missing admission, exact caller-token substitution, reserved casing and witnessed tenant casing were demonstrated before the runtime patch. Initial callback controls were strengthened to install the blocking callback after the query wait, ensuring cancellation ordering exposes the original coupling.
+- First broader Debug run: 312/312 passed, zero failures/errors/skips/unexecuted, across ingress, deadline, all reflection command adapters, protected HTTP and SDK projection/query classes. Further review and the strengthened callback mutation control remain pending.
+
+- The strengthened callback control was mutation-checked using the verbatim baseline policy through a temporary MSBuild Compile override: 4/4 callback cases failed against the original policy. That override changed the compiled inputs after MSBuild's input-cache calculation; the first restoration build reused the mutated output, and the resulting 324-test run had 11 failures. That nonqualifying attempt is retained separately. Explicit Rebuild of the Works runtime and integration project restored the fixed assembly; runtime and consumer copy hashes now match, and final verification passes.
+- Review hardening connects the formerly unused store mock to an actual SDK coordinator, adds cross-consumer source refusal/recovery under identity saturation, keeps the single recovered provider pending to prove exactly one released slot, drains all sixteen slots after completing owned providers, and covers caller cancellation during synchronous invocation. Protected HTTP controls preserve exact delegated-origin tenant binding and verify unchanged queue contents, generation, checkpoint and store count after reserved command refusal.
+- The original five findings concern query response deadlines and incomplete provider tasks. A separate pre-existing SDK callback-worker lifetime issue remains: a callback can cancel its task before blocking and release task admission early. The isolated exact-source probe prints accepted=20 with 20 callbacks still blocked. Its self-contained reproducer and output are retained; the ledger explicitly requires a shared SDK lifetime correction and published/qualified producer. No duplicated runtime mechanics, SDK source edits, package pin changes or submodule changes were introduced.
+
+## Review Triage Log
+
+- Medium, deferred: SDK admission releases on provider-task completion independently of an initiated blocking cancellation callback. The exact-source probe confirms twenty blocked callbacks despite sixteen task slots. The unchanged SDK mechanism and the original policy's unbounded callback behavior predate this batch. Existing five closures are explicitly limited to response completion and incomplete provider tasks; a separate ledger entry preserves the required SDK fix/publication/qualification.
+- Low, patched: shared identity/source pool lacked a cross-consumer regression. Saturating authority tasks now rejects source acquisition as ProcessEvidenceUnavailableException before gateway invocation, then actual completion permits acquisition again.
+- Medium, patched: an immediately successful recovery provider could hide release of multiple slots. The recovery provider now stays pending while another request is refused and the other fifteen providers remain incomplete.
+- Medium, patched: cleanup awaited already abandoned query tasks. Cleanup now completes all owned providers, releases callbacks and reacquires all sixteen SDK slots before leaving the test, then releases and awaits those workers.
+- Medium, patched: synchronous invocation lacked caller cancellation coverage. Both query adapters now propagate the exact caller token before the synchronously blocked provider is released, with zero connected store calls.
+- Low, patched: the shared witness validator also serves trusted effects. Protected resume, cancel and expiry matrix cases now prove raw uppercase/mixed-case envelope tenants remain forbidden by the SDK's exact origin binding, preserving existing authenticated purpose/kind controls.
+- Medium, patched: reserved spelling lacked current HTTP persistence evidence. Uppercase/mixed-case payload/envelope command cases now verify refusal through protected /process, unchanged persisted queue bytes, generation, checkpoint and document count, and no legacy registry creation.
+- Independent follow-up confirmed all six consumer coverage findings addressed and found no concrete new defect. The requested retained verification packet is now present; the SDK limitation remains explicitly deferred.
+
+## Verification
+
+- Broad current-source command: `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1` exits 1 with exactly two pre-existing Platform.Composition CA1062 errors in PlatformHostedPublishing.Describe and ComposeNativeProbe. The unchanged dependency graph was restored normally; the full failure is retained separately from focused evidence.
+- Focused runtime: `dotnet build src/Hexalith.Works/Hexalith.Works.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false -t:Rebuild` exits 0, zero warnings/errors.
+- Focused tests: `dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false -t:Rebuild` exits 0, zero warnings/errors. These builds consume available dependency outputs and do not qualify the full current Platform source graph.
+- Final execution: `dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorksIngressIdentityTests -class Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests -class Hexalith.Works.IntegrationTests.LinkConversationRuntimeAdapterTests -class Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-ingress-final.xml` exits 0: 324/324 passed, zero failures/errors/skips/unexecuted.
+- Commit message validation: `npm run commitlint -- --edit /tmp/works-five-ingress-commit.txt` exits 0 for `fix: close five deferred ingress safeguards`.
+- Ledger consistency assertions confirm exactly five added done statuses, one additional SDK follow-up, every original ledger line preserved in order and no submodule changes. Whitespace diff validation passes.
+- [Retained evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json) binds source/assembly hashes, exact final commands/results, compressed logs/XML, the red controls and nonqualifying cached-mutation attempt, plus the self-contained SDK limitation reproducer.

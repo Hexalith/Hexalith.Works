@@ -207,7 +207,8 @@ public sealed class WorksSdkProtectedHttpTests
         var envelope = new EventStoreDomainEventEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAV",
             scenario == "foreign-aggregate" ? "foreign-item" : "wakeup", scenario == "foreign-tenant" ? "foreign-tenant" : tenant,
             typeof(WorkItemCreated).FullName!, 1, DateTimeOffset.UnixEpoch, "wakeup-proof", "json",
-            JsonSerializer.SerializeToUtf8Bytes(created)) { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
+            JsonSerializer.SerializeToUtf8Bytes(created))
+        { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
         using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
         for (int attempt = 0; attempt < 2; attempt++)
         {
@@ -223,7 +224,8 @@ public sealed class WorksSdkProtectedHttpTests
         var valid = new WorkItemCreated("wakeup", 1, new TenantId(Tenant), new WorkItemId("wakeup"), new Obligation("synthetic"));
         var validEnvelope = new EventStoreDomainEventEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAW", "wakeup", Tenant,
             typeof(WorkItemCreated).FullName!, 1, DateTimeOffset.UnixEpoch, "wakeup-control", "json",
-            JsonSerializer.SerializeToUtf8Bytes(valid)) { Domain = "work" };
+            JsonSerializer.SerializeToUtf8Bytes(valid))
+        { Domain = "work" };
         using (HttpResponseMessage accepted = await client.SendAsync(Request("/work/events", validEnvelope, channel: true, assertion: null),
             TestContext.Current.CancellationToken).ConfigureAwait(true))
         {
@@ -324,7 +326,9 @@ public sealed class WorksSdkProtectedHttpTests
         };
         _ = await coordinator.BeginAsync(scope, "contaminated", "sealed", new Dictionary<string, long>
         {
-            ["mine"] = 2, ["foreign"] = 2, ["queue"] = 2,
+            ["mine"] = 2,
+            ["foreign"] = 2,
+            ["queue"] = 2,
         }, TestContext.Current.CancellationToken).ConfigureAwait(true);
         ReadModelBatchOperation[] operations = [.. family.Value.Select(pair => ReadModelBatchOperation.Write(
             pair.Key, pair.Key == WorksReadModelKeys.RuntimeRollUpKey("mine")
@@ -1008,16 +1012,22 @@ public sealed class WorksSdkProtectedHttpTests
     }
 
     [Theory]
-    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.OK, false)]
-    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false)]
-    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.OK, false)]
-    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.ChildCompletionResume, false, HttpStatusCode.OK, false)]
-    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false)]
-    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false)]
-    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.OK, true)]
-    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false)]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.OK, false, Tenant)]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false, Tenant)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.OK, false, Tenant)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.ChildCompletionResume, false, HttpStatusCode.OK, false, Tenant)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false, Tenant)]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false, Tenant)]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.OK, true, Tenant)]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.Expiry, false, HttpStatusCode.Forbidden, false, Tenant)]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false, "TENANT-SDK")]
+    [InlineData(nameof(CancelWorkItem), EffectKindCatalog.CascadeCancel, false, HttpStatusCode.Forbidden, false, "Tenant-sdk")]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false, "TENANT-SDK")]
+    [InlineData(nameof(ResumeWorkItem), EffectKindCatalog.DateResume, false, HttpStatusCode.Forbidden, false, "Tenant-sdk")]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.Forbidden, false, "TENANT-SDK")]
+    [InlineData(nameof(ExpireWorkItem), EffectKindCatalog.CascadeExpire, true, HttpStatusCode.Forbidden, false, "Tenant-sdk")]
     public async Task DelegatedOriginMatrixAllowsOnlyItsPurposeCommandPairs(
-        string commandType, string kind, bool withWitness, HttpStatusCode expectedStatus, bool expectedRejection)
+        string commandType, string kind, bool withWitness, HttpStatusCode expectedStatus, bool expectedRejection, string envelopeTenant)
     {
         var store = new InMemoryReadModelStore();
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
@@ -1044,7 +1054,7 @@ public sealed class WorksSdkProtectedHttpTests
         };
         var identity = new EffectIdentity(Tenant, "work", "source-matrix", 9, kind, "work", item.Value, 0);
         string message = EffectIdentityCodec.ComputeMessageId(identity);
-        var envelope = new CommandEnvelope(message, Tenant, "work", item.Value, commandType,
+        var envelope = new CommandEnvelope(message, envelopeTenant, "work", item.Value, commandType,
             payload, message, "committed-source", "works", new() { ["trusted-purpose"] = WorksEffectPurposes.ForKind(kind) });
         var request = new DomainServiceRequest(envelope, currentState)
         {
@@ -1068,6 +1078,45 @@ public sealed class WorksSdkProtectedHttpTests
         {
             (await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
         }
+    }
+
+    /// <summary>Protected command ingress refuses every reserved spelling without mutating persisted projections.</summary>
+    [Theory]
+    [InlineData("TENANTS", false)]
+    [InlineData("TeNaNtS", false)]
+    [InlineData("TENANTS", true)]
+    [InlineData("TeNaNtS", true)]
+    public async Task ReservedTenantHttpCommandPreservesPersistedState(string reserved, bool payloadReserved)
+    {
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator);
+        var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        SharedProjectionScope scope = projection.CreateScope(Tenant);
+        SharedProjectionReadResult<WorksRuntimeDocument> before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
+            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken);
+        string beforeBytes = before.Value.ShouldNotBeNull().Value.GetRawText();
+        int beforeCount = store.Count;
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", coordinator,
+            ["--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
+        await app.StartAsync(TestContext.Current.CancellationToken);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        var command = new CreateWorkItem(new TenantId(payloadReserved ? reserved : Tenant), new WorkItemId("reserved-http"), "refused");
+        var envelope = new CommandEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAV", payloadReserved ? Tenant : reserved,
+            "work", "reserved-http", nameof(CreateWorkItem), JsonSerializer.SerializeToUtf8Bytes(command),
+            "01ARZ3NDEKTSV4RRFFQ69G5FAV", null, "actor-reserved", null);
+
+        using HttpResponseMessage response = await client.SendAsync(Request("/process", new DomainServiceRequest(envelope, null),
+            channel: true, assertion: Assertion("domain-service:process")), TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
+        store.Count.ShouldBe(beforeCount);
+        SharedProjectionReadResult<WorksRuntimeDocument> after = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
+            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken);
+        after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(beforeBytes);
+        after.Generation.ShouldBe(before.Generation);
+        (await coordinator.GetCheckpointAsync(scope, "mine", TestContext.Current.CancellationToken)).ShouldNotBeNull().Position.ShouldBe(2);
+        store.Snapshot<object>("statestore", WorksReadModelKeys.PendingDateAwaitRegistryKey).ShouldBeNull();
     }
 
     /// <summary>An expiry-bearing create or reschedule must address the stream its envelope names.</summary>
@@ -1124,13 +1173,18 @@ public sealed class WorksSdkProtectedHttpTests
         ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
         owned = await checkpoints.UpdateOwnedAsync(owned, state => state with
         {
-            Checkpoint = 1, Status = ProcessSourceStatus.Quarantined, FailureSequence = 2, ReasonCode = "invalid-evidence",
+            Checkpoint = 1,
+            Status = ProcessSourceStatus.Quarantined,
+            FailureSequence = 2,
+            ReasonCode = "invalid-evidence",
         }, TestContext.Current.CancellationToken).ConfigureAwait(true);
         await checkpoints.ReleaseAsync(owned, TestContext.Current.CancellationToken).ConfigureAwait(true);
         var before = await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), TestContext.Current.CancellationToken).ConfigureAwait(true);
         string bearer = new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
-            Issuer = Issuer, Audience = "hexalith-eventstore", Expires = DateTime.UtcNow.AddMinutes(5),
+            Issuer = Issuer,
+            Audience = "hexalith-eventstore",
+            Expires = DateTime.UtcNow.AddMinutes(5),
             Claims = new Dictionary<string, object> { ["sub"] = "synthetic-operator" },
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SigningKey)), SecurityAlgorithms.HmacSha256),
         });
@@ -1235,8 +1289,12 @@ public sealed class WorksSdkProtectedHttpTests
             StreamReadPage page = repaired ? committed : committed with
             { Events = [committed.Events[0], committed.Events[1] with { EventTypeName = "UnknownWorksFact" }] };
             StreamReadEvent[] tail = [.. page.Events.Where(fact => fact.SequenceNumber > request.FromSequence)];
-            return page with { Events = tail, Metadata = page.Metadata with
-            { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber } };
+            return page with
+            {
+                Events = tail,
+                Metadata = page.Metadata with
+                { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber }
+            };
         });
         var authorizer = Substitute.For<IProcessDispositionAuthorizer>();
         authorizer.AuthorizeAsync(Arg.Any<ClaimsPrincipal>(), source, Arg.Any<CancellationToken>()).Returns(call =>
@@ -1533,8 +1591,12 @@ public sealed class WorksSdkProtectedHttpTests
             Audience = "parties-identity-reader",
             Claims = new Dictionary<string, object>
             {
-                ["sub"] = "works-identity-reader", ["azp"] = "works", ["jti"] = credentialId,
-                ["eventstore:tenant"] = Tenant, ["eventstore:domain"] = "party", ["eventstore:permission"] = "query:read",
+                ["sub"] = "works-identity-reader",
+                ["azp"] = "works",
+                ["jti"] = credentialId,
+                ["eventstore:tenant"] = Tenant,
+                ["eventstore:domain"] = "party",
+                ["eventstore:permission"] = "query:read",
             },
             IssuedAt = expired ? now.AddHours(-3) : now.AddMinutes(-2),
             NotBefore = expired ? now.AddHours(-3) : now.AddMinutes(-2),

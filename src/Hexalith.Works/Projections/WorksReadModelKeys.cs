@@ -93,7 +93,7 @@ internal static class WorksReadModelKeys
 
     /// <summary>Returns whether the tenant id collides with the well-known pending-date-await registry key.</summary>
     public static bool IsReservedTenantId(string? tenantId)
-        => string.Equals(tenantId, ReservedTenantId, StringComparison.Ordinal);
+        => string.Equals(tenantId, ReservedTenantId, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Refuses <see cref="ReservedTenantId"/> at a host ingress so its pending-date-await index key cannot

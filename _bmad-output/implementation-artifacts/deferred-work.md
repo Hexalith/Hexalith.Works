@@ -809,6 +809,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-3.md`
   summary: Mixed-case reserved tenant `TENANTS` misses the `/project` Ordinal guard, then `TenantId` lowercases to `tenants`.
+  status: done 2026-10-23
+  resolution: The original custom projection handler is superseded by SDK hosting. `spec-five-deferred-ingress-authority.md` makes the common reserved-tenant/key guard case-independent and verifies current stream acquisition, all command adapters and protected HTTP command refusal with unchanged persisted projection contents for uppercase and mixed-case spellings. [Verification evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json).
   evidence: Pre-existing order: `ThrowIfReservedTenantId(request.TenantId)` then `new TenantId(...)`. EventStore already lowercases persisted stream identity, so the poller does not send `TENANTS`; a hand-crafted `/project` body could. Not introduced by Group 1.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-15, Group 1 patch round)
@@ -1501,6 +1503,8 @@ These four items were reconfirmed on the current production code. They do not op
   evidence: Settle by reading SDK IReminderRegistrar.ConvergeAsync/ReminderConvergenceResult: if it can report incomplete without throwing, return RetryableInProgress.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: ValidateWitnessAddress compares envelope.TenantId ordinally while IsValidFor lowercases the tenant (medium, unverified).
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-ingress-authority.md` proves SDK envelopes retain raw tenant casing while canonical stream identity lowercases it; witnessed create/reschedule reflection dispatch now accepts canonical-equivalent tenants. Foreign tenants, domains and case-sensitive aggregates still refuse. Protected delegated origin binding continues to require its exact authenticated tuple. [Verification evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json).
   evidence: Settle by checking whether the gateway already normalizes envelope tenant case.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: WorksReminderIntentSource validates only the final expiry witness (medium, unverified). RESOLVED in chunk B review 2026-10-16: WorksSourceStreamReader applies WorksExpiryEvidence to every committed envelope, so the claim holds.
@@ -1548,10 +1552,14 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Bound synchronous and cancellation-ignoring Parties query-authority acquisition with shared admission and lifetime handling.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-ingress-authority.md` reuses SDK AuthoritativeStreamReadDeadline.ReadWithAdmissionAsync for the existing two-second identity budget. Synchronous stalls are isolated; caller cancellation and timeout deny before any actual coordinator/store read; task admission survives abandonment until provider completion. The separate pre-existing SDK cancellation-callback worker lifetime limitation is explicitly tracked below. [Verification evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json).
   evidence: BR7-2: baseline 8679d7d700925a870e9931b3c43c745c063e459b directly awaits ResolvePartyIdentityAsync without an invocation/admission bound; current WorksQueryPolicy.cs:52-59 can block synchronously or retain cancellation-ignoring requests. This R5 issue predates the R6–R8/R11 adoption; use a shared SDK/provider seam and regressions for sync blocking, refused admission and completion-based release.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Isolate query deadline completion from provider cancellation callbacks.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-ingress-authority.md` separates query waiting from provider cancellation through the existing SDK deadline. Blocking callbacks installed after the query waiter cannot hold timeout or caller-cancellation completion; all four strengthened controls fail against the original policy and pass with the change. Callback-worker retention is a separate SDK resource-lifetime follow-up below. [Verification evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json).
   evidence: ER7-1: /tmp/story415-edge-probe reproduced a callback entering at two seconds and holding AuthorizeAsync pending at three seconds until released. The baseline query path is already provider-bound; the later R5 WaitAsync improvement uses the provider token as its deadline token. Verify distinct deadline/provider lifetimes and nonblocking cancellation at the shared seam.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1780,6 +1788,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Bound outstanding noncooperative identity-provider operations across repeated authorization timeouts.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-ingress-authority.md` verifies sixteen shared SDK slots across separate policy instances: repeated timeouts cannot admit another incomplete identity task or stream read; a single completed/faulted provider frees exactly one slot, and actual completion permits source acquisition again. This bounds outstanding provider tasks; callback-worker cleanup remains a separate pre-existing SDK limitation below. [Verification evidence](evidence/five-deferred-ingress-authority-2026-10-23/manifest.json).
   evidence: Review R2B9: WorksQueryPolicyDeadlineTests proves the provider task can remain incomplete after the fail-closed response, and WorksQueryPolicy has no concurrency bound on subsequent calls. The policy is unchanged from pre-cutover 696781961155d764ed805843f55b40dc5882e887. Fix in the owning identity-client boundary and verify repeated noncooperative calls.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1846,3 +1856,9 @@ control plane and policies in Platform. The [retired-test replacement inventory]
 maps `WorksAppHostTopologyTests.cs` to its replacement coverage. This audit inspects retained source and
 existing evidence; it does not claim a new live run or close separate live-prerequisite, scheduler-security
 or catalog/specification entries. The historical Story 1.5 review is preserved unchanged.
+
+## Deferred from: code review of spec-five-deferred-ingress-authority.md (2026-10-23)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-ingress-authority.md`
+  summary: Retain shared SDK provider admission and cancellation-source lifetime until both the provider task and initiated cancellation callbacks terminate (medium).
+  evidence: An isolated probe compiling the unchanged AuthoritativeStreamReadDeadline source at EventStore `6a0b6441f6d78a3007678a1d0ec336e9cb8ff961` admitted 20 providers while all 20 cancellation callbacks remained blocked, despite its sixteen task slots: each callback canceled its returned task before blocking, and the task-completion continuation released admission. The mechanism predates this consumer change; original Works authority resolution also leaves such callbacks running after provider-task completion. The five-item fix bounds outstanding provider tasks and query response completion, not completed-task callbacks. Correct the technical-module helper to release only after both lifetimes and retain its source accordingly; add an executing combined race control, then publish and qualify a corrected SDK producer before claiming callback-worker admission. Do not duplicate SDK mechanics in Works. Reproducer and output are retained in this spec's verification packet.
