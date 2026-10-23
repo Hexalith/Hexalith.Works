@@ -626,7 +626,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectio
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: The live source-consumption gate still enumerates projects by basename, so a differently named root-owned project could evade this specific check. This behavior predates the evaluated-input bundle and is outside its four ledger entries.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers every root-owned project filename and exercises both PackageReference and GlobalPackageReference through the live sweep, retaining dependency/evidence/build-output exclusions. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-76: PackageVersion ownership does not trace Works-owned property overrides consumed by the approved shared catalog.
 origin: spec-deferred 61f77899777d
@@ -652,7 +653,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: A project declaring a Platforms set that excludes AnyCPU would be evaluated under a platform it does not support, so platform-conditioned imports and ProjectReference items would silently drop out of the evaluated set the gates trust as complete. No project in the repository declares such a set today.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers declared platforms before strict selected-lane evaluation, revisits framework-specific Platforms and preserves explicit caller/child globals. Unsupported-default and missing-supported-import controls pass. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-79: Restored NuGet package build props enter the custom-import freshness closure.
 origin: spec-deferred c816fd817c7c
@@ -660,7 +662,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: IsCustomImportPath excludes installed-SDK imports and generated build output, but a package's build/buildTransitive props imported from the global packages folder is neither, so it becomes a restore input. Re-extracting or touching the package cache without restoring would report the evaluated dependency artifact stale.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Excludes evaluated NuGetPackageRoot, NuGetPackageFolders and RestorePackagesPath imports only from freshness; custom siblings, dependency contents and malformed-declaration refusals remain covered. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ### DW-80: Dependency declarations that only an inactive non-Release condition guards remain invisible when they arrive through an import.
 origin: spec-deferred 65a78e5cf80d
@@ -668,7 +671,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEval
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: medium
 reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Applies Debug/Release, declared framework/platform and source-child dependency governance to the union; live direction and package-mode allowlists participate. The Debug-only child regression was demonstrated red before the fix and green afterward. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
 
@@ -715,7 +719,8 @@ location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/WorkItemRollUpPayl
 source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
 severity: low
 reason: Pre-existing, not caused by this diff — the overlap was created when `ProjectionPayloadCoverageTests.cs` was added in the prior 4.8 review round (commit `01d527a`), which duplicates `WorkItemRollUpPayloadCoverageTests`'s single coverage assertion (minus `EffectDisposition`/intentional-no-op checks). This diff only updates the older test to compile against the renamed `WorkItemRollUpPayloadDescriptor.Catalog` API. Two overlapping tests must now be kept in sync by hand; consider retiring or consolidating the older, narrower test.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Retires the narrower WorkItemRollUpPayloadCoverageTests; ProjectionPayloadCoverageTests retains every prior assertion plus catalog uniqueness, effect-disposition and intentional-no-op coverage. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
 
 ## Deferred from: review remediation of 4-8-register-and-reconcile-date-reminders-durably (2026-09-08)
 
@@ -745,18 +750,26 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Reject null-correlation `ConversationLinked` evidence in the what's-next projection.
+  status: done 2026-10-23
+  resolution: Existing descriptor rejection is confirmed by WorkItemConversationProjectionTests; the extended control proves a valid same-sequence link is still accepted after malformed evidence. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The separately committed Story 1.5 descriptor treats a null correlation as an accepted intentional no-op and can advance the source watermark for malformed evidence; Story 4.8 does not own that projection contract.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Validate persisted `ConversationLinked` identity before applying it to aggregate state.
+  status: done 2026-10-23
+  resolution: WorkItemState.Apply now refuses absent/unestablished or foreign tenant, item and aggregate identities before mutation. Unit and real SDK byte-replay controls preserve state and allow subsequent healthy replay. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The separately committed Story 1.5 replay overload validates the correlation only, so a foreign tenant/work-item/aggregate identity in corrupted persisted evidence could become authoritative and reject a later legitimate link.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add independent domain and tenant mismatch coverage for the Story 1.5 runtime envelope boundary.
+  status: done 2026-10-23
+  resolution: Existing independent domain, tenant and aggregate mismatch facts are retained and executed through the real EventStore aggregate dispatcher. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The pre-verified review found only aggregate-ID mismatch coverage; removing either the domain or tenant comparison currently leaves the focused adapter tests green.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add malformed required-field dispatch coverage for `LinkConversation`.
+  status: done 2026-10-23
+  resolution: Raw dispatch now exercises missing and explicit-null tenant, work-item and correlation fields, preserves supplied persisted state, and proves a later healthy command still emits the expected link. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: The pre-verified review found no raw runtime-adapter case with missing/null tenant, work-item, or conversation correlation, so the separately committed Story 1.5 fail-closed guards can regress undetected.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
@@ -819,6 +832,8 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Complete reserved-tenant command-envelope hardening across all aggregate adapters.
+  status: done 2026-10-23
+  resolution: All fifteen command adapters are exercised against canonical and mixed-case reserved envelope tenants and reserved payload tenants with ordinary envelopes; ordinary kernel-result preservation controls remain active. See [spec-five-deferred-conversation-boundaries.md](spec-five-deferred-conversation-boundaries.md) and its retained verification evidence.
   evidence: Split from the 4,488-token remediation spec after review showed this independently shippable adapter-boundary bundle needs all-command reserved-envelope and retained reserved-payload tests.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
@@ -1457,6 +1472,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: ReminderConvergenceResult is discarded by WorksDomainEventProcessor before returning Processed (medium, unverified).
+  status: done 2026-10-23
+  resolution: Superseded by the Story 4.9 SDK cutover. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) verifies that retained unresolved work permits acknowledgement after durable discovery, convergence exceptions release the delivery marker, and duplicate delivery does not repeat convergence; SDK scheduling-failure recovery is verified separately. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: Settle by reading SDK IReminderRegistrar.ConvergeAsync/ReminderConvergenceResult: if it can report incomplete without throwing, return RetryableInProgress.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: ValidateWitnessAddress compares envelope.TenantId ordinally while IsValidFor lowercases the tenant (medium, unverified).
@@ -1529,10 +1546,14 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Record legacy pending-date discovery before scheduling so failed scheduler calls retain a recoverable target.
+  status: done 2026-10-23
+  resolution: Superseded by removal of the legacy scheduler. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) proves current Works discovery precedes convergence, and the SDK RegistrationPersistsWitnessAndIndexBeforeArming and PendingStateSurvivesSchedulerFailure tests verify durable witness/index ordering and recovery after scheduler outage. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: The legacy suspended handler writes the fallback index after scheduling all reminders; a failed scheduler call with missing projection delivery leaves no durable discovery entry. The index write was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d; before that commit the handler wrote no fallback index, so this scheduling-failure window predates the new write.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Clear stale legacy pending-date discovery entries with a sequence-fenced empty fold.
+  status: done 2026-10-23
+  resolution: Superseded by the SDK generation-selected pending-date fold. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) verifies persisted empty membership and sequence 3 after resume/cancel, restart and stale suspension redelivery, preserving checkpoint 3; SDK RemovedIntentReleasesStateThenIndex verifies reminder discovery cleanup. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: PendingDateAwaitDiscoveryIndex.RecordAsync returns when the pending set is empty, so old entries continue to be scanned and can grow the tenant document. PendingDateAwaitDiscoveryIndex was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d. The same stale-entry claim was rejected as low in the 2026-10-17 src/scripts review because the legacy consumer rereads authoritative streams; preserve that earlier verdict when reassessing this follow-up.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1653,24 +1674,34 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Verify suspension callback discovery-write failure and successful redelivery using the real handler through WorksDomainEventProcessor.
+  status: done 2026-10-23
+  resolution: Superseded legacy processor replaced by the real `EventStoreDomainEventProcessor` and `WorksRecoveryWakeupHandler<WorkItemSuspended>`. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) injects discovery-store and registrar failures, proves released markers, reconstructs the processor, verifies persisted discovery and completion on redelivery, then duplicate suppression. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: Review T212; the accepted Story 4.15 discovery write (07e23a6fc54fca9644e844de5d1dff6f49b58b22) has healthy persistence coverage, while its processor retry test substitutes another handler. Inject registry/tenant-index failure after reminder scheduling, require retryable delivery, then restore the store and assert persisted discovery before completed deduplication.
 
 ## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md (2026-10-20)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Extend the Platform verifier's Works fixture inventory beyond IntegrationTests C# sources.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` binds complete IntegrationTests/Testing inputs, copied resources and runner configuration before execution, with mutation/addition/removal regressions.
   evidence: Review T220; `fixture_sources` (`P/eng/verify_works_host.py:149-154`) hashes only `tests/Hexalith.Works.IntegrationTests/**/*.cs` plus `ProjectMetadataPaths.cs`. The IntegrationTests project file, `tests/Hexalith.Works.Testing`, `xunit.runner.json` and copied golden JSON are unbound. This scope predates the iteration 5 corrections; compiled project-file effects are bound through the consumer binary hash.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Bind the runtime SDK export's linked Builds catalog in the verifier ledger.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` binds the selected SDK Builds location, resolved target and complete Props inventory separately from official producer sources; qualification and final closure reject drift.
   evidence: Review T221; `runtime_source_snapshot` (`P/eng/verify_works_producer.py:32-41`) records only `src/**` and three root build files, while the export's `references/Hexalith.Builds` link selects the SDK dependency graph. The 3.126.0 run's `b435f2e3` catalog is bound only by the packet's `builds-source-provenance.json`. Record the resolved catalog commit or Props hashes and re-check them at the end of the run.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Give the verifier's end-of-run "changed during execution" checks an executing regression.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` extracts the final closure checks and executes unchanged and independent source, artifact, verifier, fixture, retained-host, dependency, manifest and port-drift controls.
   evidence: Review T222 (pre-verified gap); no test reaches `P/eng/verify_works_host.py:1022-1046`, so removing or weakening any final source, artifact, verifier or fixture re-check leaves the evidence-gate tests green. Extract the end-of-pipeline checks into a testable function.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Add cross-tenant registry preservation and ETag-conflict coverage for the accepted Story 4.15 suspend-subscription discovery writer (review T235).
+  status: done 2026-10-23
+  resolution: Superseded writer replaced by SDK process/reminder discovery. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) executes real suspension handlers with a competing registry CAS and verifies three tenants and their exact persisted candidates after reconstruction; SDK IndependentRegistrationsRetryDiscoveryCas covers both same-tenant and cross-tenant reminder registration. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: The pre-verified review found that WorkItemSuspendedReminderHandlerTests only registers one tenant, while dispatcher preservation tests execute a different writer. PendingDateAwaitDiscoveryIndex and the handler test were introduced by accepted 4.15 commit 07e23a6fc54fca9644e844de5d1dff6f49b58b22. Seed tenant A, handle tenant B with a forced registry conflict, and assert both remain in persisted discovery state; no runtime defect is claimed.
 
 ## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md, iteration 8 (2026-10-20)
@@ -1707,6 +1738,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Terminate owned command descendants when the Platform verifier times out or is cancelled.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` runs commands in owned POSIX groups and terminates group members and reaps the leader on timeout, cancellation or completion; real controls cover launch-time signals, cleanup grace and detached-session ownership boundaries.
   evidence: Review R2B5: subprocess.run(timeout=1800) only kills the direct process; a temporary owned fixture confirmed its sleep descendant survives timeout and explicitly cleaned that PID. The helper is unchanged from the pre-existing verifier. Use an owned process group and a descendant-cleanup regression.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1763,4 +1796,6 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Filter linked-fixture build outputs by path relative to each owning root.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verifier-safeguards.md` filters Identity, Composition, explicit Compile links and Parties inputs relative to their owners; bin/obj workspace-parent controls retain source bindings and exclude generated outputs.
   evidence: Pre-existing `linked_fixture_snapshot` (`references/Hexalith.Platform/eng/verify_works_host.py:953`) tests `{"bin","obj"}` against absolute `path.parts`; a Works root below a `bin` or `obj` directory would drop every Identity/Composition/Parties source from the binding.

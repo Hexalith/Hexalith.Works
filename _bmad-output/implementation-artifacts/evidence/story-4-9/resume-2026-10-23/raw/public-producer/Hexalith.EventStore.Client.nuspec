@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Hexalith.EventStore.Client</id>
+    <version>3.126.1</version>
+    <authors>Hexalith Contributors</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/Hexalith/Hexalith.EventStore</projectUrl>
+    <description>Multi-tenant client SDK for the Hexalith event store — domain processor registration, assembly scanning, and fluent configuration for .NET event sourcing with DAPR</description>
+    <tags>eventsourcing dapr cqrs eventstore dotnet</tags>
+    <repository type="git" url="https://github.com/Hexalith/Hexalith.EventStore" commit="1748b16b11fb63b885dfa2fd4a9c7a420ea103a9" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="Hexalith.EventStore.Contracts" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Dapr.Client" version="1.18.10" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.DataProtection.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Configuration.Binder" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Hosting.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Http" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="ByteAether.Ulid" version="1.4.2" exclude="Build,Analyzers" />
+        <dependency id="Hexalith.Commons.UniqueIds" version="2.30.3" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Configuration" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Configuration.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Diagnostics.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Options" version="10.0.13" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Options.ConfigurationExtensions" version="10.0.13" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

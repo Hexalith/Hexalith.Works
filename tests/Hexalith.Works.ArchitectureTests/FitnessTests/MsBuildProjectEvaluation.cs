@@ -8,7 +8,7 @@ using Microsoft.Build.Exceptions;
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 /// <summary>
-/// Evaluates dependency-affecting MSBuild state with a fixed Release-lane configuration.
+/// Evaluates dependency-affecting MSBuild state across explicitly selected and declared build lanes.
 /// </summary>
 internal static class MsBuildProjectEvaluation
 {
@@ -43,7 +43,6 @@ internal static class MsBuildProjectEvaluation
                 ["BuildingInsideVisualStudio"] = "false",
                 ["Configuration"] = "Release",
                 ["DesignTimeBuild"] = "false",
-                ["Platform"] = "AnyCPU",
             });
 
     private static readonly Lazy<string> _msBuildToolsPath = new(ConfigureInstalledMsBuild);
@@ -66,7 +65,41 @@ internal static class MsBuildProjectEvaluation
         string projectPath,
         out MsBuildProjectSnapshot? snapshot,
         out string diagnostic)
-        => TryEvaluate(projectPath, _releaseGlobalProperties, out snapshot, out diagnostic);
+        => TryEvaluateCore(projectPath, _releaseGlobalProperties, expandDeclaredPlatforms: true, out snapshot, out diagnostic);
+
+    /// <summary>
+    /// Evaluates both supported configurations, including their declared platforms and frameworks.
+    /// </summary>
+    /// <param name="projectPath">The project file to evaluate.</param>
+    /// <param name="snapshots">The complete configuration snapshots, or an empty collection on failure.</param>
+    /// <param name="diagnostic">An actionable evaluator diagnostic on failure.</param>
+    /// <returns>Whether every supported lane was evaluated successfully.</returns>
+    internal static bool TryEvaluateSupportedLanes(
+        string projectPath,
+        out IReadOnlyList<MsBuildProjectSnapshot> snapshots,
+        out string diagnostic)
+    {
+        var evaluated = new List<MsBuildProjectSnapshot>();
+        foreach (string configuration in new[] { "Debug", "Release" })
+        {
+            var properties = new Dictionary<string, string>(_releaseGlobalProperties, StringComparer.OrdinalIgnoreCase)
+            {
+                ["Configuration"] = configuration,
+            };
+            if (!TryEvaluateCore(projectPath, properties, expandDeclaredPlatforms: true, out MsBuildProjectSnapshot? snapshot, out diagnostic))
+            {
+                snapshots = [];
+                diagnostic = $"{configuration} lane: {diagnostic}";
+                return false;
+            }
+
+            evaluated.Add(snapshot!);
+        }
+
+        snapshots = evaluated.AsReadOnly();
+        diagnostic = string.Empty;
+        return true;
+    }
 
     /// <summary>
     /// Tries to evaluate a referenced project with its exact effective global properties.
@@ -81,13 +114,21 @@ internal static class MsBuildProjectEvaluation
         IReadOnlyDictionary<string, string> globalProperties,
         out MsBuildProjectSnapshot? snapshot,
         out string diagnostic)
+        => TryEvaluateCore(projectPath, globalProperties, expandDeclaredPlatforms: false, out snapshot, out diagnostic);
+
+    private static bool TryEvaluateCore(
+        string projectPath,
+        IReadOnlyDictionary<string, string> globalProperties,
+        bool expandDeclaredPlatforms,
+        out MsBuildProjectSnapshot? snapshot,
+        out string diagnostic)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(projectPath);
         ArgumentNullException.ThrowIfNull(globalProperties);
 
         try
         {
-            snapshot = Evaluate(projectPath, globalProperties);
+            snapshot = Evaluate(projectPath, globalProperties, expandDeclaredPlatforms);
             diagnostic = string.Empty;
             return true;
         }
@@ -108,7 +149,8 @@ internal static class MsBuildProjectEvaluation
 
     private static MsBuildProjectSnapshot Evaluate(
         string projectPath,
-        IReadOnlyDictionary<string, string> globalProperties)
+        IReadOnlyDictionary<string, string> globalProperties,
+        bool expandDeclaredPlatforms)
     {
         _ = _msBuildToolsPath.Value;
         string canonicalProjectPath = CanonicalExistingFile(projectPath, "project");
@@ -116,30 +158,15 @@ internal static class MsBuildProjectEvaluation
             globalProperties,
             StringComparer.OrdinalIgnoreCase);
         using var projectCollection = new ProjectCollection();
-        var projects = new List<Project>
-        {
-            LoadProject(projectCollection, canonicalProjectPath, initialGlobalProperties),
-        };
-
-        if (!initialGlobalProperties.ContainsKey("TargetFramework"))
-        {
-            foreach (string targetFramework in DeclaredTargetFrameworks(projects[0]))
-            {
-                var targetFrameworkProperties = new Dictionary<string, string>(
-                    initialGlobalProperties,
-                    StringComparer.OrdinalIgnoreCase)
-                {
-                    ["TargetFramework"] = targetFramework,
-                };
-                projects.Add(LoadProject(projectCollection, canonicalProjectPath, targetFrameworkProperties));
-            }
-        }
+        IReadOnlyList<Project> projects = LoadEvaluationLanes(
+            projectCollection, canonicalProjectPath, initialGlobalProperties, expandDeclaredPlatforms);
 
         var items = new List<MsBuildEvaluatedItem>();
         var imports = new List<string>();
         foreach (Project project in projects)
         {
             ValidateDependencyDeclarations(project);
+            string[] packageRoots = [.. RestoredPackageRoots(project)];
             items.AddRange(project.Items
                 .Where(item => TryGetCanonicalDependencyItemType(item.ItemType, out _))
                 .Select(item => EvaluatedItem(item, project.GlobalProperties)));
@@ -147,7 +174,8 @@ internal static class MsBuildProjectEvaluation
                 .Select(import => CanonicalExistingFile(
                     import.ImportedProject.FullPath,
                     $"import resolved by '{canonicalProjectPath}'"))
-                .Where(import => IsCustomImportPath(import, canonicalProjectPath)));
+                .Where(import => IsCustomImportPath(import, canonicalProjectPath))
+                .Where(import => !packageRoots.Any(root => IsUnderDirectory(import, root))));
         }
 
         return new MsBuildProjectSnapshot(
@@ -180,7 +208,8 @@ internal static class MsBuildProjectEvaluation
     private static Project LoadProject(
         ProjectCollection projectCollection,
         string canonicalProjectPath,
-        IReadOnlyDictionary<string, string> globalProperties)
+        IReadOnlyDictionary<string, string> globalProperties,
+        bool ignoreMissingImports = false)
         => new(
             canonicalProjectPath,
             new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase),
@@ -188,11 +217,75 @@ internal static class MsBuildProjectEvaluation
             projectCollection,
             ProjectLoadSettings.FailOnUnresolvedSdk
                 | ProjectLoadSettings.RecordDuplicateButNotCircularImports
-                | ProjectLoadSettings.RejectCircularImports);
+                | ProjectLoadSettings.RejectCircularImports
+                | (ignoreMissingImports ? ProjectLoadSettings.IgnoreMissingImports : default));
 
-    private static IEnumerable<string> DeclaredTargetFrameworks(Project project)
+    private static IReadOnlyList<Project> LoadEvaluationLanes(
+        ProjectCollection projectCollection,
+        string projectPath,
+        IReadOnlyDictionary<string, string> initialProperties,
+        bool expandDeclaredPlatforms)
     {
-        string declaration = project.GetPropertyValue("TargetFrameworks").Trim();
+        var projects = new List<Project>();
+        var pending = new Queue<IReadOnlyDictionary<string, string>>();
+        var requestedLanes = new HashSet<string>(StringComparer.Ordinal);
+        var loadedLanes = new HashSet<string>(StringComparer.Ordinal);
+        pending.Enqueue(initialProperties);
+        while (pending.TryDequeue(out IReadOnlyDictionary<string, string>? requested))
+        {
+            if (!requestedLanes.Add(GlobalPropertiesKey(requested)))
+            {
+                continue;
+            }
+
+            string[] platforms = [];
+            if (expandDeclaredPlatforms && !initialProperties.ContainsKey("Platform"))
+            {
+                // Discovery may run outside every supported platform. It contributes no evidence: each
+                // selected lane below is loaded strictly, so a missing supported import still fails closed.
+                using var discoveryCollection = new ProjectCollection();
+                Project discovery = LoadProject(discoveryCollection, projectPath, requested, ignoreMissingImports: true);
+                platforms = [.. DeclaredLanes(discovery, "Platforms")];
+            }
+
+            IEnumerable<IReadOnlyDictionary<string, string>> lanes = platforms.Length == 0
+                ? [requested]
+                : platforms.Select(platform => new Dictionary<string, string>(requested, StringComparer.OrdinalIgnoreCase)
+                {
+                    ["Platform"] = platform,
+                });
+            foreach (IReadOnlyDictionary<string, string> lane in lanes)
+            {
+                if (!loadedLanes.Add(GlobalPropertiesKey(lane)))
+                {
+                    continue;
+                }
+
+                Project project = LoadProject(projectCollection, projectPath, lane);
+                projects.Add(project);
+                if (!lane.ContainsKey("TargetFramework"))
+                {
+                    foreach (string framework in DeclaredLanes(project, "TargetFrameworks"))
+                    {
+                        pending.Enqueue(new Dictionary<string, string>(lane, StringComparer.OrdinalIgnoreCase)
+                        {
+                            ["TargetFramework"] = framework,
+                        });
+                    }
+                }
+            }
+        }
+
+        return projects.AsReadOnly();
+    }
+
+    private static string GlobalPropertiesKey(IReadOnlyDictionary<string, string> properties)
+        => string.Join('\u001e', properties.OrderBy(property => property.Key, StringComparer.OrdinalIgnoreCase)
+            .Select(property => $"{property.Key.ToUpperInvariant()}={property.Value}"));
+
+    private static IEnumerable<string> DeclaredLanes(Project project, string propertyName)
+    {
+        string declaration = project.GetPropertyValue(propertyName).Trim();
         if (declaration.Length == 0)
         {
             return [];
@@ -201,20 +294,27 @@ internal static class MsBuildProjectEvaluation
         if (ContainsOpaqueExpression(declaration))
         {
             throw new InvalidOperationException(
-                $"Project '{project.FullPath}' has an unusable target-framework declaration '{declaration}'.");
+                $"Project '{project.FullPath}' has an unusable {propertyName} declaration '{declaration}'.");
         }
 
-        string[] targetFrameworks = declaration.Split(
+        string[] lanes = declaration.Split(
             ';',
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (targetFrameworks.Length == 0)
+        if (lanes.Length == 0)
         {
             throw new InvalidOperationException(
-                $"Project '{project.FullPath}' has an empty target-framework declaration '{declaration}'.");
+                $"Project '{project.FullPath}' has an empty {propertyName} declaration '{declaration}'.");
         }
 
-        return targetFrameworks.Distinct(StringComparer.OrdinalIgnoreCase);
+        return lanes.Distinct(StringComparer.OrdinalIgnoreCase);
     }
+
+    private static IEnumerable<string> RestoredPackageRoots(Project project)
+        => new[] { "NuGetPackageRoot", "NuGetPackageFolders", "RestorePackagesPath" }
+            .SelectMany(name => project.GetPropertyValue(name).Split(
+                ';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Select(path => Path.GetFullPath(path.Replace('\\', Path.DirectorySeparatorChar), project.DirectoryPath))
+            .Distinct(PathComparer);
 
     private static MsBuildEvaluatedItem EvaluatedItem(
         ProjectItem item,

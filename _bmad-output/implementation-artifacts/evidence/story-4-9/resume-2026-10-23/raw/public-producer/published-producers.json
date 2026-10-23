@@ -1,0 +1,26 @@
+{
+  "Hexalith.EventStore.Client": {
+    "version": "3.126.1",
+    "source": "https://api.nuget.org/v3/index.json",
+    "archiveUrl": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/3.126.1/hexalith.eventstore.client.3.126.1.nupkg",
+    "sha256": "53fd5f378a997557725fa03e8627074f940b016fd9f5a34aed981e04053b698b",
+    "repositoryUrl": "https://github.com/Hexalith/Hexalith.EventStore",
+    "repositoryCommit": "1748b16b11fb63b885dfa2fd4a9c7a420ea103a9"
+  },
+  "Hexalith.EventStore.DomainService": {
+    "version": "3.126.1",
+    "source": "https://api.nuget.org/v3/index.json",
+    "archiveUrl": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/3.126.1/hexalith.eventstore.domainservice.3.126.1.nupkg",
+    "sha256": "4876cf275201edfc74a929dad6ce050d1fe45f0aa07c96644807c6dcb1dbbefd",
+    "repositoryUrl": "https://github.com/Hexalith/Hexalith.EventStore",
+    "repositoryCommit": "1748b16b11fb63b885dfa2fd4a9c7a420ea103a9"
+  },
+  "Hexalith.EventStore.Aspire": {
+    "version": "3.126.1",
+    "source": "https://api.nuget.org/v3/index.json",
+    "archiveUrl": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/3.126.1/hexalith.eventstore.aspire.3.126.1.nupkg",
+    "sha256": "02215adfc6198d58003b457f8d68075d03438f01b09cbfd2650cef5ee7fd3bc6",
+    "repositoryUrl": "https://github.com/Hexalith/Hexalith.EventStore",
+    "repositoryCommit": "1748b16b11fb63b885dfa2fd4a9c7a420ea103a9"
+  }
+}

@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Hexalith.EventStore.Contracts.Results;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
@@ -190,6 +192,58 @@ public sealed class WorkItemLinkConversationTests
         state.ConversationCorrelationId.ShouldBe(ExistingConversation);
         state.Status.ShouldBe(WorkItemStatus.Created);
         state.Sequence.ShouldBe(1);
+    }
+
+    [Theory]
+    [InlineData("tenant")]
+    [InlineData("item")]
+    [InlineData("aggregate")]
+    [InlineData("null-tenant")]
+    [InlineData("null-item")]
+    [InlineData("null-aggregate")]
+    [InlineData("empty-aggregate")]
+    public void ConversationReplayRefusesForeignOrMissingIdentityBeforeMutation(string defect)
+    {
+        foreach (ConversationCorrelationId? existing in new ConversationCorrelationId?[] { null, ExistingConversation })
+        {
+            WorkItemState state = InStatus(WorkItemStatus.Suspended, existing);
+            string before = JsonSerializer.Serialize(state);
+            var valid = new ConversationLinked(Item.Value, state.Sequence + 1, Tenant, Item, ProposedConversation);
+            ConversationLinked malformed = defect switch
+            {
+                "tenant" => valid with { TenantId = new TenantId("tenant-beta") },
+                "item" => valid with { WorkItemId = new WorkItemId("work-002") },
+                "aggregate" => valid with { AggregateId = "work-002" },
+                "null-tenant" => valid with { TenantId = null! },
+                "null-item" => valid with { WorkItemId = null! },
+                "null-aggregate" => valid with { AggregateId = null! },
+                "empty-aggregate" => valid with { AggregateId = string.Empty },
+                _ => throw new ArgumentOutOfRangeException(nameof(defect)),
+            };
+
+            Should.Throw<InvalidOperationException>(() => state.Apply(malformed));
+
+            JsonSerializer.Serialize(state).ShouldBe(before);
+            state.Apply(valid);
+            state.ConversationCorrelationId.ShouldBe(existing ?? ProposedConversation);
+            state.Sequence.ShouldBe(valid.Sequence);
+        }
+    }
+
+    [Fact]
+    public void ConversationReplayRequiresEstablishedWorkItemIdentity()
+    {
+        var state = new WorkItemState();
+        string before = JsonSerializer.Serialize(state);
+
+        Should.Throw<InvalidOperationException>(() => state.Apply(
+            new ConversationLinked(Item.Value, 1, Tenant, Item, ProposedConversation)));
+
+        JsonSerializer.Serialize(state).ShouldBe(before);
+        state.Apply(new WorkItemCreated(Item.Value, 1, Tenant, Item, new Obligation("Valid creation")));
+        state.Apply(new ConversationLinked(Item.Value, 2, Tenant, Item, ProposedConversation));
+        state.ConversationCorrelationId.ShouldBe(ProposedConversation);
+        state.Sequence.ShouldBe(2);
     }
 
     [Fact]

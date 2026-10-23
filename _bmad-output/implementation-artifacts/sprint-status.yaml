@@ -79,6 +79,7 @@ development_status:
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
   4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
+  # Public EventStore 3.126.1 still lacks the required retained-seal fix
   # Complete 4.15, then 4.16, before resuming 4.9.
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: done

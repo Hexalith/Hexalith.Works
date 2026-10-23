@@ -207,16 +207,19 @@ internal static class KernelDependencyPolicy
             var violations = new HashSet<string>(
                 EvaluateProjectXml(governedProject, projectPath, projectXml),
                 StringComparer.Ordinal);
-            if (!MsBuildProjectEvaluation.TryEvaluate(projectPath, out MsBuildProjectSnapshot? snapshot, out string diagnostic))
+            if (!MsBuildProjectEvaluation.TryEvaluateSupportedLanes(projectPath, out IReadOnlyList<MsBuildProjectSnapshot> snapshots, out string diagnostic))
             {
                 violations.Add($"{governedProject} {diagnostic}");
                 return [.. violations.Order(StringComparer.Ordinal)];
             }
 
-            violations.UnionWith(EvaluateSnapshot(
-                governedProject,
-                snapshot!,
-                Path.GetFullPath(projectPath)));
+            foreach (MsBuildProjectSnapshot snapshot in snapshots)
+            {
+                violations.UnionWith(EvaluateSnapshot(
+                    governedProject,
+                    snapshot,
+                    Path.GetFullPath(projectPath)));
+            }
             return [.. violations.Order(StringComparer.Ordinal)];
         }
         catch (IOException exception)
@@ -334,7 +337,7 @@ internal static class KernelDependencyPolicy
         string approvedCatalog = Path.GetFullPath(approvedSharedCatalogPath);
         var violations = new HashSet<string>(StringComparer.Ordinal);
 
-        // The Release-lane evaluation resolves conditions away and never sees an unevaluable declaration, so
+        // Lane evaluation resolves conditions away and never sees an unevaluable declaration, so
         // scan the owning project XML conservatively first. Without this, a Hexalith package declared under an
         // inactive condition would leave this gate silently blind instead of failing closed.
         foreach (string packageItemKind in _packageItemKinds)
@@ -347,26 +350,29 @@ internal static class KernelDependencyPolicy
             }
         }
 
-        if (!MsBuildProjectEvaluation.TryEvaluate(projectPath, out MsBuildProjectSnapshot? snapshot, out string diagnostic))
+        if (!MsBuildProjectEvaluation.TryEvaluateSupportedLanes(projectPath, out IReadOnlyList<MsBuildProjectSnapshot> snapshots, out string diagnostic))
         {
             violations.Add(diagnostic);
             return [.. violations.Order(StringComparer.Ordinal)];
         }
 
-        foreach (MsBuildEvaluatedItem packageReference in snapshot!.Items
-            .Where(item => item.ItemType is "PackageReference" or "GlobalPackageReference")
-            .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase)))
+        foreach (MsBuildProjectSnapshot snapshot in snapshots)
         {
-            violations.Add(
-                $"Owning project '{snapshot.ProjectPath}' consumes evaluated {packageReference.ItemType} '{packageReference.Identity}' defined by '{packageReference.DefiningProjectPath}'; Hexalith libraries must use sibling ProjectReference source.");
-        }
+            foreach (MsBuildEvaluatedItem packageReference in snapshot.Items
+                .Where(item => item.ItemType is "PackageReference" or "GlobalPackageReference")
+                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase)))
+            {
+                violations.Add(
+                    $"Owning project '{snapshot.ProjectPath}' consumes evaluated {packageReference.ItemType} '{packageReference.Identity}' defined by '{packageReference.DefiningProjectPath}'; Hexalith libraries must use sibling ProjectReference source.");
+            }
 
-        foreach (MsBuildEvaluatedItem packageVersion in snapshot.ItemsOfType("PackageVersion")
-            .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
-            .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog)))
-        {
-            violations.Add(
-                $"Owning project '{snapshot.ProjectPath}' receives Works-owned PackageVersion '{packageVersion.Identity}' from '{packageVersion.DefiningProjectPath}'; only shared catalog '{approvedCatalog}' may define Hexalith package versions.");
+            foreach (MsBuildEvaluatedItem packageVersion in snapshot.ItemsOfType("PackageVersion")
+                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
+                .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog)))
+            {
+                violations.Add(
+                    $"Owning project '{snapshot.ProjectPath}' receives Works-owned PackageVersion '{packageVersion.Identity}' from '{packageVersion.DefiningProjectPath}'; only shared catalog '{approvedCatalog}' may define Hexalith package versions.");
+            }
         }
 
         return [.. violations.Order(StringComparer.Ordinal)];
@@ -398,12 +404,17 @@ internal static class KernelDependencyPolicy
             .SelectMany(snapshot => snapshot.ImportPaths.Prepend(snapshot.ProjectPath))
             .Distinct(MsBuildProjectEvaluation.PathComparer)];
 
-        return EvaluateFileWithRequiredFreshnessInputs(
+        // The restored artifact describes its active restore lane only. Also inspect every evaluated
+        // source child so a Debug-only dependency cannot hide behind a package-mode Release graph.
+        return [.. projectClosure.SelectMany(snapshot => EvaluateSnapshot(governedProject, snapshot))
+            .Concat(EvaluateFileWithRequiredFreshnessInputs(
             governedProject,
             governedProjectPath,
             Path.Combine(projectDirectory, "obj", "project.assets.json"),
             SharedRestoreInputs(repositoryRoot),
-            evaluatedRestoreInputs);
+            evaluatedRestoreInputs))
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)];
     }
 
     /// <summary>
@@ -889,16 +900,25 @@ internal static class KernelDependencyPolicy
                 continue;
             }
 
-            bool evaluated = globalProperties is null
-                ? MsBuildProjectEvaluation.TryEvaluate(
+            IReadOnlyList<MsBuildProjectSnapshot> evaluations;
+            bool evaluated;
+            string evaluationDiagnostic;
+            if (globalProperties is null)
+            {
+                evaluated = MsBuildProjectEvaluation.TryEvaluateSupportedLanes(
                     canonicalProjectPath,
-                    out MsBuildProjectSnapshot? snapshot,
-                    out string evaluationDiagnostic)
-                : MsBuildProjectEvaluation.TryEvaluate(
+                    out evaluations,
+                    out evaluationDiagnostic);
+            }
+            else
+            {
+                evaluated = MsBuildProjectEvaluation.TryEvaluate(
                     canonicalProjectPath,
                     globalProperties,
-                    out snapshot,
+                    out MsBuildProjectSnapshot? selectedSnapshot,
                     out evaluationDiagnostic);
+                evaluations = evaluated ? [selectedSnapshot!] : [];
+            }
             if (!evaluated)
             {
                 projectClosure = snapshots.AsReadOnly();
@@ -906,22 +926,25 @@ internal static class KernelDependencyPolicy
                 return false;
             }
 
-            if (!visitedEvaluations.Add(ProjectEvaluationKey(snapshot!.ProjectPath, snapshot.GlobalProperties)))
+            foreach (MsBuildProjectSnapshot snapshot in evaluations)
             {
-                continue;
-            }
-
-            snapshots.Add(snapshot);
-            foreach (MsBuildEvaluatedItem reference in snapshot!.ItemsOfType("ProjectReference"))
-            {
-                if (reference.CanonicalPath is null)
+                if (!visitedEvaluations.Add(ProjectEvaluationKey(snapshot.ProjectPath, snapshot.GlobalProperties)))
                 {
-                    projectClosure = snapshots.AsReadOnly();
-                    diagnostic = $"{governedProject} ProjectReference '{reference.Identity}' defined by '{reference.DefiningProjectPath}' has no canonical path.";
-                    return false;
+                    continue;
                 }
 
-                pendingProjects.Enqueue((reference.CanonicalPath, reference.ProjectReferenceGlobalProperties));
+                snapshots.Add(snapshot);
+                foreach (MsBuildEvaluatedItem reference in snapshot.ItemsOfType("ProjectReference"))
+                {
+                    if (reference.CanonicalPath is null)
+                    {
+                        projectClosure = snapshots.AsReadOnly();
+                        diagnostic = $"{governedProject} ProjectReference '{reference.Identity}' defined by '{reference.DefiningProjectPath}' has no canonical path.";
+                        return false;
+                    }
+
+                    pendingProjects.Enqueue((reference.CanonicalPath, reference.ProjectReferenceGlobalProperties));
+                }
             }
         }
 

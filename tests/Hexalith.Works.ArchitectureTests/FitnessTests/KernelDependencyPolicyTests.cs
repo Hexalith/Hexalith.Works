@@ -634,6 +634,44 @@ public sealed class KernelDependencyPolicyTests
         }
     }
 
+    [Theory]
+    [InlineData("PackageReference", "Debug", "x64", "net9.0")]
+    [InlineData("PackageReference", "Debug", "ARM64", "net10.0")]
+    [InlineData("ProjectReference", "Debug", "ARM64", "net10.0")]
+    [InlineData("ProjectReference", "Release", "ARM64", "net10.0")]
+    public void ImportedDependenciesAreGovernedAcrossSupportedLanes(string itemType, string configuration, string platform, string framework)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.ImportedLanes-");
+        try
+        {
+            string projectPath = Path.Combine(temporaryRoot.FullName, "Owner.csproj");
+            string importPath = Path.Combine(temporaryRoot.FullName, "conditional.props");
+            string dependencyPath = Path.Combine(temporaryRoot.FullName, "Dapr.Client.csproj");
+            File.WriteAllText(dependencyPath, "<Project />");
+            string identity = itemType == "ProjectReference" ? XmlPath(dependencyPath) : "Dapr.Client";
+            File.WriteAllText(importPath, $"""
+                <Project><ItemGroup Condition="'$(Configuration)' == '{configuration}' and '$(Platform)' == '{platform}' and '$(TargetFramework)' == '{framework}'">
+                  <{itemType} Include="{identity}" />
+                </ItemGroup></Project>
+                """);
+            File.WriteAllText(projectPath, $"""
+                <Project>
+                  <PropertyGroup><Platforms>x64;ARM64</Platforms><TargetFrameworks>net9.0;net10.0</TargetFrameworks></PropertyGroup>
+                  <Import Project="{XmlPath(importPath)}" />
+                </Project>
+                """);
+
+            string violation = KernelDependencyPolicy.EvaluateProjectFile("Hexalith.Works.Contracts", projectPath).ShouldHaveSingleItem();
+            violation.ShouldContain("Dapr.Client");
+            violation.ShouldContain("evaluated " + itemType);
+            violation.ShouldContain(importPath);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
     /// <summary>
     /// Verifies the shared declared-reference discovery is kind-generic, so every gate that reads project
     /// XML — not only the exact dependency-direction gate — splits item lists and fails closed alike.
@@ -1462,6 +1500,88 @@ public sealed class KernelDependencyPolicyTests
             violations[0].ShouldContain("newest restore input", Case.Sensitive);
             violations[0].ShouldContain(offendingPath, Case.Sensitive);
             violations[0].ShouldContain("Hexalith.Works.Server", Case.Sensitive);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Theory]
+    [InlineData("Debug", "ARM64", "net10.0")]
+    [InlineData("Release", "x64", "net9.0")]
+    public void SupportedLanesRetainReferencedCustomFreshnessInputsAndIgnorePackageCacheTouches(string configuration, string platform, string framework)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.LaneFreshness-");
+        try
+        {
+            (string projectPath, string assetsPath) = CreateGovernedProjectLayout(temporaryRoot.FullName,
+                "Hexalith.Works.Contracts", CreateAssetsJson("Hexalith.EventStore.Contracts"));
+            string childPath = Path.Combine(temporaryRoot.FullName, "Child.csproj");
+            string customPath = Path.Combine(temporaryRoot.FullName, "child.props");
+            string cacheRoot = Path.Combine(temporaryRoot.FullName, "packages");
+            string packagePath = Path.Combine(cacheRoot, "package.props");
+            Directory.CreateDirectory(cacheRoot);
+            File.WriteAllText(customPath, "<Project />");
+            File.WriteAllText(packagePath, "<Project />");
+            File.WriteAllText(childPath, $"""
+                <Project>
+                  <PropertyGroup><NuGetPackageRoot>{XmlPath(cacheRoot)}</NuGetPackageRoot></PropertyGroup>
+                  <Import Project="{XmlPath(packagePath)}" />
+                  <Import Project="{XmlPath(customPath)}" Condition="'$(Configuration)' == '{configuration}' and '$(Platform)' == '{platform}' and '$(TargetFramework)' == '{framework}'" />
+                </Project>
+                """);
+            File.WriteAllText(projectPath, $"""
+                <Project>
+                  <PropertyGroup><Platforms>x64;ARM64</Platforms><TargetFrameworks>net9.0;net10.0</TargetFrameworks></PropertyGroup>
+                  <ItemGroup><ProjectReference Include="{XmlPath(childPath)}" /></ItemGroup>
+                </Project>
+                """);
+            var baseline = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+            foreach (string input in new[] { projectPath, childPath, customPath })
+            {
+                File.SetLastWriteTimeUtc(input, baseline.AddMinutes(-1));
+            }
+
+            File.SetLastWriteTimeUtc(assetsPath, baseline);
+            File.SetLastWriteTimeUtc(packagePath, baseline.AddMinutes(1));
+            KernelDependencyPolicy.EvaluateGovernedProject(temporaryRoot.FullName, "Hexalith.Works.Contracts").ShouldBeEmpty(
+                "Touching a restored package must not invalidate otherwise current restore evidence.");
+
+            File.SetLastWriteTimeUtc(customPath, baseline.AddMinutes(1));
+            string violation = KernelDependencyPolicy.EvaluateGovernedProject(temporaryRoot.FullName, "Hexalith.Works.Contracts").ShouldHaveSingleItem();
+            violation.ShouldContain("newest restore input");
+            violation.ShouldContain(customPath);
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void DebugOnlyChildDependenciesCannotHideBehindReleaseRestoreEvidence()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.DebugChild-");
+        try
+        {
+            (string projectPath, string assetsPath) = CreateGovernedProjectLayout(temporaryRoot.FullName,
+                "Hexalith.Works.Contracts", CreateAssetsJson("Hexalith.EventStore.Contracts"));
+            string childPath = Path.Combine(temporaryRoot.FullName, "NeutralChild.csproj");
+            string importPath = Path.Combine(temporaryRoot.FullName, "debug.props");
+            File.WriteAllText(childPath, "<Project><ItemGroup><PackageReference Include=\"Dapr.Client\" /></ItemGroup></Project>");
+            File.WriteAllText(importPath, $"<Project><ItemGroup Condition=\"'$(Configuration)' == 'Debug'\"><ProjectReference Include=\"{XmlPath(childPath)}\" /></ItemGroup></Project>");
+            File.WriteAllText(projectPath, $"<Project><Import Project=\"{XmlPath(importPath)}\" /></Project>");
+            var baseline = new DateTime(2026, 10, 23, 12, 0, 0, DateTimeKind.Utc);
+            foreach (string input in new[] { projectPath, childPath, importPath })
+            {
+                File.SetLastWriteTimeUtc(input, baseline.AddMinutes(-1));
+            }
+
+            File.SetLastWriteTimeUtc(assetsPath, baseline);
+            string violation = KernelDependencyPolicy.EvaluateGovernedProject(temporaryRoot.FullName, "Hexalith.Works.Contracts").ShouldHaveSingleItem();
+            violation.ShouldContain("Dapr.Client");
+            violation.ShouldContain(childPath);
         }
         finally
         {

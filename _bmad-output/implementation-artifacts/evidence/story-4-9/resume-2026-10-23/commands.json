@@ -1,0 +1,103 @@
+[
+  {
+    "command": [
+      "bash",
+      "scripts/verify-platform-parity-ci.sh",
+      "--bootstrap-only",
+      "--artifacts-path",
+      "/tmp/story49-producer-20261023-pw6f0hc7/bootstrap"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "checkedAt": "2026-10-23T08:42:47.878897+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 24.144,
+    "log": "raw/bootstrap-only.log.gz"
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host",
+      "test_verify_works_producer",
+      "test_works_host_snapshot",
+      "test_retained_works_host",
+      "test_works_toolchain"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/eng",
+    "checkedAt": "2026-10-23T08:41:29.941113+00:00",
+    "exitCode": 1,
+    "elapsedSeconds": 1.086,
+    "log": "raw/platform-contracts.log.gz"
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host",
+      "test_verify_works_producer",
+      "test_works_host_snapshot",
+      "test_retained_works_host",
+      "test_works_toolchain"
+    ],
+    "cwd": "/tmp/story49-producer-20261023-pw6f0hc7/bootstrap/workspace/platform/eng",
+    "environment": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    },
+    "checkedAt": "2026-10-23T08:42:57.744971+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 1.06,
+    "log": "raw/platform-contracts-isolated.log.gz"
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "test_verify_works_host",
+      "test_verify_works_producer",
+      "test_works_host_snapshot",
+      "test_retained_works_host",
+      "test_works_toolchain"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/eng",
+    "environment": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    },
+    "checkedAt": "2026-10-23T08:41:40.432141+00:00",
+    "exitCode": 1,
+    "elapsedSeconds": 1.113,
+    "log": "raw/platform-contracts-root-layout.log.gz"
+  },
+  {
+    "command": [
+      "python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-2026-10-23/probe-public-producer.py",
+      "--works-root",
+      "/home/administrator/projects/hexalith/works",
+      "--output-dir",
+      "/tmp/story49-producer-20261023-pw6f0hc7/replayed-probe"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "checkedAt": "2026-10-23T08:43:36.625313+00:00",
+    "exitCode": 1,
+    "elapsedSeconds": 2.276,
+    "log": "raw/public-producer-probe.log.gz"
+  },
+  {
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "scripts/tests"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "checkedAt": "2026-10-23T08:41:13.572706+00:00",
+    "exitCode": 0,
+    "elapsedSeconds": 2.558,
+    "log": "raw/works-tooling.log.gz"
+  }
+]

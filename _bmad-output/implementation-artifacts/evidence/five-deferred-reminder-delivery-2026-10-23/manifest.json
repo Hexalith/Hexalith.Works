@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "worksBaselineRevision": "8c10b6c4a6c8f52e821535d436c5ea325d43a802",
+  "sdkSourceRevision": "2361e7b6760a7d0065c67661c2e95c2af94bdb4d",
+  "testSource": {
+    "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkReminderDeliveryTests.cs",
+    "sha256": "4e7681ca66e84a89ada51c0809ebe6edb205aeb4177a8b76596460d914adadf5"
+  },
+  "compiledTestAssemblySha256": "31ef37246e24bd4781ee47de301c8697acc0c82a2e30729937aa924576e22638",
+  "validation": {
+    "broadDebugBuild": {
+      "exitCode": 1,
+      "scope": "Current full source graph; six pre-existing Platform compile errors. See spec for exact command and errors."
+    },
+    "focusedDebugBuild": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0,
+      "scope": "Current Works test compilation with BuildProjectReferences=false; available dependency outputs. Does not qualify a complete current Platform source build."
+    },
+    "worksRegressionsBeforeReview": {
+      "exitCode": 0,
+      "total": 172,
+      "passed": 172,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "worksRegressionsFinal": {
+      "exitCode": 0,
+      "total": 174,
+      "passed": 174,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "sdkSourceDebugBuild": {
+      "exitCode": 0,
+      "warnings": 0,
+      "errors": 0
+    },
+    "sdkReminderRegressions": {
+      "exitCode": 0,
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "commitlint": {
+      "exitCode": 0,
+      "message": "test: close five deferred reminder delivery gaps\n"
+    }
+  },
+  "artifacts": {
+    "broad-debug-build.log.gz": {
+      "sha256": "b9887c0b4f8f7401acf2ccbb2b4074b0304f7af19bb4683c213e560e957ffc3d",
+      "uncompressedSha256": "16b6b9bd607f3f0242db915490d611dc6b83d7629e35c4d257f94cb564ea4e34"
+    },
+    "focused-debug-build.log.gz": {
+      "sha256": "0cf80a752c7a084e9ebce202f9745243cbc49f46423cf09415b4d5a922ac210e",
+      "uncompressedSha256": "fb070919193cc6fbe8a7e3c2e6d9a1a77de775339d6ef3a0c16ba11504d6bed9"
+    },
+    "works-regressions-before-review.log.gz": {
+      "sha256": "f0b06c70a7be0fb091004f795309eeb2f516a7dbda0288cb7d0c3a1eafbff2e8",
+      "uncompressedSha256": "69bee433ed969773819d55a534b8668ebcc0f98e069ddcb59604cbdc6c98b956"
+    },
+    "works-regressions-before-review.xml.gz": {
+      "sha256": "deae07de83fbf6f6153a26e4be6bddc386b51e733ad9d83607ca2befc3e98c25",
+      "uncompressedSha256": "3b0f6f718257cb68b68f4e7044300e7a6a69f255db8312c78f5841b45a636362"
+    },
+    "works-regressions-final.log.gz": {
+      "sha256": "483feeeaf2344348f53ae2709aeb9294f9acc07b4b36346b92f1c061397b999e",
+      "uncompressedSha256": "c16dc5a365c365b7d6a07edf6dfef548e5ef919bdc60150abc08a8785f3a5b59"
+    },
+    "works-regressions-final.xml.gz": {
+      "sha256": "4bac70e8cdf55bcd46ea860442565cdfd5b9234ee9f1531bd9ae406f14ae7172",
+      "uncompressedSha256": "df68c9fedee827b4eef9094dd93139823b794e16844bd7a2c044062ff09adbfd"
+    },
+    "sdk-debug-build.log.gz": {
+      "sha256": "f4d59337304af9bcce44eec7405748891aa2295066ba501488a527f825d38c30",
+      "uncompressedSha256": "c785681a2aaf952341909c514dc8194ec6d57b4ce2d538ca7bd3779aee1ffdc5"
+    },
+    "sdk-reminder-regressions.log.gz": {
+      "sha256": "3e9941c6aed48519e20ae2999e8d647d6c9132183834aeb0ead1e47534fd5804",
+      "uncompressedSha256": "c806f60a67a9f998004ab46314d0263888f8d054745152128fea1a974acdcef9"
+    },
+    "sdk-reminder-regressions.xml.gz": {
+      "sha256": "b8d1bb56012decee6dc4ee384d1418ceb70a867f44250b16033004167fd61c2b",
+      "uncompressedSha256": "0d54ca7197e24bd755ea90f6a5360edef3c565dcf4175d283d96fa9901552a4d"
+    },
+    "commitlint.log.gz": {
+      "sha256": "fbdd5561a9ab2eee0af15dbd5a00642b99d3caade72e89974fb601643c6cb1cc",
+      "uncompressedSha256": "7d891972b4c94277cd3e8e077d0edaa47d24cd125c823734c41e688a5a8e035f"
+    }
+  }
+}

@@ -212,10 +212,20 @@ public sealed class WorkItemState
         Sequence = e.Sequence;
     }
 
+    /// <summary>Applies a conversation link only to its already established work-item identity.</summary>
+    /// <param name="e">The persisted conversation event.</param>
+    /// <exception cref="InvalidOperationException">The event does not address this established work item.</exception>
     public void Apply(ConversationLinked e)
     {
         ArgumentNullException.ThrowIfNull(e);
         ArgumentNullException.ThrowIfNull(e.ConversationCorrelationId);
+        if (TenantId is null || WorkItemId is null
+            || e.TenantId != TenantId || e.WorkItemId != WorkItemId
+            || !string.Equals(e.AggregateId, WorkItemId.Value, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("ConversationLinked identity does not match the established work-item state.");
+        }
+
         ConversationCorrelationId ??= e.ConversationCorrelationId;
         Sequence = e.Sequence;
     }
