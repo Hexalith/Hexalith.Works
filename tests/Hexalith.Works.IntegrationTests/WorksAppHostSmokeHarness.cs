@@ -1426,21 +1426,47 @@ internal static class WorksAppHostSmokeHarness
     /// <returns>Whether the local port accepts a connection within the probe budget.</returns>
     internal static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var client = new TcpClient();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        return await IsPortReachableAsync(
+            token => client.ConnectAsync("localhost", port, token).AsTask(),
+            cancellationToken,
+            timeout.Token).ConfigureAwait(false);
+    }
+
+    /// <summary>Preserves caller cancellation across connection completion, socket failure and probe timeout races.</summary>
+    /// <param name="connectAsync">The connection operation receiving the linked cancellation token.</param>
+    /// <param name="cancellationToken">The caller's original cancellation token.</param>
+    /// <param name="probeTimeoutToken">The independently controlled probe deadline.</param>
+    /// <returns>Whether the connection succeeds before the probe deadline.</returns>
+    internal static async Task<bool> IsPortReachableAsync(
+        Func<CancellationToken, Task> connectAsync,
+        CancellationToken cancellationToken,
+        CancellationToken probeTimeoutToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, probeTimeoutToken);
         try
         {
-            using var client = new TcpClient();
-            using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            probeCts.CancelAfter(TimeSpan.FromSeconds(2));
-            await client.ConnectAsync("localhost", port, probeCts.Token).ConfigureAwait(false);
-            return true;
+            await connectAsync(probeCts.Token).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            return !probeTimeoutToken.IsCancellationRequested;
         }
         catch (SocketException)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return false;
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
-            return false;
+            cancellationToken.ThrowIfCancellationRequested();
+            if (probeTimeoutToken.IsCancellationRequested)
+            {
+                return false;
+            }
+
+            throw;
         }
     }
 }

@@ -489,7 +489,8 @@ location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmok
 source_spec: `spec-probe-cancellation-propagation.md`
 severity: medium
 reason: The routine deterministic command recorded across this repository's specs is `Hexalith.Works.IntegrationTests -class- "*SmokeTests"`, an exclude-by-class filter that drops every case in `WorksCascadeRecoveryPipelineSmokeTests`. Confirmed against the built Release assembly: `-list Tests` reports 15 `Port_probe_*`/`Prerequisite_gate_*` cases with no filter and 0 under `-class- "*SmokeTests"`. They still run in an unfiltered full-assembly run, and the spec's own verification command targets the class directly, so the coverage is not orphaned -- but a probe regression is invisible to the lane that is actually run by habit. Relocating them needs a new test class outside this file, which the intent's Block If fences off.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-verification-reliability.md` restores the current TCP helper's caller-cancellation precedence across success, socket failure and independent timeout races, with eight controlled connection cases plus three real TCP controls in WorksAppHostSmokeHarnessTests. Actual runner discovery and execution retain these controls under the deterministic exclusions; the obsolete multi-port prerequisite gate remains retired.
 
 ### DW-60: Follow-up review still recommended for dw-probe-cancellation-propagation after the damping cap was spent
 origin: review-budget-followup
@@ -1027,6 +1028,8 @@ resolution: Both faulty legacy readers are retired. MultipleExclusivePageBoundar
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Prove Docker redirected reads always complete after probe cancellation and child termination on supported runners.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verification-reliability.md` exercises both real redirected pipes through the production process adapter and harness on timeout and caller cancellation; records each read task, requires terminal completion and child exit, and preserves the exact caller token. Executed on Linux; other runners remain subject to their own execution.
   evidence: The production adapter uses token-aware `ReadToEndAsync` and kills the process first, but the current evidence does not establish that pipe reads cannot ignore cancellation indefinitely; a real child-process test would settle the maybe-false hang risk.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
@@ -1232,6 +1235,8 @@ resolution: Both faulty legacy readers are retired. MultipleExclusivePageBoundar
 
 - source_spec: `spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Mapped HTTP cancellation forwarding lacks regression tests (C11-VG2).
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verification-reliability.md` adds eleven consumer controls invoking actual mapped SDK query, replay-state and project HTTP delegates with live RequestAborted; each forwards the exact token and observes handler-triggered cancellation without a success body. These isolate mapping and JSON binding; protected ingress remains covered separately.
   evidence: Pre-verified HTTP-boundary gap belongs to existing unrelated /query, /replay-state and /project changes from ff1f5588e2b0d6807b8df018637ae3dbdf9c86fb (git blame). The 4.11 reminder change adds only its opt-in mapping hunk to that shared file.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
@@ -1577,6 +1582,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Mark Platform-only integration facts skipped when the Platform artifact is not selected.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verification-reliability.md` verifies the existing T17 repair by explicitly running Historical, Projection and HA without Platform selection: exactly three FAIL_SKIP results, zero passes, expected exit 1 under failSkips=true. This is a negative control, not a successful parity run.
   evidence: WorksPlatformHaPipelineSmokeTests and WorksPlatformProjectionPipelineSmokeTests return without assertions outside the Platform lane, so ordinary runs count their unexecuted behavior as passes. Platform parity is the separate Story 4.16 gate.
 
 ## Deferred from: code review of spec-4-15 (2026-10-18, post-reopen delta)
@@ -1653,6 +1660,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: `WorksSdkProtectedHttpTests.QueryWindowStore` counts only `IReadModelStore` reads, so a query path that reads Works state through an SDK batch or bulk read-model store would leave its non-disclosure checks at zero operations (triage T109, unverified medium).
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-verification-reliability.md` verifies the existing three-interface wrapper and DI replacements with an executing regression: each single/bulk/batch operation increments the observed request counter, while background and disabled windows do not. Existing authorized/denied HTTP cases also pass.
   evidence: Works `src` resolves no `IReadModelBatchStore` or `IReadModelBulkStore`. To settle it, trace which store interfaces the 3.125.1 SDK query and authorization path resolves during the trusted-origin matrix. If any of them reads Works state, register the window wrapper for those interfaces too, and confirm the operation count moves.
 
 ## Resolution evidence: Story 4.16 review iteration 2 corrections (2026-10-19)

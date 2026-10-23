@@ -67,6 +67,63 @@ public sealed class WorksSdkProtectedHttpTests
     private const string Actor = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
     private const string HumanBearer = "works-sdk-synthetic-human-bearer";
 
+    /// <summary>Every SDK store interface uses the request-scoped counter that protects denial assertions.</summary>
+    [Fact]
+    public async Task QueryObservationCountsSingleBulkAndBatchStoresThroughHostBindings()
+    {
+        var inner = new InMemoryReadModelStore();
+        var store = new QueryWindowStore(inner);
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999");
+        IReadModelStore single = app.Services.GetRequiredService<IReadModelStore>();
+        IReadModelBulkStore bulk = app.Services.GetRequiredService<IReadModelBulkStore>();
+        IReadModelBatchStore batch = app.Services.GetRequiredService<IReadModelBatchStore>();
+        single.ShouldBeSameAs(store);
+        bulk.ShouldBeSameAs(store);
+        batch.ShouldBeSameAs(store);
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        int round = 0;
+        async Task ExerciseAllAsync(bool counted)
+        {
+            string key = "probe-" + ++round;
+            int expected = store.Operations;
+            void AssertCount()
+            {
+                expected += counted ? 1 : 0;
+                store.Operations.ShouldBe(expected);
+            }
+
+            await single.GetAsync<string>("statestore", key, ct).ConfigureAwait(true);
+            AssertCount();
+            await single.SaveAsync("statestore", key, "saved", ct).ConfigureAwait(true);
+            AssertCount();
+            (await single.TrySaveAsync("statestore", key + "-conditional", "conditional", string.Empty, ct)
+                .ConfigureAwait(true)).ShouldBeTrue();
+            AssertCount();
+            await bulk.GetManyAsync<string>("statestore", [key], 1, ct).ConfigureAwait(true);
+            AssertCount();
+            var manifest = new ReadModelBatch(
+                new ReadModelBatchScope("statestore", Tenant, "work", "probe", "observation", key),
+                [ReadModelBatchOperation.Write(key, "batched", ReadModelBatchConcurrency.LastWrite)]);
+            (await batch.ExecuteAsync(manifest, ct).ConfigureAwait(true)).IsSuccess.ShouldBeTrue();
+            AssertCount();
+            inner.Snapshot<string>("statestore", key).ShouldBe("batched");
+            inner.Snapshot<string>("statestore", key + "-conditional").ShouldBe("conditional");
+        }
+
+        await ExerciseAllAsync(counted: false).ConfigureAwait(true);
+        store.Observe = true;
+        await ExerciseAllAsync(counted: false).ConfigureAwait(true);
+        using (QueryWindowStore.EnterRequest())
+        {
+            await ExerciseAllAsync(counted: true).ConfigureAwait(true);
+            store.Observe = false;
+            await ExerciseAllAsync(counted: false).ConfigureAwait(true);
+        }
+        store.Observe = true;
+        await ExerciseAllAsync(counted: false).ConfigureAwait(true);
+        store.Operations.ShouldBe(5);
+    }
+
     [Fact]
     public async Task RejectedNamedProjectionIngressPreservesPersistedFamilyAndCheckpoint()
     {

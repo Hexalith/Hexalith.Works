@@ -1,0 +1,206 @@
+{
+  "baseline": "e27a19837ea78f1c8883d4ba9f9e6c54f2a41a5e",
+  "date": "2026-10-23",
+  "scope": [
+    "DW-59",
+    "Platform-only fact skip semantics (T17)",
+    "QueryWindowStore single/bulk/batch observation (T109)",
+    "Docker redirected-read completion",
+    "Mapped HTTP cancellation (C11-VG2)"
+  ],
+  "results": {
+    "complete_deterministic": {
+      "total": 815,
+      "passed": 815,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "focused_subset_of_complete_deterministic": {
+      "total": 146,
+      "passed": 146,
+      "failed": 0
+    },
+    "complete_platform_absence": {
+      "total": 3,
+      "passed": 0,
+      "failed": 3,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "commands": [
+    {
+      "name": "broad-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1",
+      "exit_code": 1,
+      "log": "broad-build.log.gz"
+    },
+    {
+      "name": "initial-focused-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "log": "initial-focused-build.log.gz"
+    },
+    {
+      "name": "initial-focused",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksAppHostSmokeHarnessTests' -class '*WorksSdkEndpointCancellationTests' -class '*WorksSdkProtectedHttpTests' -result-xml /tmp/works-five-verification-focused.xml",
+      "exit_code": 1,
+      "log": "initial-focused.log.gz"
+    },
+    {
+      "name": "focused-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "log": "focused-build.log.gz"
+    },
+    {
+      "name": "focused",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksAppHostSmokeHarnessTests' -class '*WorksSdkEndpointCancellationTests' -class '*WorksSdkProtectedHttpTests' -result-xml /tmp/works-five-verification-focused-final.xml",
+      "exit_code": 0,
+      "log": "focused.log.gz"
+    },
+    {
+      "name": "deterministic",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-verification-deterministic.xml",
+      "exit_code": 0,
+      "log": "deterministic.log.gz"
+    },
+    {
+      "name": "discovery",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -list Tests -class- '*SmokeTests' -class- '*Platform*'",
+      "exit_code": 0,
+      "log": "discovery.log.gz"
+    },
+    {
+      "name": "platform-absence",
+      "command": "env -u WORKS_PLATFORM_APPHOST_ASSEMBLY dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -explicit only -class '*WorksPlatformHistoricalPipelineSmokeTests' -class '*WorksPlatformHaPipelineSmokeTests' -class '*WorksPlatformProjectionPipelineSmokeTests' -result-xml /tmp/works-five-verification-platform-skips.xml",
+      "exit_code": 1,
+      "log": "platform-absence.log.gz"
+    },
+    {
+      "name": "new-file-format",
+      "command": "dotnet format whitespace tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkEndpointCancellationTests.cs tests/Hexalith.Works.IntegrationTests/ObservedSchedulerVolumeProbe.cs",
+      "exit_code": 0,
+      "log": "new-file-format.log.gz"
+    },
+    {
+      "name": "complete-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "log": "complete-build.log.gz"
+    },
+    {
+      "name": "complete-deterministic",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-verification-complete-deterministic.xml",
+      "exit_code": 0,
+      "log": "complete-deterministic.log.gz"
+    },
+    {
+      "name": "complete-discovery",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -list Tests -class- '*SmokeTests' -class- '*Platform*'",
+      "exit_code": 0,
+      "log": "complete-discovery.log.gz"
+    },
+    {
+      "name": "complete-absence",
+      "command": "env -u WORKS_PLATFORM_APPHOST_ASSEMBLY dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -explicit only -class '*WorksPlatformHistoricalPipelineSmokeTests' -class '*WorksPlatformHaPipelineSmokeTests' -class '*WorksPlatformProjectionPipelineSmokeTests' -result-xml /tmp/works-five-verification-complete-skips.xml",
+      "exit_code": 1,
+      "log": "complete-absence.log.gz"
+    },
+    {
+      "name": "complete-format",
+      "command": "dotnet format whitespace tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkEndpointCancellationTests.cs tests/Hexalith.Works.IntegrationTests/ObservedSchedulerVolumeProbe.cs",
+      "exit_code": 0,
+      "log": "complete-format.log.gz"
+    },
+    {
+      "name": "commitlint",
+      "command": "npm run commitlint -- --edit /tmp/works-five-verification-commit.txt",
+      "exit_code": 0,
+      "log": "commitlint.log.gz"
+    },
+    {
+      "name": "whitespace",
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "exit_code": 0,
+      "log": "whitespace.log.gz"
+    }
+  ],
+  "discovered_tcp_controls": [
+    "TcpPrerequisiteProbePreservesCallerCancellation",
+    "TcpPrerequisiteProbeRecognizesReachableLoopback",
+    "TcpPrerequisiteProbeReportsUnavailableLoopback"
+  ],
+  "source_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs": "12e3e8eb16e419da6c4f83991fcd4ecc123150618630c2b1faea5deabc0618d9",
+    "tests/Hexalith.Works.IntegrationTests/ObservedSchedulerVolumeProbe.cs": "3b4f78e9ebedab027ff42d307dbda6e12b3077e839912ab939840744690e3f07",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkEndpointCancellationTests.cs": "07ab9d8565661330ef8f9f59558bfe8c714945397df1af660bfa391a835a7646",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs": "c7a4536a940e9aef8fad39e7d9af86ae93b94c4d2306bbd4a0c80ebd6af7e961",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "4f38dc5e1a7e951eaf9c01fb844a4c65f30649952de445af2c0e8cdd4ee97c38",
+    "tests/Hexalith.Works.IntegrationTests/ProcessSchedulerVolumeProbe.cs": "a27764eb11bfe013d3655ab87e22378c565ab96b0dc59b6e16b1d9068dcefe74",
+    "tests/Hexalith.Works.IntegrationTests/ISchedulerVolumeProbe.cs": "d98eadc9d3fdb8f9b9e831cb21d7e013413c65b872ecd2b81ec7a99a32bef6d0",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs": "9ebb19cff9af79b80e5972c4f8738ed93d57fe4c304cc1cbb73e963d11dcc9f0",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "59fdbedbed87708ee8bed68db6750de7ce734f11c476bfa3e9be478da4127ed3",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs": "48db59b18b6bfd0681e6b57310be9dea6558d3cd5850f18f806e5486209bd72e",
+    "xunit.runner.json": "3aaf68ea8927dce2c9ee5404088745084d709c1ff2d00bf41c90d9406d31b8a1",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreDomainServiceExtensions.cs": "881ef5a456d4ee778161d9383c72684679a0e7af03eff85f99597aee02748692"
+  },
+  "assembly_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "619b24d7c07fc34c3c9d8af8a163d248cb6372f2bf258ec266046c4f404e3f4c",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.dll": "f837c899ca16eb7cffd11e6c46f8d47213560a9115e93910ef75539bf7dd0860",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll": "4dad64e7afa7c5c34b881ae81215474db701faf797e56bb90556446b7a01edcb",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Client.dll": "f8446d74fb3faaaa936629d3294df29353252b2d2d1659017a69da382f50006b",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.dll": "374e5ba6d0b14591ab44f7914fc30a30abbe7f15affd22338640b3f46a0d9c63",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Platform.Composition.dll": "230912e55a0f5d99eaef048f6fd64e3c294edbb384e413e58cbb5f71618ce720",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Platform.Identity.dll": "99e735e348080165ea5edefc46f8e780d74d2a8d8c05c7969c1d3200375f9372"
+  },
+  "dependency_revisions": {
+    "Hexalith.EventStore": "2361e7b6760a7d0065c67661c2e95c2af94bdb4d",
+    "Hexalith.Platform": "b816f59f24c5bd34638fd21b4b70d1b13d84dec4",
+    "Hexalith.Builds": "57e4ad57c5d62c2749dc4c76ffd03fdaa7e7ac22"
+  },
+  "limits": [
+    "Broad Debug build blocked by six pre-existing Platform.Composition errors; focused compilation reuses available dependency outputs, whose DLL hashes are recorded.",
+    "Only Linux real-child execution is qualified. No complete current Platform build, distributed deployment or Platform parity qualification is claimed.",
+    "Platform absence exit 1 and three FAIL_SKIP results are expected negative evidence, separate from passing suites.",
+    "Initial focused failure was an internal-interface proxy fixture error; final pass supersedes it."
+  ],
+  "superseded_results": {
+    "focused": {
+      "total": 133,
+      "passed": 133,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "deterministic": {
+      "total": 802,
+      "passed": 802,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-absence": {
+      "total": 3,
+      "passed": 0,
+      "failed": 3,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "commands_before_review_are_historical": true,
+  "executed_tcp_race_cases": 8,
+  "discovered_tcp_race_method": true,
+  "review": {
+    "findings": 10,
+    "addressed": 10,
+    "deferred": 0,
+    "followup": "Independent reviewer confirmed all ten findings addressed after the final connection-token cancellation assertion."
+  }
+}

@@ -13,6 +13,152 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 public sealed class WorksAppHostSmokeHarnessTests
 {
+    /// <summary>Real redirected pipe reads settle when the production probe terminates its child.</summary>
+    /// <param name="cancelCaller">Whether the caller cancels instead of the probe budget expiring.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RealRedirectedProbeReadsSettleAfterTimeoutOrCallerCancellation(bool cancelCaller)
+    {
+        var startInfo = new ProcessStartInfo(OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        startInfo.ArgumentList.Add(OperatingSystem.IsWindows() ? "/c" : "-c");
+        startInfo.ArgumentList.Add(OperatingSystem.IsWindows()
+            ? "echo output-ready & echo error-ready 1>&2 & ping 127.0.0.1 -n 60 > nul"
+            : "echo output-ready; echo error-ready >&2; exec sleep 60");
+        using Process process = Process.Start(startInfo).ShouldNotBeNull();
+        using var adapter = new ProcessSchedulerVolumeProbe(process);
+        CancellationToken testToken = TestContext.Current.CancellationToken;
+        using var caller = CancellationTokenSource.CreateLinkedTokenSource(testToken);
+
+        (await process.StandardOutput.ReadLineAsync(testToken).AsTask()
+            .WaitAsync(TimeSpan.FromSeconds(10), testToken).ConfigureAwait(true)).ShouldNotBeNull().Trim().ShouldBe("output-ready");
+        (await process.StandardError.ReadLineAsync(testToken).AsTask()
+            .WaitAsync(TimeSpan.FromSeconds(10), testToken).ConfigureAwait(true)).ShouldNotBeNull().Trim().ShouldBe("error-ready");
+        process.HasExited.ShouldBeFalse();
+
+        var probe = new ObservedSchedulerVolumeProbe(adapter);
+        Task<IReadOnlyList<string>> run = WorksAppHostSmokeHarness.RunSchedulerVolumeProbeAsync(
+            probe,
+            cancelCaller ? TimeSpan.FromSeconds(30) : TimeSpan.FromMilliseconds(200),
+            TimeSpan.FromSeconds(2),
+            caller.Token);
+        Task<string> outputRead = probe.OutputRead.ShouldNotBeNull();
+        Task<string> errorRead = probe.ErrorRead.ShouldNotBeNull();
+        if (cancelCaller)
+        {
+            outputRead.IsCompleted.ShouldBeFalse();
+            errorRead.IsCompleted.ShouldBeFalse();
+            caller.Cancel();
+            OperationCanceledException exception = await Should.ThrowAsync<OperationCanceledException>(
+                () => run.WaitAsync(TimeSpan.FromSeconds(10), testToken)).ConfigureAwait(true);
+            exception.CancellationToken.ShouldBe(caller.Token);
+        }
+        else
+        {
+            TimeoutException exception = await Should.ThrowAsync<TimeoutException>(
+                () => run.WaitAsync(TimeSpan.FromSeconds(10), testToken)).ConfigureAwait(true);
+            exception.Message.ShouldContain("Docker did not inspect the Scheduler volume owner");
+        }
+
+        process.HasExited.ShouldBeTrue();
+        outputRead.IsCompleted.ShouldBeTrue();
+        errorRead.IsCompleted.ShouldBeTrue();
+        foreach (Task<string> read in new[] { outputRead, errorRead })
+        {
+            if (read.IsCanceled)
+            {
+                await Should.ThrowAsync<OperationCanceledException>(() => read).ConfigureAwait(true);
+            }
+            else
+            {
+                (await read.ConfigureAwait(true)).ShouldBeEmpty();
+            }
+        }
+    }
+
+    /// <summary>Controlled connection completion preserves caller precedence without timing-dependent network failures.</summary>
+    /// <param name="scenario">The connection/deadline race to exercise.</param>
+    [Theory]
+    [InlineData("timeout")]
+    [InlineData("timeout-success")]
+    [InlineData("caller")]
+    [InlineData("both")]
+    [InlineData("caller-success")]
+    [InlineData("caller-socket")]
+    [InlineData("foreign-cancellation")]
+    [InlineData("pre-cancelled")]
+    public async Task TcpPrerequisiteProbePreservesDeadlineAndCallerRaces(string scenario)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        using var caller = new CancellationTokenSource();
+        using var timeout = new CancellationTokenSource();
+        using var foreign = new CancellationTokenSource();
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken connectionToken = default;
+        int invocations = 0;
+        if (scenario == "pre-cancelled")
+        {
+            caller.Cancel();
+        }
+
+        Task<bool> run = WorksAppHostSmokeHarness.IsPortReachableAsync(token =>
+        {
+            invocations++;
+            connectionToken = token;
+            return completion.Task;
+        }, caller.Token, timeout.Token);
+        if (scenario.StartsWith("caller", StringComparison.Ordinal) || scenario == "both")
+        {
+            caller.Cancel();
+        }
+        if (scenario.StartsWith("timeout", StringComparison.Ordinal) || scenario == "both")
+        {
+            timeout.Cancel();
+        }
+
+        if (scenario.EndsWith("success", StringComparison.Ordinal))
+        {
+            completion.SetResult();
+        }
+        else if (scenario == "caller-socket")
+        {
+            completion.SetException(new SocketException((int)SocketError.ConnectionRefused));
+        }
+        else if (scenario == "foreign-cancellation")
+        {
+            completion.SetException(new OperationCanceledException(foreign.Token));
+        }
+        else
+        {
+            completion.SetCanceled(connectionToken);
+        }
+
+        if (scenario.StartsWith("timeout", StringComparison.Ordinal))
+        {
+            (await run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken)
+                .ConfigureAwait(true)).ShouldBeFalse();
+        }
+        else
+        {
+            OperationCanceledException exception = await Should.ThrowAsync<OperationCanceledException>(
+                () => run.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken)).ConfigureAwait(true);
+            exception.CancellationToken.ShouldBe(scenario == "foreign-cancellation" ? foreign.Token : caller.Token);
+        }
+
+        invocations.ShouldBe(scenario == "pre-cancelled" ? 0 : 1);
+        if (invocations > 0)
+        {
+            connectionToken.CanBeCanceled.ShouldBeTrue();
+            connectionToken.IsCancellationRequested.ShouldBe(scenario != "foreign-cancellation");
+        }
+    }
+
     /// <summary>A cancelled caller must leave the TCP prerequisite as cancellation, even when the port is reachable.</summary>
     [Fact]
     public async Task TcpPrerequisiteProbePreservesCallerCancellation()
