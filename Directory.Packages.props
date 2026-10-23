@@ -2,8 +2,8 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Release restores published EventStore 3.126.1. Platform.Identity has no public package, so tests use its sibling project. -->
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.126.1</HexalithEventStoreVersion>
+    <!-- Release restores published EventStore 3.127.0. Platform.Identity has no public package, so tests use its sibling project. -->
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.127.0</HexalithEventStoreVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
