@@ -1420,7 +1420,11 @@ internal static class WorksAppHostSmokeHarness
         }
     }
 
-    private static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)
+    /// <summary>Checks the TCP prerequisite without converting caller cancellation into an unavailable result.</summary>
+    /// <param name="port">The local prerequisite port.</param>
+    /// <param name="cancellationToken">Cancels the caller's prerequisite check.</param>
+    /// <returns>Whether the local port accepts a connection within the probe budget.</returns>
+    internal static async Task<bool> IsPortReachableAsync(int port, CancellationToken cancellationToken)
     {
         try
         {

@@ -106,6 +106,34 @@ public sealed class WorksSdkRecoveryCompositionTests
         }
     }
 
+    /// <summary>Partial, blank and inconsistent gateway identities fail before query authority can disagree.</summary>
+    /// <param name="worksGateway">The Works ingress gateway override, or null for the default.</param>
+    /// <param name="sdkGateway">The SDK caller authority gateway override, or null for the default.</param>
+    [Theory]
+    [InlineData("designated-gateway", null)]
+    [InlineData(null, "designated-gateway")]
+    [InlineData("designated-gateway", "other-gateway")]
+    [InlineData("designated-gateway", "Designated-gateway")]
+    [InlineData("eventstore", "")]
+    [InlineData("eventstore", " ")]
+    [InlineData("", "eventstore")]
+    [InlineData(" ", " ")]
+    public async Task InconsistentQueryGatewayIdentitiesRefuseStartup(string? worksGateway, string? sdkGateway)
+    {
+        List<string> settings = ["--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"];
+        if (worksGateway is not null) settings.Add($"--Works:Query:GatewayWorkloadId={worksGateway}");
+        if (sdkGateway is not null) settings.Add($"--Authentication:QueryAuthority:GatewayWorkloadId={sdkGateway}");
+        var exception = await Should.ThrowAsync<OptionsValidationException>(async () =>
+        {
+            var app = WorksHost.Build([.. settings]);
+            await using (app.ConfigureAwait(false))
+                await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(false);
+        });
+        exception.Message.ShouldContain("GatewayWorkloadId");
+        if (!string.Equals(worksGateway ?? "eventstore", sdkGateway ?? "eventstore", StringComparison.Ordinal))
+            exception.Message.ShouldContain("must exactly match Authentication:QueryAuthority:GatewayWorkloadId");
+    }
+
     /// <summary>Missing, blank and relative Parties addresses are rejected by host startup validation.</summary>
     [Theory]
     [InlineData(null)]

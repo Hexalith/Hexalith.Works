@@ -37,6 +37,9 @@ internal static class WorksDomainAdapters
         _ = services.AddOptions<WorksQueryOptions>()
             .Bind(configuration.GetSection(WorksQueryOptions.SectionName))
             .Validate(static options => !string.IsNullOrWhiteSpace(options.GatewayWorkloadId), "GatewayWorkloadId is required.")
+            .Validate(options => string.Equals(options.GatewayWorkloadId,
+                    configuration["Authentication:QueryAuthority:GatewayWorkloadId"] ?? "eventstore", StringComparison.Ordinal),
+                "Works:Query:GatewayWorkloadId must exactly match Authentication:QueryAuthority:GatewayWorkloadId (default eventstore).")
             .Validate(options => Uri.TryCreate(PartiesGatewayAddress(options, configuration), UriKind.Absolute, out Uri? address)
                     && (address.Scheme == Uri.UriSchemeHttp || address.Scheme == Uri.UriSchemeHttps),
                 "Works requires an absolute Parties gateway address using HTTP or HTTPS in Works:Query:PartiesGatewayBaseAddress or EventStore:CommandGateway:BaseAddress.")

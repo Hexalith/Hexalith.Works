@@ -15,6 +15,10 @@ dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
 
 Do not use recursive submodule initialization.
 
+The deterministic certificate-refusal integration controls require Linux and the `openssl` executable
+on `PATH`. Other providers remain inconclusive in the live proof; the native tests explicitly report
+unsupported runners, and the repository's `failSkips` setting keeps those runs from qualifying.
+
 ## CI Release validation
 
 CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
@@ -75,7 +79,10 @@ Release is operator-only through the `Release` workflow. Before an authorized di
   after the release job starts and does not re-read the mutable publication-freeze variable, so a later variable
   edit cannot suppress checks for an already-started publication. With required reviewers configured, expect
   **two** approval prompts in one release run: one before publication and one before verification.
-- An explicit `NUGET_API_KEY` secret.
+- A repository-scoped `NUGET_USER` variable naming the NuGet.org publishing account, with a NuGet
+  trusted-publisher policy matching this GitHub repository, the `release.yml` workflow, and the
+  `production` environment. The workflow uses GitHub OIDC through `NuGet/login` to obtain its temporary
+  `NUGET_API_KEY`; repository owners do not provision a long-lived API-key secret for this workflow.
 - A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
 - A successful push `CI` run for the exact current `main` commit.
 

@@ -479,7 +479,8 @@ location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.c
 source_spec: `spec-probe-cancellation-propagation.md`
 severity: medium
 reason: `WorksCommandPipelineSmokeTests.IsPortReachableAsync` catches every `OperationCanceledException` and returns `false`. The reminder-recovery lane now uses `WorksAppHostSmokeHarness.IsPortReachableAsync`, whose filtered catch preserves caller-requested cancellation, so it is no longer part of this deferred item.
-status: open
+status: done 2026-10-23
+resolution: `spec-five-deferred-host-boundaries.md` verifies the original command-pipeline class is retired and all current live lanes use the shared TCP probe; deterministic replacement tests prove caller cancellation, reachable and unavailable loopback outcomes.
 
 ### DW-59: The deterministic probe cases never run in the repository's habitual deterministic lane, because they live in a class that lane excludes by name.
 origin: spec-deferred 282ced3de175
@@ -1680,10 +1681,14 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Align release README authentication instructions with the independently committed OIDC release workflow.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-host-boundaries.md` aligns release prerequisites with NUGET_USER, exact trusted-publisher matching and the temporary OIDC key minted by the committed workflow.
   evidence: Review B2: README still requests a stored NuGet API key, while the release migration in 9dbd2f07d3313b6df3c491e9cf3510b87b32fe65 obtains a key using NUGET_USER. This was not introduced by the hosting cutover.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Tighten the pre-existing mTLS refusal probe against post-authentication transport resets.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-host-boundaries.md` requires an authenticated server plus a structured certificate-refusal alert, distinguishes foreign-CA evidence from certificate_required, and proves genuine refusals alongside authenticated EOF/reset controls in both TLS protocols.
   evidence: Review B8: VerifyAsync can count authenticated-server/no-SETTINGS transport failure as refusal; comparison with pre-cutover 696781961155d764ed805843f55b40dc5882e887 confirms the behavior predates this change. Add a post-authentication reset control while preserving fail-closed behavior.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1724,6 +1729,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Align or validate the Works and SDK query gateway identities for custom deployments.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-host-boundaries.md` validates exact paired identities at startup and proves default/custom signed caller-authority HTTP queries, workload enrollment and denied caller/digest requests before any identity or state access; deployment guidance requires restart for changes.
   evidence: R3B4: pre-cutover Works policy uses Works:Query:GatewayWorkloadId while already-selected SDK 3.126.0 uses Authentication:QueryAuthority:GatewayWorkloadId; prove paired settings with a nondefault caller-authority host request.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1744,6 +1751,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Define and document the Parties service-bearer rotation boundary.
+  status: done 2026-10-23
+  resolution: `spec-five-deferred-host-boundaries.md` documents overlapping authority and restart/replacement ordering; signed HTTP requests rehearse revocation, an existing secret-provider reload without credential refresh, and successful replacement against unchanged persisted projections, with zero denied state reads.
   evidence: R3B10: pre-cutover and current typed clients capture IOptions.Value headers; in-process secret changes do not refresh authority. Document/rehearse restart with replacement authority or separately specify/test a refreshable provider.
 
 ## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary.md, round 2 (2026-10-22)

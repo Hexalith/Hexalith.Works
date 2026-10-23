@@ -13,6 +13,58 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 public sealed class WorksAppHostSmokeHarnessTests
 {
+    /// <summary>A cancelled caller must leave the TCP prerequisite as cancellation, even when the port is reachable.</summary>
+    [Fact]
+    public async Task TcpPrerequisiteProbePreservesCallerCancellation()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            using var caller = new CancellationTokenSource();
+            caller.Cancel();
+            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            await Should.ThrowAsync<OperationCanceledException>(() =>
+                WorksAppHostSmokeHarness.IsPortReachableAsync(port, caller.Token)).ConfigureAwait(true);
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    /// <summary>The production TCP prerequisite accepts a listener on an owned loopback port.</summary>
+    [Fact]
+    public async Task TcpPrerequisiteProbeRecognizesReachableLoopback()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        try
+        {
+            int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+
+            (await WorksAppHostSmokeHarness.IsPortReachableAsync(port, TestContext.Current.CancellationToken)
+                .ConfigureAwait(true)).ShouldBeTrue();
+        }
+        finally
+        {
+            listener.Stop();
+        }
+    }
+
+    /// <summary>A bound socket that does not listen owns the test port while refusing TCP connections.</summary>
+    [Fact]
+    public async Task TcpPrerequisiteProbeReportsUnavailableLoopback()
+    {
+        using var reserved = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        reserved.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+        int port = ((IPEndPoint)reserved.LocalEndPoint!).Port;
+
+        (await WorksAppHostSmokeHarness.IsPortReachableAsync(port, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).ShouldBeFalse();
+    }
+
     [Fact]
     public void Ipv6_bind_failures_are_classified_by_the_production_port_probe()
     {

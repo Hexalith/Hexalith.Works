@@ -56,15 +56,19 @@ internal static partial class WorksPlatformTrustChecks
         accepted.ClientRejectedServer.ShouldBeFalse(accepted.Failure);
         accepted.ServerAccepted.ShouldBeTrue("The owned sidecar must accept a client chained to its configured root. " + accepted.Failure);
 
-        // The probe accepted the server in both refusals, so the refusal is the sidecar's own decision.
+        // Only a recognized certificate-refusal alert from the authenticated server proves its decision.
         WorksPlatformTrustProbeResult none = await ProbeAsync(port, root, issuer, expected, null, null, cancellationToken).ConfigureAwait(false);
         none.ServerIdentity.ShouldBe(expected, none.Failure);
         none.ClientRejectedServer.ShouldBeFalse(none.Failure);
         none.ServerAccepted.ShouldBeFalse("The mTLS sidecar must refuse a client that presents no certificate.");
+        none.ServerRefusedClientCertificate.ShouldBeTrue("A transport failure cannot prove refusal of an absent client certificate. " + none.Failure);
         WorksPlatformTrustProbeResult foreign = await ProbeAsync(port, root, issuer, expected, foreignClient, foreignRoot, cancellationToken).ConfigureAwait(false);
         foreign.ServerIdentity.ShouldBe(expected, foreign.Failure);
         foreign.ClientRejectedServer.ShouldBeFalse(foreign.Failure);
         foreign.ServerAccepted.ShouldBeFalse("The mTLS sidecar must refuse a client certificate from a foreign CA.");
+        foreign.ServerRefusedClientCertificate.ShouldBeTrue("A transport failure cannot prove refusal of a foreign-CA client certificate. " + foreign.Failure);
+        foreign.CertificateRefusalAlertReason.ShouldNotBe(1116,
+            "A certificate-required alert means the foreign certificate was omitted and does not prove its CA was refused.");
 
         // The same configured root with another expected identity must refuse the genuine server.
         WorksPlatformTrustProbeResult mismatch = await ProbeAsync(port, root, issuer, mismatched, trustedClient, issuer, cancellationToken).ConfigureAwait(false);
@@ -78,11 +82,12 @@ internal static partial class WorksPlatformTrustChecks
             endpoint = sidecarResource + ":internal-grpc", port, serverIdentity = accepted.ServerIdentity,
             configuredRootAndIdentityAccepted = accepted.ServerIdentity == expected && !accepted.ClientRejectedServer,
             trustedClientAcceptedByServer = accepted.ServerAccepted,
-            noClientCertificateRefusedByServer = !none.ServerAccepted && !none.ClientRejectedServer,
-            foreignCaClientRefusedByServer = !foreign.ServerAccepted && !foreign.ClientRejectedServer,
+            noClientCertificateRefusedByServer = none.ServerRefusedClientCertificate,
+            foreignCaClientRefusedByServer = foreign.ServerRefusedClientCertificate && foreign.CertificateRefusalAlertReason != 1116,
             nameMismatchRejectedByProbe = mismatch.ClientRejectedServer && mismatch.ServerIdentity == expected,
             mismatchedIdentity = mismatched,
             refusals = new { noClientCertificate = none.Failure, foreignCaClient = foreign.Failure, nameMismatch = mismatch.Failure },
+            refusalAlertReasons = new { noClientCertificate = none.CertificateRefusalAlertReason, foreignCaClient = foreign.CertificateRefusalAlertReason },
         };
     }
 
@@ -113,7 +118,7 @@ internal static partial class WorksPlatformTrustChecks
         throw new InvalidOperationException("The owned sidecar '" + resource + "' did not report its internal mTLS gRPC endpoint.");
     }
 
-    /// <summary>Probes one owned TLS endpoint; a close before server authentication never qualifies as server-side refusal.</summary>
+    /// <summary>Probes one owned TLS endpoint; transport failures never qualify as certificate-refusal evidence.</summary>
     /// <param name="port">The owned loopback port.</param>
     /// <param name="root">The configured trust root.</param>
     /// <param name="issuer">The configured issuing certificate.</param>
@@ -135,7 +140,7 @@ internal static partial class WorksPlatformTrustChecks
         catch (SocketException exception)
         {
             // A refused/reset TCP connection authenticated no server and cannot prove certificate refusal.
-            return new WorksPlatformTrustProbeResult(null, true, false, exception.GetType().Name + ": " + exception.Message);
+            return new WorksPlatformTrustProbeResult(null, true, false, false, null, exception.GetType().Name + ": " + exception.Message);
         }
         string? serverIdentity = null;
         bool clientRejected = true;
@@ -162,6 +167,7 @@ internal static partial class WorksPlatformTrustChecks
             ApplicationProtocols = [SslApplicationProtocol.Http2],
             EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
             CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
+            AllowTlsResume = false,
         };
         if (clientCertificate is not null)
         {
@@ -187,16 +193,47 @@ internal static partial class WorksPlatformTrustChecks
             }
 
             bool settings = read == header.Length && header[3] == 0x4;
-            return new WorksPlatformTrustProbeResult(serverIdentity, clientRejected, settings,
+            return new WorksPlatformTrustProbeResult(serverIdentity, clientRejected, settings, false, null,
                 settings ? null : "The server closed the connection without an HTTP/2 SETTINGS frame.");
         }
         catch (Exception exception) when (exception is AuthenticationException or IOException or SocketException)
         {
-            // The innermost error carries the TLS alert the server sent, such as a missing or unknown certificate.
+            // Error text is diagnostic only. EOF, resets and unrelated TLS failures remain inconclusive.
             Exception cause = exception.GetBaseException();
-            return new WorksPlatformTrustProbeResult(serverIdentity, clientRejected, false, exception.GetType().Name + ": " + exception.Message
+            int? reason = GetCertificateRefusalAlertReason(exception);
+            bool refused = !clientRejected && reason is not null;
+            return new WorksPlatformTrustProbeResult(serverIdentity, clientRejected, false, refused, reason, exception.GetType().Name + ": " + exception.Message
                 + (ReferenceEquals(cause, exception) ? string.Empty : " | " + cause.GetType().Name + ": " + cause.Message));
         }
+    }
+
+    /// <summary>Recognizes received certificate-refusal alerts from the supported Linux OpenSSL provider.</summary>
+    /// <remarks>OpenSSL 1.1 and 3.x pack their SSL library and reason codes differently. .NET exposes that code
+    /// as the inner cryptographic exception's HResult. Unknown providers and unrelated alerts fail closed.
+    /// See <see href="https://raw.githubusercontent.com/dotnet/runtime/v10.0.0/src/libraries/Common/src/Interop/Unix/System.Security.Cryptography.Native/Interop.ERR.cs">.NET error propagation</see>,
+    /// <see href="https://raw.githubusercontent.com/openssl/openssl/openssl-3.0.2/include/openssl/err.h.in">OpenSSL 3 packing</see>,
+    /// <see href="https://raw.githubusercontent.com/openssl/openssl/OpenSSL_1_1_1w/include/openssl/err.h">OpenSSL 1.1 packing</see> and
+    /// <see href="https://raw.githubusercontent.com/openssl/openssl/openssl-3.0.2/include/openssl/sslerr.h">received alert reasons</see>.</remarks>
+    /// <param name="exception">The TLS operation failure.</param>
+    /// <returns>Whether a structured received certificate-refusal alert was observed.</returns>
+    internal static bool HasCertificateRefusalAlert(Exception exception)
+        => GetCertificateRefusalAlertReason(exception) is not null;
+
+    private static int? GetCertificateRefusalAlertReason(Exception exception)
+    {
+        if (!OperatingSystem.IsLinux()) return null;
+        for (Exception? current = exception; current is not null; current = current.InnerException)
+        {
+            if (current is not CryptographicException) continue;
+            uint code = unchecked((uint)current.HResult);
+            // ERR_LIB_SSL is 20; OpenSSL 3.x removed the function field used by OpenSSL 1.1.
+            uint reason = ((code >> 23) & 0xFF) == 20 ? code & 0x7FFFFF
+                : ((code >> 24) & 0xFF) == 20 ? code & 0xFFF : 0;
+            // Received bad, unsupported, revoked, expired, unknown, unknown-CA or required certificate.
+            if (reason is 1042 or 1043 or 1044 or 1045 or 1046 or 1048 or 1116) return (int)reason;
+        }
+
+        return null;
     }
 
     /// <summary>Requires configured-root trust and TLS server authentication purpose for a presented certificate.</summary>
