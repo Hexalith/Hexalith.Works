@@ -635,3 +635,179 @@ status: done 2026-09-05
 archived: 2026-09-18
 resolution: already resolved: Commits 535d1b464810b5fd5650a386d43a09c2596554b4 and 103dcfde9816706d4f8bd6b2f82654bde27f0f0c separately implemented and completed the ordering and schema-v2/reconciliation work under _bmad-output/implementation-artifacts/spec-projection-write-ordering-guard.md:1-6,87-99 and spec-shared-rollup-reconciliation.md:1-6,70-82.
 
+### DW-56: Completed-marker failure can still be acknowledged as processed
+
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: The current SDK propagates post-dispatch marker failures and durably retains Dispatched until completion. CompletionMarkerFailureRemainsRetryableWithoutRepeatingReminderConvergence proves repeated completion outages refuse acknowledgement, preserve discovery and retry after reconstruction without repeating convergence. See spec-five-deferred-sdk-recovery-replacements.md and retained validation evidence; terminal skip paths are outside this post-dispatch defect.
+reopened: 2026-09-22
+amendment: The 2026-09-05 sweep marked this row done and it was archived on 2026-09-18. MarkCompletedSafelyAsync and ReleaseSafelyAsync still catch marker-store failures and only log. Story 4.8 keeps the accepted deferral on this row. The durable post-dispatch retry stays an EventStore marker-protocol change.
+prior-status: done 2026-09-05
+prior-resolution: resolved by sweep bundle dw-domain-event-processing-hardening
+resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
+origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
+
+### DW-58: The command-pipeline smoke-test prerequisite probe still collapses caller-requested cancellation into an unavailable result.
+origin: spec-deferred dc9e48616d2d
+location: tests/Hexalith.Works.IntegrationTests/WorksCommandPipelineSmokeTests.cs:175
+source_spec: `spec-probe-cancellation-propagation.md`
+severity: medium
+reason: `WorksCommandPipelineSmokeTests.IsPortReachableAsync` catches every `OperationCanceledException` and returns `false`. The reminder-recovery lane now uses `WorksAppHostSmokeHarness.IsPortReachableAsync`, whose filtered catch preserves caller-requested cancellation, so it is no longer part of this deferred item.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-host-boundaries.md` verifies the original command-pipeline class is retired and all current live lanes use the shared TCP probe; deterministic replacement tests prove caller cancellation, reachable and unavailable loopback outcomes.
+
+### DW-59: The deterministic probe cases never run in the repository's habitual deterministic lane, because they live in a class that lane excludes by name.
+origin: spec-deferred 282ced3de175
+location: tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:145
+source_spec: `spec-probe-cancellation-propagation.md`
+severity: medium
+reason: The routine deterministic command recorded across this repository's specs is `Hexalith.Works.IntegrationTests -class- "*SmokeTests"`, an exclude-by-class filter that drops every case in `WorksCascadeRecoveryPipelineSmokeTests`. Confirmed against the built Release assembly: `-list Tests` reports 15 `Port_probe_*`/`Prerequisite_gate_*` cases with no filter and 0 under `-class- "*SmokeTests"`. They still run in an unfiltered full-assembly run, and the spec's own verification command targets the class directly, so the coverage is not orphaned -- but a probe regression is invisible to the lane that is actually run by habit. Relocating them needs a new test class outside this file, which the intent's Block If fences off.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-verification-reliability.md` restores the current TCP helper's caller-cancellation precedence across success, socket failure and independent timeout races, with eight controlled connection cases plus three real TCP controls in WorksAppHostSmokeHarnessTests. Actual runner discovery and execution retain these controls under the deterministic exclusions; the obsolete multi-port prerequisite gate remains retired.
+
+### DW-61: Three untouched contract-flow test summaries still describe camelCase Web JSON as the real EventStore write path, contradicting the corrected claims this bundle landed elsewhere.
+origin: spec-deferred 2c19a16a4d17
+location: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs:13
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: medium
+reason: tests/Hexalith.Works.IntegrationTests/WorkItemHandoffChainContractFlowTests.cs:13-14 and UniformExecutorBindingLifecycleFlowTests.cs:17-18 both say "the real write path ... -> concrete JsonSerializerDefaults.Web serialization"; WorkItemProgressContractFlowTests.cs:57 says the event "survives concrete EventStore serialization" while serializing with camelCase JsonOptions. EventPersister writes options-free PascalCase, so the repository now asserts two different things about the same persisted form. These files sit outside the intent's named sweep list, so the omission is deliberate for this story.
+status: done 2026-10-22
+archived: 2026-10-23
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
+
+### DW-62: The frozen WorkItemCannotReferenceParentFromAnotherTenant catalog sample carries a same-tenant parent, so its evidence contradicts the rejection it names.
+origin: spec-deferred fcb2bd62083e
+location: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs:36,81 builds Parent as new ParentWorkItemReference(Tenant, new WorkItemId("parent-001")) with Tenant = "tenant-alpha", the event's own tenant. EnvelopeCanonicalSequencingTests sources "tenant-beta" from its own helper instead. WorkItemV1Catalog is untouched by this change, but both new corpora now freeze those bytes, so correcting the sample later means regenerating two fixtures.
+status: done 2026-10-22
+archived: 2026-10-23
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
+
+### DW-64: The byte-exact corpus never freezes the PascalCase at-rest form of EffortEstimate, ObligationReference, or ConversationCorrelationId, because every catalog sample leaves them null.
+origin: spec-deferred bb511d744622
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGolden/WorkItemCreated.v1.json
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: medium
+reason: All 23 EventPersisterGolden fixtures are produced from WorkItemV1Catalog samples, and those samples leave InitialEffort, Obligation.Reference, and ConversationCorrelationId null on every event that can carry them; the camelCase Golden/WorkItemCreated.v1.json does freeze all three. Those nested contract records therefore have no frozen writer-side form anywhere, so a property rename or shape change inside them cannot turn the exact corpus red. Closing it means changing catalog sample values, which regenerates fixtures in both corpora -- the same coupling DW-62 records.
+status: done 2026-10-22
+archived: 2026-10-23
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
+
+### DW-65: Story48Streams serializes stand-in EventStore stream bytes with camelCase Web options, the same contradiction DW-61 records for three contract-flow tests but at a helper DW-61 does not name.
+origin: spec-deferred e4191a19474f
+location: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: tests/Hexalith.Works.IntegrationTests/Story48Streams.cs:12,31 builds StreamReadEvent.Payload with new JsonSerializerOptions(JsonSerializerDefaults.Web) while standing in for real per-aggregate stream pages, and feeds the Story 4.8 recovery sources that decode through WorksEventDecoder. EventPersister writes options-free PascalCase. It is not currently an escape hatch, because the shared decoder is separately pinned against PascalCase bytes by WorksDomainEventProcessorTests, but the fixture now contradicts the persisted form the rest of this bundle established. Outside the intent's named sweep list and outside DW-61's three files.
+status: done 2026-10-22
+archived: 2026-10-23
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
+
+### DW-66: Both corpus membership gates enumerate the copied build output, so a fixture deleted from source survives in bin/ and membership still passes on an incremental build.
+origin: spec-deferred 8bfcda99d79e
+location: tests/Hexalith.Works.IntegrationTests/SchemaEvolution/EventPersisterGoldenCorpusTests.cs:32
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: EventPersisterGoldenCorpusTests.cs:32 and SchemaEvolutionGoldenCorpusTests.cs:26 resolve their corpus directory under AppContext.BaseDirectory and enumerate it with SearchOption.AllDirectories, while Hexalith.Works.IntegrationTests.csproj copies both directories with CopyToOutputDirectory PreserveNewest, which never prunes. A fixture deleted from source therefore still satisfies the bidirectional set-equality check until a clean build. The gate fails closed only in CI. Pre-existing for the Web corpus; inherited by the new exact corpus.
+status: done 2026-10-22
+archived: 2026-10-23
+resolution: resolved by spec-five-deferred-serialization-evidence-fixes.md
+
+### DW-70: The sibling pending-date-await index transform still mutates the instance it loaded, so a rejected write can leave that mutation visible in a reference-returning store.
+origin: spec-deferred 6f4552a53c41
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:330
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: MaintainPendingDateAwaitIndexAsync does `PendingDateAwaitTenantIndex index = current ?? new(...)` and then mutates `index` in place inside ReadModelWritePolicy's retry transform. The what's-next transform was converted to build replacement dictionaries on every retry precisely so a rejected attempt cannot leak into loaded state; the pending-date sibling was left on the older pattern because this story's Never clause fences off pending-date behavior. No test depends on it today (RejectNextTrySaves is never armed on that key), but the two sibling transforms now disagree on a semantics the docs claim for the index family.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: The mutable legacy dispatcher is retired. UncommittedPendingDateFoldLeavesAcceptedStateUntouchedUntilSdkCommit proves the current SDK fold produces replacement operations without changing loaded or persisted pending awaits, then commits the cleared index and sequence through SDK catch-up after reconstruction. See spec-five-deferred-sdk-recovery-replacements.md.
+
+### DW-71: The /project response still echoes the freshly computed item even when both ordering guards refused the replay, so a caller can receive state that was never persisted.
+origin: spec-deferred 2cfe338125c2
+location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:179
+source_spec: `spec-projection-write-ordering-guard.md`
+severity: low
+reason: DispatchAsync serializes `item` into ProjectionResponse unconditionally, and `indexAccepted` is computed and then discarded. Before this change the writes were unconditional, so the response always matched persisted state; a refused stale replay now returns a document the store does not hold, with no field distinguishing accepted from refused. Adding an acceptance signal changes the projection response contract, which this story's Block If fences off.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: Superseded by the approved SDK cutover: the retired response shape is not retained. StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState proves AlreadyCompleted with no compatibility state echo and unchanged persisted/query-visible newer state after restart; the unsupported direct projection path also returns no state. See spec-five-deferred-sdk-recovery-replacements.md.
+decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
+decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
+
+### DW-73: The pending-date-await index and tenant registry stay unversioned and are neither rebuilt nor pruned by the shared reconciliation, so a work item dropped from a tenant's authoritative membership can r
+origin: spec-deferred c1087044cae6
+location: src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs
+source_spec: `spec-shared-rollup-reconciliation.md`
+severity: medium
+reason: WorkItemSharedRebuildManifestBuilder emits operations only for the v2 tenant index, per-item roll-ups, and candidate-known legacy roll-up keys; WorksReadModelKeys.PendingDateAwaitIndexKey and PendingDateAwaitRegistryKey carry no generation token and appear in no manifest operation. Recovery therefore still enumerates awaits for ids that GetWorkItemQueryHandler now refuses as non-members. The underlying orphan-after-erasure gap predates this change; membership-based unreachability makes it observable from the query surface.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: The SDK generation now includes pending-date awaits rebuilt solely from authoritative membership; current recovery discovery reads that membership. Authoritative_rebuild_prunes_orphaned_pending_awaits_and_recovery_discovery proves orphan entries and watermarks disappear from selected state and discovery after restart while legacy rollback index/registry bytes remain unchanged. See spec-five-deferred-sdk-recovery-replacements.md.
+
+### DW-75: Hexalith source-consumption project discovery remains constrained by the Hexalith.Works*.csproj filename glob.
+origin: spec-deferred 9a356fa164ff
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs:415
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: The live source-consumption gate still enumerates projects by basename, so a differently named root-owned project could evade this specific check. This behavior predates the evaluated-input bundle and is outside its four ledger entries.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers every root-owned project filename and exercises both PackageReference and GlobalPackageReference through the live sweep, retaining dependency/evidence/build-output exclusions. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
+
+### DW-78: The Release lane pins Platform=AnyCPU for every evaluated project regardless of its declared Platforms.
+origin: spec-deferred 27c11709b8c0
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:29
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: A project declaring a Platforms set that excludes AnyCPU would be evaluated under a platform it does not support, so platform-conditioned imports and ProjectReference items would silently drop out of the evaluated set the gates trust as complete. No project in the repository declares such a set today.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Discovers declared platforms before strict selected-lane evaluation, revisits framework-specific Platforms and preserves explicit caller/child globals. Unsupported-default and missing-supported-import controls pass. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
+
+### DW-79: Restored NuGet package build props enter the custom-import freshness closure.
+origin: spec-deferred c816fd817c7c
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:431
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: IsCustomImportPath excludes installed-SDK imports and generated build output, but a package's build/buildTransitive props imported from the global packages folder is neither, so it becomes a restore input. Re-extracting or touching the package cache without restoring would report the evaluated dependency artifact stale.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Excludes evaluated NuGetPackageRoot, NuGetPackageFolders and RestorePackagesPath imports only from freshness; custom siblings, dependency contents and malformed-declaration refusals remain covered. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
+
+### DW-80: Dependency declarations that only an inactive non-Release condition guards remain invisible when they arrive through an import.
+origin: spec-deferred 65a78e5cf80d
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:22
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: medium
+reason: Owning-project XML is scanned condition-agnostically, so a conditional declaration in a governed or scanned project file fails closed. An import that declares a ProjectReference or PackageReference under `Condition="'$(Configuration)' == 'Debug'"` produces no evaluated item in the pinned Release lane and no owning-file sentinel, so no gate observes it. Evaluating a second lane, or treating a conditioned dependency item in any custom import as fail-closed, changes what the shared Builds props are allowed to declare and is a design decision beyond this bundle.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Applies Debug/Release, declared framework/platform and source-child dependency governance to the union; live direction and package-mode allowlists participate. The Debug-only child regression was demonstrated red before the fix and green afterward. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
+decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
+decision: 2026-09-01 Evaluate supported lanes — Evaluate and merge Release and Debug dependency surfaces together with declared framework and platform lanes, then apply canonical governance to the union with imported-condition regression tests.
+
+### DW-85: `WorkItemRollUpPayloadCoverageTests` is now a near-strict subset of `ProjectionPayloadCoverageTests`'s roll-up coverage assertion
+origin: code-review 4-8-register-and-reconcile-date-reminders-durably
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/WorkItemRollUpPayloadCoverageTests.cs
+source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
+severity: low
+reason: Pre-existing, not caused by this diff — the overlap was created when `ProjectionPayloadCoverageTests.cs` was added in the prior 4.8 review round (commit `01d527a`), which duplicates `WorkItemRollUpPayloadCoverageTests`'s single coverage assertion (minus `EffectDisposition`/intentional-no-op checks). This diff only updates the older test to compile against the renamed `WorkItemRollUpPayloadDescriptor.Catalog` API. Two overlapping tests must now be kept in sync by hand; consider retiring or consolidating the older, narrower test.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: `spec-five-deferred-architecture-guards.md` Retires the narrower WorkItemRollUpPayloadCoverageTests; ProjectionPayloadCoverageTests retains every prior assertion plus catalog uniqueness, effect-disposition and intentional-no-op coverage. Final Debug architecture verification: 327/327 passed; independent follow-up confirms all findings resolved. [Retained evidence](evidence/five-deferred-architecture-guards-2026-10-23/manifest.json).
+
+### DW-86: Story 4.7's two stream-reading sources advance their page cursor one event too far
+origin: review-remediation 4-8-register-and-reconcile-date-reminders-durably
+location: src/Hexalith.Works/Recovery/Cascade/StreamReadingCascadeDescendantSource.cs:86; src/Hexalith.Works/Recovery/ChildCompletion/StreamReadingChildCompletionAwaitingParentSource.cs:159
+source_spec: `_bmad-output/implementation-artifacts/4-7-trigger-reactor-translators-from-the-live-event-stream.md`
+severity: high
+reason: Out of scope, same root cause as the HIGH finding fixed in Story 4.8's `PendingDateAwaitStreamReader`. `StreamReadRequest.FromSequence` is an EXCLUSIVE lower bound — verified in the pinned submodule (`AggregateActor.ReadEventsRangeAsync` reads from `fromSequence + 1`, `FakeAggregateActor` filters `SequenceNumber > fromSequence`, and EventStore's own `DaprBackupCommandService` pages with `readCursor = LastSequenceReturned`, no increment). Both files page with `from = LastSequenceReturned + 1`, so every multi-page per-aggregate read silently drops exactly one event per page boundary; the cascade file's comment even states the wrong rule ("the gateway paginates by FromSequence = LastSequenceReturned + 1"). `StreamsController`'s own inline comment says the same wrong thing, which is likely where the pattern came from. These are Story 4.7 surfaces (cascade descendant discovery and child-completion parent lookup) and need their own change plus multi-page tests, not a drive-by edit inside a reminders story.
+status: done 2026-10-23
+archived: 2026-10-23
+resolution: Both faulty legacy readers are retired. MultipleExclusivePageBoundariesPreserveEveryCommittedEnvelope proves the unified WorksSourceStreamReader uses exclusive cursors over one- and two-envelope pages, preserves every envelope/message identity and rejection offset, and leaves the reminder adapter with the exact final current await. Paged child-completion and expiry-cascade translation controls also prove exact process effects and consumed-await suppression. See spec-five-deferred-sdk-recovery-replacements.md.
+
