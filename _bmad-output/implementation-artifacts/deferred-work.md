@@ -1214,6 +1214,8 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Preserve the explicit persist-before-publication invariant when refreshing the Epic 4 agent context.
+  status: done 2026-10-23
+  resolution: The context now explicitly requires EventStore to persist events before publication, independently of delivery acknowledgement (architecture AD-01). See [spec-five-deferred-epic-context.md](spec-five-deferred-epic-context.md) for authorities and validation.
   evidence: Continuation review C3-BH9 (2026-10-01). An earlier committed refresh of `epic-4-context.md` replaced the explicit publication-order statement with acknowledgement-after-durable-commit wording. The architecture remains authoritative and is loaded by this spec, but future context refreshes should carry the explicit order. This run did not edit the context, and the build workflow routes agent-context edits to deferred work.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Reconcile the open intent-gap table in the Works CI/CD spec and retain its broad Integration TRX outside `/tmp`.
@@ -1229,6 +1231,8 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Qualify the Epic 4 context Claim-only InProgress rule to preserve the existing Suspended-to-Resume transition.
+  status: done 2026-10-23
+  resolution: The context distinguishes Claim from Assigned/Queued and exact-current-await Resume from Suspended, matching WorkItemLifecycle and architecture AD-13. See [spec-five-deferred-epic-context.md](spec-five-deferred-epic-context.md) for authorities and validation.
   evidence: Story 4.11 continuation review C12-BH7 (2026-10-08). `epic-4-context.md` says Claim is the only entry to InProgress, while the existing `WorkItemLifecycle` also resumes suspended work. This run did not modify lifecycle behavior or context; agent-context corrections belong to a dedicated refresh.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
@@ -1263,10 +1267,14 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Qualify the Epic 4 context claim-loss guidance so a surface does not promise the winning party's identity without an authorized source.
+  status: done 2026-10-23
+  resolution: Claim-loss guidance now refreshes authorized evidence and permits a winner identity only from an authorized source; the rejection contract supplies no winner. See [spec-five-deferred-epic-context.md](spec-five-deferred-epic-context.md) for authorities and validation.
   evidence: Story 4.11 review C27-BH6 (2026-10-10), low. `epic-4-context.md:49` says a claim loss names the other party, but `src/Hexalith.Works.Contracts/Events/Rejections/WorkItemTransitionRejected.cs` records only status and attempted act, and the executor query filters another party's assigned items. Agent-context changes are deferred by the build workflow.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Qualify Epic 4 problem-detail guidance so tenant context appears only after authorization permits disclosure.
+  status: done 2026-10-23
+  resolution: Problem details now include tenant context only when authorization permits disclosure, preserving the architecture AD-23 non-disclosure boundary. See [spec-five-deferred-epic-context.md](spec-five-deferred-epic-context.md) for authorities and validation.
   evidence: Story 4.11 review C27-BH7 (2026-10-10), low. `epic-4-context.md:37` says problem details carry tenant context, while the epic's AD-23 acceptance requires denial before tenant-existence disclosure. Agent-context changes are deferred by the build workflow.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
@@ -1281,6 +1289,8 @@ status: open
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore projection freshness and explicit Unavailable guidance in the Epic 4 context.
+  status: done 2026-10-23
+  resolution: Headless guidance now requires freshness, safe and labeled stale results, or explicit Unavailable; partial or untrustworthy results cannot appear fresh or as numeric zero (UX-DR6/25). See [spec-five-deferred-epic-context.md](spec-five-deferred-epic-context.md) for authorities and validation.
   evidence: Story 4.11 review C29-BH5 (2026-10-10), low. `epic-4-context.md:48` omits the freshness and Unavailable behavior required by `epics.md:158,196`; a later surface could present a stale or repairing projection as zero or current. This is an agent-context correction.
 
 ## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C30)
