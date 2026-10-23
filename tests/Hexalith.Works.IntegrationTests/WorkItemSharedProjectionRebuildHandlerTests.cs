@@ -13,6 +13,8 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
 using Hexalith.Works.Queries;
+using Hexalith.Works.Recovery;
+using Hexalith.Works.Reminders;
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -195,7 +197,8 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "json",
             1,
             DateTimeOffset.UnixEpoch,
-            "corr-1") { GlobalPosition = 1 };
+            "corr-1")
+        { GlobalPosition = 1 };
         await RefuseRebuildAsync(
             store,
             Tenant,
@@ -409,6 +412,99 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull();
     }
 
+    /// <summary>Authoritative rebuilds prune removed date-await members from the selected family and recovery discovery.</summary>
+    [Fact]
+    public async Task Authoritative_rebuild_prunes_orphaned_pending_awaits_and_recovery_discovery()
+    {
+        const string orphanId = "orphan-await";
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var due = new DateTimeOffset(2035, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        AwaitCondition dateAwait = AwaitCondition.DateReached(due);
+        ProjectionEventDto[] retained =
+        [
+            Dto(new WorkItemCreated(ParentId, 1, tenant, new WorkItemId(ParentId), new Obligation("Retained await")), 1),
+            Dto(new WorkItemSuspended(ParentId, 2, tenant, new WorkItemId(ParentId), [dateAwait]), 2),
+        ];
+        ProjectionEventDto[] orphan =
+        [
+            Dto(new WorkItemCreated(orphanId, 1, tenant, new WorkItemId(orphanId), new Obligation("Removed await")), 1),
+            Dto(new WorkItemSuspended(orphanId, 2, tenant, new WorkItemId(orphanId), [dateAwait]), 2),
+        ];
+        var legacyPending = new PendingDateAwaitTenantIndex
+        {
+            Entries = { [orphanId] = [new PendingDateAwait(Tenant, orphanId, due, dateAwait.CorrelationKey)] },
+            LastSequences = { [orphanId] = 99 },
+        };
+        var legacyRegistry = new PendingDateAwaitTenantRegistry { Tenants = [Tenant] };
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(Tenant),
+            legacyPending, ct).ConfigureAwait(true);
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey,
+            legacyRegistry, ct).ConfigureAwait(true);
+
+        await RebuildAsync(store, Tenant, "seed-pending-members", [(ParentId, retained), (orphanId, orphan)]).ConfigureAwait(true);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionScope scope = new WorkItemSharedProjectionRebuildHandler().CreateScope(Tenant);
+        var before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+            .ConfigureAwait(true);
+        PendingDateAwaitTenantIndex seeded = before.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        seeded.Entries.Keys.Order(StringComparer.Ordinal).ShouldBe([orphanId, ParentId]);
+        seeded.LastSequences.Count.ShouldBe(2);
+        var previousDiscovery = await new WorksProcessSourceCatalog(coordinator).ListAsync(null, 256, ct).ConfigureAwait(true);
+        previousDiscovery.IsIncomplete.ShouldBeFalse();
+        previousDiscovery.Sources.Select(source => source.Aggregate).ShouldBe([orphanId, ParentId]);
+
+        await RebuildAsync(store, Tenant, "prune-pending-member", [(ParentId, retained)]).ConfigureAwait(true);
+
+        // Reconstruct readers so pruning is proved against the committed generation, not a retained object.
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var after = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+            .ConfigureAwait(true);
+        after.IsAvailable.ShouldBeTrue();
+        after.Generation.ShouldBeGreaterThan(before.Generation);
+        PendingDateAwaitTenantIndex selected = after.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        selected.Entries.Keys.ShouldBe([ParentId]);
+        selected.Entries[ParentId].ShouldHaveSingleItem().ShouldBe(new PendingDateAwait(Tenant, ParentId, due, dateAwait.CorrelationKey));
+        selected.LastSequences.Keys.ShouldBe([ParentId]);
+        selected.LastSequences[ParentId].ShouldBe(2);
+        var discovery = await new WorksProcessSourceCatalog(restarted).ListAsync(null, 256, ct).ConfigureAwait(true);
+        discovery.IsIncomplete.ShouldBeFalse();
+        discovery.NextKey.ShouldBeNull();
+        discovery.Sources.ShouldHaveSingleItem().Aggregate.ShouldBe(ParentId);
+        (await QueryWorkItemAsync(store, Tenant, orphanId).ConfigureAwait(true)).Found.ShouldBeFalse();
+
+        // A nonempty replacement inventory can remove every dated member without omitting the empty pending document.
+        const string neutralId = "member-without-date";
+        ProjectionEventDto[] neutralHistory = [Dto(new WorkItemCreated(neutralId, 1, tenant,
+            new WorkItemId(neutralId), new Obligation("No date await")), 1)];
+        await RebuildAsync(store, Tenant, "prune-last-pending-await", [(neutralId, neutralHistory)]).ConfigureAwait(true);
+        var emptyReader = new SharedProjectionEpochCoordinator(store, store);
+        var emptyRead = await emptyReader.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+            .ConfigureAwait(true);
+        emptyRead.IsAvailable.ShouldBeTrue();
+        emptyRead.IsStale.ShouldBeFalse();
+        emptyRead.Generation.ShouldBeGreaterThan(after.Generation);
+        PendingDateAwaitTenantIndex emptyPending = emptyRead.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        emptyPending.Entries.ShouldBeEmpty();
+        emptyPending.LastSequences.ShouldBeEmpty();
+        (await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true)).MemberWorkItemIds.ShouldBe([neutralId]);
+        var emptyDiscovery = await new WorksProcessSourceCatalog(emptyReader).ListAsync(null, 256, ct).ConfigureAwait(true);
+        emptyDiscovery.IsIncomplete.ShouldBeFalse();
+        emptyDiscovery.NextKey.ShouldBeNull();
+        emptyDiscovery.Sources.ShouldHaveSingleItem().Aggregate.ShouldBe(neutralId);
+
+        // Historical rollback discovery records remain intact while selected recovery ignores them.
+        PendingDateAwaitTenantIndex rollbackPending = (await store.GetAsync<PendingDateAwaitTenantIndex>(
+            WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitIndexKey(Tenant), ct).ConfigureAwait(true))
+            .Value.ShouldNotBeNull();
+        JsonSerializer.Serialize(rollbackPending, Web).ShouldBe(JsonSerializer.Serialize(legacyPending, Web));
+        PendingDateAwaitTenantRegistry rollbackRegistry = (await store.GetAsync<PendingDateAwaitTenantRegistry>(
+            WorksReadModelKeys.StateStoreName, WorksReadModelKeys.PendingDateAwaitRegistryKey, ct).ConfigureAwait(true))
+            .Value.ShouldNotBeNull();
+        JsonSerializer.Serialize(rollbackRegistry, Web).ShouldBe(JsonSerializer.Serialize(legacyRegistry, Web));
+    }
+
     [Fact]
     public async Task Abort_retry_and_colliding_tenant_ids_preserve_atomicity_and_tenant_isolation()
     {
@@ -589,6 +685,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
         result.Status.ShouldBe(ProjectionDispatchStatus.Failed);
         result.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.UnsupportedCapability);
+        result.State.ShouldBeNull();
     }
 
     private static DomainSharedProjectionRebuildRequest Accumulate(
@@ -669,7 +766,8 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "json",
             sequence,
             DateTimeOffset.UnixEpoch,
-            "corr-1") { GlobalPosition = sequence };
+            "corr-1")
+        { GlobalPosition = sequence };
 
     private static DomainSharedProjectionRebuildRequest Finalize(
         DomainSharedProjectionRebuildIdentity identity,

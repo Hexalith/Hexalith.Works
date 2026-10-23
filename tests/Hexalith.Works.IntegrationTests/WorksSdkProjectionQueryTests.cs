@@ -95,6 +95,69 @@ public sealed class WorksSdkProjectionQueryTests
             .ShouldHaveSingleItem();
         handler.EpochEnabled.ShouldBeTrue();
         handler.ProjectionType.ShouldBe(WorksReadModelKeys.RuntimeFamily);
+        scope.ServiceProvider.GetServices<IDomainProjectionHandler>().ShouldBeEmpty();
+        ProjectionResponse? legacy = DomainProjectionDispatcher.Project(scope.ServiceProvider,
+            new ProjectionRequest(Tenant, "work", Aggregate,
+                [Dto(new WorkItemCreated(Aggregate, 1, new TenantId(Tenant), new WorkItemId(Aggregate),
+                    new Obligation("legacy replay")), 1)]), TestContext.Current.CancellationToken);
+        legacy.ShouldBeNull("The canonical /project fallback must have no legacy Works handler capable of echoing computed state.");
+    }
+
+    /// <summary>Stale named redelivery reports its durable outcome without echoing an unpersisted older view.</summary>
+    [Fact]
+    public async Task StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        var scope = handler.CreateScope(Tenant);
+        var identity = new DomainProjectionIdentityOptions { AppId = "works-stale-replay-test", ServiceVersion = "v1" };
+        string fingerprint = ProjectionRouteCatalogFingerprint.Compute(identity.AppId, identity.ServiceVersion,
+            [new ProjectionDispatchRoute("work", WorksReadModelKeys.RuntimeFamily)]);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Aggregate);
+        ProjectionRequest created = new(Tenant, "work", Aggregate,
+            [Dto(new WorkItemCreated(Aggregate, 1, tenant, item, new Obligation("authoritative query")), 1)]);
+        ProjectionRequest queued = new(Tenant, "work", Aggregate,
+            [Dto(new WorkItemQueued(Aggregate, 2, tenant, item), 2)]);
+        using (ServiceProvider provider = NamedProjectionProvider(store, store, coordinator, handler))
+        {
+            foreach (ProjectionRequest request in new[] { created, queued })
+            {
+                ProjectionDispatchResponse response = await DomainProjectionDispatcher.DispatchAsync(provider,
+                    new ProjectionDispatchRequest(request, [WorksReadModelKeys.RuntimeFamily], $"seed-{request.Events[0].SequenceNumber}", fingerprint),
+                    new ProjectionDispatchOptions(), identity, ct);
+                ProjectionDispatchOutcome outcome = response.Outcomes.ShouldHaveSingleItem();
+                outcome.Status.ShouldBe(ProjectionDispatchStatus.Completed);
+                outcome.State.ShouldBeNull();
+            }
+        }
+        var before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct);
+        before.Value.ShouldNotBeNull().As<WorkItemRollUp>().Status.ShouldBe(WorkItemStatus.Queued);
+        string persisted = before.Value.Value.GetRawText();
+
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var restartedHandler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        using ServiceProvider restartedProvider = NamedProjectionProvider(store, store, restarted, restartedHandler);
+        ProjectionDispatchResponse replay = await DomainProjectionDispatcher.DispatchAsync(restartedProvider,
+            new ProjectionDispatchRequest(created, [WorksReadModelKeys.RuntimeFamily], "older-history-after-restart", fingerprint),
+            new ProjectionDispatchOptions(), identity, ct);
+        ProjectionDispatchOutcome duplicate = replay.Outcomes.ShouldHaveSingleItem();
+        duplicate.Status.ShouldBe(ProjectionDispatchStatus.AlreadyCompleted);
+        duplicate.State.ShouldBeNull();
+        var after = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct);
+        after.Generation.ShouldBe(before.Generation);
+        after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(persisted);
+        (await restarted.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull().Position.ShouldBe(2);
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        QueryResult result = await new GetWorkItemQueryHandler(policy, restarted).ExecuteAsync(
+            CoordinatorQuery("scheduler") with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ct);
+        result.Success.ShouldBeTrue();
+        WorkItemView view = result.GetPayload().Deserialize<WorkItemView>(s_web).ShouldNotBeNull();
+        view.Found.ShouldBeTrue();
+        view.Status.ShouldBe(WorkItemStatus.Queued);
     }
 
     [Fact]
@@ -1071,7 +1134,8 @@ public sealed class WorksSdkProjectionQueryTests
         // A new SDK envelope carries conflicting evidence for the already folded source sequence.
         // Unlike an SDK journal identity collision, this reaches the Works fold and its parking policy.
         ProjectionEventDto conflicting = Dto(new WorkItemCreated(Aggregate, 2, tenant, workItem,
-            new Obligation("Conflicting source evidence")), 2) with { GlobalPosition = 3 };
+            new Obligation("Conflicting source evidence")), 2) with
+        { GlobalPosition = 3 };
         var delivery = new SharedProjectionDelivery(Aggregate, 3,
             JsonSerializer.SerializeToUtf8Bytes(new ProjectionRequest(tenantId, "work", Aggregate, [conflicting]), s_web),
             JsonSerializer.SerializeToUtf8Bytes(3), new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
@@ -1195,7 +1259,8 @@ public sealed class WorksSdkProjectionQueryTests
         coordinator = new SharedProjectionEpochCoordinator(store, store);
         var lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct);
         (await coordinator.JournalAsync(scope, lease, Delivery(new WorkItemQueued(Aggregate, 2, new TenantId(Tenant), new WorkItemId(Aggregate)), 2)
-            with { OwnerSequenceNumber = 2 }, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
+            with
+        { OwnerSequenceNumber = 2 }, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
         _ = await coordinator.CatchUpAsync(scope, (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, coordinator, token), ct);
         var restarted = new SharedProjectionEpochCoordinator(store, store);
         (await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope, 1, Aggregate, ct)).Events.Select(item => item.SequenceNumber).ShouldBe([1L, 2L]);

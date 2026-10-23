@@ -457,11 +457,12 @@ archived: 2026-09-18
 
 ### DW-56: Completed-marker failure can still be acknowledged as processed
 
-status: open
+status: done 2026-10-23
+resolution: The current SDK propagates post-dispatch marker failures and durably retains Dispatched until completion. CompletionMarkerFailureRemainsRetryableWithoutRepeatingReminderConvergence proves repeated completion outages refuse acknowledgement, preserve discovery and retry after reconstruction without repeating convergence. See spec-five-deferred-sdk-recovery-replacements.md and retained validation evidence; terminal skip paths are outside this post-dispatch defect.
 reopened: 2026-09-22
 amendment: The 2026-09-05 sweep marked this row done and it was archived on 2026-09-18. MarkCompletedSafelyAsync and ReleaseSafelyAsync still catch marker-store failures and only log. Story 4.8 keeps the accepted deferral on this row. The durable post-dispatch retry stays an EventStore marker-protocol change.
 prior-status: done 2026-09-05
-resolution: resolved by sweep bundle dw-domain-event-processing-hardening
+prior-resolution: resolved by sweep bundle dw-domain-event-processing-hardening
 resolution-undo: 3a19f3e607e67615252688bc602dc3efb8ba600ece76cf066c65c8c09296997a 2026-09-05 7374617475733a206f70656e
 origin: migrated from legacy ledger ("Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-08-28)"), 2026-08-28
 
@@ -584,7 +585,8 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:330
 source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: MaintainPendingDateAwaitIndexAsync does `PendingDateAwaitTenantIndex index = current ?? new(...)` and then mutates `index` in place inside ReadModelWritePolicy's retry transform. The what's-next transform was converted to build replacement dictionaries on every retry precisely so a rejected attempt cannot leak into loaded state; the pending-date sibling was left on the older pattern because this story's Never clause fences off pending-date behavior. No test depends on it today (RejectNextTrySaves is never armed on that key), but the two sibling transforms now disagree on a semantics the docs claim for the index family.
-status: open
+status: done 2026-10-23
+resolution: The mutable legacy dispatcher is retired. UncommittedPendingDateFoldLeavesAcceptedStateUntouchedUntilSdkCommit proves the current SDK fold produces replacement operations without changing loaded or persisted pending awaits, then commits the cleared index and sequence through SDK catch-up after reconstruction. See spec-five-deferred-sdk-recovery-replacements.md.
 
 ### DW-71: The /project response still echoes the freshly computed item even when both ordering guards refused the replay, so a caller can receive state that was never persisted.
 origin: spec-deferred 2cfe338125c2
@@ -592,7 +594,8 @@ location: src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:179
 source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: DispatchAsync serializes `item` into ProjectionResponse unconditionally, and `indexAccepted` is computed and then discarded. Before this change the writes were unconditional, so the response always matched persisted state; a refused stale replay now returns a document the store does not hold, with no field distinguishing accepted from refused. Adding an acceptance signal changes the projection response contract, which this story's Block If fences off.
-status: open
+status: done 2026-10-23
+resolution: Superseded by the approved SDK cutover: the retired response shape is not retained. StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState proves AlreadyCompleted with no compatibility state echo and unchanged persisted/query-visible newer state after restart; the unsupported direct projection path also returns no state. See spec-five-deferred-sdk-recovery-replacements.md.
 decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 decision: 2026-09-01 Return persisted state — Keep the existing response shape but, after refusal, load and serialize the authoritative persisted item or ineligible state; add stale-replay tests proving response and store agree.
 
@@ -610,7 +613,8 @@ location: src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildMani
 source_spec: `spec-shared-rollup-reconciliation.md`
 severity: medium
 reason: WorkItemSharedRebuildManifestBuilder emits operations only for the v2 tenant index, per-item roll-ups, and candidate-known legacy roll-up keys; WorksReadModelKeys.PendingDateAwaitIndexKey and PendingDateAwaitRegistryKey carry no generation token and appear in no manifest operation. Recovery therefore still enumerates awaits for ids that GetWorkItemQueryHandler now refuses as non-members. The underlying orphan-after-erasure gap predates this change; membership-based unreachability makes it observable from the query surface.
-status: open
+status: done 2026-10-23
+resolution: The SDK generation now includes pending-date awaits rebuilt solely from authoritative membership; current recovery discovery reads that membership. Authoritative_rebuild_prunes_orphaned_pending_awaits_and_recovery_discovery proves orphan entries and watermarks disappear from selected state and discovery after restart while legacy rollback index/registry bytes remain unchanged. See spec-five-deferred-sdk-recovery-replacements.md.
 
 ### DW-74: Follow-up review still recommended for dw-shared-rollup-reconciliation after the damping cap was spent
 origin: review-budget-followup
@@ -730,7 +734,8 @@ location: src/Hexalith.Works/Recovery/Cascade/StreamReadingCascadeDescendantSour
 source_spec: `_bmad-output/implementation-artifacts/4-7-trigger-reactor-translators-from-the-live-event-stream.md`
 severity: high
 reason: Out of scope, same root cause as the HIGH finding fixed in Story 4.8's `PendingDateAwaitStreamReader`. `StreamReadRequest.FromSequence` is an EXCLUSIVE lower bound — verified in the pinned submodule (`AggregateActor.ReadEventsRangeAsync` reads from `fromSequence + 1`, `FakeAggregateActor` filters `SequenceNumber > fromSequence`, and EventStore's own `DaprBackupCommandService` pages with `readCursor = LastSequenceReturned`, no increment). Both files page with `from = LastSequenceReturned + 1`, so every multi-page per-aggregate read silently drops exactly one event per page boundary; the cascade file's comment even states the wrong rule ("the gateway paginates by FromSequence = LastSequenceReturned + 1"). `StreamsController`'s own inline comment says the same wrong thing, which is likely where the pattern came from. These are Story 4.7 surfaces (cascade descendant discovery and child-completion parent lookup) and need their own change plus multi-page tests, not a drive-by edit inside a reminders story.
-status: open
+status: done 2026-10-23
+resolution: Both faulty legacy readers are retired. MultipleExclusivePageBoundariesPreserveEveryCommittedEnvelope proves the unified WorksSourceStreamReader uses exclusive cursors over one- and two-envelope pages, preserves every envelope/message identity and rejection offset, and leaves the reminder adapter with the exact final current await. Paged child-completion and expiry-cascade translation controls also prove exact process effects and consumed-await suppression. See spec-five-deferred-sdk-recovery-replacements.md.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Complete deterministic and live verification for the concurrent Story 4.8 AppHost-owned Dapr placement/scheduler path.

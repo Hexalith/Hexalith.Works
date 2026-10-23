@@ -224,6 +224,122 @@ public sealed class WorksSdkReminderDeliveryTests
         (await restarted.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
     }
 
+    /// <summary>A completion outage propagates after dispatch and retries only the retained marker after reconstruction.</summary>
+    [Fact]
+    public async Task CompletionMarkerFailureRemainsRetryableWithoutRepeatingReminderConvergence()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        IReminderRegistrar reminders = Substitute.For<IReminderRegistrar>();
+        reminders.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>())
+            .Returns(new ReminderConvergenceResult(1, 0, 0, 0, 0));
+        EventStoreDomainEventEnvelope envelope = SuspensionEnvelope();
+        using var services = Services(store, reminders);
+
+        await Should.ThrowAsync<IOException>(() => Processor(services, Markers(store, failCompletion: true))
+            .ProcessAsync(envelope, ct));
+
+        var retainedMarkers = Markers(store);
+        (await retainedMarkers.TryAcquireAsync(envelope.MessageId, ct))
+            .ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.CompletionPending);
+        (await Checkpoints(store).ContainsCandidateAsync(new(Tenant, "work", Item), ct)).ShouldBeTrue();
+        // A second failed attempt must still refuse acknowledgement without invoking the handler again.
+        using var failedRestart = Services(store, reminders);
+        await Should.ThrowAsync<IOException>(() => Processor(failedRestart, Markers(store, failCompletion: true))
+            .ProcessAsync(envelope, ct));
+        (await retainedMarkers.TryAcquireAsync(envelope.MessageId, ct))
+            .ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.CompletionPending);
+
+        using var restarted = Services(store, reminders);
+        (await Processor(restarted, Markers(store)).ProcessAsync(envelope, ct))
+            .ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+        (await Markers(store).TryAcquireAsync(envelope.MessageId, ct))
+            .ShouldBe(EventStoreDomainEventMarkerAcquisitionResult.Completed);
+        (await Processor(restarted, Markers(store)).ProcessAsync(envelope, ct))
+            .ShouldBe(EventStoreDomainEventProcessingResult.Duplicate);
+        _ = await reminders.Received(1).ConvergeAsync(new ReminderTarget(Tenant, "work", Item), Arg.Any<CancellationToken>());
+        (await Checkpoints(store).ReadCandidatePageAsync(Tenant, 0, ct)).ShouldNotBeNull().Entries
+            .ShouldBe([new ProcessSource(Tenant, "work", Item)]);
+    }
+
+    /// <summary>An uncommitted resume fold cannot change the accepted pending-await document or its watermark.</summary>
+    [Fact]
+    public async Task UncommittedPendingDateFoldLeavesAcceptedStateUntouchedUntilSdkCommit()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        var scope = handler.CreateScope(Tenant);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        IEventPayload[] facts = [new WorkItemCreated(Item, 1, tenant, item, new Obligation("pending fold")),
+            new WorkItemSuspended(Item, 2, tenant, item, [s_date])];
+        for (int index = 0; index < facts.Length; index++)
+        {
+            var lease = await coordinator.RegisterWriterAsync(scope, handler.OrdinaryWriterId, ct);
+            (await coordinator.JournalAsync(scope, lease, Delivery(facts[index], index + 1), ct))
+                .ShouldBe(SharedProjectionJournalResult.Journaled);
+            (await coordinator.CatchUpAsync(scope, (delivery, generation, token) =>
+                handler.FoldCatchUpAsync(delivery, generation, coordinator, token), ct)).ShouldBe(1);
+        }
+        var accepted = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct);
+        var loaded = accepted.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        string before = accepted.Value.Value.GetRawText();
+        SharedProjectionDelivery resumed = Delivery(new WorkItemResumed(Item, 3, tenant, item, s_date), 3);
+
+        IReadOnlyList<ReadModelBatchOperation> proposed = await handler.FoldCatchUpAsync(resumed, accepted.Generation, coordinator, ct);
+
+        var proposedPending = JsonSerializer.Deserialize<WorksRuntimeDocument>(proposed.Single(operation =>
+                operation.Key == WorksReadModelKeys.RuntimePendingDateKey).CanonicalValue.Span,
+            new JsonSerializerOptions(JsonSerializerDefaults.Web)).ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        proposedPending.Entries.ShouldBeEmpty();
+        proposedPending.LastSequences[Item].ShouldBe(3);
+        loaded.Entries[Item].ShouldHaveSingleItem().Instant.ShouldBe(s_date.Instant!.Value);
+        loaded.LastSequences[Item].ShouldBe(2);
+        var unchanged = await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, accepted.Generation,
+            WorksReadModelKeys.RuntimePendingDateKey, ct);
+        unchanged.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
+        (await coordinator.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(2);
+
+        // Discard the proposed operations, reconstruct over retained storage, and commit through the SDK.
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var leaseAfterRestart = await restarted.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct);
+        (await restarted.JournalAsync(scope, leaseAfterRestart, resumed, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        // The admission checkpoint records journal durability; pending delivery proves the fold is not applied yet.
+        (await restarted.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
+        (await restarted.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(1);
+        bool rejected = false;
+        store.BatchFaultHook = (phase, _, _) =>
+        {
+            if (phase == ReadModelBatchPhase.BeforeDispatch)
+            {
+                rejected = true;
+                throw new IOException("synthetic pre-commit batch outage");
+            }
+            return Task.CompletedTask;
+        };
+        await Should.ThrowAsync<SharedProjectionWriteUnavailableException>(() => restarted.CatchUpAsync(scope, (delivery, generation, token) =>
+            handler.FoldCatchUpAsync(delivery, generation, restarted, token), ct));
+        rejected.ShouldBeTrue();
+        store.BatchFaultHook = null;
+        var afterRejection = new SharedProjectionEpochCoordinator(store, store);
+        (await afterRejection.ReadGenerationAsync<WorksRuntimeDocument>(scope, accepted.Generation,
+            WorksReadModelKeys.RuntimePendingDateKey, ct)).Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
+        (await afterRejection.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
+        (await afterRejection.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(1);
+        (await afterRejection.CatchUpAsync(scope, (delivery, generation, token) =>
+            handler.FoldCatchUpAsync(delivery, generation, afterRejection, token), ct)).ShouldBe(1);
+        var committed = (await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct))
+            .Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        committed.Entries.ShouldBeEmpty();
+        committed.LastSequences[Item].ShouldBe(3);
+        (await afterRejection.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(0);
+        (await restarted.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
+        loaded.Entries.ShouldContainKey(Item);
+        loaded.LastSequences[Item].ShouldBe(2);
+    }
+
     private static ProcessCheckpointStore Checkpoints(InMemoryReadModelStore store)
         => new(store, Options.Create(new EventStoreProcessOptions()), TimeProvider.System);
 
@@ -237,7 +353,7 @@ public sealed class WorksSdkReminderDeliveryTests
             new Dictionary<string, Type> { [typeof(WorkItemSuspended).FullName!] = typeof(WorkItemSuspended) },
             markers, NullLogger<EventStoreDomainEventProcessor>.Instance);
 
-    private static DaprEventStoreDomainEventMarkerStore Markers(InMemoryReadModelStore store)
+    private static DaprEventStoreDomainEventMarkerStore Markers(InMemoryReadModelStore store, bool failCompletion = false)
     {
         var client = Substitute.For<DaprClient>();
         client.GetStateAsync<EventStoreDomainEventMarkerRecord?>(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<ConsistencyMode?>(),
@@ -253,19 +369,24 @@ public sealed class WorksSdkReminderDeliveryTests
             });
         client.TrySaveStateAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<EventStoreDomainEventMarkerRecord>(), Arg.Any<string>(),
             Arg.Any<StateOptions>(), Arg.Any<IReadOnlyDictionary<string, string>>(), Arg.Any<CancellationToken>()).Returns(call =>
-                store.TrySaveAsync(call.ArgAt<string>(0), call.ArgAt<string>(1), call.Arg<EventStoreDomainEventMarkerRecord>(),
-                    call.ArgAt<string>(3), call.Arg<CancellationToken>()));
+            {
+                EventStoreDomainEventMarkerRecord record = call.Arg<EventStoreDomainEventMarkerRecord>();
+                if (failCompletion && record.State == EventStoreDomainEventMarkerState.Completed)
+                    throw new IOException("synthetic completion marker outage");
+                return store.TrySaveAsync(call.ArgAt<string>(0), call.ArgAt<string>(1), record,
+                    call.ArgAt<string>(3), call.Arg<CancellationToken>());
+            });
         return new(client, Options.Create(new EventStoreDomainEventsOptions { TopicName = "work.events", SubscriptionRoute = "/work/events" }));
     }
 
     private static EventStoreDomainEventEnvelope SuspensionEnvelope(string tenant = Tenant)
         => new(tenant switch
-            {
-                "tenant-a" => "01ARZ3NDEKTSV4RRFFQ69G5FAX",
-                "tenant-b" => "01ARZ3NDEKTSV4RRFFQ69G5FAY",
-                "tenant-c" => "01ARZ3NDEKTSV4RRFFQ69G5FAZ",
-                _ => "01ARZ3NDEKTSV4RRFFQ69G5FAV",
-            }, Item, tenant, typeof(WorkItemSuspended).FullName!, 2,
+        {
+            "tenant-a" => "01ARZ3NDEKTSV4RRFFQ69G5FAX",
+            "tenant-b" => "01ARZ3NDEKTSV4RRFFQ69G5FAY",
+            "tenant-c" => "01ARZ3NDEKTSV4RRFFQ69G5FAZ",
+            _ => "01ARZ3NDEKTSV4RRFFQ69G5FAV",
+        }, Item, tenant, typeof(WorkItemSuspended).FullName!, 2,
             DateTimeOffset.UnixEpoch, "reminder-delivery", "json",
             JsonSerializer.SerializeToUtf8Bytes(new WorkItemSuspended(Item, 2, new TenantId(tenant), new WorkItemId(Item), [s_date])))
         { Domain = "work" };

@@ -90,8 +90,11 @@ public sealed class WorksSdkIntentTranslationTests
             new WorkItemCreated(item, 1, tenant, id, new Obligation("mixed awaits"), Expiry: expiry),
             new WorkItemSuspended(item, 2, tenant, id,
                 [AwaitCondition.ChildCompleted(new WorkItemId("child")), date, AwaitCondition.ExternalSignal("external-proof")]));
-        page = page with { Events = [page.Events[0] with { MessageId = "mixed-create" },
-            page.Events[1] with { MessageId = "mixed-suspension" }] };
+        page = page with
+        {
+            Events = [page.Events[0] with { MessageId = "mixed-create" },
+            page.Events[1] with { MessageId = "mixed-suspension" }]
+        };
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
         var source = new WorksReminderIntentSource(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
@@ -178,8 +181,12 @@ public sealed class WorksSdkIntentTranslationTests
     }
 
     /// <summary>Current translation requires the exact await; the SDK retained plan owns receipt replay after consumption.</summary>
-    [Fact]
-    public async Task ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay()
+    /// <param name="pageSize">The maximum contextual envelopes per gateway page.</param>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(256)]
+    public async Task ChildResumeRequiresCurrentExactAwaitWhileSdkOwnsReceiptReplay(int pageSize)
     {
         var tenant = new TenantId(Tenant);
         var parent = new WorkItemId("parent");
@@ -195,7 +202,8 @@ public sealed class WorksSdkIntentTranslationTests
         StreamReadPage parentPage = Story48Streams.Page(Tenant, parent.Value, parentFacts);
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call => call.Arg<StreamReadRequest>().AggregateId == child.Value ? childPage : parentPage);
+            .Returns(call => SlicePage(call.Arg<StreamReadRequest>().AggregateId == child.Value ? childPage : parentPage,
+                call.Arg<StreamReadRequest>(), pageSize));
         var translator = new WorksProcessTranslator(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
         var source = new ProcessSource(Tenant, "work", child.Value);
 
@@ -211,8 +219,12 @@ public sealed class WorksSdkIntentTranslationTests
     }
 
     /// <summary>Expired parents map each direct child to delegated cascade expiry without a scheduled witness.</summary>
-    [Fact]
-    public async Task ExpiredParentMapsChildrenToCascadeExpiry()
+    /// <param name="pageSize">The maximum contextual envelopes per gateway page.</param>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(256)]
+    public async Task ExpiredParentMapsChildrenToCascadeExpiry(int pageSize)
     {
         var tenant = new TenantId(Tenant);
         var parent = new WorkItemId("expired-parent");
@@ -224,11 +236,11 @@ public sealed class WorksSdkIntentTranslationTests
             new WorkItemExpired(parent.Value, 4, tenant, parent));
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(call => call.Arg<StreamReadRequest>().AggregateId == parent.Value ? parentPage
+            .Returns(call => SlicePage(call.Arg<StreamReadRequest>().AggregateId == parent.Value ? parentPage
                 : Story48Streams.Page(Tenant, call.Arg<StreamReadRequest>().AggregateId!,
                     new WorkItemCreated(call.Arg<StreamReadRequest>().AggregateId!, 1, tenant,
                         new WorkItemId(call.Arg<StreamReadRequest>().AggregateId!), new Obligation("child"),
-                        Parent: new ParentWorkItemReference(tenant, parent))));
+                        Parent: new ParentWorkItemReference(tenant, parent))), call.Arg<StreamReadRequest>(), pageSize));
         var translator = new WorksProcessTranslator(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
         IReadOnlyList<ProcessEffect> effects = await translator.TranslateAsync(new ProcessSource(Tenant, "work", parent.Value),
             parentPage.Events[^1], TestContext.Current.CancellationToken);
@@ -277,4 +289,23 @@ public sealed class WorksSdkIntentTranslationTests
         terminal.SequenceNumber.ShouldBe(4);
         ((WorkItemCancelled)WorksEventDecoder.Decode(terminal.EventTypeName, terminal.Payload)!).Sequence.ShouldBe(3);
     }
+    /// <summary>Returns a real exclusive range from complete evidence, preserving committed envelope metadata.</summary>
+    private static StreamReadPage SlicePage(StreamReadPage complete, StreamReadRequest request, int pageSize)
+    {
+        request.ContinuationToken.ShouldBeNull();
+        StreamReadEvent[] selected = [.. complete.Events.Where(envelope => envelope.SequenceNumber > request.FromSequence).Take(pageSize)];
+        long last = selected.Length == 0 ? request.FromSequence : selected[^1].SequenceNumber;
+        return complete with
+        {
+            Events = selected,
+            Metadata = complete.Metadata with
+            {
+                FromSequence = request.FromSequence,
+                LastSequenceReturned = selected.Length == 0 ? null : last,
+                EventCount = selected.Length,
+                IsTruncated = last < complete.Metadata.LatestSequence,
+            },
+        };
+    }
+
 }

@@ -123,6 +123,57 @@ public sealed class WorksSourceStreamReaderTests
             Arg.Is<StreamReadRequest>(request => request.FromSequence == 2), Arg.Any<CancellationToken>());
     }
 
+    /// <summary>Every exclusive page boundary preserves rejection offsets and the final current date await.</summary>
+    /// <param name="pageSize">The number of committed envelopes returned by each fake gateway page.</param>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public async Task MultipleExclusivePageBoundariesPreserveEveryCommittedEnvelope(int pageSize)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        var firstDate = AwaitCondition.DateReached(DateTimeOffset.UnixEpoch);
+        var nextDate = AwaitCondition.DateReached(DateTimeOffset.UnixEpoch.AddDays(1));
+        IEventPayload[] facts = [new WorkItemCreated(Item, 1, tenant, item, new Obligation("paged recovery")),
+            new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(tenant, item, WorkItemStatus.Created, "invalid-act"),
+            new WorkItemSuspended(Item, 2, tenant, item, [firstDate]),
+            new WorkItemResumed(Item, 3, tenant, item, firstDate),
+            new WorkItemSuspended(Item, 4, tenant, item, [nextDate])];
+        var cursors = new List<long>();
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            call.Arg<StreamReadRequest>().ContinuationToken.ShouldBeNull();
+            long from = call.Arg<StreamReadRequest>().FromSequence;
+            cursors.Add(from);
+            int offset = checked((int)from);
+            IEventPayload[] selected = facts.Skip(offset).Take(pageSize).ToArray();
+            StreamReadPage page = Story48Streams.PageAt(Tenant, Item, from + 1,
+                offset + selected.Length < facts.Length, selected);
+            return page with
+            {
+                Events = [.. page.Events.Select(envelope => envelope with { MessageId = $"committed-{envelope.SequenceNumber}" })],
+                Metadata = page.Metadata with
+                {
+                    LatestSequence = facts.Length,
+                    NextContinuationToken = page.Metadata.IsTruncated ? new ReplayContinuationToken($"opaque-{from}") : null,
+                },
+            };
+        });
+
+        var reader = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        IReadOnlyList<WorksCommittedEvent> result = await reader.ReadAsync(Tenant, Item, ct);
+
+        result.Select(entry => entry.Envelope.SequenceNumber).ShouldBe([1L, 2L, 3L, 4L, 5L]);
+        result.Select(entry => entry.Envelope.MessageId).ShouldBe(Enumerable.Range(1, 5).Select(index => $"committed-{index}"));
+        result.Select(entry => entry.Payload).ShouldBe(facts);
+        cursors.ShouldBe(pageSize == 1 ? [0L, 1L, 2L, 3L, 4L] : [0L, 2L, 4L]);
+        var intents = await new Hexalith.Works.Reminders.WorksReminderIntentSource(reader)
+            .GetCurrentIntentsAsync(new Hexalith.EventStore.Contracts.Reminders.ReminderTarget(Tenant, "work", Item), ct);
+        intents.ShouldHaveSingleItem().DueUtc.ShouldBe(nextDate.Instant!.Value);
+    }
+
     /// <summary>Bad scope, positions, metadata, formats, payloads, or omitted heads never become partial context.</summary>
     [Theory]
     [InlineData("foreign-page")]
@@ -142,8 +193,11 @@ public sealed class WorksSourceStreamReaderTests
         page = failure switch
         {
             "foreign-page" => page with { Tenant = "foreign-tenant" },
-            "gap" => page with { Events = [page.Events[0] with { SequenceNumber = 2 }],
-                Metadata = page.Metadata with { LastSequenceReturned = 2, LatestSequence = 2 } },
+            "gap" => page with
+            {
+                Events = [page.Events[0] with { SequenceNumber = 2 }],
+                Metadata = page.Metadata with { LastSequenceReturned = 2, LatestSequence = 2 }
+            },
             "count" => page with { Metadata = page.Metadata with { EventCount = 0 } },
             "format" => page with { Events = [page.Events[0] with { SerializationFormat = "binary" }] },
             "unknown" => page with { Events = [page.Events[0] with { EventTypeName = "UnknownWorksFact" }] },

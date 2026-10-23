@@ -1,0 +1,200 @@
+{
+  "date": "2026-10-23",
+  "baseline_revision": "1db17ac2b84477343e4233bc6dca2d165d2ea4bb",
+  "closed_entries": [
+    "DW-56",
+    "DW-70",
+    "DW-71",
+    "DW-73",
+    "DW-86"
+  ],
+  "eventstore_revision": "2361e7b6760a7d0065c67661c2e95c2af94bdb4d",
+  "platform_revision": "b816f59f24c5bd34638fd21b4b70d1b13d84dec4",
+  "results": {
+    "debug_focused": {
+      "total": 119,
+      "passed": 119,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "debug_deterministic": {
+      "total": 793,
+      "passed": 793,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "release_focused": {
+      "total": 104,
+      "passed": 104,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "release_packages": {
+    "Hexalith.EventStore.Client/3.126.1": "package",
+    "Hexalith.EventStore.Contracts/3.126.1": "package",
+    "Hexalith.EventStore.DomainService/3.126.1": "package",
+    "Hexalith.EventStore.Server/3.126.1": "package",
+    "Hexalith.EventStore.ServiceDefaults/3.126.1": "package",
+    "Hexalith.EventStore.Testing/3.126.1": "package"
+  },
+  "source_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "6339b834f4ff437375c809bbc2f796990898dfa43cba0bb4f475e3bd77758049",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs": "4911d3832a1b1956a11a54192dc48b3dbcf8ad424b6b0cc1c71ca1f76a6e6e62",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "afd344826eec0a0534f9195459ea4ea7d476ad269fd292931f5427d3c84e68a2",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkReminderDeliveryTests.cs": "346180870c1829490e331b1848b5a090806db33d95757dc72e8aca8c939a9bc5",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "d9d3eebd94a68bcc37e602d27f0ac19e6d8d4ebc22de508e8c736b4248a352c7",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs": "81a100ba49b8fd48262bc549fac97e65c1d8ba7df2a6b363f5c357b3114eb350",
+    "tests/Hexalith.Works.IntegrationTests/Story48Streams.cs": "ff125832560f35e22bfd0d312c72112f66b9367cf817d9cd1bb70d788d10bc21",
+    "tests/Hexalith.Works.IntegrationTests/Story48RecordingLogger.cs": "a062501a478db15a636e40a0ff75400783636fb26b2acb1715deeb646b60a35a",
+    "tests/Hexalith.Works.IntegrationTests/DiagnosticUnavailableReadModelStore.cs": "247e5242e577104dc687833e95fc23e798e00d3003312f0e7a75d4269dbeff62",
+    "tests/Hexalith.Works.IntegrationTests/ThrowingDiagnosticLogger.cs": "99541458b5f23d7d89b638063ebbdaf8cb522d19ffe6da19047864c4ba5a1979",
+    "Directory.Build.props": "a9465074b79f3728baeab7b3aa8026ed1ec09a3d48157f63330d786541cc4daa",
+    "Directory.Build.targets": "670554404af97e8845698c8215a6eefab7d5a90f764667798e0d72f54bca9bd1",
+    "Directory.Packages.props": "a9613586311491d229b347d8b339efd22320e023665d13d6ccfe8fa45b2c536f",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7",
+    ".editorconfig": "dfafb8eb2717ac1bf96310c3c5cbaef634e584b794b0011e8228cde002466e68",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "20436e28b2df89931891d79b9e518c5d4fb1ed4fa2c648c2abb41e6826d12399",
+    "_bmad-output/implementation-artifacts/spec-five-deferred-sdk-recovery-replacements.md": "05ba0a85c085002344c5b82b7c97ab57705b5c69cd3f8c9ffc2e27d779d5c2ba",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "80c374d830c0666a6c1553a5eb68b4b8dfc1d5721c921ed898e3736ecbdf36fa",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-sdk-recovery-replacements-2026-10-23/reproduce-package.py": "e2c81b3c4528cdceb9e89969e66d23238e9f7cf3670a35a835da28646038523a"
+  },
+  "assembly_sha256": {
+    "debug/Hexalith.Works.IntegrationTests.dll": "6bd95e9f4264f1678f604125cc828d4937f78e3ebfbe734b6fc2568b5f721ecc",
+    "debug/Hexalith.Works.dll": "3c8a29506626593abf30fcd518f1618ba6e1f2600302a74a52882199fcefc307",
+    "debug/Hexalith.EventStore.Client.dll": "f8446d74fb3faaaa936629d3294df29353252b2d2d1659017a69da382f50006b",
+    "debug/Hexalith.EventStore.DomainService.dll": "4dad64e7afa7c5c34b881ae81215474db701faf797e56bb90556446b7a01edcb",
+    "release/Hexalith.Works.IntegrationTests.dll": "beb09da3b5aa3c609abd1a1cce6fa9c84a092c07f14c53055e8aa39596ae5a0e",
+    "release/Hexalith.Works.dll": "7bc0d5c6d2e2d3a83db210fd9b4e98689345bbc5a781c1a3c51baca3ed7687ae",
+    "release/Hexalith.EventStore.Client.dll": "8953cbd016361780a21420236814f9574f2defa426d9122a676ceead84385e96",
+    "release/Hexalith.EventStore.DomainService.dll": "a2c583ca9df91fff335784cecaa5824b43d1f140db5162e1a4bb39c5154198dd"
+  },
+  "artifacts": [
+    {
+      "path": "debug-build.log.gz",
+      "sha256": "42098e645041016e793335a1460eeab637b68b1633fc5c10ec486d557215880e",
+      "uncompressed_sha256": "4184fccaf6d8c6aa6ce5a518278e38ead2d3e3f2b7d402752db1a0cc46bf03e9"
+    },
+    {
+      "path": "debug-focused.log.gz",
+      "sha256": "079e9c57f796af5ae6666107263d331321e158099af87bcd0792594ff721dd00",
+      "uncompressed_sha256": "00d13eb75eb5ce19af1642c63f97a3dcd1a299e83191db05125f2cc2643cb690"
+    },
+    {
+      "path": "debug-focused.xml.gz",
+      "sha256": "0284b19dd95dfaffc1854b634964652d87c20c350678d8ef6becd728f33aca54",
+      "uncompressed_sha256": "ae9b7b9d5f768aeffb53141a37d0c606b1c3305ebb0210381495dc538793ecd6"
+    },
+    {
+      "path": "debug-deterministic.log.gz",
+      "sha256": "0c4083f8549b39fd1d91c92f97fde01f4dd1cebc049c03f1157ac1843eb1c3cf",
+      "uncompressed_sha256": "8d550608b217e31555ac26c270950f606eed813c80b5baad658f437fa7334e3c"
+    },
+    {
+      "path": "debug-deterministic.xml.gz",
+      "sha256": "c49029aaee41b94c6eee920bee2ec50813ebe66f6780b4c5bd95db1cdec3fcf5",
+      "uncompressed_sha256": "45a36210ed1b51da06a9138c0b9fc048434bdf120d8f650cc298a5ab849fdd73"
+    },
+    {
+      "path": "release-build.log.gz",
+      "sha256": "fccf3f1d26d2d0bb879924615f6c4d8ae1e77923313944cd13d89d3a5b26a097",
+      "uncompressed_sha256": "d88fce677669a10af037705679020c322aa3e922fe34ea97642aeb2a9aa22afa"
+    },
+    {
+      "path": "release-focused.log.gz",
+      "sha256": "7ac7783e01e28edaa8f8f5192d862f575e3e685a5f8d2ff3ac88852f11ebc5bc",
+      "uncompressed_sha256": "abd7a4a03bf1366e718dff84a6deef4dd83127403071638c0e1aaa07bab6ad2e"
+    },
+    {
+      "path": "release-focused.xml.gz",
+      "sha256": "0b6e3c8be190e80191b136599c197c35e158c07f5da7f3a9eeacc6b46551aeef",
+      "uncompressed_sha256": "4568656ba8291f1eb7f8c0864081713bf441fbc91c64f9108b91a6102af9efd2"
+    },
+    {
+      "path": "release-project.csproj.gz",
+      "sha256": "8be91fc83af3e4d20dcc0de684b457db1db9a422ddf0fccb8ec657e760462cc3",
+      "uncompressed_sha256": "5a889e2536518a08027e0c0303ea20bf56d275c9b412643648037472e6de597c"
+    },
+    {
+      "path": "release-runtime.deps.json.gz",
+      "sha256": "ed9979ce3d3e5fa6730dbf485ffd423b7cd84e4ebc6a757232d4e7c56b94e4c7",
+      "uncompressed_sha256": "81feb808e03ef4d4648deedb746d41cbd63620968becb20674345443716fe821"
+    },
+    {
+      "path": "blocked-debug-build.log.gz",
+      "sha256": "a0f87456019becfeefc68face3e2f343aa579b553cb9daf205d22cb5ffd9de11",
+      "uncompressed_sha256": "3599db490ba540875ba25a942bf6636f8f82eeafdc3af152712f55e63754b0a4"
+    },
+    {
+      "path": "blocked-release-build.log.gz",
+      "sha256": "1aef5631710da41bb8344224ed31b02cd4cc2d671d1670ecfd067eea2e65e4f4",
+      "uncompressed_sha256": "c846fef0d71bc9540f25970e02e05434f8b1cefc40bae098990f22cde091694e"
+    },
+    {
+      "path": "blocked-release-fallback.log.gz",
+      "sha256": "47af05eb7b88a08ded71c61c34cfa88f26b08ff0cc3882049be34ddc0cef081e",
+      "uncompressed_sha256": "cdfcf70195f1c8ba0d1f214ac272ab36d7f64c08b31b2726a7aab6dc7aa29ed2"
+    },
+    {
+      "path": "earlier-concurrent-deterministic.xml.gz",
+      "sha256": "ce36073d6cbb0c6b8cb221b05253595dd248749721c78930b81899e2e67c47c3",
+      "uncompressed_sha256": "8ef65bde9033564ba3709f43bb5cb3a26d740d895b77c45c48305d55f8d627c5"
+    },
+    {
+      "path": "earlier-concurrent-deterministic.log.gz",
+      "sha256": "e1c31a45408b16edcd0bde37ea9254cbfafffc807debeace793ac5933a60f7b9",
+      "uncompressed_sha256": "6adcc4d9be6013e93294fb3e3fbf43903be6a36fd5ac2c11c1bca1bd961f2109"
+    },
+    {
+      "path": "formatter.log.gz",
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressed_sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c"
+    },
+    {
+      "path": "sources/WorkItemSharedProjectionRebuildHandlerTests.cs.gz",
+      "sha256": "78b30d67fa4aad46b0950732e9bb12193f69aafcc6d5d212851947decd3e53ba",
+      "uncompressed_sha256": "6339b834f4ff437375c809bbc2f796990898dfa43cba0bb4f475e3bd77758049"
+    },
+    {
+      "path": "sources/WorksSdkIntentTranslationTests.cs.gz",
+      "sha256": "17923ba4757b37118aa0a5485c6d79a6aaa9393cd59e6fd1d080e8710b2b5967",
+      "uncompressed_sha256": "4911d3832a1b1956a11a54192dc48b3dbcf8ad424b6b0cc1c71ca1f76a6e6e62"
+    },
+    {
+      "path": "sources/WorksSdkProjectionQueryTests.cs.gz",
+      "sha256": "55a2b5a875b0869dab6915a4c8c8fff5811b64c31d6ca430084c1d576795617e",
+      "uncompressed_sha256": "afd344826eec0a0534f9195459ea4ea7d476ad269fd292931f5427d3c84e68a2"
+    },
+    {
+      "path": "sources/WorksSdkReminderDeliveryTests.cs.gz",
+      "sha256": "415c7731404d524ffdf324dcf9ceb218f4fe1fe631460be94333d138f4f1a962",
+      "uncompressed_sha256": "346180870c1829490e331b1848b5a090806db33d95757dc72e8aca8c939a9bc5"
+    },
+    {
+      "path": "sources/WorksSourceStreamReaderTests.cs.gz",
+      "sha256": "c94363c338ff53b20ba5d60bc875aa3c7f3f0d1e0dff659db415dad6f4fbdb2c",
+      "uncompressed_sha256": "d9d3eebd94a68bcc37e602d27f0ac19e6d8d4ebc22de508e8c736b4248a352c7"
+    }
+  ],
+  "limitations": [
+    "Broad Debug and Release integration builds fail on six existing Platform.Composition errors.",
+    "Debug fallback reuses existing dependency outputs; isolated Release excludes unrelated Platform fixtures.",
+    "Earlier concurrent deterministic run passed 792/793; final fresh focused and full runs pass. Cause not established.",
+    "No live topology or full Platform qualification is claimed."
+  ],
+  "commands": {
+    "debug_build": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1 -p:BuildProjectReferences=false",
+    "debug_focused": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkReminderDeliveryTests' -class '*WorksSdkProjectionQueryTests' -class '*WorkItemSharedProjectionRebuildHandlerTests' -class '*WorksSourceStreamReaderTests' -class '*WorksSdkIntentTranslationTests' -class '*WorksSdkRecoverySourceTests' -result-xml /tmp/works-five-sdk-recovery-final-regression.xml",
+    "debug_deterministic": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-sdk-recovery-final-deterministic.xml",
+    "release_reproduction": "python3 _bmad-output/implementation-artifacts/evidence/five-deferred-sdk-recovery-replacements-2026-10-23/reproduce-package.py --work-root /tmp/works-five-sdk-recovery-package",
+    "blocked_debug_build": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1",
+    "blocked_release_build": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release -m:1",
+    "blocked_release_fallback": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Release --no-restore -m:1 -p:BuildProjectReferences=false"
+  }
+}
