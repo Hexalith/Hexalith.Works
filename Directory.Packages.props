@@ -11,4 +11,10 @@
   <Import Project="$(Hexalith1BuildPackageProps)" Condition="Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith2BuildPackageProps)" Condition="Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
+  <ItemGroup>
+    <!-- Architecture-only loader and compile surface; installed SDK supplies MSBuild at runtime. -->
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.11.2" />
+    <PackageVersion Include="Microsoft.Build" Version="18.0.2" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="18.0.2" />
+  </ItemGroup>
 </Project>

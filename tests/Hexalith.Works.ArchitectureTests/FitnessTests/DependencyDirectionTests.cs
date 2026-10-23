@@ -576,23 +576,12 @@ public sealed class DependencyDirectionTests
             "Props",
             "Directory.Packages.props"));
         string[] projectFiles = RepositoryWorksProjectFiles(root);
-        string integrationProject = Path.GetFullPath(Path.Combine(root, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj"));
-        string localCandidateCatalog = Path.GetFullPath(Path.Combine(root, "Directory.Packages.props"));
-
         string[] violations = [.. projectFiles
             .SelectMany(EvaluateSupportedLanes)
-            .SelectMany(snapshot => snapshot.ItemsOfType("PackageVersion")
-                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
-                .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog))
-                // The approved Story 4.14 source/candidate authority fixture has no shared Builds package pin yet.
-                // Permit only its test-only Platform package from the repository's central candidate catalog.
-                .Where(item => !(string.Equals(item.Identity, "Hexalith.Platform.Identity", StringComparison.Ordinal)
-                    && MsBuildProjectEvaluation.PathComparer.Equals(snapshot.ProjectPath, integrationProject)
-                    && MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, localCandidateCatalog)))
-                .Select(item => $"{Path.GetRelativePath(root, snapshot.ProjectPath)} receives {item.Identity} from {item.DefiningProjectPath}."))];
+            .SelectMany(snapshot => KernelDependencyPolicy.EvaluatePackageVersionOwnership(snapshot, approvedCatalog, root))];
 
         violations.ShouldBeEmpty(
-            "External Hexalith versions must originate in Builds, except the explicit test-only Story 4.14 Platform candidate.");
+            "External Hexalith versions and effective properties must originate in Builds, except the existing approved EventStore pin.");
     }
 
     /// <summary>
@@ -858,9 +847,10 @@ public sealed class DependencyDirectionTests
                 $"<Project><Import Project=\"{XmlPath(import)}\" /></Project>");
 
             EvaluateProject(projectPath).ItemsOfType(itemType).ShouldBeEmpty("The Release control must not contain the Debug-only item.");
-            string violation = KernelDependencyPolicy.EvaluateHexalithSourceConsumption(projectPath, sharedCatalog).ShouldHaveSingleItem();
-            violation.ShouldContain("Hexalith.Unapproved");
-            violation.ShouldContain(import);
+            string[] violations = KernelDependencyPolicy.EvaluateHexalithSourceConsumption(projectPath, sharedCatalog);
+            violations.ShouldContain(violation => violation.Contains("Hexalith.Unapproved", StringComparison.Ordinal)
+                && violation.Contains(import, StringComparison.Ordinal));
+            violations.ShouldAllBe(violation => violation.Contains("Hexalith.Unapproved", StringComparison.Ordinal));
         }
         finally
         {
@@ -939,7 +929,8 @@ public sealed class DependencyDirectionTests
                 projectPath,
                 sharedCatalog);
 
-            violations.Length.ShouldBe(4);
+            violations.Length.ShouldBe(5);
+            violations.ShouldContain(violation => violation.Contains("influenced by property 'Configuration'", StringComparison.Ordinal));
             violations.ShouldContain(violation => violation.Contains("<conditional PackageReference 'Hexalith.DebugOnly'>", StringComparison.Ordinal));
             violations.ShouldContain(violation => violation.Contains("<conditional PackageVersion 'Hexalith.Conditional'>", StringComparison.Ordinal));
             violations.ShouldContain(violation => violation.Contains("consumes evaluated PackageReference 'Hexalith.DebugOnly'", StringComparison.Ordinal));
@@ -1005,6 +996,222 @@ public sealed class DependencyDirectionTests
 
             KernelDependencyPolicy.EvaluateHexalithSourceConsumption(projectPath, sharedCatalog)
                 .ShouldBeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>Version ownership follows effective property assignments, including alias evaluation timing.</summary>
+    /// <param name="scenario">The property provenance control.</param>
+    /// <param name="unauthorized">Whether an unauthorized effective input must be reported.</param>
+    [Theory]
+    [InlineData("literal", false)]
+    [InlineData("shared-property", false)]
+    [InlineData("local-override", true)]
+    [InlineData("recursive-alias", true)]
+    [InlineData("overwritten-local", false)]
+    [InlineData("post-item-reassignment", true)]
+    [InlineData("captured-before-reassignment", false)]
+    [InlineData("property-function", true)]
+    [InlineData("assignment-condition", true)]
+    [InlineData("group-condition", true)]
+    [InlineData("overwritten-selector", false)]
+    public void EffectivePackageVersionPropertyProvenanceIsGoverned(string scenario, bool unauthorized)
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.VersionProvenance-");
+        try
+        {
+            string sharedProperties = "<PropertyGroup><SharedVersion>1.0.0</SharedVersion></PropertyGroup>";
+            string before = string.Empty;
+            string after = string.Empty;
+            string expression = "$(SharedVersion)";
+            switch (scenario)
+            {
+                case "literal": expression = "1.0.0"; break;
+                case "assignment-condition":
+                case "group-condition":
+                case "overwritten-selector":
+                    before = "<PropertyGroup><WorksSelector>local</WorksSelector></PropertyGroup>";
+                    sharedProperties += scenario == "group-condition"
+                        ? """<PropertyGroup Condition="'$(WorksSelector)' == 'local'"><SharedVersion>2.0.0</SharedVersion></PropertyGroup>"""
+                        : """<PropertyGroup><SharedVersion Condition="'$(WorksSelector)' == 'local'">2.0.0</SharedVersion></PropertyGroup>""";
+                    if (scenario == "overwritten-selector")
+                    {
+                        sharedProperties += "<PropertyGroup><SharedVersion>1.0.0</SharedVersion></PropertyGroup>";
+                    }
+
+                    break;
+                case "local-override":
+                    before = "<PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup>";
+                    sharedProperties = """<PropertyGroup><SharedVersion Condition="'$(SharedVersion)' == ''">1.0.0</SharedVersion></PropertyGroup>""";
+                    break;
+                case "recursive-alias":
+                    before = "<PropertyGroup><WorksVersion>2.0.0</WorksVersion></PropertyGroup>";
+                    sharedProperties += "<PropertyGroup><Alias>$(WorksVersion)</Alias><OuterAlias>$(Alias)</OuterAlias></PropertyGroup>";
+                    expression = "$(OuterAlias)";
+                    break;
+                case "property-function":
+                    before = "<PropertyGroup><WorksVersion>2.0.0</WorksVersion></PropertyGroup>";
+                    expression = "$([System.String]::Copy('$(WorksVersion)'))";
+                    break;
+                case "overwritten-local": before = "<PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup>"; break;
+                case "post-item-reassignment": after = "<PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup>"; break;
+                case "captured-before-reassignment":
+                    sharedProperties += "<PropertyGroup><Alias>$(SharedVersion)</Alias></PropertyGroup>";
+                    after = "<PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup>";
+                    expression = "$(Alias)";
+                    break;
+            }
+
+            string catalog = WriteProject(temporaryRoot.FullName, "shared.props",
+                $"""<Project>{sharedProperties}<ItemGroup><PackageVersion Include="Hexalith.Shared" Version="{expression}" /></ItemGroup></Project>""");
+            string owner = WriteProject(temporaryRoot.FullName, "Owner.csproj",
+                $"""<Project>{before}<Import Project="{XmlPath(catalog)}" />{after}</Project>""");
+            EvaluateProject(owner).ItemsOfType("PackageVersion").ShouldHaveSingleItem().Version
+                .ShouldBe(unauthorized ? "2.0.0" : "1.0.0");
+            string[] violations = KernelDependencyPolicy.EvaluateHexalithSourceConsumption(owner, catalog);
+            if (unauthorized)
+            {
+                violations.ShouldContain(violation => violation.Contains("influenced by property", StringComparison.Ordinal)
+                    && violation.Contains(owner, StringComparison.Ordinal));
+            }
+            else
+            {
+                violations.ShouldBeEmpty();
+            }
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>Item/metadata selectors and active import/Choose selection remain effective version inputs.</summary>
+    /// <param name="selector">The distinct selector location to exercise.</param>
+    [Theory]
+    [InlineData("item")]
+    [InlineData("item-group")]
+    [InlineData("metadata")]
+    [InlineData("otherwise")]
+    [InlineData("later-when")]
+    [InlineData("import-overwrite")]
+    [InlineData("import-group-overwrite")]
+    public void VersionSelectorsRetainLocalInfluence(string selector)
+    {
+        DirectoryInfo temporary = Directory.CreateTempSubdirectory("Hexalith.Works.Version & Selectors-");
+        try
+        {
+            const string condition = "'$(WorksSelector)' == 'local'";
+            string properties = "<PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup>";
+            string items = "<ItemGroup><PackageVersion Include=\"Hexalith.Shared\" Version=\"$(SharedVersion)\" /></ItemGroup>";
+            switch (selector)
+            {
+                case "item": items = $"<ItemGroup><PackageVersion Include=\"Hexalith.Shared\" Version=\"2.0.0\" Condition=\"{condition}\" /></ItemGroup>"; break;
+                case "item-group": items = $"<ItemGroup Condition=\"{condition}\"><PackageVersion Include=\"Hexalith.Shared\" Version=\"2.0.0\" /></ItemGroup>"; break;
+                case "metadata": items = $"<ItemGroup><PackageVersion Include=\"Hexalith.Shared\" Version=\"1.0.0\" /><PackageVersion Update=\"Hexalith.Shared\"><Version Condition=\"{condition}\">2.0.0</Version></PackageVersion></ItemGroup>"; break;
+                case "otherwise":
+                case "later-when":
+                    string branch = selector == "otherwise"
+                        ? "<Otherwise><PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup></Otherwise>"
+                        : "<When Condition=\"true\"><PropertyGroup><SharedVersion>2.0.0</SharedVersion></PropertyGroup></When>";
+                    properties = $"<Choose><When Condition=\"'$(WorksSelector)' == 'other'\"><PropertyGroup><SharedVersion>1.0.0</SharedVersion></PropertyGroup></When>{branch}</Choose>";
+                    break;
+                case "import-overwrite":
+                case "import-group-overwrite":
+                    properties = "<PropertyGroup><WorksSelector>shared</WorksSelector><SharedVersion>2.0.0</SharedVersion></PropertyGroup>";
+                    break;
+            }
+
+            string catalog = WriteProject(temporary.FullName, "shared.props", $"<Project>{properties}{items}</Project>");
+            string import = $"<Import Project=\"{XmlPath(catalog)}\" />";
+            if (selector == "import-overwrite")
+            {
+                import = $"<Import Project=\"{XmlPath(catalog)}\" Condition=\"{condition}\" />";
+            }
+            else if (selector == "import-group-overwrite")
+            {
+                import = $"<ImportGroup Condition=\"{condition}\">{import}</ImportGroup>";
+            }
+
+            string owner = WriteProject(temporary.FullName, "Owner.csproj", $"<Project><PropertyGroup><WorksSelector>local</WorksSelector></PropertyGroup>{import}</Project>");
+            MsBuildProjectSnapshot snapshot = EvaluateProject(owner);
+            snapshot.ItemsOfType("PackageVersion").ShouldHaveSingleItem().Version.ShouldBe("2.0.0");
+            snapshot.ItemsOfType("PackageVersion").ShouldHaveSingleItem().VersionProvenance.ShouldContain(source =>
+                source.Name == "WorksSelector" && source.Value == "local" && source.DefiningProjectPath == owner);
+            KernelDependencyPolicy.EvaluatePackageVersionOwnership(snapshot, catalog).ShouldNotBeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(temporary.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>A global property cannot hide its evaluated value or origin behind shared metadata.</summary>
+    [Fact]
+    public void GlobalVersionPropertyProvenanceRemainsVisibleAndUnauthorized()
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.GlobalVersion-");
+        try
+        {
+            string catalog = WriteProject(temporaryRoot.FullName, "shared.props",
+                """<Project><ItemGroup><PackageVersion Include="Hexalith.Shared" Version="$(GlobalVersion)" /></ItemGroup></Project>""");
+            string owner = WriteProject(temporaryRoot.FullName, "Owner.csproj",
+                $"""<Project><Import Project="{XmlPath(catalog)}" /></Project>""");
+            MsBuildProjectEvaluation.TryEvaluate(owner, new Dictionary<string, string> { ["GlobalVersion"] = "2.0.0" },
+                out MsBuildProjectSnapshot? snapshot, out string diagnostic).ShouldBeTrue(diagnostic);
+            snapshot!.ItemsOfType("PackageVersion").ShouldHaveSingleItem().VersionProvenance
+                .ShouldContain(source => source.Name == "GlobalVersion" && source.Value == "2.0.0"
+                    && source.DefiningProjectPath == "<global property>");
+            KernelDependencyPolicy.EvaluatePackageVersionOwnership(snapshot, catalog).ShouldNotBeEmpty();
+        }
+        finally
+        {
+            Directory.Delete(temporaryRoot.FullName, recursive: true);
+        }
+    }
+
+    /// <summary>The approved pin permits only the existing EventStore property, value, family and central file.</summary>
+    /// <param name="package">The package whose version uses the local property.</param>
+    /// <param name="version">The Works-selected value.</param>
+    /// <param name="property">The version property name.</param>
+    /// <param name="definingFile">The property assignment file.</param>
+    /// <param name="allowed">Whether this is the approved exception.</param>
+    /// <param name="publicPin">The separately committed static public pin, or null to omit it.</param>
+    [Theory]
+    [InlineData("Hexalith.EventStore.Contracts", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", true)]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "Directory.Build.props", true)]
+    [InlineData("Hexalith.EventStore.Client", "3.127.0", "HexalithEventStoreVersion", "Directory.Packages.props", false)]
+    [InlineData("Hexalith.Other", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", false)]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "OtherVersion", "Directory.Packages.props", false)]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "arbitrary-import.props", false)]
+    [InlineData("Hexalith.EventStore.Client", "3.127.0", "HexalithEventStoreVersion", "Directory.Packages.props", true, "3.127.0")]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", false, null)]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", false, "")]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", false, "$(SelectedVersion)")]
+    [InlineData("Hexalith.EventStore.Client", "3.126.1", "HexalithEventStoreVersion", "Directory.Packages.props", false, "3.127.0")]
+    public void ApprovedEventStorePinExceptionStaysNarrow(string package, string version, string property, string definingFile, bool allowed, string? publicPin = "3.126.1")
+    {
+        DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.VersionPin-");
+        try
+        {
+            if (publicPin is not null)
+            {
+                WriteProject(temporaryRoot.FullName, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+                    $"""<Project><ItemGroup><AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="{XmlPath(publicPin)}" /></ItemGroup></Project>""");
+            }
+            string catalog = WriteProject(temporaryRoot.FullName, "shared.props",
+                $"""<Project><ItemGroup><PackageVersion Include="{package}" Version="$({property})" /></ItemGroup></Project>""");
+            string assignment = WriteProject(temporaryRoot.FullName, definingFile,
+                $"""<Project><PropertyGroup><{property}>{version}</{property}></PropertyGroup></Project>""");
+            string owner = WriteProject(temporaryRoot.FullName, "Owner.csproj",
+                $"""<Project><Import Project="{XmlPath(assignment)}" /><Import Project="{XmlPath(catalog)}" /></Project>""");
+            foreach (MsBuildProjectSnapshot snapshot in EvaluateSupportedLanes(owner))
+            {
+                string[] violations = KernelDependencyPolicy.EvaluatePackageVersionOwnership(snapshot, catalog, temporaryRoot.FullName);
+                (violations.Length == 0).ShouldBe(allowed);
+            }
         }
         finally
         {
@@ -1110,5 +1317,5 @@ public sealed class DependencyDirectionTests
         return path;
     }
 
-    private static string XmlPath(string path) => path.Replace('\\', '/');
+    private static string XmlPath(string path) => System.Security.SecurityElement.Escape(path.Replace('\\', '/'))!;
 }

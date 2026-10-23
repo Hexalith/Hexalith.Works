@@ -1,0 +1,33 @@
+{
+  "integration_base_commit": "7afb47ef6a002b332bb8e6a9abba510b75c8d72d",
+  "public_eventstore_pin": "3.127.0",
+  "source_eventstore_gitlink": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+  "lanes": {
+    "debug": {
+      "total": 398,
+      "passed": 398,
+      "failed": 0,
+      "skipped": 0
+    },
+    "release": {
+      "total": 398,
+      "passed": 398,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "inputs": {
+    "Directory.Packages.props": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs": "1b2cab0388b4dee2e5a0631ae840617961681059793350b022d12ffbe8aae0b9",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs": "621736e1296fb3291acb06dbe1482a767f70fbce32362633016792c46596ae94",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs": "c0533552edf836ca9ecdad50ca343909b93bcbb85ebdf9cb9144b66afc387ead",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildEvaluatedItem.cs": "2c304e1fbeadb291e9d9fb5ff7ae789816c286a01580c1c97e94744db2548973",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs": "cd8fc493250e1f2e1e7e034d3bedbf190cda34eb42d593b37915314e7800e4be",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectSnapshot.cs": "aeea78b048f6447a9f358acdc0d0a3ebda7e9af4d4c251ea557b59b57e8045cb",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildPropertyProvenance.cs": "ffd3342c0c2e9e3dd0673a5d0dbb8e89aab1e6c76aedeb40371219638c3c1be0",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildRuntime.cs": "3544548a1f9a32ede73286554680ec442d46f687dc7d5322fa429a97e80dc7e0",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildRuntimeTests.cs": "e96d9a0458e3389889a882bc9b8f84456305412a6fa250ccbf457e71df817c76",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs": "983f1cacf4d94c77c7f2b6fe8520cac0ea06d1a2509871b0538c62a7bcb8f5f6",
+    "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj": "e9eca1d9b3826ad6954d903fc0def09565a63dfed41ad7359a9fbca5d36479b2"
+  }
+}

@@ -366,16 +366,66 @@ internal static class KernelDependencyPolicy
                     $"Owning project '{snapshot.ProjectPath}' consumes evaluated {packageReference.ItemType} '{packageReference.Identity}' defined by '{packageReference.DefiningProjectPath}'; Hexalith libraries must use sibling ProjectReference source.");
             }
 
-            foreach (MsBuildEvaluatedItem packageVersion in snapshot.ItemsOfType("PackageVersion")
-                .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase))
-                .Where(item => !MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog)))
-            {
-                violations.Add(
-                    $"Owning project '{snapshot.ProjectPath}' receives Works-owned PackageVersion '{packageVersion.Identity}' from '{packageVersion.DefiningProjectPath}'; only shared catalog '{approvedCatalog}' may define Hexalith package versions.");
-            }
+            violations.UnionWith(EvaluatePackageVersionOwnership(snapshot, approvedCatalog));
         }
 
         return [.. violations.Order(StringComparer.Ordinal)];
+    }
+
+    /// <summary>Checks both metadata ownership and the effective version property's recursive provenance.</summary>
+    /// <param name="snapshot">The evaluated project evidence.</param>
+    /// <param name="approvedSharedCatalogPath">The shared catalog that owns package versions.</param>
+    /// <param name="approvedRepositoryRoot">The Works root allowed to select the existing EventStore pin.</param>
+    /// <returns>Unauthorized effective version influences.</returns>
+    internal static string[] EvaluatePackageVersionOwnership(
+        MsBuildProjectSnapshot snapshot,
+        string approvedSharedCatalogPath,
+        string? approvedRepositoryRoot = null)
+    {
+        string approvedCatalog = Path.GetFullPath(approvedSharedCatalogPath);
+        var violations = new List<string>();
+        string? publicPin = null;
+        if (approvedRepositoryRoot is not null)
+        {
+            string pinProject = Path.Combine(approvedRepositoryRoot, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj");
+            if (File.Exists(pinProject))
+            {
+                publicPin = XDocument.Load(pinProject).Descendants("AssemblyMetadata")
+                    .SingleOrDefault(item => (string?)item.Attribute("Include") == "WorksPinnedEventStoreVersion")
+                    ?.Attribute("Value")?.Value;
+                if (string.IsNullOrWhiteSpace(publicPin) || publicPin.Contains("$(", StringComparison.Ordinal))
+                {
+                    publicPin = null;
+                }
+            }
+        }
+
+        foreach (MsBuildEvaluatedItem item in snapshot.ItemsOfType("PackageVersion")
+            .Where(item => item.Identity.StartsWith("Hexalith.", StringComparison.OrdinalIgnoreCase)))
+        {
+            if (!MsBuildProjectEvaluation.PathComparer.Equals(item.DefiningProjectPath, approvedCatalog))
+            {
+                violations.Add($"Owning project '{snapshot.ProjectPath}' receives Works-owned PackageVersion '{item.Identity}' from '{item.DefiningProjectPath}'; only shared catalog '{approvedCatalog}' may define Hexalith package versions.");
+            }
+
+            foreach (MsBuildPropertyProvenance source in item.VersionProvenance
+                .Where(source => !MsBuildProjectEvaluation.PathComparer.Equals(source.DefiningProjectPath, approvedCatalog)))
+            {
+                bool approvedPin = approvedRepositoryRoot is not null
+                    && item.Identity.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal)
+                    && source.Name == "HexalithEventStoreVersion"
+                    && publicPin is not null && source.Value == publicPin
+                    && new[] { "Directory.Build.props", "Directory.Packages.props" }.Any(file =>
+                        MsBuildProjectEvaluation.PathComparer.Equals(
+                            source.DefiningProjectPath, Path.GetFullPath(Path.Combine(approvedRepositoryRoot, file))));
+                if (!approvedPin)
+                {
+                    violations.Add($"Owning project '{snapshot.ProjectPath}' receives PackageVersion '{item.Identity}' influenced by property '{source.Name}' = '{source.Value}' from '{source.DefiningProjectPath}' through {source.Influence}; only shared catalog '{approvedCatalog}' may supply version properties.");
+                }
+            }
+        }
+
+        return [.. violations.Distinct(StringComparer.Ordinal)];
     }
 
     /// <summary>

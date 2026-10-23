@@ -1,5 +1,10 @@
 # EventStore API Surface Constraints
 
+<!-- EventStore-current-source: 6a0b6441f6d78a3007678a1d0ec336e9cb8ff961 -->
+
+Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+
 ## Story 4.14 published SDK consumer surface
 
 Works' current Release target pins published EventStore `3.127.0` (tag `v3.127.0`, source `e1d8b17160202761ab5c9606cafbcf4d1a4b92c3`), the Builds catalog selection, and published Parties.Client `1.4.0`; it stores captured owner identities as sealed paged references. The previous `3.126.1` pin (tag `v3.126.1`, source `1748b16b11fb63b885dfa2fd4a9c7a420ea103a9`) was requalified under Story 4.9, recorded with the Story 4.9 evidence. The earlier `3.126.0` pin (tag `v3.126.0`, source `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`) contains the Story 4.15 journal-closeout correction (`216b7906`) and both Story 4.16 producer corrections (`9dbb3aaf`). The [public 3.126.0 packet](../_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/README.md) qualifies synthetic Platform parity and rollback for this dependency graph. Story 4.15's 2026-10-16 public 3.123.0 acceptance is historical; reopened 2026-10-18 verification uses corrected source Debug and explicitly selected unpublished candidate `3.124.1-story415.20261018.1`. Superseded public 3.124.0 lacks the journal-closeout correction and was not qualified by those source/candidate results. Earlier local candidate proofs retain their historical scope. Its `IAsyncDomainSharedProjectionEpochHandler` uses `works-runtime-v3` as both projection type and scope family; SDK `SharedProjectionEpochCoordinator` owns writer leases, journal, selected generation, checkpoints, control index, and pinned reads. Works returns logical `ReadModelBatchOperation` values and keeps its existing writer as the default until a later cutover. The common `WorksRuntimeDocument` permits heterogeneous values in one SDK `ReadManyAsync<T>` call. The published Parties client resolves current actor-to-Party authority for SDK queries. Configuration, rollback, and proof limits are recorded in [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md).
@@ -31,7 +36,7 @@ exercise every pre-existing file, so additive catalog growth cannot rewrite hist
 
 ## Canonical Stream Sequencing
 
-Verified against the current EventStore pin `c61739206fd89619b7d29dfb0812225a234066bb`
+Historically verified against EventStore revision `c61739206fd89619b7d29dfb0812225a234066bb`
 (`v3.98.0-10-gc6173920`). The characterized `EventPersister`, `EventStreamReader`, and shared payload
 serialization files are unchanged from `b43e963403efa848eda9621b5e3e7e446c7faa2d`.
 Two always-on guards cover that source, and neither covers the other's claims:

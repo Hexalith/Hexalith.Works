@@ -11,6 +11,8 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 /// <param name="OutputItemType">The evaluated ProjectReference output item type, when applicable.</param>
 /// <param name="ProjectReferenceGlobalProperties">The effective child-project globals for a ProjectReference; otherwise an empty dictionary.</param>
 /// <param name="Version">The evaluated version metadata for package items.</param>
+/// <param name="VersionProvenance">The evaluation-time property assignments supplying the version expression, including aliases.</param>
+/// <param name="HintPath">The evaluated assembly Reference hint path, if supplied.</param>
 internal sealed record MsBuildEvaluatedItem(
     string ItemType,
     string Identity,
@@ -19,4 +21,6 @@ internal sealed record MsBuildEvaluatedItem(
     string? ReferenceOutputAssembly,
     string? OutputItemType,
     IReadOnlyDictionary<string, string> ProjectReferenceGlobalProperties,
-    string Version);
+    string Version,
+    IReadOnlyList<MsBuildPropertyProvenance> VersionProvenance,
+    string HintPath);

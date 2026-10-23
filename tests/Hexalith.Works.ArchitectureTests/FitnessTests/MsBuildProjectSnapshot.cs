@@ -60,6 +60,10 @@ internal sealed class MsBuildProjectSnapshot
     /// </summary>
     internal IReadOnlyDictionary<string, string> Properties { get; }
 
+    /// <summary>Gets an actionable description of the independent evaluation lane.</summary>
+    internal string Lane => string.Join("/", new[] { "Configuration", "Platform", "TargetFramework" }
+        .Select(name => $"{name}={PropertyValue(name)}"));
+
     /// <summary>
     /// Gets one evaluated governed property value, or an empty string when it was not set.
     /// </summary>

@@ -1,5 +1,10 @@
 # Works Boundary Decision Record
 
+<!-- EventStore-current-source: 6a0b6441f6d78a3007678a1d0ec336e9cb8ff961 -->
+
+Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+
 **Status:** Accepted — Epic 1 (Story 1.4).
 **Tracks:** FR-21 (reference siblings, never copy them), FR-22 (expose module ports as
 abstractions), FR-23 (produce the boundary decision record), AR-18 (ports realization), AR-19
@@ -235,8 +240,8 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
 - **Story 4.7 (live reactor consumption and durable cascade discovery).** Works uses the EventStore SDK's
   subscription registration, handler contracts, and durable Dapr marker store, but maps an equivalent host-local
   endpoint instead of the SDK's generic processor. Both processors use case-insensitive Web reader options that
-  bind options-free PascalCase persisted bytes and camelCase compatibility inputs. That holds at the current
-  EventStore pin `c61739206fd89619b7d29dfb0812225a234066bb` and equally at the earlier
+  bind options-free PascalCase persisted bytes and camelCase compatibility inputs. That held at the
+  historical EventStore revision `c61739206fd89619b7d29dfb0812225a234066bb` and equally at the earlier
   `b43e963403efa848eda9621b5e3e7e446c7faa2d`, whose processor and aggregate sources are byte-identical: the
   withdrawn zero-valued-binding characterization was wrong at both pins, not a behaviour the bump changed. The
   local processor remains for

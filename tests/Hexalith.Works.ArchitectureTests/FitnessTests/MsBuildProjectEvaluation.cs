@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
-using Microsoft.Build.Exceptions;
 
 namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
@@ -18,6 +18,8 @@ internal static class MsBuildProjectEvaluation
     private static readonly string[] _governedPropertyNames =
     [
         "Configuration",
+        "Platform",
+        "TargetFramework",
         "HexalithDependencyModeDefaulted",
         "HexalithEventStoreRoot",
         "HexalithEventStoreFromSource",
@@ -44,8 +46,6 @@ internal static class MsBuildProjectEvaluation
                 ["Configuration"] = "Release",
                 ["DesignTimeBuild"] = "false",
             });
-
-    private static readonly Lazy<string> _msBuildToolsPath = new(ConfigureInstalledMsBuild);
 
     /// <summary>
     /// Gets the platform-appropriate canonical-path comparer.
@@ -101,6 +101,81 @@ internal static class MsBuildProjectEvaluation
         return true;
     }
 
+    /// <summary>Evaluates each supported configuration/platform/framework independently for universal checks.</summary>
+    /// <param name="projectPath">The project to inspect.</param>
+    /// <param name="snapshots">One snapshot for each supported build lane, without unioning evidence.</param>
+    /// <param name="diagnostic">An actionable failure diagnostic.</param>
+    /// <returns>Whether all supported lanes could be evaluated.</returns>
+    internal static bool TryEvaluateIndependentSupportedLanes(
+        string projectPath,
+        out IReadOnlyList<MsBuildProjectSnapshot> snapshots,
+        out string diagnostic)
+        => TryEvaluateIndependentSupportedLanes(projectPath, _emptyGlobalProperties, out snapshots, out diagnostic);
+
+    /// <summary>Evaluates independent supported lanes with explicit caller-selected global overrides.</summary>
+    /// <param name="projectPath">The project to inspect.</param>
+    /// <param name="globalOverrides">Explicit globals applied equally to every supported configuration.</param>
+    /// <param name="snapshots">The independent evaluation evidence.</param>
+    /// <param name="diagnostic">An actionable failure diagnostic.</param>
+    /// <returns>Whether every selected lane could be evaluated.</returns>
+    internal static bool TryEvaluateIndependentSupportedLanes(
+        string projectPath,
+        IReadOnlyDictionary<string, string> globalOverrides,
+        out IReadOnlyList<MsBuildProjectSnapshot> snapshots,
+        out string diagnostic)
+    {
+        try
+        {
+            _ = MsBuildRuntime.ToolsPath;
+            snapshots = EvaluateIndependentSupportedLanes(projectPath, globalOverrides);
+            diagnostic = string.Empty;
+            return true;
+        }
+        catch (Exception exception) when (IsEvaluationFailure(exception))
+        {
+            snapshots = [];
+            diagnostic = $"MSBuild lane evaluation of project '{projectPath}' failed: {exception.Message}";
+            return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static IReadOnlyList<MsBuildProjectSnapshot> EvaluateIndependentSupportedLanes(
+        string projectPath, IReadOnlyDictionary<string, string> globalOverrides)
+    {
+        string canonicalPath = CanonicalExistingFile(projectPath, "project");
+        using var collection = new ProjectCollection();
+        var snapshots = new List<MsBuildProjectSnapshot>();
+        foreach (string configuration in new[] { "Debug", "Release" })
+        {
+            var globals = new Dictionary<string, string>(_releaseGlobalProperties, StringComparer.OrdinalIgnoreCase)
+            {
+                ["Configuration"] = configuration,
+            };
+            foreach ((string name, string value) in globalOverrides)
+            {
+                globals[name] = value;
+            }
+
+            foreach (Project project in LoadEvaluationLanes(collection, canonicalPath, globals, expandDeclaredPlatforms: true))
+            {
+                // The outer multi-targeting evaluation discovers frameworks but does not build an assembly.
+                if (string.IsNullOrWhiteSpace(project.GetPropertyValue("TargetFrameworks"))
+                    || project.GlobalProperties.ContainsKey("TargetFramework"))
+                {
+                    snapshots.Add(Snapshot(canonicalPath, new Dictionary<string, string>(project.GlobalProperties, StringComparer.OrdinalIgnoreCase), [project]));
+                }
+            }
+        }
+
+        if (snapshots.Count == 0)
+        {
+            throw new InvalidOperationException($"Project '{projectPath}' declares no usable supported build lane.");
+        }
+
+        return snapshots.AsReadOnly();
+    }
+
     /// <summary>
     /// Tries to evaluate a referenced project with its exact effective global properties.
     /// </summary>
@@ -128,18 +203,12 @@ internal static class MsBuildProjectEvaluation
 
         try
         {
+            _ = MsBuildRuntime.ToolsPath;
             snapshot = Evaluate(projectPath, globalProperties, expandDeclaredPlatforms);
             diagnostic = string.Empty;
             return true;
         }
-        catch (Exception exception) when (exception is
-            ArgumentException or
-            IOException or
-            InvalidOperationException or
-            InvalidProjectFileException or
-            NotSupportedException or
-            PathTooLongException or
-            UnauthorizedAccessException)
+        catch (Exception exception) when (IsEvaluationFailure(exception))
         {
             snapshot = null;
             diagnostic = $"MSBuild evaluation of project '{projectPath}' failed: {exception.Message}";
@@ -147,12 +216,17 @@ internal static class MsBuildProjectEvaluation
         }
     }
 
+    // This bootstrap boundary must not mention MSBuild types in its signatures or exception filters.
+    private static bool IsEvaluationFailure(Exception exception)
+        => exception is ArgumentException or IOException or InvalidOperationException or NotSupportedException or UnauthorizedAccessException
+            || exception.GetType().FullName == "Microsoft.Build.Exceptions.InvalidProjectFileException";
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
     private static MsBuildProjectSnapshot Evaluate(
         string projectPath,
         IReadOnlyDictionary<string, string> globalProperties,
         bool expandDeclaredPlatforms)
     {
-        _ = _msBuildToolsPath.Value;
         string canonicalProjectPath = CanonicalExistingFile(projectPath, "project");
         var initialGlobalProperties = new Dictionary<string, string>(
             globalProperties,
@@ -161,15 +235,24 @@ internal static class MsBuildProjectEvaluation
         IReadOnlyList<Project> projects = LoadEvaluationLanes(
             projectCollection, canonicalProjectPath, initialGlobalProperties, expandDeclaredPlatforms);
 
+        return Snapshot(canonicalProjectPath, initialGlobalProperties, projects);
+    }
+
+    private static MsBuildProjectSnapshot Snapshot(
+        string canonicalProjectPath,
+        IReadOnlyDictionary<string, string> globalProperties,
+        IReadOnlyList<Project> projects)
+    {
         var items = new List<MsBuildEvaluatedItem>();
         var imports = new List<string>();
         foreach (Project project in projects)
         {
             ValidateDependencyDeclarations(project);
             string[] packageRoots = [.. RestoredPackageRoots(project)];
+            IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> provenance = PropertyProvenance(project);
             items.AddRange(project.Items
                 .Where(item => TryGetCanonicalDependencyItemType(item.ItemType, out _))
-                .Select(item => EvaluatedItem(item, project.GlobalProperties)));
+                .Select(item => EvaluatedItem(item, project.GlobalProperties, provenance)));
             imports.AddRange(project.ImportsIncludingDuplicates
                 .Select(import => CanonicalExistingFile(
                     import.ImportedProject.FullPath,
@@ -180,7 +263,7 @@ internal static class MsBuildProjectEvaluation
 
         return new MsBuildProjectSnapshot(
             canonicalProjectPath,
-            initialGlobalProperties,
+            globalProperties,
             items.DistinctBy(EvaluatedItemKey, StringComparer.Ordinal),
             imports.Distinct(PathComparer),
             GovernedProperties(projects[0]));
@@ -318,7 +401,8 @@ internal static class MsBuildProjectEvaluation
 
     private static MsBuildEvaluatedItem EvaluatedItem(
         ProjectItem item,
-        IDictionary<string, string> evaluationGlobalProperties)
+        IDictionary<string, string> evaluationGlobalProperties,
+        IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> provenance)
     {
         if (!TryGetCanonicalDependencyItemType(item.ItemType, out string itemType))
         {
@@ -357,7 +441,9 @@ internal static class MsBuildProjectEvaluation
             referenceOutputAssembly,
             outputItemType,
             projectReferenceGlobalProperties,
-            item.GetMetadataValue("Version"));
+            item.GetMetadataValue("Version"),
+            VersionProvenance(item, provenance),
+            item.GetMetadataValue("HintPath"));
     }
 
     private static string EffectiveDefiningProjectPath(ProjectItem item, string itemType)
@@ -562,7 +648,10 @@ internal static class MsBuildProjectEvaluation
             CanonicalComparisonPath(item.DefiningProjectPath),
             item.ReferenceOutputAssembly,
             item.OutputItemType,
-            properties);
+            item.HintPath,
+            properties,
+            item.Version,
+            string.Join(';', item.VersionProvenance.Select(source => $"{source.Name}={source.Value}@{source.DefiningProjectPath}:{source.Influence}")));
     }
 
     private static string CanonicalComparisonPath(string path)
@@ -574,7 +663,7 @@ internal static class MsBuildProjectEvaluation
             || value.Contains("%(", StringComparison.Ordinal);
 
     private static bool IsCustomImportPath(string path, string owningProjectPath)
-        => !IsUnderDirectory(path, _msBuildToolsPath.Value)
+        => !IsUnderDirectory(path, MsBuildRuntime.ToolsPath)
             && !HasBuildOutputSegment(path, owningProjectPath);
 
     // Only segments below the closest directory that also contains the evaluated project can be that
@@ -639,34 +728,201 @@ internal static class MsBuildProjectEvaluation
             throw new InvalidOperationException($"The {description} path '{canonicalPath}' does not exist.");
         }
 
+        // File links cannot establish project identity. Directory aliases are checked below each
+        // trusted source root by the boundary guard, allowing workspace/temp aliases above that root.
+        if ((canonicalPath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+            || canonicalPath.EndsWith(".proj", StringComparison.OrdinalIgnoreCase))
+            && new FileInfo(canonicalPath).LinkTarget is not null)
+        {
+            throw new InvalidOperationException($"The {description} path '{canonicalPath}' contains linked project path '{canonicalPath}'; an approved project must be a real file in its trusted source root.");
+        }
+
         return canonicalPath;
     }
 
-    private static string ConfigureInstalledMsBuild()
+    // Replay the active construction/import order while taking values only from MSBuild's own
+    // evaluated assignments. Import selectors are captured on entry, before an imported overwrite.
+    private static IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> PropertyProvenance(Project project)
     {
-        string? toolsPath = typeof(MsBuildProjectEvaluation).Assembly
-            .GetCustomAttributes<AssemblyMetadataAttribute>()
-            .SingleOrDefault(attribute => string.Equals(
-                attribute.Key,
-                "MSBuildToolsPath",
-                StringComparison.Ordinal))
-            ?.Value;
-        if (string.IsNullOrWhiteSpace(toolsPath))
+        var sources = new Dictionary<string, IReadOnlyList<MsBuildPropertyProvenance>>(StringComparer.OrdinalIgnoreCase);
+        foreach (ProjectProperty property in project.Properties.Where(property =>
+            property.IsGlobalProperty || property.IsEnvironmentProperty || property.IsReservedProperty))
         {
-            throw new InvalidOperationException("The architecture-test assembly does not identify its installed MSBuild tools path.");
+            sources[property.Name] = [new(property.Name, property.EvaluatedValue,
+                property.IsGlobalProperty ? "<global property>" : "<environment or reserved property>", "external assignment")];
         }
 
-        string canonicalToolsPath = Path.GetFullPath(toolsPath);
-        string msBuildAssemblyPath = Path.Combine(canonicalToolsPath, "MSBuild.dll");
-        string sdkPath = Path.Combine(canonicalToolsPath, "Sdks");
-        if (!File.Exists(msBuildAssemblyPath) || !Directory.Exists(sdkPath))
+        ProjectProperty[] assignments = [.. project.AllEvaluatedProperties.Where(property => property.Xml is not null)];
+        ResolvedImport[] imports = [.. project.Imports];
+        var importedSelectors = new Dictionary<string, IReadOnlyList<MsBuildPropertyProvenance>>(PathComparer);
+        int nextAssignment = 0;
+
+        void VisitImport(ResolvedImport import, IReadOnlyList<MsBuildPropertyProvenance> inherited)
         {
-            throw new InvalidOperationException(
-                $"Installed MSBuild surface '{canonicalToolsPath}' is incomplete; expected '{msBuildAssemblyPath}' and '{sdkPath}'.");
+            IReadOnlyList<MsBuildPropertyProvenance> selectors = inherited;
+            if (IsCustomImportPath(import.ImportingElement.ContainingProject.FullPath, project.FullPath)
+                && !IsSanctionedCatalogImport(import.ImportingElement))
+            {
+                selectors = [.. inherited, .. SelectorProvenance(import.ImportingElement, sources)];
+            }
+
+            VisitRoot(import.ImportedProject, selectors);
         }
 
-        Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", msBuildAssemblyPath);
-        Environment.SetEnvironmentVariable("MSBuildSDKsPath", sdkPath);
-        return canonicalToolsPath;
+        void VisitElement(ProjectElement element, IReadOnlyList<MsBuildPropertyProvenance> selectors)
+        {
+            if (element is ProjectImportElement importElement)
+            {
+                foreach (ResolvedImport import in imports.Where(import => ReferenceEquals(import.ImportingElement, importElement)))
+                {
+                    VisitImport(import, selectors);
+                }
+            }
+            else if (element is ProjectPropertyElement
+                && nextAssignment < assignments.Length && ReferenceEquals(assignments[nextAssignment].Xml, element))
+            {
+                ProjectProperty property = assignments[nextAssignment++];
+                MsBuildPropertyProvenance[] dependencies = [.. ExpressionProvenance(property.UnevaluatedValue, sources),
+                    .. SelectorProvenance(element, sources), .. selectors];
+                sources[property.Name] = [new(property.Name, property.EvaluatedValue, property.Xml.ContainingProject.FullPath,
+                    $"assignment '{property.UnevaluatedValue}'"), .. dependencies.Distinct()];
+            }
+            else if (element is ProjectElementContainer container && element is not ProjectTargetElement)
+            {
+                foreach (ProjectElement child in container.Children)
+                {
+                    VisitElement(child, selectors);
+                }
+            }
+        }
+
+        void VisitRoot(ProjectRootElement root, IReadOnlyList<MsBuildPropertyProvenance> selectors)
+        {
+            importedSelectors[root.FullPath] = selectors;
+            foreach (ResolvedImport import in imports.Where(import => ReferenceEquals(import.ImportingElement.ContainingProject, root)
+                && import.ImportingElement.ImplicitImportLocation == ImplicitImportLocation.Top))
+            {
+                VisitImport(import, selectors);
+            }
+
+            foreach (ProjectElement child in root.Children)
+            {
+                VisitElement(child, selectors);
+            }
+
+            foreach (ResolvedImport import in imports.Where(import => ReferenceEquals(import.ImportingElement.ContainingProject, root)
+                && import.ImportingElement.ImplicitImportLocation == ImplicitImportLocation.Bottom))
+            {
+                VisitImport(import, selectors);
+            }
+        }
+
+        VisitRoot(project.Xml, []);
+        if (nextAssignment != assignments.Length)
+        {
+            throw new InvalidOperationException($"Cannot reconstruct complete property influence for '{project.FullPath}'; "
+                + $"unmatched assignment '{assignments[nextAssignment].Name}' in '{assignments[nextAssignment].Xml.ContainingProject.FullPath}'.");
+        }
+
+        foreach ((string path, IReadOnlyList<MsBuildPropertyProvenance> selectors) in importedSelectors)
+        {
+            sources[ImportProvenanceKey(path)] = selectors;
+        }
+
+        return sources;
+    }
+
+    private static IReadOnlyList<MsBuildPropertyProvenance> VersionProvenance(
+        ProjectItem item, IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> sources)
+    {
+        ProjectMetadata? metadata = item.GetMetadata("Version");
+        var provenance = new List<MsBuildPropertyProvenance>(ExpressionProvenance(metadata?.UnevaluatedValue ?? string.Empty, sources));
+        foreach (ProjectElement element in new ProjectElement?[] { item.Xml, metadata?.Xml }.OfType<ProjectElement>())
+        {
+            provenance.AddRange(SelectorProvenance(element, sources));
+            if (sources.TryGetValue(ImportProvenanceKey(element.ContainingProject.FullPath), out IReadOnlyList<MsBuildPropertyProvenance>? imports))
+            {
+                provenance.AddRange(imports);
+            }
+        }
+
+        return [.. provenance.Distinct()];
+    }
+
+    private static IEnumerable<MsBuildPropertyProvenance> SelectorProvenance(
+        ProjectElement element, IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> sources)
+    {
+        for (ProjectElement? current = element; current is not null; current = current.Parent)
+        {
+            if (!string.IsNullOrWhiteSpace(current.Condition) && !IsSanctionedPackageModeSelection(current))
+            {
+                foreach (MsBuildPropertyProvenance source in ExpressionProvenance(current.Condition, sources, ignoreUndefined: true))
+                {
+                    yield return source with { Influence = $"{current.ElementName} condition '{current.Condition}' via {source.Influence}" };
+                }
+            }
+
+            if (current is ProjectOtherwiseElement or ProjectWhenElement)
+            {
+                for (ProjectElement? preceding = current.PreviousSibling; preceding is not null; preceding = preceding.PreviousSibling)
+                {
+                    if (preceding is ProjectWhenElement)
+                    {
+                        foreach (MsBuildPropertyProvenance source in ExpressionProvenance(preceding.Condition, sources, ignoreUndefined: true))
+                        {
+                            yield return source with { Influence = $"preceding When condition '{preceding.Condition}' via {source.Influence}" };
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static string ImportProvenanceKey(string path) => "\0import:" + path;
+
+    // These existing repository gates select the approved catalog location and source/package lane;
+    // they do not choose version values. Keep this allowance tied to their exact files and expressions.
+    private static bool IsSanctionedCatalogImport(ProjectImportElement element)
+        => PathComparer.Equals(element.ContainingProject.FullPath, Path.Combine(RepositoryRoot.Locate(), "Directory.Packages.props"))
+            && element.Condition == (element.Project switch
+            {
+                "$(Hexalith1BuildPackageProps)" => "Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'",
+                "$(Hexalith2BuildPackageProps)" => "Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'",
+                "$(Hexalith3BuildPackageProps)" => "'$(HexalithVersionsLoaded)' != 'true'",
+                _ => "<unrecognized catalog import>",
+            });
+
+    private static bool IsSanctionedPackageModeSelection(ProjectElement element)
+        => element is ProjectItemElement { ItemType: "PackageVersion", Include: "Hexalith.EventStore.Contracts" }
+            && PathComparer.Equals(element.ContainingProject.FullPath,
+                Path.Combine(RepositoryRoot.DependencyRoot("Hexalith.Builds"), "Props", "Directory.Packages.props"))
+            && element.Condition == "'$(UseHexalithProjectReferences)' != 'true' or !$(MSBuildProjectName.StartsWith('Hexalith.Works'))";
+
+    private static IReadOnlyList<MsBuildPropertyProvenance> ExpressionProvenance(
+        string expression,
+        IReadOnlyDictionary<string, IReadOnlyList<MsBuildPropertyProvenance>> sources,
+        bool ignoreUndefined = false)
+    {
+        var provenance = new List<MsBuildPropertyProvenance>();
+        foreach (Match match in Regex.Matches(expression, @"\$\(([^()]+)\)"))
+        {
+            string name = match.Groups[1].Value;
+            if (sources.TryGetValue(name, out IReadOnlyList<MsBuildPropertyProvenance>? values))
+            {
+                provenance.AddRange(values);
+            }
+            else if (!ignoreUndefined)
+            {
+                provenance.Add(new(name, string.Empty, "<unresolved property>", $"expression '{expression}'"));
+            }
+        }
+
+        string remaining = Regex.Replace(expression, @"\$\(([^()]+)\)", string.Empty);
+        if (ContainsOpaqueExpression(remaining))
+        {
+            provenance.Add(new("<unsupported expression>", expression, "<unresolved expression>", "unsupported expression"));
+        }
+
+        return [.. provenance.Distinct()];
     }
 }
