@@ -1457,6 +1457,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: ReminderConvergenceResult is discarded by WorksDomainEventProcessor before returning Processed (medium, unverified).
+  status: done 2026-10-23
+  resolution: Superseded by the Story 4.9 SDK cutover. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) verifies that retained unresolved work permits acknowledgement after durable discovery, convergence exceptions release the delivery marker, and duplicate delivery does not repeat convergence; SDK scheduling-failure recovery is verified separately. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: Settle by reading SDK IReminderRegistrar.ConvergeAsync/ReminderConvergenceResult: if it can report incomplete without throwing, return RetryableInProgress.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: ValidateWitnessAddress compares envelope.TenantId ordinally while IsValidFor lowercases the tenant (medium, unverified).
@@ -1529,10 +1531,14 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Record legacy pending-date discovery before scheduling so failed scheduler calls retain a recoverable target.
+  status: done 2026-10-23
+  resolution: Superseded by removal of the legacy scheduler. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) proves current Works discovery precedes convergence, and the SDK RegistrationPersistsWitnessAndIndexBeforeArming and PendingStateSurvivesSchedulerFailure tests verify durable witness/index ordering and recovery after scheduler outage. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: The legacy suspended handler writes the fallback index after scheduling all reminders; a failed scheduler call with missing projection delivery leaves no durable discovery entry. The index write was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d; before that commit the handler wrote no fallback index, so this scheduling-failure window predates the new write.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Clear stale legacy pending-date discovery entries with a sequence-fenced empty fold.
+  status: done 2026-10-23
+  resolution: Superseded by the SDK generation-selected pending-date fold. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) verifies persisted empty membership and sequence 3 after resume/cancel, restart and stale suspension redelivery, preserving checkpoint 3; SDK RemovedIntentReleasesStateThenIndex verifies reminder discovery cleanup. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: PendingDateAwaitDiscoveryIndex.RecordAsync returns when the pending set is empty, so old entries continue to be scanned and can grow the tenant document. PendingDateAwaitDiscoveryIndex was introduced by in-story commit 07e23a6 (2026-10-17), after baseline 8679d7d. The same stale-entry claim was rejected as low in the 2026-10-17 src/scripts review because the legacy consumer rereads authoritative streams; preserve that earlier verdict when reassessing this follow-up.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1653,6 +1659,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Verify suspension callback discovery-write failure and successful redelivery using the real handler through WorksDomainEventProcessor.
+  status: done 2026-10-23
+  resolution: Superseded legacy processor replaced by the real `EventStoreDomainEventProcessor` and `WorksRecoveryWakeupHandler<WorkItemSuspended>`. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) injects discovery-store and registrar failures, proves released markers, reconstructs the processor, verifies persisted discovery and completion on redelivery, then duplicate suppression. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: Review T212; the accepted Story 4.15 discovery write (07e23a6fc54fca9644e844de5d1dff6f49b58b22) has healthy persistence coverage, while its processor retry test substitutes another handler. Inject registry/tenant-index failure after reminder scheduling, require retryable delivery, then restore the store and assert persisted discovery before completed deduplication.
 
 ## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md (2026-10-20)
@@ -1677,6 +1685,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Add cross-tenant registry preservation and ETag-conflict coverage for the accepted Story 4.15 suspend-subscription discovery writer (review T235).
+  status: done 2026-10-23
+  resolution: Superseded writer replaced by SDK process/reminder discovery. [spec-five-deferred-reminder-delivery.md](spec-five-deferred-reminder-delivery.md) executes real suspension handlers with a competing registry CAS and verifies three tenants and their exact persisted candidates after reconstruction; SDK IndependentRegistrationsRetryDiscoveryCas covers both same-tenant and cross-tenant reminder registration. [Verification evidence](evidence/five-deferred-reminder-delivery-2026-10-23/manifest.json).
   evidence: The pre-verified review found that WorkItemSuspendedReminderHandlerTests only registers one tenant, while dispatcher preservation tests execute a different writer. PendingDateAwaitDiscoveryIndex and the handler test were introduced by accepted 4.15 commit 07e23a6fc54fca9644e844de5d1dff6f49b58b22. Seed tenant A, handle tenant B with a forced registry conflict, and assert both remain in persisted discovery state; no runtime defect is claimed.
 
 ## Deferred from: code review of spec-4-16-prove-platform-works-parity-and-rollback.md, iteration 8 (2026-10-20)
