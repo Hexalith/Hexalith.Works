@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 
 using Hexalith.EventStore.Client.Effects;
 using Hexalith.EventStore.Client.Gateway;
@@ -22,11 +23,17 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Real Works translation retains SDK unresolved state and reuses its validator after audited repair.</summary>
 public sealed class WorksSdkProcessRecoveryTests
 {
-    /// <summary>Valid scoped streams with inconsistent reciprocal relationships quarantine before any plan or target effect.</summary>
+    /// <summary>Invalid related page, payload or relationship evidence quarantines before any plan or target effect.</summary>
+    /// <param name="missingReciprocalSpawn">Whether to run child-completion recovery instead of a parent cascade.</param>
+    /// <param name="failure">The related evidence to invalidate.</param>
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task InconsistentRelatedStreamsRetainQuarantine(bool missingReciprocalSpawn)
+    [InlineData(false, "relationship")]
+    [InlineData(true, "relationship")]
+    [InlineData(false, "domain")]
+    [InlineData(true, "domain")]
+    [InlineData(false, "payload")]
+    [InlineData(true, "payload")]
+    public async Task InconsistentRelatedStreamsRetainQuarantine(bool missingReciprocalSpawn, string failure)
     {
         const string tenant = "tenant-415";
         var tenantId = new TenantId(tenant);
@@ -39,7 +46,12 @@ public sealed class WorksSdkProcessRecoveryTests
                 new WorkItemCreated(parent.Value, 1, tenantId, parent, new Obligation("parent")),
                 new ChildSpawned(parent.Value, 2, tenantId, parent, child, new Obligation("child")),
                 new WorkItemCancelled(parent.Value, 3, tenantId, parent));
-        var claimedParent = missingReciprocalSpawn ? parent : new WorkItemId("different-parent");
+        if (missingReciprocalSpawn && failure != "relationship")
+            parentPage = Story48Streams.Page(tenant, parent.Value,
+                new WorkItemCreated(parent.Value, 1, tenantId, parent, new Obligation("parent")),
+                new ChildSpawned(parent.Value, 2, tenantId, parent, child, new Obligation("child")),
+                new WorkItemSuspended(parent.Value, 3, tenantId, parent, [AwaitCondition.ChildCompleted(child)]));
+        var claimedParent = missingReciprocalSpawn || failure != "relationship" ? parent : new WorkItemId("different-parent");
         StreamReadPage childPage = missingReciprocalSpawn
             ? Story48Streams.Page(tenant, child.Value,
                 new WorkItemCreated(child.Value, 1, tenantId, child, new Obligation("child"), Parent: new ParentWorkItemReference(tenantId, claimedParent)),
@@ -51,26 +63,42 @@ public sealed class WorksSdkProcessRecoveryTests
         {
             StreamReadRequest request = call.Arg<StreamReadRequest>();
             StreamReadPage page = request.AggregateId == parent.Value ? parentPage : childPage;
+            if (request.AggregateId != item && failure == "domain") page = page with { Domain = "foreign" };
+            if (request.AggregateId != item && failure == "payload")
+            {
+                var node = JsonSerializer.Deserialize<System.Text.Json.Nodes.JsonObject>(page.Events[0].Payload).ShouldNotBeNull();
+                node["TenantId"] = JsonSerializer.SerializeToNode(new TenantId("foreign"));
+                page = page with { Events = [page.Events[0] with { Payload = JsonSerializer.SerializeToUtf8Bytes(node) }, .. page.Events.Skip(1)] };
+            }
             StreamReadEvent[] tail = [.. page.Events.Where(fact => fact.SequenceNumber > request.FromSequence)];
-            return page with { Events = tail, Metadata = page.Metadata with
-            { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber } };
+            return page with
+            {
+                Events = tail,
+                Metadata = page.Metadata with
+                { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber }
+            };
         });
         var store = new InMemoryReadModelStore();
         var options = Options.Create(new EventStoreProcessOptions());
         var source = new ProcessSource(tenant, "work", item);
         ProcessCheckpointStore Checkpoints() => new(store, options, TimeProvider.System);
         ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
-        var runner = new CheckpointedProcessRunner(gateway,
+        CheckpointedProcessRunner Runner() => new(gateway,
             new WorksProcessTranslator(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()))),
             Substitute.For<IProcessDelegationProvider>(), submitter, Checkpoints(), options);
-        ProcessRunResult result = await runner.RunAsync(source, TestContext.Current.CancellationToken);
+        ProcessRunResult result = await Runner().RunAsync(source, TestContext.Current.CancellationToken);
         result.Status.ShouldBe(ProcessSourceStatus.Quarantined);
         result.Checkpoint.ShouldBe(missingReciprocalSpawn ? 1 : 2);
         ProcessSourceState durable = await Checkpoints().GetAsync(source, TestContext.Current.CancellationToken);
         durable.Checkpoint.ShouldBe(result.Checkpoint);
+        durable.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        durable.FailureSequence.ShouldBe(result.Checkpoint + 1);
         durable.ReasonCode.ShouldBe("invalid-evidence");
         durable.PendingPlan.ShouldBeNull();
-        (await runner.RunAsync(source, TestContext.Current.CancellationToken)).Checkpoint.ShouldBe(result.Checkpoint);
+        ProcessRunResult restarted = await Runner().RunAsync(source, TestContext.Current.CancellationToken);
+        restarted.Checkpoint.ShouldBe(result.Checkpoint);
+        restarted.Status.ShouldBe(ProcessSourceStatus.Quarantined);
+        (await Checkpoints().GetAsync(source, TestContext.Current.CancellationToken)).PendingPlan.ShouldBeNull();
         submitter.ReceivedCalls().ShouldBeEmpty();
     }
 
@@ -92,8 +120,11 @@ public sealed class WorksSdkProcessRecoveryTests
         {
             "message-id" => committed with { MessageId = "different-committed-message" },
             "event-type" => committed with { EventTypeName = typeof(WorkItemExpired).FullName! },
-            "payload" => committed with { Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
-                new WorkItemCancelled(item, 2, tenantId, itemId)) },
+            "payload" => committed with
+            {
+                Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
+                new WorkItemCancelled(item, 2, tenantId, itemId))
+            },
             _ => committed,
         };
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
@@ -101,8 +132,12 @@ public sealed class WorksSdkProcessRecoveryTests
         {
             StreamReadRequest request = call.Arg<StreamReadRequest>();
             StreamReadEvent[] tail = [.. enumerated.Events.Where(fact => fact.SequenceNumber > request.FromSequence)];
-            return enumerated with { Events = tail, Metadata = enumerated.Metadata with
-            { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber } };
+            return enumerated with
+            {
+                Events = tail,
+                Metadata = enumerated.Metadata with
+                { FromSequence = request.FromSequence, EventCount = tail.Length, LastSequenceReturned = tail.LastOrDefault()?.SequenceNumber }
+            };
         });
         IEventStoreGatewayClient contextGateway = Substitute.For<IEventStoreGatewayClient>();
         contextGateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
@@ -167,16 +202,24 @@ public sealed class WorksSdkProcessRecoveryTests
             {
                 StreamReadEvent altered = failure == "corruption"
                     ? page.Events[1] with { EventTypeName = "UnknownWorksFact" }
-                    : page.Events[1] with { Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
-                        new WorkItemCancelled(item, 2, new TenantId("foreign-tenant"), itemId)) };
+                    : page.Events[1] with
+                    {
+                        Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
+                        new WorkItemCancelled(item, 2, new TenantId("foreign-tenant"), itemId))
+                    };
                 page = page with { Events = [page.Events[0], altered] };
             }
             StreamReadEvent[] tail = [.. page.Events.Where(value => value.SequenceNumber > request.FromSequence)];
-            return Task.FromResult(page with { Events = tail, Metadata = page.Metadata with
+            return Task.FromResult(page with
             {
-                FromSequence = request.FromSequence, EventCount = tail.Length,
-                LastSequenceReturned = tail.Length == 0 ? null : tail[^1].SequenceNumber,
-            } });
+                Events = tail,
+                Metadata = page.Metadata with
+                {
+                    FromSequence = request.FromSequence,
+                    EventCount = tail.Length,
+                    LastSequenceReturned = tail.Length == 0 ? null : tail[^1].SequenceNumber,
+                }
+            });
         });
         ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
         ProcessCheckpointStore Checkpoints() => new(store, options, TimeProvider.System);

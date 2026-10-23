@@ -212,6 +212,108 @@ public sealed class WorksSourceStreamReaderTests
             Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
     }
 
+    /// <summary>A corrupt second page cannot release a valid prefix or advance into another acquisition.</summary>
+    /// <param name="failure">The stream identity, cursor or envelope corruption to inject.</param>
+    [Theory]
+    [InlineData("valid")]
+    [InlineData("domain")]
+    [InlineData("aggregate")]
+    [InlineData("from")]
+    [InlineData("to")]
+    [InlineData("last-ahead")]
+    [InlineData("last-behind")]
+    [InlineData("latest-behind")]
+    [InlineData("head-regressed")]
+    [InlineData("hidden-tail")]
+    [InlineData("truncated-at-head")]
+    [InlineData("truncated-empty")]
+    [InlineData("duplicate")]
+    [InlineData("nonpositive")]
+    public async Task SecondPageMetadataMustMatchItsEvidence(string failure)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        StreamReadPage first = Story48Streams.Page(Tenant, Item,
+            new WorkItemCreated(Item, 1, tenant, item, new Obligation("prefix")));
+        first = first with { Metadata = first.Metadata with { IsTruncated = true, LatestSequence = failure == "head-regressed" ? 3 : 2 } };
+        StreamReadPage second = Story48Streams.PageAt(Tenant, Item, 2, false,
+            new WorkItemQueued(Item, 2, tenant, item));
+        second = failure switch
+        {
+            "domain" => second with { Domain = "foreign" },
+            "aggregate" => second with { AggregateId = "foreign" },
+            "from" => second with { Metadata = second.Metadata with { FromSequence = 0 } },
+            "to" => second with { Metadata = second.Metadata with { ToSequence = 2 } },
+            "last-ahead" => second with { Metadata = second.Metadata with { LastSequenceReturned = 3 } },
+            "last-behind" => second with { Metadata = second.Metadata with { LastSequenceReturned = 1 } },
+            "latest-behind" => second with { Metadata = second.Metadata with { LatestSequence = 1 } },
+            "hidden-tail" => second with { Metadata = second.Metadata with { LatestSequence = 3 } },
+            "truncated-at-head" => second with { Metadata = second.Metadata with { IsTruncated = true } },
+            "truncated-empty" => second with
+            {
+                Events = [],
+                Metadata = second.Metadata with { IsTruncated = true, EventCount = 0, LastSequenceReturned = null },
+            },
+            "duplicate" or "nonpositive" => second with
+            {
+                Events = [second.Events[0] with { SequenceNumber = failure == "duplicate" ? 1 : 0 }],
+                Metadata = second.Metadata with { LastSequenceReturned = failure == "duplicate" ? 1 : 0 },
+            },
+            _ => second,
+        };
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        var cursors = new List<long>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            long from = call.Arg<StreamReadRequest>().FromSequence;
+            cursors.Add(from);
+            return from == 0 ? first : second;
+        });
+        var reader = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        IReadOnlyList<WorksCommittedEvent>? context = null;
+        if (failure == "valid")
+        {
+            context = await reader.ReadAsync(Tenant, Item, ct);
+            context.Select(fact => fact.Envelope.SequenceNumber).ShouldBe([1L, 2L]);
+            context.Select(fact => fact.Payload.GetType()).ShouldBe([typeof(WorkItemCreated), typeof(WorkItemQueued)]);
+        }
+        else
+        {
+            await Should.ThrowAsync<InvalidOperationException>(async () =>
+                context = await reader.ReadAsync(Tenant, Item, ct).ConfigureAwait(false));
+            context.ShouldBeNull();
+        }
+        cursors.ShouldBe([0L, 1L]);
+    }
+
+    /// <summary>A source that grows during paging includes its newly observed tail before returning context.</summary>
+    [Fact]
+    public async Task GrowingHeadAcrossPagesIncludesEveryObservedEnvelope()
+    {
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        IEventPayload[] facts = [new WorkItemCreated(Item, 1, tenant, item, new Obligation("growing source")),
+            new WorkItemQueued(Item, 2, tenant, item),
+            new WorkItemSuspended(Item, 3, tenant, item, [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)])];
+        var cursors = new List<long>();
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            long from = call.Arg<StreamReadRequest>().FromSequence;
+            cursors.Add(from);
+            StreamReadPage page = Story48Streams.PageAt(Tenant, Item, from + 1, from < 2, facts[checked((int)from)]);
+            return page with { Metadata = page.Metadata with { LatestSequence = from == 0 ? 2 : 3 } };
+        });
+
+        IReadOnlyList<WorksCommittedEvent> result = await new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken);
+
+        cursors.ShouldBe([0L, 1L, 2L]);
+        result.Select(entry => entry.Envelope.SequenceNumber).ShouldBe([1L, 2L, 3L]);
+        result.Select(entry => entry.Payload).ShouldBe(facts);
+    }
+
     /// <summary>Ordinary dependency outages are typed separately from retained corrupt source evidence.</summary>
     [Theory]
     [InlineData(false)]

@@ -850,10 +850,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Make live projection unknown-event handling fail closed without advancing durable watermarks beyond understood evidence.
+  status: done 2026-10-23
+  resolution: The SDK replacement refuses unknown evidence before materializing partial state. InvalidOrdinaryEvidenceParksWithoutAdvancingVisibleState proves persisted queue, roll-up, pending-date, topology, complete reconstructed history and folded watermarks survive unchanged after reconstruction; durable parking makes queries unavailable. The journal checkpoint advances over parked evidence by design. Unknown rebuild evidence also preserves the committed generation. [Qualification spec](spec-five-deferred-evidence-admission.md); [retained verification](evidence/five-deferred-evidence-admission-2026-10-23/manifest.json).
   evidence: Unknown event types do not mark live roll-ups incomplete, while the pending-date watermark still uses the maximum raw sequence; a forward-version event can therefore expose an available total and prevent later repair when that event becomes known.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Bound generic projection decoder skip telemetry consistently with identity-mismatch telemetry.
+  status: done 2026-10-23
+  resolution: WorkItemProjectionEventDecoder already applies the same 128-character single-line sanitization to EventIds 4504 and 4505. WorkItemProjectionDecoderTelemetryTests executes unknown, empty, null and malformed paths, asserts exact structured fields, bounded type/correlation, no control/line separators and no payload or exception disclosure, preserving classification; an identity-mismatch control executes 4505 under the same assertions. [Qualification spec](spec-five-deferred-evidence-admission.md); [retained verification](evidence/five-deferred-evidence-admission-2026-10-23/manifest.json).
   evidence: EventId 4504 still accepts raw namespace-qualified event type and correlation text for unknown or malformed payloads, permitting oversized diagnostic records outside the newly bounded EventId 4505 branch.
 
 - source_spec: none
@@ -1038,10 +1042,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Decide whether the projection ingress must reject duplicate or gapped positive event sequences.
+  status: done 2026-10-23
+  resolution: The selected SDK rejects duplicate, conflicting, gapped and reordered rebuild histories as malformed_projection_outcome before inventory admission. InvalidHistoryCannotPublishPartialProjection proves zero accepted owners and unchanged committed generation/documents. Ordinary identical redelivery remains idempotent; existing executing SDK controls prove conflicting equal sequences park and missing-owner sequence delivery converges without serving partial state. [Qualification spec](spec-five-deferred-evidence-admission.md); [retained verification](evidence/five-deferred-evidence-admission-2026-10-23/manifest.json).
   evidence: `WorkItemProjectionDispatcher` sorts replay events but does not validate contiguity; settle this maybe-false finding by proving whether the EventStore projection-delivery contract can emit duplicate or gapped sequences.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Validate stream-page cursor metadata or document the EventStore invariant that makes malformed cursor shapes unreachable.
+  status: done 2026-10-23
+  resolution: The replacement WorksSourceStreamReader invokes the SDK StreamReadPageValidator and requires the authoritative head. SecondPageMetadataMustMatchItsEvidence injects corrupt second pages after a valid prefix: cursor/range mismatches, inconsistent last/head, hidden tail, truncated-at-head/empty, duplicate/nonpositive positions and foreign domain/aggregate. Every invalid matrix case refuses whole context after exactly two reads. Review reproduced a cross-page head regression that hid an already-observed tail; WorksSourceStreamReader now retains and validates the observed head. A growing-head control preserves the newly appended tail. [Qualification spec](spec-five-deferred-evidence-admission.md); [retained verification](evidence/five-deferred-evidence-admission-2026-10-23/manifest.json).
   evidence: `PendingDateAwaitStreamReader` trusts `IsTruncated`, `LatestSequence`, and `LastSequenceReturned`; inconsistent metadata could hide an unread tail or advance beyond returned events, but reachability requires gateway-contract evidence or fault injection.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
@@ -1064,6 +1072,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Apply fail-closed page and payload identity validation to the child-completion and cascade recovery stream readers.
+  status: done 2026-10-23
+  resolution: Both replacement paths use WorksSourceStreamReader. InvalidRecoveryContextCannotProduceEffects executes child-completion and cancellation cascade against paged related evidence with foreign domain/aggregate, foreign payload tenant/aggregate, missing required members, unknown facts, mismatched relationships and malformed ChildSpawned. A valid earlier child cannot escape as a partial cascade when a later child is corrupt. No effects escape; corrected complete reads verify exact command payloads. SDK runner controls reconstruct quarantine with retained checkpoints, no pending plan and no submissions. Existing paged expiry-cascade controls also pass. [Qualification spec](spec-five-deferred-evidence-admission.md); [retained verification](evidence/five-deferred-evidence-admission-2026-10-23/manifest.json).
   evidence: The pre-existing Story 4.7 readers do not consistently validate stream domain or decoded event identity and silently discard malformed lifecycle or child evidence, allowing false parent-resume decisions or incomplete cascade checkpoints. Their separate paging defect remains owned by DW-86.
 
 ## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-11.md (2026-09-21)

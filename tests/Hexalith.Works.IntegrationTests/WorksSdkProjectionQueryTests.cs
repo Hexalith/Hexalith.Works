@@ -742,16 +742,25 @@ public sealed class WorksSdkProjectionQueryTests
                 .ConfigureAwait(true)).ConfigureAwait(true);
     }
 
-    [Fact]
-    public async Task Published_sdk_journals_a_gap_but_Works_fold_parks_it_without_advancing_visible_queue()
+    /// <summary>Unknown and gapped ordinary deliveries park without publishing partial state or source watermarks.</summary>
+    /// <param name="unknown">Whether to inject an unknown event instead of a missing source sequence.</param>
+    /// <param name="defaultPolicy">Whether to qualify every retry of the default parking policy.</param>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task InvalidOrdinaryEvidenceParksWithoutAdvancingVisibleState(bool unknown, bool defaultPolicy)
     {
         var store = new InMemoryReadModelStore();
         var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions
+        var projectionOptions = defaultPolicy ? new WorksProjectionOptions() : new WorksProjectionOptions
         {
             UseSdkDelivery = true,
             MaxUndecodableEventDispatchesBeforeParking = 1,
-        }));
+        };
+        int parkingLimit = projectionOptions.MaxUndecodableEventDispatchesBeforeParking;
+        if (defaultPolicy) parkingLimit.ShouldBe(5);
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(projectionOptions));
         SharedProjectionScope scope = handler.CreateScope(Tenant);
         SharedProjectionLease lease = await coordinator.RegisterWriterAsync(scope, handler.OrdinaryWriterId,
             TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -766,27 +775,105 @@ public sealed class WorksSdkProjectionQueryTests
         lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId,
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         (await coordinator.JournalAsync(scope, lease,
-            Delivery(new WorkItemQueued(Aggregate, 3, tenant, workItem), 3),
+            Delivery(new WorkItemSuspended(Aggregate, 2, tenant, workItem,
+                [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch.AddDays(1))]), 2),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.Journaled);
         (await coordinator.CatchUpAsync(scope,
             (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, coordinator, token),
             TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await coordinator
+        lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId,
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(Aggregate),
+            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+            WorksReadModelKeys.RuntimeHistoryKey(Aggregate)];
+        var before = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken);
+        byte[] historyBefore = WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(
+            coordinator, scope, before.Generation, Aggregate, TestContext.Current.CancellationToken));
+        before.Value.ShouldNotBeNull()[WorksReadModelKeys.RuntimePendingDateKey].ShouldNotBeNull()
+            .As<PendingDateAwaitTenantIndex>().Entries[Aggregate].ShouldHaveSingleItem();
+        long sequence = unknown ? 3 : 4;
+        ProjectionEventDto dto = Dto(new WorkItemQueued(Aggregate, sequence, tenant, workItem), sequence);
+        if (unknown) dto = dto with { EventTypeName = "FutureWorksEvent" };
+        var invalid = new SharedProjectionDelivery(Aggregate, sequence,
+            JsonSerializer.SerializeToUtf8Bytes(new ProjectionRequest(Tenant, "work", Aggregate, [dto]), s_web),
+            JsonSerializer.SerializeToUtf8Bytes(sequence), new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
+        (await coordinator.JournalAsync(scope, lease, invalid,
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        long admittedCheckpoint = (await coordinator.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken))!
+            .Position;
+        admittedCheckpoint.ShouldBe(sequence);
+        for (int attempt = 1; attempt < parkingLimit; attempt++)
+        {
+            await Should.ThrowAsync<SharedProjectionRetryableFoldException>(() => coordinator.CatchUpAsync(scope,
+                (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, coordinator, token),
+                TestContext.Current.CancellationToken)).ConfigureAwait(true);
+            coordinator = new SharedProjectionEpochCoordinator(store, store);
+            SharedProjectionEpochStatus retry = await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken);
+            retry.PendingDeliveryCount.ShouldBe(1);
+            retry.IsDegraded.ShouldBeTrue();
+            retry.ParkingEvidence.ShouldBeEmpty();
+            SharedProjectionFailureStatus failure = retry.PendingFoldFailures.ShouldHaveSingleItem();
+            failure.SourceStream.ShouldBe(Aggregate);
+            failure.SourcePosition.ShouldBe(sequence);
+            failure.FailureCount.ShouldBe(attempt);
+            (await coordinator.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken))!
+                .Position.ShouldBe(admittedCheckpoint);
+            var retained = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken);
+            retained.Generation.ShouldBe(before.Generation);
+            retained.IsAvailable.ShouldBeFalse();
+            retained.Value.ShouldBeNull();
+            foreach (string key in keys)
+                (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, before.Generation, key,
+                    TestContext.Current.CancellationToken)).Value.ShouldNotBeNull().Value.GetRawText()
+                    .ShouldBe(before.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText());
+            WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(coordinator, scope,
+                retained.Generation, Aggregate, TestContext.Current.CancellationToken)).ShouldBe(historyBefore);
+            var retryPolicy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+                Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+            QueryResult retryQueue = await new WhatsNextQueryHandler(retryPolicy, coordinator).ExecuteAsync(
+                CoordinatorQuery("scheduler"), TestContext.Current.CancellationToken);
+            QueryResult retryDetail = await new GetWorkItemQueryHandler(retryPolicy, coordinator).ExecuteAsync(
+                CoordinatorQuery("scheduler") with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
+                TestContext.Current.CancellationToken);
+            foreach (QueryResult refused in new[] { retryQueue, retryDetail })
+            {
+                refused.Success.ShouldBeFalse();
+                refused.ErrorMessage.ShouldBe("projection-unavailable");
+                refused.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
+                refused.Metadata.IsDegraded.ShouldBe(true);
+            }
+        }
+        (await coordinator.CatchUpAsync(scope,
+            (delivery, generation, token) => handler.FoldCatchUpAsync(delivery, generation, coordinator, token),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(1);
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await restarted
             .ReadManyAsync<WorksRuntimeDocument>(scope,
-                [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeParkingKey(Aggregate)],
+                [.. keys, WorksReadModelKeys.RuntimeParkingKey(Aggregate)],
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
+        read.Generation.ShouldBe(before.Generation);
+        WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope,
+            read.Generation, Aggregate, TestContext.Current.CancellationToken)).ShouldBe(historyBefore);
+        foreach (string key in keys)
+            read.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText()
+                .ShouldBe(before.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText());
         WorksWhatsNextTenantIndex queue = read.Value.ShouldNotBeNull()[WorksReadModelKeys.RuntimeQueueKey]!
             .As<WorksWhatsNextTenantIndex>();
         queue.MemberWorkItemIds.ShouldContain(Aggregate);
         queue.Items.ShouldNotContainKey(Aggregate);
-        queue.LastSequences[Aggregate].ShouldBe(1);
-        read.Value[WorksReadModelKeys.RuntimeParkingKey(Aggregate)]!
-            .As<WorkItemProjectionParking>().Parked.ShouldBeTrue();
-        (await coordinator.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken)
-            .ConfigureAwait(true))!.Position.ShouldBe(3);
+        queue.LastSequences[Aggregate].ShouldBe(2);
+        read.Value[WorksReadModelKeys.RuntimePendingDateKey].ShouldNotBeNull()
+            .As<PendingDateAwaitTenantIndex>().LastSequences[Aggregate].ShouldBe(2);
+        WorkItemProjectionParking parking = read.Value[WorksReadModelKeys.RuntimeParkingKey(Aggregate)]!
+            .As<WorkItemProjectionParking>();
+        parking.Parked.ShouldBeTrue();
+        parking.FailedSequence.ShouldBe(sequence);
+        parking.FailureCount.ShouldBe(parkingLimit);
+        (await restarted.GetCheckpointAsync(scope, Aggregate, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true))!.Position.ShouldBe(sequence);
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
-        QueryResult result = await new WhatsNextQueryHandler(policy, coordinator)
+        QueryResult result = await new WhatsNextQueryHandler(policy, restarted)
             .ExecuteAsync(CoordinatorQuery("scheduler"), TestContext.Current.CancellationToken)
             .ConfigureAwait(true);
         result.Success.ShouldBeFalse();
@@ -794,6 +881,12 @@ public sealed class WorksSdkProjectionQueryTests
         result.Metadata.ShouldNotBeNull().IsDegraded.ShouldBe(true);
         result.Metadata.Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
         result.Metadata.WarningCodes.ShouldNotBeNull().ShouldContain("works-runtime-unavailable");
+        QueryResult detail = await new GetWorkItemQueryHandler(policy, restarted).ExecuteAsync(
+            CoordinatorQuery("scheduler") with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+        detail.Success.ShouldBeFalse();
+        detail.ErrorMessage.ShouldBe("projection-unavailable");
+        detail.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
     }
 
     [Fact]

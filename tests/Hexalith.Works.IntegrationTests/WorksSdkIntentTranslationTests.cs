@@ -289,6 +289,145 @@ public sealed class WorksSdkIntentTranslationTests
         terminal.SequenceNumber.ShouldBe(4);
         ((WorkItemCancelled)WorksEventDecoder.Decode(terminal.EventTypeName, terminal.Payload)!).Sequence.ShouldBe(3);
     }
+    /// <summary>Both recovery paths refuse corrupt contextual evidence and recover on a later complete read.</summary>
+    /// <param name="cascade">Whether to qualify parent cancellation or child-completion recovery.</param>
+    /// <param name="failure">The page, payload or relationship corruption to inject.</param>
+    [Theory]
+    [InlineData(true, "domain")]
+    [InlineData(false, "domain")]
+    [InlineData(true, "aggregate")]
+    [InlineData(false, "aggregate")]
+    [InlineData(true, "payload-tenant")]
+    [InlineData(false, "payload-tenant")]
+    [InlineData(true, "payload-aggregate")]
+    [InlineData(false, "payload-aggregate")]
+    [InlineData(true, "malformed")]
+    [InlineData(false, "malformed")]
+    [InlineData(true, "unknown")]
+    [InlineData(false, "unknown")]
+    [InlineData(true, "relationship")]
+    [InlineData(false, "relationship")]
+    [InlineData(true, "malformed-spawn")]
+    [InlineData(false, "malformed-spawn")]
+    public async Task InvalidRecoveryContextCannotProduceEffects(bool cascade, string failure)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var tenant = new TenantId(Tenant);
+        var parent = new WorkItemId("parent");
+        var child = new WorkItemId("child");
+        var firstChild = new WorkItemId("a-child");
+        IEventPayload terminal = cascade
+            ? new WorkItemCancelled(parent.Value, 4, tenant, parent)
+            : new WorkItemSuspended(parent.Value, 3, tenant, parent, [AwaitCondition.ChildCompleted(child)]);
+        IEventPayload[] parentFacts = cascade ? [
+            new WorkItemCreated(parent.Value, 1, tenant, parent, new Obligation("parent")),
+            new ChildSpawned(parent.Value, 2, tenant, parent, firstChild, new Obligation("first child")),
+            new ChildSpawned(parent.Value, 3, tenant, parent, child, new Obligation("child")), terminal] : [
+            new WorkItemCreated(parent.Value, 1, tenant, parent, new Obligation("parent")),
+            new ChildSpawned(parent.Value, 2, tenant, parent, child, new Obligation("child")), terminal];
+        StreamReadPage parentPage = Story48Streams.Page(Tenant, parent.Value, parentFacts);
+        StreamReadPage firstChildPage = Story48Streams.Page(Tenant, firstChild.Value,
+            new WorkItemCreated(firstChild.Value, 1, tenant, firstChild, new Obligation("first child"),
+                Parent: new ParentWorkItemReference(tenant, parent)));
+        StreamReadPage childPage = Story48Streams.Page(Tenant, child.Value,
+            new WorkItemCreated(child.Value, 1, tenant, child, new Obligation("child"),
+                Parent: new ParentWorkItemReference(tenant, parent)),
+            new WorkItemCompleted(child.Value, 2, tenant, child));
+        StreamReadPage related = cascade ? childPage : parentPage;
+        StreamReadPage invalid = related;
+        if (failure is "domain" or "aggregate")
+            invalid = failure == "domain" ? related with { Domain = "foreign" } : related with { AggregateId = "foreign" };
+        else if (failure == "unknown")
+            invalid = related with
+            {
+                Events = [.. related.Events.Take(related.Events.Count - 1),
+                related.Events[^1] with { EventTypeName = "FutureWorksFact" }]
+            };
+        else if (failure != "malformed-spawn")
+        {
+            int index = failure == "relationship" && !cascade ? 1 : 0;
+            var node = JsonSerializer.SerializeToNode(JsonSerializer.Deserialize<JsonElement>(related.Events[index].Payload))!.AsObject();
+            switch (failure)
+            {
+                case "payload-tenant": node["TenantId"] = JsonSerializer.SerializeToNode(new TenantId("foreign")); break;
+                case "payload-aggregate": node["AggregateId"] = "foreign"; break;
+                case "malformed": node.Remove("Obligation"); break;
+                case "relationship" when cascade:
+                    node["Parent"] = JsonSerializer.SerializeToNode(new ParentWorkItemReference(tenant, new WorkItemId("other-parent")));
+                    break;
+                case "relationship": node["ChildWorkItemId"] = JsonSerializer.SerializeToNode(new WorkItemId("other-child")); break;
+            }
+            invalid = related with
+            {
+                Events = [.. related.Events.Select((envelope, ordinal) => ordinal == index
+                ? envelope with { Payload = JsonSerializer.SerializeToUtf8Bytes(node) } : envelope)]
+            };
+        }
+        StreamReadPage invalidParent = parentPage;
+        if (failure == "malformed-spawn")
+        {
+            int spawnIndex = cascade ? 2 : 1;
+            var spawn = JsonSerializer.SerializeToNode(JsonSerializer.Deserialize<JsonElement>(parentPage.Events[spawnIndex].Payload))!.AsObject();
+            spawn.Remove("ChildWorkItemId");
+            invalidParent = parentPage with
+            {
+                Events = [.. parentPage.Events.Select((envelope, ordinal) => ordinal == spawnIndex
+                    ? envelope with { Payload = JsonSerializer.SerializeToUtf8Bytes(spawn) } : envelope)],
+            };
+        }
+        bool corrected = false;
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            StreamReadRequest request = call.Arg<StreamReadRequest>();
+            request.Tenant.ShouldBe(Tenant);
+            request.Domain.ShouldBe("work");
+            StreamReadPage selected = request.AggregateId == parent.Value ? parentPage
+                : request.AggregateId == firstChild.Value ? firstChildPage : childPage;
+            if (!corrected)
+            {
+                if (failure == "malformed-spawn" && request.AggregateId == parent.Value) selected = invalidParent;
+                else if (request.AggregateId == related.AggregateId) selected = invalid;
+            }
+            return SlicePage(selected, request, pageSize: 1);
+        });
+        var translator = new WorksProcessTranslator(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+        var source = new ProcessSource(Tenant, "work", cascade ? parent.Value : child.Value);
+        StreamReadEvent trigger = cascade ? parentPage.Events[^1] : childPage.Events[^1];
+        IReadOnlyList<ProcessEffect>? effects = null;
+
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            effects = await translator.TranslateAsync(source, trigger, ct).ConfigureAwait(false));
+        effects.ShouldBeNull();
+        if (cascade && failure != "malformed-spawn")
+            await gateway.Received(1).ReadWorkloadStreamAsync(
+                Arg.Is<StreamReadRequest>(request => request.AggregateId == firstChild.Value), Arg.Any<CancellationToken>());
+
+        corrected = true;
+        IReadOnlyList<ProcessEffect> recovered = await translator.TranslateAsync(source, trigger, ct);
+        recovered.Count.ShouldBe(cascade ? 2 : 1);
+        if (cascade) recovered.Select(effect => effect.TargetAggregate).ShouldBe(new[] { child.Value, firstChild.Value }.Order(StringComparer.Ordinal));
+        ProcessEffect effect = recovered.Single(effect => effect.TargetAggregate == (cascade ? child.Value : parent.Value));
+        effect.Kind.ShouldBe(cascade ? EffectKindCatalog.CascadeCancel : EffectKindCatalog.ChildCompletionResume);
+        effect.TargetDomain.ShouldBe("work");
+        effect.TargetAggregate.ShouldBe(cascade ? child.Value : parent.Value);
+        effect.Ordinal.ShouldBe(EffectKindCatalog.PrimaryTargetOrdinal);
+        effect.CommandType.ShouldBe(cascade ? nameof(CancelWorkItem) : nameof(ResumeWorkItem));
+        if (cascade)
+        {
+            CancelWorkItem command = JsonSerializer.Deserialize<CancelWorkItem>(effect.CommandPayload).ShouldNotBeNull();
+            command.TenantId.ShouldBe(tenant);
+            command.WorkItemId.ShouldBe(child);
+        }
+        else
+        {
+            ResumeWorkItem command = JsonSerializer.Deserialize<ResumeWorkItem>(effect.CommandPayload).ShouldNotBeNull();
+            command.TenantId.ShouldBe(tenant);
+            command.WorkItemId.ShouldBe(parent);
+            command.AwaitCondition.ShouldBe(AwaitCondition.ChildCompleted(child));
+        }
+    }
+
     /// <summary>Returns a real exclusive range from complete evidence, preserving committed envelope metadata.</summary>
     private static StreamReadPage SlicePage(StreamReadPage complete, StreamReadRequest request, int pageSize)
     {

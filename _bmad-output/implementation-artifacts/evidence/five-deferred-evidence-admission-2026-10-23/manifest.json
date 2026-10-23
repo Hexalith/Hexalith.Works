@@ -1,0 +1,324 @@
+{
+  "baseline": "9964499645dca28254a16b77dd14a5124cebd7dc",
+  "scope": "Five deferred projection/recovery evidence-admission entries; includes a local cross-page stream-head regression guard and executing deterministic qualification.",
+  "limits": "Debug source mode; focused builds use existing dependency binaries because the broad Platform build is blocked by two pre-existing CA1062 errors. Live Smoke/Platform lanes excluded; no new live parity or public-package qualification claimed.",
+  "review": "Independent blind review: seven findings patched, then two follow-up fixture assertions patched. Final independent inspection confirms all addressed and no further concrete regression; full triage retained in spec.",
+  "source_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorkItemProjectionDecoderTelemetryTests.cs": "d7c2bf842c2f5368991fc8af479eaa9f9b14413c794c06d627ae1e8d9d6f9472",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "ec32ab7b6c189bb1b66d0c5ca60a09c55cc1739440b9a600add6ab01ef5ae2ef",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs": "71b727595eea142892bc9c412b1b19e4436c2e0d0e9ad7c73c9575c81f1cf512",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryTests.cs": "eaaf308531d8d95adbb540863b6545900b3eb663cdf715fc6c89e698f01ebfac",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "77ce3323f8a74e9d53661f93177419ce76f2f86042b8602f0a26af3f9fd2cbfa",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "8a54104beb607b7b487c627084b5bf83c4a4030ffdfdf157f53c54ee1ff1397a",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "77973c9888d5f6198e2536f0fca7c41497fb7245c3e8d54b0e4c70e624df1e6f",
+    "src/Hexalith.Works/Hexalith.Works.csproj": "f8895532edaf29b6d73619321d45ed7d191f65c525c89ce4d9ae4e5cbfc22e0a",
+    "src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs": "352e2dc3184fd07697bd470eb751048ea271921a20e3a0bfff014ea5c62865f3",
+    "src/Hexalith.Works/Recovery/WorksProcessTranslator.cs": "e3a19f59ac28e09ec4afdd026fd96265a82b2133c3df9de82df4aa8ff0debd3a",
+    "src/Hexalith.Works/Recovery/WorksRecoveryEventDecoder.cs": "cb9a5a6c65a00cb5aac37dba2adeafdc59a3a94b2a0e9362b7bb8112c0ed8c72",
+    "src/Hexalith.Works/Projections/WorkItemProjectionEventDecoder.cs": "e21c7de1811b5525a95797e88f9ce63e17aebf4da84c2ccac748e224787e384d",
+    "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs": "da9c1a602baf9695daff7e371ae0de83c9e32d0918f5064c3b39ac65b602f183",
+    "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs": "758ed005b513ab3865741dd45a43babcfceef3ba896de98113c233d06a7ddaae",
+    "src/Hexalith.Works/Projections/SharedRebuild/WorkItemRuntimeHistoryStore.cs": "6b135c34e923304ffaaa9e30b662edabeb2d0658177b9a828d340cee6bc0c0f4",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Streams/StreamReadPageValidator.cs": "e71434d48fd068acdb80400ea15d1fb425114722178a24ca159a9e407467b426",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/DomainSharedProjectionRebuildDispatcher.cs": "b20c807c341a90e667c0c372dbd48a6b9db7c0a4fad4ab7c5655e17951c4da3a",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionEpochCoordinator.cs": "23f82c1898318e7d9a1fc0e6892586d210a5d48debab58087f2c9c2176b1cbe9",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs": "7396aa38b66579a2285e478c624d768d8b1ab14cbb82f73f3f7e581c3dc8ea35",
+    "Directory.Build.props": "b469ad4a9fe6c3ef43737e8be11f9e6f61b45ab3f3c668c4d70f90555e316a16",
+    "Directory.Build.targets": "670554404af97e8845698c8215a6eefab7d5a90f764667798e0d72f54bca9bd1",
+    "Directory.Packages.props": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7"
+  },
+  "dependency_revisions": {
+    "Hexalith.EventStore": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+    "Hexalith.Platform": "f7c62ca1007f5218dc52d6856395324704564e3a",
+    "Hexalith.Builds": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c",
+    "Hexalith.Commons": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+    "Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "Hexalith.Parties": "664b99c67e90a14c8a1cc4d9663a25fa44c47c9a"
+  },
+  "dependency_gitlinks": [
+    "160000 commit 38de8cc6c8dc7f14bec94781e050a2721f4e2c1c\treferences/Hexalith.Builds",
+    "160000 commit 1663028fb6d9f46a0bf17919edeb21bb99be1587\treferences/Hexalith.Commons",
+    "160000 commit 6a0b6441f6d78a3007678a1d0ec336e9cb8ff961\treferences/Hexalith.EventStore",
+    "160000 commit 664b99c67e90a14c8a1cc4d9663a25fa44c47c9a\treferences/Hexalith.Parties",
+    "160000 commit f7c62ca1007f5218dc52d6856395324704564e3a\treferences/Hexalith.Platform",
+    "160000 commit 221ac4592ba908ae7661ba1fa9e2d1fcc23baee0\treferences/Hexalith.PolymorphicSerializations"
+  ],
+  "final_binaries_sha256": {
+    "Hexalith.Builds.Tooling.dll": "36845afe330b1bf5efefdb095015f257ef464bad19a75fa61edf1399f1340893",
+    "Hexalith.Commons.Http.dll": "958ace6abd69293924d78d0fe45561005441817d34a51f8051b4995ef0413b01",
+    "Hexalith.Commons.UniqueIds.dll": "73db021277a5c3cc2af66a0ac117d108ec2b9f1708199984880772a575018b8e",
+    "Hexalith.EventStore.Admin.Abstractions.dll": "36c75ec1f24ef9ff2deb9e5a0e56154d9cc5b774815e6d5527e8ff9dd0e99398",
+    "Hexalith.EventStore.Aspire.dll": "81af584d759b3a1e427add1a8b935c4a8a164a1f792ec1c3156d914c739c09be",
+    "Hexalith.EventStore.Client.dll": "ab1b0d3c1b30244d9f4c5db425f6c46363615d1d28fd57db3e2b1c35dffdca7e",
+    "Hexalith.EventStore.Contracts.dll": "646b1f3ecc4ff107cb45bd833d2cd40ea778671b630c2efde220f6cc1b1ddc64",
+    "Hexalith.EventStore.DomainService.dll": "4165ca225bccab27132c20a7515a00d3ba57d555ac4dac9ef90939ced8eb9535",
+    "Hexalith.EventStore.Gateway.dll": "6e02b6e25e85d37bec472580ba1690c3973330d51b05bd0a9d49a5d065bdea05",
+    "Hexalith.EventStore.Server.dll": "c0d12eb1424268159399dcce85716e9b19cea5f1f0d24b8596750035c8366dbc",
+    "Hexalith.EventStore.ServiceDefaults.dll": "f22fce6cf24feadb5b52b00b287c79b4428f79fcb4ecd2d9af2472a867728e90",
+    "Hexalith.EventStore.Testing.dll": "c7ad96c2027aa65a2bb99fed8647f1916e21e374bf25a57a0d93902253457b43",
+    "Hexalith.McpCli.Abstractions.dll": "abfbcb5305d60faccf66ab34a288ad6da9a3d550b22618a34b2d0c14e17f4cce",
+    "Hexalith.Parties.Client.dll": "b328e3e2e2566d880e6373ab6731e23bede58888bc6c44f2f12b5a987911a5fa",
+    "Hexalith.Parties.Contracts.dll": "2d0a3ac5d64b82239ec43f67079b1135a6562d35572609db3c65cbb465313712",
+    "Hexalith.Platform.Composition.dll": "230912e55a0f5d99eaef048f6fd64e3c294edbb384e413e58cbb5f71618ce720",
+    "Hexalith.Platform.Custody.dll": "21f4733e9dc75f4ff4e35fefb3cbb49e2268e0728629350a47b48fc04a235f56",
+    "Hexalith.Platform.Identity.dll": "a75844d3baed186383fbaf1ad2c20986d468f525f7d4905305392427a865c24d",
+    "Hexalith.Platform.Works.Runtime.dll": "ae976708039a2cca112a4850d7f39cf40361a14a5df23e1b11a568b309d9c9a4",
+    "Hexalith.PolymorphicSerializations.dll": "0298b6e8802a61d5cdfcd3bf62e6c8c960ee2ab836da51608386126454a88394",
+    "Hexalith.Works.Contracts.dll": "85819240adf4f232e8050495c9157f1336f522d0c72662b2ca1ed63ba0507b3b",
+    "Hexalith.Works.IntegrationTests.dll": "a6cbfd3ec1dee34a8b344920a0a8478bb9da86457ce3bd880e983734af480335",
+    "Hexalith.Works.Projections.dll": "fc1493169bbc9b89052b3e3d55454a9141e7895af4be686dad1de9a7c6828d1e",
+    "Hexalith.Works.Reactor.dll": "b78a6fe0b868ee227a4493171de8721109b04b333e9076333df0772971f71f6b",
+    "Hexalith.Works.Server.dll": "ac184a6bccc886ab75fa6a46909c7d143e8aab183c37d087124c0bd6db5e4ca0",
+    "Hexalith.Works.Testing.dll": "ff60057bae64ba1a6486ed88d4ee7ac3a7b484117423a93c2aeb88a232553001",
+    "Hexalith.Works.dll": "1de9156fb5f53d45d0ef990233bb47e757512b41da9528f5929a49d9744bde6b"
+  },
+  "commands": [
+    {
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+      "exit_code": 1,
+      "log": "baseline-build",
+      "result": "Pre-existing PlatformHostedPublishing CA1062 errors in Describe and ComposeNativeProbe; no rule suppressed."
+    },
+    {
+      "command": "dotnet build src/Hexalith.Works/Hexalith.Works.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "log": "runtime-final-build",
+      "result": "Changed Works runtime compiled with existing dependency outputs; no claim to rebuild upstream Platform."
+    },
+    {
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "log": "validated-build",
+      "result": "Final Debug tests compiled with existing dependency outputs; no warnings/errors."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorkItemProjectionDecoderTelemetryTests -class Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests -class Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests -class Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-evidence-validated.xml",
+      "exit_code": 0,
+      "log": "validated",
+      "results": "validated"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorkItemProjectionDecoderTelemetryTests -class Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests -class Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-evidence-focused.xml",
+      "exit_code": 1,
+      "log": "focused",
+      "result": "Initial test fixture incorrectly expected malformed source positions to reach finalization; SDK rejects earlier during request validation."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorkItemProjectionDecoderTelemetryTests -class Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests -class Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-evidence-focused-final.xml",
+      "exit_code": 1,
+      "log": "focused-final",
+      "result": "Intermediate fixture omitted the capture fingerprint required by SDK Inspect; corrected before qualification."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorkItemProjectionDecoderTelemetryTests -class Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests -class Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-evidence-qualified.xml",
+      "exit_code": 0,
+      "log": "qualified",
+      "results": "qualified",
+      "result": "Intermediate pre-review qualification; superseded by validated."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class Hexalith.Works.IntegrationTests.WorkItemProjectionDecoderTelemetryTests -class Hexalith.Works.IntegrationTests.WorksSourceStreamReaderTests -class Hexalith.Works.IntegrationTests.WorksSdkIntentTranslationTests -class Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryTests -class Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests -class Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests -result-xml /tmp/works-five-evidence-review-corrected.xml",
+      "exit_code": 0,
+      "log": "review-corrected",
+      "result": "Review-correction qualification; superseded by validated."
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-evidence-validated-deterministic.xml",
+      "exit_code": 0,
+      "log": "validated-deterministic",
+      "results": "validated-deterministic"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*SecondPageMetadataMustMatchItsEvidence' -method '*GrowingHeadAcrossPagesIncludesEveryObservedEnvelope' -result-xml /tmp/works-five-evidence-head-red.xml",
+      "exit_code": 1,
+      "log": "head-red",
+      "results": "head-red",
+      "result": "Before runtime fix: the head-regressed case fails by returning incomplete context. All 14 other cases pass."
+    },
+    {
+      "command": "dotnet format whitespace tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --no-restore --verify-no-changes --include src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs tests/Hexalith.Works.IntegrationTests/WorkItemProjectionDecoderTelemetryTests.cs tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryTests.cs tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs",
+      "exit_code": 0,
+      "log": "review-format-verify",
+      "result": "No whitespace edits; generic workspace load warning retained."
+    },
+    {
+      "command": "git -c core.whitespace=cr-at-eol diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run commitlint -- --edit /tmp/works-five-evidence-commit.txt",
+      "exit_code": 0,
+      "log": "commitlint"
+    }
+  ],
+  "results": {
+    "qualified": {
+      "total": 133,
+      "passed": 133,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "deterministic": {
+      "total": 898,
+      "passed": 898,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "head-red": {
+      "total": 15,
+      "passed": 14,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "validated": {
+      "total": 152,
+      "passed": 152,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "validated-deterministic": {
+      "total": 906,
+      "passed": 906,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "artifacts": [
+    {
+      "path": "baseline-build.log.gz",
+      "sha256": "fe926b28aa756a0346f7c33a45d836fbc85462c5c27b7c1fcf4efcf29108c3b9",
+      "uncompressed_sha256": "f03d906ad3607712d8b5f93ad89a94fc5c1779aff73bb797de24d850f057327d"
+    },
+    {
+      "path": "build.log.gz",
+      "sha256": "2e54ea32f87ba272c21c1e7bd89f9c4a4ceb503326aa9fb93f91b0781089ddbb",
+      "uncompressed_sha256": "a16e14b4b5dc1fb2614f31ba348785234c580773a98c1b23a0142fd07772c3f1"
+    },
+    {
+      "path": "focused.log.gz",
+      "sha256": "064d76fe67512fcfe3c041dbd2bb6ea1a6e4124fb6d2327fec38f67a47ec9550",
+      "uncompressed_sha256": "6b6ffa332fa1086a9541af083d6a61bdfaf74012db1f1ca8b26073ffca9fca42"
+    },
+    {
+      "path": "focused.xml.gz",
+      "sha256": "beb020b69dbf2a2e13047aa17abcfe970f9f237e9db16e539a0f6f3665d7abab",
+      "uncompressed_sha256": "0079d9370f75a0e764468c5271279ff377ef664366b49654c949059ceb1e2218"
+    },
+    {
+      "path": "focused-final.log.gz",
+      "sha256": "81075f13022453c2fbfdb18a25ddf0a4556fa98be34f668a21c1fb5edd756b13",
+      "uncompressed_sha256": "ca48d3776e31f1c31e107d07da391c7ba164451cf3bcfbc4e9e10e6ae9bb98f8"
+    },
+    {
+      "path": "focused-final.xml.gz",
+      "sha256": "7f11f1d5adbb2fcd342283a3a91b206f51010e35b28d0cf54d9702ad915caaef",
+      "uncompressed_sha256": "944485049bc63e1377487c1228dbff53bf7f8188fd3859bb74cfbfc1c58ea452"
+    },
+    {
+      "path": "qualified.log.gz",
+      "sha256": "6ece0580377e06224c1560eff822e7a3978d68919f047bfe2364331e39ec0039",
+      "uncompressed_sha256": "50ff7d23022486ff20091b59efaa2aeddd78ba8f6cc4d6b0fd5ecca82974675c"
+    },
+    {
+      "path": "qualified.xml.gz",
+      "sha256": "8ed99218fb5692729839356de597a71e7b3f28aa7a0dbe36aaa6414ade82391e",
+      "uncompressed_sha256": "43de7b7e53778bc86dc8d2e62becc34f9747d7ca5e2c21da1c4044869130abb0"
+    },
+    {
+      "path": "deterministic.log.gz",
+      "sha256": "b18b132bec44feafffa2cce79f64d3983fd78a225fd582815191b9f65f53ec65",
+      "uncompressed_sha256": "3884ab5abb2133af6de0381c11df5e715daf5a0d1537fea010843e488b6e0555"
+    },
+    {
+      "path": "deterministic.xml.gz",
+      "sha256": "da344c61c141a6f741cada553e109aae76c4d94760b5c657c02abb3565e94e86",
+      "uncompressed_sha256": "a3a7dcd2fad8f1b21157517bcaf2eb9dfeae3696dd24dfa6daddfc40b2dea636"
+    },
+    {
+      "path": "head-red-build.log.gz",
+      "sha256": "003b05838b37b7f3329702343f0261a26babeee07b7145e84c9701860b3958b0",
+      "uncompressed_sha256": "d9c571d943fb928d73c1f0ab141932646903ac4ffa06d8cdb5d780ad218229ba"
+    },
+    {
+      "path": "head-red.log.gz",
+      "sha256": "478c2db7bad8d930ae2ad21712f481bb633c12eec4e8772dc6aeca59afd694d7",
+      "uncompressed_sha256": "0e514165a0068f2a1438536dd2708d5010d9dfdbc3abec3fb774d101f2eaa6fe"
+    },
+    {
+      "path": "head-red.xml.gz",
+      "sha256": "abebd6724db76dc6dde045ef3eed9c078098dbe501c824730f33a6503351ffc1",
+      "uncompressed_sha256": "6c1c14c2ae86d1324086baab6d0c23faca7ccfacff1b1d0e734b87d0c87efcc9"
+    },
+    {
+      "path": "review-build.log.gz",
+      "sha256": "bffc85160623027a2f0ef83b4dbad08d16853050131d2926807f5855641eecde",
+      "uncompressed_sha256": "4999d69c05060aa155acda0e4cd198549916990cdd69d8e2c2ad82d1d9ea622e"
+    },
+    {
+      "path": "review-corrected-build.log.gz",
+      "sha256": "ed6f0633bba2e573aa00fa3af865343298feebf61a91ea68c3807ed1df0262b2",
+      "uncompressed_sha256": "7222f03bee542f6c540a7b6721213bcd04fc974e38459c55b4937419d725db73"
+    },
+    {
+      "path": "review-corrected.log.gz",
+      "sha256": "8a2c36b080956f43fc6d27305fa1aebe7e66c2301f7eb4cbe853dca9232a52c7",
+      "uncompressed_sha256": "bbf0994779d7d88d9b8d6adf0099725b9ec24d725a133a3ccbcd2a6812d56ab4"
+    },
+    {
+      "path": "review-corrected.xml.gz",
+      "sha256": "ab99bd719bc20310a2444c6c71a3ab94b557d8ab6c8d9663a5d684618781efe7",
+      "uncompressed_sha256": "c33e36fc6ba4056eb04730ba0a41ef8be90d07d28a4b5bd598b0500abae6bea5"
+    },
+    {
+      "path": "runtime-final-build.log.gz",
+      "sha256": "23b1b0b7ae56395368f17cb95aed8887fa155851c59eca9f3ffe3632f9f473ec",
+      "uncompressed_sha256": "fb70208534a4d0ec303c2214213e8d30810dcac337973db3437603f11200173b"
+    },
+    {
+      "path": "validated-build.log.gz",
+      "sha256": "e9c747e5bc83ce8f5ec3afeae9bdd3db69ff83c3fb3f63cd687bdaacaf948a0b",
+      "uncompressed_sha256": "f1783d86d05b7f78f9eea7dbd7d2e3ce5a4e7dff9ff47f9188ae5426f367090d"
+    },
+    {
+      "path": "validated.log.gz",
+      "sha256": "f1ea561514e2f925a78619691dc5407480527b772261e12dc116ab7e49ebbd39",
+      "uncompressed_sha256": "1cbc5664a378cdde3793505f84017033bccc4ece5727bd9960d68ccd95d45182"
+    },
+    {
+      "path": "validated.xml.gz",
+      "sha256": "87e7b69b6073e45c9a8f6af05e01e26c58df7ad32f4caf874135dc368e462cd0",
+      "uncompressed_sha256": "f327c81a3be419dd05da564d20428284e4508e4c6c648170a8deb5bf03a06398"
+    },
+    {
+      "path": "validated-deterministic.log.gz",
+      "sha256": "3130b6fd01cb89086a07752a77247e08a63f6bda5ba751f2354d63537660d6df",
+      "uncompressed_sha256": "341b58dc65554459c82a6ba383f248fc8c2b2b6391b0d832464b2e3f5e33bf20"
+    },
+    {
+      "path": "validated-deterministic.xml.gz",
+      "sha256": "b59b98e4e422e61ad27bd34e33d38a0ebaad46d15dd47c2dffff0d2f5177b41e",
+      "uncompressed_sha256": "4a883f455a63d624c296dbb15a5acd81f842090803eae3fdeb08ae8c074bad9f"
+    },
+    {
+      "path": "review-format-verify.log.gz",
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressed_sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c"
+    },
+    {
+      "path": "commitlint.log.gz",
+      "sha256": "96b6f927bf0bbe611273e023bb8273c0252bc39e861a0e93c26348162e6d4ded",
+      "uncompressed_sha256": "9f823728772093548764f4ada34d0b05eef5edd842db198191daac46a6ddbf5f"
+    }
+  ]
+}

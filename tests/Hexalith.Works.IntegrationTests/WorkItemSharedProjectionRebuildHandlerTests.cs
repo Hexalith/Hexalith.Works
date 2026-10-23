@@ -688,6 +688,30 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         result.State.ShouldBeNull();
     }
 
+    /// <summary>Refused evidence after a valid prefix never replaces the last committed tenant generation.</summary>
+    /// <param name="failure">The unknown type or source position corruption.</param>
+    [Theory]
+    [InlineData("unknown")]
+    [InlineData("duplicate")]
+    [InlineData("conflicting-duplicate")]
+    [InlineData("gap")]
+    [InlineData("reordered")]
+    public async Task InvalidHistoryCannotPublishPartialProjection(string failure)
+    {
+        ProjectionEventDto[] valid = ParentHistory(Tenant);
+        ProjectionEventDto[] history = failure switch
+        {
+            "unknown" => [valid[0], valid[1] with { EventTypeName = "FutureWorksEvent" }],
+            "duplicate" => [valid[0], valid[0]],
+            "conflicting-duplicate" => [valid[0], valid[1] with { SequenceNumber = 1 }],
+            "gap" => [valid[0], valid[1] with { SequenceNumber = 3, GlobalPosition = 3 }],
+            _ => [valid[1], valid[0]],
+        };
+        await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant,
+            "refused-evidence-" + failure, [(ParentId, history)],
+            invalidEnvelopePositions: failure != "unknown").ConfigureAwait(true);
+    }
+
     private static DomainSharedProjectionRebuildRequest Accumulate(
         DomainSharedProjectionRebuildIdentity identity,
         long ordinal,
@@ -890,10 +914,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
     /// <summary>
     /// Seeds a committed SDK generation, then drives a refused capture through the SDK rebuild dispatcher and proves
-    /// that finalization fails as a handler failure while readers keep the last committed generation.
+    /// that malformed envelope positions fail admission, or undecodable payloads fail finalization, while readers
+    /// keep the last committed generation.
     /// </summary>
     private static async Task RefuseRebuildAsync(InMemoryReadModelStore store, string tenant, string operation,
-        IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories)
+        IReadOnlyList<(string AggregateId, ProjectionEventDto[] Events)> histories, bool invalidEnvelopePositions = false)
     {
         const string seededId = "seeded-committed";
         var seededItem = new WorkItemId(seededId);
@@ -907,10 +932,14 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         using ServiceProvider provider = BuildProvider(store, handler);
         SharedProjectionEpochCoordinator coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
         SharedProjectionScope scope = handler.CreateScope(tenant);
-        string[] served = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(seededId)];
+        string[] served = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(seededId),
+            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+            WorksReadModelKeys.RuntimeHistoryKey(seededId), WorksReadModelKeys.RuntimeParkingKey(seededId)];
         SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> before = await coordinator
             .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
         before.IsAvailable.ShouldBeTrue();
+        byte[] historyBefore = WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(
+            coordinator, scope, before.Generation, seededId, TestContext.Current.CancellationToken).ConfigureAwait(false));
         long committedGeneration = (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)
             .ConfigureAwait(false)).ActiveGeneration;
         committedGeneration.ShouldBeGreaterThan(0);
@@ -920,22 +949,41 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         long ordinal = 0;
         foreach ((string aggregateId, ProjectionEventDto[] events) in histories.OrderBy(static history => history.AggregateId, StringComparer.Ordinal))
         {
+            if (invalidEnvelopePositions)
+            {
+                Exception exception = await Should.ThrowAsync<Exception>(() =>
+                    DispatchAsync(provider, Accumulate(identity, ordinal, aggregateId, events))).ConfigureAwait(false);
+                exception.GetType().FullName.ShouldBe("Hexalith.EventStore.DomainService.ProjectionDispatchValidationException");
+                exception.Message.ShouldBe(ProjectionDispatchReasonCodes.MalformedOutcome);
+                DomainSharedProjectionRebuildResponse inspection = await DispatchAsync(provider,
+                    Lifecycle(identity, DomainSharedProjectionRebuildAction.Inspect) with
+                    { CaptureInventoryFingerprint = Begin(identity, histories).CaptureInventoryFingerprint }).ConfigureAwait(false);
+                inspection.AcceptedAggregateCount.ShouldBe(0);
+                inspection.InventoryFingerprint.ShouldBe(current.InventoryFingerprint);
+                continue;
+            }
             current = await DispatchAsync(provider, Accumulate(identity, ordinal, aggregateId, events)).ConfigureAwait(false);
             ordinal++;
         }
 
-        current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(false);
-        current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
-        current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
-        current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
+        if (!invalidEnvelopePositions)
+        {
+            current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(false);
+            current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
+            current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
+            current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
+        }
 
         // The refused capture promoted nothing: the active generation and every served document are unchanged.
         (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken).ConfigureAwait(false))
             .ActiveGeneration.ShouldBe(committedGeneration);
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await coordinator
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await restarted
             .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
         after.IsAvailable.ShouldBeTrue();
         after.Generation.ShouldBe(before.Generation);
+        WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope,
+            after.Generation, seededId, TestContext.Current.CancellationToken).ConfigureAwait(false)).ShouldBe(historyBefore);
         foreach (string key in served)
         {
             after.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText()

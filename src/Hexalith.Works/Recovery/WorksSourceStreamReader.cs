@@ -61,6 +61,7 @@ internal sealed class WorksSourceStreamReader(
         var expiryEvidence = new WorksExpiryEvidence();
         long bytes = 0;
         long from = 0;
+        long observedHead = 0;
         for (int pageNumber = 0; pageNumber < _options.EffectiveMaxStreamPagesPerAggregate; pageNumber++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -77,6 +78,9 @@ internal sealed class WorksSourceStreamReader(
             }
             cancellationToken.ThrowIfCancellationRequested();
             long next = StreamReadPageValidator.ValidateAndGetNextSequence(request, page);
+            if (page.Metadata.LatestSequence < observedHead)
+                throw new InvalidOperationException("Works source evidence regressed below an already observed head.");
+            observedHead = page.Metadata.LatestSequence;
             foreach (StreamReadEvent envelope in page.Events)
             {
                 cancellationToken.ThrowIfCancellationRequested();
