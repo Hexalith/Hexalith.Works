@@ -1054,16 +1054,22 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Give repeated occurrences of the same date await distinct durable resume identities without losing redelivery idempotence.
+  status: done 2026-10-24
+  resolution: The SDK replacement binds scheduling and command identities to the suspension envelope. `spec-five-deferred-date-reminder-correctness.md` executes actual SDK submissions for same-date suspensions at sequences two and four, verifies distinct message IDs and exact resume commands, persists Submitted/replay audits, and retains identical receipt identities on repeated convergence after reconstruction. A stale earlier-occurrence callback submits nothing and preserves the current witness. [Verification evidence](evidence/five-deferred-date-reminder-correctness-2026-10-24/manifest.json).
   evidence: `DateResume` derives the EventStore message id only from tenant, work item, and instant; a legitimate re-suspension on that same instant within the 24-hour command-status retention can be deduplicated as the earlier occurrence. Fixing this pre-existing Story 4.6 design requires carrying a suspension occurrence or sequence through pending-await, reminder, and command identity.
 
 <a id="story-4-8-canonical-reconciliation-stale-delay"></a>
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Recompute date-reminder delay at each scheduling operation during reconciliation.
+  status: done 2026-10-24
+  resolution: The retired reconciler is replaced by the SDK coordinator. `spec-five-deferred-date-reminder-correctness.md` executes a real SDK reconciliation pass over two retained Works targets with lost reminders; a two-minute first repair reduces the second delay from ten to eight minutes while persisted due witnesses remain unchanged. A deadline crossed during an earlier repair instead submits the later due intent and persists its disposition. [Verification evidence](evidence/five-deferred-date-reminder-correctness-2026-10-24/manifest.json).
   evidence: `DateReminderReconciler` snapshots `now` once before processing every candidate, so a future await scheduled late in a large pass receives its original relative delay and fires late by the time already spent processing earlier candidates; this behavior predates Story 4.8's baseline.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Normalize duplicate identical date awaits at the durable await-set boundary.
+  status: done 2026-10-24
+  resolution: `PendingDateAwaitProjection` now deduplicates normalized date conditions, matching the authoritative reminder source. `spec-five-deferred-date-reminder-correctness.md` covers equivalent UTC instants, mixed non-date awaits, distinct dates, ordinary delivery and full rebuild, persisted end-state, restart and redelivery without changing source events. [Verification evidence](evidence/five-deferred-date-reminder-correctness-2026-10-24/manifest.json).
   evidence: `PendingDateAwaitProjection` preserves duplicate `DateReached` conditions, producing repeated schedule or submit attempts and inflated reconciliation counts even though deterministic reminder and message ids prevent duplicate accepted outcomes. The normalization belongs with the pre-existing durable await-set contract.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
@@ -1085,10 +1091,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Preserve pending-date-await index repairability when a decoder upgrade recognizes a previously unknown event.
+  status: done 2026-10-24
+  resolution: The SDK complete-replay boundary replaces pending documents independently of their old watermarks. `spec-five-deferred-date-reminder-correctness.md` executes the production partitioned dispatcher to repair synthetic legacy high-watermark/tombstone state, with and without old parking, from unchanged currently-decodable persisted history. Staging retains the old generation; promotion repairs discovery and clears parking. Existing unknown-event controls continue to refuse current undecodable evidence. This models the old persisted outcome; it does not execute an older decoder. [Verification evidence](evidence/five-deferred-date-reminder-correctness-2026-10-24/manifest.json).
   evidence: `WorkItemProjectionDispatcher` advances the raw maximum-sequence watermark while folding only decoded events, so its `storedLastSequence >= incomingLastSequence` guard can reject the same replay after a later decoder upgrade would make that event state-affecting.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Recompute date-reminder delay for each steady-state registration.
+  status: done 2026-10-24
+  resolution: The retired handler delegates scheduling to the SDK coordinator. `spec-five-deferred-date-reminder-correctness.md` executes two current Works date intents with first-arm latency, checks each relative delay against its own operation time and stable persisted absolute witnesses, and verifies no redundant rearm after reconstruction. Lost-reminder controls cover lookup latency and elapsed-delay clamping; a deadline crossed during earlier registration submits the later due intent while preserving an independent future witness. [Verification evidence](evidence/five-deferred-date-reminder-correctness-2026-10-24/manifest.json).
   evidence: `WorkItemSuspendedReminderHandler` snapshots the clock once before scheduling every pending await, so later registrations can fire late by the latency spent awaiting earlier actor calls; this pre-existing behavior belongs with the reconciliation stale-delay family.
   - Canonical entry: [reconciliation stale-delay family](#story-4-8-canonical-reconciliation-stale-delay); this row records the steady-state sibling without creating a second reconciliation work item.
 

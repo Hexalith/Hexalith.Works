@@ -32,7 +32,7 @@ public static class PendingDateAwaitProjection
 
     /// <summary>
     /// Reconstructs the still-pending <c>DateReached</c> awaits for one work item from its <paramref name="events"/>,
-    /// supplied in ascending sequence order.
+    /// supplied in ascending sequence order. Equivalent date conditions appear once in their original order.
     /// </summary>
     public static IReadOnlyList<PendingDateAwait> PendingDateAwaits(IReadOnlyList<IEventPayload> events)
     {
@@ -49,7 +49,9 @@ public static class PendingDateAwaitProjection
                 case WorkItemSuspended suspended:
                     tenantId = suspended.TenantId;
                     workItemId = suspended.WorkItemId;
-                    currentDateAwaits = [.. suspended.AwaitConditions.Where(static condition => condition.Kind == AwaitConditionKind.DateReached)];
+                    currentDateAwaits = [.. suspended.AwaitConditions
+                        .Where(static condition => condition.Kind == AwaitConditionKind.DateReached)
+                        .Distinct()];
                     break;
 
                 // Resume consumes the await and the kernel clears the whole set; any terminal event closes
