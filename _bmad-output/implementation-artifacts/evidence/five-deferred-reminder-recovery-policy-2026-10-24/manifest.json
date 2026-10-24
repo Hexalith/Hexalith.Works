@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "repository": "/home/administrator/projects/hexalith/works",
+  "baseline_commit": "d3c26ab1f9cde7dfcae5c8bed57a0d50fdbd2445",
+  "scope": "Works source Debug consumer qualification using available dependency outputs. Synthetic registrar/actor/gateway boundaries where declared; no live Dapr topology or public-package claim. Direct source hashes are a selected code map, not complete dependency source closure.",
+  "dependencies": {
+    "Hexalith.EventStore": {
+      "revision": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+      "status": []
+    },
+    "Hexalith.Platform": {
+      "revision": "f7c62ca1007f5218dc52d6856395324704564e3a",
+      "status": []
+    },
+    "Hexalith.Builds": {
+      "revision": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c",
+      "status": []
+    },
+    "Hexalith.Parties": {
+      "revision": "664b99c67e90a14c8a1cc4d9663a25fa44c47c9a",
+      "status": []
+    },
+    "Hexalith.PolymorphicSerializations": {
+      "revision": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "status": []
+    }
+  },
+  "sources": {
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkReminderRecoveryPolicyTests.cs": "8ef1d3183c96d2d3866f92be98fed8e3cbf011935b0e5bbb552bd3904fbec09d",
+    "tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryLogCapture.cs": "9f260b16c4b7c724da3542e82896b06eb9e257b78b3f0f4867a001aeeef101df",
+    "docs/operations/subscriber-dead-letter-operator.md": "8dbf3172115b45b4fcb25a0dd17987e319733fb9ddf76ec062956de34f3dfd5a",
+    "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs": "60fa7d61062690e03d581ecc2f0fa5ce257fced1e06021b5b389a3d7f5315bf4",
+    "src/Hexalith.Works/Recovery/WorksProcessSourceCatalog.cs": "c7edd5131f23ead9acfe3dc08d50c6f784fefe52f79e3031ff8b2a1af35702c3",
+    "src/Hexalith.Works/Reminders/WorksReminderIntentSource.cs": "83e934e03b114cc31f63eaa8bf14316042bf1072f21d61da818736c0fae4e590",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReconciler.cs": "efc7aade0063725f066b88c4c184051bd5213847db974f541dfebeccee34ac17",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderCoordinator.cs": "63c735e862a856349aa312a052c3962fd9339ba3384c92f90c4322ccc4d9a908",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderIntentIndex.cs": "81b9299db7458fb7f4bfd67538135684e8ea7790cc0e42de673733107a4b7fd7",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderRuntimeStatus.cs": "5f1aa0b0c4cb699d54d541743e81706de815b5c4c3a9fba398bbf29622f24941",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderReadinessHealthCheck.cs": "f6a4790fd676ad250bb62ecd312f329a72b4b03c8e398107414b657e02c9665d",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ReminderLog.cs": "d4fdf5bbd9712eeb148a48da7baec6716d34f10860fd8e925ea7acee82c4eb94"
+  },
+  "binaries": {
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "399fb2925060c27abec11ce25774f278fd4bb34b49cdc851c4245e6011036d33",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.dll": "57f48f199ac49ee4d24e49b8c0ca9459e28c5882c7b35f8f90cb0541063b7647",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll": "4165ca225bccab27132c20a7515a00d3ba57d555ac4dac9ef90939ced8eb9535",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Client.dll": "ab1b0d3c1b30244d9f4c5db425f6c46363615d1d28fd57db3e2b1c35dffdca7e",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Contracts.dll": "646b1f3ecc4ff107cb45bd833d2cd40ea778671b630c2efde220f6cc1b1ddc64"
+  },
+  "checks": [
+    {
+      "name": "broad-debug-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 1,
+      "result": "Blocked by existing PlatformHostedPublishing CA1062 errors in Describe and ComposeNativeProbe",
+      "artifacts": [
+        "broad-build.log.gz"
+      ]
+    },
+    {
+      "name": "focused-debug-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 0,
+      "result": "Build succeeded, zero warnings/errors",
+      "artifacts": [
+        "final-build.log.gz"
+      ]
+    },
+    {
+      "name": "related-regression",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkReminderRecoveryPolicyTests' -class '*WorksDateReminderSchedulingTests' -class '*WorksSdkReminderDeliveryTests' -class '*WorksSdkRecoveryCompositionTests' -class '*WorksSdkRecoverySourceTests' -result-xml /tmp/works-five-recovery-final.xml",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 0,
+      "result": "84/84 passed, zero failures/errors/skips/unexecuted",
+      "artifacts": [
+        "final.log.gz",
+        "final.xml.gz"
+      ]
+    },
+    {
+      "name": "deterministic-regression",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-recovery-final-deterministic.xml",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 0,
+      "result": "926/926 passed, zero failures/errors/skips/unexecuted",
+      "artifacts": [
+        "final-deterministic.log.gz",
+        "final-deterministic.xml.gz"
+      ]
+    },
+    {
+      "name": "whitespace",
+      "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkReminderRecoveryPolicyTests.cs tests/Hexalith.Works.IntegrationTests/WorksReminderRecoveryLogCapture.cs",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 0,
+      "result": "Passed with generic workspace-load warning",
+      "artifacts": [
+        "final-format.log.gz"
+      ]
+    },
+    {
+      "name": "commitlint",
+      "command": "npm run commitlint -- --edit /tmp/works-five-recovery-commit.txt",
+      "working_directory": "/home/administrator/projects/hexalith/works",
+      "exit_code": 0,
+      "result": "Validated Conventional Commit",
+      "artifacts": [
+        "commitlint.log.gz",
+        "commit.txt.gz"
+      ]
+    }
+  ],
+  "test_results": {
+    "final.xml": {
+      "total": 84,
+      "passed": 84,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "not-run": 0
+    },
+    "final-deterministic.xml": {
+      "total": 926,
+      "passed": 926,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "not-run": 0
+    }
+  },
+  "artifacts": {
+    "broad-build.log.gz": {
+      "sha256": "5aa42144f7ebd807682771af7844416846ffbc755466f33d7dcaacb5e47fc132",
+      "uncompressed_sha256": "c8cddcd9ecf26587b0e2f751b1790a9bc2c451aa3df31879fe9c6d1db5e8023f",
+      "uncompressed_bytes": 9998
+    },
+    "final-build.log.gz": {
+      "sha256": "b409abe44ff0c5f3a912a558380d4ee749ac1c56e969cf38f2fbe30bc71b4a7e",
+      "uncompressed_sha256": "2700b579a6557874b33b023db115c1485f69686a1b4758f63b3abc46c22551c2",
+      "uncompressed_bytes": 593
+    },
+    "final.log.gz": {
+      "sha256": "d5177ec47ffeb4359f3b779131647e46a06c721e1b22aaf4b843a49d9d588d32",
+      "uncompressed_sha256": "7e543f7967fe12ac12caffd3d8dad7807b76c7cac6c172e50e2a32b293d11152",
+      "uncompressed_bytes": 19703
+    },
+    "final.xml.gz": {
+      "sha256": "4051dba078ac1dc0a061a3023cda88bdfd2b0946b03d24f649dc7b132c86f70f",
+      "uncompressed_sha256": "17646310ff4a067a9792115d64c8a6774a3fd0afd7a1a3adc8aa76dedaea6ce2",
+      "uncompressed_bytes": 56761
+    },
+    "final-deterministic.log.gz": {
+      "sha256": "5677b4894d25abe99a31817e5eb94b65b5ea31f2e60ceaf84efe50a2a7812f36",
+      "uncompressed_sha256": "41f4d8f2498282874448aa317c26cc658106cee2846c5aa56443d3c40cca2d25",
+      "uncompressed_bytes": 64488
+    },
+    "final-deterministic.xml.gz": {
+      "sha256": "8914bd3f8aa6d5c5d4d35288226cff5e24d87811d02299b4394e9b7434eaddf3",
+      "uncompressed_sha256": "0c8a50615b251ca026ec9c0398e7572206f4e4645a38c6b70365e68729e069ed",
+      "uncompressed_bytes": 664962
+    },
+    "final-format.log.gz": {
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressed_sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c",
+      "uncompressed_bytes": 123
+    },
+    "commitlint.log.gz": {
+      "sha256": "0db669ae954233d88f77e68bb4428a568f97c7c4d29ea6e6e1f1d5eb2f229c31",
+      "uncompressed_sha256": "b0a37b8c45aaabdc4c26907795a72a4744eacd735633ff8bf1f395d0ceb99431",
+      "uncompressed_bytes": 123
+    },
+    "commit.txt.gz": {
+      "sha256": "705d96281b1b4a9fea2a1dcb3657d850de57025bdf912020a70fad3a9b05f5dd",
+      "uncompressed_sha256": "bed543ba2978765dafbcd3510c0024c8c7114a4dc5041b5f72a954e97c3c033b",
+      "uncompressed_bytes": 49
+    }
+  },
+  "review": "Six independent Blind Hunter findings corrected; follow-up verifies all source/binary/artifact bindings and independently passes six policy cases. No remaining findings or new deferred item."
+}

@@ -866,6 +866,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
   summary: Preserve typed incomplete-scan context when partial reminder processing ends in a non-caller cancellation.
+  status: done 2026-10-24
+  resolution: The legacy reconciler is retired. Executing SDK replacement controls isolate foreign cancellation, retain earlier and later success counts plus candidate diagnostics, persist incomplete discovery, report Degraded readiness and complete a healthy sweep after reconstruction. [Specification](spec-five-deferred-reminder-recovery-policy.md); [retained verification](evidence/five-deferred-reminder-recovery-policy-2026-10-24/manifest.json).
   evidence: `DateReminderReconciler` has excluded every `OperationCanceledException` from its typed rewrap since before this story baseline, so a scheduler-owned cancellation can discard failed-tenant, failed-candidate, and parked-skip context.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
@@ -911,6 +913,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md`
   summary: Correct EventId 4603's pre-existing unconditional retry promise across all recovery callers.
+  status: done 2026-10-24
+  resolution: The legacy event and its callers are absent from the current Works assembly. Current SDK guidance describes actual pass counts and retained work without an unconditional retry promise; executing controls verify candidate failure/pass completion/disabled diagnostics and continuing periodic recovery. [Specification](spec-five-deferred-reminder-recovery-policy.md); [retained verification](evidence/five-deferred-reminder-recovery-policy-2026-10-24/manifest.json).
   evidence: The shared template still says the step "will be retried at-least-once" on a final startup attempt and at call sites with no in-process repeat; spec-8 explicitly forbids changing that template, so a separate operator-surface decision is required.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md`
@@ -984,6 +988,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
   summary: Broaden EventId 4608 operator guidance to cover non-availability parking-read failures and identify the parking record without implying its key is logged.
+  status: done 2026-10-24
+  resolution: The historical runbook now includes malformed data and other non-caller read failures, and directs authorized lookup from the emitted tenant/item tuple without claiming a record key is logged. Current SDK diagnostics have separate digest/reason/count guidance. [Specification](spec-five-deferred-reminder-recovery-policy.md); [retained verification](evidence/five-deferred-reminder-recovery-policy-2026-10-24/manifest.json).
   evidence: The parking lookup catches every non-exact-cancellation exception and logs tenant, work item, and reason, while the runbook names only availability/authorization and a “named parking key” that EventId 4608 does not emit; this wording predates the final spec-9 review patches.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-20)
@@ -1000,10 +1006,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add a post-startup reminder-reconciliation retry or terminal readiness policy after the bounded startup attempts are exhausted.
+  status: done 2026-10-24
+  resolution: The legacy startup service is retired. The actual SDK BackgroundService completes at least six failed passes, retains durable incomplete discovery and Degraded readiness, then recovers to Healthy in the same running service after dependency repair; disabling it explicitly remains Degraded. [Specification](spec-five-deferred-reminder-recovery-policy.md); [retained verification](evidence/five-deferred-reminder-recovery-policy-2026-10-24/manifest.json).
   evidence: `ReminderReconciliationService` returns permanently after its configured attempts, so a dependency outage lasting beyond startup can leave durable reminder recovery inactive until another host restart; this predates the final harness increment.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Determine whether an empty pending-await tenant registry can race ahead of projection backfill and strand pre-index reminder recovery.
+  status: done 2026-10-24
+  resolution: An actual empty SDK pass completes before Works projection backfill. Without any event wakeup or restart, the same services discover the later committed family through the real Works catalog/source, persist the reminder candidate/witness and arm it; subsequent reconstruction repairs a lost scheduler arm. This qualifies retained family membership, not a restore missing every discovery inventory. [Specification](spec-five-deferred-reminder-recovery-policy.md); [retained verification](evidence/five-deferred-reminder-recovery-policy-2026-10-24/manifest.json).
   evidence: The source treats an empty registry as a successful scan and reconciliation is single-run; settle this maybe-false finding by proving whether the EventStore projection poller replays pre-index aggregates after that scan exits.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
