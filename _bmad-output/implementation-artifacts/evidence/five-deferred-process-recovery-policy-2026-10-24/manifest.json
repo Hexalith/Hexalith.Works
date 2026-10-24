@@ -1,0 +1,338 @@
+{
+  "status": "passed-focused-debug-consumer-qualification",
+  "date": "2026-10-24",
+  "baseline": "10d89b3ce073abca00a0e50e49571dbc518dc38f",
+  "dotnet_sdk": "10.0.402",
+  "commands": [
+    {
+      "name": "broad-source-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+      "exit_code": 1,
+      "artifacts": [
+        "broad-build.log.gz"
+      ],
+      "result": "Two existing CA1062 errors in PlatformHostedPublishing.Describe and ComposeNativeProbe."
+    },
+    {
+      "name": "focused-build",
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+      "exit_code": 0,
+      "artifacts": [
+        "focused-build.log.gz"
+      ],
+      "result": "Zero warnings/errors; consumes available dependency outputs."
+    },
+    {
+      "name": "related",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkProcessRecoveryPolicyTests' -class '*WorksSdkProcessRecoveryTests' -class '*WorksSdkRecoverySourceTests' -class '*WorksSdkRecoveryCompositionTests' -result-xml /tmp/works-process-policy-related.xml",
+      "exit_code": 0,
+      "artifacts": [
+        "related.log.gz",
+        "related.xml.gz"
+      ]
+    },
+    {
+      "name": "deterministic",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-process-policy-deterministic.xml",
+      "exit_code": 0,
+      "artifacts": [
+        "deterministic.log.gz",
+        "deterministic.xml.gz"
+      ]
+    },
+    {
+      "name": "format",
+      "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --include tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryPolicyTests.cs tests/Hexalith.Works.IntegrationTests/WorksProcessRecoveryFaultStore.cs",
+      "exit_code": 0,
+      "artifacts": [
+        "format.log.gz"
+      ]
+    },
+    {
+      "name": "format-verify",
+      "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryPolicyTests.cs tests/Hexalith.Works.IntegrationTests/WorksProcessRecoveryFaultStore.cs",
+      "exit_code": 0,
+      "artifacts": [
+        "format-verify.log.gz"
+      ]
+    },
+    {
+      "name": "commitlint",
+      "command": "npm run commitlint -- --edit /tmp/works-process-policy-commit.txt",
+      "message": "test: close five deferred process recovery gaps",
+      "exit_code": 0
+    }
+  ],
+  "results": {
+    "related": {
+      "total": 84,
+      "passed": 84,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 4.479
+    },
+    "policy_cases": [
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ProbeCappedMissingPageRemainsDegradedAndRetriesAfterReconstruction",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.RetainedPublicationFailureServesLaterSourceWithinBudgetBound(workBudget: 1, passBound: 3)",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.RetainedPublicationFailureServesLaterSourceWithinBudgetBound(workBudget: 2, passBound: 2)",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.SaturatedPublicationRetainsCatalogKeyWithoutFreezingCandidates(repairAfterRestart: False)",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.SaturatedPublicationRetainsCatalogKeyWithoutFreezingCandidates(repairAfterRestart: True)",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ReadAdmissionRetainsDurableCursorAndDegradedCoverage(phase: \\\"tenant-page\\\")",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ReadAdmissionRetainsDurableCursorAndDegradedCoverage(phase: \\\"tenant-tail\\\")",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ReadAdmissionRetainsDurableCursorAndDegradedCoverage(phase: \\\"candidate-page\\\")",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ReadAdmissionRetainsDurableCursorAndDegradedCoverage(phase: \\\"candidate-tail\\\")",
+        "result": "Pass"
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksSdkProcessRecoveryPolicyTests.ReadAdmissionRetainsDurableCursorAndDegradedCoverage(phase: \\\"source-state\\\")",
+        "result": "Pass"
+      }
+    ],
+    "deterministic": {
+      "total": 936,
+      "passed": 936,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 40.875
+    }
+  },
+  "artifacts": [
+    {
+      "path": "broad-build.log.gz",
+      "sha256": "747f48c57266dc6ce4628ae0d86a18e71e323cca83b7a559cf700106b1708da2",
+      "uncompressed_sha256": "00cd8b6d108194c037d870f099066f6ae5e26e7a54cb5889551e8ecd00307cc3",
+      "uncompressed_bytes": 9998
+    },
+    {
+      "path": "focused-build.log.gz",
+      "sha256": "9cbd76917e7669cc30da499332694fb7b3a341f4994039d41d140befecf3b751",
+      "uncompressed_sha256": "5e073fbbb3a769c491ce66b67c447c1c5f08f958e7e47c88e97c1abb5ea6766c",
+      "uncompressed_bytes": 593
+    },
+    {
+      "path": "related.log.gz",
+      "sha256": "cfdf55a9e2510e04858e6575f4029bc6eb90fa8f8ed188d888eacb242cf65e6d",
+      "uncompressed_sha256": "a2df9974b428571b57cb7d4c9dc27e7b1603255a9579252f3180ad8d9c24d104",
+      "uncompressed_bytes": 19703
+    },
+    {
+      "path": "related.xml.gz",
+      "sha256": "d1f242764471e1251ac911ae66c1ec8979cb6c51e0e1beb7a8882d87148dbccf",
+      "uncompressed_sha256": "48d8dcb7d1dcb7f63eaf27c29ca17c641bc0053f4ed8c7bb65789d03cf76de71",
+      "uncompressed_bytes": 56409
+    },
+    {
+      "path": "deterministic.log.gz",
+      "sha256": "5bb6b29623402e28a5f9273d770fa427459780d712f18d911a3162a118771f8b",
+      "uncompressed_sha256": "785ab39ccb166081e3d63c9cb261d8fd33f149a5e8f724485963f0635c6ef2ae",
+      "uncompressed_bytes": 64488
+    },
+    {
+      "path": "deterministic.xml.gz",
+      "sha256": "259d08b143dc70d251f012ebbe0851b91df568c729e5b3a1005d4e8af08da43b",
+      "uncompressed_sha256": "62a05ff13444f2c7bf35794e60c8fc3e209e5b36c4dcf65f41df08cedb37d4f1",
+      "uncompressed_bytes": 671868
+    },
+    {
+      "path": "format.log.gz",
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressed_sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c",
+      "uncompressed_bytes": 123
+    },
+    {
+      "path": "format-verify.log.gz",
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressed_sha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c",
+      "uncompressed_bytes": 123
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryPolicyTests.cs",
+      "sha256": "88f117fec0659ca6b8adfe6f5657d34640577c9268529e283118d33600c0e3b8"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/WorksProcessRecoveryFaultStore.cs",
+      "sha256": "f81e5e1192af0d61bb36415469f4b33bce917bf1aadc6bd5802db8b6673134de"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/Story48Streams.cs",
+      "sha256": "ff125832560f35e22bfd0d312c72112f66b9367cf817d9cd1bb70d788d10bc21"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "sha256": "77973c9888d5f6198e2536f0fca7c41497fb7245c3e8d54b0e4c70e624df1e6f"
+    },
+    {
+      "path": "docs/operations/subscriber-dead-letter-operator.md",
+      "sha256": "d11f7f5d27f901c658dcba9719c63b80aec184dfc1f651ba316c74ee49e0e685"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/deferred-work.md",
+      "sha256": "ffb384316ceadc9d6116c9040a34d3f03f264e5773877cada07abf7dfbbdd88b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/spec-five-deferred-process-recovery-policy.md",
+      "sha256": "105eb1320dc11376141f629548d2a8fb2bffa1e591f786bdd68d94fa9019fb3b"
+    },
+    {
+      "path": "src/Hexalith.Works/Recovery/WorksProcessTranslator.cs",
+      "sha256": "e3a19f59ac28e09ec4afdd026fd96265a82b2133c3df9de82df4aa8ff0debd3a"
+    },
+    {
+      "path": "src/Hexalith.Works/Recovery/WorksSourceStreamReader.cs",
+      "sha256": "352e2dc3184fd07697bd470eb751048ea271921a20e3a0bfff014ea5c62865f3"
+    },
+    {
+      "path": "src/Hexalith.Works/Runtime/WorksRecoveryOptions.cs",
+      "sha256": "cb4cc91d155e54bafad17f778795ae9a0fc1e1741b63e3350125ee88bd0ceadd"
+    },
+    {
+      "path": "Directory.Build.props",
+      "sha256": "b469ad4a9fe6c3ef43737e8be11f9e6f61b45ab3f3c668c4d70f90555e316a16"
+    },
+    {
+      "path": "Directory.Build.targets",
+      "sha256": "670554404af97e8845698c8215a6eefab7d5a90f764667798e0d72f54bca9bd1"
+    },
+    {
+      "path": "Directory.Packages.props",
+      "sha256": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c"
+    },
+    {
+      "path": "global.json",
+      "sha256": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7"
+    },
+    {
+      "path": ".editorconfig",
+      "sha256": "dfafb8eb2717ac1bf96310c3c5cbaef634e584b794b0011e8228cde002466e68"
+    },
+    {
+      "path": "xunit.runner.json",
+      "sha256": "3aaf68ea8927dce2c9ee5404088745084d709c1ff2d00bf41c90d9406d31b8a1"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReconciler.cs",
+      "sha256": "f37c2bf82bd3e550120112c4943837c76f7cb6b290f3796e1f7830130e153473"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessCheckpointStore.cs",
+      "sha256": "86a5dabae5b8da87e1ccc87bd4bfd741ef61b1b5f320accc383bf99c150e9d96"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessSweepStore.cs",
+      "sha256": "760799c3789ce8e3d582e977c2625e4004ea9f1fc14a85f9b8f8c779c04e7939"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessSweepState.cs",
+      "sha256": "7eb7184643c291e8d3c20e686b35b2c35778820105869dd095b3bed23c55d52c"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReadinessHealthCheck.cs",
+      "sha256": "7389d3d7f74dbbbb78de5929d5565c42ff3234ccbf6eab86bc61f3c1f06c79da"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/CheckpointedProcessRunner.cs",
+      "sha256": "7396aa38b66579a2285e478c624d768d8b1ab14cbb82f73f3f7e581c3dc8ea35"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs",
+      "sha256": "fffca79129520b50047c8a7ae023c9797947a314bbd3315c27bba48b933e5bf0"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReadDeadline.cs",
+      "sha256": "51434307ddcc0241e3f19e8e3194947910a487a6f2df2885b5a1658cfd7655fb"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/ProcessReadAdmissionException.cs",
+      "sha256": "f80b897a85f221d2adab2ccfb9df193b103de3d4d78944c21f31f1ab40cf344c"
+    },
+    {
+      "path": "references/Hexalith.EventStore/src/Hexalith.EventStore.Testing/Fakes/InMemoryReadModelStore.cs",
+      "sha256": "320d71901c5ef4749d352eedb3217597bc561f6117fe39e024ad70e4909beb5a"
+    }
+  ],
+  "binaries": [
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "sha256": "b57c596a629ad43cc7be692be58d7b45920325aabf0201168168202fd48ede0e"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.dll",
+      "sha256": "9fb60df1780ad824cfea3122b5cdc674323315d0c424fb939f727225451c8a65"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.Contracts.dll",
+      "sha256": "c752c9d5a8092942634e8dabea44e239b688e598fbdf447e58a03a41fa4bb4bb"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll",
+      "sha256": "4165ca225bccab27132c20a7515a00d3ba57d555ac4dac9ef90939ced8eb9535"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Client.dll",
+      "sha256": "ab1b0d3c1b30244d9f4c5db425f6c46363615d1d28fd57db3e2b1c35dffdca7e"
+    },
+    {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Testing.dll",
+      "sha256": "c7ad96c2027aa65a2bb99fed8647f1916e21e374bf25a57a0d93902253457b43"
+    }
+  ],
+  "dependency_revisions": {
+    "references/Hexalith.Builds": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c",
+    "references/Hexalith.Commons": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+    "references/Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "references/Hexalith.EventStore": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+    "references/Hexalith.FrontComposer": "3fd62e497ed9e1ae13811af813487fb97e4adc16",
+    "references/Hexalith.Tenants": "fc0a6959844f6afde5a5141fe46c36f5a0cbc0ad",
+    "references/Hexalith.Parties": "664b99c67e90a14c8a1cc4d9663a25fa44c47c9a",
+    "references/Hexalith.Chatbot": "179f94f7f370505feb2e7b41ae242616ac4a5734",
+    "references/Hexalith.Projects": "0e4cfcc41b3255f4340929d34cc5c27709128626",
+    "references/Hexalith.Conversations": "772f7af574504492da77efe467293ccd2261906e",
+    "references/Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "references/Hexalith.Platform": "f7c62ca1007f5218dc52d6856395324704564e3a",
+    "references/Hexalith.McpCli": "3196d3d268c1a4203a238ab5fe61cd6239cebd94"
+  },
+  "review": {
+    "findings": 6,
+    "patched": 6,
+    "new_deferred_items": 0,
+    "independent_followup": "No code or operator-guidance blockers; independently reran ten policy cases."
+  },
+  "limits": [
+    "The broad Debug project build remains blocked by two existing Platform CA1062 errors; focused compilation consumes available dependency outputs.",
+    "Deterministic integration excludes live Smoke and Platform classes; no live topology or public-package qualification is claimed.",
+    "Controlled external catalog/gateway adapters and synthetic state-store faults qualify the actual SDK reconciler and Works translation over serialized retained state; this does not qualify global worker pool load.",
+    "A saturated publication queue still retains unaccepted catalog keys; existing candidates progress, and acceptance waits for a real repair to free capacity. Remaining unresolved observations keep readiness Degraded.",
+    "Missing-page recovery restores captured authoritative inventory bytes in a synthetic provider, not an in-place repair API. It does not qualify absent discovery inventories, custom serializer policy or production restoration."
+  ]
+}

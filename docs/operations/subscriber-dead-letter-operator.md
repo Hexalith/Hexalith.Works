@@ -145,6 +145,25 @@ an empty sweep and can find projection membership published later, even without 
 requires retained Works family/control-index membership; it does not prove recovery from a restore that
 omits every discovery inventory. See the [SDK configuration and ownership guide](../sdk-reminder-process-adoption.md#current-configuration-after-story-49).
 
+Process recovery reports `eventstore-processes-unresolved`. Inspect `complete`, `unresolved`,
+`pendingPublications`, `pendingObservations` and `reasonCounts` together. A full publication queue
+retains the unaccepted catalog key and Degraded readiness; already retained candidates can still run.
+Repair the publication dependency so a pending identity can finish and free admission for the held key.
+Do not remove pending identities to make room. A failed publication that already has a durable intent
+can yield to later catalog entries while its own repair remains pending.
+
+`read-worker-exhausted` during candidate discovery retains the precise discovery cursor for a later
+pass. It is worker pressure, not proof of a corrupt or missing page. A scan without tail evidence
+uses a finite missing-page probe budget; its cycle can become complete with unresolved reasons and
+must remain Degraded. The qualification restores captured inventory page bytes through a synthetic
+store; it does not qualify an in-place page-repair API. Ordinary catalog republication cannot rebuild
+a missing page when candidate and tenant markers survive. Escalate to the data recovery owner for
+consistent authoritative inventory restoration, then verify the next cycle starts at the head,
+reaches the recovered source and clears unresolved coverage. The [complete-fleet rollback procedure](../../references/Hexalith.Platform/docs/works-host-parity.md#complete-fleet-rollback)
+qualifies the disposable synthetic profile; production restore still requires its AD-28 owner decision.
+These deterministic SDK consumer guarantees do not establish production throughput, custom serializer
+compatibility or recovery when every discovery inventory is absent.
+
 ### Historical host and rollback investigations
 
 The warning IDs below describe the retained historical host only. Since Story 4.9, use the active [Platform recovery runbook](../../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations). Inspect Works `/ready` and its Healthy/Degraded/Unhealthy status rather than interpreting HTTP 200 as healthy. Correlate the bounded `eventstore.domain.recovery.*` gauges, including unresolved and pending counts, completeness, availability, readiness and `alert`; `alert=1` includes degraded, unavailable or stale recovery. Protected `POST /work/processes/revalidate` requires current source-scoped operator authority and durable attributed audit before mutation. The runbook identifies the synthetic proof's limits and the production provider requirements. The [current SDK settings](../sdk-reminder-process-adoption.md#current-configuration-after-story-49) list ignored legacy recovery controls. Historical warnings remain documented for archived rollback investigations.
