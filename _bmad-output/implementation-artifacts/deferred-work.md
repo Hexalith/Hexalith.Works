@@ -1919,3 +1919,30 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 - source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-rebuild-admission.md`
   summary: Qualify Works tenant population against the SDK individual-document ceiling, or partition the queue document before claiming 10,000-owner staging capacity.
   evidence: Executing review control: a valid 10,000-owner plan with 64-character IDs and 16 multi-page histories fits the tenant byte budget (10,347,008 bytes) and operation ceiling (40,035 of 40,259), but its queue document is 1,360,142 canonical value bytes. The actual SDK coordinator refuses staging at its independent 256 KiB mutation bound before any candidate write, preserving the seeded generation and exact prior roll-up bytes. This pre-existing document-size limit is separate from the successfully qualified 16 MiB history rebuild over four owners and the canonical batch cap; raising that cap does not partition a single document. A population contract or bounded queue-document partitioning requires a separate domain design. Regression: ActualRebuildPlansFitTheRegisteredOperationCeiling; verification packet in evidence/five-deferred-rebuild-admission-2026-10-23/manifest.json.
+
+
+### Story 4.9 publication-resume review follow-ups — 2026-10-25
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Sanitize identity-provider failure logging in WorksQueryPolicy.
+  evidence: The complete exception is passed to LogWarning at the authorization boundary, bypassing bounded diagnostic categories; the same call exists in pre-cutover6967819. Verify a generated private canary never reaches logging.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Contain authorization logger failures so an identity outage still returns a fail-closed denial.
+  evidence: WorksQueryPolicy logs inside its provider-error catch without shielding sink exceptions; both query handlers await that policy outside their read-error catch, unchanged from pre-cutover6967819. Exercise a throwing logger at this boundary.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Apply consistent retained-membership validation to current-generation query manifests.
+  evidence: The unchanged IsValidCurrent validator accepts Items/LastSequences keys omitted from MemberWorkItemIds; SDK query readers can return absence while WorksProcessSourceCatalog rejects that contradictory persisted shape. Verify malformed persisted manifests explicitly; no new partial-write cause was established.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Establish projection-store cancellation bounds for SDK query reads (unverified medium).
+  evidence: Coordinator read/status awaits lack an independent caller-side acquisition deadline, unchanged from the pre-cutover SDK path. The finding does not show the real Dapr store ignoring cancellation; a real-store timeout/cancellation probe plus an admitted non-cooperative control would settle the operational effect.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Bind reusable Platform package-cache admission to independent public-feed integrity evidence.
+  evidence: published_producers records feed/SHA-512 metadata and archive-to-DLL equality but does not authenticate the archive against independently obtained public bytes; the boundary predates this resume. This release separately verified the official Aspire/Client/DomainService packages; add reusable forged-cache controls without weakening those checks.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Correct the existing public query summaries to distinguish absence from projection unavailability.
+  evidence: GetWorkItemQueryHandler and WhatsNextQueryHandler XML summaries still promise NotFound/empty results for unavailability, although the pre-existing SDK paths return projection-unavailable failures; both mismatch and behavior are present at pre-cutover6967819.

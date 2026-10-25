@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-22 (Story 4.9 review round 2: all 15 patch items implemented; EventStore 3.126.1 defect aa2e4e323 fixed uncommitted in references/Hexalith.EventStore and verified; full gate awaits a published producer; stays in-progress)
+# last_updated: 2026-10-25 (Story 4.9: EventStore 3.128.0 published and verified; full then actual CI and exact-main retry passed; independent review complete; spec done and sprint review per bmad-build Step05)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -36,7 +36,7 @@
 
 # Original generation instant: 2026-06-15T18:47:50+02:00; normalized below to the validator's minute precision.
 generated: "2026-06-15 18:47"
-last_updated: 2026-10-22
+last_updated: 2026-10-25
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
@@ -79,9 +79,9 @@ development_status:
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
-  4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
-  # Public EventStore 3.126.1 still lacks the required retained-seal fix
-  # Complete 4.15, then 4.16, before resuming 4.9.
+  4-9-migrate-works-hosting-to-the-platform-boundary: review
+  # Published 3.128.0 and the full/CI parity and rollback proofs pass; independent review is complete.
+  # Step05 explicitly synchronizes the sprint to review; six pre-existing/unverified follow-ups are deferred.
   4-10-publish-eventstore-projection-delivery-and-rebuild-fence: done
   4-11-publish-eventstore-typed-reminder-reconciliation: done
   4-12-publish-eventstore-checkpointed-process-and-recovery-runtime: done

@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-independent-review-retention/blind-hunter.md",
+      "path": "blind-hunter.md.gz",
+      "originalSha256": "5a056444f28fc261e8d01068c79e52dd45be18845260d4c1d3b45f2ee30c9a76",
+      "storedSha256": "d2693c8014d0321bfb1e45f89ba89d69287e12a7fb3b38cf07e3ca874964edd1",
+      "originalBytes": 3891
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/edge-case-hunter.txt",
+      "path": "edge-case-hunter.txt.gz",
+      "originalSha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "storedSha256": "abc129be8d26e8d4afe9ce45f9d5a73c8ed9aa62810ca24ee789fe4581dc4a80",
+      "originalBytes": 3
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/inventory.json",
+      "path": "inventory.json.gz",
+      "originalSha256": "618b4227fa401eb0ce8e3a3e25c78d501b75f8d7eae74816d80933e895a2cb5e",
+      "storedSha256": "77afe4cc5061b7eee76e480053f8f3796617af937a1f66daa32bb03bb4a441a8",
+      "originalBytes": 714
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/parent-triage.md",
+      "path": "parent-triage.md.gz",
+      "originalSha256": "ec9e4e03b7cef0a4763779ed149b85f1bff52dfdc86a50e41d080de28f89b46f",
+      "storedSha256": "f30bf753c2907621e80e9625c57f54a98ce5a6a3246a38650fae08fd07bf8101",
+      "originalBytes": 6792
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/retention-check.json",
+      "path": "retention-check.json.gz",
+      "originalSha256": "bd6454caaa6da2db75e06ac2b551f496d4d0a7a59f9a303b8c46c87b29eb8b60",
+      "storedSha256": "bc4675e0dd0df2be5017772fa26215664c435ef0e810add3dab8befb690b09b6",
+      "originalBytes": 1097
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/review-metadata.json",
+      "path": "review-metadata.json.gz",
+      "originalSha256": "5a27df5e27bf1a3faf5570799eb90e24122744c63e56147dda9b1063e3bfd729",
+      "storedSha256": "218c0b37d5d712562c880b9d129afe534dbaee2dfb20b50bb9f1087fadd4379d",
+      "originalBytes": 1325
+    },
+    {
+      "source": "/tmp/story49-independent-review-retention/verification-gap.txt",
+      "path": "verification-gap.txt.gz",
+      "originalSha256": "d29fdd0ef493d6c0be2ded1a4c832280ad20e926a4051dfebcd04bbd71ac3417",
+      "storedSha256": "49ef6635af0480bee82636f141864da23daddc5a1f19f28d14dfedb6052853c1",
+      "originalBytes": 28
+    }
+  ]
+}

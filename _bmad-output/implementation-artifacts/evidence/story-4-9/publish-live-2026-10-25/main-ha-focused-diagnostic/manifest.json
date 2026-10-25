@@ -1,0 +1,396 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/assessment.json",
+      "path": "assessment.json.gz",
+      "originalSha256": "ddd56c04c2e89f6d05ff4db220735be0c1036fdeb69e710b9505a6aefdbb268d",
+      "storedSha256": "5d286f1706ec000aef991257a5e9b8c1b0af3429bcee83a92e8ad3b60775ed02",
+      "originalBytes": 5586
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/cleanup-and-source-invariance.json",
+      "path": "ha/cleanup-and-source-invariance.json.gz",
+      "originalSha256": "4a40b425ea71e45b3dee9ab38f4ca7708d17c50a71c0e06a595b2e9eb8185040",
+      "storedSha256": "3fceccb88ca96265ecb84b9d393f18af8abe2b6fc5c4d2f5ea2e688f10813a50",
+      "originalBytes": 696
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/command.json",
+      "path": "ha/command.json.gz",
+      "originalSha256": "78f90130d0ed83d28b50714f0a4fd3b5f5547c544d68ff27378267b76ec558e6",
+      "storedSha256": "2385fb2e72d5a367a52c765a1a6f8ded78145706bda8049a00efc1a2de1d099e",
+      "originalBytes": 5737
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/docker-observer.stderr",
+      "path": "ha/docker-observer.stderr.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/docker-selection.json",
+      "path": "ha/docker-selection.json.gz",
+      "originalSha256": "3d28ed570477b61ff0061d9ac0995b3a53e238dad28cfe2b052a53ea7128b3d7",
+      "storedSha256": "08eeaa1bdb62f1c67871578dbb216db6d6900f870b53c94bec5a8c72d9b25873",
+      "originalBytes": 604
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/ha.log",
+      "path": "ha/ha.log.gz",
+      "originalSha256": "2ea5af802b76a1e63ef7fd3ecae1afda76adb9477dbdce484fa916f842a7a21c",
+      "storedSha256": "7b16f1cc19378307cc5063fc418cf3566adebfd6e3e34bc2c28c0285d0f7eeef",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/ha.xml",
+      "path": "ha/ha.xml.gz",
+      "originalSha256": "ea0f42b417288d268ba9501273b32782e96d5a9cb301b7d0981de838f254073b",
+      "storedSha256": "65f3c7a5dd79e652a92945639efc5325563dcae0a11a1be15ae2bdf7e28c3b13",
+      "originalBytes": 1762
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/host-starts.jsonl",
+      "path": "ha/host-starts.jsonl.gz",
+      "originalSha256": "883cc9100faa47a4748c871c601486007c6ae6d0f73b1c9e6f627d06c1542711",
+      "storedSha256": "bce586888202a812d28afd6fec1bf01853bab708e8f153c6ab9d16b855664e1a",
+      "originalBytes": 26342
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/isolated-daprd/.dapr/bin/daprd",
+      "path": "ha/isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/isolated-daprd/binding.json",
+      "path": "ha/isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/isolated-daprd/launches.jsonl",
+      "path": "ha/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "95edad0e9c79c904b7df17703d74262f9f45720fbd7f951df3622fb1448ef63c",
+      "storedSha256": "a0320d15751fdffe99ab616005179323faa87daef0289ef24ae8eb6498f9d2a6",
+      "originalBytes": 2863
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-observer.log",
+      "path": "ha/native-observer.log.gz",
+      "originalSha256": "17a45a5c8545e468cf8418f259d9edff056387760f4d15f79ca82d813cd66f20",
+      "storedSha256": "ad285ba1ca44075c2a4966318b032d927d46d54a10353664de6e6bc9acd9c8eb",
+      "originalBytes": 27
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/3e61c1ec-fed0-4881-ab2b-157ffe3298e6_err",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/3e61c1ec-fed0-4881-ab2b-157ffe3298e6_err.gz",
+      "originalSha256": "cf1d35ff51d4bedc92f4dc978b969b391c44514e03bf3e6e4640c5d97e478953",
+      "storedSha256": "de5996ec5e9519a3f4189f3c2e8431a6b003134f1e446e04192c015fb864dcb5",
+      "originalBytes": 236
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/3e61c1ec-fed0-4881-ab2b-157ffe3298e6_out",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/3e61c1ec-fed0-4881-ab2b-157ffe3298e6_out.gz",
+      "originalSha256": "e3a056371175d989a234d1ae46ca98201ec99ecf5e11c739bac5a9fa50603b27",
+      "storedSha256": "e0a3d38f8e570fd2d77d0589fc477771b3c68d5923b3339fa01292a9d293f54f",
+      "originalBytes": 29180
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/6d169c10-313d-455c-beb8-20ca04b8da0d_err",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/6d169c10-313d-455c-beb8-20ca04b8da0d_err.gz",
+      "originalSha256": "b0940efdc230fb2e616ab868f12dcc2b1db6c41c1f212094f4479ce95ccdbc55",
+      "storedSha256": "3af366245543749f4d2c18c35c3f8de9cbb2a2a50f2ccd6424bda9a1c770bd5f",
+      "originalBytes": 1652
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/6d169c10-313d-455c-beb8-20ca04b8da0d_out",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/6d169c10-313d-455c-beb8-20ca04b8da0d_out.gz",
+      "originalSha256": "b63b6dd492a5533d269e7a30e16e5d135ba97b764d2f166343826fd6027fa3e8",
+      "storedSha256": "0f2cc1f1d62cda0eae930ad80185af3b4035665ca870a077409e139968e0d94b",
+      "originalBytes": 38127
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/7637bbff-d533-4058-8140-347c9476ff47_err",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/7637bbff-d533-4058-8140-347c9476ff47_err.gz",
+      "originalSha256": "24691c59ee187683cd955320e6a215de0b127a1540158b25c823d24ab6bc9a4b",
+      "storedSha256": "5175776c030192c663c858816bcfb63207c51288c72357ba8591aa2506e00b10",
+      "originalBytes": 708
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/7637bbff-d533-4058-8140-347c9476ff47_out",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/7637bbff-d533-4058-8140-347c9476ff47_out.gz",
+      "originalSha256": "1aa3968592cbf75ec42d9b2822afb8e0f04442a2ba4185225bec54f6e308b678",
+      "storedSha256": "098218c0d129fa3eab436a1f9e74680a1074bcd63dd28ac91e8084409140fa27",
+      "originalBytes": 27196
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/81a85d60-cef0-4ead-bfd7-307b2b7e0f72_err",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/81a85d60-cef0-4ead-bfd7-307b2b7e0f72_err.gz",
+      "originalSha256": "c6b435597f8526d0fc6d9e28b0f295e7c4dfde3a4ca1e0ceddf0ecdab021b3e0",
+      "storedSha256": "bb58277ff3652cbac3a96829a36c5cbbd225ff36043383a5fcdbdbeb0757a2f9",
+      "originalBytes": 1652
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/81a85d60-cef0-4ead-bfd7-307b2b7e0f72_out",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/81a85d60-cef0-4ead-bfd7-307b2b7e0f72_out.gz",
+      "originalSha256": "0713588fe209a3ab59f7dba0f029a39be388d31c7ad6964126fd2c35cc9dbb08",
+      "storedSha256": "f7169981b3abd2aa923d009d19df3f33213b0ebbe28a0e2f2b7392f30f28e4b4",
+      "originalBytes": 29986
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f_err",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f_err.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f_out",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f_out.gz",
+      "originalSha256": "d7f60e2dc4929f529ea4b0b00ff9715ca57c752b1791e51dfd4cc86a82a54412",
+      "storedSha256": "fd7f62902d60d30e08b7a6e3c89b53afe8462a283248e2c71999d7ae009980a4",
+      "originalBytes": 31553
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_err_e8b419f0-0ca8-47ea-82db-51120361543c_tvou",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_err_e8b419f0-0ca8-47ea-82db-51120361543c_tvou.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_out_e8b419f0-0ca8-47ea-82db-51120361543c_tvou",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_out_e8b419f0-0ca8-47ea-82db-51120361543c_tvou.gz",
+      "originalSha256": "b66ba78f7e535805586932015f11c3d45d6ad3e17ae0947ab40e25271f32ab84",
+      "storedSha256": "16ea3fa796fa991f376a2435b2439197341a91d42bba157dfb1468bfaf320925",
+      "originalBytes": 7590
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_starterr_e8b419f0-0ca8-47ea-82db-51120361543c",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_starterr_e8b419f0-0ca8-47ea-82db-51120361543c.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_startout_e8b419f0-0ca8-47ea-82db-51120361543c",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-placement-mtls-hruxprjz_startout_e8b419f0-0ca8-47ea-82db-51120361543c.gz",
+      "originalSha256": "a7eaae22a7c1e181e5ee3256af539784f31d71176ac4e17194a6ff632ffd2726",
+      "storedSha256": "34ad636758363440300dc58227082c4aade7e9521fe90ee458eb24114cfd2125",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_err_4b36a3d2-134f-4299-91b1-66c3b11d9d97_qwqa",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_err_4b36a3d2-134f-4299-91b1-66c3b11d9d97_qwqa.gz",
+      "originalSha256": "e8bf6ba2962880e51e1081b7ca943904d7e160e7e1fae50eb615c06214e481d5",
+      "storedSha256": "4e63030949232d4cdab39bc5c88a94012d9371c3dd2328ef4704b1f5bddbbda9",
+      "originalBytes": 23607
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_out_4b36a3d2-134f-4299-91b1-66c3b11d9d97_qwqa",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_out_4b36a3d2-134f-4299-91b1-66c3b11d9d97_qwqa.gz",
+      "originalSha256": "b52cdb74cf6e5ac7976516d16f02c7dfcc7820fee35cc849112baf194fd28fd2",
+      "storedSha256": "092eab1b958a4d1d4ef09bf2c85509b65a88d5cfb4b85fe72b23ecfa5b9c8cdc",
+      "originalBytes": 24202
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_starterr_4b36a3d2-134f-4299-91b1-66c3b11d9d97",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_starterr_4b36a3d2-134f-4299-91b1-66c3b11d9d97.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_startout_4b36a3d2-134f-4299-91b1-66c3b11d9d97",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-scheduler-mtls-xvessvjm_startout_4b36a3d2-134f-4299-91b1-66c3b11d9d97.gz",
+      "originalSha256": "b723697b84063cabd6d60b57a70fa5c7d33b031f0b6ab28aa1d13786693f7e00",
+      "storedSha256": "f22e1d5a2bd98309699c79fb988842fb12f6336d578edbaeefedad2b5c520cb0",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_err_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c_dgch",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_err_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c_dgch.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_out_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c_dgch",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_out_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c_dgch.gz",
+      "originalSha256": "a755f1d67a1ceec4f374b3797a7529f4c04a6dcf5ba36015c9c414624975ceff",
+      "storedSha256": "7b99e6d716912da24c868ff01f03e1ba92c82b4ae763dce962511ebe51fe7e7c",
+      "originalBytes": 12695
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_starterr_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_starterr_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_startout_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/dapr-sentry-aasmsphf_startout_8f4a7b34-6cc6-4c0c-b96d-05496991bc9c.gz",
+      "originalSha256": "71c0f16be5cc1f382a0c3ad337dc6577b8afc806eb8c36e5c43e6c1696b7aaff",
+      "storedSha256": "7d678c5df3272e7176dec3cd014a3774832c42913befda67ca182a7f228d3db3",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/resource-executable-3e61c1ec-fed0-4881-ab2b-157ffe3298e6.log",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/resource-executable-3e61c1ec-fed0-4881-ab2b-157ffe3298e6.log.gz",
+      "originalSha256": "55d7b7087578e39a373763df0200c1b6afb89b6d1ec81ad68df971b15795a0d9",
+      "storedSha256": "1d34bfded8f6b4afb29cf720168e229584af03711dedc5a365558de5afc7e009",
+      "originalBytes": 890
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/resource-executable-6d169c10-313d-455c-beb8-20ca04b8da0d.log",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/resource-executable-6d169c10-313d-455c-beb8-20ca04b8da0d.log.gz",
+      "originalSha256": "c8b8b7bb251f4007fe01dda2d511756daa050c64b8242479dba2a4dd0e9c37ca",
+      "storedSha256": "e83bf47765cf7a2c2295cefb0d26c2a6922e16352b76695316f735db3649658d",
+      "originalBytes": 860
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/resource-executable-7637bbff-d533-4058-8140-347c9476ff47.log",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/resource-executable-7637bbff-d533-4058-8140-347c9476ff47.log.gz",
+      "originalSha256": "19b6b0347127cb79bdfda9c9ca66b02f94e6c7812dde7f09b48b6dfafd98e1e4",
+      "storedSha256": "7b87c9c04fadc5d95afff8348501da254875e5a78997b7f76d5d414ed8d89a5c",
+      "originalBytes": 1020
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/resource-executable-81a85d60-cef0-4ead-bfd7-307b2b7e0f72.log",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/resource-executable-81a85d60-cef0-4ead-bfd7-307b2b7e0f72.log.gz",
+      "originalSha256": "e090bd0513dd8997bc95a420d498d86dc32aacc5cf9fcba9327aaa40fefe823f",
+      "storedSha256": "0639e46f94b87c98829d235d2e2787f9e2ea16f1b1329621eeff6f0be7a4f447",
+      "originalBytes": 896
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-selected/aspire-dcpXj5pMU/resource-executable-ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f.log",
+      "path": "ha/native-selected/aspire-dcpXj5pMU/resource-executable-ad37015e-ea4f-40f1-a1e9-8c4bd4e9b86f.log.gz",
+      "originalSha256": "1a17c9ff28c2781b81a57624b588588d326114e42e7c43814a067355baf5691e",
+      "storedSha256": "c3d22dab07a982574bf6bf6b23ad99ae45a76b5a65a4a6f685c718d046856764",
+      "originalBytes": 971
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/native-session-identities.jsonl",
+      "path": "ha/native-session-identities.jsonl.gz",
+      "originalSha256": "b53521bb1b36fb8850f1a0ffb5f17c40702082f6b90c04dbed891309373754b1",
+      "storedSha256": "27441f5169e271408427b79f6fe07767519d0277294c1f566b23ee0adf0a0313",
+      "originalBytes": 394
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-certificate-mount-hashes.jsonl",
+      "path": "ha/owned-certificate-mount-hashes.jsonl.gz",
+      "originalSha256": "f837477d471d4657d5dcfed7156ba7fcce298b9beb7de871321e9c1f8fda015a",
+      "storedSha256": "d6e8e5345372e353185f682d24472611859101f9a48d09e2440ac69512db63d6",
+      "originalBytes": 790
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-docker-events.jsonl",
+      "path": "ha/owned-docker-events.jsonl.gz",
+      "originalSha256": "25ad9bd8f1c9c119a2c367405f99743d49560c33989f529644fd430943a06d51",
+      "storedSha256": "d4519ef9689bb3cfb152799ab06c37f08d22a17e514264e150345a7638d4cfbe",
+      "originalBytes": 55658
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-health-probes.jsonl",
+      "path": "ha/owned-health-probes.jsonl.gz",
+      "originalSha256": "9357ee6e8594e79749e0360ac88ecbdf593c8109240a04dcb4c0487a429da223",
+      "storedSha256": "cedea1f4281e4ae50857daec70bf99d5baa4a6e14fcbbf1b4526941f59119f43",
+      "originalBytes": 18148
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-process-listeners.jsonl",
+      "path": "ha/owned-process-listeners.jsonl.gz",
+      "originalSha256": "0df701569b25e12e5bad2b204f0e4733771a38311c498c093b49bcb2254c45f6",
+      "storedSha256": "5321abc0c2cb8466f3b745248a9530ab434e29b07462dc1244e7342f187a8b7f",
+      "originalBytes": 1235478
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-sentry-inspect.jsonl",
+      "path": "ha/owned-sentry-inspect.jsonl.gz",
+      "originalSha256": "f5df7c33c9c1778a80175891b85a55201efef29c61b4710c5e6768a471bf80ef",
+      "storedSha256": "083b02dd6e36e837fb8b5113cd105faf1f0d9da5f72c0b13ff08a3087939fe09",
+      "originalBytes": 34164
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/owned-sentry-services.jsonl",
+      "path": "ha/owned-sentry-services.jsonl.gz",
+      "originalSha256": "694a194d445ca3fce51c20eb6e102fedf36d05f5731b562fd51a5a972707db04",
+      "storedSha256": "e362af68785b66879cc2042b4a2813357f386bbdd843a6129d176ce3614b7322",
+      "originalBytes": 19137
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/persisted-states.jsonl",
+      "path": "ha/persisted-states.jsonl.gz",
+      "originalSha256": "1c6f4e555cf2d4fc4354e13231fb4b880ad91fd495d5eef9dce954da79124b06",
+      "storedSha256": "49631d607b268c8818af9e3d221c5fc7e72ab6f9220e05564f76e8245fffacbe",
+      "originalBytes": 1770
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/process-observer.log",
+      "path": "ha/process-observer.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/runtime-binding-failure.json",
+      "path": "ha/runtime-binding-failure.json.gz",
+      "originalSha256": "c0331306e5a483b3adf788b624b6d3cc72027f449f337c5c25640a741aa77ff6",
+      "storedSha256": "7132ab2eb68674644eb89fcc99950b5026e37e85cc495eb4af5a89b078829b98",
+      "originalBytes": 2407
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/story49-diagnose-main-ha.py",
+      "path": "ha/story49-diagnose-main-ha.py.gz",
+      "originalSha256": "11e9272c94f9db5160d66a0d87e6468bbbc1dc76f93fabe68febc4541fd3a892",
+      "storedSha256": "a47f06bf1b0a5c3b50536d13353b2a9ef02473363153651057c7bc047c9f16ff",
+      "originalBytes": 5175
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/ha/story49-observe-owned-ha-processes.py",
+      "path": "ha/story49-observe-owned-ha-processes.py.gz",
+      "originalSha256": "8cd6050463e5746fa3eb67818f62e099f264a0aecca728ec55f8a1872dd41635",
+      "storedSha256": "5907b7b342f9a41f78f38d40f7beb0a2159c0bb9d212f070a8d0544454f522d0",
+      "originalBytes": 2225
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/implicit-rebuild-provenance/Hexalith.Works.AssemblyInfo.cs",
+      "path": "implicit-rebuild-provenance/Hexalith.Works.AssemblyInfo.cs.gz",
+      "originalSha256": "889b97982883b147a66ef176fa950bd8577fed5d173ca9b915c82602f8789c37",
+      "storedSha256": "1fbb5724ca59825360779e6ea14a22066125ef0d0e6d080855f4827fcbff1cd6",
+      "originalBytes": 1315
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/implicit-rebuild-provenance/Hexalith.Works.sourcelink.json",
+      "path": "implicit-rebuild-provenance/Hexalith.Works.sourcelink.json.gz",
+      "originalSha256": "b2908ff85b5546fa2ac8ed995c85090734c906d717aa0b1519a339dd121f9476",
+      "storedSha256": "7e91a001b304abecf1cec41bb4f72baa9cfee2078945c4d771a1afe3db9b3b47",
+      "originalBytes": 2587
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/implicit-rebuild-provenance/inventory.json",
+      "path": "implicit-rebuild-provenance/inventory.json.gz",
+      "originalSha256": "e256c4b548cf3191be561e0a02fbbbc328151ed09a23f876117449abdd12fecb",
+      "storedSha256": "bb0a2401660d22853ebfb952a291b6dcf4cd99a1ac0f0b9add3786778dfa69e4",
+      "originalBytes": 843
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/pre-compression-credential-review.json",
+      "path": "pre-compression-credential-review.json.gz",
+      "originalSha256": "77a6b5a37f952574f287e579f64237106b7f0c3594d79ad94abb82ed25ec0a45",
+      "storedSha256": "c453ecb80401debf474f17f9ed5c608e30e1935b18d505074179d45f133bb2d8",
+      "originalBytes": 630
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/focused-ha/retention-and-redaction.json",
+      "path": "retention-and-redaction.json.gz",
+      "originalSha256": "554bc30d8be0879b13c9702b304bbec3c96971df542282497bfc9e745a56b670",
+      "storedSha256": "06a024fc3c16cdd1ab423280ba7b6f59138335bd1e6772cecdc978232b8385db",
+      "originalBytes": 24239
+    }
+  ]
+}

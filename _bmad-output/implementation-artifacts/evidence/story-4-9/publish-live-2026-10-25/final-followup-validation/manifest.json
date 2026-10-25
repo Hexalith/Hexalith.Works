@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/architecture.log",
+      "path": "architecture.log.gz",
+      "originalSha256": "d44fc96c05c9601c5a120a9292c8bab9831c75657e73eb2f0af428c5e3a87e22",
+      "storedSha256": "4449798742e0b1608aa7dd112d26da3af3434de0cfc9855d269dc52c6c135947",
+      "originalBytes": 406
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/architecture.xml",
+      "path": "architecture.xml.gz",
+      "originalSha256": "95dabbd8eb4db9c7ae90e6be0d35b5c3350e7aad0f68df7e612796fff2268c2d",
+      "storedSha256": "8e3fde9df6b92131bafca768b00ccb9af42ad0a1d33a2129237654517c5f4813",
+      "originalBytes": 279368
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "298ab7b3cbec8cd6229b2420b604b56fb7b27b6cc323ff1b24f012d3f00ecef1",
+      "storedSha256": "c671c1cb8fe1bdf711456e2645678e28b802b38be530dacb87eac1de84d9d06c",
+      "originalBytes": 280
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/completion-transition.json",
+      "path": "completion-transition.json.gz",
+      "originalSha256": "c8f6b0993c20146a67a680a7bbd14758e3cfc674c76675b3ed9d06bfd8a96c5a",
+      "storedSha256": "b9817156e1704a55f4159d238c418cdd51bcdfa7f8b29373bef5a1846e1abaf7",
+      "originalBytes": 567
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/explicit-stage-inventory.json",
+      "path": "explicit-stage-inventory.json.gz",
+      "originalSha256": "234b7e96b1cbd132384a3293354822063a88acda3b439c3fdb977b5d3755b2d2",
+      "storedSha256": "d6c37d4f295f5ab49cc6221519a0a3777178667b1857fb80cc744b49d10059b1",
+      "originalBytes": 126639
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/preservation.json",
+      "path": "preservation.json.gz",
+      "originalSha256": "edf1a29b7b69d02053237dc97b8356717b010f30c40e4d3e4bc9dacf03ae11cc",
+      "storedSha256": "5a76126577aca16d9bdcd3a89e1281f9ebe5d70bf84f33a842f75ae5b87dec92",
+      "originalBytes": 177
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/retention-record.json",
+      "path": "retention-record.json.gz",
+      "originalSha256": "74e2f53f991267c2d069d249d220fd38b2a973f36228a184333751f14f66c4dd",
+      "storedSha256": "d1f03de5221352c52984017bc3923b50c79b4b6ccd21086f67d1a2476adab512",
+      "originalBytes": 1266
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/staged-input-equivalence.json",
+      "path": "staged-input-equivalence.json.gz",
+      "originalSha256": "de6b6a96069faad283c054cc3d8245cd098411f0cc94c208f7f37b23aec25799",
+      "storedSha256": "4d71f6ae0f1a0240205bfdb601fb57bb6c4b27794707512392b936a31cad0cb1",
+      "originalBytes": 83088
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/staged-raw.txt",
+      "path": "staged-raw.txt.gz",
+      "originalSha256": "4646a2bc4b5da74f790c361309c4e1202cbea26cb524b4994a08365eb3fb3010",
+      "storedSha256": "e81f9a2b190b23647096eba9a5d2918a3942c93ad04a0ba197969497f26a7286",
+      "originalBytes": 87883
+    },
+    {
+      "source": "/tmp/story49-final-followup-validation-bounded/validation-summary.json",
+      "path": "validation-summary.json.gz",
+      "originalSha256": "af220809c84b1312a07dd246a7933a604e0178057ce2ebf456463fbb466ae504",
+      "storedSha256": "273b134674797063c0702fb04ff332aab781ca5e389525e9b7dc846081a49429",
+      "originalBytes": 1330
+    }
+  ]
+}

@@ -1,0 +1,473 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/WorksAppHostSmokeHarness.cs",
+      "path": "diagnosis/WorksAppHostSmokeHarness.cs.gz",
+      "originalSha256": "3b4d4228b0d7f51e580f2fb5a16ec5e528b49ea86d98b31f274472976938d618",
+      "storedSha256": "447e3ea378669d1b2033686aa5d5cc2385818488ff85c1b4c5f6fff4e0a24cce",
+      "originalBytes": 74863
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/WorksAppHostTestReadiness.cs",
+      "path": "diagnosis/WorksAppHostTestReadiness.cs.gz",
+      "originalSha256": "8575fe1094f4d95d8e97bae4c489652a5ed9db960c5d537d0893189de81122c8",
+      "storedSha256": "399fcbd1888036de2e367dc6aa58e7c07dc02b6d6d8989f2efa7462abdbb2ce4",
+      "originalBytes": 15302
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/WorksPlatformHaPipelineSmokeTests.cs",
+      "path": "diagnosis/WorksPlatformHaPipelineSmokeTests.cs.gz",
+      "originalSha256": "59fdbedbed87708ee8bed68db6750de7ce734f11c476bfa3e9be478da4127ed3",
+      "storedSha256": "91f5c285bb32023b82593a05482100a798ca0db2a36c3dd9695cd14b56e79d12",
+      "originalBytes": 18503
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/assessment.json",
+      "path": "diagnosis/assessment.json.gz",
+      "originalSha256": "ed4970d07ca84ed2802c00fb58516ac3f05d373eb1ed563d898620cacc84c646",
+      "storedSha256": "22175992f74e080afebc59f7bf4eccc742e2dac65400d7bfcb3f7ae437bf38da",
+      "originalBytes": 10278
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/eventstore-bounded-health-observations.json",
+      "path": "diagnosis/eventstore-bounded-health-observations.json.gz",
+      "originalSha256": "dbac99b1b50e8f8276def4b237fe21e7aba613ad8f2bba05856a7bb271ece000",
+      "storedSha256": "b3976ec8e82c7088d24e582d4539313d98407a00c9ffb8a4515a6f2d21e6baa7",
+      "originalBytes": 8812
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/failed-ha-owned-launch-records.json",
+      "path": "diagnosis/failed-ha-owned-launch-records.json.gz",
+      "originalSha256": "08bf682ba4f83bcb510310a8c51497a4a0c5da82d6952abe043112ed9476b53a",
+      "storedSha256": "0a10c4f6ccdd5f71629c7b3d3e1744cb97b57d135d071b73a9b50c775bc8a934",
+      "originalBytes": 3046
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnosis/inventory.json",
+      "path": "diagnosis/inventory.json.gz",
+      "originalSha256": "15aea536cf60bd68fa1c935deb004faa72ad3a9f2910950b1b491a9b49927d7a",
+      "storedSha256": "e7373d918dabfb7c418e3c0d4c5bf703b8dd8812dbeb2fee20c9805191b2c5b8",
+      "originalBytes": 941
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/diagnostic-preparation-refusal.json",
+      "path": "diagnostic-preparation-refusal.json.gz",
+      "originalSha256": "d117b3d200c26c119315150dae278de6eb590dd60505a86709eebe4ba0f1ba13",
+      "storedSha256": "ea9714ebfebec124948c1f2cabcb418c1ae3397dadd7c547a69d5af3adecf38a",
+      "originalBytes": 425
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/normal-retry2-dispatch/attempt1-before-retry.json",
+      "path": "normal-retry2-dispatch/attempt1-before-retry.json.gz",
+      "originalSha256": "4cddf26d0a644c7324d6bb9a71ad555e9f3acfcaa7205d18dd37e72b748d4206",
+      "storedSha256": "832eecf518188fb6da79491adbdfecbcbdd503f598cdbfa2508e52f8dbaae454",
+      "originalBytes": 14019
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/normal-retry2-dispatch/main-before-retry.json",
+      "path": "normal-retry2-dispatch/main-before-retry.json.gz",
+      "originalSha256": "d2e97be50acf9d2849a1c712da1df83b00fcc345343fe24f1ea5de45337534fd",
+      "storedSha256": "75fd2f3feffc07ca427e2afb4851b52b252ca5106209d55a869baa4bdccb9530",
+      "originalBytes": 383
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/normal-retry2-dispatch/retry.json",
+      "path": "normal-retry2-dispatch/retry.json.gz",
+      "originalSha256": "9bd54c05678364f4b57604526ce70a7bb6300a73ecf47962e3e38fbb0922c889",
+      "storedSha256": "f37ec6bb75047b22b462c4ab6825cc74dd464ecc8f80ef3298a7c0666dc6534a",
+      "originalBytes": 593
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/artifacts.json",
+      "path": "original-attempt1/artifacts.json.gz",
+      "originalSha256": "dd3cd602e1da1cea7e58b4e503c89a66434db6d4636da910140f7ac4515f1640",
+      "storedSha256": "c55b7a13766b7d889721115ad0e9806e849913a9e56a16140f74530a0d263262",
+      "originalBytes": 1423
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/blocking-test-results.zip",
+      "path": "original-attempt1/blocking-test-results.zip",
+      "originalSha256": "ff0dea50034f7f07d71c00dc66837e3b94dd6c4e1701f09207d392187ed59d55",
+      "storedSha256": "ff0dea50034f7f07d71c00dc66837e3b94dd6c4e1701f09207d392187ed59d55",
+      "originalBytes": 308701
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/download-inventory.json",
+      "path": "original-attempt1/download-inventory.json.gz",
+      "originalSha256": "45fd2f4bdee6f8c61f26d9606f7ecd35578da293d3c8a001730675d5a9002697",
+      "storedSha256": "f51ad50c9c3f451714e767c31bc129355efcb3a589b4c5ae02b6c5119b0d9691",
+      "originalBytes": 9730
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/jobs.json",
+      "path": "original-attempt1/jobs.json.gz",
+      "originalSha256": "b23ae77095192064388682927b11ef68f065666f03e52457ed220b2329d03cac",
+      "storedSha256": "cd07434699aadc996d52375d5c2687e94abe7c5f264592680e9abbe415a2307f",
+      "originalBytes": 15011
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/workflow-logs.zip",
+      "path": "original-attempt1/workflow-logs.zip",
+      "originalSha256": "c75b522ae7083911bfb2a6397026563d3bb2f569041af8fcdcec36daaa94b895",
+      "storedSha256": "c75b522ae7083911bfb2a6397026563d3bb2f569041af8fcdcec36daaa94b895",
+      "originalBytes": 92232
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/workflow.json",
+      "path": "original-attempt1/workflow.json.gz",
+      "originalSha256": "0fd850da41730a03347fc228f90254b38d45a0243fd00483581485976d3ead42",
+      "storedSha256": "09e5c6dbe81afa251f144b7a579b90366cbf33cff46768acf9165af6f77c5c99",
+      "originalBytes": 14041
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/bootstrap.json",
+      "path": "original-attempt1/works-platform-parity/bootstrap.json.gz",
+      "originalSha256": "22868c97f5c24cc0db9130bb0437bbe88ace84c70cfabd02b524011788262af7",
+      "storedSha256": "5ad93221d27c46593f622ae7faaa6caa67cfa6965d9e1f7dfd33c4c19f50f898",
+      "originalBytes": 134359
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/custody/command.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/custody/command.json.gz",
+      "originalSha256": "b0ef0a7019d2609c3cd5e0106b39c17aaf027f34475143874eb4ffb90b005e43",
+      "storedSha256": "2e086439fd67b54240f4fe53c9a6f20285b26f8c1059150a498df6c9547da28c",
+      "originalBytes": 775
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/custody/custody.log",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/custody/custody.log.gz",
+      "originalSha256": "b47ef07ceb8934f3c7e4c34b8621d02f24ed1c06152b85c1d61629197f0ffa12",
+      "storedSha256": "b6acb68605e4676779cf48991d141375d57992368b44743899ceb3947588ecf6",
+      "originalBytes": 658
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/acl.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/acl.json.gz",
+      "originalSha256": "be7a7151df96289a85ef3c6381fd379e709bddb6aaa12c7f9b01cade408489c0",
+      "storedSha256": "f4a01f3eb66cb88e7ce4aec01b4af0d45bbebda901f4a85cbab6aae416361150",
+      "originalBytes": 2207
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/blocked.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/blocked.json.gz",
+      "originalSha256": "76f7997ec05159eee0631ac5866036a5d7941e7f65183f314c637e381a54b4f0",
+      "storedSha256": "3f5291cc526ac78f5707fe584a214445f429da3316e2b574a06cff6c16846a8f",
+      "originalBytes": 2049
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/isolation.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/isolation.json.gz",
+      "originalSha256": "15b348aad20e4c28405460fae127bba3749f3d6e2688799b0bc3a5fe2ea3c98a",
+      "storedSha256": "82b9f6c22757ddbd4ba814a2e650c387b0b3afffd3d5707cef5b742bf60dbce0",
+      "originalBytes": 2379
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/lost-ack.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/lost-ack.json.gz",
+      "originalSha256": "938bf4ae73615a535aafe973b80386b78d5e41dd535545c65f20cf09c9927e1a",
+      "storedSha256": "743a977c3a1601737b2aeb3b0bfba83702adb1ab312d5e19aecd81dafd6d0d6a",
+      "originalBytes": 2533
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/outage.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/outage.json.gz",
+      "originalSha256": "89446c851d936411b25540d96c93348f9ae1db7311538741f90ae9d08c0272ca",
+      "storedSha256": "6262d8d7a66f4c392e3c8b73b0f6552e338f533b48c353d0420a5a96b7f5dc8b",
+      "originalBytes": 2531
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/restart.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/restart.json.gz",
+      "originalSha256": "8ecad9a8f88d04db61ba80ce336b7e988fd748423155348f965f6112a18a30d1",
+      "storedSha256": "1a7f1d6dea1d678bcdea9427c2f25df07823723ec251fecdd591aa44fdde8991",
+      "originalBytes": 2538
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/evidence/restore.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/evidence/restore.json.gz",
+      "originalSha256": "734fac55ce3931aa973cb4dff63f8dd5f5b1c652f5528a253ad9b60d4e93e1d0",
+      "storedSha256": "ccd4c141635d543924d9ed38840e5276469c5041aaf3a35f401802add0df747b",
+      "originalBytes": 2524
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/guard/command.json",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/guard/command.json.gz",
+      "originalSha256": "d02b7cd3845c496b1fb604caa7e2197b7493ac0526e2d5bf5b9c6ed9a0b1176e",
+      "storedSha256": "1b768e79112674357f1caec6aaae35125ba1f33f368637fa500cd436e18e5b30",
+      "originalBytes": 575
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full/guard/guard.log",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full/guard/guard.log.gz",
+      "originalSha256": "1fc2368b778143311bcf07250a8f9a89156c2f5c17be516853ccbf191af17ac7",
+      "storedSha256": "10bfde30dddd99a17123fb945211a4e4f0acaf96f08e678349d5f960c1384e06",
+      "originalBytes": 497208
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-full-refusal.log",
+      "path": "original-attempt1/works-platform-parity/gate/agents-full-refusal.log.gz",
+      "originalSha256": "e9605642f4e48acf6505a029d2ced06df0cdae5d0f6a3ffe0c893f88a3a93e99",
+      "storedSha256": "54b5856647ae6f227aed85b2b14552b1724f1322fc0d9d2989afea6fcb494306",
+      "originalBytes": 391
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/agents-local-scaffold.log",
+      "path": "original-attempt1/works-platform-parity/gate/agents-local-scaffold.log.gz",
+      "originalSha256": "d38f8593fe23331b70c5843243ae577cb11e08b97083879aebf099a5b98a2673",
+      "storedSha256": "e2806617b9ee83203c25b0422b12bb6db24a9f03fce5a52e917fb813113b6078",
+      "originalBytes": 2057
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/component-evidence-gate-tests.log",
+      "path": "original-attempt1/works-platform-parity/gate/component-evidence-gate-tests.log.gz",
+      "originalSha256": "c2658d7776d4100ef29c3ec14ca81035bc91a18a07947a9af1e0119effe06f90",
+      "storedSha256": "931d73911d52b24318b70832676b6f9f220ab31d9875120eae3308ce72a3b847",
+      "originalBytes": 546
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/evidence-gate-tests.log",
+      "path": "original-attempt1/works-platform-parity/gate/evidence-gate-tests.log.gz",
+      "originalSha256": "1566a682bdcd7a43034012fdc1cbf3a7b5303e7b785e118b44c293e71247d5d9",
+      "storedSha256": "e42ab17e0e3ddd00fa7f7d70246c0776e599d859f036d6a073a6c9a6f13b6262",
+      "originalBytes": 9193
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/host-starts.jsonl",
+      "path": "original-attempt1/works-platform-parity/gate/host-starts.jsonl.gz",
+      "originalSha256": "02e550de8425280cdf69c4ecef097345922fe93ce0a6e46bc114571cb0d1ff7f",
+      "storedSha256": "4aff7f52e7fd3d86abf01c558b47c2727b006899e892939700eae7fa33984b43",
+      "originalBytes": 173082
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/isolated-daprd/binding.json",
+      "path": "original-attempt1/works-platform-parity/gate/isolated-daprd/binding.json.gz",
+      "originalSha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+      "storedSha256": "d401429eb513535a0a09d2c532bada5a5856d113594305c7068452509086eaa6",
+      "originalBytes": 257
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/isolated-daprd/launches.jsonl",
+      "path": "original-attempt1/works-platform-parity/gate/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "0a3f5199faaedc8cfe29cd578494debcb3a35b8296f69527803714e0aebefc68",
+      "storedSha256": "e188fe1dc2106c3c62d27acf3167e5e9112d4d2f7cdd74b6e09791b5a82d8532",
+      "originalBytes": 21012
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/isolated-daprd-retained-preflight/binding.json",
+      "path": "original-attempt1/works-platform-parity/gate/isolated-daprd-retained-preflight/binding.json.gz",
+      "originalSha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+      "storedSha256": "d401429eb513535a0a09d2c532bada5a5856d113594305c7068452509086eaa6",
+      "originalBytes": 257
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/isolated-daprd-retained-preflight/launches.jsonl",
+      "path": "original-attempt1/works-platform-parity/gate/isolated-daprd-retained-preflight/launches.jsonl.gz",
+      "originalSha256": "3c9ab6e69d6d58fd6510a456d35d32eebc63861ddcce6ca91b21099d0b9979e4",
+      "storedSha256": "86a0deefa64863001083547ed62326be20d2071786f9a0054661527caa30384b",
+      "originalBytes": 2273
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/ledger.json",
+      "path": "original-attempt1/works-platform-parity/gate/ledger.json.gz",
+      "originalSha256": "9b60b0bc19fed7a1e80d3fd3fea7def6193c414399d4bff26d6559b1d9724eb4",
+      "storedSha256": "f93b5e63fe799906c1a595c3b24a80105de7e374b1bb7202eddde9fa39c91ce0",
+      "originalBytes": 1336654
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/persisted-states.jsonl",
+      "path": "original-attempt1/works-platform-parity/gate/persisted-states.jsonl.gz",
+      "originalSha256": "79d53de8294dbf154b8a0717a2899dc3e02ec4b283f7eb1a2d31a7d25025b8f1",
+      "storedSha256": "424ba3c340b0cb20d6d1373e99306b9719ce771934d202eac5055c16ab5fc877",
+      "originalBytes": 3585024
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-file-host-release.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-file-host-release.log.gz",
+      "originalSha256": "92ea9cd6be0b3cb4b6e4cf456713f8032bd835847c753e3d1da9ad7fab388d0d",
+      "storedSha256": "7151fe14fa98aaf8739ae260d249803db69030d76ebaf17c78c7a4943aeef4c7",
+      "originalBytes": 1698
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-ha.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-ha.log.gz",
+      "originalSha256": "11d0bf7755aad74417ed7ff4ee2cbdf39bbfeca000321d5ea2e9f1c435294617",
+      "storedSha256": "7cd942ba61b24d85e74fa1d763f15b442d5061efeb5c9a81f900e54ceb0f96f4",
+      "originalBytes": 236887
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-ha.xml",
+      "path": "original-attempt1/works-platform-parity/gate/platform-ha.xml.gz",
+      "originalSha256": "daca2c0aac83a9d6a53ebc642f5f99e995a619757561d7ee886a5900c61f5da7",
+      "storedSha256": "05c665c416ed25167421ffabe97d4a4608745b403c4d8bc8414d90a888e383d3",
+      "originalBytes": 241942
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-historical.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-historical.log.gz",
+      "originalSha256": "9f3009082dfb1434f10fb93710e40d0c0d0794f4b53fe360d23dfe0cb8863381",
+      "storedSha256": "1385dd4d300f64a4e57e585e7068e0435544a347c01859eba0e3243be58cd05f",
+      "originalBytes": 458
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-historical.xml",
+      "path": "original-attempt1/works-platform-parity/gate/platform-historical.xml.gz",
+      "originalSha256": "9c45da2a290d11da149a406ad898c9bba5b421b387871c9bdc99fe5d4ce21a30",
+      "storedSha256": "f699ef32bb3b64ccb7f052252c303cddf3749cba0e1e44d39fe9d0f4908f24a8",
+      "originalBytes": 1726
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-recovery.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-recovery.log.gz",
+      "originalSha256": "957be417f570c82a5391ede228b7ce387836b073b3bc634eb87b9c185dbfc70c",
+      "storedSha256": "15d624ff06bb16bf7f087bc55fb7782bf698a86a9b3ccb1722e148d039229938",
+      "originalBytes": 458
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-recovery.xml",
+      "path": "original-attempt1/works-platform-parity/gate/platform-recovery.xml.gz",
+      "originalSha256": "17ec9438a5fc6ab82f8e295987210cb6f0ab33b997a5826e6cf35563667a84f2",
+      "storedSha256": "ca7be4a6bb18939d692d46662325db4a82c7401ebfdff4859ddc65ede50b506e",
+      "originalBytes": 3594
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-release.xml",
+      "path": "original-attempt1/works-platform-parity/gate/platform-release.xml.gz",
+      "originalSha256": "cd86658b44b430e836a0aacb456d37b069067baef450e380c7e11b0cdb331ca4",
+      "storedSha256": "9e23f6b5f03aa4fb15c3c5fdb1a532f90c5b87fa67329981a3eb7ada8391a933",
+      "originalBytes": 90143
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-tests-build-release.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-tests-build-release.log.gz",
+      "originalSha256": "ef58e5bd38ce37e8465be88ea697b6fbd08d7acaa720124f8b1867fbe5ebb8a2",
+      "storedSha256": "5e47072bcf98573ad595454317d3319d68f07ce3152f744dbbca100e3870dbda",
+      "originalBytes": 2176
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/platform-tests-release.log",
+      "path": "original-attempt1/works-platform-parity/gate/platform-tests-release.log.gz",
+      "originalSha256": "51f4a4e8d81da3f4258393a4c273a5b4b60f002823ba5b69fce690bc946f9f53",
+      "storedSha256": "eed0dc6f506abd0925c1f429ec642a5a97a62c86940a9126dfd6adddf97039cb",
+      "originalBytes": 448
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/retained-host-preflight.log",
+      "path": "original-attempt1/works-platform-parity/gate/retained-host-preflight.log.gz",
+      "originalSha256": "3f1b0bef5ddc9e4ccaf0b6fa470ca362df937d8b369319368a3275d7719941ae",
+      "storedSha256": "d457b6dbe042bc42ece1522373480925cca8f8e0049a655e6da7f119c3a03c1a",
+      "originalBytes": 457
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/retained-preflight-starts.jsonl",
+      "path": "original-attempt1/works-platform-parity/gate/retained-preflight-starts.jsonl.gz",
+      "originalSha256": "39e34edde5fa49df9c39cb5564b08616a28c33aaa590ca90d2a2dd27b9e7d7af",
+      "storedSha256": "1d656f01ffe0452f8ce1a986285964509f57af71f403b4d8044db68e6b553195",
+      "originalBytes": 13167
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/retained-preflight.xml",
+      "path": "original-attempt1/works-platform-parity/gate/retained-preflight.xml.gz",
+      "originalSha256": "6f3132a66ba99f4cb59737159b788e6149dca34f92eb7f70d8dbf73b37d9771e",
+      "storedSha256": "71b59b7e55067c80e171aba2ec411217aa3135eb7414b04319a381323540c829",
+      "originalBytes": 1810
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-0.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-0.log.gz",
+      "originalSha256": "0df36f4d7c3ffd9f2a7574a4f100d93a13c05694a33b87978ab42cff9db5b406",
+      "storedSha256": "4bdb35796bc19c20a7a781a0e28c3c4407bb7116ec9530341cc5fc9138792fc4",
+      "originalBytes": 1486
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-1.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-1.log.gz",
+      "originalSha256": "1809734ee0e42d2737524de9192bec9f83f0363cc0f7990cc8dc30dc4dc45a01",
+      "storedSha256": "92455178d35acedbcda68aeac91df10a2e63dca8287aa37c1ea4b16a3b264365",
+      "originalBytes": 2842
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-2.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-2.log.gz",
+      "originalSha256": "2ba0e60ac9f09323aaef5b7ea34bd7279609c85eb635f4f9c7c3b98f0e08a4aa",
+      "storedSha256": "477e0ffa0731d34ab2e4381905c2f00d76005c05366f29913c7fa7619d66ac87",
+      "originalBytes": 1060
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-3.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-3.log.gz",
+      "originalSha256": "0fb9b41913c33db85eaf9e0415a5e0bf8078f5b8c8427ccba796c888eac4c769",
+      "storedSha256": "93be838d6c23e143b1844bdb49786c4b7feabb6ccade30d51775d17a2940ad21",
+      "originalBytes": 1451
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-4.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-4.log.gz",
+      "originalSha256": "151fbc911b33973dea2944ff9ee8e7b0d2bff4a39aea85cc02cbbaa772d8cb1d",
+      "storedSha256": "37a6394aa2d1c2a27f7ee090deef5bbbc4d6bc23bc89ffb2fb74818514370800",
+      "originalBytes": 456
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/runtime-release-prebuild-5.log",
+      "path": "original-attempt1/works-platform-parity/gate/runtime-release-prebuild-5.log.gz",
+      "originalSha256": "68899974bef9f37f0a8a455f1dc159bdabd61f77355fcd26fb22bde8d96a7593",
+      "storedSha256": "f9c3263cc870c367654bfbabd92ad91e0a8ebc2d9fb0720836d079b7b0bb6de1",
+      "originalBytes": 1087
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/works-consumer-release.log",
+      "path": "original-attempt1/works-platform-parity/gate/works-consumer-release.log.gz",
+      "originalSha256": "21a3c68d1dc54b358e4aefd11f033a4df5768801f3344670eff1e9a2c900c2b4",
+      "storedSha256": "180d537a85ec090dc133b2fed997e1237466560e4bcb92517c18be24a596243c",
+      "originalBytes": 4376
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/works-consumer-supporting.log",
+      "path": "original-attempt1/works-platform-parity/gate/works-consumer-supporting.log.gz",
+      "originalSha256": "a2bdcf712f89d033a612f54e5fb950867eec12d8111ef29d9418a0b90e54a6d3",
+      "storedSha256": "d1deb74cf67dd8f99fcbb6244a451420f95188f975acb55ce008f8ed8ecb59d9",
+      "originalBytes": 39098
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/gate/works-consumer-supporting.xml",
+      "path": "original-attempt1/works-platform-parity/gate/works-consumer-supporting.xml.gz",
+      "originalSha256": "5320d53d865435cd05d1bda583b18f5a40e346e9e4d9004526e543bdd73fc59d",
+      "storedSha256": "c2b153024f8dc095a09978a3217d85bd0d31b673d2efe86cde41f9727844b373",
+      "originalBytes": 206044
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity/platform-source-binding.json",
+      "path": "original-attempt1/works-platform-parity/platform-source-binding.json.gz",
+      "originalSha256": "eda347a84392ee3d72e2061d41f3ed84974a8b01e6bc8bda48cf94cacbe8b703",
+      "storedSha256": "7bdeb50db3f33299346fcabfbcd5e7c61981a132e76f97d8e999d73557d3f71a",
+      "originalBytes": 267873
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/original-attempt1/works-platform-parity.zip",
+      "path": "original-attempt1/works-platform-parity.zip",
+      "originalSha256": "4eca15440f926ee5275c7992eef8f8f1978c467b99cbf9ef6773d990daccf826",
+      "storedSha256": "4eca15440f926ee5275c7992eef8f8f1978c467b99cbf9ef6773d990daccf826",
+      "originalBytes": 833532
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/pre-compression-credential-review.json",
+      "path": "pre-compression-credential-review.json.gz",
+      "originalSha256": "77a6b5a37f952574f287e579f64237106b7f0c3594d79ad94abb82ed25ec0a45",
+      "storedSha256": "c453ecb80401debf474f17f9ed5c608e30e1935b18d505074179d45f133bb2d8",
+      "originalBytes": 630
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/story49-assess-main-ha-failure-before-fixture-map.py",
+      "path": "story49-assess-main-ha-failure-before-fixture-map.py.gz",
+      "originalSha256": "bd4384ebb430d2a5ffb919168ca19579617c070cc1a45955ae144aa38769e715",
+      "storedSha256": "08ce039dfe80bd9e85a5cc47db467dd9e887b5ceffa8ab24d08503539f4e1143",
+      "originalBytes": 7711
+    },
+    {
+      "source": "/tmp/story49-main-failure-packet-preparation/failed-main/story49-assess-main-ha-failure.py",
+      "path": "story49-assess-main-ha-failure.py.gz",
+      "originalSha256": "8000f7bd10902e4fd190543d6e92c19a1a1e129ebd556e7dc3e83dbbd901b16e",
+      "storedSha256": "5788a6d7cb62e6c94bf4fe764555161adb77b89109c27a88a3d0e05c1c987bf6",
+      "originalBytes": 7697
+    }
+  ]
+}
