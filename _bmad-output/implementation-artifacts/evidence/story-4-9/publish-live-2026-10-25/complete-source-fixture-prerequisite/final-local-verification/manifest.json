@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Client-build.log",
+      "path": "Client-build.log.gz",
+      "originalSha256": "150bf10a4e64a050e32084bc589e65b71460123e091e716cacfcd4ed1f446d71",
+      "storedSha256": "2f10a219222fcc698128c45956091cd26ec24dcbd47bfb63ce9e174f6b40d6d6",
+      "originalBytes": 2826
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Client-tests.log",
+      "path": "Client-tests.log.gz",
+      "originalSha256": "291936216e9e306b1384ec3dc9f452bc33f3abd1f22727ed6278e2be497e4ae7",
+      "storedSha256": "7a64c3d5804856b9f91e635ba2e95c0cd85e12fb1f8c7c641d3913a116accf23",
+      "originalBytes": 405
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Client-tests.xml",
+      "path": "Client-tests.xml.gz",
+      "originalSha256": "7f1e0f36d5b8bcc803e2809983af19e8188eaaa39fc54e7f2be8702e92e30f22",
+      "storedSha256": "86168127a4ea435cf80889773a0f0efb0bd3e7564002af9f222641b64c27400d",
+      "originalBytes": 185861
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/DomainService-build.log",
+      "path": "DomainService-build.log.gz",
+      "originalSha256": "a4fb418541387fb928f95a0c7bb6372b7cac0c2adb2959eee6acda55709ab713",
+      "storedSha256": "58a28b3d81211b4b83113c47f0678ad1a9793da80d17fc3115cc2d4f1a7c6d60",
+      "originalBytes": 2340
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/DomainService-tests.log",
+      "path": "DomainService-tests.log.gz",
+      "originalSha256": "eb741a54cdb6077f41c6c0deb14faee754fe7e466352571126452b964c27be92",
+      "storedSha256": "9ce61e5ab176ebb3deb8de0641a1d71039922f9497c09d10c7b698989970fefd",
+      "originalBytes": 11691
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/DomainService-tests.xml",
+      "path": "DomainService-tests.xml.gz",
+      "originalSha256": "4c3b41a4419acef97bf9e148a6f7159fa96f96e79449a8b5c55e6851cb509280",
+      "storedSha256": "dddbc51044851d83f0a94225ca59b881d2f3fccff27660456fa196434e8d40b0",
+      "originalBytes": 16968
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Server-build.log",
+      "path": "Server-build.log.gz",
+      "originalSha256": "0e466a58b0847df25541a76690ff7798185cab3cddca2ae60ae697556eb3a8a2",
+      "storedSha256": "24e22ddcb695ba827f2251db8934ee28875cb692940a71859cf775e61b46da0f",
+      "originalBytes": 5315
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Server-tests.log",
+      "path": "Server-tests.log.gz",
+      "originalSha256": "5b4d8acbb51d75b578ec8df003e733d8f6106efa00acee51ac12ee61776c2f4f",
+      "storedSha256": "49728ecd5d08e63d92176cc9d7760fe28d8f7775814a22a2f5b6c1939a06eba3",
+      "originalBytes": 4379
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/Server-tests.xml",
+      "path": "Server-tests.xml.gz",
+      "originalSha256": "8de04328c92f17674f2084f14dafc23e9e25a6626f4522ea633503d54e3928aa",
+      "storedSha256": "2333a74debeaefd5a85510df8665d56ce0aa8375fb2e7bea66c110648e36842f",
+      "originalBytes": 212308
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "027ff775bc0aef4acf32473653b0c5eef4634e6addc79d396f8e054536afc892",
+      "storedSha256": "3c3ebfca7d0f824680e2401bb811e70150ba25fa8bb638a41cdbf2c73f5193ab",
+      "originalBytes": 3629
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/owner.patch",
+      "path": "owner.patch.gz",
+      "originalSha256": "e2fd5abf6c42a3162fa1167ae1e5cdd9358acb6269a306adfb6fe1290b10a524",
+      "storedSha256": "122cb61476f5e964e7af729b285e4b2e1f7eddba7b14cd1c707e1bd4bfc4cd7d",
+      "originalBytes": 13423
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-channel-commit.log",
+      "path": "story49-complete-source-channel-commit.log.gz",
+      "originalSha256": "aa79571308d1aad827a428e79e0aadd0002e7a5708ffd6f8ee93de7569be7b83",
+      "storedSha256": "d5146905bf7f9bdfb8eee8c2f716b88338642b8e33edfb9ed52f482f93ca98f0",
+      "originalBytes": 225
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-channel-commit.txt",
+      "path": "story49-complete-source-channel-commit.txt.gz",
+      "originalSha256": "04cb4b2d069a83bbe26d4071ec8ac1a07067b79047ae37688a5c90b0e7cfad51",
+      "storedSha256": "4aa9561929dfb4c142baae58e22560c875f99fa39a5e8e5211c79a4e2f7928c7",
+      "originalBytes": 62
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-channel-commitlint.log",
+      "path": "story49-complete-source-channel-commitlint.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-channel-pr.md",
+      "path": "story49-complete-source-channel-pr.md.gz",
+      "originalSha256": "fe0dd7f25eab28660d7abe499c57ec644f9e94acd98e92fc5c5fef991b06b4d5",
+      "storedSha256": "7047d358adf411725cf9bd860679358f0c709d400a67067f0d22b0fc76b31f3e",
+      "originalBytes": 612
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-failure-chronology.json",
+      "path": "story49-complete-source-failure-chronology.json.gz",
+      "originalSha256": "53f45c91295bd05d633e3f94cd0cbf8fc6d58bb0da9182098315a050d70b3b60",
+      "storedSha256": "68bd6bb9cad31cc8d31fa491ee1e059f3d2b3e636f87529185a4423f35dd709f",
+      "originalBytes": 1761
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/story49-complete-source-fixture-checks.py",
+      "path": "story49-complete-source-fixture-checks.py.gz",
+      "originalSha256": "7e7d06cea4eab4d3755750dd1a7a25ca09b7976ac383aac73a18ed9235c836b6",
+      "storedSha256": "deaed90db141992d3cd8d31753aaed996d76eece04a8b2df4cce9912eecdfce2",
+      "originalBytes": 2080
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-and-canaries-final/verification.json",
+      "path": "verification.json.gz",
+      "originalSha256": "b884119eae11115143997e9aaa3305da09e74b72ca8528cbb470c326b24e7227",
+      "storedSha256": "2d734dd8fd64fe85724e5587adc09defd79f9bcc823966732a85edeef6c45508",
+      "originalBytes": 1176
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-projection-native-diagnostic/initial-driver-before-selector-correction.py",
+      "path": "initial-driver-before-selector-correction.py.gz",
+      "originalSha256": "8953480d950ccf53b74a4fb4060b307f648bd23193e4edf26e9c93a39de324fe",
+      "storedSha256": "87cf4803b01930af3f4e5349145471e32eefa6a97962917ac6b4222343a2be7a",
+      "originalBytes": 5156
+    },
+    {
+      "source": "/tmp/story49-final-projection-native-diagnostic/isolated-daprd/.dapr/bin/daprd",
+      "path": "isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-projection-native-diagnostic/isolated-daprd/binding.json",
+      "path": "isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-projection-native-diagnostic/preparation-refusal-2.json",
+      "path": "preparation-refusal-2.json.gz",
+      "originalSha256": "078e888b89c42718c7fd81ecc168553617c57aa247f50bf4dee65d23d0dc9583",
+      "storedSha256": "6b46f23a10f2bee825a8e5f6f8f8eae095b668ef9fdd5edad0079c5501a5ac92",
+      "originalBytes": 238
+    },
+    {
+      "source": "/tmp/story49-final-projection-native-diagnostic/preparation-refusal.json",
+      "path": "preparation-refusal.json.gz",
+      "originalSha256": "5bbdd6a3bfc730401e4b923d6bf7fa9e444e51ed48b32eb8d8dd7daa4e40df7c",
+      "storedSha256": "e7706405c8e237cf223d7f28d47f09b9b44191d7507d8ba3efff69b984367b29",
+      "originalBytes": 334
+    }
+  ]
+}

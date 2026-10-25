@@ -1,0 +1,5 @@
+test: repair release gate fixture bindings
+
+Use the domain-bound gateway assertion overload and share configured batch
+limits with the projection dispatcher. Generate fixture credentials and keep
+exact transport and disclosure checks for those generated values.

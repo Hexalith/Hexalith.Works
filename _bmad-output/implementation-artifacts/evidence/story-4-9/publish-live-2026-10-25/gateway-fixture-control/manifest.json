@@ -1,0 +1,200 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/comparison.json",
+      "path": "comparison.json.gz",
+      "originalSha256": "0e4d086054a0226be51a1475cc25007b9e216f940887d199284c34d36b579358",
+      "storedSha256": "be39acd7c1f735f06f0c3c99f2b143662e85d783e95d3aa3850ff1c7d3fa4a2b",
+      "originalBytes": 2137
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/NuGet.Config",
+      "path": "exact-nsub6/3.127.0/NuGet.Config.gz",
+      "originalSha256": "288e7ea6a4e6262902d19228109822b09383dfc751d9b182b4eb67b08089c3fc",
+      "storedSha256": "b2f50bac7c19e3ff93b609a279cb84e90bd5e76a0ebd2ce82f555ef63360430c",
+      "originalBytes": 139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/Probe.csproj",
+      "path": "exact-nsub6/3.127.0/Probe.csproj.gz",
+      "originalSha256": "6c1384b5c6e10f86a3288278f86bf51528262ad33d12af166b16924b6a68a25d",
+      "storedSha256": "965493e3590d2e65ead3199921c24f5efb8d02d8a04061dce0ba2087ceb39820",
+      "originalBytes": 365
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/ProbeHandler.cs",
+      "path": "exact-nsub6/3.127.0/ProbeHandler.cs.gz",
+      "originalSha256": "80f2754f3372c775c4786ae0b7bdaccd73ab561cef4cb1b28cba70ee543c4ed5",
+      "storedSha256": "703b4992a0c30c18e79562645fcc9ffd9104357292f5d76ebbc229457310fe98",
+      "originalBytes": 554
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/Program.cs",
+      "path": "exact-nsub6/3.127.0/Program.cs.gz",
+      "originalSha256": "af9b3693491b10344b0f6aa5d7f9ce808d39db9f76608a498a354ad775726e32",
+      "storedSha256": "d8492218b80c27f8026b5c4109dab44dde8b0281f67b564ddb5382ea1a940dca",
+      "originalBytes": 1139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/build.log",
+      "path": "exact-nsub6/3.127.0/build.log.gz",
+      "originalSha256": "a5f5c5b66c9ffe06c6c20511528a9b1f5ccb7934b84d5a491627e69ff3bdcacc",
+      "storedSha256": "123aed4643dfea269a304bc4aa1532fb98fe025dba8bd0131ab9567bdf2c55f8",
+      "originalBytes": 293
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.127.0/result.json",
+      "path": "exact-nsub6/3.127.0/result.json.gz",
+      "originalSha256": "028c8caf63dc1955b5e28ee43e88b4e3b3878b6b927d1f4285636e078f90ae08",
+      "storedSha256": "942dd61609d043e7a1c6074269c9c6e112b9707b824d63a79f026ebaa43d1bb9",
+      "originalBytes": 132
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/NuGet.Config",
+      "path": "exact-nsub6/3.128.0/NuGet.Config.gz",
+      "originalSha256": "288e7ea6a4e6262902d19228109822b09383dfc751d9b182b4eb67b08089c3fc",
+      "storedSha256": "b2f50bac7c19e3ff93b609a279cb84e90bd5e76a0ebd2ce82f555ef63360430c",
+      "originalBytes": 139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/Probe.csproj",
+      "path": "exact-nsub6/3.128.0/Probe.csproj.gz",
+      "originalSha256": "b1789b78ad6ce9b991538d04252e3d1216c49a1065f621c82531d2172e4b3547",
+      "storedSha256": "ee1750014bb1abf448911317d6dcec07329708046f7fdf7ce0f2e14097c0a54c",
+      "originalBytes": 365
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/ProbeHandler.cs",
+      "path": "exact-nsub6/3.128.0/ProbeHandler.cs.gz",
+      "originalSha256": "80f2754f3372c775c4786ae0b7bdaccd73ab561cef4cb1b28cba70ee543c4ed5",
+      "storedSha256": "703b4992a0c30c18e79562645fcc9ffd9104357292f5d76ebbc229457310fe98",
+      "originalBytes": 554
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/Program.cs",
+      "path": "exact-nsub6/3.128.0/Program.cs.gz",
+      "originalSha256": "af9b3693491b10344b0f6aa5d7f9ce808d39db9f76608a498a354ad775726e32",
+      "storedSha256": "d8492218b80c27f8026b5c4109dab44dde8b0281f67b564ddb5382ea1a940dca",
+      "originalBytes": 1139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/build.log",
+      "path": "exact-nsub6/3.128.0/build.log.gz",
+      "originalSha256": "76181f0a9567c478796f2acd8c520bb6f82db35c2c1a2d401e1b20144caceccf",
+      "storedSha256": "8ad02fed18276dbda2c4a3cf0491b84f6d7c89f927ea88f5e4e72aafc7d59e33",
+      "originalBytes": 293
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/3.128.0/result.json",
+      "path": "exact-nsub6/3.128.0/result.json.gz",
+      "originalSha256": "76dd635368be9a82e64200f82ad6bc2e385f49795c24a8b95403236498c90b92",
+      "storedSha256": "7bbd1103e0dcfccf49c2d1b19c282912219c5e3fc8c67f8bdb2636e93b0fa378",
+      "originalBytes": 205
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exact-nsub6/commands.json",
+      "path": "exact-nsub6/commands.json.gz",
+      "originalSha256": "a65c917054a2a10e4160a9f59e5bacf8752a87e4aaf6eeec0bd935006c9a2caf",
+      "storedSha256": "f6199a6f54b91126938963a54725f39de4fc962804e63254dfe98282d42d41fe",
+      "originalBytes": 519
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/NuGet.Config",
+      "path": "exploratory-nsub5/3.127.0/NuGet.Config.gz",
+      "originalSha256": "288e7ea6a4e6262902d19228109822b09383dfc751d9b182b4eb67b08089c3fc",
+      "storedSha256": "b2f50bac7c19e3ff93b609a279cb84e90bd5e76a0ebd2ce82f555ef63360430c",
+      "originalBytes": 139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/Probe.csproj",
+      "path": "exploratory-nsub5/3.127.0/Probe.csproj.gz",
+      "originalSha256": "99a84f4883264b5d5e77c2caa3918b230b0ad6ad46efa11a6436ffca57263422",
+      "storedSha256": "ab6dac31f4cffcfe83a6cf2ff7cfcb43d3cfa45c57314dbb20d3c8df957f8004",
+      "originalBytes": 365
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/ProbeHandler.cs",
+      "path": "exploratory-nsub5/3.127.0/ProbeHandler.cs.gz",
+      "originalSha256": "80f2754f3372c775c4786ae0b7bdaccd73ab561cef4cb1b28cba70ee543c4ed5",
+      "storedSha256": "703b4992a0c30c18e79562645fcc9ffd9104357292f5d76ebbc229457310fe98",
+      "originalBytes": 554
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/Program.cs",
+      "path": "exploratory-nsub5/3.127.0/Program.cs.gz",
+      "originalSha256": "af9b3693491b10344b0f6aa5d7f9ce808d39db9f76608a498a354ad775726e32",
+      "storedSha256": "d8492218b80c27f8026b5c4109dab44dde8b0281f67b564ddb5382ea1a940dca",
+      "originalBytes": 1139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/build.log",
+      "path": "exploratory-nsub5/3.127.0/build.log.gz",
+      "originalSha256": "2d69c210f46c1cb4a851542992bae4f68963ae1501bb6f342fd4e5452ba30c03",
+      "storedSha256": "398e8eda886806902552ca06d02ac5f6aa8b165446d9d58cd8fc5c5b9b8a60bf",
+      "originalBytes": 281
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.127.0/result.json",
+      "path": "exploratory-nsub5/3.127.0/result.json.gz",
+      "originalSha256": "028c8caf63dc1955b5e28ee43e88b4e3b3878b6b927d1f4285636e078f90ae08",
+      "storedSha256": "942dd61609d043e7a1c6074269c9c6e112b9707b824d63a79f026ebaa43d1bb9",
+      "originalBytes": 132
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/NuGet.Config",
+      "path": "exploratory-nsub5/3.128.0/NuGet.Config.gz",
+      "originalSha256": "288e7ea6a4e6262902d19228109822b09383dfc751d9b182b4eb67b08089c3fc",
+      "storedSha256": "b2f50bac7c19e3ff93b609a279cb84e90bd5e76a0ebd2ce82f555ef63360430c",
+      "originalBytes": 139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/Probe.csproj",
+      "path": "exploratory-nsub5/3.128.0/Probe.csproj.gz",
+      "originalSha256": "140135251c67c5eef051469cfd90baed95405ab2d56acfa7cf96d0341d972434",
+      "storedSha256": "f066f9bc13da50b820235eb994269cd51a5d656b4e6f946649a0cb9b2be4cccc",
+      "originalBytes": 365
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/ProbeHandler.cs",
+      "path": "exploratory-nsub5/3.128.0/ProbeHandler.cs.gz",
+      "originalSha256": "80f2754f3372c775c4786ae0b7bdaccd73ab561cef4cb1b28cba70ee543c4ed5",
+      "storedSha256": "703b4992a0c30c18e79562645fcc9ffd9104357292f5d76ebbc229457310fe98",
+      "originalBytes": 554
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/Program.cs",
+      "path": "exploratory-nsub5/3.128.0/Program.cs.gz",
+      "originalSha256": "af9b3693491b10344b0f6aa5d7f9ce808d39db9f76608a498a354ad775726e32",
+      "storedSha256": "d8492218b80c27f8026b5c4109dab44dde8b0281f67b564ddb5382ea1a940dca",
+      "originalBytes": 1139
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/build.log",
+      "path": "exploratory-nsub5/3.128.0/build.log.gz",
+      "originalSha256": "60632a385fc4f1d9b338a7bf37f42d24897c2754090a37a0050394f42ab8b66c",
+      "storedSha256": "5d9dbf7fd089a6cb7c34be4cfda5d185b56315ea0fd6ce31d79ed2e6591976c9",
+      "originalBytes": 281
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/3.128.0/result.json",
+      "path": "exploratory-nsub5/3.128.0/result.json.gz",
+      "originalSha256": "76dd635368be9a82e64200f82ad6bc2e385f49795c24a8b95403236498c90b92",
+      "storedSha256": "7bbd1103e0dcfccf49c2d1b19c282912219c5e3fc8c67f8bdb2636e93b0fa378",
+      "originalBytes": 205
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/exploratory-nsub5/commands.json",
+      "path": "exploratory-nsub5/commands.json.gz",
+      "originalSha256": "366c12bf910dff777ce092dbafadad259ed092f4eeb052ce4d30d3adf6bb50ad",
+      "storedSha256": "2321ae9818726706ca07f7d3c385ab46ce47ad86c369831434e1a11387dbd2bb",
+      "originalBytes": 437
+    },
+    {
+      "source": "/tmp/story49-gateway-fixture-control-packet/gateway-change.patch",
+      "path": "gateway-change.patch.gz",
+      "originalSha256": "c3da875f3dc1c247d70b110d76762bc0244255863030f69c777f7a1667bf66ca",
+      "storedSha256": "6338edba5212b063f0650e967e6d360f3402d1751f6c2fdb5a9b14230ab080f2",
+      "originalBytes": 5175
+    }
+  ]
+}

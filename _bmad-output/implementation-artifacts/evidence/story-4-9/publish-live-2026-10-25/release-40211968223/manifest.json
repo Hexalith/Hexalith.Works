@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-release-40211968223/12606511124.zip",
+      "path": "12606511124.zip",
+      "originalSha256": "972e094ebac2c0dfa78f244888609d4c52ad3868f91645441b121d4b1ded17a2",
+      "storedSha256": "972e094ebac2c0dfa78f244888609d4c52ad3868f91645441b121d4b1ded17a2",
+      "originalBytes": 14816
+    },
+    {
+      "source": "/tmp/story49-release-40211968223/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "67872f28194abc5c7cf3b5ba6959095cf038989e3b9eda2961a85202fe329893",
+      "storedSha256": "93ef97f5ca2d8f233ed83049a5970f525dbdf4d705ec22cf76def20c76048001",
+      "originalBytes": 10534
+    },
+    {
+      "source": "/tmp/story49-release-40211968223/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "b9405a3cea98e27938310f9bd9527ef0c001b869d84e747e8144e925ec3342a8",
+      "storedSha256": "b3ff0bee6aaf52262121c7840454ff400bee92f242c37e4d19ff11eabc2400b0",
+      "originalBytes": 470
+    },
+    {
+      "source": "/tmp/story49-release-40211968223/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "858944ef11b12acf8240c099bc67bd456a1ef3ee82bcf9adb6fbd9fa686cbf27",
+      "storedSha256": "33a5241e99d10e66e4a97292886c8db988bee524835ff1420cebe94da1fc913b",
+      "originalBytes": 14094
+    }
+  ]
+}

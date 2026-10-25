@@ -1,0 +1,900 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/callback.log",
+      "path": "callback/callback.log.gz",
+      "originalSha256": "7215922f5f601d20fa0ade3bf2617ecb008bfd80a8a6b1d042a66fa2c527206b",
+      "storedSha256": "21950f7f0240fcdfb9e378e4604ff8ab0eb1830694fc8152621da2fb421be429",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/callback.xml",
+      "path": "callback/callback.xml.gz",
+      "originalSha256": "c41be69c8f84be72cc5a3b15087a8fed85307413dc500b0e442869cb9b5f2ca1",
+      "storedSha256": "5fcc8029538de63624ef1ff46d5ba6df82f09c3442f61fe090cc7240d2e08874",
+      "originalBytes": 1765
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/command.json",
+      "path": "callback/command.json.gz",
+      "originalSha256": "aa6e4e3363365ad3f55251b93d130865a17a2c00c5dd4d293be15a41a505c9f9",
+      "storedSha256": "987a49f383cca3a669e0b512f82053cb9c3355638dc02955f442b96bc17c4404",
+      "originalBytes": 4945
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/docker-observer.stderr",
+      "path": "callback/docker-observer.stderr.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/docker-selection.json",
+      "path": "callback/docker-selection.json.gz",
+      "originalSha256": "7b9dd081b9e8c6d75f306085ad5aaaba0bf9e25cee616396d19efaddbdcb796a",
+      "storedSha256": "d2a75d0b708a007d9350beb90a7088620522f499cc66da2776f59079ed4f93a3",
+      "originalBytes": 604
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/host-starts.jsonl",
+      "path": "callback/host-starts.jsonl.gz",
+      "originalSha256": "3ff5bbb51987d1ce31cdff1001a22d2304a5ec5ceb569f93d6cfb1864ca5cd44",
+      "storedSha256": "69a0368ee191c008d3f3c12610c316bc618ec43109482805c2fac5d7d8ac1a58",
+      "originalBytes": 23060
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/isolated-daprd/.dapr/bin/daprd",
+      "path": "callback/isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/isolated-daprd/binding.json",
+      "path": "callback/isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/isolated-daprd/launches.jsonl",
+      "path": "callback/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "5100f6f3f745915afb787f4b25d627daf4ea2907fb49d8f655980ecfdc22bef7",
+      "storedSha256": "fbbb1aa4f99298b6fe15bd808e61c727667be4eeb72043b86fa637d1f27bd038",
+      "originalBytes": 2301
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/owned-docker-events.jsonl",
+      "path": "callback/owned-docker-events.jsonl.gz",
+      "originalSha256": "d4d096a4d2ee61fbf321c31d51edd6544ad54195221617b18a557de270062918",
+      "storedSha256": "cf90ad1f97364dedddb4e2bcf5bdd90b3ad54f1aef54fa3b30879fc318d4e048",
+      "originalBytes": 55552
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/callback/persisted-states.jsonl",
+      "path": "callback/persisted-states.jsonl.gz",
+      "originalSha256": "45080abd08a5a64a2911902ef9287d7edff24d8f907109a30fb170522b51f39d",
+      "storedSha256": "a99bbde621717ad7129bb9cad30d51fd1a63f142ac61f6d0fab950988385a22e",
+      "originalBytes": 99677
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/command.json",
+      "path": "restart/command.json.gz",
+      "originalSha256": "05a6ee266795f1edbfb198fc8d7cc557b56ba909f758b2ecb78eb691e0e41f9b",
+      "storedSha256": "568f230576273ef626d6ca5bec6e24613342c566f2b3a793419a1f30890920d4",
+      "originalBytes": 4985
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/docker-observer.stderr",
+      "path": "restart/docker-observer.stderr.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/docker-selection.json",
+      "path": "restart/docker-selection.json.gz",
+      "originalSha256": "1e07d6c526f36370552776ef264b916dd9f3d9618be9df253abc797fdccf8d52",
+      "storedSha256": "63d5555112ee1da8d940b0616f280ccd554d5a0c516438830c8a398688c744e7",
+      "originalBytes": 1469
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/host-starts.jsonl",
+      "path": "restart/host-starts.jsonl.gz",
+      "originalSha256": "58c0b59fd7b4dc96c0b5b25e866c609f25d250089f91eaf11b10588ccb1bd506",
+      "storedSha256": "d4a9399338fa47eba23c955c2e402a182f243a746b04a2feb3c6a4323e0bc626",
+      "originalBytes": 105718
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/isolated-daprd/.dapr/bin/daprd",
+      "path": "restart/isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/isolated-daprd/binding.json",
+      "path": "restart/isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/isolated-daprd/launches.jsonl",
+      "path": "restart/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "40d07b67b501c343eecb5865bd67f3798b22292c70ed203040fd87315be9cc66",
+      "storedSha256": "fd7fb3bcc66b9f9875fcc33f357fb717ecd4fb0f36371b705b0e30e068eb4d71",
+      "originalBytes": 11505
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-observer-errors.jsonl",
+      "path": "restart/native-observer-errors.jsonl.gz",
+      "originalSha256": "3816a21c038558e97e5b872554f8b30024e13a1c0f9d5e3c063411f03f3fca9a",
+      "storedSha256": "eb464baf21052e8d0ccbc9608449f4a968a5db998a84d3addeaaa9e2972c7a91",
+      "originalBytes": 30240
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-observer-initial.py",
+      "path": "restart/native-observer-initial.py.gz",
+      "originalSha256": "45230c6c13f96c4b79d99607db1f8b983382fdf5b0f407f0f03ea1c13c1645c3",
+      "storedSha256": "21fad45375445114bf91c1af90ac42ed8fab6bdf7e60abf0a9f8c992c9569ea6",
+      "originalBytes": 5504
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-observer.log",
+      "path": "restart/native-observer.log.gz",
+      "originalSha256": "34e8ebcafb0002ba75cf0b3d2181c49a5e0db72be2321b01d9dec3df677d5abd",
+      "storedSha256": "95d2cdddafb7e50005ebb2e0acff57abf6074e0bd17853a88b5539d4a6767ff0",
+      "originalBytes": 27
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/106dbfe2-fe1a-4622-99d3-6f7911c6ca2c_err",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/106dbfe2-fe1a-4622-99d3-6f7911c6ca2c_err.gz",
+      "originalSha256": "28f25851a9f77d7c160767fd74e396b010aa688a346b56fe9a7a47a67843aad3",
+      "storedSha256": "514a435395c547c3fd14d12715a5a254251754f847e2810122f2ebc70d08f1ef",
+      "originalBytes": 4968
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/106dbfe2-fe1a-4622-99d3-6f7911c6ca2c_out",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/106dbfe2-fe1a-4622-99d3-6f7911c6ca2c_out.gz",
+      "originalSha256": "8a92827b598be089aa9180855b94fa0402dc237f251e37e6b30c2c599550139e",
+      "storedSha256": "ff6519de7e7cf00c6371f2a446699fe6c0b26425a11d45a04fd949235826e2ed",
+      "originalBytes": 57444
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/1a626b85-1e5f-434f-99ae-f61f5c2ab2ee_err",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/1a626b85-1e5f-434f-99ae-f61f5c2ab2ee_err.gz",
+      "originalSha256": "a1233db63185fdd33418716dde8e4e62ee843e3255277c8c5708ba76dd605c4b",
+      "storedSha256": "429d0a12714c4d299f6f950259cc2883fac2d257eaa68ad6e5fa49d5ae837b8a",
+      "originalBytes": 4968
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/1a626b85-1e5f-434f-99ae-f61f5c2ab2ee_out",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/1a626b85-1e5f-434f-99ae-f61f5c2ab2ee_out.gz",
+      "originalSha256": "e87586233ede0d1c787e1373de1bf5b75aeaf58195a184e7c9564749b486a740",
+      "storedSha256": "48d446eadca6f69d6cc08b108a841405733291a16d8f7fb91dcb495bf680c301",
+      "originalBytes": 42515
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_err_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f_qzrh",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_err_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f_qzrh.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_out_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f_qzrh",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_out_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f_qzrh.gz",
+      "originalSha256": "d17d86c47360b10d051518b82677fbd4a10d004ed9a7ea8dbe567c0472f68693",
+      "storedSha256": "a1ccbfdb639f511ca71a169420e59140d5da2152aae0243b9a537d5ac49bdf8d",
+      "originalBytes": 6425
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_starterr_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_starterr_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_startout_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-placement-mtls-gwxpjjra_startout_b81fd7a3-eab1-4ff6-bf52-6925183a3f9f.gz",
+      "originalSha256": "909a4474f58e3289631bba7b6cf0177c97d28c1a1c7d6982b770f15c73e66538",
+      "storedSha256": "25c8b994be8aa9cbfa010a79ab07e8dd44fdfbe393503603bdd71b01bb59ed2f",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_err_34b572a0-6dd4-44cf-b584-85379a759fa0_ytli",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_err_34b572a0-6dd4-44cf-b584-85379a759fa0_ytli.gz",
+      "originalSha256": "a95d84dbdec3cb90b59f54900f5588d28d984b77ba2c90f2150713b0af3ab072",
+      "storedSha256": "2b7c402aa461d943c9ee9ee7263d420c69fc82a74582a7f429575660d074a6a4",
+      "originalBytes": 21315
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_out_34b572a0-6dd4-44cf-b584-85379a759fa0_ytli",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_out_34b572a0-6dd4-44cf-b584-85379a759fa0_ytli.gz",
+      "originalSha256": "0ddc032f68bc0a3488e9f59b2df9d4603bcd5d8b4815c406176992f3172ef694",
+      "storedSha256": "742d115a614829daeb5b469ccd3e0371fb1ff2b2d645f55a38c4fab0c95b85ac",
+      "originalBytes": 20915
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_starterr_34b572a0-6dd4-44cf-b584-85379a759fa0",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_starterr_34b572a0-6dd4-44cf-b584-85379a759fa0.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_startout_34b572a0-6dd4-44cf-b584-85379a759fa0",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-scheduler-mtls-fkqnqccg_startout_34b572a0-6dd4-44cf-b584-85379a759fa0.gz",
+      "originalSha256": "13c1718c09e5d8db7ce882bdefc45f7626cb19f06d5308d259706cf945cbcc5f",
+      "storedSha256": "40e56c2ce90ba2bb1008f89ec99aed99ec82524fa3516988c091249c34e8ed59",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_err_69d431f8-adf7-47e3-9648-97c22eb2ec3e_zaja",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_err_69d431f8-adf7-47e3-9648-97c22eb2ec3e_zaja.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_out_69d431f8-adf7-47e3-9648-97c22eb2ec3e_zaja",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_out_69d431f8-adf7-47e3-9648-97c22eb2ec3e_zaja.gz",
+      "originalSha256": "f854d329b86c2699a8009c5b8e6bdd9a70a7f1fc2a1f642455fe7ab887f97af5",
+      "storedSha256": "77df34c06d9dcae04843c85d362c68e25da5d173db115a808ae5e3f99dbcb2ef",
+      "originalBytes": 12704
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_starterr_69d431f8-adf7-47e3-9648-97c22eb2ec3e",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_starterr_69d431f8-adf7-47e3-9648-97c22eb2ec3e.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_startout_69d431f8-adf7-47e3-9648-97c22eb2ec3e",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/dapr-sentry-heutuqpk_startout_69d431f8-adf7-47e3-9648-97c22eb2ec3e.gz",
+      "originalSha256": "57a1bd430a29e5dda2083f0edc4f448d4dfd55b77dace57f9af9740eb5ea23c3",
+      "storedSha256": "6c0410ce4d21c7e43db207ba3d0f3a1e80aad34139d8431b882bd48770325ba1",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/e2316982-a979-4819-a7cf-9f6d8d075124_err",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/e2316982-a979-4819-a7cf-9f6d8d075124_err.gz",
+      "originalSha256": "185a491bb09c1b4f680f85d4330be668bf378ce929bcffd4074bba2711f1a3a7",
+      "storedSha256": "c77220f67c3aa78d97fed1d9132391bd9e2fa2d54675d84704e73669bf9165a6",
+      "originalBytes": 3546
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/e2316982-a979-4819-a7cf-9f6d8d075124_out",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/e2316982-a979-4819-a7cf-9f6d8d075124_out.gz",
+      "originalSha256": "03042b885b9f54316baf603d675ab1b67e04e4b261f5299024974219b959c4aa",
+      "storedSha256": "0d7f8fcb698bf9c81895a8cf94b9ce33aed11a6f0fc1135317d42433bb66f195",
+      "originalBytes": 40354
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/eaabf311-15b0-46fe-a153-c5d5adb5054c_err",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/eaabf311-15b0-46fe-a153-c5d5adb5054c_err.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/eaabf311-15b0-46fe-a153-c5d5adb5054c_out",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/eaabf311-15b0-46fe-a153-c5d5adb5054c_out.gz",
+      "originalSha256": "795f6be0e2dbfc323094266557b85c12b28037646a54c4a342a2ce6c39eb9f07",
+      "storedSha256": "100cf6e27919a63c408a5e1785ff4e3d60d5535d69f99654acc3746ae5cf9b92",
+      "originalBytes": 40457
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/resource-executable-106dbfe2-fe1a-4622-99d3-6f7911c6ca2c.log",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/resource-executable-106dbfe2-fe1a-4622-99d3-6f7911c6ca2c.log.gz",
+      "originalSha256": "274220dfb0db8ae918b695fe087c8f3c13b2074b3849eefef0f4d39f9c4fe64b",
+      "storedSha256": "dae9a0c3c2c3de7c561913cbe761384b5bf52153bf96e1b9b538625f631e9de8",
+      "originalBytes": 854
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/resource-executable-1a626b85-1e5f-434f-99ae-f61f5c2ab2ee.log",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/resource-executable-1a626b85-1e5f-434f-99ae-f61f5c2ab2ee.log.gz",
+      "originalSha256": "c60fcbafb7e2c6b6b593aae2ce904f3d86bf3faf4148af0da96eda1cbf73feb5",
+      "storedSha256": "52dde6d961fc73db24f1c9d93a4de9fdaacac0b6eea972a84e5674d15cd3cd95",
+      "originalBytes": 1014
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/resource-executable-e2316982-a979-4819-a7cf-9f6d8d075124.log",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/resource-executable-e2316982-a979-4819-a7cf-9f6d8d075124.log.gz",
+      "originalSha256": "e5762fa1165d6d63da14ee1e415bc3c5db771e80b7d33b04714d5d586730dfd5",
+      "storedSha256": "6b1aa80fb6b948dd8d56e6023b1dd1f515ed243d56af6d6628f207128a237cba",
+      "originalBytes": 884
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpD6RVLn/resource-executable-eaabf311-15b0-46fe-a153-c5d5adb5054c.log",
+      "path": "restart/native-selected/aspire-dcpD6RVLn/resource-executable-eaabf311-15b0-46fe-a153-c5d5adb5054c.log.gz",
+      "originalSha256": "5d9849282c26d7ad7994728f568a9f2a83e290a8e2d4caf2162c53b1f889d3c8",
+      "storedSha256": "fbcef2fc75388dde44ea74f1f9e971ff1628c82982443f377a3e13ed893c9210",
+      "originalBytes": 965
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/26a2a380-a51a-40ab-bcda-a6946e702e36_err",
+      "path": "restart/native-selected/aspire-dcpNpoP59/26a2a380-a51a-40ab-bcda-a6946e702e36_err.gz",
+      "originalSha256": "c31e895b70c6d5fef4dcf7b69a68d861cf571572891155b7a3fcc2597327d41b",
+      "storedSha256": "d9568665b2ccb211137756419cb2532599ec6968c58368cfa11f294afe168a8c",
+      "originalBytes": 2124
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/26a2a380-a51a-40ab-bcda-a6946e702e36_out",
+      "path": "restart/native-selected/aspire-dcpNpoP59/26a2a380-a51a-40ab-bcda-a6946e702e36_out.gz",
+      "originalSha256": "bf29e305c0c9f9112a5d2d33bf759cb37aef85ec9009b0b86ed08c967fb45f7a",
+      "storedSha256": "e7051116bef35776247b250772d1982baf2de6fa7422ac512199fdc0096b3e34",
+      "originalBytes": 37339
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/31905120-96d0-4c2e-b5c5-6bdc3aab0056_err",
+      "path": "restart/native-selected/aspire-dcpNpoP59/31905120-96d0-4c2e-b5c5-6bdc3aab0056_err.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/31905120-96d0-4c2e-b5c5-6bdc3aab0056_out",
+      "path": "restart/native-selected/aspire-dcpNpoP59/31905120-96d0-4c2e-b5c5-6bdc3aab0056_out.gz",
+      "originalSha256": "f404c3e01cf2efb4b8912c01d665c38feb885e722bc0c53582bf0596f42c6ae8",
+      "storedSha256": "be6f28a38c6ec3afdeb6f741b21430de9a1ec6e5decfec454f1afe4dcd5647b2",
+      "originalBytes": 33994
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/647363c0-5e8b-4e19-81d1-3bae17618e21_err",
+      "path": "restart/native-selected/aspire-dcpNpoP59/647363c0-5e8b-4e19-81d1-3bae17618e21_err.gz",
+      "originalSha256": "d221762e0a55e50caad464c2f588bf353931a8c2452e0b5d8d8221d94f230a05",
+      "storedSha256": "28dbcc07341343f574ed8aca8799d981401663e29659c4c4d0b60fa75ee125c4",
+      "originalBytes": 1180
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/647363c0-5e8b-4e19-81d1-3bae17618e21_out",
+      "path": "restart/native-selected/aspire-dcpNpoP59/647363c0-5e8b-4e19-81d1-3bae17618e21_out.gz",
+      "originalSha256": "325bef76bd784b46a12e98b588b12d2c73a2caab23955d5c175f1e562c46e645",
+      "storedSha256": "7b4028facc0416148158129b5b3d83cd3eeac09a232640fc6d048054d2d98cba",
+      "originalBytes": 31584
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_err_80f62e76-cd27-4e93-8f03-4fc6e2299cb8_vgao",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_err_80f62e76-cd27-4e93-8f03-4fc6e2299cb8_vgao.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_out_80f62e76-cd27-4e93-8f03-4fc6e2299cb8_vgao",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_out_80f62e76-cd27-4e93-8f03-4fc6e2299cb8_vgao.gz",
+      "originalSha256": "1dabc34a664996de42237044535f8987f916a844ac43f4f0de5c8b7b1fd10092",
+      "storedSha256": "a8ebd5160553762d6e763671f1833322b342f5ba391275a46a4df413562b163f",
+      "originalBytes": 6801
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_starterr_80f62e76-cd27-4e93-8f03-4fc6e2299cb8",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_starterr_80f62e76-cd27-4e93-8f03-4fc6e2299cb8.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_startout_80f62e76-cd27-4e93-8f03-4fc6e2299cb8",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-placement-mtls-djkcwkzt_startout_80f62e76-cd27-4e93-8f03-4fc6e2299cb8.gz",
+      "originalSha256": "f1dc3e7270cd145cce0f8d3ab40946c921180e074c70413f7071c92c5eeb0f0d",
+      "storedSha256": "c1640065c2025b5218a554e1444875b82be33f7456a4a18e72c0eb8432bc0580",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_err_c15daebb-318f-4635-8f45-829c71acf0a3_aqto",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_err_c15daebb-318f-4635-8f45-829c71acf0a3_aqto.gz",
+      "originalSha256": "e3bfa254d6fb43018badf890cabaf3cf525c28024b59ff6dfc4a2f6f32fe89f3",
+      "storedSha256": "a554ded4ec7d085e10e1e48e62e2f80927942577f608c07a99b2d664cc7d1476",
+      "originalBytes": 21315
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_out_c15daebb-318f-4635-8f45-829c71acf0a3_aqto",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_out_c15daebb-318f-4635-8f45-829c71acf0a3_aqto.gz",
+      "originalSha256": "b2ae39a4d271c973c116f5c75efcc44add8d45ac9e4ea8729212fcf5d00cf3b6",
+      "storedSha256": "1a0c7b438f88331faac3ec64db1daf5a67de521849b50abc99633e02ae6dabe0",
+      "originalBytes": 20910
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_starterr_c15daebb-318f-4635-8f45-829c71acf0a3",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_starterr_c15daebb-318f-4635-8f45-829c71acf0a3.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_startout_c15daebb-318f-4635-8f45-829c71acf0a3",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-scheduler-mtls-jxkthnqh_startout_c15daebb-318f-4635-8f45-829c71acf0a3.gz",
+      "originalSha256": "10bc9876dc32a908122ce60e9e458ec100576d93df7d2d90f0c62b74808010e0",
+      "storedSha256": "07d5185da080d3d18cd9414d30b11cc597f2e9114b1aa6118fb408ac22f34453",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_err_04583ea2-c59d-4561-b840-89737ad702a7_hkdu",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_err_04583ea2-c59d-4561-b840-89737ad702a7_hkdu.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_out_04583ea2-c59d-4561-b840-89737ad702a7_hkdu",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_out_04583ea2-c59d-4561-b840-89737ad702a7_hkdu.gz",
+      "originalSha256": "43d87ef809fe2cc4c82e745aee942381dd1190b10b5a7fb4cce41199ae457279",
+      "storedSha256": "e68f5a2ae7fba07a82db636df69a14c6b323dccdc961ca7915f6d6801b3ec613",
+      "originalBytes": 12703
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_starterr_04583ea2-c59d-4561-b840-89737ad702a7",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_starterr_04583ea2-c59d-4561-b840-89737ad702a7.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_startout_04583ea2-c59d-4561-b840-89737ad702a7",
+      "path": "restart/native-selected/aspire-dcpNpoP59/dapr-sentry-mdrzqukh_startout_04583ea2-c59d-4561-b840-89737ad702a7.gz",
+      "originalSha256": "e3227d82653bd1ab429a81e84f09c945ee3d32fca619de752cf2a71ff6fbb53b",
+      "storedSha256": "98a2ec5911f33492aa1d8fe0de8c927684152c0a360af8d4a542cf9ba0fb39bc",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5_err",
+      "path": "restart/native-selected/aspire-dcpNpoP59/eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5_err.gz",
+      "originalSha256": "42cfaea7416dda950447a1f8dfbc1e1a8d84aacf3b8490cda6443f1059811f60",
+      "storedSha256": "403d4f034364427f0b3a9a1588c8db2d5b899cda3f666af6604946a5ac737c84",
+      "originalBytes": 2124
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5_out",
+      "path": "restart/native-selected/aspire-dcpNpoP59/eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5_out.gz",
+      "originalSha256": "6518cd85ee9ab8c25262b4fa0529d96bae43e4422451bdda0dba86be0100f220",
+      "storedSha256": "0dbfd58628e74b1d677023711a2d10f1a7f4d485259d8e2a892d2b291784c239",
+      "originalBytes": 44852
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/resource-executable-26a2a380-a51a-40ab-bcda-a6946e702e36.log",
+      "path": "restart/native-selected/aspire-dcpNpoP59/resource-executable-26a2a380-a51a-40ab-bcda-a6946e702e36.log.gz",
+      "originalSha256": "f5ab19bb61064fd9a021cc68e147acff9deb64de45f3370d28fd78432471f8b3",
+      "storedSha256": "a25a560982358de9a396b0991c8068f5c66e8f4d9916484b4d02895b7d6d9daa",
+      "originalBytes": 1014
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/resource-executable-31905120-96d0-4c2e-b5c5-6bdc3aab0056.log",
+      "path": "restart/native-selected/aspire-dcpNpoP59/resource-executable-31905120-96d0-4c2e-b5c5-6bdc3aab0056.log.gz",
+      "originalSha256": "0109141694ee145c7c39cae1b37cb72fb3dbd39be5982afec09549906b6a6948",
+      "storedSha256": "e167201f731eea5662c2cd5fcd76b80f8137719c18b79021b8b304d844dd21c3",
+      "originalBytes": 965
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/resource-executable-647363c0-5e8b-4e19-81d1-3bae17618e21.log",
+      "path": "restart/native-selected/aspire-dcpNpoP59/resource-executable-647363c0-5e8b-4e19-81d1-3bae17618e21.log.gz",
+      "originalSha256": "3b4eb3abae1f125692d75a38b3c4811184bafda8e689fec199e570670033b9fe",
+      "storedSha256": "0a8676e228639a7d045512727974c7c1394d3c61fcc490818e29941844275c72",
+      "originalBytes": 884
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpNpoP59/resource-executable-eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5.log",
+      "path": "restart/native-selected/aspire-dcpNpoP59/resource-executable-eda0dc6e-ea2e-45f8-bb65-7edfdb3fc9c5.log.gz",
+      "originalSha256": "872fefb80250d20beb2a90c234f131f022249da953bec88db1cb80b059b1c4bd",
+      "storedSha256": "aff78b138ed2382c0b72c851d884953c0c84aaf9606fa4a853251a26a5189252",
+      "originalBytes": 854
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/39c1bddc-c294-4b4d-9165-a8878563983e_err",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/39c1bddc-c294-4b4d-9165-a8878563983e_err.gz",
+      "originalSha256": "9c7d1e3177aeee1a49f47c6c7238155681a41f99f90395952507661e4b3d4aaa",
+      "storedSha256": "87858ab978d7643189c12df9adb4e016ac13f24a7a66835b1ca88b21cb49a3d4",
+      "originalBytes": 1416
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/39c1bddc-c294-4b4d-9165-a8878563983e_out",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/39c1bddc-c294-4b4d-9165-a8878563983e_out.gz",
+      "originalSha256": "91c08c500984b0f8c4048bb8d1afffb6217f20f368465bddec8854768b0f6ef9",
+      "storedSha256": "bb18370a837c7deb60c95ee1e11630e5f70503e52639ebc8ac9dd7528154875f",
+      "originalBytes": 41961
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755_err",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755_err.gz",
+      "originalSha256": "44b513ea455ed9da2e42fac6d12a3c26a61a3313ba2ca6546f0454cd1ffeb3a4",
+      "storedSha256": "c04213bd66abe7ac3a055c324f78cda17fb1af967e0124bfb8f4d2fb17388acf",
+      "originalBytes": 1416
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755_out",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755_out.gz",
+      "originalSha256": "d0c87dd96fcebece1e476e9d1dd611e2a0ca510ead4201813f5a8acf793b497a",
+      "storedSha256": "47f7ee62b5f4e7e3ad69894030d8df99e0bc6950cff2cfb45ee86cf67a650fa0",
+      "originalBytes": 33103
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/510020d8-8d60-452e-a614-d906dc02711a_err",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/510020d8-8d60-452e-a614-d906dc02711a_err.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/510020d8-8d60-452e-a614-d906dc02711a_out",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/510020d8-8d60-452e-a614-d906dc02711a_out.gz",
+      "originalSha256": "70797ee356fbd3435fee352372565052f27251e50e82a0dc5f7a9a8c7aaa4c8e",
+      "storedSha256": "82d8ac4902efadd11132ece4f79d3aa3f1e64cc1254af212492ac72d9dadfd44",
+      "originalBytes": 34224
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/8e0f042a-4233-48fd-8483-e3987b5ad24e_err",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/8e0f042a-4233-48fd-8483-e3987b5ad24e_err.gz",
+      "originalSha256": "8b8018640660827d215f5de1085d085aadbf704721d034c89ae8bc38b69f3900",
+      "storedSha256": "82b49cbb3dccd6d8d116323b11a5aa7fdf4e7339cca3e48d0dc5d2da9e7dad3b",
+      "originalBytes": 236
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/8e0f042a-4233-48fd-8483-e3987b5ad24e_out",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/8e0f042a-4233-48fd-8483-e3987b5ad24e_out.gz",
+      "originalSha256": "aa0e8bec10298b62b2b732715f6754951ace578e3362d998bd6119e406a0c693",
+      "storedSha256": "afb336d3967a0ae8f4dabf797b3841b5dbaaabd9335231b49eeea58f2f83c151",
+      "originalBytes": 28719
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_err_44c824fa-6304-45d8-b705-b381f8a98850_lwqx",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_err_44c824fa-6304-45d8-b705-b381f8a98850_lwqx.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_out_44c824fa-6304-45d8-b705-b381f8a98850_lwqx",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_out_44c824fa-6304-45d8-b705-b381f8a98850_lwqx.gz",
+      "originalSha256": "3b41c73bd811d6826c1988915668b30d332eddc180c5017be30f54464d2d18e7",
+      "storedSha256": "45be129f1c41f674dcdb6bcfe020af0ff9f48045507f35fd0322ed2cfc80ece0",
+      "originalBytes": 6706
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_starterr_44c824fa-6304-45d8-b705-b381f8a98850",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_starterr_44c824fa-6304-45d8-b705-b381f8a98850.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_startout_44c824fa-6304-45d8-b705-b381f8a98850",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-placement-mtls-tdmnuwce_startout_44c824fa-6304-45d8-b705-b381f8a98850.gz",
+      "originalSha256": "74a6e1c6d17dafad18c77184edcc2202e05eb8dbb89bc001407547281e48d3b9",
+      "storedSha256": "0fcd80263f53bf619c14cb216565ba1bad46c66f1372410c1fa10da94acffc9a",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_err_d3fa6c56-df97-465e-9060-e1c8301cd4a6_btxw",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_err_d3fa6c56-df97-465e-9060-e1c8301cd4a6_btxw.gz",
+      "originalSha256": "204c7768cd53f6f26a8792a4b35769f2056eb585052ff1721676386c85f70d9f",
+      "storedSha256": "7ac02d0b42ce0e828c4bc08e555c7eb466abdb83f3dfde8c4601d3fcd6af7c12",
+      "originalBytes": 22905
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_out_d3fa6c56-df97-465e-9060-e1c8301cd4a6_btxw",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_out_d3fa6c56-df97-465e-9060-e1c8301cd4a6_btxw.gz",
+      "originalSha256": "45d4007e364d79f17a0fb2105c82af6e366f7d31efccf47124e876e85ad366eb",
+      "storedSha256": "90873c2591174de85f8215763f2d2a05ee55aa2a7c0b18e4536c5ac44eac5ffc",
+      "originalBytes": 21180
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_starterr_d3fa6c56-df97-465e-9060-e1c8301cd4a6",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_starterr_d3fa6c56-df97-465e-9060-e1c8301cd4a6.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_startout_d3fa6c56-df97-465e-9060-e1c8301cd4a6",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-scheduler-mtls-rmwraftm_startout_d3fa6c56-df97-465e-9060-e1c8301cd4a6.gz",
+      "originalSha256": "823f5263c92a2d65fe5dc06394838251498cbce0b87aac0d28c0baed752556c3",
+      "storedSha256": "c7655a1dbc701d6715c5c8c9608bb79d69cecf944fc085006317bb346d73062b",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_err_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16_ynkh",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_err_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16_ynkh.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_out_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16_ynkh",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_out_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16_ynkh.gz",
+      "originalSha256": "c4e620b09cb7cc55b97efefea2accf83c393c9560ee41443cd63e7efe31bb05b",
+      "storedSha256": "8470c419d29ec02b87e457aba94564b1d0bdc9f36babecd47aec200a740bbee7",
+      "originalBytes": 12700
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_starterr_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_starterr_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_startout_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/dapr-sentry-txayzbwz_startout_fb0c1b74-7350-4e2c-a5dc-15aa6cd2de16.gz",
+      "originalSha256": "716940e9e2ffffefa2440d6bd35b44c0135119f0faabdf9ca5386420bb039940",
+      "storedSha256": "d9aa130e96f0ab9b66bf4113f3e1a509937e27014043a6ef74b543bb3927cb04",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/resource-executable-39c1bddc-c294-4b4d-9165-a8878563983e.log",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/resource-executable-39c1bddc-c294-4b4d-9165-a8878563983e.log.gz",
+      "originalSha256": "51a3af82c6d634bbe49592c37209907b71c28400baac2999be1aa9188557660b",
+      "storedSha256": "19bf8713ffc5ef95456d2bf30be73876a5aa6c30da16ccfba57ed803e7484062",
+      "originalBytes": 854
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/resource-executable-4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755.log",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/resource-executable-4deb2fdc-92ea-4bbd-8b37-ce4cc8a52755.log.gz",
+      "originalSha256": "1c25aea73fd5396594f8906e31435428a73a7bff64539e3101b830c85b55892d",
+      "storedSha256": "7293da949d41ba384f80820e87b9d0627d82470c4b80427b6dcba267f836b356",
+      "originalBytes": 1014
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/resource-executable-510020d8-8d60-452e-a614-d906dc02711a.log",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/resource-executable-510020d8-8d60-452e-a614-d906dc02711a.log.gz",
+      "originalSha256": "bb01f302b14c1f897702e64186210239dbc8a305cb750e12655a9d4a8410d39a",
+      "storedSha256": "cfbd047f6300b626f08e5442af610c1727bf2500c5a289dfb1e22b2bd27373a8",
+      "originalBytes": 965
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpRtUAaQ/resource-executable-8e0f042a-4233-48fd-8483-e3987b5ad24e.log",
+      "path": "restart/native-selected/aspire-dcpRtUAaQ/resource-executable-8e0f042a-4233-48fd-8483-e3987b5ad24e.log.gz",
+      "originalSha256": "111acf78751e73379d1b39e587e4f1a95612a2b5957842e7b0c97ecad0caa998",
+      "storedSha256": "a501037ea0024481c0af7529eba0c2bc5f08c59841749c3dc921df282656bdf9",
+      "originalBytes": 884
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408_err",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408_err.gz",
+      "originalSha256": "58fa4b69aa1a537c2ffbd549d1901287a3b9d50df45d70ec1912870eeedc65dc",
+      "storedSha256": "bf3bd5945e4fa6a1a61ddfb1a7098077e399d381771e2a7ed5fc064bbe97fcfe",
+      "originalBytes": 4020
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408_out",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408_out.gz",
+      "originalSha256": "29d97091d29cbfe9832d8b8874f863886c39a398b6492154a4b820aa2ce03264",
+      "storedSha256": "f4e2eb33424634e88e0af899cb03064be9ce9ac50ba4fd85a86f1c02ae2cfd82",
+      "originalBytes": 51355
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/6bf3da30-58e9-4cfe-9b95-353f313b48c1_err",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/6bf3da30-58e9-4cfe-9b95-353f313b48c1_err.gz",
+      "originalSha256": "c427eef05a3c4145eed9411714d0c9bcbd1511bde973cb16523c2fb94114d911",
+      "storedSha256": "1a3984595972020e81798a01e62cd306d17ef28acc3dd3588e248561c6f04fa2",
+      "originalBytes": 708
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/6bf3da30-58e9-4cfe-9b95-353f313b48c1_out",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/6bf3da30-58e9-4cfe-9b95-353f313b48c1_out.gz",
+      "originalSha256": "4b6449b3bab5e6c4878e576f0a36c16fdc4980ef2847e82f8066033096acd768",
+      "storedSha256": "ea11b6107c41b7de8f1bc838f0d72bc0f06c73acb6670d25bb06ab575c3b41f8",
+      "originalBytes": 34057
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/83a0e289-035c-45ad-8724-1043f60a7b6e_err",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/83a0e289-035c-45ad-8724-1043f60a7b6e_err.gz",
+      "originalSha256": "dec8f3eeba64cc6efe3005325cc316d6edef8bf8be09940e2a555aa568359764",
+      "storedSha256": "b188dbdfe3e82da97e1e3cf2ff5be7e2923fe8106802fe6b4b1fda6af8b9ee7c",
+      "originalBytes": 4020
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/83a0e289-035c-45ad-8724-1043f60a7b6e_out",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/83a0e289-035c-45ad-8724-1043f60a7b6e_out.gz",
+      "originalSha256": "c754cd3a399cfed637a87a5f00a846925024e7ecdf363956990249da050c2b24",
+      "storedSha256": "8b86b28d118d870b435e14e8f970f33e34bafa60589f63ce7ac965a8358b9216",
+      "originalBytes": 37737
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_err_70d990ac-dc0d-47ab-b783-c97ed43cd391_dxho",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_err_70d990ac-dc0d-47ab-b783-c97ed43cd391_dxho.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_out_70d990ac-dc0d-47ab-b783-c97ed43cd391_dxho",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_out_70d990ac-dc0d-47ab-b783-c97ed43cd391_dxho.gz",
+      "originalSha256": "c3831a4ba7b7ac7e02df1c55aa6ee3b72bd6cfee332937e649f99e13886c9d4b",
+      "storedSha256": "20dc1d1cc22b909d9a08b0e7f37d58bd63fc5aa3a158c8767c2969ebb5444405",
+      "originalBytes": 6518
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_starterr_70d990ac-dc0d-47ab-b783-c97ed43cd391",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_starterr_70d990ac-dc0d-47ab-b783-c97ed43cd391.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_startout_70d990ac-dc0d-47ab-b783-c97ed43cd391",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-placement-mtls-gwvjwsme_startout_70d990ac-dc0d-47ab-b783-c97ed43cd391.gz",
+      "originalSha256": "04ba10bddea69eb12b9b8c1c9e22770581f1faebf014301550d58fa4229beceb",
+      "storedSha256": "6c23c899a1a48d5c427204f485f5a7bbad7dc767a16fd22d1d22a3ad9506360f",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_err_77170ca9-bb05-4c16-bce4-3d2301bf09a7_huag",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_err_77170ca9-bb05-4c16-bce4-3d2301bf09a7_huag.gz",
+      "originalSha256": "d9a43a6bbb1bfd68863e80c00f1795230c3371d6c538a7b6c04c0112f5269670",
+      "storedSha256": "5caf46b50733b808bd037b4e8880f63cefbb56d66b1df0b37ce53b9712619e98",
+      "originalBytes": 21939
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_out_77170ca9-bb05-4c16-bce4-3d2301bf09a7_huag",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_out_77170ca9-bb05-4c16-bce4-3d2301bf09a7_huag.gz",
+      "originalSha256": "6dc3a5166761086deed9c7b013518f0c20274de3badb644d148e05c2a37c0cc8",
+      "storedSha256": "efbc0d35123234710286213cfd01caf21ed4b935ddde44d3a415c8c2ef2ae0fe",
+      "originalBytes": 20916
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_starterr_77170ca9-bb05-4c16-bce4-3d2301bf09a7",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_starterr_77170ca9-bb05-4c16-bce4-3d2301bf09a7.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_startout_77170ca9-bb05-4c16-bce4-3d2301bf09a7",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-scheduler-mtls-refcxamm_startout_77170ca9-bb05-4c16-bce4-3d2301bf09a7.gz",
+      "originalSha256": "885c55a32cedf6ac8976f3fdc7f19d80c0b6596b82ef174b3482e874ec40d3e9",
+      "storedSha256": "f35321b0dabf280ee8e8d2ced1e582a0c74860d3499b51522e96b0c93dabf766",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_err_86328575-dde3-4221-b7db-f768e879eac8_lldn",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_err_86328575-dde3-4221-b7db-f768e879eac8_lldn.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_out_86328575-dde3-4221-b7db-f768e879eac8_lldn",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_out_86328575-dde3-4221-b7db-f768e879eac8_lldn.gz",
+      "originalSha256": "6b25025fc662d873a3ac61f70a637ee0ac529edca429a3949932f2eb92b2b664",
+      "storedSha256": "e69ffe3eaccdd4ade1e3d5090347c6a8356e6e4f41d1fa076ccad3c8baa68b36",
+      "originalBytes": 12708
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_starterr_86328575-dde3-4221-b7db-f768e879eac8",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_starterr_86328575-dde3-4221-b7db-f768e879eac8.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_startout_86328575-dde3-4221-b7db-f768e879eac8",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dapr-sentry-rvuvqtja_startout_86328575-dde3-4221-b7db-f768e879eac8.gz",
+      "originalSha256": "f89083f18964c67e811cadb5ae9716fee3ecafd9898d9b6c87d76747ebb6b04f",
+      "storedSha256": "f3f3a124f12afa53c7a5b68c6bdab3f2345c3c7ba915595abd9b2e8daddfc6c1",
+      "originalBytes": 212
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dd064dd2-4ac0-4feb-9113-4809b95d044f_err",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dd064dd2-4ac0-4feb-9113-4809b95d044f_err.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/dd064dd2-4ac0-4feb-9113-4809b95d044f_out",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/dd064dd2-4ac0-4feb-9113-4809b95d044f_out.gz",
+      "originalSha256": "ef6a828f0ad8773f5e9b181fcf334978f0b5611916884c676fc3602c8c2386de",
+      "storedSha256": "c21ae118d5ec7deac7bd9195815f224ccdac03508821dfef28392efa7f920020",
+      "originalBytes": 36502
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/resource-executable-3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408.log",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/resource-executable-3b7e2d97-0f5e-4fb7-bdd0-aacd1487c408.log.gz",
+      "originalSha256": "0c75a8acef17684f3eb509c3731b74700a68f3e7cac128335b18a8a9785cc63d",
+      "storedSha256": "e7658ed5fe5cfbecf8144a4de617f7ab78efa8d44af184f939563262dbb511ff",
+      "originalBytes": 854
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/resource-executable-6bf3da30-58e9-4cfe-9b95-353f313b48c1.log",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/resource-executable-6bf3da30-58e9-4cfe-9b95-353f313b48c1.log.gz",
+      "originalSha256": "96f604b24c0bc8d7106eaeeed5a16234a283bc1bbc857e544c2ddf8af5f1b830",
+      "storedSha256": "f9719f5045a6acc215a6212952562453d82ddab9dba8779278521f1ba6f69df3",
+      "originalBytes": 884
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/resource-executable-83a0e289-035c-45ad-8724-1043f60a7b6e.log",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/resource-executable-83a0e289-035c-45ad-8724-1043f60a7b6e.log.gz",
+      "originalSha256": "d4ead4ebf40ee19a1b24d476bb88e01eff92437646131f6b744e5de104b81839",
+      "storedSha256": "7ff1b558747bc6fd202b7954cf932aa3262e806b0176bf68120e4a56a91f4969",
+      "originalBytes": 1014
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-selected/aspire-dcpsuUiZK/resource-executable-dd064dd2-4ac0-4feb-9113-4809b95d044f.log",
+      "path": "restart/native-selected/aspire-dcpsuUiZK/resource-executable-dd064dd2-4ac0-4feb-9113-4809b95d044f.log.gz",
+      "originalSha256": "38375ab109c6cb926e0d391c42ea98dee380a0a8d8ac22e7c0d8e2a400f73f6b",
+      "storedSha256": "a749d6ff5396c7431f2ebdb1d169065eb6371e689e872e8daa0be4d15b6cd93f",
+      "originalBytes": 965
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/native-session-identities.jsonl",
+      "path": "restart/native-session-identities.jsonl.gz",
+      "originalSha256": "5d8a950a834eb631bbeeb39d32f82ce72f69c2f57551d3f7562f04767d6f8c69",
+      "storedSha256": "1015c22938d45214fb20273ac4c68251467cd98b444a916f5b77531892305a22",
+      "originalBytes": 1579
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-certificate-mount-hashes.jsonl",
+      "path": "restart/owned-certificate-mount-hashes.jsonl.gz",
+      "originalSha256": "ab29fa3416a525b0a17edd3653421cfcfa5f39126ca33c4908c2cebe2ea3077f",
+      "storedSha256": "532de92571eff73b575ba5e92ba00315fab60a0123adfc82daa014482e072b0f",
+      "originalBytes": 2370
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-docker-events.jsonl",
+      "path": "restart/owned-docker-events.jsonl.gz",
+      "originalSha256": "22efb8f0973c3f0db3c9e0806fcec98d860fffc2fb0b9f62bceade9fcbfa2cf7",
+      "storedSha256": "c34d56aeb9b08b6b1da569092c017415ee5324ae8f7c1b6cd67599e53959c1ee",
+      "originalBytes": 248745
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-health-probes.jsonl",
+      "path": "restart/owned-health-probes.jsonl.gz",
+      "originalSha256": "a1e1d8af0b4f51992483b70f4f073a3a9f39945ff8d6e82bc0de241145f8d89f",
+      "storedSha256": "ab0119fe8a8556ebe3660d1c9956f1fc14b88410e02d89ef2c989c81fda9b531",
+      "originalBytes": 61731
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-sentry-inspect.jsonl",
+      "path": "restart/owned-sentry-inspect.jsonl.gz",
+      "originalSha256": "d84f58ecd76c6e198ff9ee615f704fdb3d88d423e74f7b13898306272220f6ea",
+      "storedSha256": "6eed7de9751538c4948c19b808e1c4f2229a64a3596da91d07307618701b25a5",
+      "originalBytes": 228254
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-sentry-proxy-health.jsonl",
+      "path": "restart/owned-sentry-proxy-health.jsonl.gz",
+      "originalSha256": "3bdc5b1b54af98cf23231e8f04f034dd5269232bdbc7f243f2bc0d9a35002d44",
+      "storedSha256": "db7ad32dfa8e636a493f2323a10ac6eec3f36a4b445033e4b8eb57fb447b2474",
+      "originalBytes": 57155
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/owned-sentry-services-token-auth.jsonl",
+      "path": "restart/owned-sentry-services-token-auth.jsonl.gz",
+      "originalSha256": "36757ff1734f6d59172da061c259c52117f6fb47a012f8333f2a03a250929960",
+      "storedSha256": "59782a9533e5d4fd0492822f22acbaa4798e73993d4af40d5e99d9a8fe67c4d6",
+      "originalBytes": 104319
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/persisted-states.jsonl",
+      "path": "restart/persisted-states.jsonl.gz",
+      "originalSha256": "62fc3cc84792f6208577f266fee922ff5848360073104a121ffe237d8cf6d789",
+      "storedSha256": "d535bc44ad9b14879184a0c211030bacb1baa98fd1bc0802450c8eae242081a7",
+      "originalBytes": 3127287
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/restart.log",
+      "path": "restart/restart.log.gz",
+      "originalSha256": "d0974747d95efa667242b78e62e00e92ab197097ef569f70021d761babd97bf9",
+      "storedSha256": "f0a053fd3af3bae407f22ad68e205a2e90e6b4bef06cd2a6a2a6ccb95faf133f",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/restart/restart.xml",
+      "path": "restart/restart.xml.gz",
+      "originalSha256": "b95f0c19c1fd1e5a572a0473ac6543a9d62dd0ca8196d8adbf15cb65fa31b5c3",
+      "storedSha256": "7758792a557e5e327a628716ca83d22b33118e1a62aee0e3dc4e66d3b6b54a12",
+      "originalBytes": 1758
+    },
+    {
+      "source": "/tmp/story49-final-native-diagnostics-bounded/retention-and-redaction.json",
+      "path": "retention-and-redaction.json.gz",
+      "originalSha256": "b863c52fb5039c7ee009360e2fca7c14dc09e1edb997e436b82ad2c16a17226c",
+      "storedSha256": "d3b085327bb19ab94cd933d4846c8d2d27d93c058717294f9277c2212a5a4eea",
+      "originalBytes": 65571
+    }
+  ]
+}

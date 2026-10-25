@@ -1,0 +1,102 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-resource-binding/actual-resource.json",
+      "path": "actual-resource.json.gz",
+      "originalSha256": "68ca44b647682930f96d19565540d9c81f35982d474054b68db1e096a3ea0f3d",
+      "storedSha256": "8daba966fa223c163ff6217ee85f4fcb2bd4808ee5e08fc71eceed51a3d1aa4d",
+      "originalBytes": 716
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/binding-fix.patch",
+      "path": "binding-fix.patch.gz",
+      "originalSha256": "65c7aa6acd390dc889d2badf9fc94d51d079874cad5c756173fb938c00f3da1d",
+      "storedSha256": "f7cd2f4c43a77d1436edc5fdf3c723662fd4a8640a04f481058c9789012a69a7",
+      "originalBytes": 8600
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "71ca23165c35a0b0d5d75bf66e5b2303209d08a03282ae9455bcd5b364b5ed76",
+      "storedSha256": "b1282aede147c7c86f03cb1b8aa9a6bd3b241c2c3112d261f735168279a8183a",
+      "originalBytes": 740
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-0.log",
+      "path": "commit-0.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-1.log",
+      "path": "commit-1.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-2.log",
+      "path": "commit-2.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-3.log",
+      "path": "commit-3.log.gz",
+      "originalSha256": "15d104cc2e08f1832f1262476b4ef2a69520c75f93390d1d6ecce057470aecd1",
+      "storedSha256": "577d5094433fc197433a098c054fca5a00bf2161918eb38680393ea80af7ffde",
+      "originalBytes": 155
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "79564bfe69cdd3f4dc4bcaa22e0338a59c44e41499539912080ea83509d97d7c",
+      "storedSha256": "f3159ce273e258f2c7adb299236ff1d3e0466606aba18ec54aa986fabc72790d",
+      "originalBytes": 61
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/commit-validation.json",
+      "path": "commit-validation.json.gz",
+      "originalSha256": "e101b4b54a05167f5d6ddd2d52588b00ba4021aae775846422875eb73510877b",
+      "storedSha256": "4e61717886b37b1bfbe6b7051dd9152fed82bb23872304967d68da11c0569964",
+      "originalBytes": 837
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/fast-forward.log",
+      "path": "fast-forward.log.gz",
+      "originalSha256": "f52f2bda2d9b0bb3732c2fe23ac2b76e3bbd312b837f50117af035351240ee26",
+      "storedSha256": "b20565e3aa7cacbef32d96df599dfcde9658752b2c3427f329c4d9875fb036e1",
+      "originalBytes": 6811
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/green-tests.log",
+      "path": "green-tests.log.gz",
+      "originalSha256": "c5518cc0d69665315459d2ca849895aab550db58b7de4931a288746f06afbee6",
+      "storedSha256": "d0691889c0c4d0c14a777dc4150854d668c65ca78bca8e95dc793eb81ab3390e",
+      "originalBytes": 9142
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/preparation.json",
+      "path": "preparation.json.gz",
+      "originalSha256": "c6d54bbcda9ec92bc6b39325238cadd4b377d0a1e32db84bfca300ef27f93ffd",
+      "storedSha256": "124e9a670d821cc7756b46481480b0d191dd971460d723edaa275fb7c14d8ece",
+      "originalBytes": 436
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/red-tests.log",
+      "path": "red-tests.log.gz",
+      "originalSha256": "c81ab42ad2b0fe95070715600ac12b638cffb7700dc5f9fd9b520ceb536446e6",
+      "storedSha256": "d7bb2565c708950ab8a6f6f107813153ff42b2e63305490fa53758a61660acab",
+      "originalBytes": 12293
+    },
+    {
+      "source": "/tmp/story49-platform-resource-binding/upstream.patch",
+      "path": "upstream.patch.gz",
+      "originalSha256": "4d095298e139cd881f45331d3d39f30843228a54fbc53e78edaf06972b086ab3",
+      "storedSha256": "5dc2bee30f8816cd12f6860d605aeedbec9d07f6122d02aa0364fef955bfe0e0",
+      "originalBytes": 472862
+    }
+  ]
+}

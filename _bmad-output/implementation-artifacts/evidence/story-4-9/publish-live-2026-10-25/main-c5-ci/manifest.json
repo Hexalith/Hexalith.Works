@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-c5-ci/12605203950.zip",
+      "path": "12605203950.zip",
+      "originalSha256": "9d9b9d8ce839f53586b44aac057040e9545d1ff4d0a035f19a1a8f2e80c200cd",
+      "storedSha256": "9d9b9d8ce839f53586b44aac057040e9545d1ff4d0a035f19a1a8f2e80c200cd",
+      "originalBytes": 231318
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/12605665162.zip",
+      "path": "12605665162.zip",
+      "originalSha256": "0e7653b147863fffd34936adcbb0b90c101d83bc34e5ae60df54883c8bd8562c",
+      "storedSha256": "0e7653b147863fffd34936adcbb0b90c101d83bc34e5ae60df54883c8bd8562c",
+      "originalBytes": 2126
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/12605896726.zip",
+      "path": "12605896726.zip",
+      "originalSha256": "249c20273963fd7405828fff141aed8e19cf5508670b039e52d30d07a925353d",
+      "storedSha256": "249c20273963fd7405828fff141aed8e19cf5508670b039e52d30d07a925353d",
+      "originalBytes": 2053694
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "0c386dcb629b972861f44348301839a1b8f6ac75f40cf70d0453e9889d10f55a",
+      "storedSha256": "4410a9dc8cb52511d76554db2ef03f6b6a36ffcd2a3aa6da3ebacb520541eaf8",
+      "originalBytes": 29238
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "c88dc70a5e980f81ac34abf3a59cbe541ad997ef3f09c079f95cf411701b8dd1",
+      "storedSha256": "e31c67f409aad8dc9f13a764b3dee7d39b00300972410ed169ffe4aab7ebb254",
+      "originalBytes": 17470
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/trx-audit.json",
+      "path": "trx-audit.json.gz",
+      "originalSha256": "a5592b88743298ac1776155af59632814618c66214a34918180e8a5f810544ae",
+      "storedSha256": "178bacc35cb9aefbb90606a2fa0774b211f08a8ca7c311e5104aadd8404c61e0",
+      "originalBytes": 26369
+    },
+    {
+      "source": "/tmp/story49-main-c5-ci/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "9f7dfa3c578a20580a663b594b86c641a50eb2c157695fb628c29954cb200914",
+      "storedSha256": "18f0b3030265841749d467f111d885559a40be28884c1525d05c9eb0488df5bd",
+      "originalBytes": 14261
+    }
+  ]
+}

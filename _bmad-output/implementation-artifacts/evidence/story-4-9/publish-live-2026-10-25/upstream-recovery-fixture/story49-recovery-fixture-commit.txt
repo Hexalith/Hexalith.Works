@@ -1,0 +1,4 @@
+test: generate recovery-discovery fixture secrets at runtime
+
+Retain the large private payload and the same-length disclosure canary
+while satisfying the tracked-secret release gate.

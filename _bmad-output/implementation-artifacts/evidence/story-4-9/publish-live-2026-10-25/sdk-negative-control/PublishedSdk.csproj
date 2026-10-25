@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><IsTestProject>true</IsTestProject>
+    <AssemblyName>Hexalith.EventStore.AppHost.Tests</AssemblyName><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    <PackageReference Include="Hexalith.EventStore.Aspire" Version="3.127.0"/>
+    <PackageReference Include="xunit.v3" Version="4.0.2"/>
+    <PackageReference Include="Shouldly" Version="4.3.0"/>
+    <Using Include="Xunit"/><Using Include="Shouldly"/>
+  </ItemGroup>
+</Project>

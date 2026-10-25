@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-active-fixture-pr/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "eaf0ee7d3ba4999fc05c85f9881f2877efe889043d3549e9c68dfda2302d9636",
+      "storedSha256": "a75b416125303a8bd2c2f4a9ef8bb9e7a947247047f098a5958c19e7bccb98b8",
+      "originalBytes": 3259
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-pr/pr-body.md",
+      "path": "pr-body.md.gz",
+      "originalSha256": "19afe48b877f4819d90608206cc0031184e05028f7f304b9c26373b71aad73b7",
+      "storedSha256": "4beb8c4372c8d136d8a5424bafcb44f4a9eb95b4b3d481bf6cbd2bb60fabf6df",
+      "originalBytes": 1319
+    }
+  ]
+}

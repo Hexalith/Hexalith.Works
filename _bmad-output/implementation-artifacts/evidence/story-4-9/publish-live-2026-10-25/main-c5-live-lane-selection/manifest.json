@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/.github/workflows/integration.yml",
+      "path": ".github/workflows/integration.yml.gz",
+      "originalSha256": "14f9f493a64414b8b510297b23b4ab29799e9c069b21a1f00ec1e8baed9a74ad",
+      "storedSha256": "1b14cb89690d3982d5dc68f5f327e24855c2c1a07fc8cdbab3d2c5bf167e2e1b",
+      "originalBytes": 5776
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/audit.json",
+      "path": "audit.json.gz",
+      "originalSha256": "f738d67f614dbd1deaae9b66eae1fe2138ce12952686efd4867053490ead31e1",
+      "storedSha256": "8f045cca9637b0a498fa85ce33380f3158699ffc41b13583e407afeea6b51122",
+      "originalBytes": 1691
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/scripts/check-committed-files.sh",
+      "path": "scripts/check-committed-files.sh.gz",
+      "originalSha256": "b4dcf7af98732af7c3f0f5bdf469161ef477f888b7b47dcb5c23b2c6b052b0e2",
+      "storedSha256": "4ef2aa782b2dec9851d94814e02a538a48c75d0fadf986cff2fc2ecb53c36374",
+      "originalBytes": 5977
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/tests/Hexalith.EventStore.IntegrationTests/AssemblyParallelizationTests.cs",
+      "path": "tests/Hexalith.EventStore.IntegrationTests/AssemblyParallelizationTests.cs.gz",
+      "originalSha256": "90adba282dfbec32f633f1e75b866d7e9d2c48286536b7cb2a919d86d871b1f6",
+      "storedSha256": "a700f2b5a253131e6eaed889e6a2697a3873ea77eeefc2312f1eebfde6e89602",
+      "originalBytes": 688
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/tests/Hexalith.EventStore.IntegrationTests/ContractTests/SignalRDaprDistributionFixture.cs",
+      "path": "tests/Hexalith.EventStore.IntegrationTests/ContractTests/SignalRDaprDistributionFixture.cs.gz",
+      "originalSha256": "c5089f1fded78743ff1e717d64b6734809cba09854a88b93eca31311ae86f377",
+      "storedSha256": "2224ecc67a3125581bcd980136a514c476da00a9ba1536a89e965a53c1ab8774",
+      "originalBytes": 19269
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/tests/Hexalith.EventStore.IntegrationTests/Hexalith.EventStore.IntegrationTests.csproj",
+      "path": "tests/Hexalith.EventStore.IntegrationTests/Hexalith.EventStore.IntegrationTests.csproj.gz",
+      "originalSha256": "243f68d36ac0875f3d149ee45bd73e7dfaffe14b22ab30e29ecfcbdbca01961f",
+      "storedSha256": "49e2e9ae6313024f5e1e1730edb5f6fb994fdcd8b8526996625f20d0f05e3fb3",
+      "originalBytes": 1942
+    },
+    {
+      "source": "/tmp/story49-main-c5-live-lane-selection/tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj",
+      "path": "tests/Hexalith.EventStore.Server.LiveSidecar.Tests/Hexalith.EventStore.Server.LiveSidecar.Tests.csproj.gz",
+      "originalSha256": "441f06dc7c6f3f3580f4b30ed6b3a1e5db9faab1dbe68cebb68a94ca5e7a19f3",
+      "storedSha256": "d08536a0ba344e2e3c59a1ecabbb721ce7c32eb982d62eddbcb279947ab73af8",
+      "originalBytes": 1934
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/12603609196.zip",
+      "path": "12603609196.zip",
+      "originalSha256": "e7ecf9e46d16addc0c308a53d63f7dc0f02cacdb297fdbc3f5228e2dc95b91c7",
+      "storedSha256": "e7ecf9e46d16addc0c308a53d63f7dc0f02cacdb297fdbc3f5228e2dc95b91c7",
+      "originalBytes": 2118
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/12604160420.zip",
+      "path": "12604160420.zip",
+      "originalSha256": "8a8c3ec9a35aca5ac7c7d17c59b729d7db621a6023c0f210fcc5d092d85c1c24",
+      "storedSha256": "8a8c3ec9a35aca5ac7c7d17c59b729d7db621a6023c0f210fcc5d092d85c1c24",
+      "originalBytes": 232294
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/12604736851.zip",
+      "path": "12604736851.zip",
+      "originalSha256": "47af6e252f9eb6b7be93f6a121264b0f8a8d5f0f984e9097e9703f766920311f",
+      "storedSha256": "47af6e252f9eb6b7be93f6a121264b0f8a8d5f0f984e9097e9703f766920311f",
+      "originalBytes": 2054890
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "c68c4d96fbb79c0bad5b4eeb035f1d4f7e30ac7965dd890d662f943655d25a94",
+      "storedSha256": "0bde7485997b8cef9035d5a87b47001979741b39bc2becfa720865a3bba0b61e",
+      "originalBytes": 29238
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "f37b2bdd88ea09b704a176db60cdf1bae647abb019f59538d325c99bdb1164f0",
+      "storedSha256": "8cf639676dadf109b830e76ecc33723b7fe8dadabdad53edac4c0266d7ebaa8e",
+      "originalBytes": 18168
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/trx-audit.json",
+      "path": "trx-audit.json.gz",
+      "originalSha256": "fa6be0e1462eb017c954f15d560053b4144209a87c4e1dc2ed2af87a8827af8c",
+      "storedSha256": "0b34fc5bd7e6d8b1c195af9911f7e684e12854eb28f9a0a918ada9f4fad58631",
+      "originalBytes": 27555
+    },
+    {
+      "source": "/tmp/story49-main-4e91-ci-failure/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "efcdbf08529f761591ea740b136064b3c305896d7e2ed94ce84664f8f483e2f9",
+      "storedSha256": "982c1d5fad81f5e5731233537bdddc808a89ce62fe04edae6b86e2b09ab681bf",
+      "originalBytes": 14347
+    }
+  ]
+}

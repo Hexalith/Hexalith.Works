@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-pr141-normal-merge/after.json",
+      "path": "after.json.gz",
+      "originalSha256": "830533e84edba5752d937d50860c0d95e7c91297196edb5f9ed81bd4105fb0c0",
+      "storedSha256": "fecf86715a40fae90e10140558f6e0b40d29a07729afc948b8f366a9352cff0b",
+      "originalBytes": 403
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-normal-merge/before.json",
+      "path": "before.json.gz",
+      "originalSha256": "5dde7289e5f727230bb3b7b496ab655c1cd943c147ed43d6cfbe565196aef02d",
+      "storedSha256": "39ba43065597379c00faad2369e8a2c83e0729440bbf06c1cc08b2a4c38b5c78",
+      "originalBytes": 4991
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-normal-merge/commit-tree-equivalence.json",
+      "path": "commit-tree-equivalence.json.gz",
+      "originalSha256": "707ef2dac93f6f1db43f1ea369d39420acb8ea6cf7fa7b8727844c95cb8ef7de",
+      "storedSha256": "fc607ec485da1b7245e1f35f3229f74b1274943b2a72111e0408d6b1be0145e2",
+      "originalBytes": 4698
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-normal-merge/merge-command.json",
+      "path": "merge-command.json.gz",
+      "originalSha256": "b8a7891f2623e11a41aceb6e2efb6ebf5e54d2982b6ec259f68d750e0d3f4b33",
+      "storedSha256": "49439667c2a4ccb59fc216bf026c47f8990694f1fc5a4da50781db8ef68b2ccd",
+      "originalBytes": 355
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-normal-merge/required-full-ci.json",
+      "path": "required-full-ci.json.gz",
+      "originalSha256": "2d2bca4e16dd01034ac8bbd56bd50d542f09f5d2e089148c42e0553a8b29a9a0",
+      "storedSha256": "893ef52829590d1f8900ba141bcc75f2634e283b74346e328c2ce5883bc016d8",
+      "originalBytes": 12463
+    }
+  ]
+}

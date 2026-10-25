@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-active-fixture-commit/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "8a3d08c36c63a65d0c7876e6ce74b8674d16d0502729c4f3d59923f2915e7a07",
+      "storedSha256": "2794f31239d5a3db80f8cf2939b45bfa8797031c25a7544dffefbee40ae368c6",
+      "originalBytes": 26029
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-commit/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "4ea5fd49d8e9029a99eb6b2c600ba0b80505b924cd8cd13016127e470b2e1e72",
+      "storedSha256": "6b521dde93554c642547f43d43651fe565024c50f14d865e1ba77587227ac93c",
+      "originalBytes": 290
+    }
+  ]
+}

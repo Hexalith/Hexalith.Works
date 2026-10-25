@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-consumer-preparation/fast-forward.log",
+      "path": "fast-forward.log.gz",
+      "originalSha256": "64827afa01f088e56c33b63b0ff2ecfcd2d42cadffd6a90fb2d89b8fa59ec2da",
+      "storedSha256": "1aa099b1f71ed24f90c97495ec52495b480228188960d3ab5d9c1e63eb2ca79a",
+      "originalBytes": 138462
+    },
+    {
+      "source": "/tmp/story49-builds-consumer-preparation/history.txt",
+      "path": "history.txt.gz",
+      "originalSha256": "6500023283b112859bafc4467a9e164984bfe5e16ac18a8177ca44696a14b606",
+      "storedSha256": "5f0d750d3d06fb26b170010c9c29b1883b848e7597dad297cf463121f2796826",
+      "originalBytes": 341
+    },
+    {
+      "source": "/tmp/story49-builds-consumer-preparation/provenance.json",
+      "path": "provenance.json.gz",
+      "originalSha256": "aafa6edefb9ee5be97bf8c69bf111fc614cef0010f7232e3fea298bbb3e24a34",
+      "storedSha256": "756b02d6cb70ff40e92373e48dfdd56f329e78d5150448120549713f5d7e098a",
+      "originalBytes": 325
+    },
+    {
+      "source": "/tmp/story49-builds-consumer-preparation/upstream-runtime.patch",
+      "path": "upstream-runtime.patch.gz",
+      "originalSha256": "8ba80d027671eb07c31f7194dc12626057e3ca3f71d8cb2e7a5898ecadd0f38a",
+      "storedSha256": "ed0ad4756042e9a3a3acec96c0d33e75b1f5fd42fc7d71268bccd59e99693c6d",
+      "originalBytes": 76284
+    }
+  ]
+}

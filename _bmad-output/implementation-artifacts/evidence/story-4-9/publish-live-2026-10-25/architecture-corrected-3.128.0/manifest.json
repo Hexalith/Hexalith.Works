@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-consumer-architecture-3.128.0-corrected/architecture.json",
+      "path": "architecture.json.gz",
+      "originalSha256": "b2f4e39f63c64fb56ffcfd7e41a2138416cb5e59468969f1ad6ff031f4ff181e",
+      "storedSha256": "4fd033ec010b95c464c6ed26014e1351eb00f6666a0f2656e92ee079e6a62ab9",
+      "originalBytes": 1386
+    },
+    {
+      "source": "/tmp/story49-consumer-architecture-3.128.0-corrected/architecture.log",
+      "path": "architecture.log.gz",
+      "originalSha256": "184bd810cdf3ce78c704be08b437dd1ed8b22ce7d38c316b68f07eb6948d1e6b",
+      "storedSha256": "d5f7b6e74debd7ff93f11316370215284851794dca95957d7534b95106e74be3",
+      "originalBytes": 406
+    },
+    {
+      "source": "/tmp/story49-consumer-architecture-3.128.0-corrected/architecture.xml",
+      "path": "architecture.xml.gz",
+      "originalSha256": "10cabf7dc0d4ef0c5fd4a3ec5f7ed6377048277cd7e90ac36244ec30fcd35377",
+      "storedSha256": "81ed08b382c43408f24e032922eb397284225c6559d479a1e260caad1e65a2d9",
+      "originalBytes": 279354
+    }
+  ]
+}

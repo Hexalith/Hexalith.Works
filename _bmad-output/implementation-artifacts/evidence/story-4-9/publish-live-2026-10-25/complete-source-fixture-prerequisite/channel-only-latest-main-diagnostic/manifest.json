@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-complete-source-channel-final/Server-build.log",
+      "path": "Server-build.log.gz",
+      "originalSha256": "5b05cd5fef4730c038cd136723c0a063564c5e240ddd6a6afa83e9b25b64c35b",
+      "storedSha256": "ec6e87adfd55e5bab5b2d2a2e6285cd3320238e505917aa4917de1b41e5cb96c",
+      "originalBytes": 4918
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-final/Server-tests.log",
+      "path": "Server-tests.log.gz",
+      "originalSha256": "6efdf68b978b7829c6f1db71a0c633eaf6cfbbf124711b184c3709382930c3c4",
+      "storedSha256": "ac0938bea4b50ec420b9d1883f2a096d6009c874d0c498187d76c949c59c446d",
+      "originalBytes": 5582
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-final/Server-tests.xml",
+      "path": "Server-tests.xml.gz",
+      "originalSha256": "50d67eb6615eba0cf4500ae8ea8f0c10aae792f401b349e44937561f781383cd",
+      "storedSha256": "7f47454aa98ea152ec5b78c39d2d0eb63245dd5e14fe0e377951cb52f5372ff1",
+      "originalBytes": 213535
+    },
+    {
+      "source": "/tmp/story49-complete-source-channel-final/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "296048960402049ea32ff7ba4d6251c8a01c1b4585fe309ad5b92cf14466f1e4",
+      "storedSha256": "998664a0544cdc451fccf58b79bfe8de7c6009c9db44582a1eaf0cfbc35ef186",
+      "originalBytes": 1249
+    }
+  ]
+}

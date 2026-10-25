@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-architecture-evidence-diagnosis/source-import-audit.json",
+      "path": "source-import-audit.json.gz",
+      "originalSha256": "91dd627aa99d93aa22643f64923684a1f8934361bf3c73321f5833a27a2a8f76",
+      "storedSha256": "fc15c80625cf4f91d3f698c606aeecace3d5ff155a42ecf03a7d069a8a387f02",
+      "originalBytes": 270
+    }
+  ]
+}

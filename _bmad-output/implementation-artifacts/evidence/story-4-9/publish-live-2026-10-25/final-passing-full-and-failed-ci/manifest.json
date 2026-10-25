@@ -1,0 +1,851 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/acceptance-audit-full.json",
+      "path": "acceptance-audit-full.json.gz",
+      "originalSha256": "6ef08ee76810af176345c9bbc4253f03c0e670c0e88d681bd474455f8c80f015",
+      "storedSha256": "ca03e654621ff5fa1a1a422fac87371977e3275dac2923b90c01d70ed7a31329",
+      "originalBytes": 591865
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/bootstrap.json",
+      "path": "ci/bootstrap.json.gz",
+      "originalSha256": "acfe64c142a8170adbfdeca0f3c9ada5f0ec9bd81fa4d6cb2337d5fea6fb4aef",
+      "storedSha256": "d10882cc4b76dc84d4bd303b55019d177a11860681b251aa10a9ba88f41348ba",
+      "originalBytes": 134351
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/custody/command.json",
+      "path": "ci/gate/agents-full/custody/command.json.gz",
+      "originalSha256": "a3deb26444707c2fe175153a3f0a1c40fef374d4b497c87a088c6673ab72d76e",
+      "storedSha256": "0664bf8542d606473071735a882043284d0d4521284b19474faeae1425040703",
+      "originalBytes": 799
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/custody/custody.log",
+      "path": "ci/gate/agents-full/custody/custody.log.gz",
+      "originalSha256": "8c6b3de3b6b5f0c4c4f89e6e660c003427a5323297d1331df06a631caeafaa9b",
+      "storedSha256": "592bfb2963455d5d6923a5bfc07dd78982f7436160e896ea83b667f299cb6e51",
+      "originalBytes": 659
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/acl.json",
+      "path": "ci/gate/agents-full/evidence/acl.json.gz",
+      "originalSha256": "be7a7151df96289a85ef3c6381fd379e709bddb6aaa12c7f9b01cade408489c0",
+      "storedSha256": "f4a01f3eb66cb88e7ce4aec01b4af0d45bbebda901f4a85cbab6aae416361150",
+      "originalBytes": 2207
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/blocked.json",
+      "path": "ci/gate/agents-full/evidence/blocked.json.gz",
+      "originalSha256": "76f7997ec05159eee0631ac5866036a5d7941e7f65183f314c637e381a54b4f0",
+      "storedSha256": "3f5291cc526ac78f5707fe584a214445f429da3316e2b574a06cff6c16846a8f",
+      "originalBytes": 2049
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/isolation.json",
+      "path": "ci/gate/agents-full/evidence/isolation.json.gz",
+      "originalSha256": "15b348aad20e4c28405460fae127bba3749f3d6e2688799b0bc3a5fe2ea3c98a",
+      "storedSha256": "82b9f6c22757ddbd4ba814a2e650c387b0b3afffd3d5707cef5b742bf60dbce0",
+      "originalBytes": 2379
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/lost-ack.json",
+      "path": "ci/gate/agents-full/evidence/lost-ack.json.gz",
+      "originalSha256": "938bf4ae73615a535aafe973b80386b78d5e41dd535545c65f20cf09c9927e1a",
+      "storedSha256": "743a977c3a1601737b2aeb3b0bfba83702adb1ab312d5e19aecd81dafd6d0d6a",
+      "originalBytes": 2533
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/outage.json",
+      "path": "ci/gate/agents-full/evidence/outage.json.gz",
+      "originalSha256": "89446c851d936411b25540d96c93348f9ae1db7311538741f90ae9d08c0272ca",
+      "storedSha256": "6262d8d7a66f4c392e3c8b73b0f6552e338f533b48c353d0420a5a96b7f5dc8b",
+      "originalBytes": 2531
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/restart.json",
+      "path": "ci/gate/agents-full/evidence/restart.json.gz",
+      "originalSha256": "cdc7452ca084b7b1fdc9b6b0a5915fd1ea12fea6423dfc6079b2529d82d2a9f5",
+      "storedSha256": "d0f59d71dfbcba4f741623373f8071079815bd9da2956a0324e5032c2324d5de",
+      "originalBytes": 2538
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/evidence/restore.json",
+      "path": "ci/gate/agents-full/evidence/restore.json.gz",
+      "originalSha256": "829e83d8e87611a72b09b654b237425cae0d61ce4b566be78f879ad4c802aa5c",
+      "storedSha256": "86c8660f98086b93bc38848809848a0e2d102454ce9ec44103f3b693b32b561f",
+      "originalBytes": 2524
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/guard/command.json",
+      "path": "ci/gate/agents-full/guard/command.json.gz",
+      "originalSha256": "f39713b7128c52536cb245288352a8995a79f3d66b7c6fcc7918a34993d6344e",
+      "storedSha256": "51efb4d16b7bd7985b9fc3cbfbd15ab14a41e45c6dbce47183dc3b11556e2d66",
+      "originalBytes": 599
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full/guard/guard.log",
+      "path": "ci/gate/agents-full/guard/guard.log.gz",
+      "originalSha256": "14599a0d4d17faa416ed6e2f09cac7a36dacf9e85808a5547da70065700aedd8",
+      "storedSha256": "85040e5269f4b417259ab2b7f47234bab3765fabf1cc2c69d31a592cb86a59be",
+      "originalBytes": 521736
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-full-refusal.log",
+      "path": "ci/gate/agents-full-refusal.log.gz",
+      "originalSha256": "f55b4fa1e79da98ac691427aa4ae842b9fd8bf4cfa8ab76cf6fc0fb8bba23584",
+      "storedSha256": "23750cb5297941ff799d6d13022be812a16ce9c6afb31edcaffee1bfef682975",
+      "originalBytes": 391
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/agents-local-scaffold.log",
+      "path": "ci/gate/agents-local-scaffold.log.gz",
+      "originalSha256": "6d2a2cb06979bdd460550f5db0a58fa53dc046b57bb8eeeb6602b30125928e78",
+      "storedSha256": "0b03ad1a0a722d1832699542a0dc03475bb19f97815c155e10e1c078f9b999d0",
+      "originalBytes": 2157
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/component-evidence-gate-tests.log",
+      "path": "ci/gate/component-evidence-gate-tests.log.gz",
+      "originalSha256": "e0994c48155f97a37c948bfe6f2919cec3876be821266f153ae92880ff1b5835",
+      "storedSha256": "acaffbe16762f8819d19a7f40a8067ed4242a9d98b79fdae92d94f9eb76f7f04",
+      "originalBytes": 546
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/evidence-gate-tests.log",
+      "path": "ci/gate/evidence-gate-tests.log.gz",
+      "originalSha256": "f3b4885cec9029593e03d07fcbfaee78fb3464285645b372655f3b09cfae01b6",
+      "storedSha256": "5bcc50c30868decd02308055deb42abb487ee9bc82450478989d36ea6e9e37bb",
+      "originalBytes": 9193
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/host-starts.jsonl",
+      "path": "ci/gate/host-starts.jsonl.gz",
+      "originalSha256": "70de53fde0bd7938201a4b2e9420eb0a5e0bbecf3aac6dbe1370f153343b0df0",
+      "storedSha256": "88c4cb56e7f419e6554bc10ef78bf23659b3f711a291232e0cc36502f3f8be57",
+      "originalBytes": 246291
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd/.dapr/bin/daprd",
+      "path": "ci/gate/isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd/binding.json",
+      "path": "ci/gate/isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd/launches.jsonl",
+      "path": "ci/gate/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "45ffd226aba3d2b91ed8b15511367b293203920846eea109fb6e3891f0bb23e8",
+      "storedSha256": "9c3ecdf5a9f33f9ab4fcc759fcbc493df4c5126aca0123272919c5a940383269",
+      "originalBytes": 25873
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd-retained-preflight/.dapr/bin/daprd",
+      "path": "ci/gate/isolated-daprd-retained-preflight/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd-retained-preflight/binding.json",
+      "path": "ci/gate/isolated-daprd-retained-preflight/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/isolated-daprd-retained-preflight/launches.jsonl",
+      "path": "ci/gate/isolated-daprd-retained-preflight/launches.jsonl.gz",
+      "originalSha256": "33a7ddebf51cb604503b9c46dc681e971ba3e31298bfbe02476a21420691ba64",
+      "storedSha256": "994aed31b261c4d843a3f1ec4426ffeba3ee201890790573dabcc992de0e8842",
+      "originalBytes": 2301
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/ledger.json",
+      "path": "ci/gate/ledger.json.gz",
+      "originalSha256": "fd921dddafb7fc606dad97abb2ca4712119cf76d3ea30afdcc02c610ab987196",
+      "storedSha256": "963499339633ab0751ca0caa3913cc2990433b7d9120abffc437c0ad75843efb",
+      "originalBytes": 1350914
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/persisted-states.jsonl",
+      "path": "ci/gate/persisted-states.jsonl.gz",
+      "originalSha256": "558be3a06ca1b4b6100de42a6a84b41d4e9259c69d4e2c07151ff55feb702a83",
+      "storedSha256": "99c69a95093996919069edb13efe30e459ba6e8962a1d84162cee65f3ac71650",
+      "originalBytes": 3369328
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-file-host-release.log",
+      "path": "ci/gate/platform-file-host-release.log.gz",
+      "originalSha256": "a3d8742852059824c444582d2d8a2f1fe2704e4cb6eb8ce23cce9ad60a62d5f1",
+      "storedSha256": "dc556dd539d63722db06e306644fdd25f56d4dd76f36016fd1d9a38be1def1a0",
+      "originalBytes": 1804
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-ha.log",
+      "path": "ci/gate/platform-ha.log.gz",
+      "originalSha256": "7e18ea45037062493c9ea41301dd50d65c4c0a4ca8baffb418fb2d6481d28351",
+      "storedSha256": "217e735cddc134374befff1427b936f551530a7a8364789de6af5aa0590b6600",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-ha.xml",
+      "path": "ci/gate/platform-ha.xml.gz",
+      "originalSha256": "9d2cc75f1e99e9eb8f92c4702f66545f7be697fad4d0b59e4d41e27593daefe2",
+      "storedSha256": "b5a85ced33b6766100457c1585bd87b9f5ccab9824af1e35c4012fa7088f16ae",
+      "originalBytes": 1760
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-historical.log",
+      "path": "ci/gate/platform-historical.log.gz",
+      "originalSha256": "8e31fb982a12cf917d94268048f1e5a4293d9ea5a7e4163a5db62d25fb6e7c7e",
+      "storedSha256": "438b66d7f74926129e5858dab1160d2e2519916a2db784447c34084fadeb61a3",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-historical.xml",
+      "path": "ci/gate/platform-historical.xml.gz",
+      "originalSha256": "eee9eb7d4c31770e0e89c045b884405adf6f48c3f5daf1b611e25c99f3d954a6",
+      "storedSha256": "c6c14e3e8362a0509e97fa8da8eb84b7dad7e68247afa01c58896de4b0bc2cf5",
+      "originalBytes": 1769
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-mtls.log",
+      "path": "ci/gate/platform-mtls.log.gz",
+      "originalSha256": "ee3d596e9ab72ec82dcd82f6e0eed7198cd54c0b396cf1ecedd6adba124e241d",
+      "storedSha256": "7a2f0a9f9127b48e8f42cace4091b67cccbbe4535c23ff664dbefbad9e2db86e",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-mtls.xml",
+      "path": "ci/gate/platform-mtls.xml.gz",
+      "originalSha256": "bb125fe6e001bdd222fe85a75c5167869ea10799fad5d49b804a896b7ddc12d2",
+      "storedSha256": "2b194fd76765f136c8f6ef46a879d013d70bec0be2da9800e8350fde8ebab875",
+      "originalBytes": 1767
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-projection.log",
+      "path": "ci/gate/platform-projection.log.gz",
+      "originalSha256": "b9c7c8eedbe2ff2119aeaf1e8ede069de42c85886a083a0c2c4d31f858a5f30e",
+      "storedSha256": "c31244bbaa3fa9c2d13ba7cc8e61c8768f3571378cda66f5992ad73a6eaf29d0",
+      "originalBytes": 102135
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-projection.xml",
+      "path": "ci/gate/platform-projection.xml.gz",
+      "originalSha256": "bb3d6a4938f48f9e076dca73e2e1cf2476abb3f6456b0dc7f1ca07878f387333",
+      "storedSha256": "8f63d7427f0663d965f6fe636a2c3b54cb24f6d10953e9b86743e86aeaa52637",
+      "originalBytes": 107363
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-recovery.log",
+      "path": "ci/gate/platform-recovery.log.gz",
+      "originalSha256": "119211befc850243d562038f903c2437b3f55eea422d39e539b44ee7954ea5bf",
+      "storedSha256": "a71628356e45ba3171c2d21680be3b38401a725260501362cdc17c59fd89e6cd",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-recovery.xml",
+      "path": "ci/gate/platform-recovery.xml.gz",
+      "originalSha256": "22105f0e38280e189d9c7178bf85c04756af36d342aef3a45eb5e1030e7d2ef0",
+      "storedSha256": "e40ce5d94ad0ecc57d028f8bcab4c39fdbd42447b7a2e4b69cbd51aec64ef5bd",
+      "originalBytes": 3625
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-release.xml",
+      "path": "ci/gate/platform-release.xml.gz",
+      "originalSha256": "60d1d702671b4aea0eaa02737743faa3e9114200e452318be8468db4dcd01875",
+      "storedSha256": "9e654ad8aca18c8398135ebe86552ac61173b2d53355075e97b8a99c3bbeb2a1",
+      "originalBytes": 91902
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-tests-build-release.log",
+      "path": "ci/gate/platform-tests-build-release.log.gz",
+      "originalSha256": "f221afd5356942f5a4255c6bfeb3525534598f873d22b42810dffb43d4c671a6",
+      "storedSha256": "8388e2cd353d5c039d80f9511c61fb965177d74e1e65d704a8460912c8ea39c1",
+      "originalBytes": 2281
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/platform-tests-release.log",
+      "path": "ci/gate/platform-tests-release.log.gz",
+      "originalSha256": "f7025b8ed81b0d3fc074f4778b514df4b8b5e9e9cc523f7a08f3e8f1c067b590",
+      "storedSha256": "5bd755bf39129bc6201f8310bb9c05e6406a23a2d1891fc77bc0f4c9175abf0a",
+      "originalBytes": 390
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/retained-host-preflight.log",
+      "path": "ci/gate/retained-host-preflight.log.gz",
+      "originalSha256": "d9f7dc4dfc0a1fa9d7e876f72510de4b4d76ca44391089af3f38fc80e6f5636a",
+      "storedSha256": "d6291166217328ffbef4997d5d3c847d3079de128693db1ffcb92b67ad249041",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/retained-preflight-starts.jsonl",
+      "path": "ci/gate/retained-preflight-starts.jsonl.gz",
+      "originalSha256": "a3364043ffc8745adba83cdafa15e84296949fb8cb46588e3895f89360f05ff2",
+      "storedSha256": "6a525d63e472da3144c130663caa39233f7e508e722f555307fcfdd2de35f489",
+      "originalBytes": 13607
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/retained-preflight.xml",
+      "path": "ci/gate/retained-preflight.xml.gz",
+      "originalSha256": "6e9961f8c4f00502dd61bb8a7784f90a7e01e4c202a907f13613e029d3ca47dd",
+      "storedSha256": "6cf7ccc94d9e50e01f1fcb4296768c36156557cda805c784370c02248be74c6c",
+      "originalBytes": 1853
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-0.log",
+      "path": "ci/gate/runtime-release-prebuild-0.log.gz",
+      "originalSha256": "f000a112dd83fd2061fdef24cf0f1fd431d50125eb15bce7ab9d7551b188f009",
+      "storedSha256": "3eceebd33193ca51d1d26e923217b903c5e8392b444d47743a1a0584030e19b6",
+      "originalBytes": 1528
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-1.log",
+      "path": "ci/gate/runtime-release-prebuild-1.log.gz",
+      "originalSha256": "09f587454c89ba3154a2e61ea8a40b2c9cb5017ec7e7a8fe9394785ed9b06243",
+      "storedSha256": "d7f6dfc08326e9d88dc6d2494dbdd791a6ee09fde8e5fa2013f3de4958692fbf",
+      "originalBytes": 3038
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-2.log",
+      "path": "ci/gate/runtime-release-prebuild-2.log.gz",
+      "originalSha256": "e7c4f8ade730b8d429848d2258199e37cb5c8d78acf3b6020960fd1dd2ab707c",
+      "storedSha256": "1eeb9d0dcc86fc7c91f166a19943f32ca034007e8a58ab5b20b4b65ff8b49792",
+      "originalBytes": 1120
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-3.log",
+      "path": "ci/gate/runtime-release-prebuild-3.log.gz",
+      "originalSha256": "b0f48ee40bc2070893d723e9b9b75078f05bd4342840c2645e267ac9b397a121",
+      "storedSha256": "5087989d9865493154d9c1724d24e47b678369c513bb9f4074ac1c089cfbfb2a",
+      "originalBytes": 1535
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-4.log",
+      "path": "ci/gate/runtime-release-prebuild-4.log.gz",
+      "originalSha256": "62ad5dcfeb26a2dec56a6fcf0ea58efbab60181ec27184d8f1172749fcee2328",
+      "storedSha256": "5e3f56acfc101b51ae7e24f8816b56551ccf956688f0c22d4007d7fdd67dc334",
+      "originalBytes": 479
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/runtime-release-prebuild-5.log",
+      "path": "ci/gate/runtime-release-prebuild-5.log.gz",
+      "originalSha256": "db68ebb72d8b894d805b25dcad3eb888eb15eaa135b256e90a6622162caa7202",
+      "storedSha256": "c4a00cfb4eaca9a38c23e1cd95d6450b7bebd285ec110cd8976ffb74c6947480",
+      "originalBytes": 1160
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/works-consumer-release.log",
+      "path": "ci/gate/works-consumer-release.log.gz",
+      "originalSha256": "47c4c70dd0856db59b88728c1703c1730270405118b3b08ec10994add392d938",
+      "storedSha256": "f0a1fc8f4eab1bc2bf434e489a2e377e819ca52cd806ef7f0050596799f354be",
+      "originalBytes": 4556
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/works-consumer-supporting.log",
+      "path": "ci/gate/works-consumer-supporting.log.gz",
+      "originalSha256": "cc4532b798e8f937f387e050346e7606eb2ae8d6461ef01d2a738640f8f58b14",
+      "storedSha256": "e91dd4045349c69b76ae47eefd8b8a1086da835ca7daa36f9fb47a9bd3553362",
+      "originalBytes": 36474
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/gate/works-consumer-supporting.xml",
+      "path": "ci/gate/works-consumer-supporting.xml.gz",
+      "originalSha256": "fd99e9a1b014e9184ff89cc5708e4b28bf03064b5b4c83cf361a91e1181893ff",
+      "storedSha256": "e10bcc4330c61ac4cef4bc18b943c33afc23d991ace35c66f65b7ae9586f9113",
+      "originalBytes": 204902
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci/platform-source-binding.json",
+      "path": "ci/platform-source-binding.json.gz",
+      "originalSha256": "f56be93792344af9c92f1ab008569b58c593bda63c48a08dd5bb3d58f1316c3a",
+      "storedSha256": "529efc6ff02cac55377627dae8c9e6e34f7bf658aff78bd083edebaf0f974b33",
+      "originalBytes": 267985
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci-console.log",
+      "path": "ci-console.log.gz",
+      "originalSha256": "273cb9996b899e8e9341b8567e00cf9a1c554509b177ea9768d97dd712db0ae3",
+      "storedSha256": "4e82bd9f02285b44e2d70812fc92ac3b9ccd183c3a7321bd7418605cc9de69b0",
+      "originalBytes": 3953
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci-docker-correlation.json",
+      "path": "ci-docker-correlation.json.gz",
+      "originalSha256": "62949c0ddf3dd1f353a2d1b85ef83b299a09b99af31ffc820bd011f50cd877fa",
+      "storedSha256": "8b2dbe65fe75e7fb3e89e1c9889d23a9a274f677b26c41a8775811c9f61a141b",
+      "originalBytes": 32370
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci-docker-observer.stderr",
+      "path": "ci-docker-observer.stderr.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci-owned-docker-events.jsonl",
+      "path": "ci-owned-docker-events.jsonl.gz",
+      "originalSha256": "60227dcc6bce3a63365a833baa9225084f8d6a69b4319f6b3539eeb11af42a1e",
+      "storedSha256": "51d40c1a69b00b6ffbf091a61fe664d8fff5d939740ed01c5be38149a60cd68a",
+      "originalBytes": 629814
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/ci-process.json",
+      "path": "ci-process.json.gz",
+      "originalSha256": "7cb07361e86e1e22a26fd400b00fc4a819abb2beb06f2fa41202128b96df92f7",
+      "storedSha256": "5e306c4dec98db27df1b1dbc32a24a5df8934bd7076003cd9c7d6b84c8219514",
+      "originalBytes": 1842
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/bootstrap.json",
+      "path": "full/bootstrap.json.gz",
+      "originalSha256": "dbc1a239aa5c5c2812dd36b990e4bc5e13732a023907a54a0a00db3fd66a3777",
+      "storedSha256": "50b0131f8daad23982c7aa22c0709c7a0e4fe0a1097a4c804165061b127066e4",
+      "originalBytes": 134387
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/full-invocation.json",
+      "path": "full/full-invocation.json.gz",
+      "originalSha256": "55b838d7e5e2a533078d853de7a9f158774d6d158b0bb5aa0b59f98f70db4c99",
+      "storedSha256": "68ae3e8c30831e9853658767c467a493b9c1a57da198aa087c8bc8bafd12cf2c",
+      "originalBytes": 1331
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/custody/command.json",
+      "path": "full/gate/agents-full/custody/command.json.gz",
+      "originalSha256": "d53da9e79e8337b932829a88ee6b892ebbcc4261f2519347d8c825417cea131b",
+      "storedSha256": "3da4927fcfb8c27db852358774f2db7bc99adc372dbf23de91a12e219c1ecf5e",
+      "originalBytes": 799
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/custody/custody.log",
+      "path": "full/gate/agents-full/custody/custody.log.gz",
+      "originalSha256": "d48dd1f7841aace193f619f4314c3c764679d1261655060b1a018d66b178ecac",
+      "storedSha256": "a363d6bb4e3369544b1ecc2c44cfcbcd4033629bb4677238d24896efd81b0f9b",
+      "originalBytes": 661
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/acl.json",
+      "path": "full/gate/agents-full/evidence/acl.json.gz",
+      "originalSha256": "2ef1bed0ec48d7415d577a233b29d1f92f77d3281343a446fbf5021d3b3c22ac",
+      "storedSha256": "18912901c81e57bcf16b14592b541ae3d6d61d38367012715715c85133faeb74",
+      "originalBytes": 2205
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/blocked.json",
+      "path": "full/gate/agents-full/evidence/blocked.json.gz",
+      "originalSha256": "9f968681a978ee342e5d5e82e3b6a7188c6f7633a8cd6d832047e06dc1fc12b3",
+      "storedSha256": "21887ef94b69a6b9f127cea098359f42d5006a30364beef4d3ce89e6d12f6117",
+      "originalBytes": 2047
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/isolation.json",
+      "path": "full/gate/agents-full/evidence/isolation.json.gz",
+      "originalSha256": "e576363f2f7c08f9d1eb51613cc82dfe6f95eddea61ed12b9dd465f005ca750b",
+      "storedSha256": "e87f0f85770eecb20212ccf1e66f833ebeed5e1f9c79545077b055b9262de75d",
+      "originalBytes": 2377
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/lost-ack.json",
+      "path": "full/gate/agents-full/evidence/lost-ack.json.gz",
+      "originalSha256": "601f852bbfa4ce2ee1749c5d4176b59f025a061273193d68faed2e5e4d73dadf",
+      "storedSha256": "a07178739fcf5b3046bd12b25f8ab1472f63854cc2e7af8aa49a794b65e4156d",
+      "originalBytes": 2531
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/outage.json",
+      "path": "full/gate/agents-full/evidence/outage.json.gz",
+      "originalSha256": "5a04ab21309f9b26df77149bd72c2086aa696e1935310d0ba69c81dce0b9d87a",
+      "storedSha256": "7d08f92f2ce362fd14f3a47fe47a79aa58bb65c536392bb41aba02e5937cd6fc",
+      "originalBytes": 2529
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/restart.json",
+      "path": "full/gate/agents-full/evidence/restart.json.gz",
+      "originalSha256": "ef297150530f5e2afd660f0dafa8a256daadbfaed9b72649925eef7a3a97c677",
+      "storedSha256": "25f8a6d96014d617a67bfde4d881892b520119893acebc4342dd513baa6c4d44",
+      "originalBytes": 2536
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/evidence/restore.json",
+      "path": "full/gate/agents-full/evidence/restore.json.gz",
+      "originalSha256": "2fce132446750b9c388971b8fddbeead206d886b9d48f05cd87b58c033333ee5",
+      "storedSha256": "bcbc147366193221d4868e52dc4c4f9e7e33b4af92911b96ce7553ace7081ebc",
+      "originalBytes": 2522
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/guard/command.json",
+      "path": "full/gate/agents-full/guard/command.json.gz",
+      "originalSha256": "3f00d5771f685d9784876ed1eaa67ddca7f1be69eeb291dc41c68a99c9957931",
+      "storedSha256": "fdfdde6e1f75be05878988c683f75bdbab5fb5ef9b69e2cd9137f30bfc8ef07b",
+      "originalBytes": 599
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full/guard/guard.log",
+      "path": "full/gate/agents-full/guard/guard.log.gz",
+      "originalSha256": "449b6677e1b2285813603be5ff1776e4de8d3843d50a910acdae3c79be93a619",
+      "storedSha256": "75f2def14679f46eb3f6062dab72c6dbe34c7edb1817816a3cc7ef70d79a5f6d",
+      "originalBytes": 469
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-full-refusal.log",
+      "path": "full/gate/agents-full-refusal.log.gz",
+      "originalSha256": "998f9fab04c5bf65548aa3d90d2e14caab9a8818a200f929c09943da992f9c60",
+      "storedSha256": "34bb8e3b6cb5dd769f8ab8fb9d9c7e127a8ce972e49cb83007624a89d99d83f0",
+      "originalBytes": 391
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/agents-local-scaffold.log",
+      "path": "full/gate/agents-local-scaffold.log.gz",
+      "originalSha256": "068b05fe009fe9c202406c7386c319561249606c2aa6138bca0383afb00ec24e",
+      "storedSha256": "32bdd0b99d8d0489165210d8571dac9f2dc8d530eabb0b8ba6929c79242c60fc",
+      "originalBytes": 4723
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/component-evidence-gate-tests.log",
+      "path": "full/gate/component-evidence-gate-tests.log.gz",
+      "originalSha256": "6e8b17efa39d2525eab9475dc0c596de4ba97994b940c6a0b2a057e466c215bc",
+      "storedSha256": "1125766fcaf13b273e7bdd30f517f61809ecc45689ad98ef4522cab1cdd73c79",
+      "originalBytes": 546
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/evidence-gate-tests.log",
+      "path": "full/gate/evidence-gate-tests.log.gz",
+      "originalSha256": "f86c42d7986313aaf4962fd5e01860fcb69dfeff4e1a3ff6c444b8977a5e6b7a",
+      "storedSha256": "3e8b42f4d0c3a9080510d54935563bcc0cf320578427f7f307cd4c206b8fe77f",
+      "originalBytes": 9193
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/host-starts.jsonl",
+      "path": "full/gate/host-starts.jsonl.gz",
+      "originalSha256": "2deeb9fe231dcb8c955f23b7a2d1eef59448969bb1e6f154bf53258004762e92",
+      "storedSha256": "2bc7c65a304993113f7b6390d9646b70e8e3d0ed714c1f319d6165c3465aef37",
+      "originalBytes": 247771
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd/.dapr/bin/daprd",
+      "path": "full/gate/isolated-daprd/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd/binding.json",
+      "path": "full/gate/isolated-daprd/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd/launches.jsonl",
+      "path": "full/gate/isolated-daprd/launches.jsonl.gz",
+      "originalSha256": "9a2d78c0687c102b30759e577005e71ffefe343442e2b53c122e074468f8de93",
+      "storedSha256": "1db44b8bb90bfde98a076ead6fc9cffb1b1185679f02aa0303e10477445b1c20",
+      "originalBytes": 25873
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd-retained-preflight/.dapr/bin/daprd",
+      "path": "full/gate/isolated-daprd-retained-preflight/.dapr/bin/daprd.gz",
+      "originalSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "storedSha256": "cbfd9f679e5f6c7440c06598d07bdded61f727a4272e5fb046902ab2f534a66b",
+      "originalBytes": 5813
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd-retained-preflight/binding.json",
+      "path": "full/gate/isolated-daprd-retained-preflight/binding.json.gz",
+      "originalSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "storedSha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "originalBytes": 264
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/isolated-daprd-retained-preflight/launches.jsonl",
+      "path": "full/gate/isolated-daprd-retained-preflight/launches.jsonl.gz",
+      "originalSha256": "0e3fe20d9036788f887a6a2a02cbeac677063f85b8dca5a4fb2dfadd348e22a7",
+      "storedSha256": "966d78926148d24b5ef9f7d7434d2993149ce77d8acb12c96a890bd1d8c1ff8e",
+      "originalBytes": 2301
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/ledger.json",
+      "path": "full/gate/ledger.json.gz",
+      "originalSha256": "4ccc47e8bf5f505d31717af4f52d4c6f5c49c2c781a6284854c368a387f9c266",
+      "storedSha256": "1fefd43c8a6e52bc4e75dac714d823d46e6c3befc818cf8e9f96bba1a3ddffb8",
+      "originalBytes": 2799313
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/persisted-states.jsonl",
+      "path": "full/gate/persisted-states.jsonl.gz",
+      "originalSha256": "624e2a5c74f073a906ae6a76826e8a765980b163761351fae2587a225c81aec4",
+      "storedSha256": "7e395d8532f2297c036c3ca21f1b4e57683ecb0cd80dbbbedfc01a73f1f4d4d4",
+      "originalBytes": 3344537
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-debug.xml",
+      "path": "full/gate/platform-debug.xml.gz",
+      "originalSha256": "a3ce34114a589b5f4067f170fdbb7c447991b8c960276001c317636079bc8b97",
+      "storedSha256": "cd731fbfc88cb1d3c0216e4efa2b2b9cb73bf75cf50783f9ea08898518123640",
+      "originalBytes": 92202
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-file-host-release.log",
+      "path": "full/gate/platform-file-host-release.log.gz",
+      "originalSha256": "d058540ba3f2ddc82085bde82b0a5f2a193d60bd73f92283b1a1e3ea8b9057e1",
+      "storedSha256": "90d0cdf70d3864ae3b50edb8bb11247b7a764f59bf4e5dd2e9747f2f3ac974ba",
+      "originalBytes": 1822
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-ha.log",
+      "path": "full/gate/platform-ha.log.gz",
+      "originalSha256": "5ca0f9186ec527d3838c3c65e98187c2f450da987d88cecb46b804bd0458c241",
+      "storedSha256": "f71e710168edbd75ed277de90903547c5fb51593e6819e926d98f883fd1c64c1",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-ha.xml",
+      "path": "full/gate/platform-ha.xml.gz",
+      "originalSha256": "8ad62c6469f8cba2073ee7191f5b4aa0f54ec2492d7a0b124c97944f4bb6d160",
+      "storedSha256": "3dc75fa08444024553dfa2a0c670751afbea092ec619bdf81923b09cd3e3e350",
+      "originalBytes": 1762
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-historical.log",
+      "path": "full/gate/platform-historical.log.gz",
+      "originalSha256": "1b022a8462f91d7e8eab9fc81a571b38b6ff3b17b7cd0feb5521745975a9373c",
+      "storedSha256": "6e109aa65d256a263b184afb45a610a41f08db915668737ec05415476215a794",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-historical.xml",
+      "path": "full/gate/platform-historical.xml.gz",
+      "originalSha256": "6b0ef450ead2c4db4466a208435a71cc1e690f9568f3d75a73ac6bd230990f7a",
+      "storedSha256": "92c77f5aeeea02a249d292cfd8e77f85dfb2d362bbad678f660573e95677fe3b",
+      "originalBytes": 1771
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-mtls.log",
+      "path": "full/gate/platform-mtls.log.gz",
+      "originalSha256": "1d5157b32f49b6277b6356d3cce3d1c745b8bf7149a6f2fba699a46fe90e7db4",
+      "storedSha256": "d9bbda0d54d9349ffa1650b9b1431e07aaaa8bb5bd29852bd7a47c2816544263",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-mtls.xml",
+      "path": "full/gate/platform-mtls.xml.gz",
+      "originalSha256": "7b19b61afb6edc308c96f08b5b51e921b2dc88f5464d6aaa7d68d8eee184a6fa",
+      "storedSha256": "8695f1bce6513d5df0e769fd7cbdbf583112426b8597f8d97414a3ad898fcf67",
+      "originalBytes": 1769
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-projection.log",
+      "path": "full/gate/platform-projection.log.gz",
+      "originalSha256": "858774c0f3d5f3ddb1407512bf3da3b196439a5ecf89f658229a022f0a66c7a6",
+      "storedSha256": "a88703aa0abb1af76cc841ad677b21e784ec3bf217ed5cda772dab6a183098c4",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-projection.xml",
+      "path": "full/gate/platform-projection.xml.gz",
+      "originalSha256": "0c9850f4f4bae9fb0108759e41b7d11b5bf2e1650c56019a0bd6526360e2602e",
+      "storedSha256": "f23ebd936987e8fd7644abe8f45f8c6dbb131ede4a856c7c34b28ed8956ae71e",
+      "originalBytes": 1788
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-recovery.log",
+      "path": "full/gate/platform-recovery.log.gz",
+      "originalSha256": "c3f01db1fabcf6db2a0c82d58f8da9ea9b2f94ec0b63563d14f783b926926f33",
+      "storedSha256": "4aa5a5239bc7087400c16eaa915d0571c73367bb0fce57c0adadcab7e00b274d",
+      "originalBytes": 400
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-recovery.xml",
+      "path": "full/gate/platform-recovery.xml.gz",
+      "originalSha256": "d695de76cb99d63ffaeb268c34d963335281057379fd91531982a91872bf3406",
+      "storedSha256": "ceca40f5205940d3b68f87ab45c283a3e1209097a058cf32b47222a25368697a",
+      "originalBytes": 3627
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-release.xml",
+      "path": "full/gate/platform-release.xml.gz",
+      "originalSha256": "49d8320be8a78976109c6a8b5eda734b64f229e603a4781b2939059269e94ea7",
+      "storedSha256": "c7da16a2d99ab0ac8299f7aabf854c323eeca8fe5e47fc5b20a3447e4bcbaeed",
+      "originalBytes": 92194
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-tests-build-debug.log",
+      "path": "full/gate/platform-tests-build-debug.log.gz",
+      "originalSha256": "c1343219f66576954bdea82393473e9e6aae5a697ea3140e3652950b28eb6cf4",
+      "storedSha256": "7b2aa05b7a3e3ccb6eadc91fe6fcbc7b1ab63edc2eac8a269efd47f027a7251f",
+      "originalBytes": 5203
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-tests-build-release.log",
+      "path": "full/gate/platform-tests-build-release.log.gz",
+      "originalSha256": "d432920f97d22399d2564e89262e4957bbcee5f3592d4f3409c378e15faa057a",
+      "storedSha256": "a8af0e1c5da8e36bba6e993384a27c4e6645d329d73095c05d994d4698d2d102",
+      "originalBytes": 2299
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-tests-debug.log",
+      "path": "full/gate/platform-tests-debug.log.gz",
+      "originalSha256": "b2da33cb1bc95c845ba3947fd9e48da77df3f005e07800be1e3254e4a99b7e0c",
+      "storedSha256": "95d58671aa44c0b745c302527dcee36cdcc1c34b8d72f9b0980c127d317a8dd6",
+      "originalBytes": 390
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/platform-tests-release.log",
+      "path": "full/gate/platform-tests-release.log.gz",
+      "originalSha256": "90a3d78c3d9743ced10adceb6dcfaed58ca84b4a230a5cabebbd6f5644e971ff",
+      "storedSha256": "8d0296b6da896b0ebec7a99a292e345929d4816b76a7fbf0dd30989eed8c08aa",
+      "originalBytes": 390
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/retained-host-preflight.log",
+      "path": "full/gate/retained-host-preflight.log.gz",
+      "originalSha256": "bf7a3926b16d91ec021c91bed3e47e40846f8e852c9810135fbc5d189c7f0b18",
+      "storedSha256": "6aadff500fb7c757d00d54fa46506a2836050e72405b312783c7ef87e5cc2afb",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/retained-preflight-starts.jsonl",
+      "path": "full/gate/retained-preflight-starts.jsonl.gz",
+      "originalSha256": "21efb16e75ebb59b3fad28c1455644590b6e9d04520594c8232b6d37426f3cbd",
+      "storedSha256": "3347a499d3407619a84c11e5936ee33ac22d492d8cd491ed77fdddc33d0f7a86",
+      "originalBytes": 13681
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/retained-preflight.xml",
+      "path": "full/gate/retained-preflight.xml.gz",
+      "originalSha256": "40f701c0cd925f6054f4956f0be6c1d2b6979c3642f786146dd6e9638ce273ab",
+      "storedSha256": "28ee10c91085449ee0085b2c238eca95d4216e4eda472b3d2a0a8fb2ff79ed18",
+      "originalBytes": 1855
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-0.log",
+      "path": "full/gate/runtime-release-prebuild-0.log.gz",
+      "originalSha256": "d8f2638bda77fac3f5fc347d975722ccc9ea98c2cbc00f62ce6ae63f82cc6500",
+      "storedSha256": "025b3fb583a86e8077aa121992135168fc8fbb0bf0591abca99db30450ff9bb6",
+      "originalBytes": 1538
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-1.log",
+      "path": "full/gate/runtime-release-prebuild-1.log.gz",
+      "originalSha256": "4bf72614cbf88b1aad13d77121d0d57f8ba31fcfe197d9f5f17acd8aef8ad29f",
+      "storedSha256": "dbb05952517fa92426fa64d493217866b39dde863311d731e92ac6d4f063224c",
+      "originalBytes": 3070
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-2.log",
+      "path": "full/gate/runtime-release-prebuild-2.log.gz",
+      "originalSha256": "22cf423ec3e060511f8b950515e01bcb4d46f8efc6a5347fe8e117f40a4da47d",
+      "storedSha256": "9fd1451a4bfc1de5bc77757d90aed9b5cbce3fb973b0e8364e0381760c77fa9f",
+      "originalBytes": 1130
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-3.log",
+      "path": "full/gate/runtime-release-prebuild-3.log.gz",
+      "originalSha256": "4d4a1f932eef0301f3c389ed84a786689fa6c5ad7f7b2187a72c6e0f5fc0a82e",
+      "storedSha256": "ea5ddea658df28009a28f3baecd2d685e9f1dfaeb1e7030464ae392543f20768",
+      "originalBytes": 1549
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-4.log",
+      "path": "full/gate/runtime-release-prebuild-4.log.gz",
+      "originalSha256": "bb249f7a4957e60dcfc4ee37e1b2053a5f4bf220d79e5894b4a4f8990cc2f9bc",
+      "storedSha256": "e114abe49c054e42a0ffacd14603f6841c31f414a322ddc177d7819f67a1d13b",
+      "originalBytes": 483
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/runtime-release-prebuild-5.log",
+      "path": "full/gate/runtime-release-prebuild-5.log.gz",
+      "originalSha256": "411f928f2f4281d993829e312c5700fa015b789fef2cadf94de4c1d85cc112e6",
+      "storedSha256": "138674c605e05983c443d0e796d536c4629f70dd47551813408e1bc708685042",
+      "originalBytes": 1172
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/works-consumer-debug.log",
+      "path": "full/gate/works-consumer-debug.log.gz",
+      "originalSha256": "751922e59d9b91ed6983ef1706bfd6c438af5e83cac8082256d8681de757401b",
+      "storedSha256": "656a7e6ea3d59e236470f82ce4264010f06636a00b92ccd6c7e01a516a1a7f94",
+      "originalBytes": 12544
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/works-consumer-release.log",
+      "path": "full/gate/works-consumer-release.log.gz",
+      "originalSha256": "ab35856f1c34dbaa7e5b91a78ebafbb33ae371dfa1b29df47d83c409807f842a",
+      "storedSha256": "5c3de7dc62faf923f59ad63b4cde7772a0ee5837d15a7a0becbec4df2f048e9a",
+      "originalBytes": 4590
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/works-consumer-supporting.log",
+      "path": "full/gate/works-consumer-supporting.log.gz",
+      "originalSha256": "c409c2642ccf39f2418ec86f74847a81ff653b537c21e065fd7aa17871ec1a35",
+      "storedSha256": "f2abb2c73c3e8cf54eb6ffd59a993ecb7d0584dd9d8792332beb2d893c4a8133",
+      "originalBytes": 36807
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/gate/works-consumer-supporting.xml",
+      "path": "full/gate/works-consumer-supporting.xml.gz",
+      "originalSha256": "26ad281bf2a79c713a9f45e3e50581e2eb9ce377168b7198d9251da11cf776fb",
+      "storedSha256": "cef9685f75f0e1abc3e107e7a11a791095f31c1364884c51fd3df5c8bc694174",
+      "originalBytes": 204894
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full/platform-source-binding.json",
+      "path": "full/platform-source-binding.json.gz",
+      "originalSha256": "ec8d1e8ff3a23d339d905e173df0d292efe84263525483e641a1427d84d342e9",
+      "storedSha256": "287a634911cb7355dce20ec9707e5251d1024405e6b5571a64c74f8c1b0405e8",
+      "originalBytes": 268009
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full-console.log",
+      "path": "full-console.log.gz",
+      "originalSha256": "be5589a45a76363bb83f6bb54297c0ef6aab1c217226b63497921f34a2974c72",
+      "storedSha256": "04d2571d9904a1c0574f15a85297fb4a36b0407be9637433c6c7782642a1f6a6",
+      "originalBytes": 3075
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full-docker-correlation.json",
+      "path": "full-docker-correlation.json.gz",
+      "originalSha256": "422fa846748e67148d0566455a22bfe344aa844557beead0f583c8216e1273c1",
+      "storedSha256": "40efec0b3debe62ea84f5a38aa09322001393b5ec8b5039d37661bbf54cd35c5",
+      "originalBytes": 32397
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full-docker-observer.stderr",
+      "path": "full-docker-observer.stderr.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full-owned-docker-events.jsonl",
+      "path": "full-owned-docker-events.jsonl.gz",
+      "originalSha256": "c1e6e44d8602907097a6946b313ccdf7ac061abb89d7491d1fb6bcd60c19e00f",
+      "storedSha256": "bf7ebec81dd0a3278d8fd1bb3ba29afc805fd2ed7d728ddf8009a5eeb4615342",
+      "originalBytes": 630222
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/full-process.json",
+      "path": "full-process.json.gz",
+      "originalSha256": "ddeaa6460bf122c0886ca83c20897a94cc91a1e75ab9949ea0c63894ebd2edad",
+      "storedSha256": "9bc7990e8ac50c3dad3898187ef6fd879460b9cc20acc4aa8fb46bc01c4f91ab",
+      "originalBytes": 1840
+    },
+    {
+      "source": "/tmp/story49-final-passing-full-and-failed-ci-bounded/retention.json",
+      "path": "retention.json.gz",
+      "originalSha256": "c086a6e755db34849726f7548fa090f564f4750935a1c7460ce1a8b3fc68a22d",
+      "storedSha256": "ec7e6a99bd024624f242b296cc7589468c211660e99ab67bf461082c57fb5433",
+      "originalBytes": 5218
+    }
+  ]
+}

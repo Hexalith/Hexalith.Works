@@ -1,0 +1,429 @@
+{
+  "run": "https://github.com/Hexalith/Hexalith.EventStore/actions/runs/40189871035",
+  "head": "373a14b5c0e9a0b980eed8b93847681e83addb22",
+  "results": [
+    {
+      "path": "Hexalith.EventStore.RestApi.Generators.Tests/Hexalith.EventStore.RestApi.Generators.Tests.trx",
+      "counters": {
+        "total": "124",
+        "executed": "124",
+        "passed": "124",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.Abstractions.Tests/Hexalith.EventStore.Admin.Abstractions.Tests.trx",
+      "counters": {
+        "total": "510",
+        "executed": "510",
+        "passed": "510",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Client.Tests/Hexalith.EventStore.Client.Tests.trx",
+      "counters": {
+        "total": "2156",
+        "executed": "2154",
+        "passed": "2154",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "2",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.Server.Tests/Hexalith.EventStore.Admin.Server.Tests.trx",
+      "counters": {
+        "total": "788",
+        "executed": "775",
+        "passed": "775",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "13",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.Server.Host.Tests/Hexalith.EventStore.Admin.Server.Host.Tests.trx",
+      "counters": {
+        "total": "66",
+        "executed": "66",
+        "passed": "66",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.AppHost.Tests/Hexalith.EventStore.AppHost.Tests.trx",
+      "counters": {
+        "total": "184",
+        "executed": "184",
+        "passed": "184",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.Cli.Tests/Hexalith.EventStore.Admin.Cli.Tests.trx",
+      "counters": {
+        "total": "384",
+        "executed": "384",
+        "passed": "384",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Server.Tests/Hexalith.EventStore.Server.Tests.trx",
+      "counters": {
+        "total": "5783",
+        "executed": "5758",
+        "passed": "5757",
+        "failed": "1",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "25",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": [
+        {
+          "name": "Hexalith.EventStore.Server.Tests.Security.SecretsProtectionTests.TrackedReusableContent_DoesNotContainUsableSecrets",
+          "diagnostic": "Shouldly.ShouldAssertException : violations.Length\n    should be\n0\n    but was\n2\n\nAdditional Info:\n    Tracked reusable content contains secret material. Only path and line are reported: tests/Hexalith.EventStore.Client.Tests/Projections/DaprReadModelBatchTests.RecoveryDiscovery.cs:18, tests/Hexalith.EventStore.Client.Tests/Projections/DaprReadModelBatchTests.RecoveryDiscovery.cs:20   at Hexalith.EventStore.Server.Tests.Security.SecretsProtectionTests.TrackedReusableContent_DoesNotContainUsableSecrets() in /home/runner/work/Hexalith.EventStore/Hexalith.EventStore/tests/Hexalith.EventStore.Server.Tests/Security/SecretsProtectionTests.cs:line 30\n   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)\n   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)\n   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)\n   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)"
+        }
+      ]
+    },
+    {
+      "path": "Hexalith.EventStore.DomainService.Tests/Hexalith.EventStore.DomainService.Tests.trx",
+      "counters": {
+        "total": "1218",
+        "executed": "1217",
+        "passed": "1217",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "1",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.QueryRouting.Tests/Hexalith.EventStore.QueryRouting.Tests.trx",
+      "counters": {
+        "total": "14",
+        "executed": "14",
+        "passed": "14",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.SignalR.Tests/Hexalith.EventStore.SignalR.Tests.trx",
+      "counters": {
+        "total": "44",
+        "executed": "44",
+        "passed": "44",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Testing.Tests/Hexalith.EventStore.Testing.Tests.trx",
+      "counters": {
+        "total": "155",
+        "executed": "155",
+        "passed": "155",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.LoadTests.Tests/Hexalith.EventStore.LoadTests.Tests.trx",
+      "counters": {
+        "total": "9",
+        "executed": "9",
+        "passed": "9",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Operations.Tests/Hexalith.EventStore.Operations.Tests.trx",
+      "counters": {
+        "total": "76",
+        "executed": "76",
+        "passed": "76",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.Mcp.Tests/Hexalith.EventStore.Admin.Mcp.Tests.trx",
+      "counters": {
+        "total": "437",
+        "executed": "429",
+        "passed": "429",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "8",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Sample.Tests/Hexalith.EventStore.Sample.Tests.trx",
+      "counters": {
+        "total": "194",
+        "executed": "194",
+        "passed": "194",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Testing.Integration.Tests/Hexalith.EventStore.Testing.Integration.Tests.trx",
+      "counters": {
+        "total": "48",
+        "executed": "48",
+        "passed": "48",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.Admin.UI.Tests/Hexalith.EventStore.Admin.UI.Tests.trx",
+      "counters": {
+        "total": "1121",
+        "executed": "1121",
+        "passed": "1121",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    },
+    {
+      "path": "Hexalith.EventStore.ProviderVerification.Tests/Hexalith.EventStore.ProviderVerification.Tests.trx",
+      "counters": {
+        "total": "69",
+        "executed": "69",
+        "passed": "69",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      },
+      "failed": []
+    }
+  ]
+}

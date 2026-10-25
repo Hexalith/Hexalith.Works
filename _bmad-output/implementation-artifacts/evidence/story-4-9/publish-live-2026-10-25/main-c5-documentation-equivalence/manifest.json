@@ -1,0 +1,137 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-c5-docs/after-story49-dispatch-release-pr375.py",
+      "path": "after-story49-dispatch-release-pr375.py.gz",
+      "originalSha256": "5610313cf1278c127513c10e8a3a3e7ebcb4cf543db313da992c71f875802fe5",
+      "storedSha256": "f5519f819446d0f9701c99a3e2a9e2f72c5093da1dc5a3419d50f1b8028f165d",
+      "originalBytes": 4489
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/after-story49-publication-proof-monitor-pr375.py",
+      "path": "after-story49-publication-proof-monitor-pr375.py.gz",
+      "originalSha256": "26d7ed82c26eb779d02c76234223643578facc29c106387b22ba7f4244008c36",
+      "storedSha256": "73161b5c758136c9f9a310425a77cea7ed74698b32ed2fcf0b559c784c8b2669",
+      "originalBytes": 3362
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/before-story49-dispatch-release-pr375.py",
+      "path": "before-story49-dispatch-release-pr375.py.gz",
+      "originalSha256": "c80b92940f3e4748aa9c4f920982553006f23976a82547e15e0ea1a55925a358",
+      "storedSha256": "4afe13bbfd04d8060e9477804675fc407bd960320fbe309b3513a37cf7542bc4",
+      "originalBytes": 4233
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/before-story49-publication-proof-monitor-pr375.py",
+      "path": "before-story49-publication-proof-monitor-pr375.py.gz",
+      "originalSha256": "5141d38a3ab775d6bb9a450008edee539b1545e0d40df4b4f46deea8b28f83aa",
+      "storedSha256": "c78ec8bdf07ff90ba7fced28bfbbade41b2d5ae5700c94dc5e6b42548d8d7652",
+      "originalBytes": 3030
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/broker-input-tests.log",
+      "path": "broker-input-tests.log.gz",
+      "originalSha256": "c3c427b44d0ffdea9b93d8fcc13908bd864b789afa07d468123d053af6a4cec2",
+      "storedSha256": "c2818bc19baae613e45463a8f9fa2ade5073189464ec71e48ac9b8ef6c45f220",
+      "originalBytes": 124
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/committed-file-guard.log",
+      "path": "committed-file-guard.log.gz",
+      "originalSha256": "ee6e3314de41623d267281a64b1d75e2257917148d109e02d6de011de1058bba",
+      "storedSha256": "bb864d2ab8a87801281d084dac4b59fba9ff2dd12ce18141cd6b76c5351a031a",
+      "originalBytes": 58
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/committed-file-tests.log",
+      "path": "committed-file-tests.log.gz",
+      "originalSha256": "ac8365629289573d32fe8508133aa73b9e415ae182b0054a3d59b64ae056610a",
+      "storedSha256": "897d47aa01bb355702caa1c15550d848a9a11360427853fb0a6199c2c8d0f30c",
+      "originalBytes": 118
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/equivalence-validation.json",
+      "path": "equivalence-validation.json.gz",
+      "originalSha256": "a13562553d8555354ba80ec8170060894ec5f5db6a19e7ecace574b87f4cd6c5",
+      "storedSha256": "963651a1604abd9ad676f8f4f0757a18d153e609411c53dd6df3d690ec72ae83",
+      "originalBytes": 806
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/fast-forward.log",
+      "path": "fast-forward.log.gz",
+      "originalSha256": "04234cd5c554a1e2d7d55af181a1ab6de0e17da4876a6bc0fcca9534f28b3ea7",
+      "storedSha256": "21a714e20034775977c16efb988839718877035e3b75926c7dc132b6a25dbb32",
+      "originalBytes": 220
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/fresh-broker-input-tests.log",
+      "path": "fresh-broker-input-tests.log.gz",
+      "originalSha256": "f1d2900a28fd7ed51ae8a6ba036acfe376b1faa5e63c74784ac49aca505abac3",
+      "storedSha256": "8492ebf006ea29d8ccacd8ff745eb26f2ed5eefe96470deff8716ff444192e60",
+      "originalBytes": 124
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/fresh-committed-file-guard.log",
+      "path": "fresh-committed-file-guard.log.gz",
+      "originalSha256": "ee6e3314de41623d267281a64b1d75e2257917148d109e02d6de011de1058bba",
+      "storedSha256": "bb864d2ab8a87801281d084dac4b59fba9ff2dd12ce18141cd6b76c5351a031a",
+      "originalBytes": 58
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/fresh-committed-file-tests.log",
+      "path": "fresh-committed-file-tests.log.gz",
+      "originalSha256": "01e5527a812ee09cc1abff067cfe0e495a60abe1dfee582fd9c5b237d88b8f0c",
+      "storedSha256": "778d5c6f5c00169e472bdbad4ea0a8d4b3a1a1f72983b6d62ffcc6b947a0e07d",
+      "originalBytes": 118
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/live-preparation-commands.json",
+      "path": "live-preparation-commands.json.gz",
+      "originalSha256": "a0c71e4ac5dcad715b62f49188c3705e8e7f8218fe9333e322751ec15374e794",
+      "storedSha256": "ac25c6351e992330190bf9dd8f53b533d976e1604f0147226a4d4a1434e0c174",
+      "originalBytes": 1199
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/provenance.json",
+      "path": "provenance.json.gz",
+      "originalSha256": "0acb5d4b646dade9d4703969ea1e5fc72afdfa96e06428557eba5014b5ddb43d",
+      "storedSha256": "ac4410e5381e8e0ac1b336a03b5e4667ffc5ae615275641e75aa7c3ae79af3c2",
+      "originalBytes": 1227
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/secret-scan.log",
+      "path": "secret-scan.log.gz",
+      "originalSha256": "6033e222b61cfe2de2500f779ded7ab184768bbf5a37dd00c11203607261483d",
+      "storedSha256": "e92fa547c4a3e6a5c209755c5320d5ae32e59b18cd708ad0bc3e560c30199f92",
+      "originalBytes": 405
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/secret-scan.xml",
+      "path": "secret-scan.xml.gz",
+      "originalSha256": "6b43ce481dd5dc47a17c18f8a8e1d1b235f367d53a7354cd2c597555f763d688",
+      "storedSha256": "788796c106d6176ca9cb930ad81376c5ea66fe05187f1f2da44a4168fa4c3191",
+      "originalBytes": 179043
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/story49_live_input_equivalence.py",
+      "path": "story49_live_input_equivalence.py.gz",
+      "originalSha256": "e5cdd64dadafc25a9a4bb5694f74f7099fc14c841c8b3f70603f0f8e4e3904bc",
+      "storedSha256": "608450db970a542d20c2d7c4d45c70cf7c33cf01045b256027ad60d04cff466f",
+      "originalBytes": 2050
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/unchanged-tracked-inputs.json",
+      "path": "unchanged-tracked-inputs.json.gz",
+      "originalSha256": "8efebca9db00d342d6e0d74f79a69ff681dd1c7bf87bcad9e9108ea167b9808e",
+      "storedSha256": "b2f9e1642a49b0ebef39be5b660174ceb76b8ff6945adc2135966bd0a3e9e91f",
+      "originalBytes": 2495786
+    },
+    {
+      "source": "/tmp/story49-main-c5-docs/upstream.patch",
+      "path": "upstream.patch.gz",
+      "originalSha256": "689689f0c03e025c2fd26eca5da462b642419007fbb85156d96e668843dd7e3a",
+      "storedSha256": "2d865031ccf7a8bdaa69d5d3d37f0e7c689df0dd9e022fcce23de638a6cd2aee",
+      "originalBytes": 24954
+    }
+  ]
+}

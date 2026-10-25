@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/apphost-update.json",
+      "path": "apphost-update.json.gz",
+      "originalSha256": "43a7f41d36990977e1a543df5d5c21e6c282980f8717c43eca697da1322bd7ee",
+      "storedSha256": "93d127d4d3f29c5b099a8128fe1a82b73e9633b1b195cc0b5d2b4471687e8087",
+      "originalBytes": 318
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "8fefa6595ae209ea0f80d34dcbe9918bd290816b5a0c71109982375762ffbbcf",
+      "storedSha256": "bf84623e870cfe4a860d4d46689089a1442eac1970d9c1050478666e2fae5eb8",
+      "originalBytes": 3332
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "71f818bf88daeed4b761eb32bdd2c8ee0378b8c0b839de44583d59ba45f86993",
+      "storedSha256": "8bf9885b371244d702177f5fb789eb13a856d645664bcab64da290afee278d38",
+      "originalBytes": 50
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/consumer-pin.patch",
+      "path": "consumer-pin.patch.gz",
+      "originalSha256": "386fe461be46f5ad12d8abfa5a1a4da53b433c05d1a37a072284206ffbc89d31",
+      "storedSha256": "6a9382a55929fce5fd1ea3231980f855174a49b58e3321288784d8eaad365547",
+      "originalBytes": 702
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/final-consumer-revisions.json",
+      "path": "final-consumer-revisions.json.gz",
+      "originalSha256": "8c0a7b45cd04301da7aac692865c34bff791e19bd072d9cbbdc083b89ad6aace",
+      "storedSha256": "95237bf01becdc3b0a83f9ef376b69ede9fd333ff7c3759398ff2ec0945bbea5",
+      "originalBytes": 771
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/final-pr.json",
+      "path": "final-pr.json.gz",
+      "originalSha256": "1693a24ad7da517ab513d2251d060108791aa70209252f1fd8d21526762c9168",
+      "storedSha256": "ced6111a6066238e5d96c9a06589cba51442893e75f485fa32bbf9e96292ace3",
+      "originalBytes": 19213
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/pr-body-patch.json",
+      "path": "pr-body-patch.json.gz",
+      "originalSha256": "0b135790febfde38e862c9abc72f1358adf710eb075965e8be0f8c2175d653e4",
+      "storedSha256": "1b8aaa5e98533b7378711ec00d31ba16b9e49fdbfa25af39ffb17b210cbb61a5",
+      "originalBytes": 2689
+    },
+    {
+      "source": "/tmp/story49-platform-consumer-3.128.0/pr-body.md",
+      "path": "pr-body.md.gz",
+      "originalSha256": "3271bd4b8e26fc4b5f384caefd0cca80a87bb3df852f4e4e87a7c05d901b1565",
+      "storedSha256": "6dfdb28e91fb1e6ba8c49df1e228b6bab07d0a43cde08dd6b3125901cd4aa2f7",
+      "originalBytes": 1419
+    }
+  ]
+}

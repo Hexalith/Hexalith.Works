@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-owner-selection/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "e01658b48739094a62ca0e3397fa434ead5cf21838898375529713df32ef1f13",
+      "storedSha256": "7fd4e08abb30fd9df9588bce951d09e18871ee19ad3756836501d48e4bc0a9c1",
+      "originalBytes": 7096
+    }
+  ]
+}

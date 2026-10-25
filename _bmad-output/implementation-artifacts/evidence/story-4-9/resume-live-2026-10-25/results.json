@@ -1,0 +1,76 @@
+{
+  "status": "in-progress; public-producer-publication-required",
+  "fullAttempts": {
+    "1": "file-host/catalog preflight refusal; no build/live lane",
+    "2": "supporting consumer failed 1 of 306 on stale Parties literal",
+    "3": "preparation passed; retained host failed 1 of 1 on duplicate channel-token resource; no accepted rows or rollback"
+  },
+  "ciProfile": "not rerun: sequential full gate and new public producer prerequisites are unmet",
+  "packageContract": {
+    "total": "2",
+    "passed": "2",
+    "failed": "0",
+    "skipped": "0",
+    "not-run": "0",
+    "time": "0.102",
+    "failedTests": []
+  },
+  "producerFocused": {
+    "total": "20",
+    "passed": "20",
+    "failed": "0",
+    "skipped": "0",
+    "not-run": "0",
+    "time": "0.278",
+    "failedTests": []
+  },
+  "ordinaryIntegration": {
+    "total": "1027",
+    "passed": "1020",
+    "failed": "0",
+    "skipped": "0",
+    "not-run": "7",
+    "time": "119.435",
+    "failedTests": []
+  },
+  "hostedPublishingDiagnostic": {
+    "total": "11",
+    "passed": "6",
+    "failed": "5",
+    "skipped": "0",
+    "not-run": "0",
+    "time": "1.045",
+    "failedTests": [
+      {
+        "name": "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests.HostedPublishWritesTheCanonicalGraphAndAddsOnlyNativeWorkloadsAndEnvironment",
+        "message": "System.IO.InvalidDataException : ../../../../../references/Hexalith.Memories/module/hexalith.module-manifest.v2.json: manifest: Supply an existing readable manifest file."
+      },
+      {
+        "name": "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests.NeutralReferenceGraphAndLocalBindingHaveIdenticalServersAndReadiness",
+        "message": "System.IO.InvalidDataException : ../../../../../references/Hexalith.Memories/module/hexalith.module-manifest.v2.json: manifest: Supply an existing readable manifest file."
+      },
+      {
+        "name": "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests.SharedAclUsesTheSelectedHostedNamespaceAndTrustDomain",
+        "message": "System.IO.InvalidDataException : ../../../../../references/Hexalith.Memories/module/hexalith.module-manifest.v2.json: manifest: Supply an existing readable manifest file."
+      },
+      {
+        "name": "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests.HostedPublishRequiresGraphPathBeforeAddingResources",
+        "message": "Shouldly.ShouldAssertException : Should.Throw<InvalidDataException>(PlatformAppModel.ComposeEntry(builder)).Message\n    should contain (case insensitive comparison)\n\\\"Platform:Hosted:GraphPath is required\\\"\n    but was actually\n\\\"../../../../../references/Hexalith.Memories/module/hexalith.module-manifest.v2.json: manifest: Suppl...\\\""
+      },
+      {
+        "name": "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests.HostedGraphDoesNotReadTheLocalProfileAndMatchesTheMaintainedChartInput",
+        "message": "System.IO.InvalidDataException : ../../../../../references/Hexalith.Memories/module/hexalith.module-manifest.v2.json: manifest: Supply an existing readable manifest file."
+      }
+    ]
+  },
+  "publicProducer": {
+    "checkedAt": "2026-10-25T10:10:06.186108+00:00",
+    "sdkRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "selectedVersion": "3.127.0",
+    "canonicalHelper": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/eng/verify_works_producer.py",
+    "canonicalHelperSha256": "f590dc57a8349d996d21e3ae1ffb97d0acdf5ff05e718b83c48c7cc6569511d6",
+    "status": "refused",
+    "errorType": "ValueError",
+    "error": "Runtime SDK differs from published producer e1d8b17160202761ab5c9606cafbcf4d1a4b92c3: src/Hexalith.EventStore.Aspire/EventStoreAppChannelTokenBindingAnnotation.cs, src/Hexalith.EventStore.Aspire/HexalithEventStoreAppChannelExtensions.cs"
+  }
+}

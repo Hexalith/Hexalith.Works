@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-works-prerequisite-commit/archive-whitespace-classification.json",
+      "path": "archive-whitespace-classification.json.gz",
+      "originalSha256": "2e5c11851c114b3d1b92962f3dfb9679bc48eb46b0e928ee067c9f4ea9deaf8c",
+      "storedSha256": "f69e4c25ec7914591a041bf49b29c0f42a831de67979affe6bd0668880c12e5a",
+      "originalBytes": 302
+    },
+    {
+      "source": "/tmp/story49-works-prerequisite-commit/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "92a9fb558b412a5cfdb3bf1a785227c38bc98b16ea15db802b9f5569b7e4c33c",
+      "storedSha256": "cdfcde7eb7071ec3f642ce9cd8ded8af89f4063388f26e1c2794c99fa4d4590b",
+      "originalBytes": 116910
+    },
+    {
+      "source": "/tmp/story49-works-prerequisite-commit/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "f0f6ad07d45a4eac4e884d41bd2b7364f44d3f27bd7b8482c7a97a27b35be61c",
+      "storedSha256": "27e4895a53f56b65e0ff91b096d5810a2b842b834e4834bfcd867dbf1ddef0af",
+      "originalBytes": 65
+    }
+  ]
+}

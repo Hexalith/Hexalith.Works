@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-pr139-full-ci/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "dccbedec049083aac51553600eea8831f8a2d82d73683f611c5884f0685c8b00",
+      "storedSha256": "0f6bd825c8bfaa6c49d5d363269e58fc050944a3f229b6a682421717e8dd2d4a",
+      "originalBytes": 22136
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-full-ci/log-result-inventory.json",
+      "path": "log-result-inventory.json.gz",
+      "originalSha256": "743488c5ed61ff345cb5cda2dc2f24189f812fd00a239adc91a98817012d1cfc",
+      "storedSha256": "bef9c1b07c21aa58e5fcb900b1b08d73a60532a23c86240e652d6001723e805a",
+      "originalBytes": 9153
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-full-ci/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "c4c14b091d31179c26bcb50bdcd7a2e8da97632af6059a8eb0b7e63340a3ebf0",
+      "storedSha256": "582933aa5bb0f8e24271a7ab7c0381b7f2a67304b85248f111d3738fe74b88e3",
+      "originalBytes": 236
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-full-ci/workflow-logs.zip",
+      "path": "workflow-logs.zip",
+      "originalSha256": "a6149acf62c9feb3a61b57817b465d96a6dc3f9d230099b232d7aa7c9e158056",
+      "storedSha256": "a6149acf62c9feb3a61b57817b465d96a6dc3f9d230099b232d7aa7c9e158056",
+      "originalBytes": 172925
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-full-ci/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "13968f13a313a319638cf2ac56cbfcedcffdd6debac2a157d533b4e3945e23bf",
+      "storedSha256": "d51d857385148e8e9b6d413a165db0cdce8efaf52f6ade5b0e324316c913ea68",
+      "originalBytes": 14414
+    }
+  ]
+}

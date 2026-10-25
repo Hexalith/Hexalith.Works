@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Builds-rules.json",
+      "path": "Hexalith.Builds-rules.json.gz",
+      "originalSha256": "bb6edda91639fddc3668682c567b496b039fe1dda930516caade6a7fe0cc8344",
+      "storedSha256": "e6ed5cac79a39b68e697a25d4d77621985952c8106724750a97f5a8cfcc6d056",
+      "originalBytes": 1610
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Builds.json",
+      "path": "Hexalith.Builds.json.gz",
+      "originalSha256": "2960bef7b9b950cc840053b2a85da02f079d99e066bbdb2e633cda29b00a034d",
+      "storedSha256": "46f9650d0597b5a49af1177ea26b77686d6550d1a349946204e882645c7da515",
+      "originalBytes": 1854
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Builds.patch",
+      "path": "Hexalith.Builds.patch.gz",
+      "originalSha256": "89d68ab6e7088c5072c993c835999f4adebb3516412811a1adadc440de7347d6",
+      "storedSha256": "ae41dc407cc0c2767f399838649dd49e9bf1f5c298be4c2db1cca23dcdca7b85",
+      "originalBytes": 100119
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Platform-rules.json",
+      "path": "Hexalith.Platform-rules.json.gz",
+      "originalSha256": "44e91dd9bfefc9835fc950224d6f2a3534fa1c6025c95788d89ccb644bbf1f95",
+      "storedSha256": "a08b9f463ccae4cafe3e04305952d5adf1c2b90064be7ddc75a6a11a459c7753",
+      "originalBytes": 1010
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Platform.json",
+      "path": "Hexalith.Platform.json.gz",
+      "originalSha256": "a55b838c3ea1fb946a9e15777c4d3c9e49aad86c4eb0dbf75bb67ba4fca9f2e9",
+      "storedSha256": "0633402c8d6d8b142caa6e461076d61fd1d8ed0a2f05e7c85979e4fc11d61689",
+      "originalBytes": 24444
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/Hexalith.Platform.patch",
+      "path": "Hexalith.Platform.patch.gz",
+      "originalSha256": "5d2aacd7a8f930fd13081077c62171e35cee6a0c7790298f2aa8af67c6e67adf",
+      "storedSha256": "b8aaeb84d4dcbc9e0bfb0ded28b944cc38f82aa008f131e9c953925c5fb0ce32",
+      "originalBytes": 4398846
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/platform-meaningful.patch",
+      "path": "platform-meaningful.patch.gz",
+      "originalSha256": "4a74f30e9754961a6c75bd2e49bc39551547dfff650f78594f59c2089b496f84",
+      "storedSha256": "990b94129c74c9c6f75feb2f209386c536c7320fed421ee80c1bfab6e4e1d87b",
+      "originalBytes": 884455
+    },
+    {
+      "source": "/tmp/story49-consumer-upstream-1636/synchronization.json",
+      "path": "synchronization.json.gz",
+      "originalSha256": "aca09337a89d958021c920291f5c377cd9e1c3ba1ce18f69e2eba2869f93a886",
+      "storedSha256": "a1b4087d054ec2d3549009daf53cdf1436579ec5f63a5ec1d5c6801453c41b5d",
+      "originalBytes": 2472
+    }
+  ]
+}

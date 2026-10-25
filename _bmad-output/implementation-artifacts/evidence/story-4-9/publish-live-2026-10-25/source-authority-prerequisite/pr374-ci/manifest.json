@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/12599863139.zip",
+      "path": "12599863139.zip",
+      "originalSha256": "e67748d241c13942b7cee1473c7139bd8785624e806d89940f0e274f184dabf2",
+      "storedSha256": "e67748d241c13942b7cee1473c7139bd8785624e806d89940f0e274f184dabf2",
+      "originalBytes": 2129
+    },
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/12600003820.zip",
+      "path": "12600003820.zip",
+      "originalSha256": "cc7962283977e9b04cdf42eb36246521f8aac90a343eadf17e1857dc89cef1af",
+      "storedSha256": "cc7962283977e9b04cdf42eb36246521f8aac90a343eadf17e1857dc89cef1af",
+      "originalBytes": 2043822
+    },
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/12600437482.zip",
+      "path": "12600437482.zip",
+      "originalSha256": "98aeffa7616b811b8b047c99099bdc52f2bdfb248a32d8a627b97c94049287ac",
+      "storedSha256": "98aeffa7616b811b8b047c99099bdc52f2bdfb248a32d8a627b97c94049287ac",
+      "originalBytes": 231893
+    },
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "89aec677033d5075dd2bc8969dfd24281acf5209e03af4c467f9d2ccc79b262e",
+      "storedSha256": "875966878791a74d8f58bc73f0301065b1f81c192e7a6ed5b22e6b1d1a8c39b6",
+      "originalBytes": 29566
+    },
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "1fd06ef9eddc62763bac9d753151962f835889f72f82aa353e25a6e947f6fbd7",
+      "storedSha256": "d0d0a2914ec66ff2d3067218b987f88a377f240a6bb891f78d97054dadb91294",
+      "originalBytes": 17478
+    },
+    {
+      "source": "/tmp/story49-pr374-ci-evidence/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "6135e50710790dd54f710d8b3c0798944fce40ec6506777d12dbe04fbf164bf4",
+      "storedSha256": "550c42541c53e32baf7430f0bff43cdde3b33a557cf98486e80ed40b2e6fd8f8",
+      "originalBytes": 14410
+    }
+  ]
+}

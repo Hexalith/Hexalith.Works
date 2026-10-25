@@ -1,0 +1,4 @@
+test(aspire): reject generated token reuse after sidecar replacement
+
+Prove a replacement sidecar and its application cannot inherit the original
+private channel credential through repeat generated-token registration.

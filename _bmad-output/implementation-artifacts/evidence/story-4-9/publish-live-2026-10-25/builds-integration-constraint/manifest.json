@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-integration-constraint/assessment.json",
+      "path": "assessment.json.gz",
+      "originalSha256": "0d565805f00cea4272f09ac9c9099572c240721800a114850522b0b18c84f8f1",
+      "storedSha256": "252a381673ac3e17e0ec6c53deba7b6f273ab51e1a51fdea4e660c86f047595e",
+      "originalBytes": 476
+    },
+    {
+      "source": "/tmp/story49-builds-integration-constraint/main-rules.json",
+      "path": "main-rules.json.gz",
+      "originalSha256": "60ffac0d9d9db607a669e6bf5ad3d410229ab5389542e252f5b0d39c9dcc7fec",
+      "storedSha256": "c37bae2b32b2ae86895e0c841722bad200fb139f4a51df147ee4f4040d1e0730",
+      "originalBytes": 1194
+    },
+    {
+      "source": "/tmp/story49-builds-integration-constraint/validate-package-version-audit.ps1",
+      "path": "validate-package-version-audit.ps1.gz",
+      "originalSha256": "0a21097035d235dc7345e7e6cb2dad522ce4b35ae2a461f9d64fb65168c21065",
+      "storedSha256": "f7140764e40c82acc7e19a6e3ff6bf9d3a1c05efe93405e74c4ae18c2d72be9b",
+      "originalBytes": 114990
+    }
+  ]
+}

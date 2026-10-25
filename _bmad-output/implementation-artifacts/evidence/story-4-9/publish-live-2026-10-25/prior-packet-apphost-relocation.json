@@ -1,0 +1,538 @@
+{
+  "preservedCommit": "831670d34c913139c16258a24074f5c8b0c8215f",
+  "originalPath": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/platform/apphost.cs",
+  "storedPath": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/platform/apphost.cs.gz",
+  "originalBytes": 723,
+  "originalSha256": "371bb12b1963831a9803762b2b4f3d9259297bb9b65d0c519aa10ba9c359b006",
+  "storedSha256": "51fd64c9a6ade12258199afdadccecbe19fac2337fe34461cf4a656185ae64da",
+  "compression": "gzip, mtime=0; no original filename",
+  "roundTripEqual": true,
+  "reconstruction": "gzip -dc _bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/platform/apphost.cs.gz > <outside-Works-destination>/apphost.cs",
+  "reason": "The unchanged root host-boundary guard classifies raw AppHost source anywhere in owned files. This historical source is not imported. Preserve its exact bytes as evidence without introducing an executable source file.",
+  "unchangedOtherPriorPacketFiles": [
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/README.md",
+      "sha256": "bb385e649be02fa69537bbbc41c3d4d9cfbe41d4fc85c5e1856fd143a23d17c9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/commands.json",
+      "sha256": "236389596921dab058e17949fa4fdf0fd8992f0b8f8a491bfb4a12a367ef05b3"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/diff-checks.json",
+      "sha256": "0d3c2f0570d5981cbabe80ba6c435cd1b966137b2cfc49fabe8078c3ea9e5159"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/eventstore-changes.patch",
+      "sha256": "100e19bd53afdcf8c76cabb2e799dadc87c94fb17af8b21ca8369b336eedc7f5"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/manifest.json",
+      "sha256": "b9c33535137e37c6424f360b1cf837ed1b99c4ad5d86608ab696258203a18df6"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/platform-changes.patch",
+      "sha256": "f49113c46f11928c0dd1e78ba8eb46fb56057fde2997cf5b63f01c1b8e1f4b1d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/owner-final-reference-inputs.json.gz",
+      "sha256": "ba25335d2b98f1d389cc5c195ed620199414e63daf78fc5cd4544810137d87d8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/owner-final-reference.targets",
+      "sha256": "ac53f840b9db8034cc1a62fe682da4333e90613a99fbed516321d014456437e8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/owner-focus-complete-reference.targets",
+      "sha256": "d34204a12976c58355d447e5c073c0c1595448246fa12cf5ea2a11dc3fc28a21"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/owner-focus-reference.targets",
+      "sha256": "a878cefb0a3c310def5a82ad6480eaff20eb5b11f262574366f2831a0a0d2c76"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/platform-owner-initial-build.log.gz",
+      "sha256": "3083981607642aa4e26b2857b5a01dcb3caf3267a1d0bd36658810c0ed0ad883"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/platform-owner-initial-runtime.log.gz",
+      "sha256": "1beb0436f3830692a39349a49fbf9d51d07dd4d61a87e72965e37da544514c61"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/platform-owner-initial-runtime.xml.gz",
+      "sha256": "357c0796fbdef18eb3d11445efb45d10a0038dc8c17bc7cf6f0ba45174f4dd53"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/diagnostics/platform-owner-interrupted-build.log.gz",
+      "sha256": "4f3b5a7a135718bf6626021fd7e4b6d30560d1d54c6fbd99bb6d3c4e53f0f41e"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/eventstore-channel-build.log.gz",
+      "sha256": "211801162a1464a6238ad76fb8e186b51c5ce83b2fc54290e05b38624ece4455"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/eventstore-channel-final.log.gz",
+      "sha256": "149f82755415903465e42b81836396c4e798bd4a151b013ef1adde4ab37b4608"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/eventstore-channel-owner-layout.log.gz",
+      "sha256": "1e97f30aa4766047defe63ced5395f42e17250dac2fbfc5ddcbf4df3bc696932"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/eventstore-channel-owner-layout.xml.gz",
+      "sha256": "4c2f1696eb7007a9290c90f53c7f5915dc4ef261623ade90e7dcc0380ce08157"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-1/bootstrap.json.gz",
+      "sha256": "7b637e44ae159081b4cf04d3275066ad3ba142d6ffa18a4851bf0d0c844420c5"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-1/coordinator.log.gz",
+      "sha256": "fe5f09c3034a295247cceaed4c67e3f50f5b8ebf7a072a85f5951e980d29d822"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-1/full-invocation.json.gz",
+      "sha256": "1dc06076bb60bbefeaebaf9221bd38128a068af5940424d08a73a2f3b7d40731"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-1/gate/ledger.json.gz",
+      "sha256": "4a99f114920c7c5e095657aead4fa020231bfc1e252a11991c0c28eb792c931f"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-1/platform-source-binding.json.gz",
+      "sha256": "6e80440b31915059f609e74627c2ce8fef666fb8994d39c0545fd53766de373f"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/custody/command.json.gz",
+      "sha256": "d5a9c7f003ac030050045a35b2b71166f337957a32fd9ce5d9fca7d799e19cb0"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/custody/custody.log.gz",
+      "sha256": "818131da3b3ece2d636b7cf0c268cf789c0ecd213cd1d0f67782c62a70bd394f"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/acl.json.gz",
+      "sha256": "18912901c81e57bcf16b14592b541ae3d6d61d38367012715715c85133faeb74"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/blocked.json.gz",
+      "sha256": "21887ef94b69a6b9f127cea098359f42d5006a30364beef4d3ce89e6d12f6117"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/isolation.json.gz",
+      "sha256": "e87f0f85770eecb20212ccf1e66f833ebeed5e1f9c79545077b055b9262de75d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/lost-ack.json.gz",
+      "sha256": "a07178739fcf5b3046bd12b25f8ab1472f63854cc2e7af8aa49a794b65e4156d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/outage.json.gz",
+      "sha256": "7d08f92f2ce362fd14f3a47fe47a79aa58bb65c536392bb41aba02e5937cd6fc"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/restart.json.gz",
+      "sha256": "46a04c2ab443c5659ed7772ad9dc781e77c2adeddd8e86701a42800afb6be242"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/evidence/restore.json.gz",
+      "sha256": "c7a857266c51e9d95e9eb30624a0e9cda8af7b4625a0950292f0eff88aee0899"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/guard/command.json.gz",
+      "sha256": "e990083d7fc7f63a3544cb02ce82d5057cf13dc91e0561b914c01fcc8dd997ae"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/agents-full/guard/guard.log.gz",
+      "sha256": "fa04d77cf48e2a77b1955c10504c1c32a439c7f60aaa5df26d04bd9edd18dde9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/bootstrap.json.gz",
+      "sha256": "d3ec41e53111690a72ba46361ea32df3229dc7cd7c0db9e15f87235746c11438"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/coordinator.log.gz",
+      "sha256": "02171a47019bdc11242659c8119d4d3b4339c689de4056078dee8fb9ff511235"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/full-invocation.json.gz",
+      "sha256": "b2586f8032d71fda65e94f0429f2644a09f92fc84a22b815303da0e6609e1c99"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/agents-full-refusal.log.gz",
+      "sha256": "e2339a430551a0b8c4ddfbd694c663d379814dbd85c243e1a383261820be559c"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/agents-local-scaffold.log.gz",
+      "sha256": "509e73a096a37fb484ce47f0dd0332db3c7c5c41241600ffc56ab9fca55ade67"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/component-evidence-gate-tests.log.gz",
+      "sha256": "b658abce4c8f15b71c2b0dcb8acd065a3c91202e2bafa095e8be5015cf18ad03"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/evidence-gate-tests.log.gz",
+      "sha256": "79ffe8e2650326c3032928fff45870551a742f4ef15d3b282a7a8fa610a3a9ed"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/ledger.json.gz",
+      "sha256": "e2e4437f327dabaed325a9a2eb82ff73e9a3486144934f8b144547c97ca3835f"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-debug.xml.gz",
+      "sha256": "b9806c3ea6d36bee544dd8ee0b6612d221fea6771bd47dcf1007bdb8cc9c24b8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-file-host-release.log.gz",
+      "sha256": "96273b4c2b1b9eda705065fdcb97783ed57c306d9d06d3f2ac57eb37f38ce5f8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-release.xml.gz",
+      "sha256": "216368c0e7aa28bedeeab92ca32ad350d1e03307cd2e4a4f760f3460c2a0b845"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-tests-build-debug.log.gz",
+      "sha256": "271e67760ecd12ba86eece5de3b2b664e2553890b3b13a018b926a87b86861ca"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-tests-build-release.log.gz",
+      "sha256": "a0e578c84c2e0eaca933bd83246e870cbf308dc9fea116dcde46d3795e173581"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-tests-debug.log.gz",
+      "sha256": "eb686577e3956cf65a9915c3ea3d40db1b2d4f2b350adb679c62d27d2a9875b5"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/platform-tests-release.log.gz",
+      "sha256": "1dfa84419f14dcc2907990390dfcc5218258dc86fdda469efb5eae7627afb29f"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/works-consumer-debug.log.gz",
+      "sha256": "7157215a85512d60835e5ee8c9d499d6360a10a32c32e4bbcae6eab26d3ecce2"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/works-consumer-release.log.gz",
+      "sha256": "fb21bf58d4955f78f7211d98889cc7fc15db2064af6552ad5f1ebfe228f2e87c"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/works-consumer-supporting.log.gz",
+      "sha256": "d1107d51ff1c5db6f7203cef48825c2ad7a4e312b81085f4833ea6dc83dffe3b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/gate/works-consumer-supporting.xml.gz",
+      "sha256": "df2668c2224e82cf4d5c208c7bbc2ed45a4493376bb3ab8d57aae62036e3a238"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-2/platform-source-binding.json.gz",
+      "sha256": "d1734f355fcc7cb2cf150c31eab1ae4b4d5756ee271c24a1974786bbce4ac3f4"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/custody/command.json.gz",
+      "sha256": "0183b639b2913543297b42899c35c58f170ea673fb295839361b4864c277e7f8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/custody/custody.log.gz",
+      "sha256": "ae78f532d2e6add6c13d6241301f62a59f274942060c89c9694efd7f0aa8f39c"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/acl.json.gz",
+      "sha256": "18912901c81e57bcf16b14592b541ae3d6d61d38367012715715c85133faeb74"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/blocked.json.gz",
+      "sha256": "21887ef94b69a6b9f127cea098359f42d5006a30364beef4d3ce89e6d12f6117"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/isolation.json.gz",
+      "sha256": "e87f0f85770eecb20212ccf1e66f833ebeed5e1f9c79545077b055b9262de75d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/lost-ack.json.gz",
+      "sha256": "a07178739fcf5b3046bd12b25f8ab1472f63854cc2e7af8aa49a794b65e4156d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/outage.json.gz",
+      "sha256": "7d08f92f2ce362fd14f3a47fe47a79aa58bb65c536392bb41aba02e5937cd6fc"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/restart.json.gz",
+      "sha256": "25f8a6d96014d617a67bfde4d881892b520119893acebc4342dd513baa6c4d44"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/evidence/restore.json.gz",
+      "sha256": "c7a857266c51e9d95e9eb30624a0e9cda8af7b4625a0950292f0eff88aee0899"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/guard/command.json.gz",
+      "sha256": "24f59ad315a94787fb831568591dc2a34e85dbf48fd5b8ea10760136293af16c"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/agents-full/guard/guard.log.gz",
+      "sha256": "293d52d10605c740885f750d5e4e6d934c899382b5bf99c996957c59fea73aee"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/bootstrap.json.gz",
+      "sha256": "0985072180546e7cb3691a767ebd40304de09515ab720567697fcc09e1311d59"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/coordinator.log.gz",
+      "sha256": "d46107e8290c906b2631a68cd1e9ee3b48fc3eeab3bc66394855443d5dcbeac6"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/full-invocation.json.gz",
+      "sha256": "25195194e41ccb4692973adc9d99a76cde17cfab9ab50ba4fa1a0607bf126f1e"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/agents-full-refusal.log.gz",
+      "sha256": "2af16d5318e7d4b5ba913dc90cec04c28d2b7152b8d268d07bb3e3f8d808cf62"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/agents-local-scaffold.log.gz",
+      "sha256": "ec2601b4f7c9ecdd9f161625c71e91dd9a324a0cdac30801e744c637dc412607"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/component-evidence-gate-tests.log.gz",
+      "sha256": "01289914dbcfda1399580108b8b373cbcea84fc654bb5c8925d7f56d9d0a3f03"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/evidence-gate-tests.log.gz",
+      "sha256": "8c857a2c8a10f25ee864d7f7cbfeb292db0ca731dd27763122f4601a20c9e670"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/ledger.json.gz",
+      "sha256": "23f63e0dab876f767a3f725c3867699fd18a9019f16f6ebf258fccf989d97f07"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-debug.xml.gz",
+      "sha256": "3dc3181d74461da05c312b390077d0a656c534e9bb1763c9e2730051f924d60a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-file-host-release.log.gz",
+      "sha256": "69a2b8a347032712d324afd759ba2fbc26da7721d137172818ecc34af82f006d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-release.xml.gz",
+      "sha256": "1e98b2c78f3cb048a8f9499182dc799200b4c9c6a1ba74d8e221a696a309b960"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-tests-build-debug.log.gz",
+      "sha256": "3200e134c8bd5c8acee583f50dcb9a12b23848c858e2142aeabfba28dae8ca8b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-tests-build-release.log.gz",
+      "sha256": "0f5b1af26689c13349844256ac9483dab8803e812711b12360e96cc446ccce8b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-tests-debug.log.gz",
+      "sha256": "b5ceae251a959a5407acfad21f3f422a142066ff316c808e111447a1cab402c1"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/platform-tests-release.log.gz",
+      "sha256": "eae0f860151b4c598e1e7c4fc2a42d00164a23c18d4500067c2723ea15f2a1a3"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/retained-host-preflight.log.gz",
+      "sha256": "02e019573741bb2a0d713f79ee75c831f5824c87d572dd1ebdf65739203dae4b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/retained-preflight.xml.gz",
+      "sha256": "c22f8e4f22fc9dbfdfdba4f8e7c2a2cf93a8349e69e2e53c3b6d3088aeb749c8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-0.log.gz",
+      "sha256": "8b5d88ff0c6ca9c91e4d7749361fd4df9fffbd77d2301fbedd8b812982bd920b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-1.log.gz",
+      "sha256": "f8f15dbb2406c6f20ef477a761f4b235d06aa9bda3d8cf0603818ba5d4c6f925"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-2.log.gz",
+      "sha256": "713f8aa9d3b808746c1e1203479704a5b3624d05dbd3b2e66069e6c464c23690"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-3.log.gz",
+      "sha256": "256360fd63287e5e36713fde999c3f3e6cdf667db10176b19c7b02b2cc9f67c9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-4.log.gz",
+      "sha256": "33201e165923de1261252e1428dc19407794857c13decbbdb54507d42721d07a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/runtime-release-prebuild-5.log.gz",
+      "sha256": "d979d7f8b964a7b694e3f72fd18f87c4786f4fe29db62df5ac071f5a978db699"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/works-consumer-debug.log.gz",
+      "sha256": "f519c22bb3bb0e13cacec16c5b9988237341b160b2299bf2dd266fc6db6b9eac"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/works-consumer-release.log.gz",
+      "sha256": "db1636843b24fe529f2d64d1b1d3884d05a1d6db9d7750fc6cffe8f3f7dc9899"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/works-consumer-supporting.log.gz",
+      "sha256": "6523e0439971a7c00cc96aa1fb3935b69de5d177ed964f155546cef88b99fa79"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/gate/works-consumer-supporting.xml.gz",
+      "sha256": "e7e4278993a0bede7215dfb8cf9200c1addee99819fc0f6a08304f79fb01a2d0"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-3/platform-source-binding.json.gz",
+      "sha256": "4184b7323bacb32a840cdc3a9af2986de4df0216a47d687e5e1eab1b26959086"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/full-driver.py",
+      "sha256": "e8406c1faf1e708d2d190a91464aef1fd987e824c469e1a9b11f607ea1c08abf"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/ordinary-final-commands.json.gz",
+      "sha256": "930c821f5b49a3a7a572ae0da7b2be9979b0884a5479c21e6cdc02379e1cfaf9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/ordinary-final.log.gz",
+      "sha256": "9ca51241688ebec754b1e9be80ded0c0d1aef67fff138f352757c65fecd05517"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/ordinary-final.xml.gz",
+      "sha256": "0efca181141391238359949926eeed263f465e93916680ce7fb6cf24d0aaa5f6"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/owner-channel-commands.json.gz",
+      "sha256": "f4660c5460a85caf1f6f6f3c1f5c51e72c747088f2e9db9dca45284afe63f300"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/owner-final-commands.json.gz",
+      "sha256": "1a6fdff6fbf4c4b017d1e8105ac728f046072026215b4d3c1a1a56da2c3f4dc8"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/owner-final.log.gz",
+      "sha256": "623ef078cd185bde2aa7f0a139da90ee001cbd0ab32e9c0ab032571f7ff64b33"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/owner-final.xml.gz",
+      "sha256": "f9427e57a3ba71d271ead9e05d6566ba40dcd19ba7c40214f6d388d141d7c667"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/package-focus.log.gz",
+      "sha256": "37331f37ce46920b28eb1f5a9261588e586305c1cf149a9632e0620a0523df10"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/package-focus/build-command.json.gz",
+      "sha256": "d828d10b2d9e37f3e4d75dffa86416296621156f9b0b0198d02a305c09a31131"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/package-focus/package-contract.xml.gz",
+      "sha256": "4a34a515010e2fd929ef83fb2023a1540a7da5865895939a545bcd749333ae46"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/package-focus/test-command.json.gz",
+      "sha256": "06d43afb285d27799e78a483aa35cceba2806c64d42b3bedd9275a400d13715e"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.Aspire.index.json.gz",
+      "sha256": "273c52b23f148e5b8c1f7f2a25673aef191451e6149d8d4c4b9f2c2ec383c68a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.Aspire.nuspec.gz",
+      "sha256": "8754d55b79f5b3ac995e672b0d65d593ea9f93bf7aa850c6ccc877f05899f86d"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.Client.index.json.gz",
+      "sha256": "273c52b23f148e5b8c1f7f2a25673aef191451e6149d8d4c4b9f2c2ec383c68a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.Client.nuspec.gz",
+      "sha256": "4c6ca453cbe9910d1a28256a16e2daa1dac5e7c790ad0100131e320c8823835a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.DomainService.index.json.gz",
+      "sha256": "f861fb2cb9df37776893880877e4444c8721c693e84070523ef5d46c36d5b852"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/Hexalith.EventStore.DomainService.nuspec.gz",
+      "sha256": "519ad99f8bb6b6cb51d1ca0a722d73280c8dbf442d283e942a7d9102d9591c21"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/official-response-1.json.gz",
+      "sha256": "b1ff6462955437cafe52d44750ccc0f3f2c77a56655c15909937bfb4021a291b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/official-response-2.json.gz",
+      "sha256": "9f6c195f7dda8e270c55458f0d4cd7b05d221e67483278d3851615c659c2e1d1"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/official-response-3.json.gz",
+      "sha256": "61d29c90286deb1fcc161f1033d0480a3fb2bd56d50ace78d18415e52f8b87f7"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/official-response-4.json.gz",
+      "sha256": "ac92818496aa17d431e5bbd692404d5b3b42eccd51dbe0e7ee235ad13628b3e2"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/official-source-receipts.json.gz",
+      "sha256": "141adc4f534a0419a1e9058df1eebdbab9c6ddab83d6017edf7c0f1143a838ba"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/public-indexes.json.gz",
+      "sha256": "1efdfb13f56dfe1f8b7e2f2fc98380d1ed8b3a0ce0d9b753a4099ebe97a07fca"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/published-producers.json.gz",
+      "sha256": "9e718d5ffbc04cfce6a178599cf620f1d372bba90a087f029d70154e8b7e166a"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/qualification-result.json.gz",
+      "sha256": "2f04638f4a9cd00da71b19b5fd78b0f3ac98319fb407981a1e2a2127351a6f85"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/public-producer-after-fix/runtime-source-snapshot.json.gz",
+      "sha256": "d813e2277193b477a126eea7a64cba67f710e46b12b2856fd98df04dd75691cc"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/published-api-diff.log.gz",
+      "sha256": "4b9056fdb5591726e6b055f214d6a0c873d83a48218e89e38277b332c76a5b94"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/eventstore/src/Hexalith.EventStore.Aspire/EventStoreAppChannelTokenBindingAnnotation.cs",
+      "sha256": "5878a7e22705e62293ef878e16c1facd88ee3add839f7fc1fa92eb8a7cc43706"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/eventstore/src/Hexalith.EventStore.Aspire/HexalithEventStoreAppChannelExtensions.cs",
+      "sha256": "e6ae25a72bded40677cb8ab62ed09faa756cf7265e4649525acd83c338486daf"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/eventstore/tests/Hexalith.EventStore.AppHost.Tests/Configuration/AppChannelTokenAspireExtensionTests.cs",
+      "sha256": "d5bdd89bcef4dc28efe35df01d91eafadae992cba34a17750d6901e4f25deddf"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/platform/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs",
+      "sha256": "ff0d90e0a10c6a1dd92b16129a9ca368c690838b43abd833b374f7694cd5a9d6"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj.gz",
+      "sha256": "047982b6f314bbdc7d55a8653d5a134f7ef314479d2274446259abf4a39ced95"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/sources/works/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs",
+      "sha256": "7a720de62f0dc845f3bccfa4c86fb7a44c7579995b3df03299cc1fd849da577b"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/raw/superseded-owner-layout.xml.gz",
+      "sha256": "8ecd3a68b7ba7236836551667a90ddf79ef7817723578979c64ba37bdeafe79e"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/results.json",
+      "sha256": "8053cb285360b51f9db70d8521f9a747c3ef1d7c9f3fce6943a471af2f1c50b9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/source-inputs.json",
+      "sha256": "aec0d32a918f895d5d6579f30d2958ff39651b70d87432de25fb7111452f02f9"
+    },
+    {
+      "path": "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/works-changes.patch",
+      "sha256": "6f1708b377acfdb42895b45d7e636f4d9d9ecaf2fff0f2f2f1cac5866d0147c4"
+    }
+  ]
+}

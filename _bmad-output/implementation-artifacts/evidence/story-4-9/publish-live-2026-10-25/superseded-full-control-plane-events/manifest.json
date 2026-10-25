@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-full-diagnostic-recovery-failure/control-plane-events.json",
+      "path": "control-plane-events.json.gz",
+      "originalSha256": "5eaf84c309b27df8d7804713ce2944095474ea98d0af619fc48d051e53b5d92a",
+      "storedSha256": "a278d1784b52c488a9dae46ce81dbc3401bca2f7d42c73fb37837dd750687dc0",
+      "originalBytes": 19161
+    },
+    {
+      "source": "/tmp/story49-full-diagnostic-recovery-failure/docker-events.jsonl",
+      "path": "docker-events.jsonl.gz",
+      "originalSha256": "0a543ced29b9b0aaefa8944a86b3cf81ab96aa88bfb45155ba605ac32c9de97f",
+      "storedSha256": "19c3a8a1968c0c94405d9ae333f973d6388c28113816fb364f7e82ea1748f4a9",
+      "originalBytes": 145434
+    }
+  ]
+}

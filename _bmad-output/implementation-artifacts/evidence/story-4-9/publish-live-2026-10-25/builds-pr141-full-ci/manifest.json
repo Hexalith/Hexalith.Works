@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "38290aa3be8659433c83ac13f350cb385e963190a7b578a382c5f1ee67a3f045",
+      "storedSha256": "ea6fe53abdf0752fe9cc5ca87e7dbb754267d25231de0d2ecfa79ed3625bcaa9",
+      "originalBytes": 22128
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/nonexecuted-comparison.json",
+      "path": "nonexecuted-comparison.json.gz",
+      "originalSha256": "bb255eecaa8d05e1910a20ed2ef5b645b8a5be7bfa5344cd5c8eee93fb4c194e",
+      "storedSha256": "60329e71d2e0c6da3ebead6b9518b33b1bd053e180466a972cb2609b632fb4bd",
+      "originalBytes": 5877
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "29fa66989d6fa490a5e488f8cea758712abab763cb0a05448cb4c02270a2afb3",
+      "storedSha256": "5340223f020edd0ade4ff0300a359960d7801e19a0983f34a994c8f13f6d4f1c",
+      "originalBytes": 236
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/test-log-inventory.json",
+      "path": "test-log-inventory.json.gz",
+      "originalSha256": "017080a3bb7a8babe5804b0b19e34c9b900520c8ee519d7b1072061fca703b84",
+      "storedSha256": "c95b183e28f6ec8737349315dfde0b967a7e20e20251c8635764878d0aea62e3",
+      "originalBytes": 7566
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/workflow-logs.zip",
+      "path": "workflow-logs.zip",
+      "originalSha256": "a97719ba00b2260df46bc530286af81d622136da1cff187e7149c6e0bdcdc2dd",
+      "storedSha256": "a97719ba00b2260df46bc530286af81d622136da1cff187e7149c6e0bdcdc2dd",
+      "originalBytes": 172642
+    },
+    {
+      "source": "/tmp/story49-builds-pr141-full-ci/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "a4a413e408fee9abc691048a5a3799f220c1b87d0594c0fee5e24278a7bfb916",
+      "storedSha256": "d0245f7662b8aeb32c4e14c5214ce3b76cbf4c3e556110066372c002dd10ad0f",
+      "originalBytes": 15382
+    }
+  ]
+}

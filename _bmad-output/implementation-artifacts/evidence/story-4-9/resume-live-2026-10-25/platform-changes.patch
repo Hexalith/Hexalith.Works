@@ -1,0 +1,76 @@
+diff --git a/apphost.cs b/apphost.cs
+index db7d169..d67317e 100644
+--- a/apphost.cs
++++ b/apphost.cs
+@@ -6,8 +6,8 @@
+ #:package Aspire.Hosting.Redis@13.6.3
+ #:package Aspire.Hosting.Keycloak@13.6.3-preview.1.26521.2
+ #:package CommunityToolkit.Aspire.Hosting.Dapr@13.6.1-beta.935
+-#:package Hexalith.EventStore.Aspire@3.126.1
+-#:package Hexalith.EventStore.ServiceDefaults@3.126.1
++#:package Hexalith.EventStore.Aspire@3.127.0
++#:package Hexalith.EventStore.ServiceDefaults@3.127.0
+ #:project src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj
+ using Aspire.Hosting;
+ using Hexalith.Platform.Composition;
+diff --git a/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs b/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs
+index 2ef39e6..e708a4b 100644
+--- a/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs
++++ b/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs
+@@ -10,26 +10,30 @@ using Microsoft.Extensions.Configuration;
+ public static class PlatformHostedPublishing
+ {
+     /// <summary>Returns canonical chart inputs without binding local credentials, paths or providers.</summary>
+-    public static JsonElement Describe(PlatformApplicationGraph graph) => JsonSerializer.SerializeToElement(new
++    public static JsonElement Describe(PlatformApplicationGraph graph)
+     {
+-        schema = "hexalith.platform.application-graph.v1",
+-        workloads = graph.Workloads.Select(w => new
++        ArgumentNullException.ThrowIfNull(graph);
++        return JsonSerializer.SerializeToElement(new
+         {
+-            identity = w.Identity, resourceId = w.ResourceId, appId = w.AppId, readiness = w.ReadinessEndpoint,
+-            environment = graph.Dapr.Environment(PlatformDeclarationSet.Id(w.Module.Declaration), w.ServerId),
+-            inputs = w.Module.Declaration.GetProperty("runtime").GetProperty("extensions").EnumerateArray()
+-                .SelectMany(e => e.GetProperty("configurationInputs").EnumerateArray()).Select(i => new
+-                {
+-                    key = i.GetProperty("key").GetString(), source = i.GetProperty("source").GetString(), reference = i.GetProperty("reference").GetString(),
+-                }).ToArray(),
+-            publicRoutes = w.Module.Declaration.GetProperty("surfaces").GetProperty("interfaces").EnumerateArray()
+-                .Where(i => i.GetProperty("server").GetString() == w.ServerId && i.GetProperty("exposure").GetString() == "public")
+-                .Select(i => i.GetProperty("routePrefix").GetString()).Distinct().ToArray(),
+-            // Namespace and trust are parameters in the chart. ACL operations come only from this helper.
+-            accessControl = graph.Dapr.AccessControl(w.AppId, "__APPLICATION_NAMESPACE__", "__TRUST_DOMAIN__"),
+-        }).ToArray(),
+-        capabilities = graph.Dapr.Capabilities, subscriptions = graph.Dapr.Subscriptions,
+-    });
++            schema = "hexalith.platform.application-graph.v1",
++            workloads = graph.Workloads.Select(w => new
++            {
++                identity = w.Identity, resourceId = w.ResourceId, appId = w.AppId, readiness = w.ReadinessEndpoint,
++                environment = graph.Dapr.Environment(PlatformDeclarationSet.Id(w.Module.Declaration), w.ServerId),
++                inputs = w.Module.Declaration.GetProperty("runtime").GetProperty("extensions").EnumerateArray()
++                    .SelectMany(e => e.GetProperty("configurationInputs").EnumerateArray()).Select(i => new
++                    {
++                        key = i.GetProperty("key").GetString(), source = i.GetProperty("source").GetString(), reference = i.GetProperty("reference").GetString(),
++                    }).ToArray(),
++                publicRoutes = w.Module.Declaration.GetProperty("surfaces").GetProperty("interfaces").EnumerateArray()
++                    .Where(i => i.GetProperty("server").GetString() == w.ServerId && i.GetProperty("exposure").GetString() == "public")
++                    .Select(i => i.GetProperty("routePrefix").GetString()).Distinct().ToArray(),
++                // Namespace and trust are parameters in the chart. ACL operations come only from this helper.
++                accessControl = graph.Dapr.AccessControl(w.AppId, "__APPLICATION_NAMESPACE__", "__TRUST_DOMAIN__"),
++            }).ToArray(),
++            capabilities = graph.Dapr.Capabilities, subscriptions = graph.Dapr.Subscriptions,
++        });
++    }
+ 
+     /// <summary>Selects the same four-owner reference composition, without calling the local binder.</summary>
+     public static PlatformCompositionOptions ReferenceOptions(string root) => new()
+@@ -44,6 +48,7 @@ public static class PlatformHostedPublishing
+     /// <summary>Probes the pinned native integration. No publish/deploy operation is triggered here.</summary>
+     public static void ComposeNativeProbe(IDistributedApplicationBuilder builder)
+     {
++        ArgumentNullException.ThrowIfNull(builder);
+         if (builder.ExecutionContext.IsRunMode) throw new InvalidOperationException("Hosted qualification is publish-only; select an explicit publish operation.");
+         if (builder.Configuration.GetValue<bool>("Platform:Timesheets:Enabled") || builder.Configuration.GetValue<bool>("Platform:Works:Enabled") || builder.Configuration.GetValue<bool>("Platform:Agents:Enabled"))
+             throw new InvalidDataException("Hosted reference publishing cannot combine local composition selections.");

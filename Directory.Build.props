@@ -39,7 +39,7 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.127.0</HexalithEventStoreVersion>
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.128.0</HexalithEventStoreVersion>
     <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
     <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
     <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a

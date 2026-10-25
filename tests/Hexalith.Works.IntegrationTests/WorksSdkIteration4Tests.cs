@@ -630,7 +630,7 @@ public sealed class WorksSdkIteration4Tests
     private static IEventStoreGatewayClient Gateway(HttpClient http, EventStoreGatewayClientOptions? options = null)
     {
         var assertions = Substitute.For<IEventStoreGatewayWorkloadAssertionSource>();
-        assertions.IssueAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(ValueTask.FromResult<string?>("synthetic-bound-assertion"));
+        assertions.IssueAsync(EventStoreGatewayWorkloadOperations.StreamRead, Tenant, "work", Arg.Any<CancellationToken>()).Returns(ValueTask.FromResult<string?>("synthetic-bound-assertion"));
         return new EventStoreGatewayClient(http, Options.Create(options ?? new()), assertions);
     }
 

@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-fixture-ordinary-checks/Evidence.Tests.log",
+      "path": "Evidence.Tests.log.gz",
+      "originalSha256": "54ee8d55209bcedd4d6f6b56c6ae440bb59e3ab4f87b75d510bba47eff43f951",
+      "storedSha256": "b0c0acd113c171e4d4cb803acae13a6489718737614edf05f63136ae1f1a41c7",
+      "originalBytes": 395
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-ordinary-checks/Evidence.Tests.xml",
+      "path": "Evidence.Tests.xml.gz",
+      "originalSha256": "f0d03dcdb71d3653869e5735e5dbefbf36a9f9827e7b8877ef839bc763c1dac4",
+      "storedSha256": "de670af8e3f3907c047f0c8cd360e909544e273e0cbaec84a49667e6e1b65ceb",
+      "originalBytes": 116868
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-ordinary-checks/Module.Tests.log",
+      "path": "Module.Tests.log.gz",
+      "originalSha256": "3f1a442e99a0dc014ce24112528c670e7634598192b138af7fe1a609d6386c18",
+      "storedSha256": "d0bbed33b401aaaa7e5acec98e6c5daeaed33e5a713f1c2b3570f7a443af2784",
+      "originalBytes": 4823
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-ordinary-checks/Module.Tests.xml",
+      "path": "Module.Tests.xml.gz",
+      "originalSha256": "4ec3c93a9b775b7288e1b57cf5e428c7ad3ede4d928de4812c6dba9065b28fe9",
+      "storedSha256": "c53268342e088a9b8457d39053d72459a6ea98c4d7abac6e94cde047b4ccb497",
+      "originalBytes": 1385441
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-ordinary-checks/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "fd8f3cb8c2c0e1e31ed3b63b604ba70bb52abc4c10c4e7b71c24c794eebb542f",
+      "storedSha256": "18f0a52e200939b204575bc4ef9d04ead269e0e94147d9e3f6a9f1a96222eb73",
+      "originalBytes": 3610
+    }
+  ]
+}

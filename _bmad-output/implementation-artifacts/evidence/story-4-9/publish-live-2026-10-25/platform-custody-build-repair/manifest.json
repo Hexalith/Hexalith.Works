@@ -1,0 +1,165 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/DaprExportQualificationMaterialSource.cs",
+      "path": "DaprExportQualificationMaterialSource.cs.gz",
+      "originalSha256": "19e295efe6e078f4e69d593f50d98d644cec8490a122e786d3e1637558b4875a",
+      "storedSha256": "4ef6ed848e346a265a3087f86487151e3990c1e9a23f831c08f647427351aa6b",
+      "originalBytes": 5685
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/DaprExportQualificationTrustSource.cs",
+      "path": "DaprExportQualificationTrustSource.cs.gz",
+      "originalSha256": "6829a902686eb46d3af33d20d30e932c037a56cbafa901b7d1fede2333a2d308",
+      "storedSha256": "17ea1c875e92b0cb7ec3f5bf179e9041e931043fe178ca00f6ebc8f3fc654a1c",
+      "originalBytes": 2644
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/ExportQualificationEngine.cs",
+      "path": "ExportQualificationEngine.cs.gz",
+      "originalSha256": "8ba93510c02359388d19fa5e57e64a63f7a56abf790ea196c94da1bd2a69e901",
+      "storedSha256": "f1de396aac4aee55853771e79f0b01431777fc7be329856c7e08e71d488aec18",
+      "originalBytes": 8129
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/SecurityEventRecorderLookup.cs",
+      "path": "SecurityEventRecorderLookup.cs.gz",
+      "originalSha256": "339ff1305db3735d0a1c09ab87c61557a36a66eebefa7c97cf0810f669b1551e",
+      "storedSha256": "77ccb748284e4df31989d8ed9cb83d640588eda28bf7f690a5e2c7da8d1ac0d6",
+      "originalBytes": 439
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/changes.json",
+      "path": "changes.json.gz",
+      "originalSha256": "ead75724df29266390bc5438ee0f0ba61783ad44ace7e7ec2abab4ae0b63074a",
+      "storedSha256": "34d4aefab47b461e52bf9456d9eb54cdca005efcfff8303592ff9cd195721254",
+      "originalBytes": 1054
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "78131de0886e5b2c000a2182d5ad36d53dcc0ccf0a52eebea9feb6e0717b9f05",
+      "storedSha256": "9fc51d2741a7c6029c3b7a7a27cf0a5ebd55a3c5616036adfaa048e92cd438e3",
+      "originalBytes": 51
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/commit.json",
+      "path": "commit.json.gz",
+      "originalSha256": "76fc11bb8ef75e56e47fb3d9788b5ceaef1ce098e0e57fa2c7ec474c9ab62a97",
+      "storedSha256": "e5b2989cfd76df521539afe60ac6a9b715f8971bbc5525434de715181b71acee",
+      "originalBytes": 308
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/commitlint.json",
+      "path": "commitlint.json.gz",
+      "originalSha256": "e77d1f06ff24eeb61611211dc31b161d9676c8bd7251fd7d14c0cab5b1c01fa3",
+      "storedSha256": "cf4b37d7751f87a5b04f0af7d6adafb0711753e177b6b19df9e427eb27f40633",
+      "originalBytes": 232
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/fixture-failed-focused-build.log",
+      "path": "fixture-failed-focused-build.log.gz",
+      "originalSha256": "d589621fc872aa2bb02258647bd0f611ee57895ef6ee9ae54875dc4ae4ff623b",
+      "storedSha256": "96c4118f5045a5c969a79add222b3e89a510471162ebe102deb79d556a38c230",
+      "originalBytes": 2741
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/fixture-failed-focused-project.csproj",
+      "path": "fixture-failed-focused-project.csproj.gz",
+      "originalSha256": "7df079e35587bee235bba65cb79c45d6048d208db3b97cf326e840c380908dd8",
+      "storedSha256": "80110d056d76538a76f85b34ee6abd7b985dc33296147207c638ac34ef6588b5",
+      "originalBytes": 837
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/fixture-failed-focused-verification.json",
+      "path": "fixture-failed-focused-verification.json.gz",
+      "originalSha256": "db53e1991f8f9b1386e93a64c301c61fc659c3ff7561d2a5fa7d95806ab30708",
+      "storedSha256": "8aafd8f5fdd2e7e1a5fa7f80855610f3470288dc9542f52d8f412165aed2c4c6",
+      "originalBytes": 933
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/fixture-preservation.json",
+      "path": "fixture-preservation.json.gz",
+      "originalSha256": "5d70462993d89b196f5cc95566a9c9dcd33144c6b7048d2a5edb7e9eef27de09",
+      "storedSha256": "fe751d8b301abaaa2ae124967e9055d154b612d4e015fcfb297dac3ce8863bb5",
+      "originalBytes": 669
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/focused-build.log",
+      "path": "focused-build.log.gz",
+      "originalSha256": "eb5038553ea79cf0f1927762008231ea820932075aef4cb231488e66a327bb73",
+      "storedSha256": "8b5c1b0bc179d4de18f2bd3dc563ea38267832889826ddddfb811baf053f67b7",
+      "originalBytes": 981
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/focused-project.csproj",
+      "path": "focused-project.csproj.gz",
+      "originalSha256": "7df079e35587bee235bba65cb79c45d6048d208db3b97cf326e840c380908dd8",
+      "storedSha256": "80110d056d76538a76f85b34ee6abd7b985dc33296147207c638ac34ef6588b5",
+      "originalBytes": 837
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/focused-tests.log",
+      "path": "focused-tests.log.gz",
+      "originalSha256": "1458dee27e82fbf66146650262b19a7dc7ea14d11bb0bc8a7ed8b6bb0cedef55",
+      "storedSha256": "f44ac3291667cb9b08b971804d0af45e0f8c4c0249fcb3c5d4e8708927bef9bf",
+      "originalBytes": 438
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/focused-tests.xml",
+      "path": "focused-tests.xml.gz",
+      "originalSha256": "54d71635271b97fd27e42ee10fc9c77bb84a3e335fda8ee83815a0b2071678f2",
+      "storedSha256": "2c3ef47b83800d4308c6e856170d49603da9ad0a3f9fe93240bb8bfa9107063c",
+      "originalBytes": 6454
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/focused-verification.json",
+      "path": "focused-verification.json.gz",
+      "originalSha256": "7858fbfb97ddb002d68954de0757a937e6dbe0a234b2fe3d3aa986c8b59eab57",
+      "storedSha256": "296910a268e31423d9b533816e1128ffc3d4cbc6c98a059a4ddd68ac1863e67b",
+      "originalBytes": 2170
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/owner-build-command.json",
+      "path": "owner-build-command.json.gz",
+      "originalSha256": "002b27aac80ed8d9bf257ca38c162107e74f562019c91c8c647092d76e4c7655",
+      "storedSha256": "1935f1d44ee7b9102584c46da51b4dd96a68b58df3f6197e352423b0742814a0",
+      "originalBytes": 1197
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/owner-build.log",
+      "path": "owner-build.log.gz",
+      "originalSha256": "15d731a9c786a4ebf9298f20183e7a30a086be9fc0a565979c3a7fe07271ad43",
+      "storedSha256": "a2ccd92a8935a8c4d22488954b1ace3cef68c67dfc38963cb8ad2ecd0fe8217a",
+      "originalBytes": 3794
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/provenance.json",
+      "path": "provenance.json.gz",
+      "originalSha256": "2fcc3f72c8b23bece538337aac0cd7c956cf90fa485db998a4d9ac8d25aea973",
+      "storedSha256": "6caabd3f6433f18e861f53a40863a27429a9bffd023df3ce96de3df9ce78db9f",
+      "originalBytes": 826
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/repair.patch",
+      "path": "repair.patch.gz",
+      "originalSha256": "c56e3b0e0ca66f51191f334391951e09b612c958173903fa0f5ed6d02fdc6c4d",
+      "storedSha256": "f2ba2feb65255113dbb4b7bccf514948f00581083f1be11a4494fc472cfed383",
+      "originalBytes": 7454
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/resolver-tests.after.cs",
+      "path": "resolver-tests.after.cs.gz",
+      "originalSha256": "f5276c39d3a851b2e2198ccd30819c8afbcb1baa80db4b658bee520a785d7c9b",
+      "storedSha256": "c4bb9ce7ff437b051db3a444bb5b54975ffea4cfd09abea6e8a5e77f0fe28d93",
+      "originalBytes": 9006
+    },
+    {
+      "source": "/tmp/story49-platform-custody-build-repair/resolver-tests.before.cs",
+      "path": "resolver-tests.before.cs.gz",
+      "originalSha256": "c207b5858208a83df17220810e5e899a2239184b90003b29b5fd07f03567d0ee",
+      "storedSha256": "07fb598b278f84cb60f89e592b09972ff226a848e6114af07e031b5c1a0a5f96",
+      "originalBytes": 8990
+    }
+  ]
+}

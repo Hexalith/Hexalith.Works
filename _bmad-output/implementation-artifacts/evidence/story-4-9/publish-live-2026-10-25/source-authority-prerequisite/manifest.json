@@ -1,0 +1,209 @@
+{
+  "owner": "Hexalith.EventStore",
+  "baseCommit": "6ca1b4cb9d422017138541036b3c23397265de98",
+  "status": "prepublication-prerequisite",
+  "files": [
+    {
+      "source": "/tmp/story49-authority-contracts-build.log",
+      "path": "story49-authority-contracts-build.log.gz",
+      "originalSha256": "02348e92507a6dc10f4f6260de732c712ec058d482e35be85739057852f582d4",
+      "storedSha256": "3c3369510157536c75c28a50e768101dbe6b6121f69f0649c0648c7d84a9480e",
+      "originalBytes": 3694
+    },
+    {
+      "source": "/tmp/story49-authority-contracts-tests.log",
+      "path": "story49-authority-contracts-tests.log.gz",
+      "originalSha256": "0ec9e1bcbea09884db8e86881f7f4e25620e9ed9d917071f05421b7cd011156d",
+      "storedSha256": "e5dead652aa98f9707e06aa2d696a8e260ca8070de83e26ea4fdc2593c306d8b",
+      "originalBytes": 421
+    },
+    {
+      "source": "/tmp/story49-authority-contracts-tests.xml",
+      "path": "story49-authority-contracts-tests.xml.gz",
+      "originalSha256": "59ffa32b0d419a3184ac9120aeddbdd89d58349af2139ea6ed86de0c77d17f1d",
+      "storedSha256": "8928d07cc80f2151928e36a88081015c642ca20b8dc4095de17fd568f585b23e",
+      "originalBytes": 100039
+    },
+    {
+      "source": "/tmp/story49-authority-defaults-build.log",
+      "path": "story49-authority-defaults-build.log.gz",
+      "originalSha256": "597c9340d6bf8260293c1631b9b335c870844a25a3bc98240bf34d612d488168",
+      "storedSha256": "d8588a85d0b17cfb0618cb49c0d40c38a96259b066f080f85505271de1654ba9",
+      "originalBytes": 1677
+    },
+    {
+      "source": "/tmp/story49-authority-defaults-tests.log",
+      "path": "story49-authority-defaults-tests.log.gz",
+      "originalSha256": "f515ef655c80338556bc7fd5fd57fbfb145c4505cabb2b3487c3c6757a0b3e86",
+      "storedSha256": "dbd1da74277350be69f7f57d2d98ed090f37abda5f2006c969ae8ad32c94c3f6",
+      "originalBytes": 448
+    },
+    {
+      "source": "/tmp/story49-authority-defaults-tests.xml",
+      "path": "story49-authority-defaults-tests.xml.gz",
+      "originalSha256": "5a64d43cb37cc43a653a95e8452758f0a23230dc03b8134c03c849ec8ff3efc8",
+      "storedSha256": "b219b72b59d4cfda5b352a3ecb30ebad047fc75db465f3fb55a6a4611dacf123",
+      "originalBytes": 3527
+    },
+    {
+      "source": "/tmp/story49-authority-dispatch-retry.log",
+      "path": "story49-authority-dispatch-retry.log.gz",
+      "originalSha256": "433609a252e9d3ef5d4e3f9dbf172912f3e3f6ede8d0a1a01da8b435732f72c2",
+      "storedSha256": "d98dc2e7d8f7f996f4f140fc3a7977149db37c6cf42a92fc380f3abf0d50b235",
+      "originalBytes": 1712
+    },
+    {
+      "source": "/tmp/story49-authority-dispatch-retry.xml",
+      "path": "story49-authority-dispatch-retry.xml.gz",
+      "originalSha256": "47d05469d4e48ad39924e20ae84ba4537d011cd1eacb0472db6b64cfbe33e7c6",
+      "storedSha256": "55d16402f7ab6746ddabfccb2910cdab878e049a02ba834338480382b00ab6a6",
+      "originalBytes": 3243
+    },
+    {
+      "source": "/tmp/story49-authority-fixture-scanner.log",
+      "path": "story49-authority-fixture-scanner.log.gz",
+      "originalSha256": "768436f3e9c2e2410eb5585fa2845d96ddb032848ae4c50f99608cdf64bd1ccf",
+      "storedSha256": "136b8939f74ccbe0730eca6e5526808338d8c35bcff71f8aa96a0ce60698521e",
+      "originalBytes": 517
+    },
+    {
+      "source": "/tmp/story49-authority-fixture-scanner.xml",
+      "path": "story49-authority-fixture-scanner.xml.gz",
+      "originalSha256": "8928da7b472db9326da3b9aae71944e6eec6d1eefe039974086aabfbaebe0a37",
+      "storedSha256": "8ee2943fa9f3e8e735a34870d9aee575ef9b6b67a52410600ac51b18aea03db2",
+      "originalBytes": 179080
+    },
+    {
+      "source": "/tmp/story49-authority-fixtures-commit.txt",
+      "path": "story49-authority-fixtures-commit.txt.gz",
+      "originalSha256": "560f17dc6bd482c6808c73f64973dc5f84dbeeaf29469838f1bae934ede190f2",
+      "storedSha256": "e2c90ce9cdfae84e2147a727b0fc27799c806dfec01f77d74b289ea608e38ccf",
+      "originalBytes": 66
+    },
+    {
+      "source": "/tmp/story49-authority-fixtures-commitlint.log",
+      "path": "story49-authority-fixtures-commitlint.log.gz",
+      "originalSha256": "558d22bb3aab9de7d8a1fd6cd6c3e91ad839aad2ddb63407c610aee757ec7847",
+      "storedSha256": "5dd6007f558fc1570d62277919f3b824f677c178073c6dafb2d6b73da3b09475",
+      "originalBytes": 121
+    },
+    {
+      "source": "/tmp/story49-authority-fixtures-pr.md",
+      "path": "story49-authority-fixtures-pr.md.gz",
+      "originalSha256": "d1797b6f2b71b6bc389e248bc57ff9cb6523574a60767e3a1c5ede79d4e5d061",
+      "storedSha256": "a79f1dc39440081608cc4b6940a95fbedd8bbbcc747fc5a463e6bf2f583cc868",
+      "originalBytes": 1398
+    },
+    {
+      "source": "/tmp/story49-authority-original-build.log",
+      "path": "story49-authority-original-build.log.gz",
+      "originalSha256": "5787e4cfa79c68a116bb0727eefa30c4a02c47c68098108a31615a24a30e03e5",
+      "storedSha256": "5f419dc028abbc3f06b48392e9d26ec2d7584760e4931638f189e396dddf84e1",
+      "originalBytes": 4918
+    },
+    {
+      "source": "/tmp/story49-authority-original-control.py",
+      "path": "story49-authority-original-control.py.gz",
+      "originalSha256": "98a549a37aaaf80f9e941979a6a09f7891d14388f31bdd80c9ba229d31a032f1",
+      "storedSha256": "9db5d3359ab9f66f67041324921658c2f7cb627990917971c84243ad683dcab3",
+      "originalBytes": 1431
+    },
+    {
+      "source": "/tmp/story49-authority-original-test.log",
+      "path": "story49-authority-original-test.log.gz",
+      "originalSha256": "e687f7f3dc8511568995bf1fb541b363646e4a1839f5ec314e00f6a502b7b10c",
+      "storedSha256": "7eb77c26cff17732252d29b67503bc57fbe0478ec93b00ea48f1b7dabae22bdd",
+      "originalBytes": 1712
+    },
+    {
+      "source": "/tmp/story49-authority-original-test.xml",
+      "path": "story49-authority-original-test.xml.gz",
+      "originalSha256": "1d9d56545c178d78fce9588db2b8000b566ec571134ee51b0ce06096dfb2a0dc",
+      "storedSha256": "73651cc11e2aeee33cffc830f4087296df400cfcfa5c6a0c1e616a6f718ebaba",
+      "originalBytes": 3242
+    },
+    {
+      "source": "/tmp/story49-authority-server-build-final.log",
+      "path": "story49-authority-server-build-final.log.gz",
+      "originalSha256": "439585ce4fd96ff5a5aae6aa504a36c7242710a37b857ddb4dbcadb3af1af325",
+      "storedSha256": "0dd1152f1491bcf68e04d9f23646316dd2d0d658c0a0603bbe43abbfb03175dc",
+      "originalBytes": 5315
+    },
+    {
+      "source": "/tmp/story49-authority-server-build.log",
+      "path": "story49-authority-server-build.log.gz",
+      "originalSha256": "ef25d92f1ecb01cb3c78c82060cdba641fadd16f449a7fbf1e2964a82872ff7c",
+      "storedSha256": "30e341b486fa7261774d277a8932ed0c2cc32e0003a7abc7f4ab5a9d192225fe",
+      "originalBytes": 5940
+    },
+    {
+      "source": "/tmp/story49-authority-server-tests.log",
+      "path": "story49-authority-server-tests.log.gz",
+      "originalSha256": "3b01e400b5efaea9076b37a983ee884f4084f6e142e2f2cfd378ceddf0febd07",
+      "storedSha256": "5565f049f2c959185e57066b93556170948052ffa1e1e5dd8d9e13696f14714d",
+      "originalBytes": 1714
+    },
+    {
+      "source": "/tmp/story49-authority-server-tests.xml",
+      "path": "story49-authority-server-tests.xml.gz",
+      "originalSha256": "3cb8ebb63fb80ecc852aef446318cdd96e43883c78db23064fea7e27e9610c63",
+      "storedSha256": "49eb1d26b6bb9b7f4a90608f513e594bd2d755499f62640a2ce0c651849752d5",
+      "originalBytes": 190618
+    },
+    {
+      "source": "/tmp/story49-authority-successor-build.log",
+      "path": "story49-authority-successor-build.log.gz",
+      "originalSha256": "1e8c1c4e3f1a22370acffac01d68ddcb36e764393acf6bee96c542cd9866c982",
+      "storedSha256": "7d08a268db39042fd6f379fb21a25e6f9635540ca6a6fd39454f30d7bb9e44be",
+      "originalBytes": 5315
+    },
+    {
+      "source": "/tmp/story49-authority-successor-final-build.log",
+      "path": "story49-authority-successor-final-build.log.gz",
+      "originalSha256": "8c5f2b5c5abbd30b59272b2ec60b9f95f27f856055f913b8e464dee12fe61ca3",
+      "storedSha256": "a43570a5eba2dfa7108972ee20ca74e12acc490ba731405e3ba9d03936f8bd8d",
+      "originalBytes": 5315
+    },
+    {
+      "source": "/tmp/story49-authority-successor-final-tests.log",
+      "path": "story49-authority-successor-final-tests.log.gz",
+      "originalSha256": "a8d82e29bfa6f5680d45544a7944993684e548e1fe4075501bcf76b523347c4e",
+      "storedSha256": "aa4bffd383294872dcd5e6222c856f9c9e77bec171e155c6125f20a92a86464d",
+      "originalBytes": 405
+    },
+    {
+      "source": "/tmp/story49-authority-successor-final-tests.xml",
+      "path": "story49-authority-successor-final-tests.xml.gz",
+      "originalSha256": "879348d1265bbf46d23b33b8991975a536785bf84c438450ee0b562f3b6708da",
+      "storedSha256": "1f78bb33df76d1612f16863a4c22fe0153cae3d62768ccf1e06669ee117130ab",
+      "originalBytes": 190798
+    },
+    {
+      "source": "/tmp/story49-authority-successor-tests.log",
+      "path": "story49-authority-successor-tests.log.gz",
+      "originalSha256": "564d0e5bf1a8c60590896a08c71e0bd1a0d7a76d2d229689729890ae57a9a362",
+      "storedSha256": "91a4437c8e1cba7e4a2d52ffa62c26e9d5fc939692bc5e0dab041d2ddd36a205",
+      "originalBytes": 405
+    },
+    {
+      "source": "/tmp/story49-authority-successor-tests.xml",
+      "path": "story49-authority-successor-tests.xml.gz",
+      "originalSha256": "69549706732714430dbc73cb956359324681414e4bdebb6a5e34aaf435dc06b0",
+      "storedSha256": "4b23d473b30599e9f750c349f81fca0d3145a0df5c4f05f086f453d01bcc61d1",
+      "originalBytes": 190806
+    },
+    {
+      "source": "/tmp/story49-main-6ca-contracts-failure.log",
+      "path": "story49-main-6ca-contracts-failure.log.gz",
+      "originalSha256": "bfbdf72287d9b4e2aa96f11cc32c9bff1d78901ed69c7b4ad493ad44efdc23ce",
+      "storedSha256": "69a934cd9fb471a005978e8a74d637e157c7e3129378e9f116808b06d4620397",
+      "originalBytes": 65042
+    },
+    {
+      "path": "owner.patch.gz",
+      "originalSha256": "4e946ed97ec108e5cbe1dee07a088a0c20723534e3058ee8f8ed0b020c6da4df",
+      "storedSha256": "f0d9d34dad20dfa3ea58fe3aee73ef34092a688fca7425f4e4ebacc784d36077",
+      "originalBytes": 14772
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Evidence.Tests-build.log",
+      "path": "Evidence.Tests-build.log.gz",
+      "originalSha256": "eef854c73b33a8c2dfd83062a277ad6aa16375eb597fea4b8e96d3312eaa0f0e",
+      "storedSha256": "02fbd271758405b179e667498f093c7d8d2bdfe047fb180bade3f68ea004480b",
+      "originalBytes": 1155
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Evidence.Tests-tests.log",
+      "path": "Evidence.Tests-tests.log.gz",
+      "originalSha256": "bc33ecc5176f00f0d4dea250f9d3fcd0542c9efe130ed1dc4c83324325008574",
+      "storedSha256": "55f28803cd141004c17df3a15a4e7a79b5a6dbb19266e5cd8cf5916d14b94db1",
+      "originalBytes": 394
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Evidence.Tests.xml",
+      "path": "Evidence.Tests.xml.gz",
+      "originalSha256": "1d08e6817d533f8d8c15aca225939ef98a81f6ee20fb5f9b885e7b53ebc02280",
+      "storedSha256": "289ea28f0e6317911c853e6eedc320406f2714352f75d6ff13940f4f7dec921c",
+      "originalBytes": 24743
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Module.Tests-build.log",
+      "path": "Module.Tests-build.log.gz",
+      "originalSha256": "988c02c87746b5464c51e0e6692954d1cffc0f84be38baced26799441c6630ae",
+      "storedSha256": "cb2d001bd2529eace0d79f4f0bed922f22a17e43fa9b6df244432d494e167b08",
+      "originalBytes": 3741
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Module.Tests-tests.log",
+      "path": "Module.Tests-tests.log.gz",
+      "originalSha256": "37efbf4fab375ab73cba0fbbf85b10b5c5486d3eb836c4aef9579d2249e2396b",
+      "storedSha256": "3f8092bb7c114e6c2f12e725341f95a32756e73eaf260792e6db636bf75a7020",
+      "originalBytes": 384
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/Module.Tests.xml",
+      "path": "Module.Tests.xml.gz",
+      "originalSha256": "99bb014078d8799bbbdbc6779da3116418bf3feda974d959e0c737dd4d6b5008",
+      "storedSha256": "f31c64c77c28492ebbbfe967723665dfde6bb15ebc70fd8b3df2fc10a716080c",
+      "originalBytes": 44934
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "444988d24285b24c447a7d42f054ecc2118abd2378d944550cdcdd055e7ead69",
+      "storedSha256": "a3d3efe25a4a435d387455afa98e7df2e3c0797fd248c557fa439e147fade423",
+      "originalBytes": 2115
+    },
+    {
+      "source": "/tmp/story49-builds-fixture-focused-checks/generator-tests.log",
+      "path": "generator-tests.log.gz",
+      "originalSha256": "aeb8eab8eeb87c97d150804b54d470279b25d480780ccf79e9464381ccfc401a",
+      "storedSha256": "20d7fdca52916631e01fa19f93e412cbcb33832cab0f203093d32294e614e369",
+      "originalBytes": 105
+    }
+  ]
+}

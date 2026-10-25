@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-tooling-bounded/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "130bbf1043ead3b1e2abb6f30ad7746114d991e306860d52459f3d6f9f54309f",
+      "storedSha256": "233e5cf499badd913c31a33b4bc0284962f31da622f14a205ecb93a60fd413c0",
+      "originalBytes": 2852
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/download-shellcheck.log",
+      "path": "download-shellcheck.log.gz",
+      "originalSha256": "c568469db38fb47a91b588ad63336ce6abb0623be524759c6a05158dfb99cded",
+      "storedSha256": "bbc6ba2886a6b506fa451c914143c5971ac8ece5ef545090d5d259f1e0de0f2a",
+      "originalBytes": 133
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/driver.py",
+      "path": "driver.py.gz",
+      "originalSha256": "044d6481068081529ab0aa58b9932cdcc02a359bac3f3ca7c40235c61b435d92",
+      "storedSha256": "56e76aeab6c596b9ce4b0f1b77123fee686830bf526d75690017c20aa4921059",
+      "originalBytes": 1756
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/extract-shellcheck.log",
+      "path": "extract-shellcheck.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/install-ruff.log",
+      "path": "install-ruff.log.gz",
+      "originalSha256": "457810fdf3858f7ddd5dedff06e7126a22a06b36878a3030903bbd32af725f9f",
+      "storedSha256": "d1383c0b7277f341836feeeaa4fa594a2e7034720ab138959bf7b54045574907",
+      "originalBytes": 270
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/lint-scripts.log",
+      "path": "lint-scripts.log.gz",
+      "originalSha256": "5d181034dcb418674d76dec9afaef49ac46b41ec30f1d83feddac68349e2465e",
+      "storedSha256": "5372a009c1d9e41d89cdac22775f42eea0f3d1f9eff4612224de439533ec362e",
+      "originalBytes": 44
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/ruff-version.log",
+      "path": "ruff-version.log.gz",
+      "originalSha256": "903111a52fa574ed4b216d347a4ab3a09bf5250256f16c5a991840a7ad9c18e7",
+      "storedSha256": "9e9be7dcb3ba988127f4c1df98e137c5cd5196b375b42db942c0b8b65de0362f",
+      "originalBytes": 12
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/shellcheck-version.log",
+      "path": "shellcheck-version.log.gz",
+      "originalSha256": "fc9eec16b4191d058a295813ca9afbe9d2b37b59975da860170726be162a3924",
+      "storedSha256": "97bf16aa0c4eaadadd6598194c642cea5710bfe31bbd945a96dfb1915f50f554",
+      "originalBytes": 139
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/tool-artifacts.json",
+      "path": "tool-artifacts.json.gz",
+      "originalSha256": "bbdba1062d865460b041b218124c6cf963f992cd2f075527e91075a92cd214ba",
+      "storedSha256": "4c354dee8865f148134b72c5d5d0462fd1caf8d0b830e03b2e4409307ba1175a",
+      "originalBytes": 1046
+    },
+    {
+      "source": "/tmp/story49-final-tooling-bounded/tooling-tests.log",
+      "path": "tooling-tests.log.gz",
+      "originalSha256": "cd6a0db766b6864ee75af7096f701aff2f3333a3ed3953fb5ee6a5debf108fce",
+      "storedSha256": "75c9a26d35ed8e5ae0751f22f1148d75b8d672c0c15c9fd91ac9866d1558e8d5",
+      "originalBytes": 486
+    }
+  ]
+}

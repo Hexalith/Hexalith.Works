@@ -1,0 +1,4 @@
+build: merge current main for token release validation
+
+Include the newly published recovery discovery changes in the validated
+release candidate while preserving the token registration regression.

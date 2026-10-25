@@ -1,0 +1,46 @@
+diff --git a/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj b/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj
+index e83e689..6b036bb 100644
+--- a/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj
++++ b/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj
+@@ -8,6 +8,7 @@
+ 
+   <ItemGroup>
+     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
++    <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />
+     <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="3.127.0" />
+     <AssemblyMetadata Include="WorksAllowLocalEventStoreCandidate" Value="$(WorksAllowLocalEventStoreCandidate)" />
+     <PackageReference Include="Aspire.Hosting.Testing" />
+diff --git a/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs b/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs
+index 0906cd8..bf30ad9 100644
+--- a/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs
++++ b/tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs
+@@ -27,12 +27,14 @@ public sealed class WorksSdkPackageContractTests
+         foreach (JsonProperty library in sdk) library.Value.GetProperty("type").GetString().ShouldBe("project");
+     }
+ #else
++    /// <summary>Release consumes the selected public SDK and Parties packages.</summary>
+     [Fact]
+     public void ReleaseConsumerLoadsSelectedSdkPackagesAndPartiesContracts()
+     {
+         AssemblyMetadataAttribute[] metadata = [.. typeof(WorksSdkPackageContractTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()];
+         string selectedVersion = metadata.Single(attribute => attribute.Key == "WorksSelectedEventStoreVersion").Value!;
+         string pinnedVersion = metadata.Single(attribute => attribute.Key == "WorksPinnedEventStoreVersion").Value!;
++        string selectedPartiesVersion = metadata.Single(attribute => attribute.Key == "WorksSelectedPartiesVersion").Value!;
+         bool allowLocalCandidate = string.Equals(metadata.Single(attribute => attribute.Key == "WorksAllowLocalEventStoreCandidate").Value,
+             "true", StringComparison.OrdinalIgnoreCase);
+         selectedVersion.ShouldNotBeNullOrWhiteSpace();
+@@ -51,8 +53,12 @@ public sealed class WorksSdkPackageContractTests
+             library.Value.GetProperty("type").GetString().ShouldBe("package");
+         }
+ 
+-        libraries.TryGetProperty("Hexalith.Parties.Client/1.4.0", out JsonElement parties).ShouldBeTrue();
+-        parties.GetProperty("type").GetString().ShouldBe("package");
++        selectedPartiesVersion.ShouldNotBeNullOrWhiteSpace();
++        foreach (string package in new[] { "Hexalith.Parties.Client", "Hexalith.Parties.Contracts" })
++        {
++            libraries.TryGetProperty(package + "/" + selectedPartiesVersion, out JsonElement parties).ShouldBeTrue();
++            parties.GetProperty("type").GetString().ShouldBe("package");
++        }
+ 
+         JsonProperty platform = libraries.EnumerateObject().Where(
+             library => library.Name.StartsWith("Hexalith.Platform.Identity/", StringComparison.Ordinal)).ShouldHaveSingleItem();

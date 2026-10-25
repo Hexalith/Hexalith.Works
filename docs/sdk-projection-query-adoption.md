@@ -28,7 +28,7 @@ The deterministic HTTP rotation rehearsal covers initial success, revocation, co
 
 ## Historical Story 4.14 migration qualification
 
-The sections below preserve the earlier opt-in, candidate and legacy-host qualification record. Their mode defaults, candidate pins, commands and remaining gates describe those historical inputs; they are not current deployment instructions. The current public SDK pin is EventStore 3.126.1, selected by the Builds catalog, and Story 4.9 removed the transitional hosting projects after complete Platform qualification.
+The sections below preserve the earlier opt-in, candidate and legacy-host qualification record. Their mode defaults, candidate pins, commands and remaining gates describe those historical inputs; they are not current deployment instructions. The current public SDK pin is EventStore 3.128.0, selected by the Builds catalog, and Story 4.9 removed the transitional hosting projects after complete Platform qualification.
 
 ## Mode and ownership
 

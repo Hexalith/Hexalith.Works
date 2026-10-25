@@ -1,0 +1,95 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-release-dispatch-2/approval-current-checks.json",
+      "path": "approval-current-checks.json.gz",
+      "originalSha256": "eb645bfc3ddd2eae79ddf566d82558a9c25d76a87f044d3d85931cb14244e07d",
+      "storedSha256": "af2f2210a8fb064d1534ed52bf8344e3c8707b5f304010e17b24b91e14c6c4a1",
+      "originalBytes": 69702
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/approval-current-main.json",
+      "path": "approval-current-main.json.gz",
+      "originalSha256": "e106f994c56c2d37d55b972cff7f5f087ddae57024514783ee20bfea242db5f8",
+      "storedSha256": "2131da4fb38f9d7f15a0077bcba108bc554d1c83f0191eeb96984a5d6c81bc34",
+      "originalBytes": 393
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/approval-request.json",
+      "path": "approval-request.json.gz",
+      "originalSha256": "cab3ca2b5e170ef384912a4c4f12d6e88013e7d635eb34314db715f4cee5adf6",
+      "storedSha256": "1b7608ce495aeb66115c48198e6a0f79bae747b9ef95d37db29c5d3a7df893db",
+      "originalBytes": 329
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/approval-result.json",
+      "path": "approval-result.json.gz",
+      "originalSha256": "3a6c62c608f0ac4dc8ec73ba41045af1f3fc6d9bb6cebf3a676bc60afbb4ddfc",
+      "storedSha256": "4fd089ea7dd1d430b13e1fe1984b4f7d4df146571070c6a67e26b9189e75feee",
+      "originalBytes": 4288
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/complete-release.log",
+      "path": "complete-release.log.gz",
+      "originalSha256": "2293e3f2111409ac5f569179f4992a5c4524fab1f03b0c27ef6501296a31ff17",
+      "storedSha256": "4c884a55f79908055aead487d2e5e607b2ab6cf4e59768377e59e152cc7531c1",
+      "originalBytes": 345936
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/created-runs.json",
+      "path": "created-runs.json.gz",
+      "originalSha256": "4bf00cc71d9290485ce284dd3c457bb7c69d61b01f1a99b069e3eda0e9cc0394",
+      "storedSha256": "54f3e9b694341da667eb546825311b99bfcc3dcb8069edd8583471f83c2ccb93",
+      "originalBytes": 14538
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/dispatch.json",
+      "path": "dispatch.json.gz",
+      "originalSha256": "9f5831c4bf1b039bfb8d77ebdd7f12342f4d33d1f9427c1d2d8fec2ab7187deb",
+      "storedSha256": "8072958bcf4442c0ad1a9f8f40fa797cf8dbf61dfc4a80bb4e208aa6f98e238f",
+      "originalBytes": 202
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/monitor.jsonl",
+      "path": "monitor.jsonl.gz",
+      "originalSha256": "9a4e788f301b5916dfbe8e04228fd30391a4808d31705fa8bcb1ef5d29f87f1b",
+      "storedSha256": "0f636208997a9a1aa97f8b475ffc8b37faff036d600277b4dc9e2ce750232f2a",
+      "originalBytes": 3123
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/observed-tag-v3.128.0.json",
+      "path": "observed-tag-v3.128.0.json.gz",
+      "originalSha256": "674fc84e84a80d0c7e507e1a94221f8fab02c2db481cfb22c15908e91327ba8d",
+      "storedSha256": "9bde35630c9f5718c5d8937e77641fb3faf7fe2f4632ffaf9e79272952426894",
+      "originalBytes": 403
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/pending-deployments.json",
+      "path": "pending-deployments.json.gz",
+      "originalSha256": "41a728eed6ce1cc51aa3aa3225ea7c9f260f66e775a5e21f489153c541634aeb",
+      "storedSha256": "3b1e32c9655344ad2f81b12133545929759374880376c398eecf0228d7db4251",
+      "originalBytes": 1740
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/preflight.json",
+      "path": "preflight.json.gz",
+      "originalSha256": "42b43e0cb2199d90a94965d85d865f8e361c4b0342fd5d6fa091b704f1d643fa",
+      "storedSha256": "8dde3f9936713ac3567600dafe9f31691544dd8296882ccdef2ce670b12b2e99",
+      "originalBytes": 93999
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/publication-current-required-checks.json",
+      "path": "publication-current-required-checks.json.gz",
+      "originalSha256": "0218b5b34d4964e27c0f4a3b68f808b9b43bb8bd6cbb3c9b3e156b824573dc0f",
+      "storedSha256": "cfd3a2797535bb949986e2ec085a36c4fdde33e92bc7c877d073e867712b148f",
+      "originalBytes": 1206
+    },
+    {
+      "source": "/tmp/story49-release-dispatch-2/release-v3.128.0.json",
+      "path": "release-v3.128.0.json.gz",
+      "originalSha256": "4b4d28425705c7b3d8d75a6826e14289e6668d9817e5c66ff511eafd6ff09abd",
+      "storedSha256": "77e254cc04607bc05f7650cb5fbbcf28b8ebe1bb2ac86f4d3086e7b8b6b6c794",
+      "originalBytes": 33745
+    }
+  ]
+}

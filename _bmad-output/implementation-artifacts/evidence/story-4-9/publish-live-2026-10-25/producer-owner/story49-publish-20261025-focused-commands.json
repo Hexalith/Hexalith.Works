@@ -1,0 +1,18 @@
+[
+  {
+    "label": "server-focus",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests",
+      "-noLogo",
+      "-class",
+      "Hexalith.EventStore.Server.Tests.Controllers.StreamsControllerTests",
+      "-class",
+      "Hexalith.EventStore.Server.Tests.Security.SecretsProtectionTests",
+      "-result-xml",
+      "/tmp/story49-publish-20261025-server-focus.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 1,
+    "log": "/tmp/story49-publish-20261025-server-focus.log"
+  }
+]

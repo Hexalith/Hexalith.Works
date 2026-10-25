@@ -1,0 +1,24 @@
+{
+  "files": {
+    "references/Hexalith.Platform/eng/retained-works-host/manifest.json": "b8cbf1bb6490b6fc6bb8ad7aa12842c202fb95a9877afd7a0a5fa1caf79caca8",
+    "references/Hexalith.Platform/eng/retained-works-host/works-source.tar.gz": "5ce3247ded7ab59ff70d5b25896fed1826b8d78b0728a2d1a4c1f2dceb7ae696"
+  },
+  "owners": {
+    "Works": {
+      "head": "5a937f7bded5e3a952fbea572bd616793e37e245",
+      "status": " M _bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md\n M references/Hexalith.EventStore\n M references/Hexalith.Platform\n M tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj\n M tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs\n?? _bmad-output/implementation-artifacts/evidence/story-4-9/resume-live-2026-10-25/\n"
+    },
+    "EventStore": {
+      "head": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+      "status": " M src/Hexalith.EventStore.Aspire/HexalithEventStoreAppChannelExtensions.cs\n?? src/Hexalith.EventStore.Aspire/EventStoreAppChannelTokenBindingAnnotation.cs\n?? tests/Hexalith.EventStore.AppHost.Tests/Configuration/AppChannelTokenAspireExtensionTests.cs\n"
+    },
+    "Builds": {
+      "head": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c",
+      "status": ""
+    },
+    "Platform": {
+      "head": "f7c62ca1007f5218dc52d6856395324704564e3a",
+      "status": " M apphost.cs\n M src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs\n"
+    }
+  }
+}

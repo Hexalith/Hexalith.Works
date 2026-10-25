@@ -1,0 +1,69 @@
+{
+  "version": "3.127.0",
+  "repositoryCommit": "e1d8b17160202761ab5c9606cafbcf4d1a4b92c3",
+  "packages": {
+    "Hexalith.EventStore.Aspire": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.aspire/3.127.0/hexalith.eventstore.aspire.3.127.0.nupkg",
+      "sha256": "b742dca375db5c256ce1cba49d4de716d75ca09fc378e98abfbaec9cba346558",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Hexalith/Hexalith.EventStore",
+        "commit": "e1d8b17160202761ab5c9606cafbcf4d1a4b92c3"
+      }
+    },
+    "Hexalith.EventStore.Client": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.client/3.127.0/hexalith.eventstore.client.3.127.0.nupkg",
+      "sha256": "7b70f3da61e55f1987160dbdcdbe151e80abd92201ede8c5e5613926d56e8684",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Hexalith/Hexalith.EventStore",
+        "commit": "e1d8b17160202761ab5c9606cafbcf4d1a4b92c3"
+      }
+    },
+    "Hexalith.EventStore.DomainService": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.domainservice/3.127.0/hexalith.eventstore.domainservice.3.127.0.nupkg",
+      "sha256": "d84ea5f5e3d78829c69ac271a876a9f2d21fbf55e9cdc7a74c62b2fff193c5ff",
+      "repository": {
+        "type": "git",
+        "url": "https://github.com/Hexalith/Hexalith.EventStore",
+        "commit": "e1d8b17160202761ab5c9606cafbcf4d1a4b92c3"
+      }
+    }
+  },
+  "commands": [
+    {
+      "name": "build",
+      "command": [
+        "dotnet",
+        "build",
+        "/tmp/story49-published-sdk-3.127.0/PublishedSdk.csproj",
+        "-c",
+        "Release",
+        "-m:1",
+        "--artifacts-path",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-published-sdk-3.127.0"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "exitCode": 0
+    },
+    {
+      "name": "tests",
+      "command": [
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-published-sdk-3.127.0/bin/PublishedSdk/release/Hexalith.EventStore.AppHost.Tests",
+        "-noLogo",
+        "-class",
+        "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests",
+        "-result-xml",
+        "/tmp/story49-published-sdk-3.127.0/tests.xml"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "exitCode": 1
+    }
+  ],
+  "testSource": {
+    "path": "tests/Hexalith.EventStore.AppHost.Tests/Configuration/AppChannelTokenAspireExtensionTests.cs",
+    "commit": "373a14b5c0e9a0b980eed8b93847681e83addb22",
+    "sha256": "831700da226dcd497969a7d44462cb9d14ba0f16deae832b0bea5d043cd4072d"
+  },
+  "executedSdkSha256": "8c9418926bda7d438e72fe9b083d648909d117305f8ae181b163426603866c38"
+}

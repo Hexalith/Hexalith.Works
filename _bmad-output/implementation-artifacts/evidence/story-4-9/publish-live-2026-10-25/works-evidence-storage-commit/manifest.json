@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-works-evidence-storage-commit/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "676f8581d8a2a400bf712769fe6e15b1799182c5d990b4d1541ff8216d79d317",
+      "storedSha256": "0fc295b72d2d91fc53a43a3414c53ff211983c98bd686c3de844bff5074ef4a3",
+      "originalBytes": 6722
+    },
+    {
+      "source": "/tmp/story49-works-evidence-storage-commit/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "c64d50235e9afeb57efa090433943aaa6d54af8c9117ef17d0756243bf36fb74",
+      "storedSha256": "6295918f7a415736eefaa8ab567fc0ecc5b70b30db31c4aca7fe643d2c4860b5",
+      "originalBytes": 67
+    }
+  ]
+}

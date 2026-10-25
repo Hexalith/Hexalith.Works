@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-scheduler-published-port-diagnostic/assessment.json",
+      "path": "assessment.json.gz",
+      "originalSha256": "9702f19202cde2df3b5402b8a1a4c4be304149621d6a407fb743681486105785",
+      "storedSha256": "a67dc64badf9165d4468fde61ed51de23ebd925ef502dfccef683bdce65ddb8c",
+      "originalBytes": 1040
+    },
+    {
+      "source": "/tmp/story49-scheduler-published-port-diagnostic/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "46fcfcd84d1f0ac59485701e0fc2e87763be1b328d2d61ca2f3825caa295dd18",
+      "storedSha256": "a84ed7244c73f7a427021d64138c05c6fe15c38b164d4c6b38f8508759c5f915",
+      "originalBytes": 1619
+    },
+    {
+      "source": "/tmp/story49-scheduler-published-port-diagnostic/diagnostic.json",
+      "path": "diagnostic.json.gz",
+      "originalSha256": "39b4bf477d0538e08fcc1dfd9b874ddc75306774a843cfa62763f487df50c47c",
+      "storedSha256": "1b874cc0097a488c75ed5a85e3524573fdbbacc9cb4b711fb8f48e0cd4dc331d",
+      "originalBytes": 1122
+    },
+    {
+      "source": "/tmp/story49-scheduler-published-port-diagnostic/health-observations.json",
+      "path": "health-observations.json.gz",
+      "originalSha256": "419481d4540371ed5e32098c0011e24b6bfc21b525e2b1579218fe4c326c4b6c",
+      "storedSha256": "dc23aeb8e6cd4a2209f2108cc0ce983fdab86754375b63948f35ec0d862321f1",
+      "originalBytes": 6239
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr374-live-evidence/12601708093.zip",
+      "path": "12601708093.zip",
+      "originalSha256": "687ec733fa932b576600dd268068af7d140879113a396b152bf2e842106d199e",
+      "storedSha256": "687ec733fa932b576600dd268068af7d140879113a396b152bf2e842106d199e",
+      "originalBytes": 1132250
+    },
+    {
+      "source": "/tmp/story49-pr374-live-evidence/full-test-inventory.json",
+      "path": "full-test-inventory.json.gz",
+      "originalSha256": "0c805aeafb1488d809a2e6eedc7e270790a9d5a78f9a0b1b101b1016371ffd45",
+      "storedSha256": "29fb53b4bd6ae2fd2a5c784d394987ddf2a5929704bfed7d504314ee26a7de9e",
+      "originalBytes": 161481
+    },
+    {
+      "source": "/tmp/story49-pr374-live-evidence/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "abd1691286626d7fba9ad97a5d0119e8833a925372a49c0d8e08bc782aca4f52",
+      "storedSha256": "6844a6ed69c157a7fc5c524c74ccdb6be8c94b27cf12f3698f759b2a3a9578bb",
+      "originalBytes": 5871
+    },
+    {
+      "source": "/tmp/story49-pr374-live-evidence/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "5a4ae52ea0db4f37ded2c992715dcae3b4f67081fc56edfa2a8bcf1ef443cfdc",
+      "storedSha256": "108a4ddf9cf58a07b70beea06f291bc9aa574cfcf5a25756e6b2925b608879e0",
+      "originalBytes": 1916
+    },
+    {
+      "source": "/tmp/story49-pr374-live-evidence/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "4b29fa3d184e2e563a1da61b156ebc00798a7b8b0a0b05324e2cd116e60cbe34",
+      "storedSha256": "d34ef045e3c01d20754ec2071841f407a948d408e53fcc564c7b254a53681e37",
+      "originalBytes": 14252
+    }
+  ]
+}
