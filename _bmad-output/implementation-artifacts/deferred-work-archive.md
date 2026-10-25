@@ -828,3 +828,57 @@ status: done 2026-10-23
 archived: 2026-10-23
 resolution: Both faulty legacy readers are retired. MultipleExclusivePageBoundariesPreserveEveryCommittedEnvelope proves the unified WorksSourceStreamReader uses exclusive cursors over one- and two-envelope pages, preserves every envelope/message identity and rejection offset, and leaves the reminder adapter with the exact final current await. Paged child-completion and expiry-cascade translation controls also prove exact process effects and consumed-await suppression. See spec-five-deferred-sdk-recovery-replacements.md.
 
+### DW-63: Nothing binds the EventStore revision quoted in the maintained docs to the actual checked-out submodule gitlink, so the corrected pin can silently rot on the next bump.
+origin: spec-deferred 7a41b5161f32
+location: docs/eventstore-api-surface-constraints.md:7
+source_spec: `spec-envelope-persistence-proof-hardening.md`
+severity: low
+reason: grep over tests/ finds no assertion on b43e963403efa848eda9621b5e3e7e446c7faa2d or c61739206fd89619b7d29dfb0812225a234066bb; both SHAs exist only as prose in docs/eventstore-api-surface-constraints.md and docs/boundary-decision-record.md. This is the same documentation-drift failure mode DW-42 recorded.
+status: done 2026-10-23
+archived: 2026-10-25
+resolution: Maintained current-source markers now bind the validated root gitlink to the effective consumed source checkout, including explicit overrides; historical and published-producer revisions remain separate. Independent marker/hash drift, malformed/missing/wrong-type gitlink and actual overridden-root drift controls pass. Final source Debug and package Release builds each have 0 warnings/errors; architecture suites each pass 398/398, 0 failed/skipped after upstream pin integration and review corrections. Evidence: `spec-five-deferred-build-governance.md`, final coordinator verification section and `evidence/five-deferred-build-governance-2026-10-23/final-*` logs/XML.
+
+### DW-76: PackageVersion ownership does not trace Works-owned property overrides consumed by the approved shared catalog.
+origin: spec-deferred 61f77899777d
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:226
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: Ownership follows the XML file that defines the effective Version metadata. A Works-local property could influence a version expression in the shared catalog while the catalog remains the defining file. This pre-existing property-provenance problem is broader than evaluated PackageReference and PackageVersion item discovery.
+status: done 2026-10-23
+archived: 2026-10-25
+resolution: Effective package-version ownership now includes ordered property assignments, recursive captured aliases and assignment/PropertyGroup conditions; only the existing EventStore pin is exempt, with wrong-name and arbitrary imported-origin controls. Final source Debug and package Release builds each have 0 warnings/errors; architecture suites each pass 398/398, 0 failed/skipped after upstream pin integration and review corrections. Evidence: `spec-five-deferred-build-governance.md`, final coordinator verification section and `evidence/five-deferred-build-governance-2026-10-23/final-*` logs/XML.
+
+### DW-77: The architecture-test lane is bound to the build machine's installed MSBuild layout instead of resolving it at run time.
+origin: spec-deferred 769960e1cb23
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs:475
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: medium
+reason: The test project captures $(MSBuildToolsPath) into an AssemblyMetadataAttribute at compile time and copies the SDK's Microsoft.Build* assemblies next to the test host. A build-once/test-elsewhere pipeline, or an SDK patch installed between build and test, makes ConfigureInstalledMsBuild throw and fails the whole architecture lane. Replacing the hand bootstrap with MSBuildLocator adds a package dependency and is a design decision beyond this bundle.
+status: done 2026-10-23
+archived: 2026-10-25
+resolution: Test-only centrally pinned Locator registers the installed SDK selected by native repository policy before MSBuild code loads; filtered native selections are refused. Unchanged binaries evaluate an SDK project and actual governed Works source through a relocated installation. Final source Debug and package Release builds each have 0 warnings/errors; architecture suites each pass 398/398, 0 failed/skipped after upstream pin integration and review corrections. Evidence: `spec-five-deferred-build-governance.md`, final coordinator verification section and `evidence/five-deferred-build-governance-2026-10-23/final-*` logs/XML.
+decision: 2026-09-01 Adopt MSBuildLocator — Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.
+decision: 2026-09-01 Adopt MSBuildLocator — Add centrally versioned test-only MSBuildLocator and Microsoft.Build dependencies, register an installed instance before loading MSBuild APIs, remove captured-path coupling, and add a build-once test-under-different-SDK-path regression.
+
+### DW-81: Runtime-adapter confinement still decides EventStore-runtime and Dapr direction from owning-file XML and basename prefixes.
+origin: spec-deferred b052bd148f70
+location: tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs:53
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: RuntimeAdapterGovernanceTests reads declared references from the governed project file only and compares them by name prefix, so an imported item or an unrelated project with an EventStore-runtime basename escapes that specific gate. The escape is partly covered elsewhere because ScaffoldGovernanceTests routes through the evaluated EvaluateProjectFile path, but with a different message. The intent named the dependency-direction, source-consumption, and restore-freshness gates; converting this fourth gate is separate work.
+status: done 2026-10-23
+archived: 2026-10-25
+resolution: Runtime boundaries inspect evaluated package and assembly references in every independent configuration/platform/framework lane, require exactly one host SDK edge and use independent root authority plus canonical project paths; imported Dapr, missing/different lane edges, root redirects and linked/basename impostors are covered. Final source Debug and package Release builds each have 0 warnings/errors; architecture suites each pass 398/398, 0 failed/skipped after upstream pin integration and review corrections. Evidence: `spec-five-deferred-build-governance.md`, final coordinator verification section and `evidence/five-deferred-build-governance-2026-10-23/final-*` logs/XML.
+
+### DW-82: The architecture-test project pins one exact System.Diagnostics.EventLog assembly version to keep the MSBuild reference set warning-free.
+origin: spec-deferred f3e8a31d6d81
+location: tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj:41
+source_spec: `spec-msbuild-dependency-discovery.md`
+severity: low
+reason: Dropping `Version=10.0.0.0`/`SpecificVersion` was tried and reintroduces MSB3277 (unification with the SDK's System.Configuration.ConfigurationManager), so the pin is load-bearing under the repository's zero-warning bar. An SDK band that ships a different EventLog assembly version will therefore need this literal edited. This is the same installed-SDK coupling as the MSBuild-layout entry above, but a distinct literal.
+status: done 2026-10-23
+archived: 2026-10-25
+resolution: Compile-only MSBuild package references replace copied SDK assemblies and the exact EventLog reference; fresh output inventory rejects copied MSBuild/EventLog/runtime dependency assemblies and captured SDK path metadata. Final source Debug and package Release builds each have 0 warnings/errors; architecture suites each pass 398/398, 0 failed/skipped after upstream pin integration and review corrections. Evidence: `spec-five-deferred-build-governance.md`, final coordinator verification section and `evidence/five-deferred-build-governance-2026-10-23/final-*` logs/XML.
+decision: 2026-09-01 Use portable dependency loading — Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.
+decision: 2026-09-01 Use portable dependency loading — Resolve EventLog consistently through the portable MSBuild loading approach selected for DW-77, remove the exact SDK assembly-version literal, and prove warning-free build and execution across SDK patch-path drift.
+
