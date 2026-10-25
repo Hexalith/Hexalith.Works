@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/12602177069.zip",
+      "path": "12602177069.zip",
+      "originalSha256": "ec234bcb0ea042b7b303f325d9544d04b2a1863133c0ca15c930aa91c4d5e68d",
+      "storedSha256": "ec234bcb0ea042b7b303f325d9544d04b2a1863133c0ca15c930aa91c4d5e68d",
+      "originalBytes": 2120
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/12602611711.zip",
+      "path": "12602611711.zip",
+      "originalSha256": "fe764008a0e8fbd42c5fc4d375b486548d968c9d1753d375a9d64538d3ba40f8",
+      "storedSha256": "fe764008a0e8fbd42c5fc4d375b486548d968c9d1753d375a9d64538d3ba40f8",
+      "originalBytes": 232084
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/12602772437.zip",
+      "path": "12602772437.zip",
+      "originalSha256": "5d618df651ec2571b25635853c0e3a5b3adc764bd92375e212c62f536acf7b1f",
+      "storedSha256": "5d618df651ec2571b25635853c0e3a5b3adc764bd92375e212c62f536acf7b1f",
+      "originalBytes": 2046877
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/build-test-job.log",
+      "path": "build-test-job.log.gz",
+      "originalSha256": "bcfb4c367db6087484e2e28e9c037f5ba2f4a4d6633f5138476593ddeee7e5e5",
+      "storedSha256": "7cd695e880ef0eaab8c17e6018f8ef07bcb61d1ca1f87ba7a7eb02d2b755bc2e",
+      "originalBytes": 803678
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "29de08774341360bea14ab321c01a34ee0da8ed38d733b0c56331e22054fc7d6",
+      "storedSha256": "9da01adb0bfe864e0656f4f16afad9af01485a0a52515fedd2ce7843aa4507fb",
+      "originalBytes": 29238
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/nonexecuted-comparison.json",
+      "path": "nonexecuted-comparison.json.gz",
+      "originalSha256": "c9b2536c3792c1bee7a11a7eccda2743612676ac4b919c881b1d27e6e1fa6848",
+      "storedSha256": "28e5e33a57c16e16cda0f914451df185145a9dab2c8891079a8444cccbd6c8fe",
+      "originalBytes": 7776
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "b838144468a3c3112a9c720e3e5ba6de2038c744b024a35777f56129f8dab2a5",
+      "storedSha256": "ac97cea2b1d1b55331ede9e7987a77a0a2f97860976147557f91788f505ec382",
+      "originalBytes": 18168
+    },
+    {
+      "source": "/tmp/story49-main-694-ci-evidence/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "7e2c04c386267d3ac1be24c5ccd83fbc485b89dd2bf113aeb6fa4bdca5e6f353",
+      "storedSha256": "e7e66b6855ffd3d09093ef7293d4407871d40df709d31886498372862ac7dcfb",
+      "originalBytes": 14459
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/12602886265.zip",
+      "path": "12602886265.zip",
+      "originalSha256": "c49d4427b4b8d407bdc0fa3275e4686bf3a00e1897659fc1f0ddedc5c4e2817e",
+      "storedSha256": "c49d4427b4b8d407bdc0fa3275e4686bf3a00e1897659fc1f0ddedc5c4e2817e",
+      "originalBytes": 2129
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/12603086034.zip",
+      "path": "12603086034.zip",
+      "originalSha256": "c11b0047076d9ec04370da1d5a4ab9bb91991ca1a0da82314a7cb23f8807972f",
+      "storedSha256": "c11b0047076d9ec04370da1d5a4ab9bb91991ca1a0da82314a7cb23f8807972f",
+      "originalBytes": 232087
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/12603656032.zip",
+      "path": "12603656032.zip",
+      "originalSha256": "1e47e01a75192a6245cba14ed2d28c6d047f022b43836d8ee9497d5d8f725f94",
+      "storedSha256": "1e47e01a75192a6245cba14ed2d28c6d047f022b43836d8ee9497d5d8f725f94",
+      "originalBytes": 2053772
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "a9ff40a76b202f549806028abd9c95cdcf2aaa7b46d3a2d3203e71d6c9b17173",
+      "storedSha256": "9e0ca4fec75921cbe37886e8e0563eceb4f7a99e9d52144d9c0ac8f6f7524110",
+      "originalBytes": 29558
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/scanner-and-exclusion-audit.json",
+      "path": "scanner-and-exclusion-audit.json.gz",
+      "originalSha256": "08fde5e3d4e7173717ce01df6db46f3e2a2ff777185f10a99ca363a20ae7ddd5",
+      "storedSha256": "06d9374d60760326fe0a32c03d1c21dd41390f564f0a61299f4c611e1aa18665",
+      "originalBytes": 7809
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "cf9a02c20a7338a4682e327b5b0c39864a76e30427445a3d583da6548ce67819",
+      "storedSha256": "4d7246e463edad526e5ce66083073efac690af6e89c113b9713be8fe04f7fb80",
+      "originalBytes": 17478
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-evidence/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "d82521279a4f8115aa18920e7d71eba7de2c8da9c1812e48d9b06948a2ed2a48",
+      "storedSha256": "ae54d6b3435d7a54c1e9be8239aedbacc3bcd7654f5868e8148289795f5fc8b1",
+      "originalBytes": 15146
+    }
+  ]
+}

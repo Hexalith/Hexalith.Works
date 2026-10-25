@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/12602944201.zip",
+      "path": "12602944201.zip",
+      "originalSha256": "78a0fbf3267b7a2ebe4a51d4531533df594fa66d1d5aae7626d91465233947ed",
+      "storedSha256": "78a0fbf3267b7a2ebe4a51d4531533df594fa66d1d5aae7626d91465233947ed",
+      "originalBytes": 231956
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/12603344311.zip",
+      "path": "12603344311.zip",
+      "originalSha256": "17af6b094f51f2103ef384fb6211bab7e46db0f11593efff9963b7217419fb80",
+      "storedSha256": "17af6b094f51f2103ef384fb6211bab7e46db0f11593efff9963b7217419fb80",
+      "originalBytes": 2139
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/12603719111.zip",
+      "path": "12603719111.zip",
+      "originalSha256": "e95f2ff058c5153ce267f8da8c089d34c30282d4567213233b81cfb47131440c",
+      "storedSha256": "e95f2ff058c5153ce267f8da8c089d34c30282d4567213233b81cfb47131440c",
+      "originalBytes": 1143391
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "7e61263b11ef39e8cda18ed07b3a328d81e222c0e89d9488e6fcc6633084c27a",
+      "storedSha256": "724371e39da4f4e0ea278841e2696bd2ac4ce87e90838a34f9b0bfac2cbcf3d1",
+      "originalBytes": 29566
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/nonexecuted-partial-audit.json",
+      "path": "nonexecuted-partial-audit.json.gz",
+      "originalSha256": "b089555b0e8e0dd8ff9843d7032696c4dbcfc302f524ef7530e48b3e26471d97",
+      "storedSha256": "d4022500c74ee30ec662da7025bec0eae726ab5a918c2643a5c0e6d294ef6962",
+      "originalBytes": 14912
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "f56064cbc151fd82b644c44f5b260648a67fa3190a2e51a8ad95f7013a063622",
+      "storedSha256": "61fa170996f2f57e6b59396af40438223fd74ccc28c629df51d1fb4fa9856da5",
+      "originalBytes": 15961
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-superseded-25bfd/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "7b29df34032a1c69ca4b2b6b69955b01f64e2fd28e6371ff792c39fc5ee48df7",
+      "storedSha256": "7d861683ad3e2354b78b26ee08916b054b62383e26fa56b7cad17c80c2082982",
+      "originalBytes": 15134
+    }
+  ]
+}

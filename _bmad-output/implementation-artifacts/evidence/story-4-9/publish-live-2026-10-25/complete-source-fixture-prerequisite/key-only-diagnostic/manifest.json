@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-complete-source-fixture-checks/Server-build.log",
+      "path": "Server-build.log.gz",
+      "originalSha256": "b779f035759a5794849e3628972bdf7d9a98ae9be9e8890a97bb08746d064214",
+      "storedSha256": "a6304170e5bff561543cbc32e470025a173209896363fdedf5f27a9f6bdbab2d",
+      "originalBytes": 5315
+    },
+    {
+      "source": "/tmp/story49-complete-source-fixture-checks/Server-tests.log",
+      "path": "Server-tests.log.gz",
+      "originalSha256": "6d1dbefa7ac1bbebc92e447433855a602473a6f76962a228cd0cddb8354eda22",
+      "storedSha256": "008cebd7dc2379dc4354fd67415110a034ba74ce99a15e0122a84393425c9d67",
+      "originalBytes": 5373
+    },
+    {
+      "source": "/tmp/story49-complete-source-fixture-checks/Server-tests.xml",
+      "path": "Server-tests.xml.gz",
+      "originalSha256": "16f0049c2300c2653fa8c746cb78e9421b0c5066dd31255a7888de3c4ed99f38",
+      "storedSha256": "1446e8f8a6ae1e8b3bd36d34e5f1d90c7fc59b856920861108994838decf80ce",
+      "originalBytes": 213283
+    },
+    {
+      "source": "/tmp/story49-complete-source-fixture-checks/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "3cc137c377ee91328c2f44d7c502b16c52273f62a7b30458bb07e8e2e404d972",
+      "storedSha256": "ca9df5b52f5f0bb57b0cac84b5b815471085650290f55727ad17ac4cc2a6ad59",
+      "originalBytes": 1250
+    }
+  ]
+}

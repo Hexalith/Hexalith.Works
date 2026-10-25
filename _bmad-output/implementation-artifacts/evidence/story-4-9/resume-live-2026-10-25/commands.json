@@ -1,0 +1,184 @@
+[
+  {
+    "name": "full-1",
+    "command": [
+      "python3",
+      "/tmp/story49-resume-20261025-full-driver.py",
+      "/tmp/story49-resume-20261025-live-full-1"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": null,
+    "result": "file-host/catalog refusal before builds; terminal exit was not separately retained",
+    "evidence": "raw/full-1/coordinator.log.gz"
+  },
+  {
+    "name": "full-2",
+    "command": [
+      "python3",
+      "/tmp/story49-resume-20261025-full-driver.py",
+      "/tmp/story49-resume-20261025-live-full-2"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "result": "nonqualifying supporting-consumer failure on stale Parties literal",
+    "evidence": "raw/full-2/coordinator.log.gz"
+  },
+  {
+    "name": "full-3",
+    "command": [
+      "python3",
+      "/tmp/story49-resume-20261025-full-driver.py",
+      "/tmp/story49-resume-20261025-live-full-3"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "result": "nonqualifying retained-host startup failure on duplicate token parameter",
+    "evidence": "raw/full-3/coordinator.log.gz"
+  },
+  {
+    "name": "package-focus-build-1",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Release",
+      "-p:TreatWarningsAsErrors=true",
+      "-p:NuGetAudit=false",
+      "-p:Version=3.127.0",
+      "-p:MinVerVersionOverride=3.127.0",
+      "-p:MSBuildWarningsAsErrors=MSB3277",
+      "-p:UseHexalithProjectReferences=false",
+      "-p:UseNuGetDeps=true",
+      "--artifacts-path",
+      "/tmp/story49-resume-20261025-package-focus",
+      "-m:1",
+      "-p:HexalithAspireHostingDaprVersion=13.6.1-beta.935",
+      "-p:PlatformWorksRuntimeRoot=/tmp/story49-resume-20261025-live-full-2/workspace/platform",
+      "-p:HexalithEventStoreRoot=/tmp/story49-resume-20261025-live-full-2/workspace/Hexalith.EventStore",
+      "-p:HexalithEventStoreVersion=3.127.0",
+      "-p:PathMap=/tmp/story49-resume-20261025-package-focus=/_/hexalith-works-platform-build"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0
+  },
+  {
+    "name": "package-focus-test-1",
+    "command": [
+      "/tmp/story49-resume-20261025-package-focus/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-class",
+      "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests",
+      "-result-xml",
+      "/tmp/story49-resume-20261025-package-focus/package-contract.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0
+  },
+  {
+    "name": "producer-owner-1",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.AppHost.Tests/Hexalith.EventStore.AppHost.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:UseNuGetDeps=false",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-resume-20261025-channel"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0
+  },
+  {
+    "name": "producer-owner-2",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-resume-20261025-channel/bin/Hexalith.EventStore.AppHost.Tests/debug/Hexalith.EventStore.AppHost.Tests",
+      "-noLogo",
+      "-class",
+      "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests",
+      "-class",
+      "Hexalith.EventStore.AppHost.Tests.Configuration.DomainModuleAspireExtensionTests",
+      "-result-xml",
+      "/tmp/story49-resume-20261025-eventstore-channel-owner-layout.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0
+  },
+  {
+    "name": "ordinary-final-1",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0
+  },
+  {
+    "name": "ordinary-final-2",
+    "command": [
+      "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story49-resume-20261025-ordinary-final.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0
+  },
+  {
+    "name": "hosted-publishing-diagnostic-1",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj",
+      "-c",
+      "Debug",
+      "--no-restore",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:BuildsToolingAssemblyPath=/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll",
+      "-p:CustomAfterMicrosoftCommonTargets=/tmp/story49-owner-final-reference.targets",
+      "-m:1",
+      "--artifacts-path",
+      "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform/artifacts/story49-owner-check"
+    ],
+    "cwd": "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform",
+    "exitCode": 0
+  },
+  {
+    "name": "hosted-publishing-diagnostic-2",
+    "command": [
+      "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform/artifacts/story49-owner-check/bin/Hexalith.Platform.Composition.Tests/debug/Hexalith.Platform.Composition.Tests",
+      "-noLogo",
+      "-class",
+      "Hexalith.Platform.Composition.Tests.PlatformHostedPublishingTests",
+      "-result-xml",
+      "/tmp/story49-resume-20261025-owner-final.xml"
+    ],
+    "cwd": "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform",
+    "exitCode": 1
+  },
+  {
+    "name": "public-producer-after-fix",
+    "command": [
+      "python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/resume-2026-10-23/probe-public-producer.py",
+      "--works-root",
+      "/home/administrator/projects/hexalith/works",
+      "--output-dir",
+      "/tmp/story49-resume-20261025-public-after-channel-fix"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "result": "expected strict refusal: two unpublished runtime inputs"
+  }
+]

@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/12603839899.zip",
+      "path": "12603839899.zip",
+      "originalSha256": "40a440545520f7c3caf358d2db68feba43b9a5a4f732e63020197303d58382ff",
+      "storedSha256": "40a440545520f7c3caf358d2db68feba43b9a5a4f732e63020197303d58382ff",
+      "originalBytes": 232401
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/12604395335.zip",
+      "path": "12604395335.zip",
+      "originalSha256": "2ff636c96a9fb64acfc19666a1f9cfdf47cce6a40231321ac2d5f32d60eb2117",
+      "storedSha256": "2ff636c96a9fb64acfc19666a1f9cfdf47cce6a40231321ac2d5f32d60eb2117",
+      "originalBytes": 2125
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/12605171380.zip",
+      "path": "12605171380.zip",
+      "originalSha256": "ccb1af0b48d565e01ba5b437138c91bb8c47acf119f16bf2f07a137938b44207",
+      "storedSha256": "ccb1af0b48d565e01ba5b437138c91bb8c47acf119f16bf2f07a137938b44207",
+      "originalBytes": 2053577
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "55b1435cf5579ec0d306ee2d7fe45a43d79af2c401e374f312ff387c96955b60",
+      "storedSha256": "974c3b33b1a75d4e9623e3b7fa1041e023b7a0d01426b131436003de05c22895",
+      "originalBytes": 29558
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "eacfb6c35bd66a9c5a064ea8f12ee3be5e483e409064f6578f26ab67cd80028e",
+      "storedSha256": "28633533116a452cb7a62d6c659dac0ab1164389d3329771882d8454b56ee328",
+      "originalBytes": 17478
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/trx-audit.json",
+      "path": "trx-audit.json.gz",
+      "originalSha256": "352fc4c6e05b57637f22033578e948e069d95700b2b5782df9648df17d81dd0d",
+      "storedSha256": "6391961f073c686dae4dbe6b0717dc0c6b4196ca2ddadfa65f6ffab93886c702",
+      "originalBytes": 26369
+    },
+    {
+      "source": "/tmp/story49-pr375-ci-b65d/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "92ff5f85b6e8230ad7d12503ddda83b0eae9b305d3d6eb4a799305cafd242880",
+      "storedSha256": "81b387c3bb49a88d91982b3ea39019ca4e709ae102ce1183844edbb908392b66",
+      "originalBytes": 15152
+    }
+  ]
+}

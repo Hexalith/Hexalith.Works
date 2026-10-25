@@ -27,12 +27,14 @@ public sealed class WorksSdkPackageContractTests
         foreach (JsonProperty library in sdk) library.Value.GetProperty("type").GetString().ShouldBe("project");
     }
 #else
+    /// <summary>Release consumes the selected public SDK and Parties packages.</summary>
     [Fact]
     public void ReleaseConsumerLoadsSelectedSdkPackagesAndPartiesContracts()
     {
         AssemblyMetadataAttribute[] metadata = [.. typeof(WorksSdkPackageContractTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()];
         string selectedVersion = metadata.Single(attribute => attribute.Key == "WorksSelectedEventStoreVersion").Value!;
         string pinnedVersion = metadata.Single(attribute => attribute.Key == "WorksPinnedEventStoreVersion").Value!;
+        string selectedPartiesVersion = metadata.Single(attribute => attribute.Key == "WorksSelectedPartiesVersion").Value!;
         bool allowLocalCandidate = string.Equals(metadata.Single(attribute => attribute.Key == "WorksAllowLocalEventStoreCandidate").Value,
             "true", StringComparison.OrdinalIgnoreCase);
         selectedVersion.ShouldNotBeNullOrWhiteSpace();
@@ -51,8 +53,12 @@ public sealed class WorksSdkPackageContractTests
             library.Value.GetProperty("type").GetString().ShouldBe("package");
         }
 
-        libraries.TryGetProperty("Hexalith.Parties.Client/1.4.0", out JsonElement parties).ShouldBeTrue();
-        parties.GetProperty("type").GetString().ShouldBe("package");
+        selectedPartiesVersion.ShouldNotBeNullOrWhiteSpace();
+        foreach (string package in new[] { "Hexalith.Parties.Client", "Hexalith.Parties.Contracts" })
+        {
+            libraries.TryGetProperty(package + "/" + selectedPartiesVersion, out JsonElement parties).ShouldBeTrue();
+            parties.GetProperty("type").GetString().ShouldBe("package");
+        }
 
         JsonProperty platform = libraries.EnumerateObject().Where(
             library => library.Name.StartsWith("Hexalith.Platform.Identity/", StringComparison.Ordinal)).ShouldHaveSingleItem();

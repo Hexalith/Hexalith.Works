@@ -1,0 +1,46 @@
+[
+  {
+    "label": "projection-focus",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025/bin/Hexalith.EventStore.Server.Tests/debug/Hexalith.EventStore.Server.Tests",
+      "-noLogo",
+      "-method",
+      "*.GuardedDescriptor_OrdinaryOperatorRebuildRetainsItsConfiguredWiderManifestWithoutActivatingProof",
+      "-result-xml",
+      "/tmp/story49-publish-20261025-projection-focus.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-projection-focus.log"
+  },
+  {
+    "label": "payloadprotection-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.PayloadProtection.Tests/Hexalith.EventStore.PayloadProtection.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:UseNuGetDeps=false",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-payloadprotection-build.log"
+  },
+  {
+    "label": "payloadprotection",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025/bin/Hexalith.EventStore.PayloadProtection.Tests/debug/Hexalith.EventStore.PayloadProtection.Tests",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story49-publish-20261025-payloadprotection.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 1,
+    "log": "/tmp/story49-publish-20261025-payloadprotection.log"
+  }
+]

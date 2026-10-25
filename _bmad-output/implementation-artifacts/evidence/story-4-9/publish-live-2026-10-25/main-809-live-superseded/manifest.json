@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-809-live-superseded/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "4bd69997fafb4286738a4d87cfc878f1f6b33ed49b1f26e6a715c4f1735d4dc6",
+      "storedSha256": "49438b9d5bb8391d7edaf148134742e2af6ff529eb0566708f67ee390f226d5b",
+      "originalBytes": 5834
+    },
+    {
+      "source": "/tmp/story49-main-809-live-superseded/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "1aae1db7aa18f2529b33e2f30816ba76e15ff61ae5bb32896bc02f49507354de",
+      "storedSha256": "5fbbfca9ccb8bed7c453c6503765ba0140447512e39a65040edf8032fd9b3e20",
+      "originalBytes": 234
+    },
+    {
+      "source": "/tmp/story49-main-809-live-superseded/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "a3149ae68a96cc45cca9c1a5abe3a5f336489996748fed2a46710fe4e33562d9",
+      "storedSha256": "7dc8e89d165a6447defb335a11bffac72d589ccb4ce024ae836bc46c82c800e4",
+      "originalBytes": 14178
+    }
+  ]
+}

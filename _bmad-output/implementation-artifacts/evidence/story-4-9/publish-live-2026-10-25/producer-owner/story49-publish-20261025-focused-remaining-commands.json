@@ -1,0 +1,84 @@
+[
+  {
+    "label": "admin-ui-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Admin.UI.Tests/Hexalith.EventStore.Admin.UI.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:UseNuGetDeps=false",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-admin-ui-build.log"
+  },
+  {
+    "label": "admin-ui",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025/bin/Hexalith.EventStore.Admin.UI.Tests/debug/Hexalith.EventStore.Admin.UI.Tests",
+      "-noLogo",
+      "-class",
+      "Hexalith.EventStore.Admin.UI.Tests.Services.AdminUiDaprTargetTests",
+      "-result-xml",
+      "/tmp/story49-publish-20261025-admin-ui.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-admin-ui.log"
+  },
+  {
+    "label": "sample-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.Sample.Tests/Hexalith.EventStore.Sample.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:UseNuGetDeps=false",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-sample-build.log"
+  },
+  {
+    "label": "sample",
+    "command": [
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025/bin/Hexalith.EventStore.Sample.Tests/debug/Hexalith.EventStore.Sample.Tests",
+      "-noLogo",
+      "-class",
+      "Hexalith.EventStore.Sample.Tests.BlazorUI.SampleUiDaprTargetTests",
+      "-result-xml",
+      "/tmp/story49-publish-20261025-sample.xml"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 0,
+    "log": "/tmp/story49-publish-20261025-sample.log"
+  },
+  {
+    "label": "apphost-build",
+    "command": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.EventStore.AppHost.Tests/Hexalith.EventStore.AppHost.Tests.csproj",
+      "-c",
+      "Debug",
+      "-p:UseHexalithProjectReferences=true",
+      "-p:UseNuGetDeps=false",
+      "-m:1",
+      "--artifacts-path",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-publish-20261025"
+    ],
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "exitCode": 1,
+    "log": "/tmp/story49-publish-20261025-apphost-build.log"
+  }
+]

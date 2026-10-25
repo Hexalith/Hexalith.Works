@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/WorksSdkIteration4Tests.after.cs",
+      "path": "WorksSdkIteration4Tests.after.cs.gz",
+      "originalSha256": "28878d210f87acfd9137a00bff78d0cdd69a2d89ffddd452e01b1d255566367a",
+      "storedSha256": "4e33b8f17f79bec15922022f1dbb06a70b9ccd11d10fc8123d22bca878601684",
+      "originalBytes": 44587
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/WorksSdkIteration4Tests.before.cs",
+      "path": "WorksSdkIteration4Tests.before.cs.gz",
+      "originalSha256": "a603fb83a1b261e5da3f025c487795f428e8890e37ca58477f543cc7ac2318e2",
+      "storedSha256": "7411f50abe2e73e462cce4e5b81c78aa6296e35db1a73a56276cec26a79aaf89",
+      "originalBytes": 44561
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/build.log",
+      "path": "build.log.gz",
+      "originalSha256": "7ffd872d59d1c9dd694c0c143712e419e267086c7df5fe01cb65354262c7829b",
+      "storedSha256": "4095267986d3d869af8e7e962eb699e34ada611f98157e3a021cbed546337d90",
+      "originalBytes": 8699
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "5cd8c867518b3ae3506ce0307be20c1d71f39076e93cd77e8cdc4bf57b7544ac",
+      "storedSha256": "8d9de485a15064aa419d51d5aba1e01c6201a840970a78eefa62e8be92ec728f",
+      "originalBytes": 945
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/fixture.patch",
+      "path": "fixture.patch.gz",
+      "originalSha256": "14ae5b8750a7887d763a56f9ea76ff0f36c811b292a6bc866f08e15ab093274a",
+      "storedSha256": "df02578cf738a6271ec8190c35c11ed3516c310addb4f11fcacb64ca0aa06bb9",
+      "originalBytes": 1069
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/focused-tests.log",
+      "path": "focused-tests.log.gz",
+      "originalSha256": "4fad476640da8a838e4c0ff605dce09927c1a768fd17c34dfb27e3a01678a976",
+      "storedSha256": "a0f8da092a02feae99c55508d8e345dab73e9ecd37d65c00fe9c3bc2b5118516",
+      "originalBytes": 399
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/focused-tests.xml",
+      "path": "focused-tests.xml.gz",
+      "originalSha256": "c311094776e1e2c70c1df281d5730b5af1dfbe660b5e9297c90dbdf59b156b73",
+      "storedSha256": "3ebff44bb4c8d611a41a3e85b180ffe0a21e47a6ea800c3c33d5b094b208a6f7",
+      "originalBytes": 63269
+    },
+    {
+      "source": "/tmp/story49-works-domain-assertion-fixture/preservation.json",
+      "path": "preservation.json.gz",
+      "originalSha256": "f6c80e3368b4e6e3365f430e611d33fb2035b387133f9f9eedfd4858227dce54",
+      "storedSha256": "8cd6efe503d9a52513eac03e278a95e80860d5347aa60f68cd64ab64930404bc",
+      "originalBytes": 477
+    }
+  ]
+}

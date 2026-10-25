@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-baseline-fd4-ci/failed-log.log",
+      "path": "failed-log.log.gz",
+      "originalSha256": "51fd8a90f57920e8c21207cd542f3978fcdbaedc7bbb84e2537ec076397fe529",
+      "storedSha256": "3cfb7dd7db3778cb76b88416d4acb833f09d25c99c551ef19c9144d21430bbbd",
+      "originalBytes": 287577
+    },
+    {
+      "source": "/tmp/story49-builds-baseline-fd4-ci/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "b3f4abf00624072c285c8a4077ea1d6ba25038fa640249cd3672f48c9c5c8b62",
+      "storedSha256": "869b9bfd7cc7201f88c819dc3e37c7584af56a37707366f59d76205154534d98",
+      "originalBytes": 14058
+    },
+    {
+      "source": "/tmp/story49-builds-baseline-fd4-ci/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "877da6a3b867194624a2c927d07367a706da6829431a7c74fce84ba4680e98e1",
+      "storedSha256": "cb69c347186854e4731f58db5a413eee7911051ba5b1e6734d8a5ba2347664b2",
+      "originalBytes": 12955
+    }
+  ]
+}

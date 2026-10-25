@@ -1,0 +1,44 @@
+[
+  {
+    "owner": "works",
+    "command": [
+      "git",
+      "-C",
+      "/home/administrator/projects/hexalith/works",
+      "-c",
+      "core.whitespace=cr-at-eol",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "output": ""
+  },
+  {
+    "owner": "platform",
+    "command": [
+      "git",
+      "-C",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.Platform",
+      "-c",
+      "core.whitespace=cr-at-eol",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "output": ""
+  },
+  {
+    "owner": "eventstore",
+    "command": [
+      "git",
+      "-C",
+      "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+      "-c",
+      "core.whitespace=cr-at-eol",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "output": ""
+  }
+]

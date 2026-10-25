@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/12604894222.zip",
+      "path": "12604894222.zip",
+      "originalSha256": "2ec7b50e06b54b731ff8158c12d74244d6dfee0dc9055f31ec3d8ee6261a4cfc",
+      "storedSha256": "2ec7b50e06b54b731ff8158c12d74244d6dfee0dc9055f31ec3d8ee6261a4cfc",
+      "originalBytes": 2133
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/12605033704.zip",
+      "path": "12605033704.zip",
+      "originalSha256": "89ee14c9a99c302279c46be3bcb33bb34d995586e13436941da0dea949c233bd",
+      "storedSha256": "89ee14c9a99c302279c46be3bcb33bb34d995586e13436941da0dea949c233bd",
+      "originalBytes": 232161
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/12605470567.zip",
+      "path": "12605470567.zip",
+      "originalSha256": "daa7f6a1ebcff30a6e1b056e0626948aeea1e13d60a8fc5568127066e9071799",
+      "storedSha256": "daa7f6a1ebcff30a6e1b056e0626948aeea1e13d60a8fc5568127066e9071799",
+      "originalBytes": 884840
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "76a4d42d6f2576ecde322cc3d83c9b8291cb20cc5f266c74711ab4492808e310",
+      "storedSha256": "f68293cf0cde08c78287b69d1bbb02123c4091ecd7708ac872a86cc3ab91f932",
+      "originalBytes": 29246
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "3a40d91db89a6d62655f38c30272ef0ced6849d38ca3dbb99aea584a80482bf5",
+      "storedSha256": "b682834a70bc6b85780a4c59b7e5d4186ef200b4fb76a1b56393eeaa174ec8a5",
+      "originalBytes": 11410
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/trx-audit.json",
+      "path": "trx-audit.json.gz",
+      "originalSha256": "09d01377c3be602909116c5dee0dee88d74d4b7a6b87a4044abc1ca9baad5411",
+      "storedSha256": "2b72051cbab9063d8eba45f51211a9d4a06010a02747461b812d9f57b900cab2",
+      "originalBytes": 18355
+    },
+    {
+      "source": "/tmp/story49-main-809-ci-superseded/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "eb2371e758aa3df4b3cae4bf4f35f5824a6d6a3181f21db320a2ea11fdb700ac",
+      "storedSha256": "55248de3894a6f20c105b73d8367e40a1ece522e8f7418d89e36ac5c1c0f35c1",
+      "originalBytes": 14336
+    }
+  ]
+}

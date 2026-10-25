@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-command-status-fixture-final/Server-build.log",
+      "path": "Server-build.log.gz",
+      "originalSha256": "ad568aad0f42e43d51fe09116638994d86c55b61da78a6cd248b9c864c5ee29e",
+      "storedSha256": "8f2130ab0ef416c7671cb83816131e19aff9ce2901d9f978a5947136d99971fa",
+      "originalBytes": 4918
+    },
+    {
+      "source": "/tmp/story49-command-status-fixture-final/Server-tests.log",
+      "path": "Server-tests.log.gz",
+      "originalSha256": "e6460397bcc6ab2742b0922731da68314e7045682c17466c00135003c8705277",
+      "storedSha256": "cacfe200ddad20fce94f818b62742de2fd82ab3631b31e203c51b219ef1a9c9b",
+      "originalBytes": 85404
+    },
+    {
+      "source": "/tmp/story49-command-status-fixture-final/Server-tests.xml",
+      "path": "Server-tests.xml.gz",
+      "originalSha256": "6855c647b96e15270623b67e6e99d0ae0c5fe652350a10e4977dcf2b60337f73",
+      "storedSha256": "5f0ce61b072e5f6e091f06aea93f1244706b4bdacb9fb193babec43cbaf40411",
+      "originalBytes": 215594
+    },
+    {
+      "source": "/tmp/story49-command-status-fixture-final/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "13ec7c45dd56214a881553cc450bbce1dc5ec7724f18b6e76bdcc02eaec4d351",
+      "storedSha256": "f611a5e5ea30cbe1e007fc4b2d380c9baee9138ed5de4386d75f5ff89f0c3cd1",
+      "originalBytes": 1257
+    },
+    {
+      "source": "/tmp/story49-command-status-fixture-final/failed-conditional.patch",
+      "path": "failed-conditional.patch.gz",
+      "originalSha256": "2d1d9fa16d1fbfeaa18080e9e3593f3351b28d318e513790300caa136329b4da",
+      "storedSha256": "1dcf6192de5d01473d2d8e09086d8ba1ce4a2d9d4ec0e26ad1775c375c1bd75a",
+      "originalBytes": 1554
+    }
+  ]
+}

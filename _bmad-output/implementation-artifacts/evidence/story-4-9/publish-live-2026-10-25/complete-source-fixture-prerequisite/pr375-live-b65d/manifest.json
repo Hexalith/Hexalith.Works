@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr375-live-b65d/12605037788.zip",
+      "path": "12605037788.zip",
+      "originalSha256": "e8e3239d90bc2ad209b17725989791ce4b141f9b7baaa098a8e7bee6e753c046",
+      "storedSha256": "e8e3239d90bc2ad209b17725989791ce4b141f9b7baaa098a8e7bee6e753c046",
+      "originalBytes": 1134991
+    },
+    {
+      "source": "/tmp/story49-pr375-live-b65d/full-test-inventory.json",
+      "path": "full-test-inventory.json.gz",
+      "originalSha256": "145a0cabbf48592410eb38a11aa799ceebb88c076fcbfeec8a9e398535036761",
+      "storedSha256": "dfa0e6dc53f619018f2bf39f9c508876bd71265856eaff2bfa9cf42aeade6749",
+      "originalBytes": 212681
+    },
+    {
+      "source": "/tmp/story49-pr375-live-b65d/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "0518d8782472609b7e28b444273d959cd96d36ae81c08c3101231ae8c8d2b5d5",
+      "storedSha256": "7021e313aa38a1c3ef827771e00f62cba509a7b1e0c58336d1948cc0135ec5fc",
+      "originalBytes": 5870
+    },
+    {
+      "source": "/tmp/story49-pr375-live-b65d/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "6f3d12c118ee54670a6551987213d55559b4dad0689eb10d50b95e700a9b229b",
+      "storedSha256": "15d41cc9815c43ca523d0d6d6facf0e1aac452bc5e1fe8dbafa942458e13f938",
+      "originalBytes": 1916
+    },
+    {
+      "source": "/tmp/story49-pr375-live-b65d/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "73cc77d41704cdf3e6a2d14c051ae68ff9f11d0a2bb99cc4ed1548a736c04d6a",
+      "storedSha256": "6fb7505316f3d3e2f3b92bcd48ef290cff563a24666b4a0cb66d9c0f1ca78349",
+      "originalBytes": 14249
+    }
+  ]
+}

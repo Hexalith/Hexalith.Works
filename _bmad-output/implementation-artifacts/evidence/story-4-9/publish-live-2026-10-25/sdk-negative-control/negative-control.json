@@ -1,0 +1,31 @@
+{
+  "status": "expected-negative-control; old-package-does-not-contain-fix",
+  "version": "3.127.0",
+  "summary": {
+    "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+    "id": "1b30fc37-903a-4298-8cd6-9f1252232862",
+    "name": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-published-sdk-3.127.0/bin/PublishedSdk/release/Hexalith.EventStore.AppHost.Tests.dll",
+    "run-date": "2026-10-25",
+    "run-time": "11:41:37",
+    "start-rtf": "2026-10-25T11:41:37.7285395+00:00",
+    "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+    "target-framework": ".NETCoreApp,Version=v10.0",
+    "errors": "0",
+    "failed": "6",
+    "finish-rtf": "2026-10-25T11:41:38.0222760+00:00",
+    "not-run": "0",
+    "passed": "2",
+    "skipped": "0",
+    "time": "0.294",
+    "time-rtf": "00:00:00.2940000",
+    "total": "8"
+  },
+  "failedTests": [
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.TopologyThenGeneratedRegistrationRetainsOnePrivateBindingAsync",
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.ReplacedSidecarCannotInheritTheGeneratedBindingAsync",
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.GeneratedRegistrationDoesNotAdoptAnExplicitCustomTokenAsync",
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.GeneratedTokensRemainPrivateToEachProjectAndItsSidecarAsync",
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.ReplacedSelectedTokenIsRefused",
+    "Hexalith.EventStore.AppHost.Tests.Configuration.AppChannelTokenAspireExtensionTests.MissingSidecarRefusesBeforeAddingASecret"
+  ]
+}

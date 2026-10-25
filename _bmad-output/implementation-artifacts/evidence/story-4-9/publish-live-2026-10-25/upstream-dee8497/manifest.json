@@ -1,0 +1,32 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-upstream-dee8497/assessment.json",
+      "path": "assessment.json.gz",
+      "originalSha256": "adcbd05207959e94bc53f4b0b204be53f0723adccd20abf37131f66f0f79bd16",
+      "storedSha256": "f6d22f46652f783cd74f9dcff4a5197b2bef400c4e8deb9ae2bf4777eaedeb28",
+      "originalBytes": 715
+    },
+    {
+      "source": "/tmp/story49-upstream-dee8497/changes.patch",
+      "path": "changes.patch.gz",
+      "originalSha256": "e413024030ffff99af08d5bcaf33d31f776921f3f2c7b9379f7451fb8c951dc9",
+      "storedSha256": "a881b71e81db758c69154314e5c3fcb5f0d3ef5fdbd048ecc295bbcfdd3ddcd8",
+      "originalBytes": 182955
+    },
+    {
+      "source": "/tmp/story49-upstream-dee8497/commits.txt",
+      "path": "commits.txt.gz",
+      "originalSha256": "4b3dae834c1f24575621a616bb8c5a257232efd6f2ef28cd64b459cc72552ff3",
+      "storedSha256": "48cfa028c11be5d97c2dd6135cea3635ffa89d2802caf6520af3fd798920ccf1",
+      "originalBytes": 1001
+    },
+    {
+      "source": "/tmp/story49-upstream-dee8497/paths.txt",
+      "path": "paths.txt.gz",
+      "originalSha256": "bdafe2acf5cc1f00fceeb7e36bc56d4fef646071ef80ab1ad7a70369c3b77bb2",
+      "storedSha256": "28060fd0cae94b403b3472d22bfad0b634fd3782f12c15535ca07bd101ab263f",
+      "originalBytes": 2634
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/AppChannelTokenAspireExtensionTests.cs",
+      "path": "AppChannelTokenAspireExtensionTests.cs.gz",
+      "originalSha256": "831700da226dcd497969a7d44462cb9d14ba0f16deae832b0bea5d043cd4072d",
+      "storedSha256": "f9df2792ad39e88071a20417240b260497fabb6f2fa3cf2ee429926639dad8fd",
+      "originalBytes": 11547
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/Hexalith.EventStore.Aspire.3.128.0.nupkg",
+      "path": "Hexalith.EventStore.Aspire.3.128.0.nupkg",
+      "originalSha256": "522e68bda69b2881417db790fd7938a30e7fa1f0935e1c14e47f675a69c89bda",
+      "storedSha256": "522e68bda69b2881417db790fd7938a30e7fa1f0935e1c14e47f675a69c89bda",
+      "originalBytes": 49052
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/Hexalith.EventStore.Client.3.128.0.nupkg",
+      "path": "Hexalith.EventStore.Client.3.128.0.nupkg",
+      "originalSha256": "ebefa21e68917f39b0ba9552ed2ebd3af211d3f6a881802cd42ea8af458e39cd",
+      "storedSha256": "ebefa21e68917f39b0ba9552ed2ebd3af211d3f6a881802cd42ea8af458e39cd",
+      "originalBytes": 509947
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/Hexalith.EventStore.DomainService.3.128.0.nupkg",
+      "path": "Hexalith.EventStore.DomainService.3.128.0.nupkg",
+      "originalSha256": "93f8d9514bf9b34000ba23c38e07dc8491a13b9c3d6401fe0d2d7b7c058008b9",
+      "storedSha256": "93f8d9514bf9b34000ba23c38e07dc8491a13b9c3d6401fe0d2d7b7c058008b9",
+      "originalBytes": 413665
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/NuGet.Config",
+      "path": "NuGet.Config.gz",
+      "originalSha256": "b4da9564db8ea2e082fc4af0bdb3e06536f5714f9d97053f40b487f7369ef722",
+      "storedSha256": "ac2b66d0d543833a7fd3b50b3c6d3e9b9dc6ddb0ee5ff40ca1c08af3e0047a60",
+      "originalBytes": 160
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/PublishedSdk.csproj",
+      "path": "PublishedSdk.csproj.gz",
+      "originalSha256": "dc0eb82c1c74f15027f7f5ff79998e996f145c96666bdc81c9e684064cd0b2a7",
+      "storedSha256": "50814b3bd985449a8370139dd69c86f4022f91de364225352ff80b2ecc5cf036",
+      "originalBytes": 724
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/build.log",
+      "path": "build.log.gz",
+      "originalSha256": "ac2b3c6c0943c8a92824852f343627a87d834e5d061ccc9e7cb81b8f93a85728",
+      "storedSha256": "16fbdb65e62b8a602125dd8d7c4293b341f256a964aa521ec257d2cbe2848048",
+      "originalBytes": 389
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/tests.log",
+      "path": "tests.log.gz",
+      "originalSha256": "849bd66f4b7b9ce126e9edfcdc3c6c18c6cef8e07602069c207dcfa9494d0e8d",
+      "storedSha256": "30badc3196092ae5cc38fa62f6d8d888944877d41697823fa1dc51e0b674e302",
+      "originalBytes": 408
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/tests.xml",
+      "path": "tests.xml.gz",
+      "originalSha256": "625b8fd777d8785a720f93a7d6cfec12267d922abb9da7fbe06c6fead486765c",
+      "storedSha256": "6414eb015e1eadd2f2e2e69aaeb222c9f99fac9222824745e59178b2c9e78410",
+      "originalBytes": 6069
+    },
+    {
+      "source": "/tmp/story49-published-sdk-3.128.0/verification.json",
+      "path": "verification.json.gz",
+      "originalSha256": "5207e175bff428d6e919d5b538380f6f13c0bf65d480d76b25355f5a12d3996f",
+      "storedSha256": "83cbc952993004e89781fa27e571804c1fb729e806d968c181e08914c16ed23d",
+      "originalBytes": 3764
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0/build.log",
+      "path": "build.log.gz",
+      "originalSha256": "d23567ba9ffb73447559973d6ea8635432d7189ee4b8870c4f69c83f36e38e9f",
+      "storedSha256": "f1cde367f96b3f073494971bb4c2e840e9f331051e070637077ae6138427084e",
+      "originalBytes": 29413
+    },
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0/record.json",
+      "path": "record.json.gz",
+      "originalSha256": "ca50d8a4e05b94651559f3426a051711bd26cfdcbb91dd58e0e133b32f5a2f84",
+      "storedSha256": "17b19f4081d0415e6495c14c6cf5e0e5a5f6300dd7e1b37c138e837a029352d8",
+      "originalBytes": 2582
+    },
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0/restore.log",
+      "path": "restore.log.gz",
+      "originalSha256": "98423be791112bb37d4817aa89a1f8dc495f2edecabd123b284588b56ffce15f",
+      "storedSha256": "8072c773eefbb1f196e9702540f619aed307aef41bd529c5cbd908ebabd68b40",
+      "originalBytes": 4757
+    }
+  ]
+}

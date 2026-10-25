@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-pr375-live-superseded-aa/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "774d0fec0e9222e11aac222dbeb82631924f3b3ea0c1505506452726669968d6",
+      "storedSha256": "74d1633da8287de7723a5bbdf57c66b7367a0adcd90214f333050af17eca95dd",
+      "originalBytes": 5874
+    },
+    {
+      "source": "/tmp/story49-pr375-live-superseded-aa/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "226bbb88e2b86a91f1cdc4463e4f9647c26a0f1479ce896627807edc6b4aec54",
+      "storedSha256": "89644555ac556fd012dfa38333b7f8caf2163a31f83c34742aa837273735fead",
+      "originalBytes": 242
+    },
+    {
+      "source": "/tmp/story49-pr375-live-superseded-aa/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "256711a64c001dab98342357800cd0c5cc8a599b9bb20506ae486a6334aaf715",
+      "storedSha256": "0391c4fe35b3a9416397beb560c3a12423558d83b5edd8e802ee192bcf8b58ff",
+      "originalBytes": 14990
+    }
+  ]
+}

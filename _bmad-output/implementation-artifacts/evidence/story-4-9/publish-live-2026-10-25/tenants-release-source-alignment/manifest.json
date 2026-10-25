@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-tenants-release-source-alignment/alignment.json",
+      "path": "alignment.json.gz",
+      "originalSha256": "2ce95da1059e6acc9423965838854c20196ac9b8042d61ed759cff49de4a0b0d",
+      "storedSha256": "5319f5f310660691a62c673d260269f597cae00c88ecf3b29cb527d6f3065cd9",
+      "originalBytes": 7300
+    },
+    {
+      "source": "/tmp/story49-tenants-release-source-alignment/upstream.patch",
+      "path": "upstream.patch.gz",
+      "originalSha256": "a05efa687fa4f1c26ba2371527c417d9fc44660b63ebb63b23d4f8d7efb9c539",
+      "storedSha256": "83aa7b12b30daf40087268239b95980bf60d780747753ad3910bf843ae5f807a",
+      "originalBytes": 623776
+    }
+  ]
+}

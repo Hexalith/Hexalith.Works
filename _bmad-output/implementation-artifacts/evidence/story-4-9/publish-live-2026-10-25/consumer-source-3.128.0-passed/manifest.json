@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0-attempt2/build.log",
+      "path": "build.log.gz",
+      "originalSha256": "67f93e31e47731e0c26bb0028dbbe9f46317d967492206e30fba230e7945f2b5",
+      "storedSha256": "f7bbd2b921c63ad66a6505ccbd546e470c432cafdf64637b9caf0ec078f451fc",
+      "originalBytes": 11294
+    },
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0-attempt2/record.json",
+      "path": "record.json.gz",
+      "originalSha256": "c59a55e065b04da45981186da9c197c2e1ea2bb217a74c26e4a49d096697e83c",
+      "storedSha256": "8b19b06b726eb75bd0bc2d050c0cad8962299c877a8c1f7bbb09218caf533d3b",
+      "originalBytes": 2891
+    },
+    {
+      "source": "/tmp/story49-consumer-source-3.128.0-attempt2/restore.log",
+      "path": "restore.log.gz",
+      "originalSha256": "fdb75ec4793eb14fba57a35b0f8db9d4298d989cc095e57c6824de8eeafe97d1",
+      "storedSha256": "bebd6840356b307b6d466da330b1ea04325b6b69b77761095dccd167da2359fe",
+      "originalBytes": 4753
+    }
+  ]
+}

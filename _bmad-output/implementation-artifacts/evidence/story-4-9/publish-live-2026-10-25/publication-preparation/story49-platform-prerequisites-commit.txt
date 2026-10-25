@@ -1,0 +1,4 @@
+fix(works): preserve SDK hosting qualification prerequisites
+
+Align the file host with the selected public SDK and explicitly reject null
+arguments in hosted publishing so the Works source build remains valid.

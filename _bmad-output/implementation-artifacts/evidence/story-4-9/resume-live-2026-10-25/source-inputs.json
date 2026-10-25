@@ -1,0 +1,56 @@
+{
+  "works": {
+    "revision": "5a937f7bded5e3a952fbea572bd616793e37e245",
+    "files": {
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "d0e3bca312944d3e59a3dca6e9fc7cb63b49a62041c2e6deb9142654d456f7fe",
+      "tests/Hexalith.Works.IntegrationTests/WorksSdkPackageContractTests.cs": "7a720de62f0dc845f3bccfa4c86fb7a44c7579995b3df03299cc1fd849da577b"
+    }
+  },
+  "platform": {
+    "revision": "f7c62ca1007f5218dc52d6856395324704564e3a",
+    "files": {
+      "apphost.cs": "371bb12b1963831a9803762b2b4f3d9259297bb9b65d0c519aa10ba9c359b006",
+      "src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs": "ff0d90e0a10c6a1dd92b16129a9ca368c690838b43abd833b374f7694cd5a9d6"
+    }
+  },
+  "eventstore": {
+    "revision": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+    "files": {
+      "src/Hexalith.EventStore.Aspire/HexalithEventStoreAppChannelExtensions.cs": "e6ae25a72bded40677cb8ab62ed09faa756cf7265e4649525acd83c338486daf",
+      "src/Hexalith.EventStore.Aspire/EventStoreAppChannelTokenBindingAnnotation.cs": "5878a7e22705e62293ef878e16c1facd88ee3add839f7fc1fa92eb8a7cc43706",
+      "tests/Hexalith.EventStore.AppHost.Tests/Configuration/AppChannelTokenAspireExtensionTests.cs": "d5bdd89bcef4dc28efe35df01d91eafadae992cba34a17750d6901e4f25deddf"
+    }
+  },
+  "builds": {
+    "revision": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c"
+  },
+  "worksCatalog": {
+    "path": "/home/administrator/projects/hexalith/works/Directory.Packages.props",
+    "sha256": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c"
+  },
+  "buildsCatalog": {
+    "path": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds/Props/Directory.Packages.props",
+    "sha256": "c8efba903924130cdcb286066bb3a9e97dd3dcb9155ccc3f852c65329ea2a0bf"
+  },
+  "hostedPublishingDiagnosticSourceEqualsCurrent": true,
+  "eventstoreAspireAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-resume-20261025-channel/bin/Hexalith.EventStore.Aspire/debug/Hexalith.EventStore.Aspire.dll",
+    "sha256": "b9ab7f451e5a08b925c7a3202d00d2e7e2dc4abbdf1baa1ad505f8af6fc22e01"
+  },
+  "eventstoreTestAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore/.artifacts/story49-resume-20261025-channel/bin/Hexalith.EventStore.AppHost.Tests/debug/Hexalith.EventStore.AppHost.Tests.dll",
+    "sha256": "ea403515b4f7a4d6f3dec13e949ff444582d3c8f4f35400ce94fc5e00ef9b472"
+  },
+  "ordinaryIntegrationAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll",
+    "sha256": "b7b8b2b8d85773f5cd1025857715d3217041e30a22d5a1d8de27d76e21e8e427"
+  },
+  "ordinaryAspireAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final/bin/Hexalith.EventStore.Aspire/debug/Hexalith.EventStore.Aspire.dll",
+    "sha256": "fc9c791b8c785d63a12f4187c5fd102862376ed2548eb4fc736a46d906d4a403"
+  },
+  "hostedDiagnosticToolingAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025-final/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll",
+    "sha256": "b2bddcfa7d91d1dfc54bbd4937bee25993e90a01a54aefefbcf65064f5518668"
+  }
+}

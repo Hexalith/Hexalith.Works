@@ -1,0 +1,4 @@
+fix(aspire): reuse generated app channel token registrations
+
+Keep the SDK-owned token bound to its original application and sidecar when
+retained topologies repeat registration. Refuse stale bindings and collisions.

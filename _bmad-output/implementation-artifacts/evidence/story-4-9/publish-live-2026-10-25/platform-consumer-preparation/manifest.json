@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-owner-preparation/consumer-base.json",
+      "path": "consumer-base.json.gz",
+      "originalSha256": "fd6ac2a71f517bc9ae0b0f197dd50d3b5037cc156f739bbb32cf5a02bd13b33a",
+      "storedSha256": "3f658c32d16ffde1ef0dc6b8b77db8981dbb20a71c20e6f8f80a4029ebb34151",
+      "originalBytes": 1035
+    },
+    {
+      "source": "/tmp/story49-platform-owner-preparation/original-guard-commit.patch",
+      "path": "original-guard-commit.patch.gz",
+      "originalSha256": "e69096573c4570920bcce1b3b4e08a496b6ac3408c6586f50568bfffb493cf29",
+      "storedSha256": "b52f72392d30239f7c30c39e03c2df86f1f569486391656d7a199a1459665ccf",
+      "originalBytes": 5304
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/after-commands.json",
+      "path": "after-commands.json.gz",
+      "originalSha256": "44bcad9e59a3232436b0067d93124845b6b19b05a96a36a89d4e969798c8e4bc",
+      "storedSha256": "e56a0c1bcc9bf6ce566cc8acb6683d50772c480f86d56868b39f23c9713f1a05",
+      "originalBytes": 587
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/authority.log",
+      "path": "authority.log.gz",
+      "originalSha256": "2058eb192607aa95598ecc9d8303ac23e6cc4a135f473bf2a7163c2e082b62e2",
+      "storedSha256": "0e0d873c5b390c0b98e2ee9383b673cee06a6f5ca53aae68182ed312c8421129",
+      "originalBytes": 138
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/before-command.json",
+      "path": "before-command.json.gz",
+      "originalSha256": "53d09bcb1cd3dfafcf8af80db8bf31f218ec0125cd5d2cf0d19d4eeb9eebbd9e",
+      "storedSha256": "63808129925d86b7414007cba2c6d5d1d8cbf1cd38c5bc8e0de2fdee7c204952",
+      "originalBytes": 310
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/before.log",
+      "path": "before.log.gz",
+      "originalSha256": "483d543730bbbee109b2ca06e4a9cf52c8ec8623be92f8669b513041261f9367",
+      "storedSha256": "d5ba5225a12e45c434eb34899a0272ebb4f481312f8b0c963f41396062ea0f0d",
+      "originalBytes": 202408
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "140610a65b65b4ceb1776dc2bcc204ef22699ba70a605c4c3c6b6294e4e3360d",
+      "storedSha256": "f363f83b2d5e943e46f30ea92069079b99f7b2c0b1e00a331348c191ba2f320f",
+      "originalBytes": 49
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/commit.json",
+      "path": "commit.json.gz",
+      "originalSha256": "d1d0df7886d353b2d884154c2cc990c5575f5e88a3acf2f255b4a710a706849f",
+      "storedSha256": "99cd3d40f15821ef85a62f6abce05d6a5e7ce8e0e0847e74c507db32cff52cc0",
+      "originalBytes": 1295
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/commitlint.json",
+      "path": "commitlint.json.gz",
+      "originalSha256": "5d8f23718d6d15c925c5b4a62d275d891abaf8420162a4a829553144319d972f",
+      "storedSha256": "5965b4d68ec2f8668412b3f021ce2b7eb3a64f79242b90c8a4d50aa01b8b1f63",
+      "originalBytes": 233
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/preservation.json",
+      "path": "preservation.json.gz",
+      "originalSha256": "0c46c39dfec9544f0471bf0fae764afa2e8d6538f049ab08cb98e1ce5656732b",
+      "storedSha256": "5275a42b4c5616cd10c2f814919d765484843aeae4d9203db3f1cd1b3e3c83c5",
+      "originalBytes": 2096
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/regressions.log",
+      "path": "regressions.log.gz",
+      "originalSha256": "f40b4f9189ea4cc0340ff14a283e12216afc3b7ac62ea84a3fec0a953bf2ab8f",
+      "storedSha256": "d7023224d52ef479ecff21509e144a975dfae1d4df1883f2dfeb4982020e2b13",
+      "originalBytes": 65
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-archive-repair/repair.patch",
+      "path": "repair.patch.gz",
+      "originalSha256": "1077168e8ec410c9dd540076e656ccc38f7f101d71eee836c2693541ab24453b",
+      "storedSha256": "5ceccef3cc01e48806e9c05ee2553f5285fe28d6b1af8a3e448ed15d702437d1",
+      "originalBytes": 117658
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-evidence-pr/body.md",
+      "path": "body.md.gz",
+      "originalSha256": "99d1c939505e09358cd6064b42283664763405d54d18f75ef92d5703c1dbb6de",
+      "storedSha256": "82b1b851d37c03c82d66fb5b59327ca67ad9a85f4a6c62dc892b039bd8570225",
+      "originalBytes": 660
+    },
+    {
+      "source": "/tmp/story49-builds-evidence-pr/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "abba8019af3bc3cff1ab804007140338482dab46d94c541b080fa8aa14b446c0",
+      "storedSha256": "27cd881724e1adc38de31b00fc0fd01336a2283ef3e69830a54275684e9a5f59",
+      "originalBytes": 1621
+    }
+  ]
+}

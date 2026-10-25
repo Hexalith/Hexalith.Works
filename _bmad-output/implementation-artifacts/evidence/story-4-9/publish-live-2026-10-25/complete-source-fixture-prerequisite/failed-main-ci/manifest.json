@@ -1,0 +1,60 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/12601577936.zip",
+      "path": "12601577936.zip",
+      "originalSha256": "fae966fcab9514a2d2c0ae1d98a8c4c9213efb0a682806b2cc6ba1cbfe71c306",
+      "storedSha256": "fae966fcab9514a2d2c0ae1d98a8c4c9213efb0a682806b2cc6ba1cbfe71c306",
+      "originalBytes": 232416
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/12601669005.zip",
+      "path": "12601669005.zip",
+      "originalSha256": "135a3869217c6e02eb9f20ea89d50de2b849836845206c4d8a4600ec13a218b9",
+      "storedSha256": "135a3869217c6e02eb9f20ea89d50de2b849836845206c4d8a4600ec13a218b9",
+      "originalBytes": 2137
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/12602014752.zip",
+      "path": "12602014752.zip",
+      "originalSha256": "97d1b5f521f64b83a0220d6497eab959ccc08f84952c42280e3bbda6140e2afc",
+      "storedSha256": "97d1b5f521f64b83a0220d6497eab959ccc08f84952c42280e3bbda6140e2afc",
+      "originalBytes": 2043941
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/build-test-job.log",
+      "path": "build-test-job.log.gz",
+      "originalSha256": "deca34a06cbd718217e37d02db162a61d2f29a5b2c95c04228008189a856a89c",
+      "storedSha256": "c064dc4b7ea0b74e77afb2c958a0199a426c8486cef854e23a63f7b2fa506438",
+      "originalBytes": 791975
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/fixture-failure-assessment.json",
+      "path": "fixture-failure-assessment.json.gz",
+      "originalSha256": "7f12213c5fb9f9b9911906422631a6d38c1fddd2820cd3895ed8d1f775e5be0d",
+      "storedSha256": "19b70c61f058e8bb622276c697e8a0025fc16417693b5b75659a2df10930e5d9",
+      "originalBytes": 1912
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/jobs.json",
+      "path": "jobs.json.gz",
+      "originalSha256": "334003107923e7f807a0e5e2584ba7c43fed9004bae9a76bb2e328a63f5e88b5",
+      "storedSha256": "ceecbed82884cb35872d2b596576cf8d397f5b9b6c59bb52645aa768d4dea1f3",
+      "originalBytes": 29238
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/summary.json",
+      "path": "summary.json.gz",
+      "originalSha256": "c08c3508cdfa7feacaf193cc5f2c8d81d9b4df13300bfdf7f51a9f65e1d197c5",
+      "storedSha256": "4e39c943522d5b04f73b195c47b265fbcc90f769ef010cdce7a61d835e8bbcf0",
+      "originalBytes": 18168
+    },
+    {
+      "source": "/tmp/story49-main-dee-ci-evidence/workflow.json",
+      "path": "workflow.json.gz",
+      "originalSha256": "d1d0a032406eccb492a4e492e00cf02663b5feccbafdb8f0eecd209967762c2a",
+      "storedSha256": "8ca4c40ba95b725303e3994b1e273a5f0601945e7867359c6f089fef690371b2",
+      "originalBytes": 14443
+    }
+  ]
+}

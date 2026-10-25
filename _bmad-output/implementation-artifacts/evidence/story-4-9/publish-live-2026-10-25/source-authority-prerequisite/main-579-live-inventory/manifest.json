@@ -1,0 +1,10 @@
+{
+  "files": [
+    {
+      "path": "full-test-inventory.json.gz",
+      "originalSha256": "407b9114dc4ce096ceb3327000938bc80964c5d67b5b92f093f27ee190b8378c",
+      "storedSha256": "48802062efe1237a4a8082f8b637878ebd4411a8087f06d709d6be3cc7234471",
+      "originalBytes": 161441
+    }
+  ]
+}
