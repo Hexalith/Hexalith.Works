@@ -40,10 +40,15 @@
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
     <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.127.0</HexalithEventStoreVersion>
-    <WorksSdkCandidateFeed>$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
-    <WorksPlatformCandidateFeed>$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
-    <RestoreAdditionalProjectSources Condition="Exists('$(WorksPlatformCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksPlatformCandidateFeed)</RestoreAdditionalProjectSources>
-    <RestoreAdditionalProjectSources Condition="Exists('$(WorksSdkCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksSdkCandidateFeed)</RestoreAdditionalProjectSources>
+    <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
+    <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
+    <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a
+         historical feed directory on disk must not change an ordinary restore's producer authority. -->
+    <RestoreAdditionalProjectSources Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' == 'candidate:true' and Exists('$(WorksPlatformCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksPlatformCandidateFeed)</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' == 'candidate:true' and Exists('$(WorksSdkCandidateFeed)')">$(RestoreAdditionalProjectSources);$(WorksSdkCandidateFeed)</RestoreAdditionalProjectSources>
+    <!-- Candidate admission must not populate the ordinary public-package cache. An explicit
+         RestorePackagesPath remains the caller's isolation choice. -->
+    <RestorePackagesPath Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' == 'candidate:true' and '$(RestorePackagesPath)' == ''">$(MSBuildThisFileDirectory).artifacts/sdk-candidate-packages</RestorePackagesPath>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -92,6 +97,21 @@
   <!-- Reject invalid caller values, equal mode switches (true/true or false/false), and source flags that
        disagree with the selected mode. These checks run for restore/package collection as well as compile. -->
   <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error
+      Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:false'"
+      Code="HXW0003"
+      Text="WorksAllowLocalEventStoreCandidate must be exactly true or false when supplied." />
+    <!-- Read the literal committed pin so ambient environment variables and command-line overrides
+         cannot silently change Release producer identity. Explicit candidate verification opts in. -->
+    <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)Directory.Packages.props"
+             Query="/Project/PropertyGroup/HexalithEventStoreVersion/text()"
+             Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true'">
+      <Output TaskParameter="Result" PropertyName="_WorksDeclaredEventStoreVersion" />
+    </XmlPeek>
+    <Error
+      Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and ('$(HexalithEventStoreVersion)' != '$(_WorksDeclaredEventStoreVersion)' or '$(_WorksDeclaredEventStoreVersion)' == '')"
+      Code="HXW0003"
+      Text="Release requires the committed EventStore pin '$(_WorksDeclaredEventStoreVersion)'; received '$(HexalithEventStoreVersion)'. For isolated candidate verification, explicitly set WorksAllowLocalEventStoreCandidate=true." />
     <Error
       Condition="'$(RequestedUseHexalithProjectReferences)' != '' and '$(RequestedUseHexalithProjectReferences)' != 'true' and '$(RequestedUseHexalithProjectReferences)' != 'false'"
       Code="HXW0001"
@@ -146,6 +166,30 @@
     <ItemGroup>
       <Analyzer Remove="@(Analyzer)" Condition="'%(Filename)' == 'Microsoft.Gen.Logging'" />
     </ItemGroup>
+  </Target>
+
+  <!-- A property-only check cannot protect builds without restore from an older candidate graph.
+       Reuse the installed SDK's assets reader to check every restored SDK package, including
+       packages without compile assets, before any compilation can consume the graph. -->
+  <Target Name="ValidateWorksResolvedEventStorePackages"
+          AfterTargets="ResolvePackageAssets" BeforeTargets="CoreCompile"
+          DependsOnTargets="ValidateHexalithDependencyMode"
+          Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and Exists('$(ProjectAssetsFile)')">
+    <PropertyGroup>
+      <_WorksCandidateCachePrefix>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory).artifacts/sdk-candidate-packages').Replace('\', '/').ToUpperInvariant())/</_WorksCandidateCachePrefix>
+    </PropertyGroup>
+    <ResolvePackageDependencies ProjectPath="$(MSBuildProjectFullPath)"
+                                ProjectAssetsFile="$(ProjectAssetsFile)"
+                                ProjectLanguage="$(Language)"
+                                TargetFramework="$(TargetFramework)">
+      <Output TaskParameter="PackageDefinitions" ItemName="_WorksResolvedPackages" />
+    </ResolvePackageDependencies>
+    <Error Condition="'%(_WorksResolvedPackages.Type)' == 'package' and $([System.String]::Copy('%(_WorksResolvedPackages.Name)').ToUpperInvariant().StartsWith('HEXALITH.EVENTSTORE.')) and '%(_WorksResolvedPackages.Version)' != '$(_WorksDeclaredEventStoreVersion)'"
+           Code="HXW0003"
+           Text="Release assets resolve '%(_WorksResolvedPackages.Identity)' instead of committed EventStore '$(_WorksDeclaredEventStoreVersion)'. Restore Release with the committed pin before building." />
+    <Error Condition="'%(_WorksResolvedPackages.Type)' == 'package' and $([System.String]::Copy('%(_WorksResolvedPackages.ResolvedPath)').Replace('\', '/').ToUpperInvariant().StartsWith('$(_WorksCandidateCachePrefix)'))"
+           Code="HXW0003"
+           Text="Release assets still use the isolated candidate cache for '%(_WorksResolvedPackages.Identity)'. Restore without candidate admission before building." />
   </Target>
 
 </Project>

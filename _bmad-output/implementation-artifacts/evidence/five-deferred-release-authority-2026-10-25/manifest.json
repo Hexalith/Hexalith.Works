@@ -1,0 +1,260 @@
+{
+  "status": "complete",
+  "date": "2026-10-25",
+  "parentRevision": "dbbc658f11a72856013501b4ee0a704494775938",
+  "initialRevision": "3605124805d9fd51b1cebc6117bc8ffbc87651f2",
+  "remoteBeforeCommit": "3605124805d9fd51b1cebc6117bc8ffbc87651f2",
+  "scope": "Five release authority deferred entries. Local build, package and tooling qualification; no publication, live topology, production or hosted CI result is claimed.",
+  "results": {
+    "tooling": {
+      "passed": 76,
+      "failed": 0
+    },
+    "architecture": {
+      "total": 398,
+      "passed": 398,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "isolatedPackageConsumers": 5,
+    "validatedPrimaryPackages": 5,
+    "portableSourceLinkSymbolPackages": 5,
+    "newFocusedCases": 23,
+    "reviewFindingsPatched": 8,
+    "reviewFindingsDeferred": 0
+  },
+  "commands": [
+    {
+      "command": "dotnet restore Hexalith.Works.slnx -p:Configuration=Release -p:NuGetAudit=false -m:1 --force",
+      "exitCode": 0,
+      "log": "works-five-deferred-restore-reviewed.log.gz"
+    },
+    {
+      "command": "dotnet build tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --configuration Release --no-restore -m:1",
+      "exitCode": 0,
+      "log": "works-five-deferred-architecture-build-reviewed.log.gz"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -result-xml /tmp/works-five-deferred-architecture-reviewed.xml",
+      "exitCode": 0,
+      "log": "works-five-deferred-architecture-tests-reviewed.log.gz"
+    },
+    {
+      "command": "python3 -m unittest discover -s scripts/tests -v",
+      "exitCode": 0,
+      "log": "works-five-deferred-tooling-reviewed.log.gz"
+    },
+    {
+      "command": "python3 scripts/pack-release-packages.py /tmp/works-five-deferred-packages-reviewed-20261025 0.0.0-deferred.20261025",
+      "exitCode": 0,
+      "log": "works-five-deferred-pack-reviewed.log.gz"
+    },
+    {
+      "command": "python3 scripts/validate-nuget-packages.py /tmp/works-five-deferred-packages-reviewed-20261025",
+      "exitCode": 0,
+      "log": "works-five-deferred-nuget-reviewed.log.gz"
+    },
+    {
+      "command": "python3 scripts/validate-consumer-package-references.py /tmp/works-five-deferred-packages-reviewed-20261025",
+      "exitCode": 0,
+      "log": "works-five-deferred-consumers-reviewed.log.gz"
+    },
+    {
+      "command": "uvx --from ruff==0.13.2 ruff check scripts/*.py scripts/tests/*.py",
+      "exitCode": 0,
+      "log": "works-five-deferred-ruff-reviewed.log.gz"
+    },
+    {
+      "command": "bash scripts/lint-scripts.sh",
+      "exitCode": 0,
+      "log": "works-five-deferred-script-lint.log.gz"
+    },
+    {
+      "command": "actionlint .github/workflows/*.yml (official standalone 1.7.12; archive checksum verified)",
+      "exitCode": 0,
+      "log": "works-five-deferred-actionlint-final.log.gz"
+    },
+    {
+      "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs",
+      "exitCode": 0,
+      "log": "works-five-deferred-format-reviewed.log.gz"
+    },
+    {
+      "command": "npm run commitlint -- --edit /tmp/works-five-deferred-commit.txt",
+      "exitCode": 0,
+      "log": "works-five-deferred-commitlint.log.gz"
+    }
+  ],
+  "sourceSha256": {
+    ".github/workflows/ci.yml": "3ca8c6012c4a95efafc7b1ab71104d23b9cf90b5fbd6ad64811d3d7b2d44830f",
+    "Directory.Build.props": "93e6cbbf39119cf74912059a9961d0fe6cf9855db09eda6b1c5a4edbb89b7196",
+    "Directory.Packages.props": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c",
+    "Directory.Solution.props": "22e6260c321729b4d201fdc7b4f2d7eec446c88594f87af6c61104504968e30a",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7",
+    "README.md": "6018365d9f33544675cd11044ab27cca135a2de8ae4c3db36834e747529f7a36",
+    "scripts/tests/test_release_build_policy.py": "9d65091fbb23612711f315daac005ee7cb178324d4eaf19217ee6729fff2ae63",
+    "scripts/tests/test_release_builds_compatibility.py": "7e3db2e9a537a5b7ee3e88866c6d17df251cdbbfe992dcd5407cef38f9166c99",
+    "scripts/pack-release-packages.py": "f79b52dc2386f298a92498cf0501c1f081bcd5012ef876caccfd098b2529087b",
+    "scripts/validate-nuget-packages.py": "d37ca88e087a8c0a85c83f5fb5778876eab94e9b7c01b1f36364279c69cda9ba",
+    "scripts/validate-consumer-package-references.py": "1a62993bdd7dfa42e38f5285c94950745cebdb3c81eafd2ff555fbcaf22c2e6c",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs": "5119a4b6337fe4cf1503f8fe5f35302a7a4a891e306a431c8a1bba4f8c782a4a",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "48f0088e9d6cc92f4b975d1aff39198a0ffe34035a3cf2608a47e2e8bbd4d64f",
+    "_bmad-output/implementation-artifacts/spec-five-deferred-release-authority.md": "b2c71cd995370d185007f5fdeee542176a42e057e1212e34aee722bade25c4fa"
+  },
+  "rawEvidence": {
+    "works-five-deferred-restore-reviewed.log.gz": {
+      "sha256": "fef4c68a5bd5473072cc4aff444b10e0fb9f772e55683e375b44d3fcfc8ed773",
+      "uncompressedSha256": "dbd5cc4880ea199559e72b22877c849f49fd48edc4e7785369870eb3e9e9a233"
+    },
+    "works-five-deferred-architecture-build-reviewed.log.gz": {
+      "sha256": "c40168cccdc8ea076c014447f2a02ff45857733498a4000f9fb127fb98c9a875",
+      "uncompressedSha256": "6e5d84e196cb213d12dd2abefd66d9519217aae7963c1439f084a739505b8ead"
+    },
+    "works-five-deferred-architecture-tests-reviewed.log.gz": {
+      "sha256": "3bed02961339bd562fda0f743296e620f6d5bd2a23148246d8ee945f2d7e3dcb",
+      "uncompressedSha256": "f34591310883263e3a55f8f98ea69c7e226c954cc717c561f35cd2fb699034f1"
+    },
+    "works-five-deferred-architecture-reviewed.xml.gz": {
+      "sha256": "228fb731e9c4e31f9f95812d9eec95b352d4171a856b1b8531b7aad116f73941",
+      "uncompressedSha256": "393696376e7292c271a99bfc7374771691162b89a9109594575b0d05fdde6784"
+    },
+    "works-five-deferred-tooling-reviewed.log.gz": {
+      "sha256": "72501aff555032018bce1c33532c9067838215f3f7fa4ef52bef3c332a2f9adf",
+      "uncompressedSha256": "4445be02beb87a4184c0ef1a4ba85fe411463315f17aa6391453caa9210b6612"
+    },
+    "works-five-deferred-pack-reviewed.log.gz": {
+      "sha256": "57598074eeebfa3781a5e5d0472e0e4723730d20fb9a983a6814e8ecede85d6a",
+      "uncompressedSha256": "a82e3d645715773ece265ddcc48f68bd91c0f12ee941290dec4b587e74c154e9"
+    },
+    "works-five-deferred-consumers-reviewed.log.gz": {
+      "sha256": "a2ce92b6795d1295135c5de8887ee1ab841751b1e9a7494376118cd9dce38820",
+      "uncompressedSha256": "179b2e8bf8ef7d9237ed3170ddf02168a5528b59f99d5eb04c06aa18b77b97a0"
+    },
+    "works-five-deferred-nuget-reviewed.log.gz": {
+      "sha256": "15422d0341ce0aade167ac4512fa6c6468bcf98f213daa3e3f868e9b427287a3",
+      "uncompressedSha256": "f81b019f7a88745af19f405e0cf045d99f0a3f195ca16b61fd5a07a88badc891"
+    },
+    "works-five-deferred-ruff-reviewed.log.gz": {
+      "sha256": "f3af4d142827f5aad2eb0c72d556d325488a57fb6219aac10afeb51085667d53",
+      "uncompressedSha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "works-five-deferred-script-lint.log.gz": {
+      "sha256": "932570018101a5a7624f64a903f0564f18d937770a2d546b8682e7570a10d22e",
+      "uncompressedSha256": "12fcd66412a6e16027acbf70d5244cbec04082d3f9145a8708aa5b4e60f2d160"
+    },
+    "works-five-deferred-actionlint-final.log.gz": {
+      "sha256": "c345aff70c5eca1138e4008f1d06a8b186a335a807ecdebc9cad08041135b45a",
+      "uncompressedSha256": "c6fb83610fe36629dda8c72caa1a124eef18772b4f315b40159bbd452046c793"
+    },
+    "works-five-deferred-format-reviewed.log.gz": {
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+      "uncompressedSha256": "239c224f01960886368326d9ef5ebdcce071dcd0996d157bef6a963fc1eaa49c"
+    },
+    "works-five-deferred-commitlint.log.gz": {
+      "sha256": "654884d22dac53fd93eb1ee668116a855ebf7fb2dfd1f614937467e2e9941983",
+      "uncompressedSha256": "e6259884aae251541768bfb852a0340cdd7640a55732d1a57b1eb36e79ec153f"
+    },
+    "works-five-deferred-fetch.log.gz": {
+      "sha256": "1130bc353f921750f798ed6b5e5d6658a22599495219c5687b163cc781a3d1a0",
+      "uncompressedSha256": "671b55c71333462ce2534c8827829ceab3fa7354f04be02926e83b93390cf0f1"
+    },
+    "works-five-deferred-symbols.json.gz": {
+      "sha256": "5cad865852b27292fad169bbb5f119bac9f9f672c16b58006c75bd766093f764",
+      "uncompressedSha256": "2be10707ec35b03bebcf4ddd97d9dbac0919481eeb1ea898a72f14a26731db2a"
+    },
+    "works-five-deferred-hooks.json.gz": {
+      "sha256": "54cae6b11c537e801dceb5a24df12f2856ee14841e8956a8f235e49c0d4a7289",
+      "uncompressedSha256": "1718937e4b753d13f40b19be39039a95a459e5b9cdc75bdc94fac5dbe12a65cc"
+    },
+    "works-five-deferred-hook-CollectPackageReferences.log.gz": {
+      "sha256": "b43e7c445cdb3f6a51951e58f802708f8868fe5ed78a8edb0c8aa1adabe80a8f",
+      "uncompressedSha256": "25ac2d685793759458dfd4f5de15b2537ba80c9e490e2c29959d483489282134"
+    },
+    "works-five-deferred-hook-CoreCompile.log.gz": {
+      "sha256": "b43e7c445cdb3f6a51951e58f802708f8868fe5ed78a8edb0c8aa1adabe80a8f",
+      "uncompressedSha256": "25ac2d685793759458dfd4f5de15b2537ba80c9e490e2c29959d483489282134"
+    },
+    "works-release-policy-reviewed.log.gz": {
+      "sha256": "782c8c5e67ec748c2605426884ef74fae2cf6503d24b29248c5e94bf925ad43c",
+      "uncompressedSha256": "a23b48502411ff558b4dfdfb35513b5f1bee451e6b76dc3e557b0b064e1b0eaa"
+    }
+  },
+  "packageSha256": {
+    "Hexalith.Works.Contracts.0.0.0-deferred.20261025.nupkg": "c353fbc1ba3f9916597fcf8164d4b5c7048753526dc1603979e80e0492af17b0",
+    "Hexalith.Works.Contracts.0.0.0-deferred.20261025.snupkg": "06904e9443c7c6fd4260b649dd6eeeebf12fd0c50bfafe1659f4e89a2ba32e0d",
+    "Hexalith.Works.Projections.0.0.0-deferred.20261025.nupkg": "69e168d9b10cf661354f94bd0ca714f380a6734fa39f40137a3dd1a15456ec02",
+    "Hexalith.Works.Projections.0.0.0-deferred.20261025.snupkg": "0d9572249da1ab6f12ea94499fb273ada9ee8cedcd12d2066bef49a05c934a00",
+    "Hexalith.Works.Reactor.0.0.0-deferred.20261025.nupkg": "f8772844c3063c55b7404672c2b1665da491c0b251e6a0c1d2ee87dcebc51077",
+    "Hexalith.Works.Reactor.0.0.0-deferred.20261025.snupkg": "fd9afe4f83911525e7158fe2b06e4b93b10db3e6fa012ddbcefb8e8801b19ac9",
+    "Hexalith.Works.Server.0.0.0-deferred.20261025.nupkg": "77cdf6c9802437a4ceb74ff6fafc68d8b74365f983878c21d5d41fdf417070cb",
+    "Hexalith.Works.Server.0.0.0-deferred.20261025.snupkg": "66017815cc676dee9cc8fbd45f75e4afe949e7d5981ea0bb5635ca07f8dc09d6",
+    "Hexalith.Works.Testing.0.0.0-deferred.20261025.nupkg": "c811c9c490426126b14d9a9533a222f09522f7847cf56f24af95719deefbfb12",
+    "Hexalith.Works.Testing.0.0.0-deferred.20261025.snupkg": "394328065679f1f1aafe265c91af2ba8ff7d754d2f01402bb1fe452155e0e80e"
+  },
+  "ledgerPreservation": {
+    "closedEntries": 5,
+    "parentLedgerSha256": "0a175ee8ca1555dc7993da472374885c9de6f7cf419daafe698cc74d6386cfbd",
+    "originalBytesReconstructed": true
+  },
+  "rootDependencyRevisions": {
+    "Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "Hexalith.Builds": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c",
+    "Hexalith.Chatbot": "179f94f7f370505feb2e7b41ae242616ac4a5734",
+    "Hexalith.Commons": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+    "Hexalith.Conversations": "772f7af574504492da77efe467293ccd2261906e",
+    "Hexalith.EventStore": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+    "Hexalith.FrontComposer": "3fd62e497ed9e1ae13811af813487fb97e4adc16",
+    "Hexalith.McpCli": "3196d3d268c1a4203a238ab5fe61cd6239cebd94",
+    "Hexalith.Parties": "664b99c67e90a14c8a1cc4d9663a25fa44c47c9a",
+    "Hexalith.Platform": "f7c62ca1007f5218dc52d6856395324704564e3a",
+    "Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "Hexalith.Projects": "0e4cfcc41b3255f4340929d34cc5c27709128626",
+    "Hexalith.Tenants": "fc0a6959844f6afde5a5141fe46c36f5a0cbc0ad"
+  },
+  "buildsProducerRevisions": {
+    "ciWorkflow": "04d961759994396132bb2b113ee465b64740a543",
+    "ciInitialization": "fa6472788c14301c2c91c6beb85a8215aae1022c",
+    "releasePreparation": "397c94a4e246c90b21cf408790fa0d55bf32d795"
+  },
+  "limits": [
+    "Shellcheck unavailable; shell scripts unchanged and syntax checks passed.",
+    "NuGetAudit=false used only for this restore invocation; committed audit policy remains enabled.",
+    "Explicit caller cache/source overrides and arbitrary pre-existing global cache provenance remain caller-owned.",
+    "Earlier failed fixture, format and architecture attempts are historical; final gates pass."
+  ],
+  "historicalRawEvidence": {
+    "works-five-deferred-architecture-tests.log.gz": {
+      "sha256": "2b578b640ab332b20880c63dc7bbd9b92e5de0342774c963aaf608137be2d8ed",
+      "uncompressedSha256": "906a85a6c1ad6b3ce0a8e91020acfd9913db3a068e2bef35468f0733f2c536a9"
+    },
+    "works-five-deferred-consumers.log.gz": {
+      "sha256": "842462a3728578251fe73d8ee4df14f253344878d8d8c37dab5a3cdf84f2fe6c",
+      "uncompressedSha256": "b5ca21c9f246e9eb7847aac0496564846c9e16110dd04c5cd63c173f7fef9a35"
+    },
+    "works-five-deferred-format.log.gz": {
+      "sha256": "4f33d9dfeecfbd97d2c8bf5cdbd753836243880d8a24c187685533b13924aa2c",
+      "uncompressedSha256": "80f7f15c49ce3ac6af27db32cf496420d48e2e1cb82d1f79b49eca2ae90946ca"
+    },
+    "works-five-deferred-nuget.log.gz": {
+      "sha256": "15422d0341ce0aade167ac4512fa6c6468bcf98f213daa3e3f868e9b427287a3",
+      "uncompressedSha256": "f81b019f7a88745af19f405e0cf045d99f0a3f195ca16b61fd5a07a88badc891"
+    },
+    "works-five-deferred-pack.log.gz": {
+      "sha256": "3ff3aca9b85647f7033ddafcab98fed56f05fb9bb719f4c14a498c0440c8b973",
+      "uncompressedSha256": "1500345a5bc8164f00002704776c32aecb7e56949c1de1fd1f1c59b0488e0624"
+    },
+    "works-five-deferred-ruff.log.gz": {
+      "sha256": "f3af4d142827f5aad2eb0c72d556d325488a57fb6219aac10afeb51085667d53",
+      "uncompressedSha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "works-five-deferred-tooling-final.log.gz": {
+      "sha256": "6a12fa4d07cc94c26b011e55e737129a121f0935a4f30a539b053f190d7b7a78",
+      "uncompressedSha256": "7f7234b05b69207d53c6d8ec81b857984403b249ca7821009a1530a6c1b2bd2d"
+    },
+    "works-release-policy-tests.log.gz": {
+      "sha256": "324767ea3b75d79b39ba11f66d17ecfdf63415c380a8f7e9bebe1a6004730616",
+      "uncompressedSha256": "374da58bc3da96437b85a2f201bd3e7ebabc88fd8a4ee9de6adffe4ea62a8566"
+    }
+  }
+}

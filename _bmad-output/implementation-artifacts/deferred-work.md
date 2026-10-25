@@ -941,6 +941,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Make published Works assemblies carry the released package version instead of the build-time MinVer height version.
+  status: done 2026-10-25
+  resolution: Current packer compiles with the requested version and ships symbols/SourceLink. A fresh five-package pack at 0.0.0-deferred.20261025 passes metadata validation and five isolated package-only consumers, including reflected informational-version checks. See [qualification spec](spec-five-deferred-release-authority.md) and [retained packet](evidence/five-deferred-release-authority-2026-10-25/manifest.json).
   evidence: Verified 2026-09-19 by opening `nupkgs/Hexalith.Works.Contracts.0.0.0-ci-test.nupkg`: the nuspec reads `0.0.0-ci-test` while the embedded `lib/net10.0/Hexalith.Works.Contracts.dll` carries `AssemblyInformationalVersion 0.0.0-preview.0.221+61d292b2c2be507930fc56b9b73ae6d753461633` and `AssemblyVersion 0.0.0.0`. `scripts/pack-release-packages.py:96-115` packs with `--no-build --no-restore`, so `-p:Version`/`-p:PackageVersion`/`-p:MinVerVersionOverride` can only restamp nuspec metadata, and `-p:ContinuousIntegrationBuild=true` is inert because `CoreCompile` is skipped. `scripts/validate-nuget-packages.py` reads nuspec metadata only and never opens `lib/**/*.dll`, so the divergence passes every gate. Fixing it changes the release pack strategy (pack with build, or stamp the version at compile time), which the CI/CD spec's tasks do not settle. Related: the packages also ship no symbols and no SourceLink (`IncludeSymbols`/`SymbolPackageFormat`/`PublishRepositoryUrl`/`EmbedUntrackedSources` are unset despite a declared `RepositoryUrl`).
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
@@ -1605,6 +1607,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Preserve subsequent solution targets when serializing solution project builds.
+  status: done 2026-10-25
+  resolution: The destructive Directory.Solution.targets was already removed. The executing two-project Build,Pack regression uses committed solution policy and requires each Build and Pack target exactly once. See [qualification spec](spec-five-deferred-release-authority.md) and [retained packet](evidence/five-deferred-release-authority-2026-10-25/manifest.json).
   evidence: BR7-3: independent CI commit f9ddce953f37b1e11db9cdc3d88ba2c1ca62d2d5 removes ProjectReference items in Directory.Solution.targets. Root package-free .csproj probe /tmp/story415-root-msbuild-5e_gzxzq, dotnet msbuild x.slnx -nologo -t:Build,Pack, exits 0 with BUILD_A and no PACK_A. Repair reusable build orchestration with a multi-target regression; initial .proj parse failure is separate.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1613,6 +1617,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Prevent ordinary package restores from confusing local candidate archives with published producers.
+  status: done 2026-10-25
+  resolution: Historical candidate feeds now require WorksAllowLocalEventStoreCandidate=true. Fresh- and warm-cache offline controls refuse candidates from each feed by default, admit them only with explicit opt-in and a separate default cache, and verify exact archive hashes/source. Ordinary builds also refuse residual candidate-cache assets; explicit caller sources/caches remain caller-owned. See [qualification spec](spec-five-deferred-release-authority.md) and [retained packet](evidence/five-deferred-release-authority-2026-10-25/manifest.json).
   evidence: BR7-9: baseline Directory.Build.props already adds the local Story 4.14 feed whenever present, and current props also adds the 4.15 feed. A matching ID/version can satisfy restore from those sources. Current packers refuse stable identities and isolated public verification checks official hashes; general restore source mapping/identity provenance belongs to shared build governance.
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, resumed closeout review)
@@ -1631,6 +1637,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Verify that release preparation and exact-source CI use compatible Builds action behavior.
+  status: done 2026-10-25
+  resolution: Exact committed CI and release action-chain comparison proves identical initialization and compatible SDK selection, restore and Release compilation. Fourteen executing controls cover scoped caller inputs, step activation/context/order, complete SDK configuration, restore sources, build outputs/options and approved checkout/dependency identity. See [qualification spec](spec-five-deferred-release-authority.md) and [retained packet](evidence/five-deferred-release-authority-2026-10-25/manifest.json).
   evidence: CI invokes Builds workflow 04d9617 while release preparation invokes action 397c94a. Compare their implementations or run dry release preparation to determine whether the version difference changes accepted output; medium impact remains unverified.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1692,6 +1700,8 @@ Historical entries above stay unchanged. The [qualification packet](evidence/sto
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Restore an unconditional default EventStore pin, or refuse a Release build whose effective `HexalithEventStoreVersion` differs from `WorksPinnedEventStoreVersion` without an explicit opt-in.
+  status: done 2026-10-25
+  resolution: Release restore/compile compares the effective SDK against the literal committed Directory.Packages.props pin and rejects ambient or command-line drift with HXW0003; SDK assets inspection also refuses stale mismatched package graphs in builds without restore. Candidate qualification requires explicit true; source Debug and the default public pin retain their behavior. See [qualification spec](spec-five-deferred-release-authority.md) and [retained packet](evidence/five-deferred-release-authority-2026-10-25/manifest.json).
   evidence: Triage T15. The pin at `Directory.Packages.props:6` was unconditional at the Story 4.16 baseline (`3.123.0`). Story 4.15 `fbcacfb` made it conditional, as `Directory.Build.props:42` already was. An ambient `HexalithEventStoreVersion` environment variable now silently selects another SDK for Release restores, while global `-p:` overrides would have worked either way.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`

@@ -150,7 +150,7 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             parkingLookup,
             "PendingDateAwaitParkingLookupFailed",
             "state-store",
-            "restore",
+            "repair the specific read or data failure",
             "host remains running",
             "retry budget remains",
             "later reconciliation reads the candidate",
@@ -158,7 +158,7 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "restart",
             "startup retries were exhausted");
         Assert.Contains(
-            "Restart Works after remediation if shutdown ended the pass or startup retries were exhausted.",
+            "Restart the historical host after remediation if shutdown ended the pass or startup retries were exhausted.",
             parkingLookup,
             StringComparison.Ordinal);
 
