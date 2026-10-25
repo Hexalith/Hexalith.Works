@@ -1,0 +1,138 @@
+[
+  {
+    "name": "public-producer",
+    "command": "python3 _bmad-output/implementation-artifacts/evidence/story-4-9/resume-2026-10-23/probe-public-producer.py --works-root /home/administrator/projects/hexalith/works --output-dir /tmp/story49-resume-20261025-public-current",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/public-producer/qualification-result.json.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "tooling",
+    "command": "python3 -m unittest discover -s scripts/tests",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-tooling.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "bootstrap",
+    "command": "bash scripts/verify-platform-parity-ci.sh --bootstrap-only --artifacts-path /tmp/story49-resume-20261025-bootstrap",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-bootstrap.log.gz",
+    "scope": "bootstrap-only; parity-incomplete"
+  },
+  {
+    "name": "fixed-bootstrap",
+    "command": "bash scripts/verify-platform-parity-ci.sh --bootstrap-only --artifacts-path /tmp/story49-resume-20261025-fixed-bootstrap",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-fixed-bootstrap.log.gz",
+    "scope": "bootstrap-only; parity-incomplete"
+  },
+  {
+    "name": "platform-helper-contracts",
+    "command": "python3 -m unittest test_verify_works_host test_works_toolchain test_verify_works_producer test_isolated_daprd test_retained_works_host test_works_host_snapshot test_works_verifier_command test_works_verifier_inputs",
+    "cwd": "/tmp/story49-resume-20261025-bootstrap/workspace/platform/eng",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-platform-contracts.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "component-helper-contracts",
+    "command": "python3 -m unittest test_verify_full test_prepare_acceptance",
+    "cwd": "/tmp/story49-resume-20261025-bootstrap/workspace/platform/eng/ext-host-1",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-component-contracts.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "debug-source-restore",
+    "command": "dotnet restore Hexalith.Works.slnx -p:Configuration=Debug -p:UseHexalithProjectReferences=true -m:1 --artifacts-path .artifacts/story49-resume-20261025",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-restore.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "build",
+    "command": "dotnet build Hexalith.Works.slnx -c Debug --no-restore -p:UseHexalithProjectReferences=true -m:1 --artifacts-path .artifacts/story49-resume-20261025",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-build.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "build-fixed",
+    "command": "dotnet build Hexalith.Works.slnx -c Debug --no-restore -p:UseHexalithProjectReferences=true -m:1 --artifacts-path .artifacts/story49-resume-20261025",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-build-fixed.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "architecture",
+    "command": ".artifacts/story49-resume-20261025/bin/Hexalith.Works.ArchitectureTests/debug/Hexalith.Works.ArchitectureTests -noLogo -result-xml /tmp/story49-resume-20261025-architecture.xml",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-architecture.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "unit",
+    "command": ".artifacts/story49-resume-20261025/bin/Hexalith.Works.UnitTests/debug/Hexalith.Works.UnitTests -noLogo -result-xml /tmp/story49-resume-20261025-unit.xml",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-unit.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "property",
+    "command": ".artifacts/story49-resume-20261025/bin/Hexalith.Works.PropertyTests/debug/Hexalith.Works.PropertyTests -noLogo -result-xml /tmp/story49-resume-20261025-property.xml",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 0,
+    "output": "raw/story49-resume-20261025-property.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "integration",
+    "command": ".artifacts/story49-resume-20261025/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests -noLogo -result-xml /tmp/story49-resume-20261025-integration.xml",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-integration.log.gz",
+    "scope": "prerequisite-or-ordinary-check"
+  },
+  {
+    "name": "owner-nested-build",
+    "command": "dotnet build tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj -c Debug -p:UseHexalithProjectReferences=true -m:1 --artifacts-path artifacts/story49-resume-20261025-owner",
+    "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-owner-build.log.gz",
+    "scope": "owner-test-build; blocked by inherited CA2007"
+  },
+  {
+    "name": "owner-layout-build",
+    "command": "dotnet build tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj -c Debug -p:UseHexalithProjectReferences=true -m:1 --artifacts-path artifacts/story49-owner-check",
+    "cwd": "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-owner-layout-build.log.gz",
+    "scope": "diagnostic-only; blocked by Builds style diagnostics"
+  },
+  {
+    "name": "owner-assembly-retry",
+    "command": "dotnet build tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj -c Debug -p:UseHexalithProjectReferences=true -p:BuildsToolingAssemblyPath=/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll -m:1 --artifacts-path artifacts/story49-owner-check",
+    "cwd": "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-owner-layout-retry.log.gz",
+    "scope": "diagnostic-only; missing transitive test assembly references"
+  },
+  {
+    "name": "owner-import-final",
+    "command": "dotnet build tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj -c Debug -p:UseHexalithProjectReferences=true -p:BuildsToolingAssemblyPath=/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll -p:CustomAfterMicrosoftCommonTargets=/tmp/story49-owner-reference.targets -m:1 --artifacts-path artifacts/story49-owner-check",
+    "cwd": "/tmp/story49-resume-20261025-fixed-bootstrap/workspace/platform",
+    "exitCode": 1,
+    "output": "raw/story49-resume-20261025-owner-layout-final.log.gz",
+    "scope": "diagnostic-only; four missing NuGet references; no owner facts executed"
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-25T09:26:18.733375+00:00",
+  "scope": "prerequisite-and-focused-verification; no-complete-parity-qualification",
+  "revisions": {
+    "Works": "d46166d8cc038ec28ecb4bbdf989684eb746adc1",
+    "Platform": "f7c62ca1007f5218dc52d6856395324704564e3a",
+    "EventStore": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+    "Builds": "38de8cc6c8dc7f14bec94781e050a2721f4e2c1c"
+  },
+  "selectedSourceFiles": {
+    "Directory.Build.props": "93e6cbbf39119cf74912059a9961d0fe6cf9855db09eda6b1c5a4edbb89b7196",
+    "Directory.Packages.props": "67f76550ee03cf13ff4ac660c1bfa45416f1d9846bebc5a5cfe7686dce22c27c",
+    ".github/workflows/ci.yml": "3ca8c6012c4a95efafc7b1ab71104d23b9cf90b5fbd6ad64811d3d7b2d44830f",
+    "scripts/verify-platform-parity-ci.py": "44378f86fb7fd9f5594440496dbd75c2311265aefef01c737346e6a309e8e012",
+    "scripts/verify-platform-parity-ci.sh": "70e2509e0a9b6b6f0f943f3beb0c36ea1c02aba9f480cc26ff88b9fd798e2bea",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "6d37af6fc45cd79c424fa1cebacf388860e515638fe62324c5a07c836c3f37d1",
+    "references/Hexalith.Platform/src/Hexalith.Platform.Composition/PlatformHostedPublishing.cs": "ff0d90e0a10c6a1dd92b16129a9ca368c690838b43abd833b374f7694cd5a9d6",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "f9d1b85cb1ee73f2a4fc3982f27dbd898c3f6ae3e80a64bf11eee66383d6f797",
+    "references/Hexalith.Platform/eng/verify_works_producer.py": "f590dc57a8349d996d21e3ae1ffb97d0acdf5ff05e718b83c48c7cc6569511d6"
+  },
+  "platformPatchSha256": "c1fb038d2d78095cba280f26df859978338020d4edc61a274b5d0dd22ea784b5",
+  "platformSourceMatchesPostEditBootstrap": true,
+  "postEditPlatformSourceInventorySha256": "e68719e67b1b05a30843e05b49cbd32e2438d93e723fb2424edca1e310e59d4e",
+  "diagnosticToolingAssembly": {
+    "path": "/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll",
+    "sha256": "e3e37bab5b4d6735677b70898d405aabc67798e1e6b7aec6a7077746b041ec3a",
+    "producer": "successful current Works Debug/source solution build",
+    "note": "Explicit diagnostic owner-test assembly reference; not canonical parity evidence."
+  }
+}

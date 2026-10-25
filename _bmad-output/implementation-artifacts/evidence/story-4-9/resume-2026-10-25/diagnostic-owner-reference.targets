@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Hexalith.Platform.Composition.Tests'">
+    <Reference Include="Hexalith.Builds.Tooling" HintPath="/home/administrator/projects/hexalith/works/.artifacts/story49-resume-20261025/bin/Hexalith.Builds.Tooling/debug/Hexalith.Builds.Tooling.dll" />
+  </ItemGroup>
+</Project>

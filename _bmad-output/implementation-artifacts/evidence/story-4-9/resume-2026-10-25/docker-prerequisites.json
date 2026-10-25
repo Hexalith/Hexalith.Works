@@ -1,0 +1,37 @@
+{
+  "linuxCli": {
+    "/usr/bin/docker": {
+      "exists": false,
+      "resolved": "/mnt/wsl/docker-desktop/cli-tools/usr/bin/docker"
+    },
+    "/mnt/wsl/docker-desktop/cli-tools/usr/bin/docker": {
+      "exists": false,
+      "resolved": "/mnt/wsl/docker-desktop/cli-tools/usr/bin/docker"
+    },
+    "command": [
+      "docker",
+      "version",
+      "--format",
+      "{{.Server.Version}}"
+    ],
+    "exitCode": 1,
+    "stdout": "\nThe command 'docker' could not be found in this WSL 2 distro.\nWe recommend to activate the WSL integration in Docker Desktop settings.\n\nFor details about using Docker Desktop with WSL 2, visit:\n\nhttps://docs.docker.com/go/wsl2/\n\n",
+    "stderr": ""
+  },
+  "socket": {
+    "error": "TimeoutError('timed out')",
+    "path": "/var/run/docker.sock",
+    "timeoutSeconds": 5
+  },
+  "windowsCli": {
+    "command": [
+      "/mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe",
+      "version",
+      "--format",
+      "{{.Server.Version}}"
+    ],
+    "exitCode": 0,
+    "stdout": "29.8.2\n",
+    "stderr": ""
+  }
+}

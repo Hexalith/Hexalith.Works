@@ -1,0 +1,112 @@
+{
+  "unit": {
+    "total": 597,
+    "passed": 597,
+    "failed": 0,
+    "skipped": 0,
+    "notRun": 0,
+    "failures": []
+  },
+  "property": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "notRun": 0,
+    "failures": []
+  },
+  "architecture": {
+    "total": 398,
+    "passed": 398,
+    "failed": 0,
+    "skipped": 0,
+    "notRun": 0,
+    "failures": []
+  },
+  "integration": {
+    "total": 1027,
+    "passed": 1004,
+    "failed": 16,
+    "skipped": 0,
+    "notRun": 7,
+    "failures": [
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.SchedulerInventoryBindsEntryMetadataAndRestoreReproducesIt",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"string\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"hash-value\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"hash-field\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"set-member\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"type\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"ttl-removed\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"ttl-extended\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"ttl-added\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"extra-key\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"missing-key\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"list-order\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"stream-pending\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"field-ttl-removed\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.RestoredInventoryRejectsEveryChangedValueTypeAndExpiry(mutation: \\\"field-ttl-extended\\\")",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      },
+      {
+        "name": "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests.CompleteFleetRoundTripPreservesEveryLogicalValueAndCapturedFile",
+        "message": "System.AggregateException : Synthetic fixture startup and owned-resource cleanup both failed. (Synthetic Redis fixture Docker operation failed: ) (Synthetic Redis fixture Docker operation failed: )\n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: \n---- System.InvalidOperationException : Synthetic Redis fixture Docker operation failed: "
+      }
+    ],
+    "ownershipCancellation": {
+      "total": 17,
+      "passed": 17
+    },
+    "explicitNotRun": [
+      "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+      "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+      "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+      "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+    ]
+  }
+}
