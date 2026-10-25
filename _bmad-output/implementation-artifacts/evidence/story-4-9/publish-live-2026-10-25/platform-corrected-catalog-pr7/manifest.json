@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-final-catalog-pr/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "61029a7184174ac0bf14e676e19c90bec4d03ec2ec0c2ffde5c7f8b2079160ed",
+      "storedSha256": "285e91a3bc1cf21f0cb35c204fb482dc627bc27ee44fe9a61c440ef0c2962757",
+      "originalBytes": 3555
+    },
+    {
+      "source": "/tmp/story49-platform-final-catalog-pr/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "0ef95f342d9b01993429b2462cc042ba03dac7ccfe2aee871c9613052c71681c",
+      "storedSha256": "93638a1d594ff2697d85a9576cd81eca825167c5951fa0cfaf791c748c598ed6",
+      "originalBytes": 57
+    },
+    {
+      "source": "/tmp/story49-platform-final-catalog-pr/pr-body.md",
+      "path": "pr-body.md.gz",
+      "originalSha256": "132c8b0fc54a3e3ef91925621a1b9f25fd2c990f58bff2b57b0fa47b4bffe07f",
+      "storedSha256": "50e0b46377ccc6b239c727639e190477187f0bf55da1c1c775bd7f5a5c4b8b0f",
+      "originalBytes": 1287
+    }
+  ]
+}

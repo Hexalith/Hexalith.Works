@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-pr140-ci-40215286935/failed.log",
+      "path": "failed.log.gz",
+      "originalSha256": "14075e200e2a78a1cf18f574393ed73b42c9c80d02897a41224c657057c2ccc9",
+      "storedSha256": "6f93386fc961fd738d39bb78cf4c043a185b49af6bd90783b859c42f3109a09f",
+      "originalBytes": 2286
+    },
+    {
+      "source": "/tmp/story49-builds-pr140-ci-40215286935/run.json",
+      "path": "run.json.gz",
+      "originalSha256": "c240ffd48e14c416da900e37d709dbb49d3943b54f217eb452c83caebebf6982",
+      "storedSha256": "e1abe25114b663f8709216a2175eedd2e9de7d30de1d00b915508c0aff0755c6",
+      "originalBytes": 7774
+    }
+  ]
+}

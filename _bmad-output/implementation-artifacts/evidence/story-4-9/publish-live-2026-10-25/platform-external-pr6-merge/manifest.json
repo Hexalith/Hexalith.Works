@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-platform-external-pr6-merge/core-input-comparison.json",
+      "path": "core-input-comparison.json.gz",
+      "originalSha256": "4f9127d4725d46156e9483dbd0beb767fd27a4ffde90a276581046472c870f54",
+      "storedSha256": "46bd7281792fe684cbb9f9c53f2b16d840251087b2abf8e6a3617a6a85b23871",
+      "originalBytes": 2119
+    },
+    {
+      "source": "/tmp/story49-platform-external-pr6-merge/merge.json",
+      "path": "merge.json.gz",
+      "originalSha256": "04c87552a2f7df234146b858fc15601be6a00b5677d10f1cda6112812268f0ff",
+      "storedSha256": "580a14c43f403adac0e8bf8bbcdd7871ff4d29c196cf51e5f3218b1e06794753",
+      "originalBytes": 1528
+    },
+    {
+      "source": "/tmp/story49-platform-external-pr6-merge/npm-ci.log",
+      "path": "npm-ci.log.gz",
+      "originalSha256": "411bcb95e178c46986a6d3e5b0a2039328569d4cf2017d86e344f9dbb7873168",
+      "storedSha256": "82660010a3dacf03b25b748303f056a15b31b4cff01abd003201a00d38bc42ac",
+      "originalBytes": 224
+    },
+    {
+      "source": "/tmp/story49-platform-external-pr6-merge/tree-equivalence.json",
+      "path": "tree-equivalence.json.gz",
+      "originalSha256": "0b0c833057efce9fea56fe7b3568a569838b9b08231019bf0de815ceddca38ee",
+      "storedSha256": "93f5375d9abaed92bcd9667237a0b7b77ef6a33d81a348f63d52c88dcb6a6199",
+      "originalBytes": 405
+    },
+    {
+      "source": "/tmp/story49-platform-external-pr6-merge/upstream-diff.patch",
+      "path": "upstream-diff.patch.gz",
+      "originalSha256": "f3e74b966d2273fa2d22371637b9cd02952db157121cf717922c8e82d1151609",
+      "storedSha256": "d9053130d75c9b1f7bce1b53fec5fe9517bb0a46a60c4d905885c3a5b370318b",
+      "originalBytes": 247484
+    }
+  ]
+}

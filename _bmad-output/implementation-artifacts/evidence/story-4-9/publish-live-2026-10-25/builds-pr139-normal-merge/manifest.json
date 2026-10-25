@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-pr139-merge/merge-command.json",
+      "path": "merge-command.json.gz",
+      "originalSha256": "2e48db1550ae3939db7afd16c7510aa90c4dab0a6535b9b53cc6f14bd1e089d9",
+      "storedSha256": "0db3f02025c2ffe03d63e7b95c081c38ea5a6148bedea0c7e70bd6d8083511e7",
+      "originalBytes": 252
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-merge/post-merge.json",
+      "path": "post-merge.json.gz",
+      "originalSha256": "4ac19e44f480c31503273b4027b66e2f3c4c36f447d0ef92ad1e7b2e8d24b6c1",
+      "storedSha256": "e69e191e884c7840c26436e4efa08da9e0286dc7ad47638deaa875bd35ad896e",
+      "originalBytes": 235
+    },
+    {
+      "source": "/tmp/story49-builds-pr139-merge/pre-merge.json",
+      "path": "pre-merge.json.gz",
+      "originalSha256": "061e4bbd725db79cb84d78e5e308e838bbf1aa42c670a1b693b86517eeb3046a",
+      "storedSha256": "ead0a3f971af018ea840c4f63fb024574303a39bdffe2ad2bc30ac3cbb6e5e74",
+      "originalBytes": 3951
+    }
+  ]
+}

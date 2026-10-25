@@ -1,0 +1,95 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/catalog.json",
+      "path": "catalog.json.gz",
+      "originalSha256": "6a533bc1abb70d96af1c619423498bb8c8c9672b2af65316c759fbaa560139a5",
+      "storedSha256": "ab95732b58c0bc060a7549c74a7f364915c51e7e39c42d110731e51837ab6961",
+      "originalBytes": 539
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "cd28f6360481649f24af6b729db07488882d0eb4dd39b6d5ff3d4c9db2473633",
+      "storedSha256": "146024312ee37eba6327e2304400b8b6d9c7224ac2dcc4c636240dca973aa1b3",
+      "originalBytes": 1085
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/corrected-publisher.log",
+      "path": "corrected-publisher.log.gz",
+      "originalSha256": "03c354e63612719620f55615cbd3d55eab2fd9fa13f356bad9ff6aefd1c79c4a",
+      "storedSha256": "31718d370843ab539ecc8a005818ec230671caf65329c11e02a8e74eccfde643",
+      "originalBytes": 9279
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/diff-check.log",
+      "path": "diff-check.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/evaluated-catalog.log",
+      "path": "evaluated-catalog.log.gz",
+      "originalSha256": "3391720183a0e35d065e93d9fdabcfd4f0152d8b13fe3773a5a4b0bd1cb5b27b",
+      "storedSha256": "3c88169a2f251188c71ea9ae4af645f4325588fbf3a705833ca06d081e8dd6d0",
+      "originalBytes": 170
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/fixture-migration.json",
+      "path": "fixture-migration.json.gz",
+      "originalSha256": "e2705ab98e06eb650df37f1bb3fe18a8825308674245092b8f026a374000bf53",
+      "storedSha256": "b254f82773f067ba868715864c0d2f8f73cdc822757e9ae458482c6f862b7880",
+      "originalBytes": 27762
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/npm-ci.log",
+      "path": "npm-ci.log.gz",
+      "originalSha256": "0d9e5b0857c1c17e4816b81187594b48e67b6248493c5e1fd25ac2a69853b502",
+      "storedSha256": "7854c3e98f32c23d0444f7bb92ee0e6ffa807971192a83f8c386d3738192dc40",
+      "originalBytes": 234
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/original-fixtures.json",
+      "path": "original-fixtures.json.gz",
+      "originalSha256": "22d52b0ff9f3550fbca7c47c895e72ac8b14cf1898e25658f079f37f54334a16",
+      "storedSha256": "ab29043024cb9923e55b8214c2f76c18117a0850f62b4ed1cd5e29b11038abb7",
+      "originalBytes": 40950
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/original-publisher.log",
+      "path": "original-publisher.log.gz",
+      "originalSha256": "c0429a930acc0a9724f3d7e78783033b0ddd1097ba2e12073e2220536ba66d2f",
+      "storedSha256": "e4e464b46d2593cda7fd3a9cbfec5f1db38a66ca20a835100d9dc462a2ab0fb4",
+      "originalBytes": 566
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/patch.diff",
+      "path": "patch.diff.gz",
+      "originalSha256": "00b4f1c460ed9a03f33385e5c72a6e5a3293cebf1ce157066afa98999e252554",
+      "storedSha256": "64f142fc09e3eab98cc7fdf5d8f332ab152b6b2c98f6abb590d3a74f994cea0f",
+      "originalBytes": 263044
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/scope-audit.json",
+      "path": "scope-audit.json.gz",
+      "originalSha256": "3f4b4cf7328bf1262e02fdd4e4fe9880e60ceba901a0d29d44ac4f28f7aa6cea",
+      "storedSha256": "dae36f8646e6f87f77a8241617bdd80f5298219505e67283ac526a637ad195cc",
+      "originalBytes": 8145
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/synthetic-generator-check.log",
+      "path": "synthetic-generator-check.log.gz",
+      "originalSha256": "c9d1bfa5e0a45ac4d553528dfca5076318f07d761e8ce8e7d38e107ed3c3a1ab",
+      "storedSha256": "087d6d9ca7663663282c2fd037fbec3d482961dff4f43d5871b8afe3e3d900d2",
+      "originalBytes": 361
+    },
+    {
+      "source": "/tmp/story49-builds-active-fixture-migration/synthetic-generator.log",
+      "path": "synthetic-generator.log.gz",
+      "originalSha256": "698269598aa4b0dc686ca00475a087ad7c73934ccec3ce56d6ef339785a50dc5",
+      "storedSha256": "2df975da6d882312765e88162f1d3333c9913141727cadf02af632b1739ea3fe",
+      "originalBytes": 2640
+    }
+  ]
+}
