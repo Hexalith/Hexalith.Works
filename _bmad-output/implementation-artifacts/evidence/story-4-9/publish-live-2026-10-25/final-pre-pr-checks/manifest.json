@@ -1,0 +1,123 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/architecture-result.json",
+      "path": "architecture-result.json.gz",
+      "originalSha256": "379c026695f1202156fa8196abea680fd3530ff8015712d6035ad247952ba3f4",
+      "storedSha256": "d4c542badb0cec638d6ab7e9a42ac9497c4411a966cde9b2a5099223aa1cf9d7",
+      "originalBytes": 759
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/architecture.log",
+      "path": "architecture.log.gz",
+      "originalSha256": "980906ea6852c381dfbf21172b57ce4ad04bce170a806b9af1b4351df35d6d04",
+      "storedSha256": "0756d856626983655b6de94cd6a26ec092588ecbb537de392c02a29cc38812f6",
+      "originalBytes": 406
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/architecture.xml",
+      "path": "architecture.xml.gz",
+      "originalSha256": "42b11bb94b427e7239307164f44ca5f3334bde8a2b89c4fcb5e04fb9b293667c",
+      "storedSha256": "5ea33c45026c830530c6464737017c12ced32196e77881b94a4266268b2e4786",
+      "originalBytes": 279321
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/closure-preparation-refusal.json",
+      "path": "closure-preparation-refusal.json.gz",
+      "originalSha256": "d0be42606cc919b5153e8a01f6e68b1e5b5d78341368e0fd447034cb3793d2dc",
+      "storedSha256": "ba88d8000848077c28ab4ce828966bc6fef829501a5b4cc0f009d69d01907e37",
+      "originalBytes": 323
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "8dcd2ea32b36c7b5e4b7ddd022ac89fff87ded77fcd13ac08fd8878eca8c8e6d",
+      "storedSha256": "ae4e0160236be9c248786525fd0fb07568554bf7ae172a926830f5094909f39d",
+      "originalBytes": 1192
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/commit-message.txt",
+      "path": "commit-message.txt.gz",
+      "originalSha256": "37a991fdfdef557a61f7643826ea7b69c9e7269f380e9e90410e137af49c340e",
+      "storedSha256": "af6b18d6012cfd5a3890fad4f43248c2e70714e9bec10958675f07e5e59d5b39",
+      "originalBytes": 58
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/commitlint.json",
+      "path": "commitlint.json.gz",
+      "originalSha256": "4a9067fbe5cff97d6eddda219d3bf60034d5dcbc4060880f4e14f6c1fec14905",
+      "storedSha256": "ce17f44bf4dcc4cebb5d7175535a7832b3d1e7e26228e3d2986835d4d17a87dc",
+      "originalBytes": 202
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/commitlint.log",
+      "path": "commitlint.log.gz",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "storedSha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "originalBytes": 0
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/consumer-authority-baseline-control.log",
+      "path": "consumer-authority-baseline-control.log.gz",
+      "originalSha256": "4da115e9e5ac792a04fcb752b92553a100d6e399ae28dea99293b44aedfc59c4",
+      "storedSha256": "0b47aa5e6ef58f1ec181dd8ed14674d6afb99cd8b9d9fe850638ffc217d8512e",
+      "originalBytes": 1218
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/consumer-authority-classification.json",
+      "path": "consumer-authority-classification.json.gz",
+      "originalSha256": "0d729f70fabbbb74354e3da0d829310d6d39e052c232ba8be236613e8985e41b",
+      "storedSha256": "5ba6cb8607a6d9f7ffcea68a5b511af94f06636f530ddfedf770aa0630a538e6",
+      "originalBytes": 1016
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/consumer-authority.log",
+      "path": "consumer-authority.log.gz",
+      "originalSha256": "4da115e9e5ac792a04fcb752b92553a100d6e399ae28dea99293b44aedfc59c4",
+      "storedSha256": "0b47aa5e6ef58f1ec181dd8ed14674d6afb99cd8b9d9fe850638ffc217d8512e",
+      "originalBytes": 1218
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/driver.py",
+      "path": "driver.py.gz",
+      "originalSha256": "24eb046a0c45976f7e9cd800df4f22f7dfe557bb4b61e91dfeb6c1c52e8368a5",
+      "storedSha256": "5fae927ea2ed225bdfbb3a45e8927164d36f059b2e86c64657e37142ac6b1930",
+      "originalBytes": 1605
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/fetch-divergence.json",
+      "path": "fetch-divergence.json.gz",
+      "originalSha256": "a7fb4c1e120f626cf639d88bdc289fc4afc8792b39042a6a0ea4ac186926df24",
+      "storedSha256": "b9ac6dee3410737fdeb10736b611ea4864b66503f717f9e3dae2d3271e75b7da",
+      "originalBytes": 141
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/precommit-input-equivalence.json",
+      "path": "precommit-input-equivalence.json.gz",
+      "originalSha256": "a916f7c375e5e6d642a538f0ec9dfecba740a276c2388237e720239a5db59dc2",
+      "storedSha256": "3c46d78f4b2701790eb0679033651fa3f1891ff7b99a79e4a0bf07aeb5b9395e",
+      "originalBytes": 592946
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/prepare-review-evidence.py",
+      "path": "prepare-review-evidence.py.gz",
+      "originalSha256": "07e35c456e1e2a58311b127dd580a7ddf8eb22197aad3dad362fe1935713c733",
+      "storedSha256": "d4de214cebe61745d5ff8f16e13efba148174379f7e5251d42af51cfb8923a6e",
+      "originalBytes": 3770
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/story49-full-closure-recheck-after-current-docs.json",
+      "path": "story49-full-closure-recheck-after-current-docs.json.gz",
+      "originalSha256": "3d779155b0e9a176e45bd3a875f235363936cced26465d520513e7a8395e9fe2",
+      "storedSha256": "d369504b762d96a8965410593d4e60248f7a7d1e91e6c1c8a2bcfa160aed4021",
+      "originalBytes": 807
+    },
+    {
+      "source": "/tmp/story49-hosted-pr-final-checks-bounded/story49-preserved-packet-audit-before-hosted-pr.json",
+      "path": "story49-preserved-packet-audit-before-hosted-pr.json.gz",
+      "originalSha256": "e7154c1a1c48d2ef7ca59f40808cac2b12c6618d405c85d2ec8ddb5811e4547c",
+      "storedSha256": "0fd9e768b1ac01ef91cf97b11c49d5755aaee75d83d95c926d5618e2a7f41559",
+      "originalBytes": 177
+    }
+  ]
+}

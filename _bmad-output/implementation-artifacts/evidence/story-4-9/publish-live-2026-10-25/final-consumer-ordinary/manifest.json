@@ -1,0 +1,95 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/architecture.log",
+      "path": "architecture.log.gz",
+      "originalSha256": "c0bbc6e0d15a455231fcad08396dd8fa4f88b728a2c11f1361fe83459079cee4",
+      "storedSha256": "6f9747ff251c71ae59d95e3c0a05e57b5ac5f8c675a3bb5ab3ae9e490fe5c6db",
+      "originalBytes": 406
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/architecture.xml",
+      "path": "architecture.xml.gz",
+      "originalSha256": "f79474bd79b5903b08d262f821eaff4b263e387c79fc09335e0bec0c1966d120",
+      "storedSha256": "8fc7e09836e9b4b40335ce0b28484ff9f7ed78fdf1c871e52806d84e5272614a",
+      "originalBytes": 279356
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/commands.json",
+      "path": "commands.json.gz",
+      "originalSha256": "643d96447811f8b44913da575abd800e19f4e1107631e5de4bf40faea03de6ae",
+      "storedSha256": "39a48e7a605a0b8384277172b12b3ea2486a4804f4dfedec1872286aeec9f634",
+      "originalBytes": 8070
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/default-restore.log",
+      "path": "default-restore.log.gz",
+      "originalSha256": "83c56a6c6703c125581e6e3f9bfea2ce30a26ae89d2474df1e4335e52bc4b3eb",
+      "storedSha256": "1a78090e24c85df8c0aa264a24cfaa86e648c2afd319b4cd901e7475240adddf",
+      "originalBytes": 4750
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/integration.log",
+      "path": "integration.log.gz",
+      "originalSha256": "30dfffe2b8cd01152c6a8d6b9d4305f85f9d24625eaf1a0e87108d0a5f6c7784",
+      "storedSha256": "d149c624e29593d31912d7fb279fa3fea67472fbcb2c6f2a3cbf022fed7a2e4a",
+      "originalBytes": 64626
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/integration.xml",
+      "path": "integration.xml.gz",
+      "originalSha256": "7ee42b508b22345f20545b88ac5090abe2d8853b18244e13d2c2512e7d1e6d42",
+      "storedSha256": "d1f2876fba8342658fcf0ec3d49d6c71132c0babc55011f6ea4716f4f746d082",
+      "originalBytes": 732211
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/isolated-restore.log",
+      "path": "isolated-restore.log.gz",
+      "originalSha256": "faf0c0eaf3aca46b02ed7feaada5294f265b431087ba0680d38ea5614c2941b6",
+      "storedSha256": "737f272adcf75f4f5ceacdf18b5fe01a5058ef4e142ce6b72339b6ee7299c886",
+      "originalBytes": 4752
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/property.log",
+      "path": "property.log.gz",
+      "originalSha256": "14f92ca42d3b7b8a4e1752dab90cf17089dfec1593af4e45c3331857a4e20733",
+      "storedSha256": "24617a98974409fcf83c2983c32d0515de4adf75bae7708c2e4501e8b3445f7f",
+      "originalBytes": 449
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/property.xml",
+      "path": "property.xml.gz",
+      "originalSha256": "7ed7e4fb2e398a09bbc3d2872dbc29a1acce9b35739fa04f486ba137f847e358",
+      "storedSha256": "c78b30b1cef578fcf23f1ade6cb525603771b35efe941971816daecac0d25a69",
+      "originalBytes": 3988
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/selected-inputs.json",
+      "path": "selected-inputs.json.gz",
+      "originalSha256": "b7fe654f544ac73fe991ef099c9592c0fb658583c4f5056468d52e6a2f42e28a",
+      "storedSha256": "a8195dfd1dc2c21cb4ad728cd2910c21de8d8eec0ad179939fab5bc79f0d56f9",
+      "originalBytes": 469
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/source-build.log",
+      "path": "source-build.log.gz",
+      "originalSha256": "17eb41422c271bd82a146f7e401ca1843f26b499b85d927aa8406ef694364169",
+      "storedSha256": "bc8d4f98004772c1d4ee458b24b10fd27da15a8c142ecbf8360ded165d7e3c11",
+      "originalBytes": 10754
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/unit.log",
+      "path": "unit.log.gz",
+      "originalSha256": "782b1751d8a3810d95f528c6354df752e25906054c65a1c18e07b6250f14dfe3",
+      "storedSha256": "c7436459651a0fe510ae578eaf507829c3c2d3a314c36d75ecb1ac49a097991d",
+      "originalBytes": 365
+    },
+    {
+      "source": "/tmp/story49-final-consumer-ordinary/unit.xml",
+      "path": "unit.xml.gz",
+      "originalSha256": "49f489fc76b6dc5020ac7b71a2106a06e89ae4d415aebab2e09e526a58679266",
+      "storedSha256": "dd81394ded567bbd5398a7d0c4cc2860eae35111ec14d60feeb6714f58b0bf98",
+      "originalBytes": 378432
+    }
+  ]
+}

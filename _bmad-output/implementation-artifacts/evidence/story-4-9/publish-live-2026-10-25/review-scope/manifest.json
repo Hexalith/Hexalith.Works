@@ -1,0 +1,186 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-review-scope/builds-pr139-inventory.json",
+      "path": "builds-pr139-inventory.json.gz",
+      "originalSha256": "37ff1e4612f097b3ba8333f1a121534a9fa13830f7b82f5ed3b7e275644a73aa",
+      "storedSha256": "055c4107f66620180089baefb3a220103d3f620bedec086158a454549052269f",
+      "originalBytes": 2785
+    },
+    {
+      "source": "/tmp/story49-review-scope/builds-pr140-inventory.json",
+      "path": "builds-pr140-inventory.json.gz",
+      "originalSha256": "8dda8cfb0ae394c157c36ee52a286ed546b83e057a3f77d8fdf5b44ee66fb8b4",
+      "storedSha256": "2ddba75f367ccfa5210e861b9ab4a17af6294a2f98dad31c73ba4df528f43839",
+      "originalBytes": 3440
+    },
+    {
+      "source": "/tmp/story49-review-scope/builds-pr141-inventory.json",
+      "path": "builds-pr141-inventory.json.gz",
+      "originalSha256": "d24c2c20646b68dfb848e349f8be353c16ca475a18c9b5c24ef536940135b52c",
+      "storedSha256": "51ff91fd0eb68168413bbe4f31f02bfa225117e8dc064f09308d557943f7d049",
+      "originalBytes": 25096
+    },
+    {
+      "source": "/tmp/story49-review-scope/eventstore-pr373-inventory.json",
+      "path": "eventstore-pr373-inventory.json.gz",
+      "originalSha256": "cfcce7a34800443dd3b37e3868bc50e984f076440124cd4b55fe484008d06760",
+      "storedSha256": "d78d61e474937866c44cea3b6e008adaa9d8490b071928bcd476b4dbcc1d22e7",
+      "originalBytes": 1922
+    },
+    {
+      "source": "/tmp/story49-review-scope/eventstore-pr374-inventory.json",
+      "path": "eventstore-pr374-inventory.json.gz",
+      "originalSha256": "c839be41b204765bf58b374363c9eb8f97be118e7515f82f7f128e28fa82022e",
+      "storedSha256": "4836d67cc22c1f7777d0720077dcc3ed5c2c34efa37050e25836f656f0dd6ee3",
+      "originalBytes": 1866
+    },
+    {
+      "source": "/tmp/story49-review-scope/eventstore-pr375-inventory.json",
+      "path": "eventstore-pr375-inventory.json.gz",
+      "originalSha256": "6f0e3682705ba55906dd3c4370c5c020f6818a67dc82e352ec9711f81c7f855f",
+      "storedSha256": "fb6df83d52c3711b0a8697da389945a685e8bcb6ef91c24fbb68c1bf9b166ec4",
+      "originalBytes": 2241
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Builds/022668ac2dd3b0ec4b1b8e99b243debef0eee374.patch",
+      "path": "owner-patches/Builds/022668ac2dd3b0ec4b1b8e99b243debef0eee374.patch.gz",
+      "originalSha256": "b8461a089ab3420e17d05b7808b467e792c8ffc3f3ec7640c822b7cd397ae913",
+      "storedSha256": "c8e181317a4cee3b87a5c8852710a388ca839fe9b03f11a44ce8492125b88358",
+      "originalBytes": 53814
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Builds/234778f7422692cb9e15d7ae673f6d2e7aa58230.patch",
+      "path": "owner-patches/Builds/234778f7422692cb9e15d7ae673f6d2e7aa58230.patch.gz",
+      "originalSha256": "e7753ed2bc274a2cb4568467506f743a3889e5c17965d6d3d9229f9d3714211d",
+      "storedSha256": "bfa5a05d0cc084f29ddac4dcd222cd9fc00be00b6ece6459940207aeca0618b6",
+      "originalBytes": 1508
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Builds/aac713a2f189ec9563c899a2220c8da6d74ef237.patch",
+      "path": "owner-patches/Builds/aac713a2f189ec9563c899a2220c8da6d74ef237.patch.gz",
+      "originalSha256": "f2c83308508fe2f3368a8c1d5baaf486942f2b5b50243f9ed5d372d934b409ca",
+      "storedSha256": "88af42f222ae7bd033ab31a7c03c41fc2920181b18f7422c9f4cb7c483574675",
+      "originalBytes": 118275
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Builds/f9142d8a845a16e54ee060e6a0250c773d00e0ba.patch",
+      "path": "owner-patches/Builds/f9142d8a845a16e54ee060e6a0250c773d00e0ba.patch.gz",
+      "originalSha256": "b7bae72c0904105956e442a0043f242a2c96e01c7f8a262e67471eabdcea7426",
+      "storedSha256": "df6d8b9439bfb24a7ec04d2cb52e0cf38d2daef0b59a86ec1b6d626e5434a39e",
+      "originalBytes": 270782
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/03ef9f156c5590a81c5409fde601952ebfb58c21.patch",
+      "path": "owner-patches/EventStore/03ef9f156c5590a81c5409fde601952ebfb58c21.patch.gz",
+      "originalSha256": "3e5e24b6b2330db2a77e6726be7b7557a5f07beb9244720fe39a57f62ae4ddb4",
+      "storedSha256": "0e52f3b3ff37360eb0ea214e023ac7d3526e62979b6ad33c8593752aba119803",
+      "originalBytes": 25941
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/0c5de74269e1dfdd9ed0dfcc0ea5ea1bd5a20b2c.patch",
+      "path": "owner-patches/EventStore/0c5de74269e1dfdd9ed0dfcc0ea5ea1bd5a20b2c.patch.gz",
+      "originalSha256": "4a4fd7a586d371f1bc008c7c1428b008df21d702eb88186bbd47950b2f425c83",
+      "storedSha256": "cbfcfc69d929141b13c270cc396ac31845f3e7d289961a76545d292d39d6deef",
+      "originalBytes": 2933
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/29cb708e86a68c626e41d7be99aa5ecef1f19afc.patch",
+      "path": "owner-patches/EventStore/29cb708e86a68c626e41d7be99aa5ecef1f19afc.patch.gz",
+      "originalSha256": "6c84422fd062ef57fba26f047a70bfb6a695539916d3a3745fcf3ee8373492d1",
+      "storedSha256": "a3c965a027a787984de00c7f6bc4572dcf9638b8d70d2813b1c22ee767cb10f5",
+      "originalBytes": 3046
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/5f7a698c99042d54f8246ba9c2c90d17bffda0d8.patch",
+      "path": "owner-patches/EventStore/5f7a698c99042d54f8246ba9c2c90d17bffda0d8.patch.gz",
+      "originalSha256": "07cde43249c5082561e22e7f479451d78f6cc3ba04f82aba772efd4d54d6ccdf",
+      "storedSha256": "46a0ae6948005dec098e77e1957117a9e2d211b2b24a6b65e4c56def88e67c0e",
+      "originalBytes": 15448
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/aa409b5f657e8578e509a72e6bcfc9959c02d531.patch",
+      "path": "owner-patches/EventStore/aa409b5f657e8578e509a72e6bcfc9959c02d531.patch.gz",
+      "originalSha256": "c6f0194df918e3479ba4ddb1dffe4d2272a429b0aefc12b878f8f9842f842d47",
+      "storedSha256": "bfb20ad3427c1c73ce7b03189f9bd056c9788b8776cfe55cabcf65a9cd2c226f",
+      "originalBytes": 13971
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/b65d90fade545ecacc5263021c1d3e1bf0320f4e.patch",
+      "path": "owner-patches/EventStore/b65d90fade545ecacc5263021c1d3e1bf0320f4e.patch.gz",
+      "originalSha256": "790e27ae8963184493da79f5349eb5aeb373427acf94b9138e20408b47bd4b8a",
+      "storedSha256": "8418fd2097d7907d50fa6a323926fa427a0d6ab45d085315cd8e3e666f82c767",
+      "originalBytes": 1957
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/EventStore/d80cbf4d1f7948f4ef39d06b3846fd221bc0ef8a.patch",
+      "path": "owner-patches/EventStore/d80cbf4d1f7948f4ef39d06b3846fd221bc0ef8a.patch.gz",
+      "originalSha256": "c32c0c1dde2ba9ab0a83d611f3edf35ac4c0a5d8edd7fc31343e6ba24fc0fb7f",
+      "storedSha256": "98e3b1b5251a0679825276eeee2832c031f432a40fa2f127b10fad8d8fa25a2d",
+      "originalBytes": 16037
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/0386b388ccb31b74f7633983368649bcd0cfa5f4.patch",
+      "path": "owner-patches/Platform/0386b388ccb31b74f7633983368649bcd0cfa5f4.patch.gz",
+      "originalSha256": "806c67fc9bc9103aff4d6b4951a98b69f5f0a94c1fa3f9b799bbb8a4292b7602",
+      "storedSha256": "ab0153c5425cd02b26108babb53112e7a1a639574de04d52a521ee324ee75062",
+      "originalBytes": 8073
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/2c261d2517692ac45721099fcccf822f3821509e.patch",
+      "path": "owner-patches/Platform/2c261d2517692ac45721099fcccf822f3821509e.patch.gz",
+      "originalSha256": "feea123a1e80507cc394d9165d7e8ac4aa20b1dc040cd02b060ee6dbdc08c413",
+      "storedSha256": "89d26808f68335be2e9348a91f946cc4b016dedc3aabd4e4d5912ddd48ee84ea",
+      "originalBytes": 658
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/5f91eab71b0dc22916fc71ad49821955bedb1cf8.patch",
+      "path": "owner-patches/Platform/5f91eab71b0dc22916fc71ad49821955bedb1cf8.patch.gz",
+      "originalSha256": "c734b7d23cd5417956a7c05db01444f542c4a3c8b0e1585d248c9091f56e7265",
+      "storedSha256": "f59936ae1cb15ec5162a438b0807613b7b131025d7a7d76a5da6ce2a06f50646",
+      "originalBytes": 5370
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/7375f7a681e5cee9c371fc2bafd1b9401779115a.patch",
+      "path": "owner-patches/Platform/7375f7a681e5cee9c371fc2bafd1b9401779115a.patch.gz",
+      "originalSha256": "55c9bf62c738b50660c23b785c5c423259abe02112590d5103d80a6f29f1833f",
+      "storedSha256": "c62b8a08d8e2929b4674930cbba37903ee5553e7ef428c07fe80fc545c17d7d5",
+      "originalBytes": 9163
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/75514f5a0ad4551d09863dee010b8795ff8bfa8d.patch",
+      "path": "owner-patches/Platform/75514f5a0ad4551d09863dee010b8795ff8bfa8d.patch.gz",
+      "originalSha256": "44054561642260f574550605ac85a9922bc9b39feb49fff03ff8b5f3eea5a07d",
+      "storedSha256": "fb7f8ae12f54bb3c50f6581c279154082bd6c9c00378d01b9b48cf9a76b4122b",
+      "originalBytes": 9163
+    },
+    {
+      "source": "/tmp/story49-review-scope/owner-patches/Platform/d5a616c99a8c4df53c37fe81593c3c1192732976.patch",
+      "path": "owner-patches/Platform/d5a616c99a8c4df53c37fe81593c3c1192732976.patch.gz",
+      "originalSha256": "cc0883d4ddcf65802f46c9f36fe268ecc4208d84a07d5e92805b991fe3ce940d",
+      "storedSha256": "b845314cc7bfd7f62868ceac2aa46d6f5f4d09ebf4d8d15959dcce50a83ada82",
+      "originalBytes": 1342
+    },
+    {
+      "source": "/tmp/story49-review-scope/platform-pr6-inventory.json",
+      "path": "platform-pr6-inventory.json.gz",
+      "originalSha256": "d7b4c5b31f8c3c8d98ee88a1eee9036dc5e648d023c0e48995d60ce51634e117",
+      "storedSha256": "2130ac64d96cd7a2cf176b568abf228a9a2d4b3469209b4eece4b24a95b452a1",
+      "originalBytes": 3055
+    },
+    {
+      "source": "/tmp/story49-review-scope/platform-pr7-inventory.json",
+      "path": "platform-pr7-inventory.json.gz",
+      "originalSha256": "5dfe2b7ab284f1568f5e7a6674396abb70b02a6a03bbc4f5bf5ce09af65cbe97",
+      "storedSha256": "f0d6f0c9dc82b61ab0a21644844fc13a17152e51aea667d4da5aad729aad720b",
+      "originalBytes": 719
+    },
+    {
+      "source": "/tmp/story49-review-scope/review-scope.json",
+      "path": "review-scope.json.gz",
+      "originalSha256": "f64ed522634c906c15c6d324e8d0ddf80f1c4c9252a861c29e02ff49ace0b818",
+      "storedSha256": "32a68c27d26ac7d880b2cf40cc07c92192aeab34a21ba68f4de80220c272a3ba",
+      "originalBytes": 338673
+    }
+  ]
+}

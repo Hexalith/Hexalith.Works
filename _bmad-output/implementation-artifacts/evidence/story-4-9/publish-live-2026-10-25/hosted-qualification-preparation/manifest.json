@@ -1,0 +1,109 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/acceptance-audit-full.json",
+      "path": "acceptance-audit-full.json.gz",
+      "originalSha256": "24b4096545fe29f699d70a2a0e6ae15ebf42f8293043f6a218c19280c1869404",
+      "storedSha256": "916e0f5ed98e0f7391f59d5fb07ffc624ed889678d0460f6822bab1dd5401d7a",
+      "originalBytes": 600377
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/checkpoint.json",
+      "path": "checkpoint.json.gz",
+      "originalSha256": "bab7dc9c1a2709951d3e565b745c084a0a5fa1dd10b02d1bfb6404d36f3a085e",
+      "storedSha256": "0abd9c4eb98ee65e360419e7b64bf7f5c6c0197b02c5b34ea53f323d05d8c74b",
+      "originalBytes": 1474
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/full-unittest-inventory-command.json",
+      "path": "full-unittest-inventory-command.json.gz",
+      "originalSha256": "e8c43f07e1976c684b38fdee6c9b03475f97672bb5fdd2766d59e282280d2143",
+      "storedSha256": "56f2d06b30b6dadfa950df0504a58be887adff26fa2d7157ade1720067ed80f7",
+      "originalBytes": 1533
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/full-unittest-inventory.json",
+      "path": "full-unittest-inventory.json.gz",
+      "originalSha256": "8a38fb1bf03baa754fb8ceded6c4fed2165e83e7a4ebc4a4b8ae27892d0fc5ac",
+      "storedSha256": "e95579b10188b2a7315db00c5cdf774fff88f5cdefbd2d7655fa792740e294c2",
+      "originalBytes": 73372
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/security-inventory.json",
+      "path": "security-inventory.json.gz",
+      "originalSha256": "d68ed01e13d995c82508dbad60ca0052c6622d1f05bbdfff4a8b36f4d85b0a1f",
+      "storedSha256": "7b1522957108c83e1a81d0055dc9ac1b4ae0346bbf9a9078e071731621d925eb",
+      "originalBytes": 271309
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-attempt2-core-credential-scan.json",
+      "path": "story49-attempt2-core-credential-scan.json.gz",
+      "originalSha256": "8abc065b9592183d6b4bf7504fe689b7176f2e40d946632b4ffd10da14b690eb",
+      "storedSha256": "8edeb0edb9f42b21ca565d011b68ac790d71697ea224075ce59997ef9c5fb3a2",
+      "originalBytes": 256
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-final-acceptance-audit-ci-retry1.py",
+      "path": "story49-final-acceptance-audit-ci-retry1.py.gz",
+      "originalSha256": "89e9bac6999c4937c0b3dad8f5f6f3a861bc64be4df8223cf68e40a13a0c5acb",
+      "storedSha256": "cf41932be2afeff2d6887c3c9d2f96daadcc444e5ca898382014e47e53e5e660",
+      "originalBytes": 15628
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-final-acceptance-audit-retry2.py",
+      "path": "story49-final-acceptance-audit-retry2.py.gz",
+      "originalSha256": "8d5288f8d75ead27f10be34c3665f9ea4bbb092d31c7a912904de93f12c1e84a",
+      "storedSha256": "f4f2a6fcdfc19a94b7daa1be53780838619a72e9b5548db5bdf86a1aee79836f",
+      "originalBytes": 15283
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-final-ci-retry1.py",
+      "path": "story49-final-ci-retry1.py.gz",
+      "originalSha256": "00e375a64222ef921e546712f4b93cabefa0e6bd7201a716eef75b66c928bf5b",
+      "storedSha256": "f64ec2da34d028dcd96356ce08ed4ebe49c5acc6162e3d6110068edd5c2f3e1b",
+      "originalBytes": 5542
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-final-qualified-gates-retry2.py",
+      "path": "story49-final-qualified-gates-retry2.py.gz",
+      "originalSha256": "af3c0c8bbb05faa89130047891ced3b67a09329df0dd2656a9ded1384dd97e9a",
+      "storedSha256": "c25d9e6ef68c94d4f5212e370ca721dbec55c9803390ef21a866f5a1f52ad8ca",
+      "originalBytes": 5098
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-full-audit-before-migration-refusal-binding.json",
+      "path": "story49-full-audit-before-migration-refusal-binding.json.gz",
+      "originalSha256": "6ef08ee76810af176345c9bbc4253f03c0e670c0e88d681bd474455f8c80f015",
+      "storedSha256": "ca03e654621ff5fa1a1a422fac87371977e3275dac2923b90c01d70ed7a31329",
+      "originalBytes": 591865
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-full-closure-recheck-before-ci-retry1.json",
+      "path": "story49-full-closure-recheck-before-ci-retry1.json.gz",
+      "originalSha256": "aa2dd942cddd5d988eda63cec229b8ddebb37716c5cf266e0e0f97cd7d3c67aa",
+      "storedSha256": "492c1b6fa54e1595b1d6406166363c85d9cd7fd9ef12b87b68f232946d8de750",
+      "originalBytes": 807
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-recheck-passing-full.py",
+      "path": "story49-recheck-passing-full.py.gz",
+      "originalSha256": "b5934ff2431b9140c3d297c5aa6d245ea8a50569aec30379eb10d630ec00268f",
+      "storedSha256": "841ff5fa8dc66048b9c7f6b23eeb06215c3298fc9c3d8dd4fe68426e33893189",
+      "originalBytes": 1506
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-retain-ci-retry1-observations.py",
+      "path": "story49-retain-ci-retry1-observations.py.gz",
+      "originalSha256": "1dba140cb2c62e7fa29a7f68bb749cd52c1a52d51488173218cf646ca54b29d6",
+      "storedSha256": "7e5c3cbce3cc6dd6a49874b1a88154f6290a10e23c5b8b72e4e9f0c34b52a70c",
+      "originalBytes": 3341
+    },
+    {
+      "source": "/tmp/story49-hosted-qualification-preparation/story49-superseded-causality-reassessment.json",
+      "path": "story49-superseded-causality-reassessment.json.gz",
+      "originalSha256": "812498092640d566a6afa80931e1f3d25e417b70e0898200e3bd97468e71fb56",
+      "storedSha256": "fa3de43565672673190399e95ec673fe0619cf1258095e849e1cd142fed1fc0c",
+      "originalBytes": 861
+    }
+  ]
+}

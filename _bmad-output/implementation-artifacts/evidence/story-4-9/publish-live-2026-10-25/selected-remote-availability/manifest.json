@@ -1,0 +1,11 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-selected-remote-availability-bounded/availability.json",
+      "path": "availability.json.gz",
+      "originalSha256": "f32492060e4fa30052acbec9844af37a0c4655968c5e51c9315c0d8a362c4a07",
+      "storedSha256": "e167a10f7631777224f8f9766d7001e49f0a6bd6c0433c7875b3a8c2d017a941",
+      "originalBytes": 2888
+    }
+  ]
+}

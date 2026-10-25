@@ -1,0 +1,25 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-ci-retry1-scheduler-diagnosis/owned-scheduler-events.json",
+      "path": "owned-scheduler-events.json.gz",
+      "originalSha256": "5eadfddce1377e873cb8b983ef23979374002e9a0397ba08b83629b32b453960",
+      "storedSha256": "97ffa982105f1d867abae07921e1f56bcf86aa094bb1802509b0328616803c8b",
+      "originalBytes": 9977
+    },
+    {
+      "source": "/tmp/story49-ci-retry1-scheduler-diagnosis/resource-service-dd37dd55-5d17-4e1a-bf10-df85dff1cd66.log",
+      "path": "resource-service-dd37dd55-5d17-4e1a-bf10-df85dff1cd66.log.gz",
+      "originalSha256": "02c907ad629bc0d7583edc2f5b0a33ee5484750170ee2a72072509d382851a93",
+      "storedSha256": "4d3b56b3b51da254b227f5d981f3bf8addaee84114b84b0b5fcca17c2f64867d",
+      "originalBytes": 3624
+    },
+    {
+      "source": "/tmp/story49-ci-retry1-scheduler-diagnosis/safe-dcp-port-records.json",
+      "path": "safe-dcp-port-records.json.gz",
+      "originalSha256": "9a210491a9b3f26872423d48b958579e633e67424e259ac5bb58ca267c23a5c7",
+      "storedSha256": "834da17e3edc032a4cfb9ca133e868b4c4f3aafb539012f2c318aec5f725c324",
+      "originalBytes": 227936
+    }
+  ]
+}
