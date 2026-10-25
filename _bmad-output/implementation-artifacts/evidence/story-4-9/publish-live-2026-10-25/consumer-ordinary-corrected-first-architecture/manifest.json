@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/architecture.json",
+      "path": "architecture.json.gz",
+      "originalSha256": "8346c074ad9cdc41bf9a8f3cc2ef6a413c24e98284e01f1817ccc3dfa136dbaf",
+      "storedSha256": "9b15e8ad1b86887c3dd32290208f88002b062f80a3beebbedbfe9d12d1d18abe",
+      "originalBytes": 4546
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/architecture.log",
+      "path": "architecture.log.gz",
+      "originalSha256": "088bc9565c4b6e044c32db1883bb2d54cab10cdbaa6d0e238582cc764738f452",
+      "storedSha256": "05b4f506baba30296fc28beb0987b7aaac5c87c9c008fd7986bb3cbfb4ff2c73",
+      "originalBytes": 3492
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/architecture.xml",
+      "path": "architecture.xml.gz",
+      "originalSha256": "ebcd4f05050f2c460ba2219507b512a3c53dec5726b68e9d839381960c87310c",
+      "storedSha256": "ec5b8d97e1145b8bcb2b689926b146905ebb57602388043bd6af8c4d407ba718",
+      "originalBytes": 282332
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/fixture-and-explicit-inventory.json",
+      "path": "fixture-and-explicit-inventory.json.gz",
+      "originalSha256": "7949c75ad4ca32644e415e711681171ba4505c9b5d43545038345d475b16b270",
+      "storedSha256": "f8c7bc9fb3c508ac7206828ec0aead5e4c98556db66b400d97e81ac131215a7b",
+      "originalBytes": 14394
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/integration.json",
+      "path": "integration.json.gz",
+      "originalSha256": "52d39ee1420a8326625b440e9b1a0a447c8ed494996b2bec40c9614d37dd71d0",
+      "storedSha256": "2b7af2d18e3d5de93ba33bba7ca7e8af472c163263c1593a420d279375b007c4",
+      "originalBytes": 2854
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/integration.log",
+      "path": "integration.log.gz",
+      "originalSha256": "59cccb551ccb6fdd5a5176f3b98fb46703ba175f2ec6b44b33e8101446a81010",
+      "storedSha256": "400c0bad6d4b738cd9fe9dc62f0bb71a7b610e15cc959eaf04c41855872181ab",
+      "originalBytes": 64626
+    },
+    {
+      "source": "/tmp/story49-consumer-ordinary-3.128.0-corrected/integration.xml",
+      "path": "integration.xml.gz",
+      "originalSha256": "946fb7a57712ed6d0523d92718e9e8c1946f9c5a64b6c00ed739c8b269dc664e",
+      "storedSha256": "1ab97aaed85031120208c0963875d8c65e96f9d46fc2e945499cee2639a7f1b7",
+      "originalBytes": 732113
+    }
+  ]
+}

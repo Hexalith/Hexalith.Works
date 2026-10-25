@@ -1,0 +1,18 @@
+{
+  "files": [
+    {
+      "source": "/tmp/story49-default-restore-3.128.0/record.json",
+      "path": "record.json.gz",
+      "originalSha256": "9c5ecba43ec1bd887ba01f405051d5e32eeb48c2e8587cba7b9f62ed54ba84d5",
+      "storedSha256": "06d13b72264a61684190bb6f5151b654a4eb8246f311bde27f7f5c4574971776",
+      "originalBytes": 299
+    },
+    {
+      "source": "/tmp/story49-default-restore-3.128.0/restore.log",
+      "path": "restore.log.gz",
+      "originalSha256": "2b8d1dcd59fd7e885eedcb7273f67773b017aa3a012ab499bd1678e51e768008",
+      "storedSha256": "296213fa5bf53cec8850e8b487aa58b6ba9e08721c305e51b9f22ed02a3831ce",
+      "originalBytes": 4750
+    }
+  ]
+}
