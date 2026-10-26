@@ -1946,3 +1946,47 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Correct the existing public query summaries to distinguish absence from projection unavailability.
   evidence: GetWorkItemQueryHandler and WhatsNextQueryHandler XML summaries still promise NotFound/empty results for unavailability, although the pre-existing SDK paths return projection-unavailable failures; both mismatch and behavior are present at pre-cutover6967819.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-26)
+
+Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These entries retain each independent finding's verdict; repeated findings refer to existing work and do not claim new cutover regressions.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B1 — Sanitize Parties identity-provider failure logging (medium; existing follow-up).
+  evidence: WorksQueryPolicy.cs:77 passes the complete exception to LogWarning; the same call exists at pre-cutover6967819 and is already recorded in the 2026-10-25 publication-resume follow-ups. Verify a private exception canary never enters logging; do not duplicate the owning correction.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B3 — Apply required scalar-member validation to projection evidence (medium; pre-existing).
+  evidence: WorkItemSharedRebuildManifestBuilder.cs:59 uses WorkItemProjectionEventDecoder, whose ordinary deserializer accepts a missing ReEstimated.Estimated as zero; WorksRecoveryEventDecoder rejects the same missing member. The decoder/call exist at18e94d3. Verify corrupt-member refusal and legitimate historical payload compatibility before choosing the owning parser correction.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B4 — Establish and enforce the supported projection discriminator set (medium; pre-existing).
+  evidence: WorkItemProjectionEventDecoder.SimpleTypeName resolves Foreign.Namespace.WorkItemCancelled to the Works cancellation type; recovery checks the exact full or short Works name. This behavior exists at18e94d3. Establish legitimate historical aliases and verify corrupt foreign aliases cannot change a projection before tightening admission.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B5 — Require creation evidence before deriving state-changing recovery reminders (medium; pre-existing).
+  evidence: WorksSourceStreamReader.cs:112 applies WorksExpiryEvidence, which rejects pre-creation rescheduling but accepts an initial WorkItemSuspended; WorksReminderIntentSource can derive a date reminder from that corrupt history. The paths exist at pre-cutover6967819. Preserve rejection-only histories while verifying whole-history creation ordering and no reminder registration on corrupt evidence.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B6 — Measure what's-next query cost over retained terminal membership (maybe-false; unverified medium).
+  evidence: WhatsNextQueryHandler.cs:113 loads parking and roll-up documents for all retained members before executor/status filtering; SharedProjectionEpochCoordinator.ReadManyAsync reads logical keys sequentially. This predates cutover, and no admitted-population timeout was demonstrated. Real-store population measurements against the actual caller deadline would settle the operational effect before any filtering/storage redesign.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B7 — Measure ordinary full-family projection-fold cost (maybe-false; unverified medium; existing follow-up).
+  evidence: WorkItemSharedProjectionRebuildHandler.cs:170 reloads retained member histories and refolds the tenant per ordinary delivery. The same concern is already in the 4.14 and 4.9 performance follow-ups. No measured operational-budget failure was demonstrated; settle using real-store latency and representative admitted population/history limits before changing folding semantics.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26-B8 — Measure whole-catalog rescans during paged discovery (maybe-false; unverified medium).
+  evidence: WorksProcessSourceCatalog.cs:27 scans tenant membership and materializes all sources before applying afterKey at83 on each page. This predates cutover and no recovery/readiness deadline failure was demonstrated. Measure complete multi-page sweeps with real-store latency; any cursor optimization must preserve incomplete-scope detection and progress for healthy tenants.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-26, CI/build group)
+
+CI/build and scripts group, Works `18e94d3..ab020fa`. Both entries predate this story's cutover work or concern repository settings rather than code.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26C-B5 — Drop release `issues`/`pull-requests: write` scopes no longer required after inlining (low; pre-existing).
+  evidence: release.yml:54-55 keeps scopes that 4ef0217 added only for the reusable workflow's declaration; 640c8b5 (pre-cutover 6967819) inlined the job, and .releaserc.json disables fail/success comments and labels. contents: write already dominates; verify removal with the next authorized release.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R26C-A4 — Decide whether the Platform parity job must be a required merge check on `main` (low; repository setting).
+  evidence: release.yml verify-source requires a successful push CI run, so parity blocks release; `main` has no branch protection or rules, so a red parity job does not block merges.
