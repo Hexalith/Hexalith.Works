@@ -1,0 +1,29 @@
+{
+  "log": "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867993958.log",
+  "compileOutputCounts": {
+    "Hexalith.Platform.Custody": 1,
+    "Hexalith.Platform.Works.Runtime": 1,
+    "Hexalith.Builds.Tooling": 1
+  },
+  "buildSummaries": [
+    "2026-10-26T21:50:32.3839464Z Build succeeded.",
+    "2026-10-26T21:50:32.3839831Z     0 Warning(s)",
+    "2026-10-26T21:50:32.3840137Z     0 Error(s)",
+    "2026-10-26T21:50:39.5839502Z Build succeeded.",
+    "2026-10-26T21:50:39.5839969Z     0 Warning(s)",
+    "2026-10-26T21:50:39.5840329Z     0 Error(s)",
+    "2026-10-26T21:50:41.2794335Z Build succeeded.",
+    "2026-10-26T21:50:41.2794575Z     0 Warning(s)",
+    "2026-10-26T21:50:41.2794724Z     0 Error(s)",
+    "2026-10-26T21:50:42.9710026Z Build succeeded.",
+    "2026-10-26T21:50:42.9710344Z     0 Warning(s)",
+    "2026-10-26T21:50:42.9710663Z     0 Error(s)",
+    "2026-10-26T21:50:44.6739901Z Build succeeded.",
+    "2026-10-26T21:50:44.6740142Z     0 Warning(s)",
+    "2026-10-26T21:50:44.6740324Z     0 Error(s)",
+    "2026-10-26T21:50:46.4153051Z Build succeeded.",
+    "2026-10-26T21:50:46.4153302Z     0 Warning(s)",
+    "2026-10-26T21:50:46.4153490Z     0 Error(s)"
+  ],
+  "copyCollisionCodePresent": false
+}

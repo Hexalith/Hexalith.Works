@@ -1,0 +1,94 @@
+{
+  "evidence-gate-tests": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "component-evidence-gate-tests": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "agents-full-refusal": {
+    "exitCode": 1,
+    "logSha256Matches": true
+  },
+  "agents-local-scaffold": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-tests-build-release": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-tests-release": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-file-host-release": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "works-consumer-release": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "works-consumer-supporting": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-0": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-1": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-2": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-3": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-4": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "runtime-release-prebuild-5": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "retained-host-preflight": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-recovery": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-historical": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-ha": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-mtls": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "platform-projection": {
+    "exitCode": 0,
+    "logSha256Matches": true
+  },
+  "isolated-daprd": {
+    "shimSha256Equivalent": true,
+    "runtimeSha256Equivalent": true
+  },
+  "isolated-daprd-retained-preflight": {
+    "shimSha256Equivalent": true,
+    "runtimeSha256Equivalent": true
+  }
+}

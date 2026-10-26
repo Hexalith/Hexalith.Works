@@ -1,0 +1,98 @@
+[
+  {
+    "name": "negative-missing-hosted-replay",
+    "command": [
+      "/usr/bin/python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/audit-hosted.py",
+      "--matrix",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/controls/missing-hosted-method-matrix.json",
+      "--output",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/results/negative-missing-hosted"
+    ],
+    "exitCode": 1,
+    "expectedExitCode": 1,
+    "log": "negative-missing-hosted-replay.log",
+    "logSha256": "d5be31004a153716b71c7391d3f2cfcf2f162da14e59f8281e5a0ed7f842081f"
+  },
+  {
+    "name": "focused-tests-optimized",
+    "command": [
+      "/usr/bin/python3",
+      "-O",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27",
+      "-p",
+      "test_acceptance_tools.py",
+      "-v"
+    ],
+    "exitCode": 0,
+    "expectedExitCode": 0,
+    "log": "focused-tests-optimized.log",
+    "logSha256": "dac42594df2c4378df83667d88f619e6303a8673dc3dc594c9450f50b302c326"
+  },
+  {
+    "name": "focused-tests",
+    "command": [
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27",
+      "-p",
+      "test_acceptance_tools.py",
+      "-v"
+    ],
+    "exitCode": 0,
+    "log": "focused-tests.log",
+    "logSha256": "dc692dc346dde207eda46e22515c404668a0ab8f5292f929ea478f983ad9ed70"
+  },
+  {
+    "name": "syntax-check",
+    "scope": [
+      "download-artifact.py",
+      "audit-hosted.py",
+      "build-packet.py",
+      "test_acceptance_tools.py",
+      "acceptance_support.py"
+    ],
+    "result": "passed"
+  },
+  {
+    "name": "offline-hosted-audit-replay",
+    "command": [
+      "python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/audit-hosted.py",
+      "--output",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/results/hosted-audit"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "exitCode": 0,
+    "log": "hosted-audit-replay.log",
+    "logSha256": "1ad9a32371accb917791cb836f81d3b375bf72ed71fca38c48e2f0db5ebd4068",
+    "scope": "offline retained-evidence replay only; no live qualification"
+  },
+  {
+    "name": "offline-derived-summary-replay",
+    "command": [
+      "python3",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/build-packet.py",
+      "--acceptance",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/results/hosted-audit/hosted-audit.json",
+      "--output",
+      "_bmad-output/implementation-artifacts/evidence/story-4-9/review-acceptance-tools-2026-10-27/results/summary"
+    ],
+    "environment": {
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "exitCode": 0,
+    "log": "summary-replay.log",
+    "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scope": "offline retained-evidence replay only; no live qualification"
+  }
+]

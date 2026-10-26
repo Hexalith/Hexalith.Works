@@ -1,0 +1,11 @@
+{
+  "creatorPid": "67951",
+  "ownerPid": 67399,
+  "executableName": "dcp",
+  "commandKind": "other",
+  "monitorPid": "67932",
+  "kubeconfigPath": "/tmp/aspire-dcppQvClZ/kubeconfig",
+  "credentialOwnerUid": 1000,
+  "taskUid": 1000,
+  "privateNativeOriginalSha256": "55f54747a187029fd583ae850871349a8e8dbbc726bd3466e50c62ea8a227097"
+}

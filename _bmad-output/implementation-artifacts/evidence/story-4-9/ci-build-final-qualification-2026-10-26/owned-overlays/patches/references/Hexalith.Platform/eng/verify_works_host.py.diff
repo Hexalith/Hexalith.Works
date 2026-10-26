@@ -1,0 +1,10 @@
+--- a/references/Hexalith.Platform/eng/verify_works_host.py
++++ b/references/Hexalith.Platform/eng/verify_works_host.py
+@@ -1262,6 +1262,7 @@
+             summary["status"] = "preparation-passed; parity-incomplete"
+             return 0
+         environment = os.environ.copy()
++        environment.pop("GITHUB_TOKEN", None)
+         ephemeral_range = host_ephemeral_port_range()
+         reserved_ranges = host_reserved_port_ranges()
+         control_plane_ports = select_control_plane_ports(ephemeral_range, reserved_ranges)

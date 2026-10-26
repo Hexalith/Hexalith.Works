@@ -1,0 +1,62 @@
+{
+  "scope": "starting revisions plus exact eight owned overlays; external workspace updates excluded",
+  "fullExitCode": 1,
+  "ownerStatus": "incomplete",
+  "rollback": {
+    "complete": false,
+    "missing": "Platform-write -> complete fleet restore -> retained Works host queries and receipt replay"
+  },
+  "xml": {
+    "platform-debug.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-recovery.xml": {
+      "total": 4,
+      "passed": 3,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-release.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "retained-preflight.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "works-consumer-supporting.xml": {
+      "total": 306,
+      "passed": 306,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "persistedPhases": 16,
+  "fleetStarts": 4,
+  "unexecutedRequiredLanes": [
+    "platform-historical",
+    "platform-ha",
+    "platform-mtls",
+    "platform-projection",
+    "final source/runtime/archive/launcher closure"
+  ],
+  "failure": "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart: later Sentry readiness Unhealthy; cause unresolved",
+  "qualification": "nonqualifying; no row, complete rollback or final closure acceptance credit"
+}

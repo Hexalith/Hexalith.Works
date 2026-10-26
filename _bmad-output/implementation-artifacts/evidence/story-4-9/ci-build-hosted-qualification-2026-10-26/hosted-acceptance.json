@@ -1,0 +1,168 @@
+{
+  "status": "hosted artifacts accepted by unchanged coordinator and rebound owning predicates",
+  "runId": 40407181685,
+  "worksCommit": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+  "platformCommit": "73bebc0a336ebf68cee77ab0114d96dde66c386d",
+  "profile": {
+    "name": "ci",
+    "consumerConfigurations": [
+      "Release"
+    ],
+    "agentsConfiguration": "Release",
+    "sourceConformance": "not-requested; full-local-profile-only",
+    "liveProofs": "all-R1-R11-and-complete-fleet-rollback"
+  },
+  "xml": {
+    "platform-ha.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-historical.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-mtls.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-projection.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-recovery.xml": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-release.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "retained-preflight.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "works-consumer-supporting.xml": {
+      "total": 306,
+      "passed": 306,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "canonicalExecutedPasses": 459,
+  "rows": 11,
+  "proofs": 44,
+  "proofRecordHashesAndCrossPhasePredicatesRebound": true,
+  "rollbackComplete": true,
+  "phases": 32,
+  "fleetStarts": 11,
+  "runtimeArtifacts": 441,
+  "consumerArtifacts": 461,
+  "ordinaryExclusionCoverage": {
+    "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness": true,
+    "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": true,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": true,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": true
+  },
+  "inputEquivalence": {
+    "Works": {
+      "sameSourceFiles": true,
+      "fileCount": 425,
+      "localCommit": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "hostedCommit": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+      "sameCommit": false,
+      "onlyLocal": [],
+      "onlyHosted": [],
+      "changed": []
+    },
+    "Platform": {
+      "sameSourceFiles": true,
+      "fileCount": 1083,
+      "localCommit": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "hostedCommit": "73bebc0a336ebf68cee77ab0114d96dde66c386d",
+      "sameCommit": false,
+      "onlyLocal": [],
+      "onlyHosted": [],
+      "changed": []
+    },
+    "fixtureSources": {
+      "sameFiles": true,
+      "files": 194
+    },
+    "platformConsumerSources": {
+      "sameFiles": true,
+      "files": 567
+    },
+    "verifierHelpers": {
+      "sameFiles": true,
+      "files": 25
+    },
+    "coordinators": {
+      "sameFiles": true,
+      "files": 2
+    },
+    "linkedFixtureSources": {
+      "sameRelativePathsAndHashes": true,
+      "files": 84
+    }
+  },
+  "toolchainPinEquivalent": true,
+  "publicRuntimeProducerEquivalent": true,
+  "retainedArchiveEquivalent": true,
+  "launchChecks": {
+    "isolated-daprd": {
+      "launches": 45,
+      "configurations": 44,
+      "binding": {
+        "runtime": "/home/runner/.dapr/bin/daprd",
+        "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+        "shimSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+        "sentryAddress": "127.0.0.1:65534"
+      }
+    },
+    "isolated-daprd-retained-preflight": {
+      "launches": 4,
+      "configurations": 4,
+      "binding": {
+        "runtime": "/home/runner/.dapr/bin/daprd",
+        "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+        "shimSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+        "sentryAddress": "127.0.0.1:65534"
+      }
+    }
+  },
+  "verificationLimit": "Remote runtime binaries are bound by native owning inventories/closure and uploaded start records; binaries are not rehashed locally because CI does not upload them. Source files and required XML/proof/binding bytes are independently compared/rebound.",
+  "rootCauseClaim": "No local Docker Desktop historical cause is inferred from hosted Linux success."
+}

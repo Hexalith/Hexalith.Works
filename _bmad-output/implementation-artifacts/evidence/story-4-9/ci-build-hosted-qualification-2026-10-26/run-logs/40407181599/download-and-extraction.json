@@ -1,0 +1,55 @@
+{
+  "runId": 40407181599,
+  "headSha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+  "conclusion": "success",
+  "command": [
+    "gh",
+    "api",
+    "repos/Hexalith/Hexalith.Works/actions/runs/40407181599/logs"
+  ],
+  "zipSha256": "d0f4a9cf9377375d78d98514c4709ade7cebb58620052d4d229aa6901117a6a0",
+  "zipBytes": 103813,
+  "expandedBytes": 783306,
+  "members": {
+    "0_codeql _ analyze.txt": {
+      "bytes": 391083,
+      "sha256": "b6e761cb01148d2b0060f2cab57771f194d648786fd115489551b9678818b744"
+    },
+    "codeql _ analyze/system.txt": {
+      "bytes": 1119,
+      "sha256": "fdab5ca86f324e7895245d349f8f51e1fcf8c97c05978bb4260313f51a3310a3"
+    },
+    "codeql _ analyze/1_Set up job.txt": {
+      "bytes": 2464,
+      "sha256": "13fa6d560c383132dc1a71013034bd2efa5bdb25bac1d2d265a72ed0ce0b1dae"
+    },
+    "codeql _ analyze/2_Run actions_checkout@v7.0.1.txt": {
+      "bytes": 7965,
+      "sha256": "9cc12fd677c886b4160e8d0a0a02fdcfd579bb0807b22ef7d42658a38dc3a93e"
+    },
+    "codeql _ analyze/3_Initialize CodeQL.txt": {
+      "bytes": 38116,
+      "sha256": "c7bd1e47d1609d51c7b289cfd0961f9e04c0aeb6286500f7b2314edf79be2b23"
+    },
+    "codeql _ analyze/4_Perform CodeQL Analysis.txt": {
+      "bytes": 337977,
+      "sha256": "f8820251754c45da8d152b3915ed779878101e2c7970cb8742ec77b8c9814200"
+    },
+    "codeql _ analyze/6_Post Perform CodeQL Analysis.txt": {
+      "bytes": 50,
+      "sha256": "a9f6363ab98798cea1830c6226d68c31fd95a209711361ee3524810106ed142f"
+    },
+    "codeql _ analyze/7_Post Initialize CodeQL.txt": {
+      "bytes": 249,
+      "sha256": "1bab63c8e814ef3ce797fd33f36fcaf896f504684c2347cc3cd1bb82814955d4"
+    },
+    "codeql _ analyze/8_Post Run actions_checkout@v7.0.1.txt": {
+      "bytes": 4222,
+      "sha256": "6a3022feffb59d68dc67d24bf48f10a42a4eea3d4b744e33404c9cccfcdbb856"
+    },
+    "codeql _ analyze/9_Complete job.txt": {
+      "bytes": 61,
+      "sha256": "351d00f6213b6b125efa2ed487809f253e87c5aa06034bcbfb82fb563d3cf0d6"
+    }
+  }
+}

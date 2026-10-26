@@ -1,0 +1,17 @@
+{
+  "helperSha256": "5f93c47e6079ea4a6f5c441f78345b2fb2c28b1c9f8e9048c35eb51660a18d08",
+  "status": "diagnostic-only; zero parity credit",
+  "admission": "DCP creator PID/start/group from exact owned Docker control-plane admission; --kubeconfig from that exact process, loopback API only; container API UID must match admitted resource UID",
+  "excluded": [
+    "spec.env",
+    "status.effectiveEnv",
+    "createFiles",
+    "PEM contents",
+    "kubeconfig/client credential contents"
+  ],
+  "limits": {
+    "seconds": 1400,
+    "pollSeconds": 5,
+    "maximumSnapshots": 300
+  }
+}

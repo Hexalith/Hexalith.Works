@@ -1,0 +1,24 @@
+{
+  "status": "diagnostic-only; zero parity credit",
+  "helperSha256": "c002886c1d1f350d40de1de0bb0f1cc996fe220c835990c3401b99cc941bf24a",
+  "admission": "Docker volume filter and exact read-only Sentry configuration bind source under these owned roots, plus Sentry image/name; never admit by image alone",
+  "roots": [
+    "/tmp/story49-group2-current-20261026T182217Z/full1/workspace/platform/DaprComponents",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/gate/retained-works-source"
+  ],
+  "excluded": [
+    "container environment",
+    "credential file contents",
+    "foreign containers"
+  ],
+  "limits": {
+    "pollSeconds": 10,
+    "maximumSeconds": 5400,
+    "maximumContainers": 20,
+    "maximumObservations": 1000,
+    "perContainerLogBytes": 1048576,
+    "dockerCommandSeconds": 5,
+    "httpTimeoutSeconds": 0.5,
+    "tcpTimeoutSeconds": 0.5
+  }
+}

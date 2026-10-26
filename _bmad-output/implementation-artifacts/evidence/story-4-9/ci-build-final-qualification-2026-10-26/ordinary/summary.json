@@ -1,0 +1,74 @@
+{
+  "assemblies": {
+    "Hexalith.Works.IntegrationTests.xml": {
+      "counts": {
+        "total": 1030,
+        "passed": 1023,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "not-run": 7
+      },
+      "notRunTests": [
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+          "result": "NotRun"
+        },
+        {
+          "name": "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+          "result": "NotRun"
+        }
+      ],
+      "sha256": "379a5a5da4d21032de3562516f54054c337df4084cb3009df6a4d5b22b2baf34"
+    },
+    "Hexalith.Works.PropertyTests.xml": {
+      "counts": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "not-run": 0
+      },
+      "notRunTests": [],
+      "sha256": "b28c9ad13eee56d7d69a86497a461204c068d9101b4105425990c0d38ba6c2f8"
+    },
+    "Hexalith.Works.UnitTests.xml": {
+      "counts": {
+        "total": 597,
+        "passed": 597,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "not-run": 0
+      },
+      "notRunTests": [],
+      "sha256": "16aacda21279b0925e9324e9a5972a5c0c2bb115dc6930c5c6910f3cdacd5058"
+    }
+  },
+  "runtimeFiles": 884,
+  "runtimeBeforeAfterIdentical": true,
+  "priorSetIdenticalFiles": 881,
+  "changedDependencyMetadataFiles": 3,
+  "liveFactsReservedForCanonicalGate": 7
+}

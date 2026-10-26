@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Release gating requires a successful push CI run for the exact main SHA, so a push run must never be
+  # cancelled by a later push. Only pull-request runs are safe to supersede.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  platform-toolchain:
+    name: Platform-owned Works proof toolchain
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      dapr-cli: ${{ steps.pins.outputs.dapr-cli }}
+      dapr-runtime: ${{ steps.pins.outputs.dapr-runtime }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      # Platform derives the Works proof toolchain from the root Builds catalog's Dapr pins.
+      - name: Initialize root Platform toolchain owner and Builds version authority
+        run: git submodule update --init -- references/Hexalith.Builds references/Hexalith.Platform
+      - name: Read Platform-owned toolchain
+        id: pins
+        run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
+
+  platform-parity:
+    name: Platform R1–R11 parity and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: false
+          persist-credentials: false
+      - name: Initialize required root dependencies
+        run: >-
+          git submodule update --init --
+          references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons
+          references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
+          references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Read Platform-owned Works proof toolchain
+        id: platform-toolchain
+        run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
+      - name: Initialize Dapr proof prerequisites
+        uses: Hexalith/Hexalith.Builds/Github/dapr-init@04d961759994396132bb2b113ee465b64740a543
+        with:
+          version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
+          runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
+      - name: Run complete canonical Platform gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: bash scripts/verify-platform-parity-ci.sh --artifacts-path "$RUNNER_TEMP/works-platform-parity"
+      - name: Preserve parity results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: works-platform-parity
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/works-platform-parity/bootstrap.json
+            ${{ runner.temp }}/works-platform-parity/platform-source-binding.json
+            ${{ runner.temp }}/works-platform-parity/gate/*.json
+            ${{ runner.temp }}/works-platform-parity/gate/*.log
+            ${{ runner.temp }}/works-platform-parity/gate/*.xml
+            ${{ runner.temp }}/works-platform-parity/gate/*.jsonl
+            ${{ runner.temp }}/works-platform-parity/gate/*.md
+            ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.json
+            ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.log
+            ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.xml
+            ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.jsonl
+            ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.md
+            ${{ runner.temp }}/works-platform-parity/gate/isolated-daprd*/binding.json
+            ${{ runner.temp }}/works-platform-parity/gate/isolated-daprd*/launches.jsonl
+
+  ci:
+    needs: platform-toolchain
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@04d961759994396132bb2b113ee465b64740a543
+    with:
+      solution: Hexalith.Works.slnx
+      test-platform: microsoft-testing-platform
+      dapr-version: ${{ needs.platform-toolchain.outputs.dapr-cli }}
+      dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}
+      build-timeout-minutes: 60
+      run-consumer-validation: true
+      unit-test-projects: |
+        tests/Hexalith.Works.UnitTests
+        tests/Hexalith.Works.ArchitectureTests
+        tests/Hexalith.Works.PropertyTests
+      integration-test-projects: |
+        tests/Hexalith.Works.IntegrationTests
+
+  scripts-lint:
+    name: Lint release tooling
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: false
+          persist-credentials: false
+      - name: Validate workflow syntax and expressions
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml
+      - name: Install ruff
+        run: pipx install ruff==0.13.2
+      - name: Lint release and validation scripts
+        run: bash scripts/lint-scripts.sh
+      - name: Initialize root helpers and Builds history for tooling tests
+        run: git submodule update --init -- references/Hexalith.Platform references/Hexalith.Builds
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Run release tooling regression tests
+        run: python3 -m unittest discover -s scripts/tests

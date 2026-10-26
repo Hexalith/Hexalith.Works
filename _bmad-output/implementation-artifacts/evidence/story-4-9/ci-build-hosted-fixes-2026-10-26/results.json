@@ -1,0 +1,44 @@
+{
+  "scope": "Additional corrections discovered from exact-current hosted CI; no full or hosted acceptance credit yet",
+  "hostedRun": {
+    "id": 40370134405,
+    "commit": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+    "url": "https://github.com/Hexalith/Hexalith.Works/actions/runs/40370134405",
+    "parity": "HTTP403 anonymous source API rate limit before live facts",
+    "ordinary": "MSB3026 duplicate source project build contexts"
+  },
+  "corrections": [
+    "Late SDK transitive ProjectReference globals normalized after IncludeTransitiveProjectReferences; internal Works identities preserved",
+    "Optional authorization only to official repository Git API; not redirected or inherited by live runtime; CI token remains read-only"
+  ],
+  "focused": {
+    "nativeSDKCases": 4,
+    "redCases": 4,
+    "rootTooling": 82,
+    "ownerTests": 90,
+    "architecture": 398,
+    "freshParallelBuild": "zero warnings/errors; Custody, Works.Runtime, Builds.Tooling each compiled once",
+    "lint": "shellcheck,ruff,Actionlint1.7.12 passed",
+    "goFallback": "go command unavailable; existing pinned Actionlint1.7.12 binary passed"
+  },
+  "officialAuthenticatedSmoke": {
+    "commit": "c5d1c280d8c1c1a207cd159d817f614e93c93130",
+    "responseSha256": "44c50737c071e4d8db4624c72979762583ff2147979a1d5cf0d4bc111ef5d7f0",
+    "responseBytes": 1152,
+    "credentialsRecorded": false
+  },
+  "revisions": {
+    "works": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+    "platform": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad"
+  },
+  "codeSha256": {
+    "Directory.Build.targets": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+    ".github/workflows/ci.yml": "5cf062de4dfe030fb05bcaef27b0cc30f95a9be22d3109f315699934d0f6cdbe",
+    "scripts/tests/test_transitive_project_reference_globals.py": "c09ec6b69394068f6fcc3a49aded75fdbc40ec750cde589b1c984f98c0149654",
+    "references/Hexalith.Platform/eng/verify_works_producer.py": "469cdda858d75b26c02db8112642186edd078fe601e2e05904a44fe46fcc7ed4",
+    "references/Hexalith.Platform/eng/test_verify_works_producer.py": "04c6a680b26ba79348bc84bb09d8b2724b07118dd38b7fa52b405708fd5df65a",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": "b3f8b31583b1e8c3ff0a409774fe9eab33b6dd86b07ebf3520d0b1a00974776e",
+    "references/Hexalith.Platform/docs/works-host-parity.md": "e470feca328088a2c132f9e66f155580f7f079ff25608f1347b196706e60aac5"
+  }
+}

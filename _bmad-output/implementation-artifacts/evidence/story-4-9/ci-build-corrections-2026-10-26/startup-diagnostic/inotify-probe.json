@@ -1,0 +1,13 @@
+{
+  "observedAtUtc": "2026-10-26T18:12:32.614901+00:00",
+  "uid": 1000,
+  "maximumProbeWatches": 256,
+  "acceptedWatches": 256,
+  "limits": {
+    "max_user_instances": "8192",
+    "max_user_watches": "1048576",
+    "max_queued_events": "65536"
+  },
+  "limitation": "Post-failure bounded current observation; no historical watch count or startup root cause inferred.",
+  "ownedDescriptorClosed": true
+}

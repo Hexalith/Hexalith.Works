@@ -1,0 +1,235 @@
+diff --git a/Directory.Solution.props b/Directory.Solution.props
+index 4735851..c50dc77 100644
+--- a/Directory.Solution.props
++++ b/Directory.Solution.props
+@@ -7,7 +7,5 @@
+          but keep NU1901-NU1904 visible and non-blocking unless an individual advisory is suppressed. -->
+     <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+     <RestoreBuildInParallel>false</RestoreBuildInParallel>
+-    <!-- Aspire AppHost and its solution projects otherwise write the same output files concurrently. -->
+-    <BuildInParallel>false</BuildInParallel>
+   </PropertyGroup>
+ </Project>
+diff --git a/scripts/tests/test_platform_parity_ci.py b/scripts/tests/test_platform_parity_ci.py
+index 222b672..efc0698 100644
+--- a/scripts/tests/test_platform_parity_ci.py
++++ b/scripts/tests/test_platform_parity_ci.py
+@@ -304,6 +304,62 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
+     def test_accepts_the_complete_canonical_result(self):
+         self.assertEqual(self.require(self.ledger), self.ledger)
+ 
++    def main_fixture(self):
++        origin = self.artifacts / "platform-origin"
++        selected = self.artifacts / "platform-selected"
++        for platform, digest in ((origin, "f" * 64), (selected, RUNTIME)):
++            (platform / "config").mkdir(parents=True)
++            (platform / "config/works-proof-toolchain.json").write_text(
++                json.dumps({"linuxAmd64DaprdSha256": digest}))
++        record = {
++            "status": "bootstrap-validated; parity-incomplete",
++            "coordinatorSha256": PARITY.coordinator_hashes(),
++            "platformOrigin": str(origin),
++            "platformRoot": str(selected),
++            "platformSourceFiles": {"source.cs": "original"},
++        }
++        snapshot = Mock()
++        snapshot.origin_files.return_value = record["platformSourceFiles"]
++        bootstrap = self.artifacts / "bootstrap.json"
++        bootstrap.write_text(json.dumps(record, indent=2) + "\n")
++        return record, snapshot, bootstrap
++
++    def test_main_refuses_incomplete_profile_or_runtime_ledgers_without_stamping_bootstrap(self):
++        record, snapshot, bootstrap = self.main_fixture()
++        original = bootstrap.read_bytes()
++        for mutation, message in (
++            (lambda ledger: ledger.update(status="preparation-passed; parity-incomplete"), "rollback did not pass"),
++            (lambda ledger: ledger["profile"].update(name="full"), "Release/package CI profile"),
++            (lambda ledger: ledger["qualifiedToolchain"].update(runtimeSha256="f" * 64),
++             "Platform-qualified Dapr runtime"),
++        ):
++            with self.subTest(message=message):
++                ledger = copy.deepcopy(self.ledger)
++                mutation(ledger)
++                (self.gate / "ledger.json").write_text(json.dumps(ledger))
++                with (
++                    patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
++                    patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
++                    patch.object(PARITY.subprocess, "run"),
++                    self.assertRaisesRegex(ValueError, message),
++                ):
++                    PARITY.main()
++                self.assertEqual(bootstrap.read_bytes(), original)
++
++    def test_main_accepts_complete_gate_using_the_bootstrapped_platform_pin(self):
++        record, snapshot, bootstrap = self.main_fixture()
++        (self.gate / "ledger.json").write_text(json.dumps(self.ledger))
++        with (
++            patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
++            patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
++            patch.object(PARITY.subprocess, "run") as run,
++        ):
++            PARITY.main()
++        run.assert_called_once_with(["canonical-gate"], env={}, check=True)
++        self.assertEqual(json.loads(bootstrap.read_text())["status"],
++                         "passed-disposable-synthetic-parity-and-rollback")
++        snapshot.origin_files.assert_called_once_with(Path(record["platformOrigin"]))
++
+     def test_missing_skipped_unexecuted_or_failed_required_lane_refuses(self):
+         for lane in PARITY.REQUIRED_CHECKS:
+             for mutation in ("missing", "skipped", "unexecuted", "failed"):
+@@ -361,7 +417,7 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
+             self.require(self.ledger)
+ 
+     def test_full_or_misreported_ci_profile_cannot_qualify_ci(self):
+-        for configuration in ("full", "debug-check", "debug-agents", "absent"):
++        for configuration in ("full", "debug-check", "debug-agents", "debug-consumers", "absent"):
+             ledger = copy.deepcopy(self.ledger)
+             if configuration == "full":
+                 ledger["profile"]["name"] = "full"
+@@ -369,6 +425,8 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
+                 ledger["checks"]["Debug"] = ledger["checks"]["Release"]
+             elif configuration == "debug-agents":
+                 ledger["profile"]["agentsConfiguration"] = "Debug"
++            elif configuration == "debug-consumers":
++                ledger["profile"]["consumerConfigurations"] = ["Debug", "Release"]
+             else:
+                 del ledger["profile"]
+             with self.assertRaisesRegex(ValueError, "Release/package CI profile"):
+diff --git a/scripts/tests/test_release_build_policy.py b/scripts/tests/test_release_build_policy.py
+index 148fbe6..10629f8 100644
+--- a/scripts/tests/test_release_build_policy.py
++++ b/scripts/tests/test_release_build_policy.py
+@@ -89,15 +89,26 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
+                                       f"-p:HexalithEventStoreVersion={PIN}-story415.policy", *arguments)
+                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+ 
+-    def test_invalid_candidate_switch_and_false_admission_are_refused(self):
+-        for value in ("false", "yes", "on", "1"):
+-            with self.subTest(value=value):
+-                result = self.msbuild(
+-                    "-t:ValidateHexalithDependencyMode", "-p:Configuration=Release",
+-                    "-p:HexalithEventStoreVersion=0.0.1", f"-p:WorksAllowLocalEventStoreCandidate={value}",
+-                )
+-                self.assertNotEqual(0, result.returncode)
+-                self.assertIn("HXW0003", result.stdout)
++    def test_false_candidate_admission_does_not_allow_pin_drift(self):
++        result = self.msbuild(
++            "-t:ValidateHexalithDependencyMode", "-p:Configuration=Release",
++            "-p:HexalithEventStoreVersion=0.0.1", "-p:WorksAllowLocalEventStoreCandidate=false",
++        )
++        self.assertNotEqual(0, result.returncode)
++        self.assertIn("Release requires the committed EventStore pin", result.stdout)
++
++    def test_invalid_candidate_switch_refuses_with_the_committed_pin_in_both_configurations(self):
++        for configuration in ("Release", "Debug"):
++            for value in ("yes", "on", "1"):
++                with self.subTest(configuration=configuration, value=value):
++                    result = self.msbuild(
++                        "-t:ValidateHexalithDependencyMode", f"-p:Configuration={configuration}",
++                        f"-p:HexalithEventStoreVersion={PIN}", f"-p:WorksAllowLocalEventStoreCandidate={value}",
++                    )
++                    self.assertNotEqual(0, result.returncode)
++                    self.assertIn("HXW0003", result.stdout)
++                    self.assertIn("WorksAllowLocalEventStoreCandidate must be exactly true or false", result.stdout)
++                    self.assertNotIn("Release requires the committed EventStore pin", result.stdout)
+ 
+     def test_candidate_feeds_require_opt_in_and_preserve_explicit_sources(self):
+         for story in ("story-4-14", "story-4-15"):
+diff --git a/scripts/verify-story415-sdk-candidate.sh b/scripts/verify-story415-sdk-candidate.sh
+index f279b2f..35f43c6 100755
+--- a/scripts/verify-story415-sdk-candidate.sh
++++ b/scripts/verify-story415-sdk-candidate.sh
+@@ -12,12 +12,14 @@ import xml.etree.ElementTree as ET
+ print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithEventStoreVersion'))
+ PY
+ )"
+-parties_version="$(python3 - "$repository_root/Directory.Packages.props" <<'PY'
+-import sys
+-import xml.etree.ElementTree as ET
+-print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithPartiesVersion'))
+-PY
+-)"
++# Resolve the imported catalog exactly as the integration consumer's assembly metadata does.
++parties_version="$(dotnet msbuild \
++    "$repository_root/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" \
++    -nologo -p:Configuration=Release -getProperty:HexalithPartiesVersion)"
++if [[ -z "${parties_version//[[:space:]]/}" ]]; then
++    echo "Effective HexalithPartiesVersion is empty; refusing SDK verification." >&2
++    exit 1
++fi
+ verification_feed="$repository_root/.artifacts/story-4-15/feed"
+ if [[ "$sdk_version" != *-* ]]; then
+     verification_feed="$fixture/public-feed"
+diff --git a/tmp/story49-group2-20261026T173247Z/works/scripts/tests/test_story415_sdk_verifier.py b/tmp/story49-group2-20261026T173247Z/works/scripts/tests/test_story415_sdk_verifier.py
+new file mode 100644
+index 0000000..33c7cc7
+--- /dev/null
++++ b/tmp/story49-group2-20261026T173247Z/works/scripts/tests/test_story415_sdk_verifier.py
+@@ -0,0 +1,67 @@
++"""The current SDK verifier must consume the effective imported Parties package version."""
++
++import os
++import shutil
++import subprocess
++import tempfile
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++
++
++class Story415SdkVerifierTests(unittest.TestCase):
++    def verify_version_selection(self, version):
++        with tempfile.TemporaryDirectory(prefix="works-sdk-verifier-") as directory:
++            root = Path(directory)
++            scripts = root / "scripts"
++            scripts.mkdir()
++            script = scripts / "verify-story415-sdk-candidate.sh"
++            shutil.copyfile(ROOT / "scripts/verify-story415-sdk-candidate.sh", script)
++            shutil.copyfile(ROOT / "global.json", root / "global.json")
++            (root / "Directory.Packages.props").write_text(
++                '<Project><PropertyGroup><HexalithEventStoreVersion>3.128.0</HexalithEventStoreVersion>'
++                '</PropertyGroup><Import Project="catalog.props" /></Project>')
++            (root / "catalog.props").write_text(
++                f"<Project><PropertyGroup><HexalithPartiesVersion>{version}</HexalithPartiesVersion>"
++                "</PropertyGroup></Project>")
++            project = root / "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"
++            project.parent.mkdir(parents=True)
++            project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
++                               '<TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>')
++            commands = root / "commands"
++            commands.mkdir()
++            shim = commands / "dotnet"
++            shim.write_text(
++                '#!/usr/bin/env bash\nset -euo pipefail\n'
++                'if [[ "$1" == "msbuild" ]]; then\n'
++                '    exec "$SDK_VERIFIER_REAL_DOTNET" "$@"\n'
++                'fi\n'
++                'if [[ "$1" == "run" && "$2" == "--project" ]]; then\n'
++                '    cp "$3" "$SDK_VERIFIER_CAPTURE"\n'
++                '    exit 73\n'
++                'fi\nexit 74\n')
++            shim.chmod(0o755)
++            capture = root / "consumer.xml"
++            environment = {
++                key: value for key, value in os.environ.items()
++                if key.casefold() not in {"hexalithpartiesversion", "hexalithversionsloaded"}
++            } | {
++                "PATH": str(commands) + os.pathsep + os.environ["PATH"],
++                "SDK_VERIFIER_REAL_DOTNET": shutil.which("dotnet"),
++                "SDK_VERIFIER_CAPTURE": str(capture),
++            }
++            result = subprocess.run(["bash", str(script)], cwd=root, env=environment,
++                                    capture_output=True, text=True, timeout=60, check=False)
++            return result, capture.read_text() if capture.exists() else None
++
++    def test_package_only_consumer_uses_the_effective_imported_parties_version(self):
++        result, consumer = self.verify_version_selection("9.8.7")
++        self.assertEqual(result.returncode, 73, result.stdout + result.stderr)
++        self.assertIn('<PackageReference Include="Hexalith.Parties.Client" Version="9.8.7" />', consumer)
++
++    def test_empty_effective_parties_version_refuses_before_consumer_restore(self):
++        result, consumer = self.verify_version_selection("")
++        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
++        self.assertIn("Effective HexalithPartiesVersion is empty", result.stderr)
++        self.assertIsNone(consumer)

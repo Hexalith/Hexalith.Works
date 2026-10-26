@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-26T19:11:20.282873+00:00",
+  "scope": "focused diagnostic only; no complete/full parity credit",
+  "command": [
+    "/tmp/story49-group2-current-20261026T182217Z/full1/gate/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-explicit",
+    "on",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "-result-xml",
+    "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/result.xml"
+  ],
+  "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+  "exitCode": 0,
+  "runtimeLauncherBytesUnchanged": true,
+  "changedRuntimeFiles": [],
+  "sourceRuntimeArchiveInputClosureAfter": true,
+  "finishedAt": "2026-10-26T19:22:56.409705+00:00"
+}

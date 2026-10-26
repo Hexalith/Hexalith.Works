@@ -1,0 +1,99 @@
+<assemblies schema-version="3" id="56bd2021-0583-4a26-994a-081eebf3cc9c" computer="DESKTOP-VIOG240" user="administrator" start-rtf="2026-10-26T17:57:20.1363664+00:00" finish-rtf="2026-10-26T18:10:29.4360834+00:00" timestamp="10/26/2026 19:10:29"><assembly environment="64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]" id="47f03819-469e-4dff-a0c4-69ced47b9ca5" name="/tmp/story49-group2-20261026T173247Z/full1/gate/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests.dll" run-date="2026-10-26" run-time="17:57:20" start-rtf="2026-10-26T17:57:20.1363664+00:00" test-framework="xUnit.net v3 4.0.2+0c7aa4991f" target-framework=".NETCoreApp,Version=v10.0" errors="0" failed="1" finish-rtf="2026-10-26T18:10:29.4360834+00:00" not-run="0" passed="3" skipped="0" time="789.336" time-rtf="00:13:09.3360000" total="4"><collection name="Works AppHost live topology" id="33621f80-9cc3-43ec-9f52-b91fdaadefbb" failed="1" not-run="0" passed="3" skipped="0" time="789.223" time-rtf="00:13:09.2230000" total="4"><test id="bc896ff9-ac0c-4246-bea0-a0741d3fa078" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" result="Fail" time="625.675" time-rtf="00:10:25.6750000" start-rtf="2026-10-26T17:57:20.2176911+00:00" finish-rtf="2026-10-26T18:07:45.8743225+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart" source-file="/tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="189"><failure exception-type="System.InvalidOperationException"><message>System.InvalidOperationException : [startup/readiness] The Aspire AppHost could not start the live Works topology. dapr-sentry[state=Running,health=Unhealthy,exit=none] dapr-placement-mtls[state=Waiting,health=unknown,exit=none] dapr-scheduler-mtls[state=Waiting,health=unknown,exit=none] eventstore[state=Waiting,health=unknown,exit=none] works[state=Waiting,health=unknown,exit=none] eventstore-operations[state=Waiting,health=unknown,exit=none] eventstore-admin[state=Waiting,health=unknown,exit=none]
+dapr-sentry startup output:
+2026-10-26T18:04:45.9358438Z time=\"2026-10-26T18:04:45.935779133Z\" level=info msg=\"CA certificate key pair ready\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:45.9358455Z time=\"2026-10-26T18:04:45.935794674Z\" level=info msg=\"OIDC HTTP server is disabled\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:45.9358461Z time=\"2026-10-26T18:04:45.9358029Z\" level=info msg=\"Using validator 'insecure'\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:45.9361355Z time=\"2026-10-26T18:04:45.935914362Z\" level=info msg=\"Fetching initial identity\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:45.9361377Z time=\"2026-10-26T18:04:45.935950848Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:45.9361384Z time=\"2026-10-26T18:04:45.935971228Z\" level=info msg=\"metrics server started on :9090/\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:45.9363796Z time=\"2026-10-26T18:04:45.936160732Z\" level=info msg=\"Security is initialized successfully\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:45.9363860Z time=\"2026-10-26T18:04:45.936168357Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-27 18:04:45 +0000 UTC, renewal at: 2026-10-27 05:57:15 +0000 UTC\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:45.9363871Z time=\"2026-10-26T18:04:45.936263557Z\" level=info msg=\"Running gRPC server on port 50001\" instance=5b4efb0c744c scope=dapr.sentry.server type=log ver=1.18.7
+2026-10-26T18:04:47.9372915Z time=\"2026-10-26T18:04:47.935995014Z\" level=warning msg=\"Issuer credentials changed; reloading\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373152Z time=\"2026-10-26T18:04:47.936115268Z\" level=info msg=\"Healthz server is shutting down\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373162Z time=\"2026-10-26T18:04:47.936137432Z\" level=info msg=\"Shutting down gRPC server\" instance=5b4efb0c744c scope=dapr.sentry.server type=log ver=1.18.7
+2026-10-26T18:04:47.9373170Z time=\"2026-10-26T18:04:47.936223579Z\" level=info msg=\"Adding validator 'insecure'\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373185Z time=\"2026-10-26T18:04:47.936231184Z\" level=info msg=\"Using local file system for trust bundle storage\" instance=5b4efb0c744c scope=dapr.sentry.ca type=log ver=1.18.7
+2026-10-26T18:04:47.9373196Z time=\"2026-10-26T18:04:47.936568081Z\" level=info msg=\"Root and issuer certs found: using credentials from store\" instance=5b4efb0c744c scope=dapr.sentry.ca type=log ver=1.18.7
+2026-10-26T18:04:47.9373205Z time=\"2026-10-26T18:04:47.936582198Z\" level=info msg=\"CA certificate key pair ready\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373214Z time=\"2026-10-26T18:04:47.936601346Z\" level=info msg=\"OIDC HTTP server is disabled\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373219Z time=\"2026-10-26T18:04:47.936609682Z\" level=info msg=\"Using validator 'insecure'\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373224Z time=\"2026-10-26T18:04:47.936721049Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373230Z time=\"2026-10-26T18:04:47.936804772Z\" level=info msg=\"metrics server started on :9090/\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:47.9373235Z time=\"2026-10-26T18:04:47.936844179Z\" level=info msg=\"Fetching initial identity\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:47.9373326Z time=\"2026-10-26T18:04:47.937075309Z\" level=info msg=\"Security is initialized successfully\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:47.9373337Z time=\"2026-10-26T18:04:47.937081421Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-27 18:04:47 +0000 UTC, renewal at: 2026-10-27 05:57:17 +0000 UTC\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:47.9373350Z time=\"2026-10-26T18:04:47.937129264Z\" level=info msg=\"Running gRPC server on port 50001\" instance=5b4efb0c744c scope=dapr.sentry.server type=log ver=1.18.7
+2026-10-26T18:04:49.9382210Z time=\"2026-10-26T18:04:49.938086313Z\" level=warning msg=\"Issuer credentials changed; reloading\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9386738Z time=\"2026-10-26T18:04:49.938323836Z\" level=info msg=\"Healthz server is shutting down\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9386769Z time=\"2026-10-26T18:04:49.938343956Z\" level=info msg=\"Shutting down gRPC server\" instance=5b4efb0c744c scope=dapr.sentry.server type=log ver=1.18.7
+2026-10-26T18:04:49.9386781Z time=\"2026-10-26T18:04:49.938408822Z\" level=info msg=\"Adding validator 'insecure'\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9390875Z time=\"2026-10-26T18:04:49.939010486Z\" level=info msg=\"Using local file system for trust bundle storage\" instance=5b4efb0c744c scope=dapr.sentry.ca type=log ver=1.18.7
+2026-10-26T18:04:49.9394742Z time=\"2026-10-26T18:04:49.939425264Z\" level=info msg=\"Root and issuer certs found: using credentials from store\" instance=5b4efb0c744c scope=dapr.sentry.ca type=log ver=1.18.7
+2026-10-26T18:04:49.9395564Z time=\"2026-10-26T18:04:49.93953586Z\" level=info msg=\"CA certificate key pair ready\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9395932Z time=\"2026-10-26T18:04:49.939577Z\" level=info msg=\"OIDC HTTP server is disabled\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9396354Z time=\"2026-10-26T18:04:49.939601227Z\" level=info msg=\"Using validator 'insecure'\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9398267Z time=\"2026-10-26T18:04:49.939798201Z\" level=info msg=\"Healthz server is listening on [::]:8080\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9404406Z time=\"2026-10-26T18:04:49.940077229Z\" level=info msg=\"metrics server started on :9090/\" instance=5b4efb0c744c scope=dapr.sentry type=log ver=1.18.7
+2026-10-26T18:04:49.9414584Z time=\"2026-10-26T18:04:49.940807282Z\" level=info msg=\"Fetching initial identity\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:49.9414672Z time=\"2026-10-26T18:04:49.941179538Z\" level=info msg=\"Security is initialized successfully\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:49.9414713Z time=\"2026-10-26T18:04:49.941200609Z\" level=info msg=\"Starting workload identity expiry watcher; cert expires on: 2026-10-27 18:04:49 +0000 UTC, renewal at: 2026-10-27 05:57:19 +0000 UTC\" instance=5b4efb0c744c scope=dapr.runtime.security type=log ver=1.18.7
+2026-10-26T18:04:49.9414747Z time=\"2026-10-26T18:04:49.941315933Z\" level=info msg=\"Running gRPC server on port 50001\" instance=5b4efb0c744c scope=dapr.sentry.server type=log ver=1.18.7
+2026-10-26T18:04:44.7990000Z [sys] Added new ContainerNetworkConnection: ContainerName = dapr-sentry-utqtgwcn
+
+dapr-placement-mtls startup output:
+2026-10-26T18:04:41.8382379Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:44.8028405Z Waiting for resource 'dapr-sentry' to become healthy.
+
+dapr-scheduler-mtls startup output:
+2026-10-26T18:04:41.8380915Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:44.8028321Z Waiting for resource 'dapr-sentry' to become healthy.
+
+eventstore startup output:
+2026-10-26T18:04:41.8233598Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:41.8233805Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-26T18:04:41.8233855Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-26T18:04:44.8026906Z Waiting for resource 'dapr-sentry' to become healthy.
+
+works startup output:
+2026-10-26T18:04:41.8235502Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-26T18:04:41.8235593Z Waiting for resource ready to execute for 'statestore'.
+2026-10-26T18:04:41.8235642Z Finished waiting for resource 'statestore'.
+2026-10-26T18:04:41.8235735Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:41.8235777Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-26T18:04:41.8235827Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-26T18:04:44.8027588Z Waiting for resource 'dapr-sentry' to become healthy.
+
+works-ha startup output:
+
+eventstore-operations startup output:
+2026-10-26T18:04:41.8236312Z Waiting for resource 'works' to enter the 'Running' state.
+2026-10-26T18:04:41.8236389Z Waiting for resource 'statestore' to enter the 'Running' state.
+2026-10-26T18:04:41.8236415Z Waiting for resource ready to execute for 'statestore'.
+2026-10-26T18:04:41.8236443Z Finished waiting for resource 'statestore'.
+2026-10-26T18:04:41.8236494Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:41.8236538Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-26T18:04:41.8236578Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-26T18:04:44.8027721Z Waiting for resource 'dapr-sentry' to become healthy.
+
+eventstore-admin startup output:
+2026-10-26T18:04:41.8234845Z Waiting for resource 'eventstore-operations' to enter the 'Running' state.
+2026-10-26T18:04:41.8234911Z Waiting for resource 'dapr-sentry' to enter the 'Running' state.
+2026-10-26T18:04:41.8234953Z Waiting for resource 'dapr-placement-mtls' to enter the 'Running' state.
+2026-10-26T18:04:41.8234994Z Waiting for resource 'dapr-scheduler-mtls' to enter the 'Running' state.
+2026-10-26T18:04:44.8027452Z Waiting for resource 'dapr-sentry' to become healthy.
+
+---- System.InvalidOperationException : [startup/readiness] The Aspire AppHost could not start the live Works topology. dapr-sentry[state=Running,health=Unhealthy,exit=none] dapr-placement-mtls[state=Waiting,health=unknown,exit=none] dapr-scheduler-mtls[state=Waiting,health=unknown,exit=none] eventstore[state=Waiting,health=unknown,exit=none] works[state=Waiting,health=unknown,exit=none] eventstore-operations[state=Waiting,health=unknown,exit=none] eventstore-admin[state=Waiting,health=unknown,exit=none]
+-------- System.Threading.Tasks.TaskCanceledException : A task was canceled.</message><stack-trace>   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 602
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 548
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 637
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 637
+   at Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart() in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:line 637
+--- End of stack trace from previous location ---
+----- Inner Stack Trace -----
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 420
+----- Inner Stack Trace -----
+   at Aspire.Hosting.Testing.DistributedApplicationFactory.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationFactory.cs:line 73
+   at Aspire.Hosting.Testing.DistributedApplicationTestingBuilder.SuspendingDistributedApplicationFactory.DelegatedHost.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationTestingBuilder.cs:line 599
+   at Aspire.Hosting.Testing.DistributedApplicationTestingBuilder.SuspendingDistributedApplicationFactory.DelegatedDistributedApplication.StartAsync(CancellationToken cancellationToken) in /_/src/Aspire.Hosting.Testing/DistributedApplicationTestingBuilder.cs:line 574
+   at Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness.WithAppHostAsync(CancellationToken cancellationToken, Func`5 body, Action`1 configure, String actorTypeName, Boolean expectWorksReadinessDegraded, String schedulerVolumeName, String certificateDirectory, Boolean useRetainedHost) in /tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:line 416</stack-trace></failure></test><test id="89de77f6-988e-4892-b182-74c745269904" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetainedPlanWaitBoundsNonCooperativeStoreAcquisition" result="Pass" time="0.042" time-rtf="00:00:00.0420000" start-rtf="2026-10-26T18:07:45.8823047+00:00" finish-rtf="2026-10-26T18:07:45.9262473+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="RetainedPlanWaitBoundsNonCooperativeStoreAcquisition" source-file="/tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="37" /><test id="8c623e61-4d16-441a-a1c0-78eb731b0a5d" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetryStorePreservesCoordinatedBatchCapability" result="Pass" time="0.029" time-rtf="00:00:00.0290000" start-rtf="2026-10-26T18:07:45.9268408+00:00" finish-rtf="2026-10-26T18:07:45.9563014+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="RetryStorePreservesCoordinatedBatchCapability" source-file="/tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="61" /><test id="a82c9169-68d0-454d-91dc-61813ff9206d" name="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery" result="Pass" time="163.477" time-rtf="00:02:43.4770000" start-rtf="2026-10-26T18:07:45.9568143+00:00" finish-rtf="2026-10-26T18:10:29.4256456+00:00" type="Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests" method="SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery" source-file="/tmp/story49-group2-20261026T173247Z/works/tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs" source-line="77" /></collection></assembly></assemblies>

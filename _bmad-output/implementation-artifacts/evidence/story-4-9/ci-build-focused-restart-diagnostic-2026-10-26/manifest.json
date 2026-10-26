@@ -1,0 +1,357 @@
+{
+  "createdAtUtc": "2026-10-26T19:28:58.944862+00:00",
+  "scope": "focused unchanged fact diagnostic; zero complete/full acceptance credit",
+  "nativeRoot": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1",
+  "files": {
+    "build-packet.py": {
+      "sha256": "4b602682dd9fb2942e8fbae3d984cdeb21e1c79989954bfce851920ed4934e22",
+      "bytes": 7201,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/build-packet.py",
+      "sourceSha256": "4b602682dd9fb2942e8fbae3d984cdeb21e1c79989954bfce851920ed4934e22",
+      "sourceBytes": 7201,
+      "compression": "none"
+    },
+    "command.json": {
+      "sha256": "b974c1f6820a62e3374f61101896ddccc4fb0d7a35c466d3d042247deaef26e0",
+      "bytes": 912,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/command.json",
+      "sourceSha256": "b974c1f6820a62e3374f61101896ddccc4fb0d7a35c466d3d042247deaef26e0",
+      "sourceBytes": 912,
+      "compression": "none"
+    },
+    "dcp-observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "diagnostic-summary.json": {
+      "sha256": "ebc7de2ef797e5ac6943a3105bcd8ab2b17f47f4694be842a13dc559dfc12206",
+      "bytes": 3373,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/diagnostic-summary.json",
+      "sourceSha256": "ebc7de2ef797e5ac6943a3105bcd8ab2b17f47f4694be842a13dc559dfc12206",
+      "sourceBytes": 3373,
+      "compression": "none"
+    },
+    "driver.log.gz": {
+      "sha256": "2adb6437d7595921e62ca11c3147ef826aac63c055676dfef2f60f04c8c73307",
+      "bytes": 458,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/driver.log",
+      "sourceSha256": "ff9a83f9e0c7094043e3e17851247f5ea5d4bd4796004a74b306eeacdc84987e",
+      "sourceBytes": 841,
+      "compression": "gzip"
+    },
+    "finished.json": {
+      "sha256": "ff9a83f9e0c7094043e3e17851247f5ea5d4bd4796004a74b306eeacdc84987e",
+      "bytes": 841,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/finished.json",
+      "sourceSha256": "ff9a83f9e0c7094043e3e17851247f5ea5d4bd4796004a74b306eeacdc84987e",
+      "sourceBytes": 841,
+      "compression": "none"
+    },
+    "observe-control-plane-periodic.py": {
+      "sha256": "524669bf71159b1c22110d5d2ea8d111736c8b0961596067af889120920b4dc8",
+      "bytes": 13832,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observe-control-plane-periodic.py",
+      "sourceSha256": "524669bf71159b1c22110d5d2ea8d111736c8b0961596067af889120920b4dc8",
+      "sourceBytes": 13832,
+      "compression": "none"
+    },
+    "observe-control-plane.py": {
+      "sha256": "3fdc89692276307191976c37d230bc246e65378d2cf3b43907fa64f7afc75481",
+      "bytes": 16124,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observe-control-plane.py",
+      "sourceSha256": "3fdc89692276307191976c37d230bc246e65378d2cf3b43907fa64f7afc75481",
+      "sourceBytes": 16124,
+      "compression": "none"
+    },
+    "observe-dcp.py": {
+      "sha256": "5f93c47e6079ea4a6f5c441f78345b2fb2c28b1c9f8e9048c35eb51660a18d08",
+      "bytes": 6038,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observe-dcp.py",
+      "sourceSha256": "5f93c47e6079ea4a6f5c441f78345b2fb2c28b1c9f8e9048c35eb51660a18d08",
+      "sourceBytes": 6038,
+      "compression": "none"
+    },
+    "observer-change-only-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observer-change-only-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "observer-driver.log.gz": {
+      "sha256": "d1eeab6149df9b904538ab619b0445ee95c3fa68682be5286b5ad221433cd7be",
+      "bytes": 242,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observer-driver.log",
+      "sourceSha256": "a88d4e1c3afbac0eb9ee0efe7473a62a0c0e71f584f427e9a8c9c4fc7ca7e216",
+      "sourceBytes": 293,
+      "compression": "gzip"
+    },
+    "observer-rate-transition.json": {
+      "sha256": "e232fbccbce93b8b50f66dd704d5c7da539af7447ffbc01ec4c1ee812f3ef1cb",
+      "bytes": 396,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/observer-rate-transition.json",
+      "sourceSha256": "e232fbccbce93b8b50f66dd704d5c7da539af7447ffbc01ec4c1ee812f3ef1cb",
+      "sourceBytes": 396,
+      "compression": "none"
+    },
+    "result.log.gz": {
+      "sha256": "54bc169c53a8289b503f51e57c2417f3998e32ce2e2c796f0faea0849ec05b20",
+      "bytes": 242,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/result.log",
+      "sourceSha256": "85cec2b7827d5312459ed72694f590b0deca88c5ae3858907e33270dc74a7245",
+      "sourceBytes": 400,
+      "compression": "gzip"
+    },
+    "result.xml": {
+      "sha256": "dace844f6a092444eb3640bf1cecee55df6a922e29d9d8ab1d8a6ab41497b762",
+      "bytes": 1763,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/result.xml",
+      "sourceSha256": "dace844f6a092444eb3640bf1cecee55df6a922e29d9d8ab1d8a6ab41497b762",
+      "sourceBytes": 1763,
+      "compression": "none"
+    },
+    "run-focus.py": {
+      "sha256": "197ac397d3d336300e30f219bb24ec7ae5fa48f9f53fb573a88580954572687a",
+      "bytes": 2008,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/run-focus.py",
+      "sourceSha256": "197ac397d3d336300e30f219bb24ec7ae5fa48f9f53fb573a88580954572687a",
+      "sourceBytes": 2008,
+      "compression": "none"
+    },
+    "runtime-after.json": {
+      "sha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "bytes": 196120,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/runtime-after.json",
+      "sourceSha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "sourceBytes": 196120,
+      "compression": "none"
+    },
+    "runtime-before.json": {
+      "sha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "bytes": 196120,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/runtime-before.json",
+      "sourceSha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "sourceBytes": 196120,
+      "compression": "none"
+    },
+    "runtime-environment.json": {
+      "sha256": "40d6ba28826017ae14eff675aeb32e5ffd229c4b7a7a9481ef49c144ba8ee295",
+      "bytes": 2923,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/runtime-environment.json",
+      "sourceSha256": "40d6ba28826017ae14eff675aeb32e5ffd229c4b7a7a9481ef49c144ba8ee295",
+      "sourceBytes": 2923,
+      "compression": "none"
+    },
+    "summarize.py": {
+      "sha256": "2f59d5151d0388a821b99cfae468b13271ec548f8a488868a10e4d533424391d",
+      "bytes": 3195,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/summarize.py",
+      "sourceSha256": "2f59d5151d0388a821b99cfae468b13271ec548f8a488868a10e4d533424391d",
+      "sourceBytes": 3195,
+      "compression": "none"
+    },
+    "control-plane-observer/admitted.jsonl.gz": {
+      "sha256": "34a4b3af69df5fa5a2d7d68889b6ce09611429510915660e2bb9b7e4f29a74ce",
+      "bytes": 1900,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/admitted.jsonl",
+      "sourceSha256": "b0299b84cdc1fd2377c324f47722564de1299cb90aebc4456c3597d069b4acf8",
+      "sourceBytes": 11249,
+      "compression": "gzip"
+    },
+    "control-plane-observer/aspire-describe.jsonl.gz": {
+      "sha256": "dd14b565b46dd45932122433e8d37957a8c212cfa979bdc2aa97de66e6478021",
+      "bytes": 699,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/aspire-describe.jsonl",
+      "sourceSha256": "2bcab3491d88953ed0369d51cb448f570e845288d5e2b2fe6335dad8f15fc409",
+      "sourceBytes": 19933,
+      "compression": "gzip"
+    },
+    "control-plane-observer/disappearances.jsonl.gz": {
+      "sha256": "6f938e81f58f4fa70aac5581991e4469119fe1754726c0c85df4bea6290d9326",
+      "bytes": 747,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/disappearances.jsonl",
+      "sourceSha256": "ed147f39740de6d59793fdf7f5c1aacee8939e6f5eb0018c3c673d62a40188b7",
+      "sourceBytes": 2925,
+      "compression": "gzip"
+    },
+    "control-plane-observer/events.jsonl.gz": {
+      "sha256": "e62b74bb213b4a6ce91f77d6ab9cfc132772f5f24e98d690f171971c09455677",
+      "bytes": 4950,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/events.jsonl",
+      "sourceSha256": "f0e4142e7be7edad2f4d263a2002965fae6ae5f83090b04a790e07f58c4a935d",
+      "sourceBytes": 134338,
+      "compression": "gzip"
+    },
+    "control-plane-observer/namespace-helpers.jsonl.gz": {
+      "sha256": "86386c9c8a801eb4af1258de8c7749481b7d198f86958d7b9f8734471f7170b7",
+      "bytes": 9725,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/namespace-helpers.jsonl",
+      "sourceSha256": "a7abf6b51a5cf585dc76b8496f1f599f1b809d9f57b56b2eaa78f5f3e6774444",
+      "sourceBytes": 121968,
+      "compression": "gzip"
+    },
+    "control-plane-observer/native-tool-limitations.jsonl.gz": {
+      "sha256": "d0c8b346cab454cd11b523bfa5af084fa59095b01ce40f2e17e85888bc2dc457",
+      "bytes": 1194,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/native-tool-limitations.jsonl",
+      "sourceSha256": "bc33e8b8150c42fa971e76a78aa0943b563191cb37830938096a7a55937f350d",
+      "sourceBytes": 9737,
+      "compression": "gzip"
+    },
+    "control-plane-observer/observations.jsonl.gz": {
+      "sha256": "1d9abb6bef94af24777693ffbab0106859c0d2b357a2bdc3bcb681562985dbf4",
+      "bytes": 16249,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/observations.jsonl",
+      "sourceSha256": "ccbe7fd8dbcfff81e317da6eae8ab880c606adec6001185d5f34d2fb60fdd529",
+      "sourceBytes": 452754,
+      "compression": "gzip"
+    },
+    "control-plane-observer/scope-periodic.json": {
+      "sha256": "20c51674087eee65dce6a2fb2a135f3ce49d6f2ae23e3c4a3d44a0d36d07876e",
+      "bytes": 1215,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/scope-periodic.json",
+      "sourceSha256": "20c51674087eee65dce6a2fb2a135f3ce49d6f2ae23e3c4a3d44a0d36d07876e",
+      "sourceBytes": 1215,
+      "compression": "none"
+    },
+    "control-plane-observer/scope.json": {
+      "sha256": "4e7b0f5b1a1e57f3152a4090075106a60a1cd3f8df3ba3eb3a9325ca9e2fa6c7",
+      "bytes": 1353,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/scope.json",
+      "sourceSha256": "4e7b0f5b1a1e57f3152a4090075106a60a1cd3f8df3ba3eb3a9325ca9e2fa6c7",
+      "sourceBytes": 1353,
+      "compression": "none"
+    },
+    "control-plane-observer/stdout.jsonl.gz": {
+      "sha256": "0da58e3489bed8d21e53e4639b5b2f388a2f6fe113ae666989a01abf79af3cfc",
+      "bytes": 42262,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/stdout.jsonl",
+      "sourceSha256": "5ab68d1c72b72b21066b1ec767611187a9c79f74b9205818437f2521e859186b",
+      "sourceBytes": 335328,
+      "compression": "gzip"
+    },
+    "control-plane-observer/summary.json": {
+      "sha256": "9994bb452e7333a0dbb2f8b7e30df71f7e4f89c315ddbc75a5957da9d607d106",
+      "bytes": 207,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/control-plane-observer/summary.json",
+      "sourceSha256": "9994bb452e7333a0dbb2f8b7e30df71f7e4f89c315ddbc75a5957da9d607d106",
+      "sourceBytes": 207,
+      "compression": "none"
+    },
+    "dcp-observer/admitted-apis.jsonl.gz": {
+      "sha256": "eb9a85d488c092b984811bfe1830c5a7c4ab0ece82d2294e6573f84ec388c163",
+      "bytes": 344,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer/admitted-apis.jsonl",
+      "sourceSha256": "08ed20a5dac5a61896b2917ab9c54c1fdbff0e8eae6a7166c2b04e21617ce63c",
+      "sourceBytes": 1135,
+      "compression": "gzip"
+    },
+    "dcp-observer/scope.json": {
+      "sha256": "31f8630ed091e269050658c6944d4636d1dc4e532f1ecd7bff3078be995de5a9",
+      "bytes": 580,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer/scope.json",
+      "sourceSha256": "31f8630ed091e269050658c6944d4636d1dc4e532f1ecd7bff3078be995de5a9",
+      "sourceBytes": 580,
+      "compression": "none"
+    },
+    "dcp-observer/service-logs.jsonl.gz": {
+      "sha256": "8a2eeb396ca9688037dd00357a6e67f8d424d6bf9b068ba318832d3a93efae6a",
+      "bytes": 2250,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer/service-logs.jsonl",
+      "sourceSha256": "ae647cf53d330089a87622357375eeeb934ab73b9e464d492246d4091f10cb8b",
+      "sourceBytes": 11328,
+      "compression": "gzip"
+    },
+    "dcp-observer/snapshots.jsonl.gz": {
+      "sha256": "cd923586f8eb2f2d16d27f835dfa6b0c5975dc958d52f306170564589ad4a95b",
+      "bytes": 7585,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer/snapshots.jsonl",
+      "sourceSha256": "6f60d1cf34708867d9b2ece3e9cce1be73f7bd8bb01d3004e409d393d24ffe6b",
+      "sourceBytes": 384923,
+      "compression": "gzip"
+    },
+    "dcp-observer/summary.json": {
+      "sha256": "44b48b7087c38f46049753fe2abd03b265738e4210d260ba339835050b61f2de",
+      "bytes": 140,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/dcp-observer/summary.json",
+      "sourceSha256": "44b48b7087c38f46049753fe2abd03b265738e4210d260ba339835050b61f2de",
+      "sourceBytes": 140,
+      "compression": "none"
+    },
+    "isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "isolated-daprd/launches.jsonl.gz": {
+      "sha256": "2a9c346d1c459ed52d0595c0b3cce16677e2d04a1fc48f40044f2861d8d6be29",
+      "bytes": 2154,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/isolated-daprd/launches.jsonl",
+      "sourceSha256": "1c1b9fe64cf284a350bbe7abc104526eae918d77bc9d2d915f2d86b807142e8b",
+      "sourceBytes": 11505,
+      "compression": "gzip"
+    },
+    "preparation/prepare-focus.py": {
+      "sha256": "29019d5b7c5b1dd3075c3d5f5bbb6a24b23366577e76ea30415c5ec1a2b40eeb",
+      "bytes": 2837,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/prepare-focus.py",
+      "sourceSha256": "29019d5b7c5b1dd3075c3d5f5bbb6a24b23366577e76ea30415c5ec1a2b40eeb",
+      "sourceBytes": 2837,
+      "compression": "none"
+    },
+    "preparation/prepare-focus-argument-refused.py": {
+      "sha256": "a2113b108a53834e6592ff2908cca1dc77a7f514d2baa18e23e92d0c0b3ff94c",
+      "bytes": 2832,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/prepare-focus-argument-refused.py",
+      "sourceSha256": "a2113b108a53834e6592ff2908cca1dc77a7f514d2baa18e23e92d0c0b3ff94c",
+      "sourceBytes": 2832,
+      "compression": "none"
+    },
+    "preparation/focused-preparation.log.gz": {
+      "sha256": "5a26ce0058a2756d9a9b8d7393e6ceb2c55f9ee40ff41dea61b2afa89736a87d",
+      "bytes": 89,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-preparation.log",
+      "sourceSha256": "352614181df9eec017015751fda4da6651ee812882f2d3ebd91773f374e6f236",
+      "sourceBytes": 78,
+      "compression": "gzip"
+    },
+    "preparation/focused-preparation-argument-refused.log.gz": {
+      "sha256": "e7dc04a3165e251bfee25eef8007ef470da9702f0f56e2dd2e8d9bfc076594d5",
+      "bytes": 386,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/focused-preparation-argument-refused.log",
+      "sourceSha256": "39968f4f7d35142c1d6b74470bfbcde2d046edddf0e118f2a0a23e30ece546d2",
+      "sourceBytes": 939,
+      "compression": "gzip"
+    },
+    "captured-inputs.json": {
+      "sha256": "99a0ba1684ec760cee0da31181f2dbcfc7d67efb7c6d1b747eb6a143fa528500",
+      "bytes": 22868,
+      "source": "/tmp/story49-group2-current-20261026T182217Z/inputs.json",
+      "sourceSha256": "99a0ba1684ec760cee0da31181f2dbcfc7d67efb7c6d1b747eb6a143fa528500",
+      "sourceBytes": 22868,
+      "compression": "none"
+    },
+    "README.md": {
+      "sha256": "0193b24ac4bb83b732bf6b321ccc46c74fbb7d854b74e3b6105a605403d4a4f8",
+      "bytes": 4948,
+      "compression": "none",
+      "source": "authored diagnostic summary"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "Hexalith.Works.IntegrationTests": {
+    "total": 1030,
+    "passed": 1023,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 7,
+    "notRunTests": [
+      "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+      "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+      "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+      "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily"
+    ]
+  },
+  "Hexalith.Works.UnitTests": {
+    "total": 597,
+    "passed": 597,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0,
+    "notRunTests": []
+  },
+  "Hexalith.Works.PropertyTests": {
+    "total": 3,
+    "passed": 3,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0,
+    "notRunTests": []
+  }
+}

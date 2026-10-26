@@ -1,0 +1,75 @@
+{
+  "scope": "current readiness snapshot, separate from frozen full; not a complete consumed-source closure",
+  "observedAtUtc": "2026-10-26T18:14:48.955757+00:00",
+  "works": {
+    "revision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+    "status": "M _bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md\n M docs/boundary-decision-record.md\n M docs/eventstore-api-surface-constraints.md\n?? _bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/"
+  },
+  "rootDependencies": {
+    "references/Hexalith.AI.Tools": {
+      "gitlink": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+      "checkout": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+      "status": ""
+    },
+    "references/Hexalith.Builds": {
+      "gitlink": "cbff0462ffa2c12496ab69ba786fb31efcdde7c2",
+      "checkout": "cbff0462ffa2c12496ab69ba786fb31efcdde7c2",
+      "status": ""
+    },
+    "references/Hexalith.Chatbot": {
+      "gitlink": "f75d1ded32b1e55dbb4f9f7d8c1148fd12c64e7e",
+      "checkout": "f75d1ded32b1e55dbb4f9f7d8c1148fd12c64e7e",
+      "status": ""
+    },
+    "references/Hexalith.Commons": {
+      "gitlink": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+      "checkout": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+      "status": ""
+    },
+    "references/Hexalith.Conversations": {
+      "gitlink": "109ef750a1ed0d1b02ba7efee8807d611fbad130",
+      "checkout": "109ef750a1ed0d1b02ba7efee8807d611fbad130",
+      "status": ""
+    },
+    "references/Hexalith.EventStore": {
+      "gitlink": "7af8a2a74dff103f286abad144e4959e3e30b902",
+      "checkout": "7af8a2a74dff103f286abad144e4959e3e30b902",
+      "status": ""
+    },
+    "references/Hexalith.FrontComposer": {
+      "gitlink": "5b8a860744667fd09848d6a21bf592df2f592322",
+      "checkout": "5b8a860744667fd09848d6a21bf592df2f592322",
+      "status": ""
+    },
+    "references/Hexalith.McpCli": {
+      "gitlink": "49345128c189ff3955c00afb9f587b7a31c0ab15",
+      "checkout": "49345128c189ff3955c00afb9f587b7a31c0ab15",
+      "status": ""
+    },
+    "references/Hexalith.Parties": {
+      "gitlink": "0e53be8dc88c46829be10af5f886b89dcd72464d",
+      "checkout": "0e53be8dc88c46829be10af5f886b89dcd72464d",
+      "status": ""
+    },
+    "references/Hexalith.Platform": {
+      "gitlink": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "checkout": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "status": ""
+    },
+    "references/Hexalith.PolymorphicSerializations": {
+      "gitlink": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "checkout": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "status": ""
+    },
+    "references/Hexalith.Projects": {
+      "gitlink": "02d0dbd088095068cb40729191d352b05d89b55b",
+      "checkout": "02d0dbd088095068cb40729191d352b05d89b55b",
+      "status": ""
+    },
+    "references/Hexalith.Tenants": {
+      "gitlink": "cc0efc7df3399f1ea0e3789033ee75926bd06b35",
+      "checkout": "cc0efc7df3399f1ea0e3789033ee75926bd06b35",
+      "status": ""
+    }
+  }
+}

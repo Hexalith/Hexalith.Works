@@ -1,0 +1,13 @@
+{
+  "scope": "diagnostic only; full host/HA/matrix acceptance is not invoked or claimed",
+  "checker": "unchanged owning isolated_daprd.verify",
+  "result": {
+    "launchCount": 24,
+    "sidecarConfigurations": 24,
+    "launchesSha256": "35e72a7f023b5d98ce2febf027c0816be5df47dc4b7a6227e74440f8941ae40d",
+    "runtime": "/home/administrator/.dapr/bin/daprd",
+    "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+    "shimSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+    "sentryAddress": "127.0.0.1:65534"
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "Hexalith.Works.ArchitectureTests": {
+    "counters": {
+      "total": "398",
+      "executed": "398",
+      "passed": "398",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "outcomes": {
+      "Passed": 398
+    },
+    "nonPassed": []
+  },
+  "Hexalith.Works.IntegrationTests": {
+    "counters": {
+      "total": "1030",
+      "executed": "1023",
+      "passed": "1023",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "7",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "outcomes": {
+      "NotRunnable": 7,
+      "Passed": 1023
+    },
+    "nonPassed": [
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+        "outcome": "NotRunnable",
+        "testId": "7c75fb16-75f4-4214-ba95-05cac7e7355e"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+        "outcome": "NotRunnable",
+        "testId": "e58e2987-f12f-4179-adea-92a7a7fd18bb"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "outcome": "NotRunnable",
+        "testId": "04a08ded-4067-4d65-a0e3-c8e7b0cc394b"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "outcome": "NotRunnable",
+        "testId": "5488a236-0c7b-481c-8eef-338e09f6d094"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "outcome": "NotRunnable",
+        "testId": "7ac591c1-5940-4094-b1f8-c4103badad27"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+        "outcome": "NotRunnable",
+        "testId": "38de8c50-35a7-4f9f-acd0-77a35d768174"
+      },
+      {
+        "testName": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
+        "outcome": "NotRunnable",
+        "testId": "d0e047d2-5593-4a28-b558-5fe15e39bd0c"
+      }
+    ]
+  },
+  "Hexalith.Works.PropertyTests": {
+    "counters": {
+      "total": "3",
+      "executed": "3",
+      "passed": "3",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "outcomes": {
+      "Passed": 3
+    },
+    "nonPassed": []
+  },
+  "Hexalith.Works.UnitTests": {
+    "counters": {
+      "total": "597",
+      "executed": "597",
+      "passed": "597",
+      "failed": "0",
+      "error": "0",
+      "timeout": "0",
+      "aborted": "0",
+      "inconclusive": "0",
+      "passedButRunAborted": "0",
+      "notRunnable": "0",
+      "notExecuted": "0",
+      "disconnected": "0",
+      "warning": "0",
+      "completed": "0",
+      "inProgress": "0",
+      "pending": "0"
+    },
+    "outcomes": {
+      "Passed": 597
+    },
+    "nonPassed": []
+  }
+}

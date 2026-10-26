@@ -1,0 +1,104 @@
+{
+  "scope": "exact frozen changed source and metadata overlays; historical evidence overlays bound by inputs.json and original immutable packets",
+  "files": {
+    ".github/workflows/ci.yml": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": true,
+      "baseSha256": "3ca8c6012c4a95efafc7b1ab71104d23b9cf90b5fbd6ad64811d3d7b2d44830f",
+      "overlaySha256": "5cf062de4dfe030fb05bcaef27b0cc30f95a9be22d3109f315699934d0f6cdbe",
+      "overlayBytes": 5895,
+      "patchSha256": "fb58d6abc576a1d9692fa6cd15a9176b0a37c84e186d58693ed33b5b4a0d0571",
+      "patchBytes": 512
+    },
+    "Directory.Build.targets": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": true,
+      "baseSha256": "670554404af97e8845698c8215a6eefab7d5a90f764667798e0d72f54bca9bd1",
+      "overlaySha256": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+      "overlayBytes": 2005,
+      "patchSha256": "42f2c68c1bcf1af453a830b1539345a862b055ea9c3f716f139f1785ad9fc918",
+      "patchBytes": 1392
+    },
+    "_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": true,
+      "baseSha256": "4105a925682d22f6c7ffcf34104b9ab0f1b4f048329a60687c5c1f47218c4889",
+      "overlaySha256": "504af893213f5e839a5bd44cd22c1cf3f7091cdd0adf5aa01daf5c11e473f643",
+      "overlayBytes": 186382,
+      "patchSha256": "b55bfa6b507a4dcaca40dd79ba52619021bdae499a0decfcb5cfa05861a9e3a8",
+      "patchBytes": 30818
+    },
+    "docs/boundary-decision-record.md": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": true,
+      "baseSha256": "7e1f10be86cc96cb9cec5b8f12ba5be57c6440eb7c7b8bb075d19d2f2caad4b8",
+      "overlaySha256": "24b09a2dae99a3fcf818af3f57b27f4ba13009e555a8bcd9edeb16b84fcbf8a7",
+      "overlayBytes": 47206,
+      "patchSha256": "d0267142cd7f602ff40fd295b9d3f0f92c5dc03834eea721b74fbf87c1971a77",
+      "patchBytes": 540
+    },
+    "docs/eventstore-api-surface-constraints.md": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": true,
+      "baseSha256": "fb602dbcd536596cca3dce1d30cfb1ce25e91e7e52fbfceaa514f6467182c53d",
+      "overlaySha256": "70be6d50dada8b288484f739f438dcdfc3306ac1c9f04f3a54e05f4b0b12a50c",
+      "overlayBytes": 40427,
+      "patchSha256": "bf2854e5dc4ca905e598e9cf3fa955ea460f57d39ffa73220b67ef0654ed011d",
+      "patchBytes": 571
+    },
+    "scripts/tests/test_transitive_project_reference_globals.py": {
+      "baseRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+      "baseExists": false,
+      "baseSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "overlaySha256": "c09ec6b69394068f6fcc3a49aded75fdbc40ec750cde589b1c984f98c0149654",
+      "overlayBytes": 4769,
+      "patchSha256": "959f7cb2405c2d7bce157eb96dccfdd0df3585a3e077ba3a3bad717323642e8f",
+      "patchBytes": 4994
+    },
+    "references/Hexalith.Platform/docs/works-host-parity.md": {
+      "baseRevision": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "baseExists": true,
+      "baseSha256": "547e35c5f222eee0f77bad5c7900ad1db583df56708560359065453f32638809",
+      "overlaySha256": "e470feca328088a2c132f9e66f155580f7f079ff25608f1347b196706e60aac5",
+      "overlayBytes": 40135,
+      "patchSha256": "65a808643ec2bb9321d16f696e8aee7e5f61b113f116c862a300e81d192c8295",
+      "patchBytes": 1057
+    },
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": {
+      "baseRevision": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "baseExists": true,
+      "baseSha256": "13fc9d774ab024d5fb068dc1363ef0cdd637f186d75ed37ed13a87252679066b",
+      "overlaySha256": "b3f8b31583b1e8c3ff0a409774fe9eab33b6dd86b07ebf3520d0b1a00974776e",
+      "overlayBytes": 95933,
+      "patchSha256": "0d5a20d9082848dceae04902cdddfb638be14a04725e375a8932ac48a71da60e",
+      "patchBytes": 2132
+    },
+    "references/Hexalith.Platform/eng/test_verify_works_producer.py": {
+      "baseRevision": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "baseExists": true,
+      "baseSha256": "28dde0ca8911b33c14cf7fbcc56bb86b94729b556444c119e529b49526d8e664",
+      "overlaySha256": "04c6a680b26ba79348bc84bb09d8b2724b07118dd38b7fa52b405708fd5df65a",
+      "overlayBytes": 17225,
+      "patchSha256": "16ef4013e47bf98b718f42d2c6ce073ca4f2f6658153a0a671d7f458bbb41810",
+      "patchBytes": 2552
+    },
+    "references/Hexalith.Platform/eng/verify_works_host.py": {
+      "baseRevision": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "baseExists": true,
+      "baseSha256": "169404b38e5fdb47f2e964e4d9d1f85772a733f85a06ce380c75da1ef061537c",
+      "overlaySha256": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+      "overlayBytes": 98567,
+      "patchSha256": "24d87da4deab2851b21502026c27109a2daac05a6c0777344bffde2d7918c2b3",
+      "patchBytes": 527
+    },
+    "references/Hexalith.Platform/eng/verify_works_producer.py": {
+      "baseRevision": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+      "baseExists": true,
+      "baseSha256": "f590dc57a8349d996d21e3ae1ffb97d0acdf5ff05e718b83c48c7cc6569511d6",
+      "overlaySha256": "469cdda858d75b26c02db8112642186edd078fe601e2e05904a44fe46fcc7ed4",
+      "overlayBytes": 11492,
+      "patchSha256": "877dfeaaf202178e3709bf1ab9ca72b50c3ad51d51b823141c4d13535b7fc59e",
+      "patchBytes": 1047
+    }
+  }
+}

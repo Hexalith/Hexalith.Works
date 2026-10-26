@@ -1,0 +1,26 @@
+{
+  "status": "diagnostic-only; zero parity credit",
+  "helperSha256": "3fdc89692276307191976c37d230bc246e65378d2cf3b43907fa64f7afc75481",
+  "sentryAdmission": "exact owned read-only config mount plus Sentry name/image and nonempty DCP ownership labels",
+  "peerAdmission": "same exact credential mount and DCP creator PID/start/group as an already admitted Sentry; expected resource name and published control port",
+  "roots": [
+    "/tmp/story49-group2-current-20261026T182217Z/full1/workspace/platform/DaprComponents",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/gate/retained-works-source"
+  ],
+  "excluded": [
+    "environment values",
+    "credential contents",
+    "foreign resources"
+  ],
+  "limits": {
+    "seconds": 1500,
+    "observations": 1200,
+    "containers": 20,
+    "namespaceHelpers": 120,
+    "internalPolicy": "one baseline per newly admitted container; subsequent only published/proxy health transition or explicit trigger",
+    "perContainerLogBytes": 1048576,
+    "pollSeconds": 5
+  },
+  "namespaceHelper": "only if native tools unavailable; exact cached image from owned proof Redis; --rm, unique CID/name/label, shared target network, no host or target mounts; image-created anonymous scratch volume allowed and cleanup verified",
+  "aspireSkill": "/home/administrator/.agents/skills/aspire-monitoring/SKILL.md"
+}

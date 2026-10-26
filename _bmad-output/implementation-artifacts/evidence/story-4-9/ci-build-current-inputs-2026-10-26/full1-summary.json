@@ -1,0 +1,63 @@
+{
+  "scope": "captured current workspace, distinct from failed starting revisions",
+  "fullExitCode": 1,
+  "ownerStatus": "incomplete",
+  "rollback": {
+    "complete": false,
+    "missing": "Platform-write -> complete fleet restore -> retained Works host queries and receipt replay"
+  },
+  "xml": {
+    "platform-release.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-debug.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "works-consumer-supporting.xml": {
+      "total": 306,
+      "passed": 306,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "retained-preflight.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-recovery.xml": {
+      "total": 4,
+      "passed": 3,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "persistedPhases": 16,
+  "fleetStarts": 4,
+  "failure": "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart: later startup has Placement Running/Unhealthy while Sentry/Scheduler Healthy; cause unresolved",
+  "unexecutedRequiredLanes": [
+    "platform-historical",
+    "platform-ha",
+    "platform-mtls",
+    "platform-projection",
+    "final source/runtime/archive/launcher closure"
+  ],
+  "observer": "4 exact owned Sentries; 62 native observations; zero parity credit",
+  "qualification": "nonqualifying; all rows open; no complete rollback or final closure acceptance"
+}

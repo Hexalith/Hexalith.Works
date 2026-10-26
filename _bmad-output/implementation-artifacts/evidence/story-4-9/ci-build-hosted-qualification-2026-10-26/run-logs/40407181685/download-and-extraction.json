@@ -1,0 +1,227 @@
+{
+  "runId": 40407181685,
+  "headSha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+  "conclusion": "success",
+  "command": [
+    "gh",
+    "api",
+    "repos/Hexalith/Hexalith.Works/actions/runs/40407181685/logs"
+  ],
+  "zipSha256": "072ce877caaaec5d03c7cba290f6c9c6b52b9f0ec10e25f9eece00056d7afb7b",
+  "zipBytes": 90885,
+  "expandedBytes": 329447,
+  "members": {
+    "2_ci _ build-and-test.txt": {
+      "bytes": 79407,
+      "sha256": "9b16f39f2ca1a251c1a96f11355b8076e929c97941b759e2eb2e703e76aedcd6"
+    },
+    "ci _ build-and-test/system.txt": {
+      "bytes": 1120,
+      "sha256": "a37775e3be057dfbd3118c47a0cd123073e4c1e433a1f039a8021a95d38b07af"
+    },
+    "ci _ build-and-test/1_Set up job.txt": {
+      "bytes": 5329,
+      "sha256": "b71472dd8e2c7dc73d3eb9286b6334cc7119ac3cad7ba134f06b428472c0ee96"
+    },
+    "ci _ build-and-test/2_Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 7590,
+      "sha256": "3ad12ba1d8f7ef2fab3fefdc97404c89fd87fcc4fb51a20c05b3531b43596bc9"
+    },
+    "ci _ build-and-test/7_Initialize root-declared submodules.txt": {
+      "bytes": 6295,
+      "sha256": "0fcc894d9830b44e4ac59bd21c0cd2375ec8cd3dd3af78a248dc7a28891c1969"
+    },
+    "ci _ build-and-test/8_Initialize .NET.txt": {
+      "bytes": 3366,
+      "sha256": "9eee892ab91bed9ddcefabb62aefecdd84112e28b1e13bc60a6355dac3ba538e"
+    },
+    "ci _ build-and-test/9_Cache NuGet packages.txt": {
+      "bytes": 1584,
+      "sha256": "1524a1d3daad062443e2b18636e817b0c564d45a3b48689adb4275dd5ece14ab"
+    },
+    "ci _ build-and-test/11_Restore.txt": {
+      "bytes": 3241,
+      "sha256": "ca0fd2d8e6caedb2960510170b478761aeb31c9cd7ac1c2d9efd0166b22c66f0"
+    },
+    "ci _ build-and-test/12_Build.txt": {
+      "bytes": 4126,
+      "sha256": "d34f6ce79eeb24deff552885874b36bab95534f05d966c50b8779797f0e0a75a"
+    },
+    "ci _ build-and-test/13_Validate package consumer references.txt": {
+      "bytes": 9398,
+      "sha256": "d84b3c81e322a5ca35a57d0c9626c36f6e135436d3eb1760c0f5c128e9690fb0"
+    },
+    "ci _ build-and-test/15_Unit tests (Tier 1, Microsoft.Testing.Platform).txt": {
+      "bytes": 6677,
+      "sha256": "bee062b1190c70b1f9fc5a9b828b1e2fb3b9578a479ed5fa6c50cb05d12b34a1"
+    },
+    "ci _ build-and-test/17_Install and initialize Dapr.txt": {
+      "bytes": 5895,
+      "sha256": "13b38ccafc6c5ade679ab2396dd65f0798f831dfbea67ef906022958949719db"
+    },
+    "ci _ build-and-test/19_Integration tests (Tier 2, Microsoft.Testing.Platform).txt": {
+      "bytes": 7791,
+      "sha256": "9c5f7d7a60af0fafebaa679115922a4d4c3b64d70117acdedc1259b9393ed1b7"
+    },
+    "ci _ build-and-test/21_Fail on blocking test failures.txt": {
+      "bytes": 4020,
+      "sha256": "3629244b834e0a067072c683901347e89604a69ae386abb06140bbfc24f26d71"
+    },
+    "ci _ build-and-test/22_Upload test and coverage evidence.txt": {
+      "bytes": 1819,
+      "sha256": "1271c6af280b2057b6819ed0630f85a1fc957d0121e1e75986238ea8e72429b8"
+    },
+    "ci _ build-and-test/42_Post Cache NuGet packages.txt": {
+      "bytes": 143,
+      "sha256": "1fdf1a4830e2670db939510601afb969a773501ab3c03964ff119bdf3273401a"
+    },
+    "ci _ build-and-test/43_Post Initialize .NET.txt": {
+      "bytes": 50,
+      "sha256": "9f167722967464a1e8f81c2849b3cd35e90291b6d6a2c076899140b3975e75c1"
+    },
+    "ci _ build-and-test/44_Post Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 11382,
+      "sha256": "eb32d0f0cd98772890854c46657200db9ff590910f180746bfa371276f87369a"
+    },
+    "ci _ build-and-test/45_Complete job.txt": {
+      "bytes": 749,
+      "sha256": "cf2bc9e36ad68572393a30ad42dffd47426e1c1a5f68662c517a3208d867e6f7"
+    },
+    "3_Platform-owned Works proof toolchain.txt": {
+      "bytes": 17725,
+      "sha256": "b7ccee178bc8fe1e04bc235121198f2454fd768564a64bb1a867c31b77deaf17"
+    },
+    "Platform-owned Works proof toolchain/system.txt": {
+      "bytes": 585,
+      "sha256": "74f447127e32e4f50da0b390618b5bbc0abc72ffd01f7607cdf59c084ed943b6"
+    },
+    "Platform-owned Works proof toolchain/1_Set up job.txt": {
+      "bytes": 1961,
+      "sha256": "eddb03404242d0c166e25e2b121528b4e4eef9dc73d9d7a7d871313feead0c58"
+    },
+    "Platform-owned Works proof toolchain/2_Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 11175,
+      "sha256": "1486c387bf8769de66ace26f997785a78ddc80c642fb25ec845f4b307d668304"
+    },
+    "Platform-owned Works proof toolchain/3_Initialize root Platform toolchain owner and Builds version authority.txt": {
+      "bytes": 1182,
+      "sha256": "547af09993bc28123e148c75a7846ba94c296656fb49cb873c824767b830d6bd"
+    },
+    "Platform-owned Works proof toolchain/4_Read Platform-owned toolchain.txt": {
+      "bytes": 370,
+      "sha256": "5389d7dbcb1d5933783d52064cafd4fdb6d33d0e853e3ca5793344e51d5d9857"
+    },
+    "Platform-owned Works proof toolchain/8_Post Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 2827,
+      "sha256": "d461f68f214b8b6061e9312fceaafe67830fabd598e7a052c921075c4a55d263"
+    },
+    "Platform-owned Works proof toolchain/9_Complete job.txt": {
+      "bytes": 225,
+      "sha256": "f27e55904119e66f71db029779714f5027b6e966a8b3763ced4b36759a989802"
+    },
+    "4_Platform R1\u2013R11 parity and rollback.txt": {
+      "bytes": 41312,
+      "sha256": "5ae1fdfa46a1ae9b40131232f5793c3c16aca26baf7e0f59929e069b1a41539e"
+    },
+    "Platform R1\u2013R11 parity and rollback/system.txt": {
+      "bytes": 582,
+      "sha256": "bd9b33fab4866645118cacd1fb57a68c0e0f2c279fa5da53d2d8a5d3a6c6d160"
+    },
+    "Platform R1\u2013R11 parity and rollback/1_Set up job.txt": {
+      "bytes": 2856,
+      "sha256": "f72ce3cb78baf9baa8b2b97b01546cd4d6c6c98e327e61ad9736cab49a77a4a7"
+    },
+    "Platform R1\u2013R11 parity and rollback/2_Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 11342,
+      "sha256": "91dc77e113a88d77d9b4ea802a018b45d4bd00cf7a89f0231203739438ed1295"
+    },
+    "Platform R1\u2013R11 parity and rollback/3_Initialize required root dependencies.txt": {
+      "bytes": 4155,
+      "sha256": "c901e0281b3ca2ce8b309a0768e0562819251744e2a072c2cb636ace2d0c9fc0"
+    },
+    "Platform R1\u2013R11 parity and rollback/4_Run actions_setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68.txt": {
+      "bytes": 3366,
+      "sha256": "46dbd3d1313f41205610f7d870722c619bc482afc046c7bb47830b2d272bae02"
+    },
+    "Platform R1\u2013R11 parity and rollback/5_Read Platform-owned Works proof toolchain.txt": {
+      "bytes": 466,
+      "sha256": "5dba5f102e2f2784fbbe1512b3a4b8bb0a8e376f9350bb82dacf2619aaea530b"
+    },
+    "Platform R1\u2013R11 parity and rollback/6_Initialize Dapr proof prerequisites.txt": {
+      "bytes": 5887,
+      "sha256": "bd60fe7581f43f2c4f4346f0237660c434bc1b4ec8f6779243a92bd2f7c89116"
+    },
+    "Platform R1\u2013R11 parity and rollback/7_Run complete canonical Platform gate.txt": {
+      "bytes": 3654,
+      "sha256": "39d837376f3726b5a7d9d7cbbecc04d4bf19ed1c55fa2b3b19a856faf5778eef"
+    },
+    "Platform R1\u2013R11 parity and rollback/8_Preserve parity results.txt": {
+      "bytes": 2927,
+      "sha256": "eac5360554ae64011bd0b22bfb8aaa8e240b16589a4f7e5197cfd70535da24d0"
+    },
+    "Platform R1\u2013R11 parity and rollback/15_Post Run actions_setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68.txt": {
+      "bytes": 50,
+      "sha256": "5ecda49a891a7c93d565f3275cad973bd65dce0bd045240f27f5c07a00fd810e"
+    },
+    "Platform R1\u2013R11 parity and rollback/16_Post Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 6175,
+      "sha256": "8846b66fa5a7ad5bafe21f671c4a6617c98f8659890c76cb5f5ad96dff98d237"
+    },
+    "Platform R1\u2013R11 parity and rollback/17_Complete job.txt": {
+      "bytes": 464,
+      "sha256": "b87a8f500db1e5a4cc76fa5400e88648c176bda3caaac631165193f77200a73f"
+    },
+    "5_Lint release tooling.txt": {
+      "bytes": 24785,
+      "sha256": "8465aa2976b99369013506938691a14385f4065f3d945005cd9fa0d08c61dd62"
+    },
+    "Lint release tooling/system.txt": {
+      "bytes": 579,
+      "sha256": "6a19898476f66bf05ec550c44de16dc09542a68fd86ad71231d50bf5008bf3f7"
+    },
+    "Lint release tooling/1_Set up job.txt": {
+      "bytes": 2111,
+      "sha256": "a7387b03e4eb2a1ba0bd182a71654fe1eadd039c18bb4e3d4f0f8ad4a7769d59"
+    },
+    "Lint release tooling/2_Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 11751,
+      "sha256": "cf48b5e8cc7893ecbcffeae2735983f432b926b9b151b0b04d5748102277f987"
+    },
+    "Lint release tooling/3_Validate workflow syntax and expressions.txt": {
+      "bytes": 1301,
+      "sha256": "7ecdd3b0d510216ab2cadd7b0dcab3aa7ab8b54de704406cd4d8a5bc9410ac37"
+    },
+    "Lint release tooling/4_Install ruff.txt": {
+      "bytes": 610,
+      "sha256": "80d1ef7b93a75f2e3268a5fe7001e2da9cc872b839e3ddafaed6386db5b131b5"
+    },
+    "Lint release tooling/5_Lint release and validation scripts.txt": {
+      "bytes": 373,
+      "sha256": "461913f33b7ccb8c013d113f859181e822a2ef092603ed210171dcfd5aa6f6ce"
+    },
+    "Lint release tooling/6_Initialize root helpers and Builds history for tooling tests.txt": {
+      "bytes": 1182,
+      "sha256": "d7a76e9604bea988bdc9317b4441abba63f16b96263bc83b3cfb1715593de17e"
+    },
+    "Lint release tooling/7_Run actions_setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68.txt": {
+      "bytes": 3366,
+      "sha256": "1a6200cd7555a070415b33b58a2b732c968d580557c8d80fb2e4a4f3a351d266"
+    },
+    "Lint release tooling/8_Run release tooling regression tests.txt": {
+      "bytes": 1183,
+      "sha256": "7c00a55968aa319ac0b1e2ce3179e4137ad7d616f58fa1cd3c6a89b23cb332ae"
+    },
+    "Lint release tooling/15_Post Run actions_setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68.txt": {
+      "bytes": 50,
+      "sha256": "1a075219aa011305cb7b173b5c0b14b3c626c562fce2ac884c74e893850bb06c"
+    },
+    "Lint release tooling/16_Post Run actions_checkout@3d3c42e5aac5ba805825da76410c181273ba90b1.txt": {
+      "bytes": 2827,
+      "sha256": "34de218c37f0733af10dbcffc6263ec26c9a0fc372c681142fae1ecf521ea131"
+    },
+    "Lint release tooling/17_Complete job.txt": {
+      "bytes": 61,
+      "sha256": "68b25fe4ce1515b55e0ff7cf3d833e4e7595ed6ab7e9089eaf94fb2da1921eb9"
+    }
+  }
+}

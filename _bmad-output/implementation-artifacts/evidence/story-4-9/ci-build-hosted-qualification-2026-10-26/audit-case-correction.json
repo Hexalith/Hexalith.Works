@@ -1,0 +1,8 @@
+{
+  "scope": "local audit wrapper only; no CI/source/runtime/required checker changed",
+  "initialOutcome": "assertion comparing raw host SHA strings",
+  "cause": "Native .NET start records render uppercase SHA256; Python ledger renders lowercase. Paths and case-normalized digests match exactly.",
+  "correction": "Compare hexadecimal SHA strings case-insensitively, matching the unchanged owning verifier behavior.",
+  "initialScriptSha256": "322731c3d65933680a6b292bd28730a774ebd13ef7012239445d107038ace07b",
+  "correctedScriptSha256": "36710319daa3431dab2a5192733cd4586d18450cfa03a25a5648ec9d6bc8fd07"
+}

@@ -1,0 +1,48 @@
+{
+  "observedAtUtc": "2026-10-26T18:12:32.612827+00:00",
+  "scope": "only Sentry instance identifier from the failed owned fleet; no foreign container query",
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "--type",
+        "container",
+        "5b4efb0c744c"
+      ],
+      "exitCode": 1,
+      "stdout": "sentry-inspect.stdout",
+      "stderr": "sentry-inspect.stderr"
+    },
+    {
+      "command": [
+        "docker",
+        "logs",
+        "--tail",
+        "120",
+        "5b4efb0c744c"
+      ],
+      "exitCode": 1,
+      "stdout": "sentry-native.stdout",
+      "stderr": "sentry-native.stderr"
+    },
+    {
+      "command": [
+        "docker",
+        "events",
+        "--since",
+        "2026-10-26T18:04:40Z",
+        "--until",
+        "2026-10-26T18:09:00Z",
+        "--filter",
+        "container=5b4efb0c744c",
+        "--format",
+        "{{json .}}"
+      ],
+      "exitCode": 0,
+      "stdout": "sentry-events.stdout",
+      "stderr": "sentry-events.stderr"
+    }
+  ],
+  "limitation": "Container was already absent and filtered events returned no records; removal caller and direct native DCP/health state were not observed."
+}

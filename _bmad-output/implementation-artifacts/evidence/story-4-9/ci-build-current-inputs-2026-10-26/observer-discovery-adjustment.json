@@ -1,0 +1,7 @@
+{
+  "initialHelper": "observe-sentry-initial.py",
+  "initialOutput": "sentry-observer",
+  "initialObservations": 0,
+  "reason": "Docker volume filter did not return the exact read-only file bind although an owned port candidate was present; add published-port/name prefilter while retaining exact source-path admission",
+  "canonicalInputsChanged": false
+}

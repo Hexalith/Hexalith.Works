@@ -1,0 +1,23 @@
+{
+  "audit-hosted.py": {
+    "sealedOriginal": "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/audit-hosted.py",
+    "sealedOriginalSha256": "7456e4c7fa7d79a75dca95022ae4d47be6f8ab81e739a67780874e1091d25169",
+    "nativeOriginal": "/tmp/story49-audit-hosted-parent.py",
+    "nativeOriginalSha256": "7456e4c7fa7d79a75dca95022ae4d47be6f8ab81e739a67780874e1091d25169",
+    "successor": "audit-hosted.py"
+  },
+  "download-artifact.py": {
+    "sealedOriginal": "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/download-artifact.py",
+    "sealedOriginalSha256": "58e0f01e4d3ed663f5e121add1bb626ebb68d930f72b37ae9b1374d77dee550a",
+    "nativeOriginal": "/tmp/story49-hosted-20261026T215001Z/download-artifact.py",
+    "nativeOriginalSha256": "58e0f01e4d3ed663f5e121add1bb626ebb68d930f72b37ae9b1374d77dee550a",
+    "successor": "download-artifact.py"
+  },
+  "build-packet.py": {
+    "sealedOriginal": "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/build-packet.py",
+    "sealedOriginalSha256": "55a1e33fb3592331c31e83c8705b1b1bc84e55dd0aeb0950809e0f778ed5628e",
+    "nativeOriginal": "/tmp/story49-hosted-20261026T215001Z/build-packet.py",
+    "nativeOriginalSha256": "55a1e33fb3592331c31e83c8705b1b1bc84e55dd0aeb0950809e0f778ed5628e",
+    "successor": "build-packet.py"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "recordedAtUtc": "2026-10-26T21:50:01.771000+00:00",
+  "authorization": "Retained explicit Story4.9 permission for necessary owner/root commits and pushes; full2 passed before Works push",
+  "localFull": {
+    "root": "/tmp/story49-final-20261026T195205Z/full2",
+    "parentAudit": "/tmp/story49-final-full2-parent-audit.json",
+    "manifestSha256": "b97c38b5cd66e466db99265b04d77aa0528c18b067e9ad70d522262b8e9747d9"
+  },
+  "commits": {
+    "Platform": "73bebc0a336ebf68cee77ab0114d96dde66c386d",
+    "WorksPointer": "352729a12d2551e404886b350708343bc761f0f5",
+    "WorksCore": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd"
+  },
+  "scopes": {
+    "Platform": [
+      "docs/works-host-parity.md",
+      "eng/test_verify_works_host.py",
+      "eng/test_verify_works_producer.py",
+      "eng/verify_works_host.py",
+      "eng/verify_works_producer.py"
+    ],
+    "WorksPointer": [
+      "references/Hexalith.Platform"
+    ],
+    "WorksCore": [
+      ".github/workflows/ci.yml",
+      "Directory.Build.targets",
+      "scripts/tests/test_transitive_project_reference_globals.py",
+      "docs/boundary-decision-record.md",
+      "docs/eventstore-api-surface-constraints.md"
+    ]
+  },
+  "sourceCaptureComparisons": 14,
+  "sourceByteDifferences": 0,
+  "commitlint": "all three final messages passed local repository validation; initial disallowed chore type corrected to build",
+  "whitespace": "all normal whitespace guards retained with cr-at-eol for the repository CRLF convention; staged bytes exactly match qualification",
+  "pushes": "normal fast-forward main pushes; no force/admin merge/policy edits",
+  "platformEffectiveRule": {
+    "ruleset": 24657106,
+    "alwaysAllowedActor": {
+      "type": "User",
+      "id": 6775094,
+      "login": "jpiquot"
+    },
+    "actorVerified": true,
+    "githubReportedExistingRuleBypass": true
+  },
+  "ci": {
+    "id": 40407181685,
+    "event": "push",
+    "headSha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+    "url": "https://github.com/Hexalith/Hexalith.Works/actions/runs/40407181685",
+    "state": "running"
+  },
+  "completionRecords": "spec and bounded evidence are local; source commits published; story/sprint and qualification tasks remain in-progress pending hosted/review",
+  "messageSha256": {
+    "Platform": "6a1741e067a7f38bc8724766233841742f2adfed9522d5f091ea73c78f915df3",
+    "WorksPointer": "954960c8c69d8c2688a470a0167cd177c9e4baf6a74422720a43bfce8cd6e72d",
+    "WorksCore": "6b59daa8b307d54c2fb6d93063b675997b0abfb24d7a86b97458c2d02b6711ea"
+  }
+}

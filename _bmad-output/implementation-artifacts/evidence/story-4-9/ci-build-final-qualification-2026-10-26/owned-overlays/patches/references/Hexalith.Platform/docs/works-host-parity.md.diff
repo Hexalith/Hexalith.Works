@@ -1,0 +1,15 @@
+--- a/references/Hexalith.Platform/docs/works-host-parity.md
++++ b/references/Hexalith.Platform/docs/works-host-parity.md
+@@ -194,7 +194,11 @@
+ probe also needs the host `openssl` CLI (OpenSSL 1.1.1 or later): the owned Sentry
+ issues Ed25519 credentials, and .NET cannot sign the probe's client certificate with
+ them. The verifier also needs outbound HTTPS. It fetches the producer's official
+-commit, tree and `v<version>` tag receipts from `api.github.com`. It restores any
++commit, tree and `v<version>` tag receipts from `api.github.com`. The optional
++`GITHUB_TOKEN` authenticates only that official repository's Git API requests
++to avoid shared anonymous rate limits; it is excluded from redirected requests
++and other repository paths. Hosted CI supplies its read-only job token.
++The verifier restores any
+ published EventStore package missing from the local NuGet cache from nuget.org
+ (`https://api.nuget.org/v3/index.json`), the provenance source every restored
+ package must record. Without that access the run fails with a recorded failure.

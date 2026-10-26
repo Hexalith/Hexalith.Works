@@ -1,0 +1,163 @@
+{
+  "scope": "final fixed current revisions plus exact captured overlays; later unrelated changes excluded",
+  "fullExitCode": 1,
+  "ownerStatus": "incomplete",
+  "failure": "platform-recovery failed; see /tmp/story49-final-20261026T195205Z/full1/gate/platform-recovery.log",
+  "profile": {
+    "name": "full",
+    "consumerConfigurations": [
+      "Debug",
+      "Release"
+    ],
+    "agentsConfiguration": "Debug",
+    "sourceConformance": "required",
+    "liveProofs": "all-R1-R11-and-complete-fleet-rollback"
+  },
+  "unexecutedRequiredLanes": [
+    "platform-historical",
+    "platform-ha",
+    "platform-mtls",
+    "platform-projection"
+  ],
+  "finalClosureExecuted": false,
+  "xml": {
+    "platform-debug.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-recovery.xml": {
+      "total": 4,
+      "passed": 3,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "platform-release.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "retained-preflight.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    },
+    "works-consumer-supporting.xml": {
+      "total": 306,
+      "passed": 306,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0
+    }
+  },
+  "rowStatuses": {
+    "R1": "open",
+    "R2": "open",
+    "R3": "open",
+    "R4": "open",
+    "R5": "open",
+    "R6": "open",
+    "R7": "open",
+    "R8": "open",
+    "R9": "open",
+    "R10": "open",
+    "R11": "open"
+  },
+  "requiredProofs": {
+    "R1": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R2": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R3": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R4": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R5": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R6": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R7": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R8": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R9": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R10": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    },
+    "R11": {
+      "persisted": false,
+      "negative": false,
+      "restart": false,
+      "rollback": false
+    }
+  },
+  "passedProofCount": 0,
+  "rollbackComplete": false,
+  "persistedPhases": 12,
+  "fleetStarts": 3,
+  "ordinaryTopologyFactCoverage": {
+    "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process": false,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": false,
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": false,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": false,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": true,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": false,
+    "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness": true
+  },
+  "capturedInputsUnchanged": true,
+  "authenticationPresenceOnly": true,
+  "hostedQualification": "pending parent handoff",
+  "remainingReviewGroups": "pending parent workflow"
+}

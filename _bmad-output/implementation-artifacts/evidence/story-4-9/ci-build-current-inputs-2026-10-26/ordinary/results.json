@@ -1,0 +1,47 @@
+[
+  {
+    "project": "Hexalith.Works.UnitTests",
+    "command": [
+      "dotnet",
+      "/tmp/story49-group2-current-20261026T182217Z/works/tests/Hexalith.Works.UnitTests/bin/Release/net10.0/Hexalith.Works.UnitTests.dll",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story49-group2-current-20261026T182217Z/ordinary/Hexalith.Works.UnitTests.xml"
+    ],
+    "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+    "startedAtUtc": "2026-10-26T18:23:44.945737+00:00",
+    "exitCode": 0,
+    "finishedAtUtc": "2026-10-26T18:23:45.461186+00:00",
+    "logSha256": "6923e91123503b607d53680ddad6bd924d7d82ac53e07914c5924dc96471c3a5"
+  },
+  {
+    "project": "Hexalith.Works.PropertyTests",
+    "command": [
+      "dotnet",
+      "/tmp/story49-group2-current-20261026T182217Z/works/tests/Hexalith.Works.PropertyTests/bin/Release/net10.0/Hexalith.Works.PropertyTests.dll",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story49-group2-current-20261026T182217Z/ordinary/Hexalith.Works.PropertyTests.xml"
+    ],
+    "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+    "startedAtUtc": "2026-10-26T18:23:45.461465+00:00",
+    "exitCode": 0,
+    "finishedAtUtc": "2026-10-26T18:23:45.877211+00:00",
+    "logSha256": "b16b1d58f116813602b457bf589c63db3c0b45490200165ecbe7c344642069b9"
+  },
+  {
+    "project": "Hexalith.Works.IntegrationTests",
+    "command": [
+      "dotnet",
+      "/tmp/story49-group2-current-20261026T182217Z/works/tests/Hexalith.Works.IntegrationTests/bin/Release/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-noLogo",
+      "-result-xml",
+      "/tmp/story49-group2-current-20261026T182217Z/ordinary/Hexalith.Works.IntegrationTests.xml"
+    ],
+    "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+    "startedAtUtc": "2026-10-26T18:23:45.877507+00:00",
+    "exitCode": 0,
+    "finishedAtUtc": "2026-10-26T18:25:24.865883+00:00",
+    "logSha256": "ca4af32f81ad9dc4fd26e3584e77e9becb38ad5b572387245403a41452e73246"
+  }
+]

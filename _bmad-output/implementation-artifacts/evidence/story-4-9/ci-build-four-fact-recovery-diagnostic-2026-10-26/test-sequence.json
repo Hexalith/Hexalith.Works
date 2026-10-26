@@ -1,0 +1,64 @@
+{
+  "failedFull": [
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "result": "Fail",
+      "start-rtf": "2026-10-26T20:09:53.1403427+00:00",
+      "finish-rtf": "2026-10-26T20:17:33.3287351+00:00",
+      "time": "460.194"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:17:33.3365161+00:00",
+      "finish-rtf": "2026-10-26T20:20:14.6324938+00:00",
+      "time": "161.3"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetryStorePreservesCoordinatedBatchCapability",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:20:14.6336623+00:00",
+      "finish-rtf": "2026-10-26T20:20:14.6588708+00:00",
+      "time": "0.025"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetainedPlanWaitBoundsNonCooperativeStoreAcquisition",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:20:14.6594654+00:00",
+      "finish-rtf": "2026-10-26T20:20:14.6987493+00:00",
+      "time": "0.039"
+    }
+  ],
+  "diagnostic": [
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:27:20.3118223+00:00",
+      "finish-rtf": "2026-10-26T20:37:27.5784274+00:00",
+      "time": "607.282"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:37:27.5855301+00:00",
+      "finish-rtf": "2026-10-26T20:40:08.6846311+00:00",
+      "time": "161.104"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetryStorePreservesCoordinatedBatchCapability",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:40:08.6860018+00:00",
+      "finish-rtf": "2026-10-26T20:40:08.7082339+00:00",
+      "time": "0.022"
+    },
+    {
+      "name": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.RetainedPlanWaitBoundsNonCooperativeStoreAcquisition",
+      "result": "Pass",
+      "start-rtf": "2026-10-26T20:40:08.7087429+00:00",
+      "finish-rtf": "2026-10-26T20:40:08.7474322+00:00",
+      "time": "0.038"
+    }
+  ],
+  "sameClassAndBinary": true,
+  "canonicalCommandDifference": "result XML path only; launcher/evidence output paths differ in the recorded environment"
+}

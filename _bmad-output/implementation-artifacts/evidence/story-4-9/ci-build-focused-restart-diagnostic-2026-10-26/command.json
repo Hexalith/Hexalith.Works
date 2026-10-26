@@ -1,0 +1,19 @@
+{
+  "scope": "focused diagnostic only; no full acceptance credit",
+  "command": [
+    "/tmp/story49-group2-current-20261026T182217Z/full1/gate/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-explicit",
+    "on",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "-result-xml",
+    "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/result.xml"
+  ],
+  "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+  "timeoutSeconds": 1800,
+  "sourceRuntimeInputClosureBefore": true,
+  "runtimeFiles": 909,
+  "launcherPolicy": "identical shim/binding copies; only diagnostic evidence paths differ; canonical runtime bytes and proof deadlines unchanged",
+  "skill": "/home/administrator/.agents/skills/aspire-monitoring/SKILL.md"
+}

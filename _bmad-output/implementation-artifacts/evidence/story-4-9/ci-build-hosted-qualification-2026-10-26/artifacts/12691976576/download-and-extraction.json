@@ -1,0 +1,38 @@
+{
+  "downloadedAt": "2026-10-26T21:53:09.656721+00:00",
+  "metadataCommand": [
+    "gh",
+    "api",
+    "repos/Hexalith/Hexalith.Works/actions/artifacts/12691976576"
+  ],
+  "downloadCommand": [
+    "gh",
+    "api",
+    "repos/Hexalith/Hexalith.Works/actions/artifacts/12691976576/zip"
+  ],
+  "artifactId": 12691976576,
+  "name": "blocking-test-results",
+  "zipBytes": 308656,
+  "zipSha256": "d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17",
+  "declaredDigestMatched": true,
+  "safeExtraction": "relative unique paths only; no symlinks/traversal/backslashes; bounded expanded bytes",
+  "expandedBytes": 3169484,
+  "members": {
+    "Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.trx": {
+      "bytes": 629465,
+      "sha256": "feb24e485b170131f153e115fa4f71bbf194d53544415cdd266849cc739ef11b"
+    },
+    "Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.trx": {
+      "bytes": 1655667,
+      "sha256": "81c386853e8dda062cd06d47dbb2577edbf4b1f40f637d51e20415d9c3b637fe"
+    },
+    "Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.trx": {
+      "bytes": 878693,
+      "sha256": "6a0a47d7e772aef1896388d40f0a6d31976b73a67f74846bc91ab886548382a1"
+    },
+    "Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.trx": {
+      "bytes": 5659,
+      "sha256": "7e9a1f1a98425310d89724c31634d29a1a73c19a9c4a302cc0d171a6acb8ecf5"
+    }
+  }
+}

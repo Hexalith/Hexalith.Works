@@ -1,0 +1,60 @@
+{
+  "scope": "native adapter smoke only; no full qualification or proven root cause",
+  "xml": {
+    "total": 1,
+    "passed": 1,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0
+  },
+  "seconds": 31.655,
+  "matches": 3,
+  "ports": {
+    "dapr-sentry": 28134,
+    "dapr-scheduler-mtls": 22435,
+    "dapr-placement-mtls": 25352
+  },
+  "native": {
+    "dapr-sentry": {
+      "samples": 4,
+      "explicitPublishedHttp200Samples": 4,
+      "id": "a182a5db5fce3e1254dcd488df0d6c5c5c1d8c35fa7dfc3122c5b21ae96f3598",
+      "port": 28134
+    },
+    "dapr-scheduler-mtls": {
+      "samples": 4,
+      "explicitPublishedHttp200Samples": 3,
+      "id": "66e7729cbc36057caf2fe1071ef1152de86bc5dce80ddfb92bf9711ecbae6f4e",
+      "port": 22435
+    },
+    "dapr-placement-mtls": {
+      "samples": 4,
+      "explicitPublishedHttp200Samples": 3,
+      "id": "d11078ead70f91ffcc3b1e3c82a82fbe5b972a408add4790e22ede6b3af0c50f",
+      "port": 25352
+    }
+  },
+  "actualSmokeRuntimeInventoryFiles": 907,
+  "actualSmokeInventoryBeforeAfterUnchanged": true,
+  "separateFrozenFourFactInventoryFiles": 909,
+  "separateFrozenFourFactInventoryStillUnchanged": true,
+  "strictClosureBeforeAfter": true,
+  "retainedHostStartCount": 1,
+  "isolatedDaprd": {
+    "launchCount": 4,
+    "sidecarConfigurations": 4,
+    "launchesSha256": "2eade87e663661710b5156f9b9ef073e3a0f9d8edb604eb906326c711c8b6bcb",
+    "runtime": "/home/administrator/.dapr/bin/daprd",
+    "runtimeSha256": "e988a6f53abec017fc9ebcb4f89de9bed11bce005eb49bd8e85e8d3d6adbf488",
+    "shimSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+    "sentryAddress": "127.0.0.1:65534"
+  },
+  "helperContainersCreated": 0,
+  "sourceHashes": {
+    "docker_health_adapter.py": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+    "bin/docker": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b",
+    "configure_scope.py": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+    "test_adapter.py": "7490d1f97f61889e26d02295ba5d11df21a6122761c915bf6401268c02157656"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "docker_health_adapter.py": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+  "bin/docker": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b",
+  "configure_scope.py": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+  "cached-images.json": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+  "windows-excluded-ports.txt": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46"
+}

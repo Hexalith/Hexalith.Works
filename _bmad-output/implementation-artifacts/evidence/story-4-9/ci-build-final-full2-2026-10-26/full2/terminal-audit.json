@@ -1,0 +1,417 @@
+{
+  "scope": "same frozen final source; distinct accepted child-only CP health-port environment",
+  "exitCode": 0,
+  "ownerStatus": "passed-disposable-synthetic-parity-and-rollback",
+  "failure": null,
+  "xml": {
+    "platform-debug.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 5.223
+    },
+    "platform-ha.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 90.268
+    },
+    "platform-historical.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 127.916
+    },
+    "platform-mtls.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 30.119
+    },
+    "platform-projection.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 156.056
+    },
+    "platform-recovery.xml": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 786.71
+    },
+    "platform-release.xml": {
+      "total": 144,
+      "passed": 144,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 5.231
+    },
+    "retained-preflight.xml": {
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 37.76
+    },
+    "works-consumer-supporting.xml": {
+      "total": 306,
+      "passed": 306,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "not-run": 0,
+      "seconds": 97.103
+    }
+  },
+  "rowStatuses": {
+    "R1": "passed",
+    "R2": "passed",
+    "R3": "passed",
+    "R4": "passed",
+    "R5": "passed",
+    "R6": "passed",
+    "R7": "passed",
+    "R8": "passed",
+    "R9": "passed",
+    "R10": "passed",
+    "R11": "passed"
+  },
+  "proofs": {
+    "R1": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R2": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R3": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R4": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R5": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R6": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R7": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R8": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R9": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R10": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    },
+    "R11": {
+      "persisted": true,
+      "negative": true,
+      "restart": true,
+      "rollback": true
+    }
+  },
+  "passedProofCount": 44,
+  "rollbackComplete": true,
+  "persistedPhases": 32,
+  "fleetStarts": 11,
+  "ordinaryTopologyFactCoverage": {
+    "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": true,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": true,
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": true,
+    "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness": true
+  },
+  "capturedOverlayCount": 246,
+  "capturedInputsUnchanged": true,
+  "originSourceAndCoordinatorPostchecks": true,
+  "helperBytesUnchanged": true,
+  "runtimeArtifacts": 441,
+  "consumerArtifacts": 461,
+  "adapterMatches": 36,
+  "adapterKinds": {
+    "dapr-sentry": 12,
+    "dapr-placement-mtls": 12,
+    "dapr-scheduler-mtls": 12
+  },
+  "nativeCoverage": {
+    "dapr-sentry-vkujttfa": {
+      "kind": "dapr-sentry",
+      "port": 25826,
+      "observedSamples": 5,
+      "http200Samples": 5
+    },
+    "dapr-placement-mtls-uvmcduer": {
+      "kind": "dapr-placement-mtls",
+      "port": 30521,
+      "observedSamples": 5,
+      "http200Samples": 4
+    },
+    "dapr-scheduler-mtls-wxgxzcpt": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 22851,
+      "observedSamples": 5,
+      "http200Samples": 4
+    },
+    "dapr-sentry-mtawzyad": {
+      "kind": "dapr-sentry",
+      "port": 31191,
+      "observedSamples": 28,
+      "http200Samples": 28
+    },
+    "dapr-placement-mtls-cgytwnsn": {
+      "kind": "dapr-placement-mtls",
+      "port": 28989,
+      "observedSamples": 28,
+      "http200Samples": 28
+    },
+    "dapr-scheduler-mtls-fayrhgwy": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 29260,
+      "observedSamples": 28,
+      "http200Samples": 28
+    },
+    "dapr-sentry-qwzetupd": {
+      "kind": "dapr-sentry",
+      "port": 20556,
+      "observedSamples": 13,
+      "http200Samples": 12
+    },
+    "dapr-placement-mtls-fdgamypj": {
+      "kind": "dapr-placement-mtls",
+      "port": 31702,
+      "observedSamples": 13,
+      "http200Samples": 11
+    },
+    "dapr-scheduler-mtls-emydfcxp": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 23435,
+      "observedSamples": 13,
+      "http200Samples": 12
+    },
+    "dapr-sentry-ymhxgfpu": {
+      "kind": "dapr-sentry",
+      "port": 27523,
+      "observedSamples": 32,
+      "http200Samples": 32
+    },
+    "dapr-placement-mtls-kcprptnw": {
+      "kind": "dapr-placement-mtls",
+      "port": 32053,
+      "observedSamples": 32,
+      "http200Samples": 32
+    },
+    "dapr-scheduler-mtls-graydfcb": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 29872,
+      "observedSamples": 32,
+      "http200Samples": 32
+    },
+    "dapr-sentry-admectww": {
+      "kind": "dapr-sentry",
+      "port": 29779,
+      "observedSamples": 14,
+      "http200Samples": 13
+    },
+    "dapr-scheduler-mtls-qjsqzquk": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 28022,
+      "observedSamples": 13,
+      "http200Samples": 12
+    },
+    "dapr-placement-mtls-dwfadfga": {
+      "kind": "dapr-placement-mtls",
+      "port": 30433,
+      "observedSamples": 13,
+      "http200Samples": 12
+    },
+    "dapr-sentry-jkjvqrxu": {
+      "kind": "dapr-sentry",
+      "port": 32552,
+      "observedSamples": 40,
+      "http200Samples": 40
+    },
+    "dapr-scheduler-mtls-afddrqpa": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 27386,
+      "observedSamples": 40,
+      "http200Samples": 39
+    },
+    "dapr-placement-mtls-cfmkmejz": {
+      "kind": "dapr-placement-mtls",
+      "port": 25386,
+      "observedSamples": 40,
+      "http200Samples": 39
+    },
+    "dapr-sentry-ehhfpkjt": {
+      "kind": "dapr-sentry",
+      "port": 26304,
+      "observedSamples": 5,
+      "http200Samples": 4
+    },
+    "dapr-placement-mtls-xrcrkjeu": {
+      "kind": "dapr-placement-mtls",
+      "port": 23847,
+      "observedSamples": 5,
+      "http200Samples": 4
+    },
+    "dapr-scheduler-mtls-vcpfbhry": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 23185,
+      "observedSamples": 4,
+      "http200Samples": 4
+    },
+    "dapr-sentry-gytqqcna": {
+      "kind": "dapr-sentry",
+      "port": 27775,
+      "observedSamples": 14,
+      "http200Samples": 14
+    },
+    "dapr-scheduler-mtls-gzkamhtd": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 32357,
+      "observedSamples": 13,
+      "http200Samples": 13
+    },
+    "dapr-placement-mtls-xbpuykxd": {
+      "kind": "dapr-placement-mtls",
+      "port": 23589,
+      "observedSamples": 14,
+      "http200Samples": 13
+    },
+    "dapr-sentry-qwybdpzr": {
+      "kind": "dapr-sentry",
+      "port": 22699,
+      "observedSamples": 5,
+      "http200Samples": 5
+    },
+    "dapr-placement-mtls-xxdurkdj": {
+      "kind": "dapr-placement-mtls",
+      "port": 29333,
+      "observedSamples": 5,
+      "http200Samples": 5
+    },
+    "dapr-scheduler-mtls-yqdvhvud": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 29242,
+      "observedSamples": 5,
+      "http200Samples": 5
+    },
+    "dapr-sentry-ypdxxxec": {
+      "kind": "dapr-sentry",
+      "port": 28239,
+      "observedSamples": 14,
+      "http200Samples": 13
+    },
+    "dapr-scheduler-mtls-jvqgcrqy": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 21780,
+      "observedSamples": 14,
+      "http200Samples": 13
+    },
+    "dapr-placement-mtls-nubxfcpc": {
+      "kind": "dapr-placement-mtls",
+      "port": 23630,
+      "observedSamples": 14,
+      "http200Samples": 13
+    },
+    "dapr-sentry-qkjdfatd": {
+      "kind": "dapr-sentry",
+      "port": 24052,
+      "observedSamples": 4,
+      "http200Samples": 3
+    },
+    "dapr-scheduler-mtls-fyfzgmta": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 24006,
+      "observedSamples": 3,
+      "http200Samples": 2
+    },
+    "dapr-placement-mtls-eurparjh": {
+      "kind": "dapr-placement-mtls",
+      "port": 27613,
+      "observedSamples": 3,
+      "http200Samples": 2
+    },
+    "dapr-sentry-cwerrnrk": {
+      "kind": "dapr-sentry",
+      "port": 20858,
+      "observedSamples": 24,
+      "http200Samples": 24
+    },
+    "dapr-scheduler-mtls-mzjzthwv": {
+      "kind": "dapr-scheduler-mtls",
+      "port": 25854,
+      "observedSamples": 24,
+      "http200Samples": 24
+    },
+    "dapr-placement-mtls-pzjfvatu": {
+      "kind": "dapr-placement-mtls",
+      "port": 22745,
+      "observedSamples": 24,
+      "http200Samples": 24
+    }
+  },
+  "extraHelperContainers": 0,
+  "runtimeGithubTokenKeyPresent": false,
+  "hostedQualification": "pending parent handoff",
+  "remainingReviewGroups": "pending parent workflow"
+}

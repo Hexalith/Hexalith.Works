@@ -1,0 +1,47 @@
+--- a/references/Hexalith.Platform/eng/test_verify_works_producer.py
++++ b/references/Hexalith.Platform/eng/test_verify_works_producer.py
+@@ -5,8 +5,10 @@
+ from pathlib import Path
+ import tempfile
+ import unittest
++import urllib.request
+ from unittest.mock import patch
+ 
++import verify_works_producer
+ from verify_works_producer import (API, COMMITS_API, BUILD_FILES, REPOSITORY_URL, TAG_REFS_API, TAGS_API,
+                                    builds_input_snapshot, qualify_runtime_source, require_unchanged_runtime_source,
+                                    runtime_source_snapshot)
+@@ -16,6 +18,33 @@
+ ROOT_TREE = "c" * 40
+ TAG = "v3.125.1"
+ TAG_OBJECT = "e" * 40
++
++
++class OfficialSourceFetchAuthenticationTests(unittest.TestCase):
++    def fetch_request(self, url, token):
++        with (patch.dict(os.environ, {"GITHUB_TOKEN": token}),
++              patch.object(verify_works_producer.urllib.request, "urlopen") as open_url):
++            open_url.return_value.__enter__.return_value.read.return_value = b"{}"
++            self.assertEqual(verify_works_producer._fetch(url), b"{}")
++        open_url.assert_called_once()
++        self.assertEqual(open_url.call_args.kwargs["timeout"], 15)
++        return open_url.call_args.args[0]
++
++    def test_official_git_requests_use_optional_token_without_forwarding_it_on_redirect(self):
++        request = self.fetch_request(COMMITS_API + COMMIT, "synthetic-source-fetch-token")
++        self.assertEqual(request.get_header("Authorization"), "Bearer synthetic-source-fetch-token")
++        self.assertNotIn("Authorization", request.headers)
++        redirected = urllib.request.HTTPRedirectHandler().redirect_request(
++            request, None, 302, "redirect", {}, "https://example.invalid/redirected")
++        self.assertIsNone(redirected.get_header("Authorization"))
++
++    def test_no_token_or_foreign_host_path_never_receives_authorization(self):
++        for url, token in ((COMMITS_API + COMMIT, ""), (COMMITS_API + COMMIT, "  "),
++                           ("https://example.invalid/tree", "synthetic-source-fetch-token"),
++                           ("https://api.github.com.example.invalid/tree", "synthetic-source-fetch-token"),
++                           ("https://api.github.com/repos/another/project/git/trees/main", "synthetic-source-fetch-token")):
++            with self.subTest(url=url, token_present=bool(token.strip())):
++                self.assertIsNone(self.fetch_request(url, token).get_header("Authorization"))
+ 
+ 
+ class ProducerQualificationTests(unittest.TestCase):

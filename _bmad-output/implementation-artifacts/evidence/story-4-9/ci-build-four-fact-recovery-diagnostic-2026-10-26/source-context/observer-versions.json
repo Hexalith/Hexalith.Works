@@ -1,0 +1,41 @@
+{
+  "python": "3.14.4",
+  "helpers": {
+    "observe-control-plane.py": "5ded914fb7cc735953dc3603e9b0b05d28a9b16918080a0b51f12e39fc878466",
+    "observe-dcp.py": "8bd9a3794f5eb6f33065e98cd3fa845a934c014ec049cd4b8bf598c912259dda"
+  },
+  "commands": [
+    {
+      "command": [
+        "aspire",
+        "--version"
+      ],
+      "exitCode": 0,
+      "stdout": "13.6.1+3751e615ad660621f2a7aa4c390ef48e08a0eed8\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "docker",
+        "version",
+        "--format",
+        "{{.Client.Version}} {{.Server.Version}}"
+      ],
+      "exitCode": 0,
+      "stdout": "29.8.2 29.8.2\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "kubectl",
+        "version",
+        "--client",
+        "-o",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "{\n  \"clientVersion\": {\n    \"major\": \"1\",\n    \"minor\": \"36\",\n    \"gitVersion\": \"v1.36.1\",\n    \"gitCommit\": \"756939600b9a7180fc2df6550a4585b638875e67\",\n    \"gitTreeState\": \"clean\",\n    \"buildDate\": \"2026-05-12T09:54:35Z\",\n    \"goVersion\": \"go1.26.2\",\n    \"compiler\": \"gc\",\n    \"platform\": \"linux/amd64\"\n  },\n  \"kustomizeVersion\": \"v5.8.1\"\n}\n",
+      "stderr": ""
+    }
+  ]
+}

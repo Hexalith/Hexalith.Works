@@ -1,0 +1,94 @@
+{
+  "createdAtUtc": "2026-10-26T23:15:17.459265+00:00",
+  "scope": "Offline successors for five supplemental acceptance-tool review findings; original packets/native inputs immutable; parent owns full verification and acceptance",
+  "files": {
+    "README.md": {
+      "sha256": "e9079acac587ddbf4d87d284452dd2abcf6dc40b7c0dffaceeaff51a0d6cc7e3",
+      "bytes": 4621
+    },
+    "acceptance_support.py": {
+      "sha256": "13aead9adfc37372424b89fc52892a8ab7b0529af9c05de4a468132eb404e8c6",
+      "bytes": 3846
+    },
+    "audit-hosted.py": {
+      "sha256": "862045f689dd10eae7a0a96b55d5001be224d704a4307a0727845d8de6de7ac4",
+      "bytes": 16631
+    },
+    "build-packet.py": {
+      "sha256": "78ea8e29a0632b60c1bff40e6e17b7cc1c30fb6f8b8bca4307dd8ad596277f3d",
+      "bytes": 10778
+    },
+    "checks.json": {
+      "sha256": "7ba71274e2e6776352d34f164889ef9b2fe58f836118d6a10b24ae69e1c6f1c1",
+      "bytes": 3293
+    },
+    "controls/missing-hosted-method-matrix.json": {
+      "sha256": "9ea52242957f0692a0275381d6dbfd4a7b65384d33e6c648b9d7fea953e575c6",
+      "bytes": 12474
+    },
+    "download-artifact.py": {
+      "sha256": "1b42ca338f964e297e503323d512b02cb356fb5d6443770678e54e733f722f6c",
+      "bytes": 2806
+    },
+    "focused-tests-optimized.log": {
+      "sha256": "dac42594df2c4378df83667d88f619e6303a8673dc3dc594c9450f50b302c326",
+      "bytes": 3735
+    },
+    "focused-tests.log": {
+      "sha256": "dc692dc346dde207eda46e22515c404668a0ab8f5292f929ea478f983ad9ed70",
+      "bytes": 3735
+    },
+    "hosted-audit-replay.log": {
+      "sha256": "1ad9a32371accb917791cb836f81d3b375bf72ed71fca38c48e2f0db5ebd4068",
+      "bytes": 4118
+    },
+    "negative-missing-hosted-replay.log": {
+      "sha256": "d5be31004a153716b71c7391d3f2cfcf2f162da14e59f8281e5a0ed7f842081f",
+      "bytes": 4260
+    },
+    "preserved-inputs-after.json": {
+      "sha256": "d601051c9a898c56d69845780f859374a4c7bd8ae902be994bf713878f2d15d3",
+      "bytes": 115
+    },
+    "preserved-inputs-before.json": {
+      "sha256": "c672b7ff507055206d72dbcbdcf3fd22496e71007ac91c6f0822596896f7a244",
+      "bytes": 55681
+    },
+    "results/hosted-audit/hosted-audit.json": {
+      "sha256": "1ad9a32371accb917791cb836f81d3b375bf72ed71fca38c48e2f0db5ebd4068",
+      "bytes": 4118
+    },
+    "results/hosted-audit/matrix-audit.json": {
+      "sha256": "3702c0cca710127aabd98777fd827f6ea0e1734daf78841b129d19b5be786a82",
+      "bytes": 12509
+    },
+    "results/negative-missing-hosted/hosted-audit.json": {
+      "sha256": "d5be31004a153716b71c7391d3f2cfcf2f162da14e59f8281e5a0ed7f842081f",
+      "bytes": 4260
+    },
+    "results/negative-missing-hosted/matrix-audit.json": {
+      "sha256": "656a02fdfc344b3df0fdf6a40f3e4766b4412e40e5fc39b4ec5362a16633dfbc",
+      "bytes": 12471
+    },
+    "results/summary/README.md": {
+      "sha256": "de38e4364da598701a8002ba998c185c9f9181a2f6d338e7856b60131d0a9918",
+      "bytes": 1070
+    },
+    "results/summary/summary-claims.json": {
+      "sha256": "0ded787c4ad166f6046dc74607d18363a8c4bde7c79b5c2f0d859bc0e588be17",
+      "bytes": 3127
+    },
+    "summary-replay.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "test_acceptance_tools.py": {
+      "sha256": "a169fd4bfe23b57fcc0540b94df4fc359252ad9f7d9f9163523681f35bed2167",
+      "bytes": 16214
+    },
+    "tool-lineage.json": {
+      "sha256": "a51ac58d2f039cf77e97a48db91d3385d90ea418c61c874a92c21ccf89d6994b",
+      "bytes": 1419
+    }
+  }
+}

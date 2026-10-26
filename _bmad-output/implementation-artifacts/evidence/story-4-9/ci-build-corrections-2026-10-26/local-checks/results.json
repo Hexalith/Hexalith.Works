@@ -1,0 +1,61 @@
+{
+  "scope": "Focused local checks on the owned group-2 fixes; moving-workspace build failure kept separate",
+  "checks": [
+    {
+      "command": "python3 -m unittest discover -s scripts/tests",
+      "result": "passed",
+      "tests": 81,
+      "log": "story49-group2-tooling-tests.log"
+    },
+    {
+      "command": "python3 -m unittest test_verify_works_host",
+      "cwd": "references/Hexalith.Platform/eng",
+      "result": "passed",
+      "tests": 68,
+      "log": "story49-group2-platform-tests.log"
+    },
+    {
+      "command": "bash scripts/verify-story415-sdk-candidate.sh",
+      "result": "passed",
+      "sdk": "3.128.0",
+      "parties": "1.6.0",
+      "log": "story49-group2-sdk-helper.log"
+    },
+    {
+      "command": "PATH=/tmp/story49-final-tooling/shellcheck/usr/bin:/tmp/story49-final-tooling/bin:$PATH bash scripts/lint-scripts.sh",
+      "result": "passed-shellcheck-and-ruff",
+      "log": "story49-group2-full-lint.log"
+    },
+    {
+      "command": "python3 /tmp/story49-group2-mutations.py",
+      "result": "passed-expected-refusals",
+      "expectedFailureCases": [
+        3,
+        1,
+        6
+      ],
+      "log": "story49-group2-mutations.log"
+    },
+    {
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m -v:minimal",
+      "result": "failed-moving-external-source",
+      "diagnostic": "CS0246 AgentsIngressDenialContext in externally advanced Platform AgentsHostComposition.cs:125",
+      "log": "story49-group2-release-build.log"
+    }
+  ],
+  "logs": {
+    "story49-group2-platform-tests.log": "39bebfdb3189cf09ab90fbfe477b72be99a8d20c7af8acc0f087614859701da0",
+    "story49-group2-tooling-tests.log": "fdf5cc240134342368a7d8b136e61a7f447c61d2101238701b98976f753b1ff3",
+    "story49-group2-platform-red.log": "518719aa6413e31d419d1ac081ef3ca9a2d7aa010de6cbdd3d376f661978a4dd",
+    "story49-group2-lint.log": "29bbc99c5133aff7afee28526e205e662a175fae001481a6e7926f9082859bb8",
+    "story49-group2-build-policy-tests.log": "99f3606de13afb6e6488b5c5e83d34bf817ec71185368f51bb122903e19d9464",
+    "story49-group2-helper-red.log": "4042073e587a850445900fbc4397ad5dc708d1c1a2aa2dbc13e27327944ecc28",
+    "story49-group2-full-lint.log": "5d181034dcb418674d76dec9afaef49ac46b41ec30f1d83feddac68349e2465e",
+    "story49-group2-sdk-helper.log": "f1d4042250752aa8668a2e47f42deaff624ea5db488d57f90a8a3152d4456d98",
+    "story49-group2-coordinator-tests.log": "ba6dd06c09ef6a8a6832b2cea43fa2a8727f98f356951abae0f8afbb533c719a",
+    "story49-group2-helper-tests.log": "b5321670de9dc0ef754513ad7efd1bd002b1323b30ce376748c56388d98764e9",
+    "story49-group2-release-build.log": "146f755ba910dc3b0cbc4275c6ab44ee68da70ac7b30fea2749da46144957a84",
+    "story49-group2-mutations.log": "a8ef3f69a045dacd757f93065077adf70546ef443877e9a04ca3ddfc4c7af612",
+    "story49-group2-release-restore.log": "488f703e9fd562c626dfb4a4cf2b3da97e66b08fac6acd20649cf091dcbd0ec0"
+  }
+}

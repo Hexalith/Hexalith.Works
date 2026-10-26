@@ -1,0 +1,31 @@
+{
+  "scope": "read-only exact published runs and associated jobs/artifacts",
+  "repository": "Hexalith/Hexalith.Works",
+  "runIds": [
+    40407181685,
+    40407181557,
+    40407181599
+  ],
+  "commands": [
+    [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/runs/40407181685"
+    ],
+    [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/runs/40407181685/jobs?per_page=100"
+    ],
+    [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/runs/40407181557"
+    ],
+    [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/runs/40407181599"
+    ]
+  ]
+}

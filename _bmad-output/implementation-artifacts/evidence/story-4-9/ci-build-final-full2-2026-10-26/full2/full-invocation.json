@@ -1,0 +1,57 @@
+{
+  "scope": "fresh canonical full; same frozen final sources, distinct scoped environment input",
+  "command": [
+    "bash",
+    "/tmp/story49-final-20261026T195205Z/full1/workspace/platform/eng/verify-works-host.sh",
+    "--profile",
+    "full",
+    "--works-root",
+    "/tmp/story49-final-20261026T195205Z/works",
+    "--runtime-sdk-root",
+    "/tmp/story49-final-20261026T195205Z/full1/workspace/Hexalith.EventStore",
+    "--platform-source-binding",
+    "/tmp/story49-final-20261026T195205Z/full2/platform-source-binding.json",
+    "--artifacts-path",
+    "/tmp/story49-final-20261026T195205Z/full2/gate"
+  ],
+  "sourceCapture": "/tmp/story49-final-20261026T195205Z/inputs.json",
+  "sourceCaptureSha256": "1c8da687c84af8b81e63c0c6880e2df8aaf8179ef1e91a19065be3f9618b860f",
+  "worksRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+  "sourceRoots": {
+    "works": "/tmp/story49-final-20261026T195205Z/works",
+    "platform": "/tmp/story49-final-20261026T195205Z/full1/workspace/platform",
+    "runtimeSdk": "/tmp/story49-final-20261026T195205Z/full1/workspace/Hexalith.EventStore"
+  },
+  "environmentPins": {
+    "HexalithBuildsRoot": "/tmp/story49-final-20261026T195205Z/works/references/Hexalith.Builds",
+    "HexalithEventStoreRoot": "/tmp/story49-final-20261026T195205Z/full1/workspace/Hexalith.EventStore",
+    "HexalithCommonsRoot": "/tmp/story49-final-20261026T195205Z/works/references/Hexalith.Commons",
+    "HexalithPartiesRoot": "/tmp/story49-final-20261026T195205Z/works/references/Hexalith.Parties",
+    "HexalithTenantsRoot": "/tmp/story49-final-20261026T195205Z/works/references/Hexalith.Tenants",
+    "HexalithPolymorphicSerializationsRoot": "/tmp/story49-final-20261026T195205Z/works/references/Hexalith.PolymorphicSerializations",
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+  },
+  "pathPrefix": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/bin",
+  "remainingPathUnchanged": true,
+  "scopeConfiguration": "/tmp/story49-final-20261026T195205Z/full2/environment/scope.json",
+  "scopeSha256": "ea8a9a238773bad777b9cd789d7af8a3ef29384519cec95d776973a59020cb55",
+  "selectedSentryConfigurationRoots": [
+    "/tmp/story49-final-20261026T195205Z/full1/workspace/platform/DaprComponents",
+    "/tmp/story49-final-20261026T195205Z/full2/gate/retained-works-source"
+  ],
+  "helperHashes": {
+    "docker_health_adapter.py": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+    "bin/docker": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b",
+    "configure_scope.py": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+    "cached-images.json": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+    "windows-excluded-ports.txt": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46"
+  },
+  "strictInputClosureBefore": true,
+  "canonicalProcessBudgetsSeconds": 1800,
+  "canonicalStartupBudgetSeconds": 180,
+  "authenticationPresent": true,
+  "authenticationSource": "existing gh credential in memory; value never recorded",
+  "authenticationPolicy": "official GIT_API only; redirects drop auth; owner strips token before live runtime",
+  "extraHelperContainers": 0,
+  "observation": "read-only exact-owned Docker/DCP only"
+}

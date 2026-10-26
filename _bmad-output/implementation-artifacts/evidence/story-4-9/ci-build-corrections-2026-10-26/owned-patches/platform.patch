@@ -1,0 +1,44 @@
+diff --git a/docs/works-host-parity.md b/docs/works-host-parity.md
+index bc5bf16..b1e0923 100644
+--- a/docs/works-host-parity.md
++++ b/docs/works-host-parity.md
+@@ -2,7 +2,7 @@
+ 
+ ## Canonical local and CI profiles
+ 
+-`eng/verify-works-host.sh --profile full` is the default local gate: source Debug and public-package Release consumer checks, followed by every explicit live R1–R11 proof and complete-fleet rollback. `--profile ci` uses only Release/public-package consumer checks and Release/package Agents scaffold probes, as required by the Hexalith CI baseline. The explicitly accepted unpublished Platform.Identity, Platform.Composition and conditional Platform.Works.Runtime test-source exceptions remain explicit; the Composition exception is hash-bound from the Platform tree the consumer actually compiles (`PlatformWorksRuntimeRoot`), including its linked `DaprSelfHostedMtls.cs`, not from the Works dependency copy. Runtime SDK executables still build in Release from independently qualified exact public producer source; their external dependencies use packages.
++`eng/verify-works-host.sh --profile full` is the default local gate: source Debug and public-package Release consumer checks, followed by every explicit live R1–R11 proof and complete-fleet rollback. `--profile ci` uses only Release/public-package consumer checks and Release/package Agents scaffold probes, as required by the Hexalith CI baseline. The explicitly accepted test-only source exceptions are unpublished Platform.Identity, Platform.Composition, conditional Platform.Works.Runtime and the eleven linked Parties authority/query sources compiled into Works IntegrationTests. Parties.Client and Parties.Contracts remain catalog-selected public NuGet packages, and `linkedFixtureSources` binds the exact linked authority/query bytes from `HexalithPartiesRoot`; the Composition exception is hash-bound from the Platform tree the consumer actually compiles (`PlatformWorksRuntimeRoot`), including its linked `DaprSelfHostedMtls.cs`, not from the Works dependency copy. Runtime SDK executables still build in Release from independently qualified exact public producer source; their external dependencies use packages.
+ 
+ The Builds catalog (`HexalithDaprRuntimeVersion` 1.18.7, `HexalithDaprCliVersion` 1.18.2) is the single Dapr version authority for the Works fleet: `WorksPreviewModel` composes Sentry, Placement and Scheduler from it through `CompositionToolchainPins`, and `eng/works_toolchain.py` derives the sidecar runtime and CLI from the same catalog, resolved exactly like `HexalithBuildsRoot`. The Platform-owned [Works proof toolchain](../config/works-proof-toolchain.json) no longer names versions of its own: it binds only the exact qualified Linux `daprd` SHA-256 to the catalog runtime it was qualified for, and refuses a catalog runtime change until that hash is requalified. CI reads the derived pins through `eng/works_toolchain.py` for both the parity lane and the ordinary lane (`dapr-version` and `dapr-runtime-version`). The canonical gate checks the installed version and runtime hash, requires that the toolchain came from the same catalog that selects the SDK, and refuses either isolated launcher (live fleet or retained preflight) unless it executes those exact bytes, all before any live lane; the Works CI coordinator independently requires the executed hash to equal the Platform pin. An owned local self-invocation comparison of the exact hosted 1.18.3 binary showed missing caller attribution and preservation of a spoofed `dapr-caller-app-id`; the qualified 1.18.7 binary stamps the actual `works` caller and overwrites the spoof. That probe did not enable mTLS and does not qualify a production deployment. The production profile requires `daprRuntimeVersion >= 1.18.7` as a numeric qualified floor (1.18.8, 1.18.10, 1.19.0 and 2.0.0 admissible; 1.9.0 and 1.18.6 refused), and its JSON schema is tested against the same cases; preview admission remains closed. Hosted run [39674116771](https://github.com/Hexalith/Hexalith.Works/actions/runs/39674116771) passed the Release/package CI profile on the earlier pins; the Builds-derived toolchain, the 3.127.0 producer selection and the changed verifier inputs require fresh complete qualification; the earlier 3.126.1 selection's qualification is recorded with the Works Story 4.9 evidence.
+ 
+diff --git a/eng/test_verify_works_host.py b/eng/test_verify_works_host.py
+index 0ca7cc6..0c37a18 100644
+--- a/eng/test_verify_works_host.py
++++ b/eng/test_verify_works_host.py
+@@ -367,6 +367,13 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                     outcomes.assert_not_called()
+         return json.loads((artifacts / 'ledger.json').read_text()), artifacts, qualified
+ 
++    def test_release_dependency_record_names_every_accepted_test_only_source_exception(self):
++        ledger, _, _ = self.run_until_live_lanes(b'qualified runtime')
++        self.assertEqual(ledger['dependencyModes']['Release'],
++                         'public NuGet ' + VERSION + ' consumer graph plus explicitly named test-only '
++                         'Platform.Identity, Platform.Composition, conditional Platform.Works.Runtime '
++                         'and linked Parties authority/query source')
++
+     def test_complete_pipeline_checks_final_inputs_before_accepting_persisted_evidence(self):
+         ledger, _, _ = self.run_until_live_lanes(b'qualified runtime', finish=True)
+         self.assertEqual(ledger['status'], 'passed-disposable-synthetic-parity-and-rollback')
+diff --git a/eng/verify_works_host.py b/eng/verify_works_host.py
+index 335ab78..21a1eb1 100644
+--- a/eng/verify_works_host.py
++++ b/eng/verify_works_host.py
+@@ -1214,7 +1214,7 @@ def run_verification(args):
+             "project": str(identity_root / "Hexalith.Platform.Identity.csproj"),
+             "projectSha256": sha256(identity_root / "Hexalith.Platform.Identity.csproj"),
+             "qualifiedAssemblySha256": sha256(consumer_output / "bin/Hexalith.Works.IntegrationTests/release/Hexalith.Platform.Identity.dll")}
+-        summary["dependencyModes"] = {"Release": "public NuGet " + version + " consumer graph plus explicitly named test-only Platform.Identity, Platform.Composition and conditional Platform.Works.Runtime source"}
++        summary["dependencyModes"] = {"Release": "public NuGet " + version + " consumer graph plus explicitly named test-only Platform.Identity, Platform.Composition, conditional Platform.Works.Runtime and linked Parties authority/query source"}
+         if "Debug" in profile["consumerConfigurations"]:
+             summary["dependencyModes"]["Debug"] = "sibling source project graph; independently built and hashed"
+         for row in summary["rows"].values():

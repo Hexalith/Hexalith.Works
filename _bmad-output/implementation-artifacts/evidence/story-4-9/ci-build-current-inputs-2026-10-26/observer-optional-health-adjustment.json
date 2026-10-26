@@ -1,0 +1,8 @@
+{
+  "priorHelper": "observe-sentry-port-prefilter.py",
+  "priorOutput": "sentry-observer-v2",
+  "priorObservations": 0,
+  "reason": "Docker inspect optional Health property is absent for this image; use map index to encode null while preserving the exact owned config-mount admission",
+  "observedNativeDiagnostic": "template map has no entry for key Health",
+  "canonicalInputsChanged": false
+}

@@ -1,0 +1,352 @@
+# EventStore API Surface Constraints
+
+<!-- EventStore-current-source: 7af8a2a74dff103f286abad144e4959e3e30b902 -->
+
+Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+
+## Story 4.14 published SDK consumer surface
+
+Works' current Release target pins published EventStore `3.128.0` (tag `v3.128.0`, source `c5d1c280d8c1c1a207cd159d817f614e93c93130`), the Builds catalog selection, and published Parties.Client `1.6.0`; it stores captured owner identities as sealed paged references. The previous `3.126.1` pin (tag `v3.126.1`, source `1748b16b11fb63b885dfa2fd4a9c7a420ea103a9`) was requalified under Story 4.9, recorded with the Story 4.9 evidence. The earlier `3.126.0` pin (tag `v3.126.0`, source `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`) contains the Story 4.15 journal-closeout correction (`216b7906`) and both Story 4.16 producer corrections (`9dbb3aaf`). The [public 3.126.0 packet](../_bmad-output/implementation-artifacts/evidence/story-4-16/public-3.126.0-2026-10-19/README.md) qualifies synthetic Platform parity and rollback for this dependency graph. Story 4.15's 2026-10-16 public 3.123.0 acceptance is historical; reopened 2026-10-18 verification uses corrected source Debug and explicitly selected unpublished candidate `3.124.1-story415.20261018.1`. Superseded public 3.124.0 lacks the journal-closeout correction and was not qualified by those source/candidate results. Earlier local candidate proofs retain their historical scope. Its `IAsyncDomainSharedProjectionEpochHandler` uses `works-runtime-v3` as both projection type and scope family; SDK `SharedProjectionEpochCoordinator` owns writer leases, journal, selected generation, checkpoints, control index, and pinned reads. Works returns logical `ReadModelBatchOperation` values. Story 4.14 initially retained the existing writer as the default; the subsequent [Story 4.9 SDK-only composition](platform-hosting-cutover.md) uses the SDK writer and runtime. The common `WorksRuntimeDocument` permits heterogeneous values in one SDK `ReadManyAsync<T>` call. The published Parties client resolves current actor-to-Party authority for SDK queries. Configuration, rollback, and proof limits are recorded in [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md).
+
+The published Parties HttpClient uses independent configured service authority through the canonical gateway. Platform now admits explicitly configured JWT service readers for current identity resolution while preserving tenant/RBAC, exact signed scope, current actor registry checks, and existing Dapr policies. Synthetic protected HTTP proof continues through the real Parties binding/custody source service. The corrected SDK retains delivery-conflict identities in fenced epoch state, exposes durable degraded readiness, and supplies an explicit covering-rebuild repair API. Works honors that signal on list and detail reads. Local-candidate provenance, bounded evidence recovery, source-fixture provenance, and the independent upstream-publication/production gates are documented in [sdk-projection-query-adoption.md](sdk-projection-query-adoption.md).
+
+Story 1.1 verified the live `Hexalith.EventStore` source surface before Works depends on domain behavior in later stories.
+
+## Schema compatibility contract (VAL-H11)
+
+Story 1.5 closes VAL-H11 for the 40-type Works v1 catalog. The compatibility rules below apply to
+aggregate replay, `/project`, shared rebuild, and live subscription/recovery readers.
+
+| Concern | Bound compatibility rule |
+| --- | --- |
+| Concrete writer | Durable event payloads and command bodies use options-free concrete `System.Text.Json`: exact PascalCase CLR property names, no `$type`, no envelope fields. Existing type names and bytes never change. |
+| Tolerant reader direction | EventStore's shared case-insensitive reader and Works projection readers accept both the exact PascalCase form and the frozen camelCase Web form. New readers read all old payloads; old readers ignore additive properties on known types. |
+| Optional/default fields | Additive read-model fields are nullable. A missing `ConversationCorrelationId` in an older `WorkItemRollUp` or `WorkItemView` document reads as `null`; no empty or generated identifier is substituted. |
+| Polymorphic identity | Each durable command/event/rejection retains its unversioned CLR type-name discriminator in the generated polymorphic registry. `V2` aliases and renamed discriminators are forbidden for this change. |
+| Enum and unknown type | Existing enum strings remain closed: an unknown enum value is malformed, never coerced. An unknown event type is not interpreted as another event; current readers skip/acknowledge it according to their bounded surface, while shared rebuild marks its history incomplete. |
+| Malformed known payload | Replay/binding fails rather than fabricating required values. Projection logs bounded metadata; reminder-affecting malformed events halt that projection path, other malformed evidence refuses reliable rolled totals, and shared rebuild marks the candidate incomplete. |
+| Rejections | Rejection payloads persist at EventStore envelope positions but apply as aggregate-state no-ops and are excluded from read-model accepted-source watermarks. |
+| Story 1.5 projection effect | `ConversationLinked` folds the opaque reference into aggregate state, `WorkItemRollUp`, and `WorkItemView`. What's-next accepts it only to advance the accepted-source watermark; eligibility and ordering do not change. `WorkItemConversationLinkRejected` remains a replay/projection no-op. |
+| Rollout order | Deploy readers, generated mapper registration, aggregate replay, and projection descriptors before enabling a producer of `LinkConversation`/`ConversationLinked`. Then enable producers; rollback must retain those readers while any new payload may remain in a stream. |
+
+The Web and exact EventPersister corpora bind both new event shapes bidirectionally, and the separate
+LinkConversation command fixture binds its exact concrete writer bytes. The corpus tests continue to
+exercise every pre-existing file, so additive catalog growth cannot rewrite historical payload bytes.
+
+## Canonical Stream Sequencing
+
+Historically verified against EventStore revision `c61739206fd89619b7d29dfb0812225a234066bb`
+(`v3.98.0-10-gc6173920`). The characterized `EventPersister`, `EventStreamReader`, and shared payload
+serialization files are unchanged from `b43e963403efa848eda9621b5e3e7e446c7faa2d`.
+Two always-on guards cover that source, and neither covers the other's claims:
+`EventStoreApiSurfaceCharacterizationTests.P1_EventStorePersistsRejectionsAndUsesEnvelopeCanonicalSequencing`
+reads `AggregateActor`, `EventPersister`, and `AggregateReplayer` source text and guards the
+envelope-sequencing claims only. The concrete-writer and shared-reader casing claims below are guarded
+behaviourally instead, by `EventPersisterGoldenCorpusTests` (options-free PascalCase writer bytes, read
+back through `EventStorePayloadSerialization.Options`) and `SchemaEvolutionGoldenCorpusTests` (camelCase
+compatibility inputs read through the same shared options). `EventStreamReader`'s snapshot-at-current
+behaviour is guarded by `EnvelopeCanonicalSequencingTests`.
+
+EventStore envelope `SequenceNumber` is the canonical persisted position. `EventPersister` derives it
+from `AggregateMetadata.CurrentSequence`, assigns one gapless position to every persisted success or
+`IRejectionEvent`, and updates metadata independently of any similarly named payload field.
+`EventStreamReader` reads those envelope positions from 1 through the metadata watermark on a full
+replay, and only the tail from `snapshot.SequenceNumber + 1` when a snapshot is supplied (returning the
+snapshot alone when it already sits at the current sequence). `AggregateReplayer` sorts and gap-validates
+the positions it is given before invoking every matching `Apply` overload.
+
+Works payload `Sequence` has a narrower meaning: it is the state-changing-event ordinal used by
+`WorkItemState` and advances only when an event mutates aggregate state. Rejection payload shapes remain
+frozen without `AggregateId` or `Sequence`; applying an `IRejectionEvent` is a no-op even though its
+EventStore envelope occupies a persisted position. Therefore, after a rejection at envelope position 1,
+a valid create is persisted at envelope position 2 while `WorkItemCreated.Sequence` is correctly 1.
+Projection delivery, replay ordering, freshness watermarks, and deduplication use the EventStore
+envelope `SequenceNumber`, not the Works payload ordinal.
+
+## Concurrency
+
+EventStore does not expose an explicit `expectedVersion` append argument. Optimistic concurrency is implemented through the Dapr state-store ETag used by `AggregateActor.SaveStateAsync()`, which raises `ConcurrencyConflictException` after configured retries. Later Works claim and single-writer stories must translate that infrastructure conflict into Works domain rejections instead of assuming an expected-version append API.
+
+## Online Rebuild
+
+EventStore's aggregate projection rebuild remains operator-initiated, checkpoint-per-aggregate, and pausable
+through `IProjectionRebuildOrchestrator`, `ProjectionRebuildCheckpoint`, and `ProjectionRebuildStatus`; that
+path is not a shadow-projection plus atomic-swap model. EventStore also exposes the internal, versioned
+`/project/rebuild/shared/v1` lifecycle for projections that require a sealed set of co-available aggregate
+histories. Its Begin/Accumulate/Finalize/Stage/Commit protocol validates bounded candidates and promotes one
+single-store `IReadModelBatchStagingStore` manifest atomically. Works uses that shared lifecycle for tenant-wide
+roll-up reconciliation while retaining the checkpoint path for independent aggregate projections.
+
+## Story 4.5 — Command/Event Pipeline Under Aspire (historical runtime adapter proof)
+
+Story 4.5 wired the first runnable adapter edge (`src/Hexalith.Works`) and the Works AppHost topology. The
+verified EventStore domain-service surface is:
+
+- **Discovery requires a concrete `EventStoreAggregate<TState>` subclass.** `AssemblyScanner` only discovers
+  subclasses of `Hexalith.EventStore.Client.Aggregates.EventStoreAggregate<TState>` (and
+  `EventStoreProjection<TReadModel>`). The pure static `WorkItemAggregate` is **not** discovered. The host
+  therefore provides `WorkItemEventStoreAggregate : EventStoreAggregate<WorkItemState>` decorated
+  `[EventStoreDomain("work")]` (the convention would otherwise derive `work-item-event-store`), declaring one
+  `public static DomainResult Handle(TCommand, WorkItemState?, CommandEnvelope)` wrapper per Works command that
+  delegates to the pure kernel. All fifteen wrappers inspect only the normalized envelope tenant for the shared
+  reserved-id guard, so malformed unrelated domain/aggregate fields do not change ordinary kernel delegation.
+  `LinkConversation` additionally fail-closes when envelope domain, tenant, or aggregate id disagrees with the
+  payload. No EventStore runtime inheritance leaks into `Server` — the
+  `Server -> Contracts` direction
+  is preserved (fitness-asserted).
+- **Canonical host shape (current cutover).** A domain module is two lines — `builder.AddEventStoreDomainService(assembly)` then
+  `app.UseEventStoreDomainService()`. The SDK supplies the platform service defaults (health/OpenTelemetry),
+  convention discovery/registration of aggregates + `IDomainQueryHandler`s, runtime activation, and the canonical
+  `/process`, `/replay-state`, `/query`, `/project`, and `/admin/operational-index-metadata` endpoints. Per the
+  EventStore domain-module contract delegates service defaults to EventStore and Platform. Story 4.9
+  removed the transitional `Hexalith.Works.ServiceDefaults` and AppHost projects after the complete parity gate.
+- **Polymorphic registration is required at the host edge.** Commands arrive at `/process` through the shared
+  static `PolymorphicSerializationResolver` registry, so the host calls
+  `HexalithWorksContractsSerialization.RegisterPolymorphicMappers()` (plus the DI registration) at startup.
+- **Persist-then-publish.** `AggregateActor` persists events (the `EventsStored` checkpoint via `SaveStateAsync`,
+  raising `ConcurrencyConflictException` on the Dapr state-store ETag conflict) **before** `PublishEventsAsync`.
+  Command status advances Received → Processing → EventsStored → EventsPublished → Completed; the smoke test polls
+  `/api/v1/commands/status/{correlationId}` to a terminal status.
+- **Concrete writer and shared reader casing.** `EventPersister` serializes normal concrete payloads with
+  options-free `System.Text.Json`, producing compact PascalCase bytes at rest with no polymorphic `$type`.
+  EventStore's shared `JsonSerializerDefaults.Web` reader options are property-name case-insensitive and accept
+  both those PascalCase bytes and camelCase compatibility/client inputs.
+
+### Projection-model reconciliation — what is wired and what is still deferred
+
+- **Wired:** a bespoke async `/project` handler (mapped before `UseEventStoreDomainService`, so the SDK yields the
+  route) decodes each `ProjectionEventDto` by `EventTypeName` through case-insensitive Web reader options. That
+  reader accepts both the options-free PascalCase persisted form and camelCase compatibility fixtures, with no
+  polymorphic `$type` in either concrete form. It feeds the pure
+  `WhatsNextQueueProjection` and `WorkItemRollUpProjection`, and persists a tenant-scoped `works-whats-next` index
+  plus per-item roll-up through `IReadModelStore` + `ReadModelWritePolicy` (idempotent per-item merge, ETag-guarded).
+  A discovered `WhatsNextQueryHandler : IDomainQueryHandler` reads that index and applies the pure
+  `WhatsNextOrdering` + `WhatsNextQueryAuthorization`.
+- **Refuse stale persisted roll-ups (2026-08-27):** the EventStore `/project` contract delivers a **single
+  aggregate's** event stream per call. A parent replay can reconstruct its own current effort and its accepted
+  `ChildSpawned` facts, but cannot reconcile those children with their later, separately dispatched streams.
+  The runtime adapter therefore refuses totals when `ExposedChildCount > 0` or when the request contains a
+  `ChildSpawned` event type that could not be decoded or accepted. It persists/exposes both `RolledRemaining` and
+  `RolledRemainingByUnit` as unavailable (`null` / empty). It preserves own effort, lifecycle status (including
+  terminal status), parent/child structure, tenant identity, diagnostics, and the accepted-source watermark.
+  Exposed child identities are emitted in ordinal `WorkItemId.Value` order; `ExposedChildCount` is that filtered
+  sequence's size, not an effort-contribution count. Leaf roll-ups remain locally complete and available. The pure
+  projection still supports recursive convergence when all contributing event streams are co-available; the per-aggregate
+  runtime does not claim that convergence. Deterministic `WorkItemProjectionQueryAdapterTests` assert the
+  persisted read-model end state and query representation.
+- **Monotonic projection writes (2026-08-29):** delayed full replays compare the accepted EventStore envelope
+  position carried by `LatestAcceptedSourceSequence` before mutating either persisted model. The adapter writes
+  the per-item roll-up first through `ReadModelWritePolicy`; a strictly newer stored roll-up makes the stale
+  dispatch skip its tenant-index write. The tenant index has its own ETag-guarded per-item `LastSequences`
+  watermark, retained after eligibility removal, and falls back to an eligible legacy item's own sequence only
+  when that aggregate id has no `LastSequences` entry; a retained entry is the sole authority for that id, so a
+  stored item cannot outrank its own tombstone. Equal-sequence redispatches may refresh deterministic
+  documents. An empty or rejection-only replay has no accepted model and writes neither roll-up nor what's-next
+  index. These two keys remain separate, non-atomic read models: each is independently monotonic and they
+  converge on replay rather than claiming a cross-key transaction. The pending date-await index maintained by
+  the same dispatch is outside this guarantee: it keeps its pre-existing raw stream-sequence watermark.
+- **Shared roll-up reconciliation (2026-08-29):** Works registers the public
+  `WorkItemSharedProjectionRebuildHandler` for EventStore's internal `/project/rebuild/shared/v1` route. The
+  operator supplies a sealed authoritative tenant inventory; the handler folds all complete histories through
+  one pure roll-up and what's-next graph, discovers edges from both `ChildSpawned` and
+  `WorkItemCreated.Parent`, and applies the same boundary sanitizer as normal `/project`. Missing, malformed,
+  unknown, cross-tenant, cyclic, or multiply-parented relationship evidence keeps reliable local fields but
+  makes both rolled shapes unavailable. Stage writes only a bounded candidate envelope. Commit atomically
+  promotes a schema-v2 tenant membership index and its per-item documents while deleting the candidate-known
+  unversioned keys. Until that commit, readers and ordinary dispatch continue using existing legacy keys; once
+  the v2 index exists, membership is authoritative and makes any unlisted historical document unreachable.
+  The Dapr ACL admits this route only from EventStore, and EventStore's candidate/manifest limits fail closed
+  before any live mutation.
+  Operational consistency requires ordinary projection delivery to remain quiesced from inventory capture
+  through Commit, or an equivalent platform fence that excludes live writers. Delivery resumes and catches up
+  after Commit. The Works handler does not itself prevent a concurrent ordinary `/project` writer from
+  overwriting, or being overwritten by, a `LastWrite` manifest operation.
+
+### Build reconciliation
+
+Aspire package pins were reconciled from 13.4.3 to **13.4.6** (and `Aspire.AppHost.Sdk` to 13.4.6) to match the
+checked-out `Hexalith.EventStore` submodule, which `Hexalith.EventStore.Aspire` requires. This is a submodule-drift
+alignment forced by the ProjectReference rule, not a discretionary upgrade.
+
+## Story 4.6 — Reminder and Reactor Recovery (historical adapter-edge proof)
+
+Story 4.6 keeps the Works kernel clock-free and infrastructure-free while proving two recovery concerns at the
+runnable host edge:
+
+- **Current date resumes use SDK typed reminder intents.** Works registers `WorksReminderIntentSource`
+  through `AddEventStoreReminders`; EventStore owns actor registration, callbacks and reconciliation.
+  `WorksSdkReminderActor` persists typed `DateResume`/expiry intents and submits deterministic trusted
+  effects through the EventStore gateway. The retired Story 4.6 `DateReminderActor`, `AddActors` and
+  `MapActorsHandlers` implementation is historical evidence only. Platform owns Scheduler, placement,
+  state-store composition and callback policy; see [the cutover record](platform-hosting-cutover.md).
+- **Scheduler/state-store dependency is explicit.** Local proof uses the existing Redis-backed `statestore`
+  component with `actorStateStore: "true"` and `works` in scope. Dapr Scheduler, placement, and Redis are
+  prerequisites for the live Tier-3 lane; deterministic tests cover the adapter logic without those services.
+- **Reminder reconciliation is bounded by the per-aggregate stream-read route.** _(Superseded by Story 4.8 — see
+  below; at 4.6 the host rescanned a hand-configured `Works:Recovery:Tenants` scope with a tenant-wide read.)_ The
+  gateway's `POST /api/v1/streams/read` route **requires an `AggregateId`** — `StreamReadRequest.AggregateId` is
+  contract-optional ("omit only for domain-wide rebuild reads") but `StreamsController` rejects a null id today —
+  so neither tenant-wide nor domain-wide enumeration is available. Story 4.8 keeps every reminder read per-aggregate
+  but drops the hand-configured tenant scan for durable-index discovery (below). The reconciliation decision logic
+  is proven deterministically by `DateReminderRecoveryRuntimeTests`.
+- **Cascade checkpoints are host-edge read-model state.** The terminal-cascade runtime uses the pure
+  `TerminalCascadeTranslator`, persists bounded checkpoint records in the shared state store via
+  `IReadModelStore`, and submits descendant terminal commands through the EventStore command gateway. Checkpoint
+  state is written before each target attempt and again after dispatch; replay reuses the persisted checkpoint,
+  not an in-memory descendant list. If a process stops after submit but before completion is recorded, replay
+  resubmits the same deterministic command, which remains safe under aggregate idempotency.
+- **Descendant discovery limitation.** Production discovery reads direct children from the parent stream. Already
+  terminal descendants can be skipped when the re-readable candidate source marks them terminal; otherwise a
+  duplicate terminal command remains safe because domain acceptance still round-trips through `Handle`. A richer
+  subtree/status projection would improve skip-before-dispatch fidelity without changing the kernel boundary.
+
+No Story 4.6 reminder, checkpoint, or read-model runtime record is a durable polymorphic command/event/rejection
+catalog type. The count was **37** at Story 4.6 completion; Story 1.5 later raised the current catalog to
+**40**, with all pre-existing golden bytes still compatible.
+
+## Story 4.7 — Live Domain-Event Consumption and Cascade Recovery
+
+Story 4.7 verified the checked-out subscription and publisher surfaces at EventStore commit `440ff4c`. The
+workspace intentionally advanced the `references/Hexalith.EventStore` pin from `c6b72caa` to `440ff4c` during the
+story; the delta is hot-reload readiness/diagnostics test infrastructure that Works does not consume, so every
+surface documented below is unchanged from the original `c6b72caa` verification.
+
+- **Tenant topic composition must be resolved explicitly.** Without an override, the publisher composes
+  `{tenantId}.work.events`, while `EventStoreDomainEventsOptions.ForDomain("work")` subscribes to the static
+  `work.events` topic. The AppHost therefore injects
+  `EventStore__Publisher__TopicOverrides__work=work.events` into EventStore. Works continues to use the existing
+  shared `pubsub` component and declares one programmatic subscription through `MapSubscribeHandler`.
+- **The generic processor shares the case-insensitive payload reader.** `EventStoreDomainEventProcessor` binds
+  both EventPersister's PascalCase bytes and camelCase Web compatibility inputs through
+  `EventStorePayloadSerialization.Options`. That file is byte-identical between `b43e963403efa848eda9621b5e3e7e446c7faa2d`
+  and the current pin `c61739206fd89619b7d29dfb0812225a234066bb`, so the withdrawn "not Web-JSON compatible /
+  silently binds a zero-valued record" characterization was wrong at both revisions rather than something the pin
+  bump changed. Works retains its host-local endpoint for stricter tenant/work-item/aggregate identity validation
+  and its explicit terminal handling of malformed or unhandled deliveries; casing compatibility was never the
+  reason for the local processor.
+- **Durable markers provide restart dedup, not broker ordering.** The Dapr marker key includes the configured
+  topic, subscription route, and EventStore message id. A completed marker makes a redelivery `Duplicate` across
+  host restarts. Handler failures do not write completion and remain retryable; after handlers finish, marker
+  completion is the durable side-effect boundary. Dapr pub/sub remains at-least-once and unordered, so target
+  commands retain deterministic ids and aggregate `Handle` remains authoritative.
+- **Stream re-reads remain per aggregate.** Child-completion recovery reads the child stream for its parent
+  reference, then reads that parent stream to rebuild current await conditions. Cascade discovery reads the
+  parent stream and consults each child's persisted roll-up only for terminal status; parent roll-up totals with
+  child contributions are explicitly unavailable and are never used for cascade decisions.
+- **Command payload binding uses the same shared reader contract.** The pinned EventStore aggregate adapter
+  deserializes inner command payloads with `EventStorePayloadSerialization.Options`, so both case-preserving CLR
+  property names and camelCase Web inputs bind correctly. `EventStoreAggregate` is also byte-identical across the
+  two revisions above, so the withdrawn case-sensitive command-reader characterization was never true of either
+  pin. Works recovery submissions keep their existing case-preserving writer form for consistency with the
+  options-free persisted event convention.
+- **Internal Works gateway calls use Dapr authentication.** Under Aspire, the EventStore gateway client targets
+  `DAPR_HTTP_ENDPOINT` and applies `AddEventStoreDaprServiceInvocation("eventstore")`; EventStore explicitly
+  allow-lists `works` through `Authentication:DaprInternal:AllowedCallers`. Direct configured HTTP remains only
+  the fallback for hosts composed without Dapr. This gives child-completion reads, cascade reads, and generated
+  commands the supported `dapr-caller-app-id=works` system identity.
+- **Readiness is dependency-specific.** Aspire's EventStore and Works resources expose `/alive` health checks so
+  their HTTP processes and Dapr app channels are established before tests submit commands. The live lanes then
+  wait for the `dapr-actor-placement` entry inside EventStore's `/ready` response and one Works app-health probe
+  interval. They intentionally do not require overall `/ready`=200 because the same response contains the
+  independent `projection-delivery-writer-protocol` cutover, which can remain unhealthy while aggregate command
+  actors are ready.
+- **The live gate passes at this revision.** After explicit Release builds of both suppressed EventStore hosts,
+  all three Tier-3 lanes completed without skips. The reactor lane proved the shared `work.events` delivery path
+  for both translators: child completion resumed its awaiting parent, parent cancellation dispatched its first
+  descendant, and a fresh AppHost replayed the durable incomplete checkpoint to cancel the outstanding
+  descendant with exactly one terminal event on each.
+
+No Story 4.7 subscription, source, index, or checkpoint type enters the durable polymorphic catalog.
+The count was **37** after that story's prior correct-course addition and is **40** after Story 1.5.
+
+## Story 4.8 — Register and Reconcile Date Reminders Durably
+
+Story 4.8 closes the runtime-wiring gap the 2026-07-21 audit found: date resumes must execute in the live topology
+in steady state and on recovery, without per-tenant hand configuration. It changes the stream-read usage and the
+recovery-discovery model while keeping every read per-aggregate.
+
+- **Suspend-time registration on the live event stream (AC #1).** A new
+  `IEventStoreDomainEventHandler<WorkItemSuspended>` on Story 4.7's `work.events` subscription re-folds the
+  suspended aggregate's per-aggregate stream through the pure `PendingDateAwaitProjection` and registers one durable
+  Dapr reminder per pending `DateReached` await. Registration is derived from the folded **current** pending set,
+  never a raw event in isolation, so a suspend redelivered after the item resumed registers nothing. The
+  subscription (immediate on publish) — not the `/project` dispatch (delivered by EventStore's
+  `ProjectionPollerService` on a per-domain refresh cadence, so poll-interval latency) — is the steady-state
+  trigger.
+- **Durable pending-date-await index replaces the hand-configured scan (AC #2/#3).** The `/project` dispatcher now
+  also maintains, alongside the what's-next and roll-up read models, a per-tenant pending-date-await index document
+  (`projection:works:pending-date-await:{tenantId}`) plus one well-known tenant-registry document
+  (`projection:works:pending-date-await:tenants`), both plain host-edge `System.Text.Json` read models upserted via
+  `ReadModelWritePolicy.UpdateAsync`. For a live pending entry, the registry is written before the index so a crash
+  strands only an empty read, never actionable reminder state under an undiscoverable tenant. An initially absent
+  cleared-history tombstone may write only its non-actionable monotonic watermark without registering the tenant:
+  there is no pending await for recovery to discover, and any later live entry registers the tenant first. The
+  registry is what removes per-tenant configuration: Dapr state stores expose no key enumeration and the gateway
+  exposes no tenant-wide read, so the durable registry is the substrate-compatible enumeration.
+- **Index writes are gated by authoritative full-replay history.** A replay writes the index when its current fold
+  has pending date awaits or when its own history contains a `DateReached` suspension that now needs a monotonic
+  cleared tombstone. An aggregate that never held a date await writes nothing. The gate does not consult the
+  persisted index first: that read would race an older dispatch and allow stale await resurrection.
+- **Index is discovery, stream is truth.** The recovery source enumerates the registry, reads each tenant's index,
+  and re-folds every candidate's per-aggregate stream (`AggregateId` always set) before acting — a stale index
+  entry whose stream has resumed contributes nothing. The `StreamsController` null-`AggregateId` 400 rejection
+  (verified against submodule `6a8f3866`) is therefore no longer load-bearing for reminders; the tenant-wide
+  null-aggregate scan is retired.
+- **On by default, no hand configuration (AC #3).** `WorksRecoveryOptions.Tenants` and its AppHost
+  `Works:Recovery:Tenants` forwarding are removed; `ReminderReconciliationService` runs whenever
+  `RunReconciliationOnStartup` (default `true`). The whole pass stays crash-safe by idempotency (deterministic
+  `DateReminderName`/correlation ids), not checkpoints.
+- **`StreamReadRequest.FromSequence` is an EXCLUSIVE lower bound.** The server reads from `fromSequence + 1`
+  (`AggregateActor.ReadEventsRangeAsync`) and the gateway fake filters `SequenceNumber > fromSequence`, so a page
+  cursor advances to `FromSequence = LastSequenceReturned` — **not** `LastSequenceReturned + 1`, which silently
+  drops exactly one event per page boundary. EventStore's own paging (`DaprBackupCommandService`) uses the same
+  no-increment cursor; the `+ 1` wording in `StreamsController`'s inline comment is misleading and must not be
+  copied. `ContinuationToken` stays null (the gateway fail-closes on any non-null token) and `PageSize` ≤ 1000.
+- **The page budget is per aggregate.** `WorksRecoveryOptions.MaxStreamPagesPerAggregate` bounds the pages read
+  for one work item, and is spent once per work item — not once per tenant. The former
+  `Works:Recovery:MaxStreamPagesPerTenant` key still binds as a deprecated alias and wins when set, so existing
+  configuration keeps working.
+- **`tenants` is a reserved tenant id.** `PendingDateAwaitIndexKey("tenants")` would render the registry key
+  byte-for-byte, overwriting the registry with an index document that deserializes to an empty tenant set and
+  silently disabling reminder recovery for every tenant. The durable registry key is deliberately unchanged (no
+  migration); the id is refused where tenant ids enter the host — the `/project` dispatcher and the `work.events`
+  subscription processor — and by the key builder itself.
+- **A permanently undecodable state-affecting event parks its aggregate.** Decoding stays fail-closed, but after
+  `Works:Projection:MaxUndecodableEventDispatchesBeforeParking` (default 5) consecutive failures on the *same*
+  sequence, the `/project` dispatch is acknowledged with a distinct error log and the aggregate is recorded as
+  parked (`projection:works:parked:{tenantId}:{workItemId}`), so `ProjectionPollerService` stops redispatching it
+  forever. The blast radius is one visible aggregate rather than a permanent poller loop. Reminder recovery also
+  skips that aggregate without reading its stream, so it cannot recreate a missing reminder registration or issue
+  an overdue resume. Parking does not cancel an already durable steady-state reminder, which may still fire. If
+  registration is absent or lost, restart reconciliation cannot repair it until separate operator remediation is
+  delivered. Warning 4607 identifies each affected item.
+- **Recovery warnings retain bounded identity and the structured cause.** EventId 4605 reports incomplete scan
+  counts, 4607 reports terminal parked skips, 4608 distinguishes parking-document read failures from stream
+  failures, and 4609 reports steady-state or recovery scheduling failures with tenant, work item, deterministic
+  reminder name, and exception type. The exception is attached through the logging exception slot, never copied
+  into the message template; exact caller cancellation emits no 4609, while foreign cancellation remains a
+  retryable failure.
+- **Catalog unchanged by Story 4.8.** The index, registry, and parking records are host-edge STJ, not
+  `[PolymorphicSerialization]` types. The current catalog is **40** and Story 4.8's delta is zero, with all
+  pre-existing golden bytes still compatible.
+
+## Story 4.15 producer correction history
+
+Before public 3.123.0 acceptance, Works verified local Story 4.15 candidates on the published EventStore 3.122.0 base containing the accepted 4.14 projection fixes. Those candidate results remain historical. Story 4.16 verification selected public 3.126.0; current dependency pins select public 3.128.0. `IProcessTranslator` permits bounded cancellable contextual reads around pure domain translation, and `ProcessEvidenceUnavailableException` retains retry/park semantics without checkpoint advance. `ReminderIntent.Ordinal` and `SourceMessageId` are additive default-preserving seams. Optional `IReminderTargetCatalog.ListAsync(afterKey, limit, cancellationToken)` enables SDK-owned periodic discovery from existing Works family membership. Authenticated `TrustedEffectOrigin` is an ephemeral domain-service handoff validated against the exact gateway workload and request bindings; it is never caller privilege or durable credentials. See [sdk-reminder-process-adoption.md](sdk-reminder-process-adoption.md) for composition, authority and rollback contracts.
+
+Review iteration 1 adds optional `ProcessSourcePage.IsIncomplete` for healthy keyset results plus SDK-owned unresolved discovery. The SDK's optional `ProcessSourceState.PendingPlan` holds `ProcessEnvelopePlan` until receipt-backed checkpoint commit; null plans retain historical control JSON. Restored plans must match immutable committed source semantics and current effect/byte budgets. Works consumes these local `.4` seams without inventing persistence. SDK runtime owners remain responsible for retention and complete restore; production authority and publication remain separate gates.
+
+Story 4.15 iteration 2 preserves the published eleven-value `ReminderIntent` ABI with additive init properties. SDK discovery continuation carries incompleteness across failure/restart, bounded reminder discovery follows indexed work, retained-plan digests cover all effect semantics, and direct trusted-origin denials require bounded durable SDK audit before 403 (otherwise retryable 503). See [SDK adoption](sdk-reminder-process-adoption.md) for engineering budgets and [iteration-2 proof](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-2/implementation.md) for local `.6` provenance.
+
+Default Debug consumption is verified from the built dependency graph: all nine EventStore libraries, including Contracts, resolve as projects. The checked-out sibling's local project version may trail the selected package candidate; Works omits only the Contracts `PackageVersion` item while using source so CPM cannot promote a newer transitive package over that explicit project. All other transitive pins (including JWT/OpenApi security dependencies), sibling dependency-mode decisions and every Release package pin remain enabled. The dependency-file regression covers the resulting graph. Disabling all transitive pinning was rejected during verification. The retained `ProjectReference.AdditionalProperties` hint forwards compile/version metadata; it does not fix NuGet restore promotion. The source-only Contracts exemption is the accepted restore-graph correction; preliminary logs of the metadata-only experiment remain historical.
+
+Iteration 3 adds `SharedProjectionEpochCoordinator.GetAvailableControlIndexTenantsAsync` returning validated live tenants plus `IsIncomplete` while preserving the existing all-or-error reader. SDK-owned reminder sweep generations/revisions and separate indexed/catalog continuations prevent stale completion and starvation; no Works persistence seam is added. The common SDK process boundary audits both binding and adapter authorization denial before acknowledgment. Historical local `.7` source/package and runtime proof is recorded in [iteration-3 evidence](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-iteration-3/implementation.md).
+
+### Story 4.15 reopened store contract
+
+The unpublished `3.124.1-story415.20261018.1` candidate uses SDK `77d9af18a54d92506e310fe5a45021a395e66f60` (`v3.124.0-3`, including three unpublished commits) plus the correction. [Reopened acceptance evidence](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/implementation.md) binds source Debug, selected package Release and persisted restart behavior. The [source requalification addendum](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/sdk-rebase-requalification/implementation.md) separately binds SDK `216b7906`; later source revisions are not covered by it. Deterministic source Debug and unchanged-candidate Release results at SDK `f43b121c6c7539487b1f38b3c28508e3ab6264cc` are recorded in the [requalification packet](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/post-review-patch-requalification/implementation.md), the [final review closeout](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/post-review-patch-closeout/implementation.md) and its [review-patch addendum](../_bmad-output/implementation-artifacts/evidence/story-4-15/review-fixes-2026-10-18/closeout-review-patches/implementation.md).
+
+For a failed create-only write with an empty ETag, typed `IReadModelStore.TrySaveAsync`, expiring `TrySaveWithTimeToLiveAsync` and the SDK raw batch accessor's `TryWriteAsync` return `false` only after a strong read-back of the same key proves a nonempty ETag. Missing or unreadable proof preserves the original write failure. Caller cancellation, including cancellation during read-back, remains failure. Existing nonempty-ETag updates and successful creates keep their behavior. SDK source commit `575c8070355ff9b6afb17521d6eb529a85327e4d`, rebased unchanged as `f43b121c6c7539487b1f38b3c28508e3ab6264cc`, additionally counts the read-back as one state RPC in delivery-cost diagnostics. That diagnostic is source-only and is absent from the archived `3.124.1-story415.20261018.1` candidate DLLs; the candidate verifies the create-conflict behavior described above. This contract prevents an existing shared receipt from blocking journal dequeue without treating a transient create failure as a delivery conflict or gap.
+
+The correction is published in EventStore 3.125.0 and later, and the current pin selects public 3.128.0 (tag `v3.128.0`); Story 4.16 verified 3.126.0 (tag `v3.126.0`). Story 4.16 verifies Platform parity against that explicitly identified producer; this correction does not admit production data or remove the transitional host.

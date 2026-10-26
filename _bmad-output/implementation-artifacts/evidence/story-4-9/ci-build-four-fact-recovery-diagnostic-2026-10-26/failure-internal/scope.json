@@ -1,0 +1,14 @@
+{
+  "status": "four-fact sequence diagnostic only; no full credit",
+  "helperSha256": "f5c02daed03a591a1f44cabef476ddf2d4ba3dc68d0754f8519c435fdb34dfb2",
+  "owner": "story49-recovery-042ba045010a4c0083ac1643a12c0146",
+  "trigger": "three consecutive unique public health observations refusing/timing out while exact owned container remains Running",
+  "limits": {
+    "seconds": 1900,
+    "helpersPerTarget": 1,
+    "maximumTargets": 6
+  },
+  "helperPolicy": "exact cached image from same owned proof Redis, --rm, unique CID/name/owner, network container:<exact-owned-ID>, readonly root, no privileges/capabilities, no host/target mounts or published ports; only image-declared anonymous /data volume; exact cleanup verified",
+  "targetOperations": "read-only inspect/HTTP; no exec or mutation",
+  "simultaneous": "namespace wget and published/DCP HTTP reads run concurrently; timestamps retained"
+}

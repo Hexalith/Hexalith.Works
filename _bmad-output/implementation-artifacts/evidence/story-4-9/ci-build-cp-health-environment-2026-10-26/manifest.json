@@ -1,0 +1,1365 @@
+{
+  "frozenAtUtc": "2026-10-26T21:06:35.917738+00:00",
+  "scope": "accepted adapter and native smoke only; distinct future full must qualify",
+  "nativeRoot": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1",
+  "files": {
+    "adapter-v1-zero-matches.py": {
+      "sha256": "430b01a3dee0087b945ee9529b78e76e98aa70abc334a3beab9104814582f9ae",
+      "bytes": 9274,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/adapter-v1-zero-matches.py",
+      "sourceSha256": "430b01a3dee0087b945ee9529b78e76e98aa70abc334a3beab9104814582f9ae",
+      "sourceBytes": 9274,
+      "compression": "none"
+    },
+    "adapter-v2-shape-refused.py": {
+      "sha256": "f3335fcddd3d9b46ecda4ee8016719b926e2af40c43f78e2bd6919043b3a5d7b",
+      "bytes": 10985,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/adapter-v2-shape-refused.py",
+      "sourceSha256": "f3335fcddd3d9b46ecda4ee8016719b926e2af40c43f78e2bd6919043b3a5d7b",
+      "sourceBytes": 10985,
+      "compression": "none"
+    },
+    "adapter-v3-protocol-refused.py": {
+      "sha256": "e8d6c401af30229d0bf0b5945ce91d4d0b6628886eb58a67b2f6199b9efef4d9",
+      "bytes": 11915,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/adapter-v3-protocol-refused.py",
+      "sourceSha256": "e8d6c401af30229d0bf0b5945ce91d4d0b6628886eb58a67b2f6199b9efef4d9",
+      "sourceBytes": 11915,
+      "compression": "none"
+    },
+    "adapter-v4-native-uppercase-refused.py": {
+      "sha256": "75c748c69aa71d6bb35f78620db4add5ee81b44dccc310697d4603a1e60a08a9",
+      "bytes": 11896,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/adapter-v4-native-uppercase-refused.py",
+      "sourceSha256": "75c748c69aa71d6bb35f78620db4add5ee81b44dccc310697d4603a1e60a08a9",
+      "sourceBytes": 11896,
+      "compression": "none"
+    },
+    "adapter-v5-single-monitor-refused.py": {
+      "sha256": "2dd7bed45348a23d6ccddcb94201e441eaa73ed635fae086905ddfb3df293cd5",
+      "bytes": 11946,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/adapter-v5-single-monitor-refused.py",
+      "sourceSha256": "2dd7bed45348a23d6ccddcb94201e441eaa73ed635fae086905ddfb3df293cd5",
+      "sourceBytes": 11946,
+      "compression": "none"
+    },
+    "audit_smoke.py": {
+      "sha256": "3d181143d269fa7e404e4f6bbd67dbb04c21c034186b9267e9686a8dd71b185b",
+      "bytes": 3408,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/audit_smoke.py",
+      "sourceSha256": "3d181143d269fa7e404e4f6bbd67dbb04c21c034186b9267e9686a8dd71b185b",
+      "sourceBytes": 3408,
+      "compression": "none"
+    },
+    "cached-images.json": {
+      "sha256": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+      "bytes": 1033,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/cached-images.json",
+      "sourceSha256": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+      "sourceBytes": 1033,
+      "compression": "none"
+    },
+    "configure_scope.py": {
+      "sha256": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+      "bytes": 1334,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/configure_scope.py",
+      "sourceSha256": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+      "sourceBytes": 1334,
+      "compression": "none"
+    },
+    "daprio-dapr-1.18.7.json": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/daprio-dapr-1.18.7.json",
+      "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "sourceBytes": 1,
+      "compression": "none"
+    },
+    "daprio-sentry-1.18.7.json": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/daprio-sentry-1.18.7.json",
+      "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "sourceBytes": 1,
+      "compression": "none"
+    },
+    "docker_health_adapter.py": {
+      "sha256": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+      "bytes": 12401,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/docker_health_adapter.py",
+      "sourceSha256": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+      "sourceBytes": 12401,
+      "compression": "none"
+    },
+    "linux-ephemeral-ports.txt": {
+      "sha256": "457d5f0bdd8fd8302e2fcd01bcaf909005537cdc8208a2209f0e723fc4d96b40",
+      "bytes": 12,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/linux-ephemeral-ports.txt",
+      "sourceSha256": "457d5f0bdd8fd8302e2fcd01bcaf909005537cdc8208a2209f0e723fc4d96b40",
+      "sourceBytes": 12,
+      "compression": "none"
+    },
+    "native-protocol-red.log.gz": {
+      "sha256": "82d2c77396dece7a6dc689cd13b93fafa94851cabe93d6cc448c8bfde7aaf133",
+      "bytes": 335,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/native-protocol-red.log",
+      "sourceSha256": "5adf21341a48e7200f507758afaf8a79d3ac5c1bbd8e990d35e8b011464e58dd",
+      "sourceBytes": 817,
+      "compression": "gzip"
+    },
+    "offline-controls-optimized.log.gz": {
+      "sha256": "516907f1828ce68ace5480d8f2a25604128a2e486aff4e13a5e2b5a597d5ea27",
+      "bytes": 55,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/offline-controls-optimized.log",
+      "sourceSha256": "2d5b92bf8fc34f4cbf2a846e0b51b9d8a4553efcc678613cbbfe6c06df7d79e1",
+      "sourceBytes": 111,
+      "compression": "gzip"
+    },
+    "offline-controls-optimized.log.initial-7": {
+      "sha256": "0d6653413f55f7cf64dbfab59b6b29c640ade8e63585414ab2a44a0892a5ed0a",
+      "bytes": 105,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/offline-controls-optimized.log.initial-7",
+      "sourceSha256": "0d6653413f55f7cf64dbfab59b6b29c640ade8e63585414ab2a44a0892a5ed0a",
+      "sourceBytes": 105,
+      "compression": "none"
+    },
+    "offline-controls.log.gz": {
+      "sha256": "362d1bc9a3f415bfae11dfacab0cb4de1b07de67ee08cd0e198376114d3f93ab",
+      "bytes": 55,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/offline-controls.log",
+      "sourceSha256": "fc4b694ca223e702d46f6fae6cc95097401419b5c583fbba0fce0203d015988a",
+      "sourceBytes": 111,
+      "compression": "gzip"
+    },
+    "offline-controls.log.initial-7": {
+      "sha256": "e586fc0f3bb2a05f4c80f07d1b4c6171e830592f6c7aaf70d4af3b0aa3ebd072",
+      "bytes": 105,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/offline-controls.log.initial-7",
+      "sourceSha256": "e586fc0f3bb2a05f4c80f07d1b4c6171e830592f6c7aaf70d4af3b0aa3ebd072",
+      "sourceBytes": 105,
+      "compression": "none"
+    },
+    "preflight-smoke-2-driver.log.gz": {
+      "sha256": "a9dc330ed03a736c1ec96c8a77814761c505d926b1202ae8d8c1b7c4a30756cb",
+      "bytes": 678,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2-driver.log",
+      "sourceSha256": "37eac6104551b0d01c0e50924b2ebca7d9ea929c1152b39a40ac8f6c8ce8b764",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3-driver.log.gz": {
+      "sha256": "f1a4472b9419c1bb28fce5412de0abdd7103ac1cca054465c1351ed5fa47a12c",
+      "bytes": 676,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3-driver.log",
+      "sourceSha256": "e1176aa02f8459451a36c02ba7ffd6c8d4bb8d2bbfcf6a0ada83efed9ae261ac",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4-driver.log.gz": {
+      "sha256": "3a61d25d6c166a1e6a5b1cd8e76fed2a7da8e25b3a4db005f0266c0fce1307f2",
+      "bytes": 684,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4-driver.log",
+      "sourceSha256": "87cb599ec73a70e06b65a5b6dead37872cb7c531a01e23d3f53b6a3175a6635b",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5-driver.log.gz": {
+      "sha256": "be72985568f9dccd7ef5aa1fb010d377671c04e17467beee1fde735a4082929c",
+      "bytes": 680,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5-driver.log",
+      "sourceSha256": "27e98b9e6e527e505127ece944141836a3db8cc7f57d121361e03e4ecb5067c6",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6-driver.log.gz": {
+      "sha256": "34cf2ca656ae355ce89833d0574eff2ac188ad618115a6cce5c112feb4868c5f",
+      "bytes": 679,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6-driver.log",
+      "sourceSha256": "2d240f18f0f56d00018dff44149ef063068956a312e194a43b0e7b3f690dc8f7",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "preflight-smoke-driver.log.gz": {
+      "sha256": "842e7d2b3f92059338ca0b3b5c018ab3178cc47898c45f97e31e0a0c74a819f2",
+      "bytes": 678,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-driver.log",
+      "sourceSha256": "deaa182e79557a268cc477cbfc8791defcb541a292e9314f8e394a12de396a70",
+      "sourceBytes": 1315,
+      "compression": "gzip"
+    },
+    "qualified-helper-binding.json": {
+      "sha256": "1a19ed94f7609918f50dceac9e8cec41cf6130b6b6daaf68d220dcd7d4e06076",
+      "bytes": 1283,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified-helper-binding.json",
+      "sourceSha256": "1a19ed94f7609918f50dceac9e8cec41cf6130b6b6daaf68d220dcd7d4e06076",
+      "sourceBytes": 1283,
+      "compression": "none"
+    },
+    "run_preflight_smoke.py": {
+      "sha256": "4083dd4b5bca1ada1d445adb93725eafc110538e90b7eb1048108c815df3c968",
+      "bytes": 4857,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/run_preflight_smoke.py",
+      "sourceSha256": "4083dd4b5bca1ada1d445adb93725eafc110538e90b7eb1048108c815df3c968",
+      "sourceBytes": 4857,
+      "compression": "none"
+    },
+    "test_adapter.py": {
+      "sha256": "7490d1f97f61889e26d02295ba5d11df21a6122761c915bf6401268c02157656",
+      "bytes": 9877,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/test_adapter.py",
+      "sourceSha256": "7490d1f97f61889e26d02295ba5d11df21a6122761c915bf6401268c02157656",
+      "sourceBytes": 9877,
+      "compression": "none"
+    },
+    "windows-excluded-ports.txt": {
+      "sha256": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46",
+      "bytes": 1155,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/windows-excluded-ports.txt",
+      "sourceSha256": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46",
+      "sourceBytes": 1155,
+      "compression": "none"
+    },
+    "qualified/docker_health_adapter.py": {
+      "sha256": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+      "bytes": 12401,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/docker_health_adapter.py",
+      "sourceSha256": "8c9512a93addc5254c6c6e5b651f902440fed866019ff910668a42556b99fe67",
+      "sourceBytes": 12401,
+      "compression": "none"
+    },
+    "qualified/bin/docker": {
+      "sha256": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b",
+      "bytes": 164,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/bin/docker",
+      "sourceSha256": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b",
+      "sourceBytes": 164,
+      "compression": "none"
+    },
+    "qualified/configure_scope.py": {
+      "sha256": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+      "bytes": 1334,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/configure_scope.py",
+      "sourceSha256": "17a21be097dbb5e1d66f81d98bedb7e3597928ca7c67e021de9822ec22e55cf8",
+      "sourceBytes": 1334,
+      "compression": "none"
+    },
+    "qualified/cached-images.json": {
+      "sha256": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+      "bytes": 1033,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/cached-images.json",
+      "sourceSha256": "b798caca1666e4af5c511c77095e8d7ba817c241dddaa0488f18a846ae0189bf",
+      "sourceBytes": 1033,
+      "compression": "none"
+    },
+    "qualified/windows-excluded-ports.txt": {
+      "sha256": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46",
+      "bytes": 1155,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/qualified/windows-excluded-ports.txt",
+      "sourceSha256": "6bda3175bc6d78727dab4aff7b9f4631a8b32572a8ab2bab80811221df68fa46",
+      "sourceBytes": 1155,
+      "compression": "none"
+    },
+    "preflight-smoke-1/command.json": {
+      "sha256": "90e5d77275b9d20944e6e64af015d6d2afce2708abf12473011279c23ec4bbac",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/command.json",
+      "sourceSha256": "90e5d77275b9d20944e6e64af015d6d2afce2708abf12473011279c23ec4bbac",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-1/finished.json": {
+      "sha256": "deaa182e79557a268cc477cbfc8791defcb541a292e9314f8e394a12de396a70",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/finished.json",
+      "sourceSha256": "deaa182e79557a268cc477cbfc8791defcb541a292e9314f8e394a12de396a70",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-1/host-starts.jsonl.gz": {
+      "sha256": "aba2cb0d7960e7cb8aa1921944437e49a06d40054084716a963651271679273f",
+      "bytes": 2487,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/host-starts.jsonl",
+      "sourceSha256": "cd88bd212d404316ca3f99311f57b2ce3603dc83cdd9c730ae7e932c675a69a9",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-1/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-1/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "ce6e4df49f9f8cfbfa561ffb1be50ba897abb2373ed2067e8c6453345ef3289c",
+      "bytes": 687,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/isolated-daprd/launches.jsonl",
+      "sourceSha256": "4340b66603d120c16c125d1c6da108f41551008bc3c3345b479e1a9e91f3b692",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-1/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "7105ab5e57497e75ea1cb0da2143dc62c88499434438bc813d68f3b0f42319fc",
+      "bytes": 730,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/admitted.jsonl",
+      "sourceSha256": "ffd1c27229bcbeababb5c813d4c33430686317aae5121fc9178c5a544a9adbd0",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "423f95fccb915b806defc36bd5a7416ad4d05e1f868bd4f5c924f4e48bc7c8fc",
+      "bytes": 335,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "8b6686d27bb8eac4370a47446fc3c91a757660b1064637641c266a21de40a5f0",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "fc919ce99ea4373d8f646f2d7d5c7e52c9329b520a06ce47031131cde8e7a23b",
+      "bytes": 209,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "8ef1da86adddbd49030c2b8527f12e09db99011873522c5d9d371db577c833c8",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/events.jsonl.gz": {
+      "sha256": "efce8dc10bba97e696346fd82638c846a542f471c47f9cd48f2a0f9f5c01d940",
+      "bytes": 1291,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/events.jsonl",
+      "sourceSha256": "e435983e4205ed013f2749594f746e1771eed8f7088399172a101c284f5f107a",
+      "sourceBytes": 42026,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/observations.jsonl.gz": {
+      "sha256": "8c3559d476cf1060cccf189dbd9d161e6bd7b8b239f2a16a4c56e50e9dd502c9",
+      "bytes": 893,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/observations.jsonl",
+      "sourceSha256": "3cc5a9ce3d2e5af58f2d92c143ac09d3e7bb71275f137d70ccd582e6ff15f361",
+      "sourceBytes": 10576,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-1/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "d5a5d438c91443f76e374a116876e7c96f7d165ccb9afdca4496270b21c6cdda",
+      "bytes": 4869,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/stdout.jsonl",
+      "sourceSha256": "52871e0545fc096f743a27e98f94aa260c6df8c09ff14bed9dd667a2cb91b8f6",
+      "sourceBytes": 26565,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/read-only-observer/summary.json": {
+      "sha256": "3ead7a15e1078f15785d5cbd6f94dd5dd7bd4f64dc1aa0ed3b02ea8828b9987a",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/read-only-observer/summary.json",
+      "sourceSha256": "3ead7a15e1078f15785d5cbd6f94dd5dd7bd4f64dc1aa0ed3b02ea8828b9987a",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-1/result.log.gz": {
+      "sha256": "131108cf009f90a427692a15acb44290bd7f3eff4a774870d40e4b249521a094",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/result.log",
+      "sourceSha256": "19aefe23efbab668c277906a62e81bbf0d658d465e92977e1892e7ca10885d6c",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/result.xml": {
+      "sha256": "438768ae55840c3b8162307e8dc53c341e31453d81dd024b539368675e6c9918",
+      "bytes": 1835,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/result.xml",
+      "sourceSha256": "438768ae55840c3b8162307e8dc53c341e31453d81dd024b539368675e6c9918",
+      "sourceBytes": 1835,
+      "compression": "none"
+    },
+    "preflight-smoke-1/runtime-after.json.gz": {
+      "sha256": "08a3bb7f891206a35343bbc411ddbf02b8e30d8e04f49447df1902cea06a9482",
+      "bytes": 36339,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/runtime-after.json",
+      "sourceSha256": "3c9e39fed9bde5622f677c836322f92b02c58b3a0baa6519d3f51e20946b55bb",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/runtime-before.json.gz": {
+      "sha256": "08a3bb7f891206a35343bbc411ddbf02b8e30d8e04f49447df1902cea06a9482",
+      "bytes": 36339,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/runtime-before.json",
+      "sourceSha256": "3c9e39fed9bde5622f677c836322f92b02c58b3a0baa6519d3f51e20946b55bb",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-1/scope.json": {
+      "sha256": "1c3e6b5b80ea2974d73d4111abcd3a93d118a04158696d226fe6a5f3fcea519e",
+      "bytes": 2511,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/scope.json",
+      "sourceSha256": "1c3e6b5b80ea2974d73d4111abcd3a93d118a04158696d226fe6a5f3fcea519e",
+      "sourceBytes": 2511,
+      "compression": "none"
+    },
+    "preflight-smoke-2/command.json": {
+      "sha256": "99d112cd08248481181371c6cc555f90cd056e4c12c13897bc1bf121240292e3",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/command.json",
+      "sourceSha256": "99d112cd08248481181371c6cc555f90cd056e4c12c13897bc1bf121240292e3",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-2/finished.json": {
+      "sha256": "37eac6104551b0d01c0e50924b2ebca7d9ea929c1152b39a40ac8f6c8ce8b764",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/finished.json",
+      "sourceSha256": "37eac6104551b0d01c0e50924b2ebca7d9ea929c1152b39a40ac8f6c8ce8b764",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-2/host-starts.jsonl.gz": {
+      "sha256": "69d084775d1254e1cf7183121a3c3c4048948e4e1fb566b6cd62e5321cfa896e",
+      "bytes": 2488,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/host-starts.jsonl",
+      "sourceSha256": "9ebdfd08c6a90a07f19b4d08f97e14c2a341595c9cefb5d00c9cf52f4b395380",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/interceptions.jsonl.gz": {
+      "sha256": "3caa5089416338886c3227ab2051e2323b82d9e4ce493e7c67b0492e91f0b4da",
+      "bytes": 882,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/interceptions.jsonl",
+      "sourceSha256": "589ab83d3868a5b728013356e492ac85bb760711edd23683c3be24ced3522173",
+      "sourceBytes": 14417,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-2/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-2/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "5eeb9aa473c6f70d7c1059eee8f9892054e48fedea6a600dd2a7b3d17323e1bb",
+      "bytes": 693,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/isolated-daprd/launches.jsonl",
+      "sourceSha256": "6baad46ec3277dc32ea7fa0a020b354ccb07fee80371a5799a5816e4784a877e",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-2/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "84341303ca20adaa2a7935f668086a98d27767cb7f2596fbb91fe61f1f9f7124",
+      "bytes": 726,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/admitted.jsonl",
+      "sourceSha256": "5f773e309659c24b485948c24af74a0eaf729ae5e8d9e552a825737b362237e7",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "d7a91807ead1596bf7a60182c2f596cf9621cfabe07c5dac2dfa3e5f08b80d51",
+      "bytes": 336,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "1c80030b7bdf51c75813df28e833c3f5846f50fa993bb20a5369ddb5100b341e",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "ae4fb7b0b55cccfad75aced59c628ddbab57c9bd28fb1466e7700a8c5793ab20",
+      "bytes": 205,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "07a4bfad3da257633c6f4c79d658c9bc053a49f1a71488d1359c7f46e81a1e06",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/events.jsonl.gz": {
+      "sha256": "9afd8a8c6ac448f8cf734793a86d54f18ec28d76acab90a84714b0181ba7e081",
+      "bytes": 1289,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/events.jsonl",
+      "sourceSha256": "7457781dd05c69920b5360c3130440f82c07ea5e9b9c260a97097fae9b91257f",
+      "sourceBytes": 42026,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/observations.jsonl.gz": {
+      "sha256": "84f915fee2f5c546c2a6dc3a719fdc38453a5c3a1a54d6735611faeeeee97537",
+      "bytes": 894,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/observations.jsonl",
+      "sourceSha256": "4bd11983697fc2cb7882c852b367410c131c7922d78a15a8092f9493bb64a161",
+      "sourceBytes": 10576,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-2/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "28df8b8c94e751e5e7a93ad7fa5fc10105de944d1c4739596405da04387c899a",
+      "bytes": 4585,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/stdout.jsonl",
+      "sourceSha256": "052c32abef5ad4cc9810f6b3c562945ef5b8b26d0e0f0b929c15470c9dc672a2",
+      "sourceBytes": 23623,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/read-only-observer/summary.json": {
+      "sha256": "677003e128861c2b131ed3de87c494f5a290f66cec67967bb551e0c0418a328b",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/read-only-observer/summary.json",
+      "sourceSha256": "677003e128861c2b131ed3de87c494f5a290f66cec67967bb551e0c0418a328b",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-2/result.log.gz": {
+      "sha256": "9cbd687a4bf01201aa3c0e00be37d21d01cff30cb62ed0f35ffd34da73632061",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/result.log",
+      "sourceSha256": "7f587c6a2eb5af35d676d5a62f65cec5a987f4dd55d3b9cae5bb08f6149864e2",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/result.xml": {
+      "sha256": "8ad5a37c51ba2bf40c3292770a95aeb5ac6dde8dcae8ee841cc0ff85028bd1ab",
+      "bytes": 1835,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/result.xml",
+      "sourceSha256": "8ad5a37c51ba2bf40c3292770a95aeb5ac6dde8dcae8ee841cc0ff85028bd1ab",
+      "sourceBytes": 1835,
+      "compression": "none"
+    },
+    "preflight-smoke-2/runtime-after.json.gz": {
+      "sha256": "6faa7ac633d39f135c5dca006d09342b11b04dea43c95a84476b0109ba7d72b4",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/runtime-after.json",
+      "sourceSha256": "917ebd4d1c46769b624e91cfa3a6e06e424fcc0e76640eecff08007b1e85dba4",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/runtime-before.json.gz": {
+      "sha256": "6faa7ac633d39f135c5dca006d09342b11b04dea43c95a84476b0109ba7d72b4",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/runtime-before.json",
+      "sourceSha256": "917ebd4d1c46769b624e91cfa3a6e06e424fcc0e76640eecff08007b1e85dba4",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-2/scope.json": {
+      "sha256": "ea87e1eb5db2974aca467cd3358c5374d6a0efdf1ff26ef671ea002d4e534d78",
+      "bytes": 2511,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-2/scope.json",
+      "sourceSha256": "ea87e1eb5db2974aca467cd3358c5374d6a0efdf1ff26ef671ea002d4e534d78",
+      "sourceBytes": 2511,
+      "compression": "none"
+    },
+    "preflight-smoke-3/command.json": {
+      "sha256": "057ded14deeea950195ad68cd4ba8697fd380cd361f5f1a18288616112cb37da",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/command.json",
+      "sourceSha256": "057ded14deeea950195ad68cd4ba8697fd380cd361f5f1a18288616112cb37da",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-3/finished.json": {
+      "sha256": "e1176aa02f8459451a36c02ba7ffd6c8d4bb8d2bbfcf6a0ada83efed9ae261ac",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/finished.json",
+      "sourceSha256": "e1176aa02f8459451a36c02ba7ffd6c8d4bb8d2bbfcf6a0ada83efed9ae261ac",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-3/host-starts.jsonl.gz": {
+      "sha256": "f3fd4f8aa1310335c4391e6ac901bc832f7e97632cb563e988156c7264093ea9",
+      "bytes": 2495,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/host-starts.jsonl",
+      "sourceSha256": "c2b0649fd3adf4672549ed1bf8496a24d0d6c6a43613f4aa875ef773b0a1676b",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/interceptions.jsonl.gz": {
+      "sha256": "adeea6888717209f5fc01211590fdf9824cbcd3fefc4139eef08c4393710dea2",
+      "bytes": 282,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/interceptions.jsonl",
+      "sourceSha256": "a6c74502b9e87e9e46a345f63abbb1d24cb9c9ecb7865e56dd306ec4fe274c8a",
+      "sourceBytes": 974,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-3/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-3/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "9a148d0d9182324cd35db75a4b17ca11f6b41517d563f1540fe4273bc3dd8374",
+      "bytes": 691,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/isolated-daprd/launches.jsonl",
+      "sourceSha256": "20e5f8ff889f2cc849d39ae22b63b847aa8396ef9a4a003890ea1129c01b0e07",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-3/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "b7193682ad26ca40fa0d5f02393a1e5131f9c12a482c6483a2401d6cc5a9ac87",
+      "bytes": 724,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/admitted.jsonl",
+      "sourceSha256": "06968029753189bb895fc6a9956f24beafea7f2af098464bf8630ff5482741fa",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "3fc83cfa92ce52cab9480529012263c047c54f402d41ec49922b8b5651d73043",
+      "bytes": 336,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "d7c43f0c8129c39a20e3bc438536e406ece9d1e3cd99fbaba38a0cc69e7ba5df",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "0e8357464e5971f11ee8a61e700f84dcf58cb8f3742aa84642e042b00e195b30",
+      "bytes": 206,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "efe0d7cbe14aed99bf32684cb2906ee309dfde20d5e515d8e1da76a8c577969c",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/events.jsonl.gz": {
+      "sha256": "aac142b4e92df8d6c0c80ec40b682d63860f7c85dec962a433d043d3f70cadc4",
+      "bytes": 1286,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/events.jsonl",
+      "sourceSha256": "44ae9794578393bed08bb096136d7b32d9d0ebe8eb74ae137340234dcd2c45c4",
+      "sourceBytes": 42026,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/observations.jsonl.gz": {
+      "sha256": "3a6ead9f49122f2c0b3a7a06e80aac897afe2198170cf8fcda38bf356e50c425",
+      "bytes": 896,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/observations.jsonl",
+      "sourceSha256": "d76ff9334941c68833f822995bff91712c159ef7fc6a7ea2a54bc909a9202b1e",
+      "sourceBytes": 10576,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-3/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "db8e17109bfd64b2a99e29e1b587f3097d407e3609705eb4efffde1f535701c3",
+      "bytes": 5185,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/stdout.jsonl",
+      "sourceSha256": "fb2011b0789260bf8956cd859c7a294414857a306bfdf6d8590319c986c3baa3",
+      "sourceBytes": 27747,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/read-only-observer/summary.json": {
+      "sha256": "b5e8d7b0719225468680f217a68f5bd1983ea31bc30e8019380f5a3e700c5d03",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/read-only-observer/summary.json",
+      "sourceSha256": "b5e8d7b0719225468680f217a68f5bd1983ea31bc30e8019380f5a3e700c5d03",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-3/result.log.gz": {
+      "sha256": "bb4ecabdb701d430784d4887a884d4b25e0da4a96341f4867e91c5739d4c4048",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/result.log",
+      "sourceSha256": "44192bc2aa229dd2b185e030009aa07f3c3f3dd5609fadff2a9f5351653bab0b",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/result.xml": {
+      "sha256": "394884234d94f83121e89edcb45aafead00239e7607c4a94d3bbc8e6b622fa8e",
+      "bytes": 1834,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/result.xml",
+      "sourceSha256": "394884234d94f83121e89edcb45aafead00239e7607c4a94d3bbc8e6b622fa8e",
+      "sourceBytes": 1834,
+      "compression": "none"
+    },
+    "preflight-smoke-3/runtime-after.json.gz": {
+      "sha256": "4b4375ad25a42c054aaa07045630f6ae3109c60ab8c6d2680e1e044e4786da23",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/runtime-after.json",
+      "sourceSha256": "b9908e65079b2571a837ccb4d0284ba92db307170c86d90d77d4349e402df75c",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/runtime-before.json.gz": {
+      "sha256": "4b4375ad25a42c054aaa07045630f6ae3109c60ab8c6d2680e1e044e4786da23",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/runtime-before.json",
+      "sourceSha256": "b9908e65079b2571a837ccb4d0284ba92db307170c86d90d77d4349e402df75c",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-3/scope.json": {
+      "sha256": "8282f82dd6437a981dc01a68fe0afec9b72567a31c1198c81a2a20d8c04f604f",
+      "bytes": 2511,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-3/scope.json",
+      "sourceSha256": "8282f82dd6437a981dc01a68fe0afec9b72567a31c1198c81a2a20d8c04f604f",
+      "sourceBytes": 2511,
+      "compression": "none"
+    },
+    "preflight-smoke-4/command.json": {
+      "sha256": "003251ca3d19bc696b38cdc3bf5e64c0048ac4d5d573b00a37d515ba84801cac",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/command.json",
+      "sourceSha256": "003251ca3d19bc696b38cdc3bf5e64c0048ac4d5d573b00a37d515ba84801cac",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-4/finished.json": {
+      "sha256": "87cb599ec73a70e06b65a5b6dead37872cb7c531a01e23d3f53b6a3175a6635b",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/finished.json",
+      "sourceSha256": "87cb599ec73a70e06b65a5b6dead37872cb7c531a01e23d3f53b6a3175a6635b",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-4/host-starts.jsonl.gz": {
+      "sha256": "c26c18eaf2c4ea2e3ce4544d180d2b14da4e49adf422b334350665d5c3a51bc2",
+      "bytes": 2490,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/host-starts.jsonl",
+      "sourceSha256": "4e05e1bbbff66cbd420cf2896051ac3ab3daf0f7e0bd7c06ee38bb3854c112c8",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/interceptions.jsonl.gz": {
+      "sha256": "493b52817575a1759fef5934264200bcd2a0b33981d7eb22bbb484ca07369bfe",
+      "bytes": 322,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/interceptions.jsonl",
+      "sourceSha256": "81d14c0639716c7bea0fc9ba40bec62aa16a9e663b0e331cf54bf54e0d1aa81f",
+      "sourceBytes": 1114,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-4/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-4/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "4f329c171dbb7133738090d230f4a5747d7d9472614219dbda497312430d9dd9",
+      "bytes": 688,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/isolated-daprd/launches.jsonl",
+      "sourceSha256": "9950e55cdd5b23566775b7a6a3ff855aec322415a5d369b61805d294e7e3d6d0",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-4/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "9d0064add7c08355c6ed3360d6e0de1e57fb518e82121cae347679cf1e2286b8",
+      "bytes": 733,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/admitted.jsonl",
+      "sourceSha256": "6fe2a58e027e8e1654b40ead7fe614c7139a9fe7bec52a1303110dc97f2b593a",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "9e980e034415aa09385ecb9386736ed0efa3c770ddf1b204439a2ee8e2109b10",
+      "bytes": 337,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "643afd526e400144b0113f6cbac159262fa0e43cf67edb44799940393edc7df9",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "24c45f2b46c43647080c6c5c3d0162bfb5b1410e2e97a051c65b17e9eb38803b",
+      "bytes": 206,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "d5c2336c7e5a80115ad9fd3f5ec2fd2c932592af934f77d155293bc2992c8f8c",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/events.jsonl.gz": {
+      "sha256": "e7c01ca910114dd49a7ddc47a365f53ffc9942f96b988d4b36c7ae62a297c07c",
+      "bytes": 1290,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/events.jsonl",
+      "sourceSha256": "0bdae3ac317fcd6d8cc00da0c948d90f3ba55ccb5dacd62b772d29a90e364573",
+      "sourceBytes": 42026,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/observations.jsonl.gz": {
+      "sha256": "793e718705581a8ae697fcaaf5efbb01cfdac5681a5e05a60399c9c3af356913",
+      "bytes": 899,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/observations.jsonl",
+      "sourceSha256": "d118674465c3a40ca744ccac860889d812b70d1088819f2551397578c2b62fbb",
+      "sourceBytes": 10572,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-4/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "b4cfd48c1afaa4d537fcd06012fef8775117a778c75301cb94b3f94dbdc2a9e9",
+      "bytes": 4595,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/stdout.jsonl",
+      "sourceSha256": "6b9312515da7895e0c2f8412b90c304ed8bd4bf2e29326e569ba43c5453300d8",
+      "sourceBytes": 23630,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/read-only-observer/summary.json": {
+      "sha256": "9f53a3f6a765bce32d9c3a934e7478d26d86121376afa1dbc8377c21ec94866b",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/read-only-observer/summary.json",
+      "sourceSha256": "9f53a3f6a765bce32d9c3a934e7478d26d86121376afa1dbc8377c21ec94866b",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-4/result.log.gz": {
+      "sha256": "ff570900b728541b9852ff50acf836cef39f5abaed29cce2e4164b180d1f90d1",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/result.log",
+      "sourceSha256": "269b94ee6ce07bb8ddabcea5ffd6f3533eb64a3a582d423a4875550f27a57f3c",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/result.xml": {
+      "sha256": "69ecda8c8968d791442065d291f09a45eca922eabccfc9c0c3df01f5df5c78bd",
+      "bytes": 1835,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/result.xml",
+      "sourceSha256": "69ecda8c8968d791442065d291f09a45eca922eabccfc9c0c3df01f5df5c78bd",
+      "sourceBytes": 1835,
+      "compression": "none"
+    },
+    "preflight-smoke-4/runtime-after.json.gz": {
+      "sha256": "39a9da04d5cd0f1e2823c45afa30d33dbaeec7bd65b0b0baa10cee44444ffd2f",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/runtime-after.json",
+      "sourceSha256": "2fb00dfaa79d2545e5142d44c8dcb7278002bd59588ef38830c601a2ef98d2c9",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/runtime-before.json.gz": {
+      "sha256": "39a9da04d5cd0f1e2823c45afa30d33dbaeec7bd65b0b0baa10cee44444ffd2f",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/runtime-before.json",
+      "sourceSha256": "2fb00dfaa79d2545e5142d44c8dcb7278002bd59588ef38830c601a2ef98d2c9",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-4/scope.json": {
+      "sha256": "4efb41202b9f896d9bb172581dbb00d64a9545daeeec58caf9e1c1a9fbc4901b",
+      "bytes": 2511,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-4/scope.json",
+      "sourceSha256": "4efb41202b9f896d9bb172581dbb00d64a9545daeeec58caf9e1c1a9fbc4901b",
+      "sourceBytes": 2511,
+      "compression": "none"
+    },
+    "preflight-smoke-5/command.json": {
+      "sha256": "c5580ae25a8c5166c25a9271e0b9d67f18a9f759167c13b7af5e458ddfbb8348",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/command.json",
+      "sourceSha256": "c5580ae25a8c5166c25a9271e0b9d67f18a9f759167c13b7af5e458ddfbb8348",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-5/finished.json": {
+      "sha256": "27e98b9e6e527e505127ece944141836a3db8cc7f57d121361e03e4ecb5067c6",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/finished.json",
+      "sourceSha256": "27e98b9e6e527e505127ece944141836a3db8cc7f57d121361e03e4ecb5067c6",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-5/host-starts.jsonl.gz": {
+      "sha256": "1ea3fa5f344261b80207f47fbd4c29f17ea95578cce4c91979c854f3cb491163",
+      "bytes": 2490,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/host-starts.jsonl",
+      "sourceSha256": "fce83576b2ae338a2a2c4df5e162c3d00edfa2746550007bd92e1a5efe758e85",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/interceptions.jsonl.gz": {
+      "sha256": "6300746ce18de2a88d5e6d1c525535d9b81c44db04c53fd9b4b4eaa270a08c28",
+      "bytes": 348,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/interceptions.jsonl",
+      "sourceSha256": "076cf07f7c5ea540ef5092282e9404b92236b4072d9ab2f7adecef7df89bff65",
+      "sourceBytes": 1265,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-5/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-5/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "9e4430658e904a6415ada06acb81df2c5e92b2c5c17c115e81520eb709199520",
+      "bytes": 687,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/isolated-daprd/launches.jsonl",
+      "sourceSha256": "b0f67186d1dca21cac8f46e711d91b64633ba60185f3d590cb926658fbc09fd3",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-5/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "d6ad83f01fd6b00db2f72c449fce8d3caedddfa33b0480846b1e4d8e4708043f",
+      "bytes": 729,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/admitted.jsonl",
+      "sourceSha256": "2f8edf495f76d9337276c7ca79e592e9d5b7acd9f653db1aefc23d88d2e25795",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "e3eb679f5fcecd821a6f2097e36938e2f0a5543a9e14b1f9d2d9303a606ea86d",
+      "bytes": 336,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "e943c31d52cf6555b97e17fa1cca92cf13592fd043639363381afb3f68063977",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "27ae89fd2e6ba87291f751f6133dfd49118f0913d753c26004a27835af9c3379",
+      "bytes": 207,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "9af4fe0e53948cf53946671425901d99aaf141708dede6cdaefe3d00ed9555ba",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/events.jsonl.gz": {
+      "sha256": "2a23ab5e2da1c14c60ce17cab65a8917f37882a52f19f8afdc3b3a32425227af",
+      "bytes": 1290,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/events.jsonl",
+      "sourceSha256": "e7ffce08cec2affa214ef066d8a850f0308810f2437e6b0aebe2c46afecc33cf",
+      "sourceBytes": 41349,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/observations.jsonl.gz": {
+      "sha256": "64f79bf0ba08d0b5d21012d2fd528e8a8df382915eb4c1c932d73a33f75bfe86",
+      "bytes": 940,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/observations.jsonl",
+      "sourceSha256": "08a861464527b74d4d68ed328b84bbb94467bc97469318aaf613581b5a90f676",
+      "sourceBytes": 10142,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-5/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "3adddd280a0ff1467351b37375b3b1894e0eb9b1e68e616b7bc418640e157e38",
+      "bytes": 4605,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/stdout.jsonl",
+      "sourceSha256": "0d21cf5f41b2450776338c3f82c2326867fceba34827c4499923dc3209ca61c3",
+      "sourceBytes": 23630,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/read-only-observer/summary.json": {
+      "sha256": "2f6a797602fb92989ecf9f096d299311f3fce32e4b72c83d67a024fe01fba872",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/read-only-observer/summary.json",
+      "sourceSha256": "2f6a797602fb92989ecf9f096d299311f3fce32e4b72c83d67a024fe01fba872",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-5/result.log.gz": {
+      "sha256": "bac0ab628fcbb8cd804e83f3fe3fd721725e0f97e812a35b920968feda6fef2a",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/result.log",
+      "sourceSha256": "64519dea84f4d9f8600be9644a53d0624b61182f89f92aa1667b05bbf698254a",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/result.xml": {
+      "sha256": "a6358a70be23a3951d3ce10cfd709f25f166b5c302ad923be778da1339ff0a60",
+      "bytes": 1835,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/result.xml",
+      "sourceSha256": "a6358a70be23a3951d3ce10cfd709f25f166b5c302ad923be778da1339ff0a60",
+      "sourceBytes": 1835,
+      "compression": "none"
+    },
+    "preflight-smoke-5/runtime-after.json.gz": {
+      "sha256": "0a52fb85c40453a9f8249369b14c3250d8624355d5b6c98d4d958599e951ea16",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/runtime-after.json",
+      "sourceSha256": "c2b4dc5c46d9e089e2d2f0479c34f11cb43e1f86ddbba086e529192dbb813ee2",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/runtime-before.json.gz": {
+      "sha256": "0a52fb85c40453a9f8249369b14c3250d8624355d5b6c98d4d958599e951ea16",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/runtime-before.json",
+      "sourceSha256": "c2b4dc5c46d9e089e2d2f0479c34f11cb43e1f86ddbba086e529192dbb813ee2",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-5/scope.json": {
+      "sha256": "c1c6a6fd2dd02f2785b296048efc37519c279aa62653eeef917b406ecc070b08",
+      "bytes": 2510,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/scope.json",
+      "sourceSha256": "c1c6a6fd2dd02f2785b296048efc37519c279aa62653eeef917b406ecc070b08",
+      "sourceBytes": 2510,
+      "compression": "none"
+    },
+    "preflight-smoke-5/selected-dcp-link-sanitized.json": {
+      "sha256": "1a9fd3e40b02f18b8bab7f67d4cd2c3ed143eb90165a2ceb1844e4d82ec60cf0",
+      "bytes": 333,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/selected-dcp-link-sanitized.json",
+      "sourceSha256": "1a9fd3e40b02f18b8bab7f67d4cd2c3ed143eb90165a2ceb1844e4d82ec60cf0",
+      "sourceBytes": 333,
+      "compression": "none"
+    },
+    "preflight-smoke-5/selected-dcp-monitor-hops.json": {
+      "sha256": "b64f35d707a780884ffff159b769051f7b349b5f3451dbf1182fedce066e73ac",
+      "bytes": 121,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/selected-dcp-monitor-hops.json",
+      "sourceSha256": "b64f35d707a780884ffff159b769051f7b349b5f3451dbf1182fedce066e73ac",
+      "sourceBytes": 121,
+      "compression": "none"
+    },
+    "preflight-smoke-6/acceptance.json": {
+      "sha256": "1b80a53cc3239bff88e8578c5ec244b95f173ed28726b0c16d1c44e542cda0ff",
+      "bytes": 2094,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/acceptance.json",
+      "sourceSha256": "1b80a53cc3239bff88e8578c5ec244b95f173ed28726b0c16d1c44e542cda0ff",
+      "sourceBytes": 2094,
+      "compression": "none"
+    },
+    "preflight-smoke-6/adapter-matches.jsonl.gz": {
+      "sha256": "00d38f821daf4c78ea6db9e5bce2ff7db4538e9e4a66b7c722c476ed07419722",
+      "bytes": 1449,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/adapter-matches.jsonl",
+      "sourceSha256": "76a09f6b97d8432eed2688da04e9fc11f4815273c4a5187c034a83eba84b4374",
+      "sourceBytes": 5524,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/allocated-ports.json": {
+      "sha256": "4ed5469b2a0c7b135bae2c56a70218678249a7da1069df9e83bbe662e9e46d21",
+      "bytes": 21,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/allocated-ports.json",
+      "sourceSha256": "4ed5469b2a0c7b135bae2c56a70218678249a7da1069df9e83bbe662e9e46d21",
+      "sourceBytes": 21,
+      "compression": "none"
+    },
+    "preflight-smoke-6/command.json": {
+      "sha256": "a7f172a3cd6f93007e5a513a67c54cb249acd265b2df8a6b5d74c3528660b04f",
+      "bytes": 1169,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/command.json",
+      "sourceSha256": "a7f172a3cd6f93007e5a513a67c54cb249acd265b2df8a6b5d74c3528660b04f",
+      "sourceBytes": 1169,
+      "compression": "none"
+    },
+    "preflight-smoke-6/finished.json": {
+      "sha256": "2d240f18f0f56d00018dff44149ef063068956a312e194a43b0e7b3f690dc8f7",
+      "bytes": 1315,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/finished.json",
+      "sourceSha256": "2d240f18f0f56d00018dff44149ef063068956a312e194a43b0e7b3f690dc8f7",
+      "sourceBytes": 1315,
+      "compression": "none"
+    },
+    "preflight-smoke-6/frozen-common-runtime-recheck.json.gz": {
+      "sha256": "27a423f0013e5a873e5a99ca61ec2655de07bc9c3a509caab7d5aaaac1c5880f",
+      "bytes": 5937,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/frozen-common-runtime-recheck.json",
+      "sourceSha256": "bff347078b7e9b0730bc436b83c25abb9fde570e848835d01b51606c8a8f28ee",
+      "sourceBytes": 131596,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/host-starts.jsonl.gz": {
+      "sha256": "c0231f7f7a4607b1c4d3bdfbaa9fc2226bc744042ee958b55ad4cb290334543f",
+      "bytes": 2488,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/host-starts.jsonl",
+      "sourceSha256": "013323510d706ed087a0cd48106ca48764bb2aaf7aba6253635b4b3d1b568b4f",
+      "sourceBytes": 13025,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/interceptions.jsonl.gz": {
+      "sha256": "88b1ab4de4f91e677b2f761c6c7abf6d51d54a81fb14c6d0360e58423b856e61",
+      "bytes": 481,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/interceptions.jsonl",
+      "sourceSha256": "45bfc3f4dd4acc288e1183c661fc88c96b0561525af8eccc8ebeebf1e25fd2a4",
+      "sourceBytes": 2105,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/isolated-daprd/.dapr/bin/daprd": {
+      "sha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "bytes": 5813,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/isolated-daprd/.dapr/bin/daprd",
+      "sourceSha256": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+      "sourceBytes": 5813,
+      "compression": "none"
+    },
+    "preflight-smoke-6/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/isolated-daprd/binding.json",
+      "sourceSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "sourceBytes": 264,
+      "compression": "none"
+    },
+    "preflight-smoke-6/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "4f1c0d853a0d6e4aad014c963eed5905904a877337070d6d3859d8dd889f2520",
+      "bytes": 688,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/isolated-daprd/launches.jsonl",
+      "sourceSha256": "2eade87e663661710b5156f9b9ef073e3a0f9d8edb604eb906326c711c8b6bcb",
+      "sourceBytes": 2301,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/observe-control-plane.py": {
+      "sha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "bytes": 8627,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/observe-control-plane.py",
+      "sourceSha256": "a4dc1f633739ea3cfaa4881847d46b3b679fbb84d7202eb84c6031ad319341ca",
+      "sourceBytes": 8627,
+      "compression": "none"
+    },
+    "preflight-smoke-6/observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/observer-driver.log",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sourceBytes": 0,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/admitted.jsonl.gz": {
+      "sha256": "7b0d8ba8d789712e24582e022bcc2243fc57ac5a28374afd1803493449e1eaf2",
+      "bytes": 728,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/admitted.jsonl",
+      "sourceSha256": "d6348ef6d777e0002337a6d04c3c55b59c3c60ab8b808197af3f0edd0234d980",
+      "sourceBytes": 2531,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/aspire-describe.jsonl.gz": {
+      "sha256": "3bbb108a406226b6f455ebf8176d9afd002e2ee1261fd85175ebc7892bf09376",
+      "bytes": 337,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/aspire-describe.jsonl",
+      "sourceSha256": "d9d1355fbd113728dc660708f097f782fe0a7ac0beb3f7278c3cd1831c014a6b",
+      "sourceBytes": 1268,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/disappearances.jsonl.gz": {
+      "sha256": "8bbd9efa822006ed35be75bfe387db4f0590edf24ed081cb3e0c17286b5ac69f",
+      "bytes": 207,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/disappearances.jsonl",
+      "sourceSha256": "2ffb669d224ee388095ea213eb1f88c194afa45ae2267b4fbf04c245f822c470",
+      "sourceBytes": 351,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/events.jsonl.gz": {
+      "sha256": "d8ceb1ce4b7c8112eb42bea408d447f15b364524f76231a7af0bc6bdba41973c",
+      "bytes": 1275,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/events.jsonl",
+      "sourceSha256": "c5710538e82ff0b478f3d653f886b40f20dbea538fb0f0f216db89a5683da610",
+      "sourceBytes": 39986,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/observations.jsonl.gz": {
+      "sha256": "eb6d18324242319ef5a7a336cc74000e79c5143a090f2bd9b8dee26cf4e86178",
+      "bytes": 944,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/observations.jsonl",
+      "sourceSha256": "9fd44591191e9b54cf33bee05617c23033e8a05c4139e8d73541f0c11a4ba960",
+      "sourceBytes": 10142,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/scope.json": {
+      "sha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "bytes": 830,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/scope.json",
+      "sourceSha256": "5737370caeac31da518432741f2f5838c7e89e9740ce1b9b103c7951e5b005be",
+      "sourceBytes": 830,
+      "compression": "none"
+    },
+    "preflight-smoke-6/read-only-observer/stdout.jsonl.gz": {
+      "sha256": "8846cb60d4943500e4aa4a3b0500d690c3f9b4d67050c5534adac3cab8fd5f08",
+      "bytes": 4274,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/stdout.jsonl",
+      "sourceSha256": "6c21b3e088a1c2fd9d74aff0ade695074f9af0e0339c743e7016a7ded14eaf49",
+      "sourceBytes": 20656,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/read-only-observer/summary.json": {
+      "sha256": "cd9ffb45993a9becfef56aa142586c6dec58deeda14e06cbf37df65896400281",
+      "bytes": 199,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/read-only-observer/summary.json",
+      "sourceSha256": "cd9ffb45993a9becfef56aa142586c6dec58deeda14e06cbf37df65896400281",
+      "sourceBytes": 199,
+      "compression": "none"
+    },
+    "preflight-smoke-6/result.log.gz": {
+      "sha256": "2be8453afd5248bc45b2be0804ec38b7551181e9740e51ef20e3fdc693eadcbd",
+      "bytes": 242,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/result.log",
+      "sourceSha256": "b5d0c613be8da56dc6363a89fc3eb18b8fa8c630da1e1d08cb770f1498eeb7b4",
+      "sourceBytes": 399,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/result.xml": {
+      "sha256": "01f939cf7aa9ccdbeaa057d1e6c7836c513362aa1ca2635959d734eafaa8326f",
+      "bytes": 1834,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/result.xml",
+      "sourceSha256": "01f939cf7aa9ccdbeaa057d1e6c7836c513362aa1ca2635959d734eafaa8326f",
+      "sourceBytes": 1834,
+      "compression": "none"
+    },
+    "preflight-smoke-6/runtime-after.json.gz": {
+      "sha256": "c1e16a4e49f6b38cdd340c425a6cb740b12927687f86a511c7d7bd0c11b16802",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/runtime-after.json",
+      "sourceSha256": "0beb1480dd8df0a35c460ec5c7969ed4e7335da76ad52c3875c4636c23e27e1a",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/runtime-before.json.gz": {
+      "sha256": "c1e16a4e49f6b38cdd340c425a6cb740b12927687f86a511c7d7bd0c11b16802",
+      "bytes": 36341,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/runtime-before.json",
+      "sourceSha256": "0beb1480dd8df0a35c460ec5c7969ed4e7335da76ad52c3875c4636c23e27e1a",
+      "sourceBytes": 187697,
+      "compression": "gzip"
+    },
+    "preflight-smoke-6/scope.json": {
+      "sha256": "e5fe0e862649e7a2b0402024215919cb770e11ea73f5a8397dd1bfcb99e950aa",
+      "bytes": 2510,
+      "source": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-6/scope.json",
+      "sourceSha256": "e5fe0e862649e7a2b0402024215919cb770e11ea73f5a8397dd1bfcb99e950aa",
+      "sourceBytes": 2510,
+      "compression": "none"
+    },
+    "README.md": {
+      "sha256": "05a51d13bd6f705c1f9315e22d2bde73a09aa92f7cffce04dac6e40dd8660e8e",
+      "bytes": 4646,
+      "compression": "none",
+      "source": "authored environment experiment summary"
+    }
+  }
+}

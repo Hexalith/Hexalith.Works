@@ -1,0 +1,76 @@
+{
+  "at": "20261026T222416Z",
+  "ci": {
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd"
+  },
+  "codeql": {
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "jobs": [
+    {
+      "id": 121867846268,
+      "name": "Lint release tooling",
+      "status": "completed",
+      "conclusion": "success",
+      "activeSteps": [],
+      "failedSteps": []
+    },
+    {
+      "id": 121867846553,
+      "name": "Platform R1\u2013R11 parity and rollback",
+      "status": "completed",
+      "conclusion": "success",
+      "activeSteps": [],
+      "failedSteps": []
+    },
+    {
+      "id": 121867846664,
+      "name": "Platform-owned Works proof toolchain",
+      "status": "completed",
+      "conclusion": "success",
+      "activeSteps": [],
+      "failedSteps": []
+    },
+    {
+      "id": 121867993958,
+      "name": "ci / build-and-test",
+      "status": "completed",
+      "conclusion": "success",
+      "activeSteps": [],
+      "failedSteps": []
+    },
+    {
+      "id": 121870590422,
+      "name": "ci / performance-tests",
+      "status": "completed",
+      "conclusion": "skipped",
+      "activeSteps": [],
+      "failedSteps": []
+    },
+    {
+      "id": 121870591367,
+      "name": "ci / aspire-tests",
+      "status": "completed",
+      "conclusion": "skipped",
+      "activeSteps": [],
+      "failedSteps": []
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 12693567134,
+      "name": "works-platform-parity",
+      "size": 1061032,
+      "digest": "sha256:0dcbd6ac49bda95a029551bfcf1af09255b42f6cce58997d28c3ab1dbfcbaec7"
+    },
+    {
+      "id": 12691976576,
+      "name": "blocking-test-results",
+      "size": 308656,
+      "digest": "sha256:d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17"
+    }
+  ]
+}

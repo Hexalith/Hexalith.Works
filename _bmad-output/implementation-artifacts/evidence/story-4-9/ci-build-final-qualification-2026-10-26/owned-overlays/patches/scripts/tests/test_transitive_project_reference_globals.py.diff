@@ -1,0 +1,81 @@
+--- a/scripts/tests/test_transitive_project_reference_globals.py
++++ b/scripts/tests/test_transitive_project_reference_globals.py
+@@ -0,0 +1,78 @@
++"""Keep SDK-added source references in the same build context as their parent edges."""
++
++import json
++import os
++import shutil
++import subprocess
++import tempfile
++import unittest
++from pathlib import Path
++from xml.etree import ElementTree as ET
++
++ROOT = Path(__file__).resolve().parents[2]
++PIN = ET.parse(ROOT / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
++
++
++class TransitiveProjectReferenceGlobalsTests(unittest.TestCase):
++    def test_sdk_added_source_edges_preserve_selected_globals_in_both_configurations(self):
++        for configuration in ("Debug", "Release"):
++            for explicit_version in (False, True):
++                with self.subTest(configuration=configuration, explicit_version=explicit_version):
++                    self.verify_graph(configuration, explicit_version)
++
++    def verify_graph(self, configuration, explicit_version):
++        with tempfile.TemporaryDirectory(prefix="works-transitive-globals-") as directory:
++            root = Path(directory)
++            works = root / "works"
++            external = root / "external"
++            feed = root / "feed"
++            for path in (works, external, feed):
++                path.mkdir()
++            for filename in ("Directory.Build.props", "Directory.Build.targets", "global.json"):
++                shutil.copyfile(ROOT / filename, works / filename)
++            (works / "Directory.Packages.props").write_text(
++                f"<Project><PropertyGroup><HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>"
++                "</PropertyGroup></Project>")
++            (external / "Directory.Build.props").write_text(
++                "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>")
++            for parent in (works, external):
++                (parent / "NuGet.Config").write_text(
++                    '<configuration><packageSources><clear /><add key="offline" '
++                    f'value="{feed}" /></packageSources></configuration>')
++            leaf = external / "Hexalith.SourceLeaf.csproj"
++            leaf.write_text('<Project Sdk="Microsoft.NET.Sdk" />')
++            middle = external / "Hexalith.SourceParent.csproj"
++            middle.write_text('<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>'
++                              f'<ProjectReference Include="{leaf}" /></ItemGroup></Project>')
++            project = works / "Hexalith.Works.GraphProbe.csproj"
++            project.write_text('<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>'
++                               '<PackageReference Remove="MinVer" />'
++                               f'<ProjectReference Include="{middle}" /></ItemGroup></Project>')
++            environment = {
++                key: value for key, value in os.environ.items()
++                if not key.casefold().startswith("hexalith")
++                and key.casefold() not in {"configuration", "usehexalithprojectreferences", "usenugetdeps",
++                                           "worksallowlocaleventstorecandidate", "restoreadditionalprojectsources"}
++            }
++            common = ["dotnet", "msbuild", str(project), "-nologo", f"-p:Configuration={configuration}",
++                      "-p:NuGetAudit=false"]
++            if explicit_version:
++                common.append(f"-p:HexalithEventStoreVersion={PIN}")
++            restore = subprocess.run([*common, "-t:Restore"], cwd=works, env=environment,
++                                     capture_output=True, text=True, timeout=60, check=False)
++            self.assertEqual(restore.returncode, 0, restore.stdout + restore.stderr)
++            query = subprocess.run([*common, "-t:IncludeTransitiveProjectReferences", "-getItem:ProjectReference"],
++                                   cwd=works, env=environment, capture_output=True, text=True,
++                                   timeout=60, check=False)
++            self.assertEqual(query.returncode, 0, query.stdout + query.stderr)
++            references = json.loads(query.stdout)["Items"]["ProjectReference"]
++            selected = {Path(item["FullPath"]): item for item in references}
++            self.assertIn(middle, selected)
++            self.assertIn(leaf, selected, "The real SDK must add the transitive reference during target execution")
++            expected = {"HexalithEventStoreVersion": PIN, "Configuration": configuration,
++                        "ShouldUnsetParentConfigurationAndPlatform": "false"}
++            for path in (middle, leaf):
++                values = dict(part.split("=", 1) for part in selected[path].get("AdditionalProperties", "").split(";")
++                              if "=" in part)
++                for name, value in expected.items():
++                    self.assertEqual(values.get(name), value, f"{path.name} lost {name} after SDK expansion")

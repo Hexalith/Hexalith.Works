@@ -1,0 +1,29 @@
+test_missing_and_null_api_digest_are_unavailable_not_matched (test_acceptance_tools.DownloadDigestTests.test_missing_and_null_api_digest_are_unavailable_not_matched) ... ok
+test_supplied_matching_digest_is_matched (test_acceptance_tools.DownloadDigestTests.test_supplied_matching_digest_is_matched) ... ok
+test_supplied_mismatch_or_empty_digest_is_refused (test_acceptance_tools.DownloadDigestTests.test_supplied_mismatch_or_empty_digest_is_refused) ... ok
+test_matching_evaluator_and_helpers_execute_private_verified_bytes (test_acceptance_tools.EvaluatorTests.test_matching_evaluator_and_helpers_execute_private_verified_bytes) ... ok
+test_mismatching_evaluator_refused_before_import (test_acceptance_tools.EvaluatorTests.test_mismatching_evaluator_refused_before_import) ... ok
+test_mismatching_required_helper_refused_before_evaluator_import (test_acceptance_tools.EvaluatorTests.test_mismatching_required_helper_refused_before_evaluator_import) ... ok
+test_missing_recorded_import_is_refused (test_acceptance_tools.EvaluatorTests.test_missing_recorded_import_is_refused) ... ok
+test_ambiguous_method_does_not_pass (test_acceptance_tools.MatrixTests.test_ambiguous_method_does_not_pass) ... ok
+test_complete_coverage_passes_only_after_other_checks_pass (test_acceptance_tools.MatrixTests.test_complete_coverage_passes_only_after_other_checks_pass) ... ok
+test_failed_hosted_method_is_recorded_as_failed (test_acceptance_tools.MatrixTests.test_failed_hosted_method_is_recorded_as_failed) ... ok
+test_missing_hosted_method_refuses_and_replaces_stale_pass (test_acceptance_tools.MatrixTests.test_missing_hosted_method_refuses_and_replaces_stale_pass) ... ok
+test_other_failed_check_prevents_matrix_wide_success (test_acceptance_tools.MatrixTests.test_other_failed_check_prevents_matrix_wide_success) ... ok
+test_ancillary_wrong_revision_is_refused (test_acceptance_tools.SummaryClaimTests.test_ancillary_wrong_revision_is_refused) ... ok
+test_duplicate_compilation_or_warning_is_refused (test_acceptance_tools.SummaryClaimTests.test_duplicate_compilation_or_warning_is_refused) ... ok
+test_failed_ancillary_evidence_is_refused (test_acceptance_tools.SummaryClaimTests.test_failed_ancillary_evidence_is_refused) ... ok
+test_failed_required_job_is_refused (test_acceptance_tools.SummaryClaimTests.test_failed_required_job_is_refused) ... ok
+test_incorrect_acceptance_count_is_refused (test_acceptance_tools.SummaryClaimTests.test_incorrect_acceptance_count_is_refused) ... ok
+test_incorrect_ordinary_counters_are_refused (test_acceptance_tools.SummaryClaimTests.test_incorrect_ordinary_counters_are_refused) ... ok
+test_missing_actual_case_is_refused_even_with_adjusted_counters (test_acceptance_tools.SummaryClaimTests.test_missing_actual_case_is_refused_even_with_adjusted_counters) ... ok
+test_missing_ancillary_evidence_is_refused (test_acceptance_tools.SummaryClaimTests.test_missing_ancillary_evidence_is_refused) ... ok
+test_packet_failure_writes_failed_report_and_never_publishes_success_readme (test_acceptance_tools.SummaryClaimTests.test_packet_failure_writes_failed_report_and_never_publishes_success_readme) ... ok
+test_supported_summary_derives_success_counts_and_compilation_claims (test_acceptance_tools.SummaryClaimTests.test_supported_summary_derives_success_counts_and_compilation_claims) ... ok
+test_missing_or_extra_extracted_member_is_refused (test_acceptance_tools.ZipBindingTests.test_missing_or_extra_extracted_member_is_refused) ... ok
+test_tampered_extraction_is_refused_with_unchanged_original_zip (test_acceptance_tools.ZipBindingTests.test_tampered_extraction_is_refused_with_unchanged_original_zip) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 0.044s
+
+OK

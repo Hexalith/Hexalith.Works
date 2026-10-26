@@ -1,0 +1,20 @@
+--- previous/Hexalith.Works.IntegrationTests/Hexalith.Works.deps.json
++++ final/Hexalith.Works.IntegrationTests/Hexalith.Works.deps.json
+@@ -6,7 +6,7 @@
+   "compilationOptions": {},
+   "targets": {
+     ".NETCoreApp,Version=v10.0": {
+-      "Hexalith.Works/1.0.3-preview.0.53": {
++      "Hexalith.Works/1.0.3-preview.0.54": {
+         "dependencies": {
+           "Hexalith.EventStore.DomainService": "3.128.0",
+           "Hexalith.Parties.Client": "1.6.0",
+@@ -705,7 +705,7 @@
+     }
+   },
+   "libraries": {
+-    "Hexalith.Works/1.0.3-preview.0.53": {
++    "Hexalith.Works/1.0.3-preview.0.54": {
+       "type": "project",
+       "serviceable": false,
+       "sha512": ""

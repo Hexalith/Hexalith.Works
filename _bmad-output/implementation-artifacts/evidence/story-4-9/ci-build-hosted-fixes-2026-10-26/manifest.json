@@ -1,0 +1,181 @@
+{
+  "scope": "Additional corrections discovered from exact-current hosted CI; no full or hosted acceptance credit yet",
+  "files": {
+    "story49-updated-main-hosted-parity-failure.log.gz": {
+      "sha256": "4d150d33a8cb64a35470ae37c620e7d0d75f53830c6daf3eb38082d35b841e6d",
+      "bytes": 9351,
+      "originalSha256": "5f6e64c325ef5d7da4f19c47047b186e211ab88aa7a24c4d5faa90d1aa17b8ac",
+      "originalBytes": 41367,
+      "source": "/tmp/story49-updated-main-hosted-parity-failure.log",
+      "compression": "gzip"
+    },
+    "story49-updated-main-hosted-ordinary-failure.log.gz": {
+      "sha256": "133891e4875f3b0de5874bb517bc2cdb6e7368930b1634b33c433e6ff22418dc",
+      "bytes": 10106,
+      "originalSha256": "0656e5e707a978235dfdc3bf9bd23c3bb874d48e55241f78a7d552aaea296a9a",
+      "originalBytes": 51058,
+      "source": "/tmp/story49-updated-main-hosted-ordinary-failure.log",
+      "compression": "gzip"
+    },
+    "story49-late-project-references-before.json.gz": {
+      "sha256": "f1fc4b8776a4223d424aac35845837ef560eaaeedda53f787feefe705842ecd1",
+      "bytes": 1036,
+      "originalSha256": "f6af2a172acb928c8fa584ad30d9715bf5d39dbf87dc1468dda6d3c32365b3a4",
+      "originalBytes": 13878,
+      "source": "/tmp/story49-late-project-references-before.json",
+      "compression": "gzip"
+    },
+    "story49-late-project-references-after.json.gz": {
+      "sha256": "f5fa06b9c7beb22ee93e46fe62ae9aab3ab57975e4cb5f522b7dc439cbeeda97",
+      "bytes": 1044,
+      "originalSha256": "4601307861b7652cc927fb982a74c8736d9de66f4ac0ae423829a950c96cc884",
+      "originalBytes": 14295,
+      "source": "/tmp/story49-late-project-references-after.json",
+      "compression": "gzip"
+    },
+    "story49-transitive-globals-red.log.gz": {
+      "sha256": "d8237ca212d5653bb9f62f281bce77bf33f9bd793e5603c02cb3435607808140",
+      "bytes": 526,
+      "originalSha256": "b5c1762fce8c5b52b8497d46828a3ae94956120113808187ab259f26581f928a",
+      "originalBytes": 5004,
+      "source": "/tmp/story49-transitive-globals-red.log",
+      "compression": "gzip"
+    },
+    "story49-transitive-globals-update-check.log.gz": {
+      "sha256": "0b08d8620e03d74358cbef04f570f2b45c0216441526db848e1bce4565d86c03",
+      "bytes": 51,
+      "originalSha256": "30bd1c582386be0240d54cdfaa5d40984c0110f9e28cb071aa746fc417c69880",
+      "originalBytes": 98,
+      "source": "/tmp/story49-transitive-globals-update-check.log",
+      "compression": "gzip"
+    },
+    "story49-producer-auth-red.log.gz": {
+      "sha256": "ae9d56766a43d7fee7abcfe655a3a2fe1eb1109318bca1f0698ebb87204266cb",
+      "bytes": 385,
+      "originalSha256": "ad9165148eb3b2d30fec34707dbdb0043b880a71e73c85207959de847530f232",
+      "originalBytes": 994,
+      "source": "/tmp/story49-producer-auth-red.log",
+      "compression": "gzip"
+    },
+    "story49-producer-auth-green.log.gz": {
+      "sha256": "d146f208c5b7d17f3e3f696d26854abf3e4ab3c5b0a2276704cb3bc65aefd0de",
+      "bytes": 55,
+      "originalSha256": "0e553916a266bf09cbb23a238710b757fdf54726a6df952819cdbf30e753d4f7",
+      "originalBytes": 120,
+      "source": "/tmp/story49-producer-auth-green.log",
+      "compression": "gzip"
+    },
+    "story49-source-token-runtime-red.log.gz": {
+      "sha256": "8e1d0842ec31a7cb6c0125cd2c7c8a437b46fbb415f63918aee2a8453c34c10b",
+      "bytes": 593,
+      "originalSha256": "6780fc60079b4fb3aa9868f7939ce572d5b12c2a37fc1f640d6a48a22c566e61",
+      "originalBytes": 2209,
+      "source": "/tmp/story49-source-token-runtime-red.log",
+      "compression": "gzip"
+    },
+    "story49-owner-hosted-fixes-green.log.gz": {
+      "sha256": "c5d57a21ec7b85376f95a003eff1e5a8833e9641eaa2af69c37681fb7ead460a",
+      "bytes": 1228,
+      "originalSha256": "7d31eec2b93112e7ed35169be8d3436f28ba8f39aff8e1f8c55a305b64415f7e",
+      "originalBytes": 11961,
+      "source": "/tmp/story49-owner-hosted-fixes-green.log",
+      "compression": "gzip"
+    },
+    "story49-final-tooling-after-hosted-fixes.log.gz": {
+      "sha256": "d978f0873893edb3e6db50de65bc2f281e04e608bea1f109e1fe1a5fbe608c63",
+      "bytes": 285,
+      "originalSha256": "e97712db9918e3dac789caa527791c681ef1e859808a2221267c50348bf89965",
+      "originalBytes": 492,
+      "source": "/tmp/story49-final-tooling-after-hosted-fixes.log",
+      "compression": "gzip"
+    },
+    "story49-final-parallel-build-canonical-target.log.gz": {
+      "sha256": "207c93dd978bef8d7f57358aff4301f49a5293e1984d45bce8b3351781fa8265",
+      "bytes": 564,
+      "originalSha256": "1f6e6621e942aff3872772af428a3394ca49d92bc1111377bc39317dd0125744",
+      "originalBytes": 2904,
+      "source": "/tmp/story49-final-parallel-build-canonical-target.log",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-restore.log.gz": {
+      "sha256": "b037f4b82735d6d67415e63658568dd79052e9207619fe01b3aa23aeb1458528",
+      "bytes": 357,
+      "originalSha256": "3331e0d835c3c7680afc6f9aced200e65c99900aedd72d69ac2ddb166e6ecae2",
+      "originalBytes": 2302,
+      "source": "/tmp/story49-hosted-corrections-restore.log",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-architecture.log.gz": {
+      "sha256": "419a8b81e4a9ee5985f312db35d45c9a5a6812ff234877af7284c6c3a94c765e",
+      "bytes": 293,
+      "originalSha256": "59b8bb250cd6d98295c0b43023f7d1e5863a7b63058ffc2fb899132eb3574d67",
+      "originalBytes": 477,
+      "source": "/tmp/story49-hosted-corrections-architecture.log",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-architecture.xml.gz": {
+      "sha256": "b66dfbf83cead41a6ba4c0fed2290646de79b1b4038b2b114dc7636dc3372b61",
+      "bytes": 29836,
+      "originalSha256": "da2949ada47b8e5315a2b23751f0546617cf890e4e6a3364446087cbb6a3e198",
+      "originalBytes": 279372,
+      "source": "/tmp/story49-hosted-corrections-architecture.xml",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-lint.log.gz": {
+      "sha256": "5372a009c1d9e41d89cdac22775f42eea0f3d1f9eff4612224de439533ec362e",
+      "bytes": 60,
+      "originalSha256": "5d181034dcb418674d76dec9afaef49ac46b41ec30f1d83feddac68349e2465e",
+      "originalBytes": 44,
+      "source": "/tmp/story49-hosted-corrections-lint.log",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-actionlint.log.gz": {
+      "sha256": "4ee89f7937df167c05381c9566fc28ab3e1d75e27ae281327e1e02602c3947b4",
+      "bytes": 61,
+      "originalSha256": "84c754cb6e71716e7f02a16acd6dcc449ba0311c864853a5acaed6a4ac55ea83",
+      "originalBytes": 41,
+      "source": "/tmp/story49-hosted-corrections-actionlint.log",
+      "compression": "gzip"
+    },
+    "story49-hosted-corrections-actionlint-native.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalBytes": 0,
+      "source": "/tmp/story49-hosted-corrections-actionlint-native.log",
+      "compression": "gzip"
+    },
+    "works-corrections.patch.gz": {
+      "sha256": "876f7f4454f5ead7d8e3a8d2d417ff21c1ff560a95e0e6f314bd608582f59d4e",
+      "bytes": 2257,
+      "originalSha256": "b306b5cdc1f54da8a8740bf2466b262a5ecb60f8708d6b9cc1376f85b9706aa1",
+      "originalBytes": 6898,
+      "source": null,
+      "compression": "gzip"
+    },
+    "platform-corrections.patch.gz": {
+      "sha256": "b95cd65664f4bc472b8dece32c61b8502e34f881427e5b540242c095a65f8bef",
+      "bytes": 2937,
+      "originalSha256": "72304bd666614dd0653deea8382e3a2fb9e63220a2806eec0558f45dca0dffbd",
+      "originalBytes": 7928,
+      "source": null,
+      "compression": "gzip"
+    },
+    "results.json": {
+      "sha256": "2a925f7d7a6d7f78feb5827f4c836b2cd4f7a1a75ad847641e83ea22b7842b29",
+      "bytes": 2543,
+      "originalSha256": "2a925f7d7a6d7f78feb5827f4c836b2cd4f7a1a75ad847641e83ea22b7842b29",
+      "originalBytes": 2543,
+      "source": null,
+      "compression": "none"
+    },
+    "README.md": {
+      "sha256": "c7a77b226ea258a375f40eb764b0714da47a15bb8657eb62942b7e1486e77460",
+      "bytes": 1171,
+      "originalSha256": "c7a77b226ea258a375f40eb764b0714da47a15bb8657eb62942b7e1486e77460",
+      "originalBytes": 1171,
+      "source": null,
+      "compression": "none"
+    }
+  }
+}

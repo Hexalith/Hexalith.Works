@@ -1,0 +1,898 @@
+{
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/README.md": {
+    "sha256": "795df373ab61e464afb56b214880adf25349cf8b7b699e2e2b8b5fb97b4e8f97",
+    "bytes": 4017
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifact-digests.json": {
+    "sha256": "ebec0803167f1eae42b3289f29b9e3612d0c88f05d57023e481aa68af49c6a30",
+    "bytes": 346
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/download-and-extraction.json": {
+    "sha256": "edaa3082cbdce029dca1e72dd591c16566376055b8f61e982da26fa350347548",
+    "bytes": 1390
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/extracted/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.trx.gz": {
+    "sha256": "f21b3f5fdd587296e669303232789a5bd0c6b1b2a53acc9b714f337864fec0fd",
+    "bytes": 62808
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/extracted/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.trx.gz": {
+    "sha256": "9b86cc00f93572bed7d2a6b8ca8ffd1a416b214ec9f067bf7ca3fc334735ed15",
+    "bytes": 157847
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/extracted/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.trx.gz": {
+    "sha256": "8d361ba9811a5799b292d62e6d0694c71e0f82c10f5e3a341863364044e20c60",
+    "bytes": 1207
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/extracted/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.trx.gz": {
+    "sha256": "00f2706562b322c8f30ca7df7961efd509c5c4717d810f5df66e297caf988989",
+    "bytes": 88040
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/metadata.json": {
+    "sha256": "6895d791f3bc69b12033c7328e26fad68fd84ec6f9f017a6f6f50739aac04bc3",
+    "bytes": 695
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12691976576/original-artifact.zip": {
+    "sha256": "d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17",
+    "bytes": 308656
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/download-and-extraction.json": {
+    "sha256": "0a4e4e8983dc3d8be9532a356067a691efd491b3303c2b65d692fd25488118aa",
+    "bytes": 8291
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/bootstrap.json": {
+    "sha256": "85676e9bfbf411055b1fcc21fa36b2ea43cf4fea4d190d2f93fef0e4b274bdd5",
+    "bytes": 148966
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/custody/command.json": {
+    "sha256": "b0ef0a7019d2609c3cd5e0106b39c17aaf027f34475143874eb4ffb90b005e43",
+    "bytes": 775
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/custody/custody.log.gz": {
+    "sha256": "202b330c22897db3847bbf8de8a0d4a110495cad58212871f0a6411fbfa3caaf",
+    "bytes": 307
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/acl.json": {
+    "sha256": "cac445c46af2c1563718b9a17c34ba867f4b5051d47c622b6ee0672fd47db63d",
+    "bytes": 2207
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/blocked.json": {
+    "sha256": "3cbbe0ea6ba000ee723408bad76ad99b324a99d71fd887d7a939bbdb0576b4a8",
+    "bytes": 2049
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/isolation.json": {
+    "sha256": "3d4b04dc33f957825c1451648c7168dc988ec41b31705919c2c86a1c70419105",
+    "bytes": 2379
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/lost-ack.json": {
+    "sha256": "626d8e6443e9de37cb5e7786fb720ba4dc13c469a1b40f282ff3ab3a66c278ef",
+    "bytes": 2533
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/outage.json": {
+    "sha256": "d9b1fda9f9ae6964cd82cb1c5116d84a0203aa3ab17de14c29a15b3f0f588690",
+    "bytes": 2531
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/restart.json": {
+    "sha256": "09101e9b400c3f4eff8b09ef940a8851ac5de56c1c8fd2a9fc25f1267633b987",
+    "bytes": 2538
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/evidence/restore.json": {
+    "sha256": "0c5ada1ec3da6ebe0a98127a22b786501ea40b47f5437f20ef1b2fd1c18b750d",
+    "bytes": 2524
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/guard/command.json": {
+    "sha256": "d02b7cd3845c496b1fb604caa7e2197b7493ac0526e2d5bf5b9c6ed9a0b1176e",
+    "bytes": 575
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full/guard/guard.log.gz": {
+    "sha256": "a317e279f8801b6baf095f3abd0be873a9f6f256a283a9f9f4752659454f77e4",
+    "bytes": 13618
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-full-refusal.log.gz": {
+    "sha256": "6c41c4e630aa2bd6c05b5c39511a7f5c1a1ba36a7ad4025dfc89dc5d559b9e28",
+    "bytes": 249
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/agents-local-scaffold.log.gz": {
+    "sha256": "53d91324cc1cd86877535e8566a227c9e8f6cd0bae18032a8b6e936a1a69a7e9",
+    "bytes": 575
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/component-evidence-gate-tests.log.gz": {
+    "sha256": "0ebaa478236981d7e47ed68a92e364c572901669b85690da4d643400ebaf7dde",
+    "bytes": 228
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/evidence-gate-tests.log.gz": {
+    "sha256": "dad5b86f25a20a047a8a58b47a85b8de9828ec14272ec9247e319b9b9375b768",
+    "bytes": 1236
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/host-starts.jsonl.gz": {
+    "sha256": "1c8b3b59afff3e2151f8237912ac23846a77b24df5326dc9a6715408044a4adb",
+    "bytes": 9784
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/isolated-daprd/binding.json": {
+    "sha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+    "bytes": 257
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/isolated-daprd/launches.jsonl.gz": {
+    "sha256": "9e9e2e93a01a4806624b50a656f7e2fc701efda912bc903af46e27512f39ae05",
+    "bytes": 4387
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/isolated-daprd-retained-preflight/binding.json": {
+    "sha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+    "bytes": 257
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/isolated-daprd-retained-preflight/launches.jsonl.gz": {
+    "sha256": "95b72170726c85d7c787ed1540a9bc1ca2c97d118b5947fec58c3894411d086f",
+    "bytes": 687
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/ledger.json.gz": {
+    "sha256": "c677a669f98e73ff2a7c171d768e3e9169fe92c855e54e07d3fb244d8a411db4",
+    "bytes": 652476
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/persisted-states.jsonl.gz": {
+    "sha256": "0d5a2ca4b86938d8876ae8ded98c870462e00e759e89af30501251776e7a7535",
+    "bytes": 164926
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-file-host-release.log.gz": {
+    "sha256": "a1860575bc323350eecc0ccf64a292bbfcb223ee518c0e3c20773f01d6ad4693",
+    "bytes": 413
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-ha.log.gz": {
+    "sha256": "8dc3793575ced60e0a908fedbba05cb5a97a25e817638fc8b2058db54a7fcc93",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-ha.xml": {
+    "sha256": "25a6822c5a42fddecc99937f6eb6bd857c3d7610522cb94892e46b671b4d3f0d",
+    "bytes": 1720
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-historical.log.gz": {
+    "sha256": "dbd9f607d5e4a80573cad846f7a95e83975e2b6f7b8d3e3f78d82e1496486602",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-historical.xml": {
+    "sha256": "ffb9edad449cde05e74620189a17295e1b7149178a2dc4ef883c808986b43057",
+    "bytes": 1726
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-mtls.log.gz": {
+    "sha256": "894d36f16173ce7eb08736e13cdf844928c6b5f6a14e2507079f732d703618b7",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-mtls.xml": {
+    "sha256": "df7f23bd177e9e3603579733cccea65ba9bd28f17228a81929758e91b202246f",
+    "bytes": 1724
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-projection.log.gz": {
+    "sha256": "bf41f09d8e83de78933f607cd6d6ccaf557af90b3bab8229de708d8468d8aacd",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-projection.xml": {
+    "sha256": "5992f8592b655beec9b3d4432fd7d7aa84bfaf08b6f903446b51e34270bc7f83",
+    "bytes": 1744
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-recovery.log.gz": {
+    "sha256": "237c5ebd426a2f897d460d7e90619be549dda67fb8cadaecf1fdc53017a79323",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-recovery.xml": {
+    "sha256": "0fd69013926e1a326d75e7efc2e68f0081a669eda98c801bfd734f1783c875c3",
+    "bytes": 3593
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-release.xml": {
+    "sha256": "7d33e5a2abf205190ea0abfb07bb05758a8ed72821397e5af85b1df3c3aca7b8",
+    "bytes": 90166
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-tests-build-release.log.gz": {
+    "sha256": "8d0ed4386e3f8c202c832d63248088f7ca47878374f1a3c8c4944228db8d379e",
+    "bytes": 499
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/platform-tests-release.log.gz": {
+    "sha256": "f95865a2f97be006f2a8da732b0b715cd16f13ab6efa91c409e12079cccfac5f",
+    "bytes": 259
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/retained-host-preflight.log.gz": {
+    "sha256": "f600cc0d3b077108e89f568a783924023dfe29ce12a1d35bc7a8064e6bd38d14",
+    "bytes": 260
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/retained-preflight-starts.jsonl.gz": {
+    "sha256": "2102cfe95b0d3234e666666f4db848f8b7064892f57ed9017deeceab8e2daa08",
+    "bytes": 2469
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/retained-preflight.xml": {
+    "sha256": "642585e51d1e21426038b52299830ea3a80af48c76bc12e40bd27d21587655bd",
+    "bytes": 1809
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-0.log.gz": {
+    "sha256": "8ee3a69dfd0cbe9cd2b8941251e19fa4e2684ca8f19cf3d834aba1138744df45",
+    "bytes": 319
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-1.log.gz": {
+    "sha256": "62f5d53b9d2569abaad1c8834ec05013428f33cf0bc0711c923d1fa163b1a5fd",
+    "bytes": 428
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-2.log.gz": {
+    "sha256": "bd9aff76055c862a6cc21cff8572b970d90829b0e2a11158ee38c846caade047",
+    "bytes": 327
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-3.log.gz": {
+    "sha256": "e90912ed8d822d469e9e872b9b011a87cf74ae4ebdaf0d196e531fc74dc7bc76",
+    "bytes": 356
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-4.log.gz": {
+    "sha256": "86f3d622e02ee34bfe4cb26611e0f0e46a2bdd4a3634481cd6d8b7b79a265bde",
+    "bytes": 240
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/runtime-release-prebuild-5.log.gz": {
+    "sha256": "9bbc0f202c3e2197533b6929c49089ab55b3e877381c73d5cb757d5fcf170da2",
+    "bytes": 316
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/works-consumer-release.log.gz": {
+    "sha256": "e8608edc53e69fb709a0e4181214d74892088184c160570eb1284245944f1f3a",
+    "bytes": 668
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/works-consumer-supporting.log.gz": {
+    "sha256": "c1d1499883b30f5a6342ff0850f069e05aa46d9dd4aa755e7e494b81ff0184ec",
+    "bytes": 2152
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/gate/works-consumer-supporting.xml": {
+    "sha256": "ae90b28515c7fd815664a23b4801f56f833d4fb37a336048a4ba3948cfcebf80",
+    "bytes": 206042
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/extracted/platform-source-binding.json.gz": {
+    "sha256": "d5a89dbddebdaff80ed13985631d1d39f07827bb7ab306af0198851193713d24",
+    "bytes": 108644
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/metadata.json": {
+    "sha256": "106f26a0838f93fe0d879a3e91e9b1a7186ee3f9aa09887ec43a8eda1b11629d",
+    "bytes": 696
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/artifacts/12693567134/original-artifact.zip": {
+    "sha256": "0dcbd6ac49bda95a029551bfcf1af09255b42f6cce58997d28c3ab1dbfcbaec7",
+    "bytes": 1061032
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/audit-case-correction.json": {
+    "sha256": "918e005665ecf12db6945d805211352e320370c9ab5f4eb6037c9caa55022428",
+    "bytes": 608
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/audit-hosted-initial.py": {
+    "sha256": "322731c3d65933680a6b292bd28730a774ebd13ef7012239445d107038ace07b",
+    "bytes": 8517
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/audit-hosted.log.gz": {
+    "sha256": "941d901b6f1a11329d0a3b0c3edf71ccd3c6818041cb5ff8876a3d5dc75d2e89",
+    "bytes": 864
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/audit-hosted.py": {
+    "sha256": "36710319daa3431dab2a5192733cd4586d18450cfa03a25a5648ec9d6bc8fd07",
+    "bytes": 8581
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/build-packet.py": {
+    "sha256": "55a1e33fb3592331c31e83c8705b1b1bc84e55dd0aeb0950809e0f778ed5628e",
+    "bytes": 7121
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/ci-jobs-initial.json": {
+    "sha256": "bfed4543137d02b2e63b68e94ee201cf89ab215e18039370572ee711554f9013",
+    "bytes": 12198
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/ci-run-initial.json": {
+    "sha256": "52d3c9f32705eea8cd37909f70db8a052cb024ae786e8a5d2a59f824fe07fac8",
+    "bytes": 12836
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/codeql-run-initial.json": {
+    "sha256": "adf8a3c366ee52c74dda8dd10895f05045ff39fe71336d21d7edef7374d7cd4b",
+    "bytes": 12841
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/commands.json": {
+    "sha256": "64a7878c28ad1558052bb8d64c9948b83aa3bd12f685327af7faedc306ce7199",
+    "bytes": 632
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/commitlint-run-initial.json": {
+    "sha256": "ea172834d7f7f34bbc73fe3b12a84120070480cb4db4738b78355d436a62968f",
+    "bytes": 12856
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/completed-job-logs/121867846268.log.gz": {
+    "sha256": "abd503368a4b17666da599887fe019fbb4344d06be859dbe715b21d5d0917c81",
+    "bytes": 5563
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/completed-job-logs/121867846553.log.gz": {
+    "sha256": "0d2092632f841aea5d7ad066e370c8592e9852dc1f11ccb84ca992eda8485b87",
+    "bytes": 9157
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/completed-job-logs/121867846664.log.gz": {
+    "sha256": "c330911f1252fc8e9f79e866cabed8c813936aeb42e56b224f109c024d2640dd",
+    "bytes": 3769
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/completed-job-logs/121867993958.log.gz": {
+    "sha256": "23756c8fd5333f3512a23a4d8486c3c8f5c30d90fcac6bb76be35198a9c5b990",
+    "bytes": 16028
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/download-artifact.py": {
+    "sha256": "58e0f01e4d3ed663f5e121add1bb626ebb68d930f72b37ae9b1374d77dee550a",
+    "bytes": 2272
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/download-run-logs.py": {
+    "sha256": "2855ff8d96bc4d2c0874ceb0d9e164a360594171032939c5ef995dc1a2374347",
+    "bytes": 1830
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/final-api/ci-artifacts.json": {
+    "sha256": "c1c9dcbb3db73f014b3d33c2941f2e97a8206f10cb172cc30584873b49b2f255",
+    "bytes": 1424
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/final-api/ci-jobs.json": {
+    "sha256": "f5a121338ec895ea9e954bb7ed8d6d89f9cc3374aa18c79ca0c4095dc1c8d185",
+    "bytes": 15011
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/final-api/ci-run.json": {
+    "sha256": "32994523e20db6d221bd90f72b5604a3e353e398bf56a86f6664e9f053fa9a0f",
+    "bytes": 12839
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/final-api/codeql-run.json": {
+    "sha256": "1bb2aa31c9255e4f0536c2b49b778d5440e666d50f2ab8d3bcd3866ec844c098",
+    "bytes": 12844
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/hosted-acceptance.json": {
+    "sha256": "56289baa7973a3afdcab70735eff0b85fe8a95dfc0fd4a5d276ff79dbd6f00ad",
+    "bytes": 5402
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/hosted-build-summary.json": {
+    "sha256": "b7d10b8e259385e6626d224c6867c86fac98303bd35f0d33236057841ede4722",
+    "bytes": 1236
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/latest.json": {
+    "sha256": "cfb705eb08797c7e70c4aa6db6bc7805cdc927c0eb4bbc019c835c3513eb5d47",
+    "bytes": 1801
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/log-download-commands.json": {
+    "sha256": "f87351583fd5977bfb2e7b788e6c85efb8d0d1d697a769fca15e2d93578ace72",
+    "bytes": 1271
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/manifest.json": {
+    "sha256": "bc0601d6594a1409d21f22921a43f1a286d9c8e5ca6d3d95d4f3f4dd95c4aa8f",
+    "bytes": 43114
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/monitor-driver.log.gz": {
+    "sha256": "06a15657c50ecc7fb503baf7a36dbb338042f9e29ed51df4cc366635aaa0d891",
+    "bytes": 586
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/monitor.py": {
+    "sha256": "5ca2755226ba24d3a3be7546d9f8b48bdbd21916349ed961d616ad2b33a6dd60",
+    "bytes": 725
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/native-command-log-integrity.json": {
+    "sha256": "d79a6be0b0cf4970b31b189f5b2934af6cf97674e599da2b57bb3f507180581c",
+    "bytes": 1966
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/ordinary-summary.json": {
+    "sha256": "19603a833fc6c6b9056a3a2a815eef9598432d3450a40edb1ddcd4ebd41b1cf2",
+    "bytes": 3960
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/parity-log-availability.json": {
+    "sha256": "2df0b14f4bcc0843536caa41f945ef6ccd0029947a041a4f2cf0c99367f1e3f2",
+    "bytes": 218
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/poll.py": {
+    "sha256": "bb52db23889161113af9b005e4eddc06e34894f091af6bd86d8726a09918e733",
+    "bytes": 1494
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181557/download-and-extraction.json": {
+    "sha256": "a949932139723b0f61135cac2c619167547d7b578b12771604ffd734233909bd",
+    "bytes": 2265
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181557/original-logs.zip": {
+    "sha256": "67db4145885c607fceba5a2f17b5b5d39082173c6def9dc0f4bf6a38bfaea5b4",
+    "bytes": 15655
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181557/run.json": {
+    "sha256": "ea172834d7f7f34bbc73fe3b12a84120070480cb4db4738b78355d436a62968f",
+    "bytes": 12856
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181599/download-and-extraction.json": {
+    "sha256": "e4676066b20e903e14ce975c966b0f4688870a3f6bf2c99a2fe35045d5780bca",
+    "bytes": 1983
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181599/original-logs.zip": {
+    "sha256": "d0f4a9cf9377375d78d98514c4709ade7cebb58620052d4d229aa6901117a6a0",
+    "bytes": 103813
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181599/run.json": {
+    "sha256": "1bb2aa31c9255e4f0536c2b49b778d5440e666d50f2ab8d3bcd3866ec844c098",
+    "bytes": 12844
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181685/download-and-extraction.json": {
+    "sha256": "5fe1684310ff729061983df5aa7450bc4e57e6e1e179e5f226b303d9af1e741b",
+    "bytes": 10273
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181685/original-logs.zip": {
+    "sha256": "072ce877caaaec5d03c7cba290f6c9c6b52b9f0ec10e25f9eece00056d7afb7b",
+    "bytes": 90885
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/run-logs/40407181685/run.json": {
+    "sha256": "32994523e20db6d221bd90f72b5604a3e353e398bf56a86f6664e9f053fa9a0f",
+    "bytes": 12839
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-hosted-qualification-2026-10-26/status-events.jsonl.gz": {
+    "sha256": "cbb58cf30ad8058c20756160da62bb6dae9d1d18347710273ad6c3c373f777e6",
+    "bytes": 598
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/README.md": {
+    "sha256": "518b7c5ea62d5aa12446b5e764abf18fa4c813c79e50ef5d61bc2aa510eabf48",
+    "bytes": 2893
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/audit-full2.py": {
+    "sha256": "ee5ea15c16cd5dfc6c11a9778e13e219eeff3b828b381e44100b3bda55ab65df",
+    "bytes": 5107
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/audit-hosted.py": {
+    "sha256": "7456e4c7fa7d79a75dca95022ae4d47be6f8ab81e739a67780874e1091d25169",
+    "bytes": 8523
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/audit-matrix.py": {
+    "sha256": "2008456c2b5d8338dcd6b712208087dff4446f49c90e1396317290364d84859d",
+    "bytes": 5608
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/frozen-matrix-parent-audit.json": {
+    "sha256": "b02c915695d09c2b4a0aac67656837bdbbd9055206223575de5236f4b996bfa9",
+    "bytes": 12488
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/full2-parent-audit.json": {
+    "sha256": "8899a4e4e18e8ee93e7026ebb901217702cbd295eca7e20fce913dc68b7cab21",
+    "bytes": 33022
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/hosted-parent-audit.json": {
+    "sha256": "cb7cb8c4c1d38120fcbbd37829f5726ff7f7abb65feb3a4fa7ef1cd3352ac1b7",
+    "bytes": 1060
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/initial-hosted-audit-roots.json": {
+    "sha256": "b372f2ef6d6daa2f1fd27b07e890079b14a1bd11e6fa1610a975153951afc289",
+    "bytes": 12546
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/manifest.json": {
+    "sha256": "e6a7bb279610ea3737894ccbce7c55f8364c8505a6d204bef9d00c78156dd3bf",
+    "bytes": 1889
+  },
+  "/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-parent-acceptance-2026-10-26/publication-record.json": {
+    "sha256": "a8812daf0c3836992a66d9e3fc9e7af099a12b1a1af58b3998654bbab19ec6bd",
+    "bytes": 2512
+  },
+  "/tmp/story49-audit-full2.py": {
+    "sha256": "ee5ea15c16cd5dfc6c11a9778e13e219eeff3b828b381e44100b3bda55ab65df",
+    "bytes": 5107
+  },
+  "/tmp/story49-audit-hosted-parent.py": {
+    "sha256": "7456e4c7fa7d79a75dca95022ae4d47be6f8ab81e739a67780874e1091d25169",
+    "bytes": 8523
+  },
+  "/tmp/story49-final-20261026T195205Z/full2/bootstrap.json": {
+    "sha256": "41c1f849461901ef5dad18e90c31deebb9c2292e28d3a9061d22491fde23e030",
+    "bytes": 149071
+  },
+  "/tmp/story49-final-20261026T195205Z/full2/gate/ledger.json": {
+    "sha256": "1c6b8db31488511b5e369f5a4296601df9517ab8a99a04a54627548203104c4d",
+    "bytes": 2848438
+  },
+  "/tmp/story49-final-full2-parent-audit.json": {
+    "sha256": "8899a4e4e18e8ee93e7026ebb901217702cbd295eca7e20fce913dc68b7cab21",
+    "bytes": 33022
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifact-digests.json": {
+    "sha256": "ebec0803167f1eae42b3289f29b9e3612d0c88f05d57023e481aa68af49c6a30",
+    "bytes": 346
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/download-and-extraction.json": {
+    "sha256": "edaa3082cbdce029dca1e72dd591c16566376055b8f61e982da26fa350347548",
+    "bytes": 1390
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/extracted/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.trx": {
+    "sha256": "feb24e485b170131f153e115fa4f71bbf194d53544415cdd266849cc739ef11b",
+    "bytes": 629465
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/extracted/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.trx": {
+    "sha256": "81c386853e8dda062cd06d47dbb2577edbf4b1f40f637d51e20415d9c3b637fe",
+    "bytes": 1655667
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/extracted/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.trx": {
+    "sha256": "7e9a1f1a98425310d89724c31634d29a1a73c19a9c4a302cc0d171a6acb8ecf5",
+    "bytes": 5659
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/extracted/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.trx": {
+    "sha256": "6a0a47d7e772aef1896388d40f0a6d31976b73a67f74846bc91ab886548382a1",
+    "bytes": 878693
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/metadata.json": {
+    "sha256": "6895d791f3bc69b12033c7328e26fad68fd84ec6f9f017a6f6f50739aac04bc3",
+    "bytes": 695
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12691976576/original-artifact.zip": {
+    "sha256": "d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17",
+    "bytes": 308656
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/download-and-extraction.json": {
+    "sha256": "0a4e4e8983dc3d8be9532a356067a691efd491b3303c2b65d692fd25488118aa",
+    "bytes": 8291
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/bootstrap.json": {
+    "sha256": "85676e9bfbf411055b1fcc21fa36b2ea43cf4fea4d190d2f93fef0e4b274bdd5",
+    "bytes": 148966
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/custody/command.json": {
+    "sha256": "b0ef0a7019d2609c3cd5e0106b39c17aaf027f34475143874eb4ffb90b005e43",
+    "bytes": 775
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/custody/custody.log": {
+    "sha256": "42400929209aed0bde3260d09c0465c18d2e50a857669603a6796c140a6dfbfc",
+    "bytes": 658
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/acl.json": {
+    "sha256": "cac445c46af2c1563718b9a17c34ba867f4b5051d47c622b6ee0672fd47db63d",
+    "bytes": 2207
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/blocked.json": {
+    "sha256": "3cbbe0ea6ba000ee723408bad76ad99b324a99d71fd887d7a939bbdb0576b4a8",
+    "bytes": 2049
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/isolation.json": {
+    "sha256": "3d4b04dc33f957825c1451648c7168dc988ec41b31705919c2c86a1c70419105",
+    "bytes": 2379
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/lost-ack.json": {
+    "sha256": "626d8e6443e9de37cb5e7786fb720ba4dc13c469a1b40f282ff3ab3a66c278ef",
+    "bytes": 2533
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/outage.json": {
+    "sha256": "d9b1fda9f9ae6964cd82cb1c5116d84a0203aa3ab17de14c29a15b3f0f588690",
+    "bytes": 2531
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/restart.json": {
+    "sha256": "09101e9b400c3f4eff8b09ef940a8851ac5de56c1c8fd2a9fc25f1267633b987",
+    "bytes": 2538
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/evidence/restore.json": {
+    "sha256": "0c5ada1ec3da6ebe0a98127a22b786501ea40b47f5437f20ef1b2fd1c18b750d",
+    "bytes": 2524
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/guard/command.json": {
+    "sha256": "d02b7cd3845c496b1fb604caa7e2197b7493ac0526e2d5bf5b9c6ed9a0b1176e",
+    "bytes": 575
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full/guard/guard.log": {
+    "sha256": "c8019308403aee37e67317c2cf7ae372218faac6f28276801ccb5376fff95ae2",
+    "bytes": 497208
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-full-refusal.log": {
+    "sha256": "f5484d3a21030917cd81c1cb3bcb02d3533a14701b4f828f66f67bcc2df37504",
+    "bytes": 391
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/agents-local-scaffold.log": {
+    "sha256": "cdc6c9af5a86075735ba0101a641643e894c400462f3eee272e57ba6b45e538d",
+    "bytes": 2057
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/component-evidence-gate-tests.log": {
+    "sha256": "88ebc1a47d0a5644237569ad19d21f94daf44d333aeeda2615fa4d2a1349a36b",
+    "bytes": 547
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/evidence-gate-tests.log": {
+    "sha256": "bd4670348aae14c59b489d1951d37cbaa4f37b149a5ed3850b5a4f3598df6a27",
+    "bytes": 12027
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/host-starts.jsonl": {
+    "sha256": "8a95134ff1672d5ebebb4473fa14ab0c78f3ea37d8feb01e0e1676d8300569d0",
+    "bytes": 242719
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/isolated-daprd/binding.json": {
+    "sha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+    "bytes": 257
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/isolated-daprd/launches.jsonl": {
+    "sha256": "fe7f1b9801940e573b95e396bddc3ee67d14ab128988944d39d7d49a88dc18e9",
+    "bytes": 25558
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/isolated-daprd-retained-preflight/binding.json": {
+    "sha256": "781cf0a3b02954a6c386489ddffc12cee6efbaf8eeaad1b8ab275f09afe2f719",
+    "bytes": 257
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/isolated-daprd-retained-preflight/launches.jsonl": {
+    "sha256": "683e4d37922153cfdc693f20201502b45f27c24052d156387f8c882a04c4548e",
+    "bytes": 2273
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/ledger.json": {
+    "sha256": "5773e6839575efe514208b1b93affd91ba9d06a50b47c1d5d2e2186dbb0a5e57",
+    "bytes": 2503102
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/persisted-states.jsonl": {
+    "sha256": "38b7281f24d1b5c745670cd5afce476869b5f730d848ddcb01a3fc5014041804",
+    "bytes": 3646070
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-file-host-release.log": {
+    "sha256": "4fa3b3b340182e621271e8c850c994544ac5818d40598671f0cd815698449375",
+    "bytes": 1699
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-ha.log": {
+    "sha256": "8692319e9be13af21a3b5011280f99ac0081778ddc70347a3af6857a3dcf2582",
+    "bytes": 458
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-ha.xml": {
+    "sha256": "25a6822c5a42fddecc99937f6eb6bd857c3d7610522cb94892e46b671b4d3f0d",
+    "bytes": 1720
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-historical.log": {
+    "sha256": "75d3eb075d559a6db7c9cfda1f367058805b21d8b2f297b52a1e67deafdd001b",
+    "bytes": 458
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-historical.xml": {
+    "sha256": "ffb9edad449cde05e74620189a17295e1b7149178a2dc4ef883c808986b43057",
+    "bytes": 1726
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-mtls.log": {
+    "sha256": "91ace444902aa7924aaee9dca93bbdc24b287a58c792f0d22989fbdcaaf76d05",
+    "bytes": 457
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-mtls.xml": {
+    "sha256": "df7f23bd177e9e3603579733cccea65ba9bd28f17228a81929758e91b202246f",
+    "bytes": 1724
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-projection.log": {
+    "sha256": "7e5db7a087cac6a476c16f6909ed483e3c0f76ad18334874d2c9ab83605f56e9",
+    "bytes": 458
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-projection.xml": {
+    "sha256": "5992f8592b655beec9b3d4432fd7d7aa84bfaf08b6f903446b51e34270bc7f83",
+    "bytes": 1744
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-recovery.log": {
+    "sha256": "60bf397e6d145520591f40eaacb5b5a512cd8e7347bc2402f0b8a6fa4af04068",
+    "bytes": 458
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-recovery.xml": {
+    "sha256": "0fd69013926e1a326d75e7efc2e68f0081a669eda98c801bfd734f1783c875c3",
+    "bytes": 3593
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-release.xml": {
+    "sha256": "7d33e5a2abf205190ea0abfb07bb05758a8ed72821397e5af85b1df3c3aca7b8",
+    "bytes": 90166
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-tests-build-release.log": {
+    "sha256": "071ad712ebe86a08eab2d104443a0078980f441e10864214b66ee8d35fd545e6",
+    "bytes": 2176
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/platform-tests-release.log": {
+    "sha256": "99c8982baa3728bfba0556ef72780f334ec51ac71bcc60a79d3c13eeb12f4b3b",
+    "bytes": 448
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/retained-host-preflight.log": {
+    "sha256": "2a21a8d05490e9e5241810c69ebfc3f32dd06ba818c0d35c9ad6fcf836db1938",
+    "bytes": 457
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/retained-preflight-starts.jsonl": {
+    "sha256": "41a413ee8b6a9d9e59548d51968102dfdf16cec4160dea3e8bab992f46268322",
+    "bytes": 13167
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/retained-preflight.xml": {
+    "sha256": "642585e51d1e21426038b52299830ea3a80af48c76bc12e40bd27d21587655bd",
+    "bytes": 1809
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-0.log": {
+    "sha256": "1cbd9c328918b1940ec53f3f31c9132ef495c0cdb34f4ae49c1166514f38361b",
+    "bytes": 1486
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-1.log": {
+    "sha256": "105553a961a584fa0f91804d09af4f386fd1fb1ef4615a7e511afb0a20cacc41",
+    "bytes": 2841
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-2.log": {
+    "sha256": "359a07b5346a906e6034686b0fa1145d9c81c9a75cb4c58502ed1fd49e53bebf",
+    "bytes": 1060
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-3.log": {
+    "sha256": "f3d0f3adcef4b18d83c1bf68e00c1d17d935e96f794a4364b8256703bf64c3c2",
+    "bytes": 1451
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-4.log": {
+    "sha256": "56f24e52374f77808d004e60c5ce37bb20236bb9f000b1f70e601865226e3de2",
+    "bytes": 456
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/runtime-release-prebuild-5.log": {
+    "sha256": "6743f73d6ba1fad946aa937566d6cfcbe559fdd31c4d949dc766cd698f46e74f",
+    "bytes": 1086
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/works-consumer-release.log": {
+    "sha256": "ada74fcf83ecf8790a2aee61030c1196f6bd0b733878b9c8873b13045402f165",
+    "bytes": 3891
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/works-consumer-supporting.log": {
+    "sha256": "daee4a8fe3b6f3d828315108304c3e7932243abeadd901ab5c7dded2f741cc54",
+    "bytes": 36952
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/gate/works-consumer-supporting.xml": {
+    "sha256": "ae90b28515c7fd815664a23b4801f56f833d4fb37a336048a4ba3948cfcebf80",
+    "bytes": 206042
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/extracted/platform-source-binding.json": {
+    "sha256": "279206981df406768c8b8a77b552b44f806de66f6c233489ef1fa3ef30c677ae",
+    "bytes": 297069
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/metadata.json": {
+    "sha256": "106f26a0838f93fe0d879a3e91e9b1a7186ee3f9aa09887ec43a8eda1b11629d",
+    "bytes": 696
+  },
+  "/tmp/story49-hosted-20261026T215001Z/artifacts/12693567134/original-artifact.zip": {
+    "sha256": "0dcbd6ac49bda95a029551bfcf1af09255b42f6cce58997d28c3ab1dbfcbaec7",
+    "bytes": 1061032
+  },
+  "/tmp/story49-hosted-20261026T215001Z/audit-case-correction.json": {
+    "sha256": "918e005665ecf12db6945d805211352e320370c9ab5f4eb6037c9caa55022428",
+    "bytes": 608
+  },
+  "/tmp/story49-hosted-20261026T215001Z/audit-hosted-initial.py": {
+    "sha256": "322731c3d65933680a6b292bd28730a774ebd13ef7012239445d107038ace07b",
+    "bytes": 8517
+  },
+  "/tmp/story49-hosted-20261026T215001Z/audit-hosted.log": {
+    "sha256": "10e0f39edaf037849c50a2198eb97f368a1f461d033adb0c83076e98971415de",
+    "bytes": 2484
+  },
+  "/tmp/story49-hosted-20261026T215001Z/audit-hosted.py": {
+    "sha256": "36710319daa3431dab2a5192733cd4586d18450cfa03a25a5648ec9d6bc8fd07",
+    "bytes": 8581
+  },
+  "/tmp/story49-hosted-20261026T215001Z/build-packet.py": {
+    "sha256": "55a1e33fb3592331c31e83c8705b1b1bc84e55dd0aeb0950809e0f778ed5628e",
+    "bytes": 7121
+  },
+  "/tmp/story49-hosted-20261026T215001Z/ci-jobs-initial.json": {
+    "sha256": "bfed4543137d02b2e63b68e94ee201cf89ab215e18039370572ee711554f9013",
+    "bytes": 12198
+  },
+  "/tmp/story49-hosted-20261026T215001Z/ci-run-initial.json": {
+    "sha256": "52d3c9f32705eea8cd37909f70db8a052cb024ae786e8a5d2a59f824fe07fac8",
+    "bytes": 12836
+  },
+  "/tmp/story49-hosted-20261026T215001Z/codeql-run-initial.json": {
+    "sha256": "adf8a3c366ee52c74dda8dd10895f05045ff39fe71336d21d7edef7374d7cd4b",
+    "bytes": 12841
+  },
+  "/tmp/story49-hosted-20261026T215001Z/commands.json": {
+    "sha256": "64a7878c28ad1558052bb8d64c9948b83aa3bd12f685327af7faedc306ce7199",
+    "bytes": 632
+  },
+  "/tmp/story49-hosted-20261026T215001Z/commitlint-run-initial.json": {
+    "sha256": "ea172834d7f7f34bbc73fe3b12a84120070480cb4db4738b78355d436a62968f",
+    "bytes": 12856
+  },
+  "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846268.log": {
+    "sha256": "8465aa2976b99369013506938691a14385f4065f3d945005cd9fa0d08c61dd62",
+    "bytes": 24785
+  },
+  "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846553.log": {
+    "sha256": "5ae1fdfa46a1ae9b40131232f5793c3c16aca26baf7e0f59929e069b1a41539e",
+    "bytes": 41312
+  },
+  "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846664.log": {
+    "sha256": "b7ccee178bc8fe1e04bc235121198f2454fd768564a64bb1a867c31b77deaf17",
+    "bytes": 17725
+  },
+  "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867993958.log": {
+    "sha256": "9b16f39f2ca1a251c1a96f11355b8076e929c97941b759e2eb2e703e76aedcd6",
+    "bytes": 79407
+  },
+  "/tmp/story49-hosted-20261026T215001Z/download-artifact.py": {
+    "sha256": "58e0f01e4d3ed663f5e121add1bb626ebb68d930f72b37ae9b1374d77dee550a",
+    "bytes": 2272
+  },
+  "/tmp/story49-hosted-20261026T215001Z/download-run-logs.py": {
+    "sha256": "2855ff8d96bc4d2c0874ceb0d9e164a360594171032939c5ef995dc1a2374347",
+    "bytes": 1830
+  },
+  "/tmp/story49-hosted-20261026T215001Z/hosted-acceptance.json": {
+    "sha256": "56289baa7973a3afdcab70735eff0b85fe8a95dfc0fd4a5d276ff79dbd6f00ad",
+    "bytes": 5402
+  },
+  "/tmp/story49-hosted-20261026T215001Z/hosted-build-summary.json": {
+    "sha256": "b7d10b8e259385e6626d224c6867c86fac98303bd35f0d33236057841ede4722",
+    "bytes": 1236
+  },
+  "/tmp/story49-hosted-20261026T215001Z/latest.json": {
+    "sha256": "cfb705eb08797c7e70c4aa6db6bc7805cdc927c0eb4bbc019c835c3513eb5d47",
+    "bytes": 1801
+  },
+  "/tmp/story49-hosted-20261026T215001Z/log-download-commands.json": {
+    "sha256": "f87351583fd5977bfb2e7b788e6c85efb8d0d1d697a769fca15e2d93578ace72",
+    "bytes": 1271
+  },
+  "/tmp/story49-hosted-20261026T215001Z/monitor-driver.log": {
+    "sha256": "b2204cf5d91967d014a20a54dadcb3bc3ca6df8beadc7f4ca7aaed1e042ab68b",
+    "bytes": 2694
+  },
+  "/tmp/story49-hosted-20261026T215001Z/monitor.py": {
+    "sha256": "5ca2755226ba24d3a3be7546d9f8b48bdbd21916349ed961d616ad2b33a6dd60",
+    "bytes": 725
+  },
+  "/tmp/story49-hosted-20261026T215001Z/native-command-log-integrity.json": {
+    "sha256": "d79a6be0b0cf4970b31b189f5b2934af6cf97674e599da2b57bb3f507180581c",
+    "bytes": 1966
+  },
+  "/tmp/story49-hosted-20261026T215001Z/ordinary-summary.json": {
+    "sha256": "19603a833fc6c6b9056a3a2a815eef9598432d3450a40edb1ddcd4ebd41b1cf2",
+    "bytes": 3960
+  },
+  "/tmp/story49-hosted-20261026T215001Z/parity-log-availability.json": {
+    "sha256": "2df0b14f4bcc0843536caa41f945ef6ccd0029947a041a4f2cf0c99367f1e3f2",
+    "bytes": 218
+  },
+  "/tmp/story49-hosted-20261026T215001Z/poll.py": {
+    "sha256": "bb52db23889161113af9b005e4eddc06e34894f091af6bd86d8726a09918e733",
+    "bytes": 1494
+  },
+  "/tmp/story49-hosted-20261026T215001Z/polls/20261026T222416Z/ci-artifacts.json": {
+    "sha256": "c1c9dcbb3db73f014b3d33c2941f2e97a8206f10cb172cc30584873b49b2f255",
+    "bytes": 1424
+  },
+  "/tmp/story49-hosted-20261026T215001Z/polls/20261026T222416Z/ci-jobs.json": {
+    "sha256": "f5a121338ec895ea9e954bb7ed8d6d89f9cc3374aa18c79ca0c4095dc1c8d185",
+    "bytes": 15011
+  },
+  "/tmp/story49-hosted-20261026T215001Z/polls/20261026T222416Z/ci-run.json": {
+    "sha256": "32994523e20db6d221bd90f72b5604a3e353e398bf56a86f6664e9f053fa9a0f",
+    "bytes": 12839
+  },
+  "/tmp/story49-hosted-20261026T215001Z/polls/20261026T222416Z/codeql-run.json": {
+    "sha256": "1bb2aa31c9255e4f0536c2b49b778d5440e666d50f2ab8d3bcd3866ec844c098",
+    "bytes": 12844
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181557/download-and-extraction.json": {
+    "sha256": "a949932139723b0f61135cac2c619167547d7b578b12771604ffd734233909bd",
+    "bytes": 2265
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181557/original-logs.zip": {
+    "sha256": "67db4145885c607fceba5a2f17b5b5d39082173c6def9dc0f4bf6a38bfaea5b4",
+    "bytes": 15655
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181557/run.json": {
+    "sha256": "ea172834d7f7f34bbc73fe3b12a84120070480cb4db4738b78355d436a62968f",
+    "bytes": 12856
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181599/download-and-extraction.json": {
+    "sha256": "e4676066b20e903e14ce975c966b0f4688870a3f6bf2c99a2fe35045d5780bca",
+    "bytes": 1983
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181599/original-logs.zip": {
+    "sha256": "d0f4a9cf9377375d78d98514c4709ade7cebb58620052d4d229aa6901117a6a0",
+    "bytes": 103813
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181599/run.json": {
+    "sha256": "1bb2aa31c9255e4f0536c2b49b778d5440e666d50f2ab8d3bcd3866ec844c098",
+    "bytes": 12844
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181685/download-and-extraction.json": {
+    "sha256": "5fe1684310ff729061983df5aa7450bc4e57e6e1e179e5f226b303d9af1e741b",
+    "bytes": 10273
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181685/original-logs.zip": {
+    "sha256": "072ce877caaaec5d03c7cba290f6c9c6b52b9f0ec10e25f9eece00056d7afb7b",
+    "bytes": 90885
+  },
+  "/tmp/story49-hosted-20261026T215001Z/run-logs/40407181685/run.json": {
+    "sha256": "32994523e20db6d221bd90f72b5604a3e353e398bf56a86f6664e9f053fa9a0f",
+    "bytes": 12839
+  },
+  "/tmp/story49-hosted-20261026T215001Z/status-events.jsonl": {
+    "sha256": "1eccd11b913eae56d61ec0f6d28de8f18939ca50133dd607bafc8a71de27b613",
+    "bytes": 2694
+  },
+  "/tmp/story49-hosted-parent-audit-initial-roots.json": {
+    "sha256": "b372f2ef6d6daa2f1fd27b07e890079b14a1bd11e6fa1610a975153951afc289",
+    "bytes": 12546
+  },
+  "/tmp/story49-hosted-parent-audit.json": {
+    "sha256": "cb7cb8c4c1d38120fcbbd37829f5726ff7f7abb65feb3a4fa7ef1cd3352ac1b7",
+    "bytes": 1060
+  },
+  "/tmp/story49-matrix-parent-audit.json": {
+    "sha256": "b02c915695d09c2b4a0aac67656837bdbbd9055206223575de5236f4b996bfa9",
+    "bytes": 12488
+  },
+  "/tmp/story49-matrix-parent-audit.py": {
+    "sha256": "2008456c2b5d8338dcd6b712208087dff4446f49c90e1396317290364d84859d",
+    "bytes": 5608
+  },
+  "/tmp/story49-publication-record.json": {
+    "sha256": "a8812daf0c3836992a66d9e3fc9e7af099a12b1a1af58b3998654bbab19ec6bd",
+    "bytes": 2512
+  }
+}

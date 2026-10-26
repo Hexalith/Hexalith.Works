@@ -1,0 +1,25 @@
+{
+  "scope": "adapter native smoke only; no full qualification",
+  "startedAt": "2026-10-26T20:50:11.924252+00:00",
+  "command": [
+    "/tmp/story49-final-20261026T195205Z/full1/gate/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+    "-noLogo",
+    "-explicit",
+    "on",
+    "-class",
+    "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests",
+    "-result-xml",
+    "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-1/result.xml"
+  ],
+  "cwd": "/tmp/story49-final-20261026T195205Z/works",
+  "timeoutSeconds": 1800,
+  "startupBudgetSeconds": 180,
+  "sourceRuntimeArchiveClosureBefore": true,
+  "runtimeFiles": 907,
+  "pathPrefix": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/bin",
+  "remainingPathUnchanged": true,
+  "originalPathSha256": "8834f5fb3c1da4635296ec66e3c7a2f9652e46f96390d1c9bc92da6f6bea4454",
+  "scopeSha256": "1c3e6b5b80ea2974d73d4111abcd3a93d118a04158696d226fe6a5f3fcea519e",
+  "adapterSha256": "430b01a3dee0087b945ee9529b78e76e98aa70abc334a3beab9104814582f9ae",
+  "shimSha256": "01f5277ee6960bb744e9cadf1e8a2a21967b910737498ad0f5379b279fef6d7b"
+}

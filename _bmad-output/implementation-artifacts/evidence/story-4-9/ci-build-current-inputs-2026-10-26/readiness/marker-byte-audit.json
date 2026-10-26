@@ -1,0 +1,35 @@
+{
+  "scope": "current-workspace marker metadata only; outside eight-overlay frozen scope",
+  "observedAtUtc": "2026-10-26T18:14:18.292611+00:00",
+  "worksCommit": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+  "eventStoreGitlink": "7af8a2a74dff103f286abad144e4959e3e30b902",
+  "consumedEventStore": "7af8a2a74dff103f286abad144e4959e3e30b902",
+  "files": [
+    {
+      "path": "docs/eventstore-api-surface-constraints.md",
+      "oldRevision": "c5d1c280d8c1c1a207cd159d817f614e93c93130",
+      "newRevision": "7af8a2a74dff103f286abad144e4959e3e30b902",
+      "beforeSha256": "fb602dbcd536596cca3dce1d30cfb1ce25e91e7e52fbfceaa514f6467182c53d",
+      "afterSha256": "70be6d50dada8b288484f739f438dcdfc3306ac1c9f04f3a54e05f4b0b12a50c",
+      "byteLength": 40427,
+      "replacementStart": 72,
+      "replacementLength": 40,
+      "allOtherBytesEqual": true,
+      "beforeCRLF": 352,
+      "afterCRLF": 352
+    },
+    {
+      "path": "docs/boundary-decision-record.md",
+      "oldRevision": "c5d1c280d8c1c1a207cd159d817f614e93c93130",
+      "newRevision": "7af8a2a74dff103f286abad144e4959e3e30b902",
+      "beforeSha256": "7e1f10be86cc96cb9cec5b8f12ba5be57c6440eb7c7b8bb075d19d2f2caad4b8",
+      "afterSha256": "24b09a2dae99a3fcf818af3f57b27f4ba13009e555a8bcd9edeb16b84fcbf8a7",
+      "byteLength": 47206,
+      "replacementStart": 66,
+      "replacementLength": 40,
+      "allOtherBytesEqual": true,
+      "beforeCRLF": 0,
+      "afterCRLF": 0
+    }
+  ]
+}

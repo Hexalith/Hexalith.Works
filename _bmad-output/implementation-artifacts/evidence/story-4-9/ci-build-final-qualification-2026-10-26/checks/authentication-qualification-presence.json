@@ -1,0 +1,9 @@
+{
+  "officialProducerMatches": true,
+  "officialQualification": "official-commit-tree-and-exact-git-blob-identities",
+  "repositoryCommit": "c5d1c280d8c1c1a207cd159d817f614e93c93130",
+  "checkoutCommit": null,
+  "runtimeLedgerContainsGithubTokenKey": false,
+  "topLevelAuthenticationPresent": true,
+  "credentialValueRecorded": false
+}

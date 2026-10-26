@@ -1,0 +1,72 @@
+{
+  "status": "failed",
+  "errors": [
+    "matrix hosted fact Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ReviewControlMissingHostedMethod: Missing"
+  ],
+  "ciRun": 40407181685,
+  "rootCommit": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+  "profile": "ci Release-only",
+  "canonicalFacts": 459,
+  "xml": {
+    "platform-release.xml": 144,
+    "works-consumer-supporting.xml": 306,
+    "retained-preflight.xml": 1,
+    "platform-recovery.xml": 4,
+    "platform-historical.xml": 1,
+    "platform-ha.xml": 1,
+    "platform-mtls.xml": 1,
+    "platform-projection.xml": 1
+  },
+  "rows": 11,
+  "proofs": 44,
+  "phases": 32,
+  "fleetStarts": 11,
+  "rollbackComplete": true,
+  "sourceEquivalence": {
+    "Works": 425,
+    "Platform": 1083,
+    "fixtureSources": 194,
+    "platformConsumerSources": 567,
+    "verifierHelpers": 25,
+    "normalizedLinkedFixtures": 84
+  },
+  "frozenMatrixRows": 4,
+  "manifestEntries": 102,
+  "nativeBindings": 101,
+  "manifestSha256": "bc0601d6594a1409d21f22921a43f1a286d9c8e5ca6d3d95d4f3f4dd95c4aa8f",
+  "verifiedEvaluatorAndHelpers": {
+    "verify_works_producer.py": "469cdda858d75b26c02db8112642186edd078fe601e2e05904a44fe46fcc7ed4",
+    "works_toolchain.py": "8cd197b8b0dab73c493438ac3c1fc246bfee31c6eba6bde815bc6bdbb1b44561",
+    "test_works_toolchain.py": "642def0f8762282dc17252766b9e303d014370a21938dd63b1b9287131d8ae99",
+    "test_verify_works_host.py": "b3f8b31583b1e8c3ff0a409774fe9eab33b6dd86b07ebf3520d0b1a00974776e",
+    "test_verify_works_producer.py": "04c6a680b26ba79348bc84bb09d8b2724b07118dd38b7fa52b405708fd5df65a",
+    "isolated_daprd.py": "4a9d9a3eef2a4a2a740794eb96adf31a550a51d8e9409eceefb0492a27867a37",
+    "test_isolated_daprd.py": "eab53f866713df356b667d81c53992aad0c70f8aa9cb7182c515fe48de04f470",
+    "retained_works_host.py": "e7a4894ef625f4c9921b35931dd3dc9f658e6d5e7883be370507585124c356d6",
+    "test_retained_works_host.py": "d09b1a5078cb6db4c6af7d881c0146bb64faa39637830b5e707e045708dbb917",
+    "retained-works-host/manifest.json": "b8cbf1bb6490b6fc6bb8ad7aa12842c202fb95a9877afd7a0a5fa1caf79caca8",
+    "retained-works-host/works-source.tar.gz": "5ce3247ded7ab59ff70d5b25896fed1826b8d78b0728a2d1a4c1f2dceb7ae696",
+    "works_host_snapshot.py": "41c1b7584e3d799fb6091bbfb1c48eee875c75faccb483b913880af2292885f7",
+    "test_works_host_snapshot.py": "f5b2d4b829fe2e57c0977d315e79e223975eb75504964854e225b6568004ed29",
+    "verify-agents-host.sh": "64355c776175336239ad20e35eadf9090828addc7b4c6cb246623e75146cc15b",
+    "verify-platform-pins.py": "a3fa1b991e18aa736df8e329ec4a356e1cdd038fdeac778136d07b1d85709234",
+    "test_verify_platform_pins.py": "330856f62f27c3c0b53a20a33b100c110f7309ec4311f2f5f69a166efad645a3",
+    "test_local_dapr_security_cleanup.py": "d48e549bafec659f4f79d89f2d7e99e4c3fc1ffcdf3014cd403ad1de7bb5f719",
+    "test-local-dapr-security.py": "434523bea69da5b2bd25f9fcb0952e5a30b1e24c0d20b539901dae18e809d316",
+    "ext-host-1/verify_full.py": "f48a83723798d4a5f883529e4cb333afae8ef8e603bc80aa5a1d2eaa8ef74308",
+    "ext-host-1/prepare_acceptance.py": "a072fb0a7b772d5503a793c002b87ecf35252c1aa8cd576909dec87a47d5deef",
+    "ext-host-1/test_verify_full.py": "23fd917024a928367307b315688ca435faa2403f8cbfeba0e1586122f579bf47",
+    "ext-host-1/test_prepare_acceptance.py": "358e8112d56e3137e0cf1ccc8f7a213c994d8453651c142ce118831ad419914c",
+    "works_verifier_command.py": "5899c67727d69189d81f457267815b4dc6593508932804123f8ab40019f39e16",
+    "test_works_verifier_command.py": "ce34ca9a038e3deb2aad4dd493b2c6b1c2f5abcc971142d6d46c52b51ae2b4c0",
+    "test_works_verifier_inputs.py": "605cfe68bfd16c845ecec8fa08aa108eb6aead8523dff9a83350c025fad6bbcd",
+    "verify_works_host.py": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce"
+  },
+  "verifiedOriginalZips": {
+    "12693567134": "0dcbd6ac49bda95a029551bfcf1af09255b42f6cce58997d28c3ab1dbfcbaec7",
+    "12691976576": "d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17"
+  },
+  "consumedLedgerSha256": "5773e6839575efe514208b1b93affd91ba9d06a50b47c1d5d2e2186dbb0a5e57",
+  "extractedBytesBoundDirectlyToOriginalZips": true,
+  "limit": "CI binaries are bound by executed owning final closure and uploaded inventory/start records; they are not uploaded for local rehash."
+}

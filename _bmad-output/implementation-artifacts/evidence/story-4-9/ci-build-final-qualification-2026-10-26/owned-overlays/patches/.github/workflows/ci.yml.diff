@@ -1,0 +1,11 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -65,6 +65,8 @@
+           version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
+           runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
+       - name: Run complete canonical Platform gate
++        env:
++          GITHUB_TOKEN: ${{ github.token }}
+         run: bash scripts/verify-platform-parity-ci.sh --artifacts-path "$RUNNER_TEMP/works-platform-parity"
+       - name: Preserve parity results
+         if: always()

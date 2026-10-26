@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-26T23:18:55.929420+00:00",
+  "status": "passed",
+  "sealedPackets": {
+    "ci-build-corrections-2026-10-26": {
+      "files": 84,
+      "manifestSha256": "9a360960445f889ba9644eb251795eaf7daaf8e39ac6004959343f8e0496e41e"
+    },
+    "ci-build-current-inputs-2026-10-26": {
+      "files": 105,
+      "manifestSha256": "1bd1fd2e35ed6e4f21e57ee5342e17f30bad2cf5190ea2f1c9bd38bfc18ee9a3"
+    },
+    "ci-build-focused-restart-diagnostic-2026-10-26": {
+      "files": 44,
+      "manifestSha256": "2aae6aeab4b4c774c2a0a8fa88b73f73d24b7cd4fb52f79b4bcfcdadee27d476"
+    },
+    "ci-build-hosted-fixes-2026-10-26": {
+      "files": 22,
+      "manifestSha256": "51f59de80aba6917fd26c411843d6d9cecdd80ca5204428dc414aa19965bfe6e"
+    },
+    "ci-build-final-qualification-2026-10-26": {
+      "files": 136,
+      "manifestSha256": "26ac0a57d0d82038e952d65cfa8587dc7d66b85206991b6ac16c8e3fff42dbfb"
+    },
+    "ci-build-four-fact-recovery-diagnostic-2026-10-26": {
+      "files": 43,
+      "manifestSha256": "4bb1b8ae91aad6a19c1e73ad302a0dd27d780d068db96c4b97899a83b2d9a724"
+    },
+    "ci-build-cp-health-environment-2026-10-26": {
+      "files": 170,
+      "manifestSha256": "18cc2f7a5d21dff259158a95c77ee2d98083def39cd6e7066a4695e27e6d5631"
+    },
+    "ci-build-final-full2-2026-10-26": {
+      "files": 95,
+      "manifestSha256": "b97c38b5cd66e466db99265b04d77aa0528c18b067e9ad70d522262b8e9747d9"
+    },
+    "ci-build-hosted-qualification-2026-10-26": {
+      "files": 102,
+      "manifestSha256": "bc0601d6594a1409d21f22921a43f1a286d9c8e5ca6d3d95d4f3f4dd95c4aa8f"
+    },
+    "ci-build-parent-acceptance-2026-10-26": {
+      "files": 9,
+      "manifestSha256": "e6a7bb279610ea3737894ccbce7c55f8364c8505a6d204bef9d00c78156dd3bf"
+    }
+  },
+  "storedFiles": 810,
+  "decodedNativeBindings": 771,
+  "selectedSealedAndNativeFilesPreserved": 224,
+  "successorFiles": 22,
+  "successorManifestSha256": "a98b9e5aedbe1afd6a3e2d598511d164925809d0398fc665c3b155bc35f186fc",
+  "tests": {
+    "normal": 24,
+    "optimized": 24,
+    "bothExitCode": 0
+  },
+  "positiveReplay": "passed",
+  "negativeReplay": {
+    "exitCode": 1,
+    "status": "failed",
+    "injectedResult": [
+      {
+        "xml": null,
+        "result": "Missing"
+      }
+    ]
+  },
+  "derivedSummary": "passed",
+  "replayOutputs": "/tmp/story49-review-parent-acceptance-20261027",
+  "errors": []
+}

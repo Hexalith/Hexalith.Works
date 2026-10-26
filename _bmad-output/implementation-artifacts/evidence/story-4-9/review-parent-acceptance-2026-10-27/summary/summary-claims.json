@@ -1,0 +1,88 @@
+{
+  "status": "passed",
+  "runs": {
+    "CI": {
+      "id": 40407181685,
+      "head_sha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "Commitlint": {
+      "id": 40407181557,
+      "head_sha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "CodeQL": {
+      "id": 40407181599,
+      "head_sha": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  },
+  "requiredJobs": {
+    "Lint release tooling": "success",
+    "Platform R1\u2013R11 parity and rollback": "success",
+    "Platform-owned Works proof toolchain": "success",
+    "ci / build-and-test": "success"
+  },
+  "otherJobs": {
+    "ci / performance-tests": "skipped",
+    "ci / aspire-tests": "skipped"
+  },
+  "canonicalFacts": 459,
+  "rows": 11,
+  "proofs": 44,
+  "rollbackComplete": true,
+  "ordinary": {
+    "UnitTests": {
+      "passed": 597,
+      "notRunnable": 0,
+      "total": 597
+    },
+    "ArchitectureTests": {
+      "passed": 398,
+      "notRunnable": 0,
+      "total": 398
+    },
+    "PropertyTests": {
+      "passed": 3,
+      "notRunnable": 0,
+      "total": 3
+    },
+    "IntegrationTests": {
+      "passed": 1023,
+      "notRunnable": 7,
+      "total": 1030
+    }
+  },
+  "ordinaryExclusionsExecutedCanonically": [
+    "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness",
+    "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+    "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+    "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+    "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+  ],
+  "build": {
+    "successfulSummaries": 6,
+    "warnings": 0,
+    "errors": 0,
+    "compileOutputCounts": {
+      "Hexalith.Platform.Custody": 1,
+      "Hexalith.Platform.Works.Runtime": 1,
+      "Hexalith.Builds.Tooling": 1
+    },
+    "copyCollisionCodePresent": false
+  },
+  "support": {
+    "acceptanceSha256": "1ad9a32371accb917791cb836f81d3b375bf72ed71fca38c48e2f0db5ebd4068",
+    "originalArtifactZips": {
+      "12693567134": "0dcbd6ac49bda95a029551bfcf1af09255b42f6cce58997d28c3ab1dbfcbaec7",
+      "12691976576": "d59b453016ad2e8df7b1a0b39405534f1c75c27882168181dfe6d564633a3a17"
+    },
+    "originalCiLogsZip": "072ce877caaaec5d03c7cba290f6c9c6b52b9f0ec10e25f9eece00056d7afb7b",
+    "nativeResponsesBoundToSealedHostedPacket": true
+  }
+}

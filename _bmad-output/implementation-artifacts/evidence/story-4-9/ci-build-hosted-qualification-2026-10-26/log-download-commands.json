@@ -1,0 +1,42 @@
+[
+  {
+    "command": [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/jobs/121867846664/logs"
+    ],
+    "exitCode": 0,
+    "output": "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846664.log",
+    "sha256": "b7ccee178bc8fe1e04bc235121198f2454fd768564a64bb1a867c31b77deaf17"
+  },
+  {
+    "command": [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/jobs/121867846553/logs"
+    ],
+    "exitCode": 0,
+    "output": "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846553.log",
+    "sha256": "5ae1fdfa46a1ae9b40131232f5793c3c16aca26baf7e0f59929e069b1a41539e"
+  },
+  {
+    "command": [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/jobs/121867993958/logs"
+    ],
+    "exitCode": 0,
+    "output": "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867993958.log",
+    "sha256": "9b16f39f2ca1a251c1a96f11355b8076e929c97941b759e2eb2e703e76aedcd6"
+  },
+  {
+    "command": [
+      "gh",
+      "api",
+      "repos/Hexalith/Hexalith.Works/actions/jobs/121867846268/logs"
+    ],
+    "exitCode": 0,
+    "output": "/tmp/story49-hosted-20261026T215001Z/completed-job-logs/121867846268.log",
+    "sha256": "8465aa2976b99369013506938691a14385f4065f3d945005cd9fa0d08c61dd62"
+  }
+]

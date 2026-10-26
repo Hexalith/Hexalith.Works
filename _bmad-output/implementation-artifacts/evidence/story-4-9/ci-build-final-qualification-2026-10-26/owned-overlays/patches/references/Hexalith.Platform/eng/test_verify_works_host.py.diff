@@ -1,0 +1,35 @@
+--- a/references/Hexalith.Platform/eng/test_verify_works_host.py
++++ b/references/Hexalith.Platform/eng/test_verify_works_host.py
+@@ -289,7 +289,7 @@
+                 self.assertIn('-p:UseHexalithProjectReferences=false', entry['command'])
+                 self.assertIn('-p:UseNuGetDeps=true', entry['command'])
+ 
+-    def run_until_live_lanes(self, runtime_bytes, isolated_hash=None, finish=False, final_error=None):
++    def run_until_live_lanes(self, runtime_bytes, isolated_hash=None, finish=False, final_error=None, observed_runtime_envs=None):
+         """Drive the real gate sequence through toolchain qualification and optionally final acceptance."""
+         works = self.directory()
+         for _, _, _, consumer in ROWS.values():
+@@ -310,6 +310,8 @@
+ 
+         def command(arguments, **kwargs):
+             name = Path(kwargs['stdout'].name).stem
++            if observed_runtime_envs is not None and verify_works_host.target_commands([{'name': name}]):
++                observed_runtime_envs.append(kwargs['env'])
+             if verify_works_host.target_commands([{'name': name}]) and not finish:
+                 raise RuntimeError('stopped at live lane ' + name)
+             if name == 'works-consumer-release':
+@@ -373,6 +375,14 @@
+                          'public NuGet ' + VERSION + ' consumer graph plus explicitly named test-only '
+                          'Platform.Identity, Platform.Composition, conditional Platform.Works.Runtime '
+                          'and linked Parties authority/query source')
++
++    def test_source_fetch_token_is_not_inherited_by_the_live_runtime(self):
++        observed = []
++        with patch.dict(os.environ, {'GITHUB_TOKEN': 'synthetic-source-fetch-token'}):
++            self.run_until_live_lanes(b'qualified runtime', observed_runtime_envs=observed)
++        self.assertTrue(observed)
++        for environment in observed:
++            self.assertFalse('GITHUB_TOKEN' in environment)
+ 
+     def test_complete_pipeline_checks_final_inputs_before_accepting_persisted_evidence(self):
+         ledger, _, _ = self.run_until_live_lanes(b'qualified runtime', finish=True)

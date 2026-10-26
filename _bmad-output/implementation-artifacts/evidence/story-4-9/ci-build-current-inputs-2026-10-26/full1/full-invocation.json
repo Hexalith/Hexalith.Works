@@ -1,0 +1,25 @@
+{
+  "command": [
+    "bash",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/workspace/platform/eng/verify-works-host.sh",
+    "--profile",
+    "full",
+    "--works-root",
+    "/tmp/story49-group2-current-20261026T182217Z/works",
+    "--runtime-sdk-root",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/workspace/Hexalith.EventStore",
+    "--platform-source-binding",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/platform-source-binding.json",
+    "--artifacts-path",
+    "/tmp/story49-group2-current-20261026T182217Z/full1/gate"
+  ],
+  "environmentPins": {
+    "HexalithBuildsRoot": "/tmp/story49-group2-current-20261026T182217Z/works/references/Hexalith.Builds",
+    "HexalithEventStoreRoot": "/tmp/story49-group2-current-20261026T182217Z/full1/workspace/Hexalith.EventStore",
+    "HexalithCommonsRoot": "/tmp/story49-group2-current-20261026T182217Z/works/references/Hexalith.Commons",
+    "HexalithPartiesRoot": "/tmp/story49-group2-current-20261026T182217Z/works/references/Hexalith.Parties",
+    "HexalithTenantsRoot": "/tmp/story49-group2-current-20261026T182217Z/works/references/Hexalith.Tenants",
+    "HexalithPolymorphicSerializationsRoot": "/tmp/story49-group2-current-20261026T182217Z/works/references/Hexalith.PolymorphicSerializations",
+    "DOTNET_USE_POLLING_FILE_WATCHER": "1"
+  }
+}

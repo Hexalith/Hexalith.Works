@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "errors": [],
+  "ciRun": 40407181685,
+  "rootCommit": "09cc8e19c23ec15a0542499892bbf5cd4b8f38dd",
+  "profile": "ci Release-only",
+  "canonicalFacts": 459,
+  "xml": {
+    "platform-release.xml": 144,
+    "works-consumer-supporting.xml": 306,
+    "retained-preflight.xml": 1,
+    "platform-recovery.xml": 4,
+    "platform-historical.xml": 1,
+    "platform-ha.xml": 1,
+    "platform-mtls.xml": 1,
+    "platform-projection.xml": 1
+  },
+  "rows": 11,
+  "proofs": 44,
+  "phases": 32,
+  "fleetStarts": 11,
+  "rollbackComplete": true,
+  "sourceEquivalence": {
+    "Works": 425,
+    "Platform": 1083,
+    "fixtureSources": 194,
+    "platformConsumerSources": 567,
+    "verifierHelpers": 25,
+    "normalizedLinkedFixtures": 84
+  },
+  "frozenMatrixRows": 4,
+  "manifestEntries": 102,
+  "nativeBindings": 101,
+  "manifestSha256": "bc0601d6594a1409d21f22921a43f1a286d9c8e5ca6d3d95d4f3f4dd95c4aa8f",
+  "limit": "CI binaries are bound by executed owning final closure and uploaded inventory/start records; they are not uploaded for local rehash."
+}

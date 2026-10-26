@@ -1,0 +1,30 @@
+{
+  "daprio/sentry:1.18.7": {
+    "id": "sha256:4aacb3ca515ee6208dbafb2b44ebd9d9cdf216e390aa459543787624058c0d80",
+    "entrypoint": null,
+    "cmd": null,
+    "repoDigests": [
+      "daprio/sentry@sha256:4aacb3ca515ee6208dbafb2b44ebd9d9cdf216e390aa459543787624058c0d80"
+    ]
+  },
+  "daprio/dapr:1.18.7": {
+    "id": "sha256:0ac4fadf0016be85065cdebab952a8350e468cf9283d26777b0307a14a10aecc",
+    "entrypoint": null,
+    "cmd": null,
+    "repoDigests": [
+      "daprio/dapr@sha256:0ac4fadf0016be85065cdebab952a8350e468cf9283d26777b0307a14a10aecc"
+    ]
+  },
+  "daprio/sentry:1.18.3": {
+    "id": "sha256:3ce98d3a37a46ef02916fc4ab6b2e61c468c89a222637c5cef668350b38a8244",
+    "repoDigests": [
+      "daprio/sentry@sha256:3ce98d3a37a46ef02916fc4ab6b2e61c468c89a222637c5cef668350b38a8244"
+    ]
+  },
+  "daprio/dapr:1.18.3": {
+    "id": "sha256:9927721e00dada7d5d44a66c8976363e770df39797cbdb06aee1cadd9cebc1a9",
+    "repoDigests": [
+      "daprio/dapr@sha256:9927721e00dada7d5d44a66c8976363e770df39797cbdb06aee1cadd9cebc1a9"
+    ]
+  }
+}

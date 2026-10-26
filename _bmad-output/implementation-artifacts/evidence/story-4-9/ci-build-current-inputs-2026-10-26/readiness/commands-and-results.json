@@ -1,0 +1,33 @@
+{
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "scope": "current workspace readiness only; separate from both full snapshots",
+  "commands": [
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -noLogo -method \"*P0_CurrentSourceRevisionMarkersMatchGitlinkAndConsumedCheckout\" -result-xml /tmp/story49-group2-20261026T173247Z/current-workspace/marker-green.xml",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet restore Hexalith.Works.slnx -p:Configuration=Release -m:1 -v:minimal",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m -v:minimal",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -noLogo -result-xml /tmp/story49-group2-20261026T173247Z/current-workspace/architecture-release.xml",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet restore Hexalith.Works.slnx -p:Configuration=Release --force -m:1 -v:minimal",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -noLogo -result-xml /tmp/story49-group2-20261026T173247Z/current-workspace/architecture-release-after-force.xml"
+  ],
+  "parallelBuild": {
+    "passed": true,
+    "warnings": 0,
+    "errors": 0,
+    "elapsed": "00:01:21.67"
+  },
+  "markerGuard": {
+    "passed": 1
+  },
+  "firstArchitecture": {
+    "passed": 397,
+    "failed": 1,
+    "reason": "unchanged cached assets older than catalog input"
+  },
+  "finalArchitecture": {
+    "passed": 398,
+    "failed": 0,
+    "skipped": 0,
+    "notRun": 0
+  },
+  "architectureDllObservedAfterSha256": "4961ba3296ad2f5a05ff348746463fb10749c3f4fc7562381556044be024afe3"
+}

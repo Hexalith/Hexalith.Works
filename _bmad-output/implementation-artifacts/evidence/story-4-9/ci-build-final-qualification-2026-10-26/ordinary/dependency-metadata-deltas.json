@@ -1,0 +1,23 @@
+[
+  {
+    "project": "Hexalith.Works.UnitTests",
+    "path": "Hexalith.Works.UnitTests.deps.json",
+    "beforeSha256": "7fa04e7a02453b9622119a2394567511e326e1c448129dd21a3ba7ee31ede018",
+    "afterSha256": "7a8882cb7a8b4b4ddedc83d3e36a0e46ecae3e9dc5451ba4184c56c76f7e483b",
+    "diff": "ordinary/Hexalith.Works.UnitTests-Hexalith.Works.UnitTests.deps.json.diff"
+  },
+  {
+    "project": "Hexalith.Works.PropertyTests",
+    "path": "Hexalith.Works.PropertyTests.deps.json",
+    "beforeSha256": "e8b326d85dd9cc4ef03d8896bc13d637bcb092c6985808751a7aa52d57f58249",
+    "afterSha256": "a4af4cc63ecca7b048ac6ca645e647fb53729dc31a5dc16be2e90abec6010e46",
+    "diff": "ordinary/Hexalith.Works.PropertyTests-Hexalith.Works.PropertyTests.deps.json.diff"
+  },
+  {
+    "project": "Hexalith.Works.IntegrationTests",
+    "path": "Hexalith.Works.deps.json",
+    "beforeSha256": "6264614d9ce49de1518b1bdf9b29ba48eb298ecf91ce56d35fe1638709f4e640",
+    "afterSha256": "48b3d986b3747e46a4ed3c89efccfa498ed4f74b27fe973aa040f50d1889bc45",
+    "diff": "ordinary/Hexalith.Works.IntegrationTests-Hexalith.Works.deps.json.diff"
+  }
+]

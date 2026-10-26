@@ -1,0 +1,158 @@
+{
+  "purpose": "temporary child-scoped CP health port experiment; product source/deadlines/assertions unchanged",
+  "ownerPid": 67399,
+  "ownerStartTicks": "20668848",
+  "createdAtEpoch": 1793048330.029923,
+  "realDocker": "/usr/bin/docker",
+  "realDockerSha256": "6f7a95d27f98fc8c5f6b220898988bf8f61dd9b040936797917cbdc72c6cabe6",
+  "images": {
+    "daprio/sentry:1.18.7": "sha256:4aacb3ca515ee6208dbafb2b44ebd9d9cdf216e390aa459543787624058c0d80",
+    "daprio/dapr:1.18.7": "sha256:0ac4fadf0016be85065cdebab952a8350e468cf9283d26777b0307a14a10aecc",
+    "daprio/sentry:1.18.3": "sha256:3ce98d3a37a46ef02916fc4ab6b2e61c468c89a222637c5cef668350b38a8244",
+    "daprio/dapr:1.18.3": "sha256:9927721e00dada7d5d44a66c8976363e770df39797cbdb06aee1cadd9cebc1a9"
+  },
+  "sentryConfigRoots": [
+    "/tmp/story49-final-20261026T195205Z/full1/workspace/platform/DaprComponents",
+    "/tmp/story49-final-20261026T195205Z/full1/gate/retained-works-source"
+  ],
+  "portRange": [
+    20000,
+    32767
+  ],
+  "windowsExcludedRanges": [
+    [
+      5357,
+      5357
+    ],
+    [
+      27339,
+      27339
+    ],
+    [
+      49694,
+      49793
+    ],
+    [
+      49794,
+      49893
+    ],
+    [
+      49894,
+      49993
+    ],
+    [
+      50000,
+      50059
+    ],
+    [
+      50080,
+      50080
+    ],
+    [
+      50101,
+      50200
+    ],
+    [
+      50201,
+      50300
+    ],
+    [
+      50301,
+      50400
+    ],
+    [
+      50443,
+      50443
+    ],
+    [
+      50579,
+      50678
+    ],
+    [
+      50680,
+      50779
+    ],
+    [
+      51049,
+      51148
+    ],
+    [
+      51490,
+      51589
+    ],
+    [
+      51590,
+      51689
+    ],
+    [
+      51690,
+      51789
+    ],
+    [
+      51790,
+      51889
+    ],
+    [
+      51890,
+      51989
+    ],
+    [
+      51990,
+      52089
+    ],
+    [
+      52090,
+      52189
+    ],
+    [
+      52390,
+      52489
+    ],
+    [
+      52490,
+      52589
+    ],
+    [
+      55342,
+      55441
+    ],
+    [
+      57380,
+      57479
+    ],
+    [
+      58297,
+      58396
+    ],
+    [
+      59091,
+      59091
+    ],
+    [
+      59870,
+      59969
+    ],
+    [
+      60310,
+      60409
+    ],
+    [
+      61951,
+      62050
+    ],
+    [
+      62087,
+      62186
+    ],
+    [
+      62773,
+      62872
+    ],
+    [
+      62935,
+      63034
+    ]
+  ],
+  "allocationState": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/allocated-ports.json",
+  "log": "/tmp/story49-final-20261026T195205Z/cp-health-environment-1/preflight-smoke-5/adapter-matches.jsonl"
+}

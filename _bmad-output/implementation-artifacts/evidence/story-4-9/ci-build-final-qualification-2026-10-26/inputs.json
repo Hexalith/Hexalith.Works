@@ -1,0 +1,1016 @@
+{
+  "scope": "final captured current source plus exact parent corrections; no later external changes followed",
+  "capturedAtUtc": "2026-10-26T19:52:05.678236+00:00",
+  "worksRevision": "0280fb91ee3bff2c903421bc10afa3aa4bc3ebd8",
+  "rootDependencies": {
+    "references/Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "references/Hexalith.Builds": "cbff0462ffa2c12496ab69ba786fb31efcdde7c2",
+    "references/Hexalith.Chatbot": "f75d1ded32b1e55dbb4f9f7d8c1148fd12c64e7e",
+    "references/Hexalith.Commons": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+    "references/Hexalith.Conversations": "109ef750a1ed0d1b02ba7efee8807d611fbad130",
+    "references/Hexalith.EventStore": "7af8a2a74dff103f286abad144e4959e3e30b902",
+    "references/Hexalith.FrontComposer": "5b8a860744667fd09848d6a21bf592df2f592322",
+    "references/Hexalith.McpCli": "49345128c189ff3955c00afb9f587b7a31c0ab15",
+    "references/Hexalith.Parties": "0e53be8dc88c46829be10af5f886b89dcd72464d",
+    "references/Hexalith.Platform": "bed9e8ccd4c6fa03a9a7f0857b1a95960320e3ad",
+    "references/Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "references/Hexalith.Projects": "02d0dbd088095068cb40729191d352b05d89b55b",
+    "references/Hexalith.Tenants": "cc0efc7df3399f1ea0e3789033ee75926bd06b35"
+  },
+  "overlays": {
+    ".github/workflows/ci.yml": {
+      "sha256": "5cf062de4dfe030fb05bcaef27b0cc30f95a9be22d3109f315699934d0f6cdbe",
+      "bytes": 5895
+    },
+    "Directory.Build.targets": {
+      "sha256": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+      "bytes": 2005
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/README.md": {
+      "sha256": "d3a28629cc609fb92b25e14ba3b432ce6ebdd97f21131065e21281a67ce6d2b1",
+      "bytes": 3540
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/architecture-release.log.gz": {
+      "sha256": "05d1c5aa81e64e5d65d845b8c1391f1da2779ccd7de8548184580a9bd60e98fd",
+      "bytes": 244
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/architecture-release.xml": {
+      "sha256": "d5ab3a8f5aa12969fce63694dc7b18534e731dbca851e84a62e7f234be9bfe1e",
+      "bytes": 279043
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/frozen-tooling-tests.log.gz": {
+      "sha256": "756cb3e2afead4281ec80f616ef51b20e8be4fc1b9a6c573afcfe7a060413886",
+      "bytes": 287
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full-driver.py": {
+      "sha256": "2dd28831be4e0dccd2641bf6029af9722fc9ae963317de9d95667907375de9dd",
+      "bytes": 1206
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1-driver.log.gz": {
+      "sha256": "4bc5711a91468f920d69fa02b292e4ef951615d77a5fc6e36975d69bbe362f08",
+      "bytes": 436
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1-summary.json": {
+      "sha256": "b1eb0361b25ec62bba5e51735dfc3064e26f8f90af31ad49c5daf0f5506bb53b",
+      "bytes": 1562
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/bootstrap.json": {
+      "sha256": "45f1faec39731377793cbe6c3fca94792591361c32ffb16d0ba134766bd6d8f7",
+      "bytes": 134295
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/full-invocation.json": {
+      "sha256": "98cd2ea7c02bdb11fcdaab4b35b0de38d3cced922658f2cd0d88fec55d8d0366",
+      "bytes": 1240
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full-refusal.log.gz": {
+      "sha256": "78bf6664ac24a893366e75dc122c5af42b95a79df3c053ee248661de21bb14e4",
+      "bytes": 249
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/custody/command.json": {
+      "sha256": "158f616fe52d7b297f8fcd9e387d36dfbf7ad2b6324dafdcc685bca32ff9ff37",
+      "bytes": 765
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/custody/custody.log.gz": {
+      "sha256": "a9821698142dd7952eab17dd5afd2e4a5ab3e3a5a440421d60561e7828d9034c",
+      "bytes": 294
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/acl.json": {
+      "sha256": "2ef1bed0ec48d7415d577a233b29d1f92f77d3281343a446fbf5021d3b3c22ac",
+      "bytes": 2205
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/blocked.json": {
+      "sha256": "9f968681a978ee342e5d5e82e3b6a7188c6f7633a8cd6d832047e06dc1fc12b3",
+      "bytes": 2047
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/isolation.json": {
+      "sha256": "e576363f2f7c08f9d1eb51613cc82dfe6f95eddea61ed12b9dd465f005ca750b",
+      "bytes": 2377
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/lost-ack.json": {
+      "sha256": "601f852bbfa4ce2ee1749c5d4176b59f025a061273193d68faed2e5e4d73dadf",
+      "bytes": 2531
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/outage.json": {
+      "sha256": "5a04ab21309f9b26df77149bd72c2086aa696e1935310d0ba69c81dce0b9d87a",
+      "bytes": 2529
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/restart.json": {
+      "sha256": "1ed4b5ddc0b59df09e04224af1e765cc1087bcb872f8f31189677c111b6f8d25",
+      "bytes": 2536
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/evidence/restore.json": {
+      "sha256": "2fce132446750b9c388971b8fddbeead206d886b9d48f05cd87b58c033333ee5",
+      "bytes": 2522
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/guard/command.json": {
+      "sha256": "5a0a27f48051c759a9c86dbd1f48e64b22421d5e453da7a25000f87b9f1ae45d",
+      "bytes": 565
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-full/guard/guard.log.gz": {
+      "sha256": "5c5782642d2ba3da376a15279e4d440317f3a49b0e9c1244f56b09bdb7e685e3",
+      "bytes": 318
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/agents-local-scaffold.log.gz": {
+      "sha256": "90b176d7acd71ace4bae52a2494fcad72e1b7e8c1c035ac2173a1df0fa2b6ee3",
+      "bytes": 802
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/component-evidence-gate-tests.log.gz": {
+      "sha256": "e02089bacb044eac8b3b35d38e837e77a7dc7c4af7ce423727384495c57a85c9",
+      "bytes": 226
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/evidence-gate-tests.log.gz": {
+      "sha256": "1adcab2bdb001b570a087ec54c15d4583b9c6320f87f06a390b7b64d7b2cc3c4",
+      "bytes": 1151
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/host-starts.jsonl": {
+      "sha256": "653e459262c120e86a8c7584105f11e16a568c77eaae46304cc598eac561cdfa",
+      "bytes": 90591
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/isolated-daprd-retained-preflight/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/isolated-daprd-retained-preflight/launches.jsonl": {
+      "sha256": "5e5f5faa63959f70abd70f51ff2cbc8e4f655c961c737ffffed1eb48ba6e7f18",
+      "bytes": 2301
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/isolated-daprd/launches.jsonl": {
+      "sha256": "ba5d40ca6e05804af07a9a499ca69945ba2792daa6acebe2282bbcd5cf71cf31",
+      "bytes": 9204
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/ledger.json": {
+      "sha256": "b086e1ac0b9660560890b64cd89b6f4d90bda5e341d68fe54edf8ad3e3338fe9",
+      "bytes": 1689246
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/persisted-states.jsonl": {
+      "sha256": "c5992a21b00e37f3a4ffcbdfc722f5d81848c1ac60007ce33929a3d22af1f71b",
+      "bytes": 143537
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-debug.xml": {
+      "sha256": "ba85cd3a22aba36850442ea50372d8d8325ee79aad97c21353b2269d548ce5e5",
+      "bytes": 89749
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-file-host-release.log.gz": {
+      "sha256": "034f83b7d13042037ed6137b33fa3427eaf35e00c0d094532122f4b3a9c80cb7",
+      "bytes": 430
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-recovery.log.gz": {
+      "sha256": "08dd4aff8871a902a14974a0cbe9346e30dc3a883b058968097433e1627c7cd5",
+      "bytes": 2258
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-recovery.xml": {
+      "sha256": "c27f6c7e8465cd9ef8bbf562ec8fefe01c88749eb26194a1af55f64414d459b9",
+      "bytes": 18436
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-release.xml": {
+      "sha256": "0a67534037ab6092e26740f691f3b7f277d24a57a421872f841dae5beeb40443",
+      "bytes": 89740
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-tests-build-debug.log.gz": {
+      "sha256": "a8af28652a928e11dc7184c0fe2be10deb14451fda329e017a98588035139b09",
+      "bytes": 749
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-tests-build-release.log.gz": {
+      "sha256": "7f9dac2e5976244ccc349fbafff6d97a59a439d1a27f070266cf639944d1582f",
+      "bytes": 517
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-tests-debug.log.gz": {
+      "sha256": "3293c653d41cb7fbe295b4d749d93bdafc61a8be1962e6d662f37cdf33267fc9",
+      "bytes": 241
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/platform-tests-release.log.gz": {
+      "sha256": "4db45f9385b0d98d3036a00973ec19ee0410834460efb8f721663d58db76d0b0",
+      "bytes": 240
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/retained-host-preflight.log.gz": {
+      "sha256": "e91401e664399daeb2e8ebb21e59db847c67b94904224cb8a649111cc27086fc",
+      "bytes": 241
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/retained-preflight-starts.jsonl": {
+      "sha256": "899d92edc5715b0e0f02a7b3f60fc81179aff2f5be5a73210d4ba495f4f72252",
+      "bytes": 13051
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/retained-preflight.xml": {
+      "sha256": "b786f67d125395df613689dafc01a39c1cfc76960747bdc665aa599d36832dca",
+      "bytes": 1837
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-0.log.gz": {
+      "sha256": "e48b9a145c814f373a37e104b4e912394c237848182e565d20d08f25d2a1d8c1",
+      "bytes": 326
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-1.log.gz": {
+      "sha256": "9460e5d5b1cfbf510a3fc76e04e99386702e1866646a30179fe6a0828e007ada",
+      "bytes": 423
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-2.log.gz": {
+      "sha256": "d21a0d08e768a4e8f884d0619d8f4277d018ce44f97e1ffd452c6559b636e99c",
+      "bytes": 335
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-3.log.gz": {
+      "sha256": "3651618624ac3db7f75e92899d1c252a6c02c8c8538fc6dd0964889e898a1003",
+      "bytes": 362
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-4.log.gz": {
+      "sha256": "add9c331c95da3c9deb7af15bb5cacd6cf1d438d37efb4fa81ccaa4b3558d867",
+      "bytes": 244
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/runtime-release-prebuild-5.log.gz": {
+      "sha256": "ccd3930b477d385c802b0109140eb479d01571addf44e3e3e67755e5022d5274",
+      "bytes": 311
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/works-consumer-debug.log.gz": {
+      "sha256": "7d1b61dfa6d11341f199076be6866b1bff1f81de286a7ecf7a78805d423950b3",
+      "bytes": 1210
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/works-consumer-release.log.gz": {
+      "sha256": "83b95401cd8e7dd3d6d674bcf66a46ad6bfbcd2628ee15a9d462752786ef3a54",
+      "bytes": 697
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/works-consumer-supporting.log.gz": {
+      "sha256": "97a9863952b477356eaafd9ff14dd9110d16ed51886c688e917600ea9eb47c38",
+      "bytes": 2127
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/gate/works-consumer-supporting.xml": {
+      "sha256": "9875e99386575c83721dbfc93a0c4be90e8294ccf90a4529e7f39a757a1ee43f",
+      "bytes": 204578
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/full1/platform-source-binding.json": {
+      "sha256": "4d26bb0c88dd696ec58ec00bb387c71c6052a124c70fb5123836596cb87130c4",
+      "bytes": 268240
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/inputs.json": {
+      "sha256": "d6cb3ca45c00d0e695dc8ea3199560b4af4dad267801f9075c1f1effc89edd62",
+      "bytes": 2237
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/results.json": {
+      "sha256": "195c53767208b66dfd0adfa9ed3794543735f6dac6bdca0775e91c04e22154d9",
+      "bytes": 2989
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-build-policy-tests.log.gz": {
+      "sha256": "84297d05db94f5fbf1e7632cc9357fccd45c2c934745bc291034cd671d806381",
+      "bytes": 55
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-coordinator-tests.log.gz": {
+      "sha256": "6d2c65f5a4856eb26b7c53a600e57c2e8693a3bb81fd4a4b65d721fad7516203",
+      "bytes": 281
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-full-lint.log.gz": {
+      "sha256": "5372a009c1d9e41d89cdac22775f42eea0f3d1f9eff4612224de439533ec362e",
+      "bytes": 60
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-helper-red.log.gz": {
+      "sha256": "c12c513d855b862f5486de7a6e005d5caa0bf67cb44ee5b67b23f8140463e1ca",
+      "bytes": 640
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-helper-tests.log.gz": {
+      "sha256": "74db3eccd29e1df172451b14c6c43c769a181b3e65e67479b7f197204b985cba",
+      "bytes": 53
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-lint.log.gz": {
+      "sha256": "bcbd46e64b1155e72d13424bbab58f4ee4d94085204c857a3da8acdf4d6e5a3e",
+      "bytes": 104
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-mutations.log.gz": {
+      "sha256": "d5259a5666b37b1da7a29941e29c73511f99ea705771a9c877b4c14f2cfc275c",
+      "bytes": 752
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-platform-red.log.gz": {
+      "sha256": "4d60371b19875dc5510ae30a1c05ed46bced11a8079355709c21166222280284",
+      "bytes": 798
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-platform-tests.log.gz": {
+      "sha256": "d4f6b8bdfd333064d2dfdf14d9ea4a4bc514bb908c3fb7c0fcf45c95de6ab96c",
+      "bytes": 1148
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-release-build.log.gz": {
+      "sha256": "edfb2220d34d3000000e30ae4333022e74b071091731f209eee6818369d6a0d7",
+      "bytes": 687
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-release-restore.log.gz": {
+      "sha256": "a35af192c4227486d7253ae5a65ef1968f811f716490cbc7225ecd1dedeed0e3",
+      "bytes": 350
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-sdk-helper.log.gz": {
+      "sha256": "1674d980e1397809dba28242a15f030858996b034a935370ba5053057fa31202",
+      "bytes": 1009
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/local-checks/story49-group2-tooling-tests.log.gz": {
+      "sha256": "207260733c0f0cfcc45bfc91b77f6de054fb740a32279106027ed1f947740c14",
+      "bytes": 285
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/manifest.json": {
+      "sha256": "9a360960445f889ba9644eb251795eaf7daaf8e39ac6004959343f8e0496e41e",
+      "bytes": 33627
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/owned-patches/manifest.json": {
+      "sha256": "fe9843f8303b0b7140b544af57f8c458ba5f60b9947add9d3123b607a1e80a2f",
+      "bytes": 176
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/owned-patches/platform.patch": {
+      "sha256": "042a2b85583a7b6d91455631421e4442bacbe408ac01e0e56c6e175665ea7266",
+      "bytes": 6744
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/owned-patches/works.patch": {
+      "sha256": "56b9cbc7f899ff6a61e778d31e7e7f0ab24e43144128435a920f8e8e7d703972",
+      "bytes": 13074
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/parallel-build-and-architecture.json": {
+      "sha256": "deb66c21264c981fbe477297d8a7c426cd1d7a15f224d315db6a241e86b190f7",
+      "bytes": 857
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/parallel-release-build.log.gz": {
+      "sha256": "40a2db8327a1e6201b6514ed8a8942b8029c4355a4e4d23855ea7aa9e5a9e5e0",
+      "bytes": 588
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/parallel-release-restore.log.gz": {
+      "sha256": "5325639b89acbf3d6388ff98c11e5a32ca84bbb76f8994c8a3e46969d9e5d0fc",
+      "bytes": 365
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/captured-startup-message.txt.gz": {
+      "sha256": "d3fcdfab6f247e3d2ca51a7b85aa97f5c501f8276a258f0ad511e325b7b4f615",
+      "bytes": 1612
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/docker-observations.json": {
+      "sha256": "fc0dce9a84ebe4f27aeb2449b168f2092cfa1ce2190e0e901bcc3e080b55c62e",
+      "bytes": 1185
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/inotify-probe.json": {
+      "sha256": "589b77a4fae6e8d3b1f6b89d9548d5b10cc661fd9c35f6a8a76bd1feb1da746f",
+      "bytes": 402
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-events.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-events.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-inspect.stderr": {
+      "sha256": "ae8f2cfc8ace7ed111eaba464f2813e8f6bb281794eb372f1a6355c256c68aa3",
+      "bytes": 60
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-inspect.stdout": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-native.stderr": {
+      "sha256": "ae8f2cfc8ace7ed111eaba464f2813e8f6bb281794eb372f1a6355c256c68aa3",
+      "bytes": 60
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-corrections-2026-10-26/startup-diagnostic/sentry-native.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/README.md": {
+      "sha256": "199e26892bcb793cb7c021446a6e0498e4ed9f76f9cac60ab5dde211b9dda04b",
+      "bytes": 4231
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full-driver.py": {
+      "sha256": "2dd28831be4e0dccd2641bf6029af9722fc9ae963317de9d95667907375de9dd",
+      "bytes": 1206
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1-driver.log.gz": {
+      "sha256": "f01a342c3899744ce5628c62d0d2f6e1c6f31f9b4709fa1a32f5b11b149aa714",
+      "bytes": 444
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1-summary.json": {
+      "sha256": "b52fd83b103aa0a2488575a3f9897169a908821dd3c5ef100c2418861c02313e",
+      "bytes": 1673
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/bootstrap.json": {
+      "sha256": "9dcb8f98a726514ad8d452e6feb12ba93c039a9ee1c835c5a7f023f8fad9c4cf",
+      "bytes": 149005
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/full-invocation.json": {
+      "sha256": "46c9001805762b3edcc375e170e4edafed6ccad148ae4705c298d7c664ccb2c7",
+      "bytes": 1328
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full-refusal.log.gz": {
+      "sha256": "6f6478c0995f399bf479a3567e9849fd2381a31ded77854fa73adca5ee49117d",
+      "bytes": 249
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/custody/command.json": {
+      "sha256": "17d016962b872ebfa5976b3c54cb138ef04d10aacaa221275aea6e3b0ba9ab43",
+      "bytes": 781
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/custody/custody.log.gz": {
+      "sha256": "b79dc51784312d7c03562a7f0c678fd6f486a96c85b828388833e54b422454c1",
+      "bytes": 297
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/acl.json": {
+      "sha256": "9aad978b2e4ac12f51ddbc1adbb29d8d1291245e49f68ec1e10e28dd1e3a860e",
+      "bytes": 2205
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/blocked.json": {
+      "sha256": "b115450454aee032e47b5fe627aa72233b2b64bdf21d84b07fc5f234902d42d0",
+      "bytes": 2047
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/isolation.json": {
+      "sha256": "f86922d3b5629d39d5c21e8a1a4980f3b0bc0514e083e0ee3bd85077af62dfbd",
+      "bytes": 2377
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/lost-ack.json": {
+      "sha256": "47cfc146193432175e7b3b54f8df93671c01222d74e57df81d305cbfe8c0bfba",
+      "bytes": 2531
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/outage.json": {
+      "sha256": "f9c7046f19606e35c2c0fb330d9e96f9917da2f4f1aaa7bba5d3d75a241c679d",
+      "bytes": 2529
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/restart.json": {
+      "sha256": "678dceae99ec5f450d4eee2452482daa791c42869483016b08b09855a98ef0c1",
+      "bytes": 2536
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/evidence/restore.json": {
+      "sha256": "7288af636017ea2392e6d0edeacaef2191c904f768b96e1e59098a7e7d57ab94",
+      "bytes": 2522
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/guard/command.json": {
+      "sha256": "45e2c1b04ee4b10e053c982f3476a62c2166e49a178fa05b6ab731e88b88b777",
+      "bytes": 581
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-full/guard/guard.log.gz": {
+      "sha256": "a47bd1ea2bf62928aebf830223ce379263e4ea407f2d97996e47516544d9efb3",
+      "bytes": 321
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/agents-local-scaffold.log.gz": {
+      "sha256": "0de0b13eac5def6a4e5aaf0e5bdbcbecbd2b74450bd41787365d499f611bc4bc",
+      "bytes": 796
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/component-evidence-gate-tests.log.gz": {
+      "sha256": "d3720e1abaf03e696703df2f409c173039b558868b0b9f02858bc83bf0e7cd25",
+      "bytes": 228
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/evidence-gate-tests.log.gz": {
+      "sha256": "f9a900efb7035aad2c20b40dbff11605b715a9d9666e2fd0fa5cb549d9147c92",
+      "bytes": 1161
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/host-starts.jsonl": {
+      "sha256": "b4a170ce51a290dad1e2f10f48914cb444a95d4cf480f0c1eb3922c848db3f5e",
+      "bytes": 92772
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/isolated-daprd-retained-preflight/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/isolated-daprd-retained-preflight/launches.jsonl": {
+      "sha256": "b89f02adeb88efe764b3f1aeca9b3313c64d3d52501e4cb5d18970d1f980586d",
+      "bytes": 2301
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/isolated-daprd/launches.jsonl": {
+      "sha256": "5de0773cc66c19a6122920dfd458aefe94c585b1b7042cb80fd89adbb49e4074",
+      "bytes": 9204
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/ledger.json": {
+      "sha256": "482aa5469330715ae29424cc181937a4f7a2f7a395786bbcab926ea44a827918",
+      "bytes": 1761064
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/persisted-states.jsonl": {
+      "sha256": "59a47ed17c9d3d84abfeb0ae623317efbcf2fe3df5ee843d08367d4f3d215b53",
+      "bytes": 132690
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-debug.xml": {
+      "sha256": "7025450e46c8fa5d3dd11f2157a6c227b8b85bd7e8edfa5a114e9d2388d65200",
+      "bytes": 90880
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-file-host-release.log.gz": {
+      "sha256": "f335c1133b2fd5bb615ce77eb4b6205254115e2317d01ce5d2c8b3eee56563f2",
+      "bytes": 437
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-recovery.log.gz": {
+      "sha256": "ab94935bb69c8bb2e10cb4146b9133e6d1fa002f1c0c874aa6551861fb5184ab",
+      "bytes": 4887
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-recovery.xml": {
+      "sha256": "b89416725561e080e9b00c67ab666e5793eee419af27f11cfe45989c4589adae",
+      "bytes": 33967
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-release.xml": {
+      "sha256": "a2c726052a5e5d5031ff92dfb8408954512645021bfd23af55af967e5ef66a67",
+      "bytes": 90883
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-tests-build-debug.log.gz": {
+      "sha256": "291aeff461dc071efb31c8892a6ad316377cab4c8554a14cac427d8240276884",
+      "bytes": 729
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-tests-build-release.log.gz": {
+      "sha256": "8bc01aa72b42ba5990cca52e305dec944c4c0671e5389310c824e6f2de5d6c04",
+      "bytes": 510
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-tests-debug.log.gz": {
+      "sha256": "7d609e61c8687bd4116d05018f8378771befc1e037a5046778f423cbfa01f72e",
+      "bytes": 242
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/platform-tests-release.log.gz": {
+      "sha256": "7db52245fb5a1a20665bbb6f5f6ca4f4a927f21839e2d9bc92756c5c79c4385f",
+      "bytes": 240
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/retained-host-preflight.log.gz": {
+      "sha256": "92ff7ebaed737ea1ae1fdbfaf50356cb17e0747b7c13be5805c8efcebc5c38d7",
+      "bytes": 242
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/retained-preflight-starts.jsonl": {
+      "sha256": "f8a5e3c639c26d167a6be2b9dce0bdd262b07ba270c58dcc6824ec4dfbcdaac3",
+      "bytes": 13353
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/retained-preflight.xml": {
+      "sha256": "05f8c632fecb56d3ad93be71d92a91b0aefdb0c656b288de19da22c7efb77f8f",
+      "bytes": 1852
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-0.log.gz": {
+      "sha256": "7408190dfa05736ae4d81b1e4dbfee7d3edf0bac57bd7ad4fad754db5a60e299",
+      "bytes": 324
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-1.log.gz": {
+      "sha256": "21091760ae22238525681acfc92c403181998f8b0bb2adf50096b9fc1a7fccf5",
+      "bytes": 419
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-2.log.gz": {
+      "sha256": "3fff7918d30fd5d559a832cf356bc00fbcebc94a5e65486d03cfeb1660ac3529",
+      "bytes": 340
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-3.log.gz": {
+      "sha256": "9cbed6a37090ca949c7f0bd35b0f4666d609009de77c771c1fd2dfecfd6bf2e2",
+      "bytes": 365
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-4.log.gz": {
+      "sha256": "24fa6df784cac07c88f7b7b8f94916dc1771a03e4532f960bee2e6e93d4ce5ae",
+      "bytes": 249
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/runtime-release-prebuild-5.log.gz": {
+      "sha256": "cdcda6185eb3c9b486a1367e33dc362d305039ad49558861b6dea078d86b6a82",
+      "bytes": 322
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/works-consumer-debug.log.gz": {
+      "sha256": "9497d41c310734d5e686e5c7b469a836ee98d4ca4b8851e08a104872b36a5627",
+      "bytes": 1189
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/works-consumer-release.log.gz": {
+      "sha256": "07faccf42c15cbf98d6465107918ad09bc0eadc8f89fd8d311f6fffc9aa92ecc",
+      "bytes": 679
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/works-consumer-supporting.log.gz": {
+      "sha256": "b134f635f1dc8ea2e97a9f0d28d7ade4e7735e17c6a41170ce986e1e6b93007e",
+      "bytes": 2151
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/gate/works-consumer-supporting.xml": {
+      "sha256": "57000fc7e1940e18dea13ca54e5492533a70f109cd950c9061807796d4a3156f",
+      "bytes": 207024
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/full1/platform-source-binding.json": {
+      "sha256": "52e500ea8bbc426face9f8610eea4be8ef7ffeac76e52ccba26f09655e99b136",
+      "bytes": 297153
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/inputs.json": {
+      "sha256": "99a0ba1684ec760cee0da31181f2dbcfc7d67efb7c6d1b747eb6a143fa528500",
+      "bytes": 22868
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/manifest.json": {
+      "sha256": "1bd1fd2e35ed6e4f21e57ee5342e17f30bad2cf5190ea2f1c9bd38bfc18ee9a3",
+      "bytes": 42364
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/observe-sentry-initial.py": {
+      "sha256": "c002886c1d1f350d40de1de0bb0f1cc996fe220c835990c3401b99cc941bf24a",
+      "bytes": 6163
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/observe-sentry-port-prefilter.py": {
+      "sha256": "36aa20c8cddb786f329bad1557afd3ea3242fb4eabd9a80d82520b6d144119b5",
+      "bytes": 6701
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/observe-sentry.py": {
+      "sha256": "9d5d2f8e949598a23d4bd80fb2783776198dc3a88757e337ae5a5638d46fb916",
+      "bytes": 6672
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/observer-discovery-adjustment.json": {
+      "sha256": "c0ea8044c5f4d35f8654a12b1d62913240466005c2a4e985d3085c6faba97775",
+      "bytes": 357
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/observer-optional-health-adjustment.json": {
+      "sha256": "48b2eb136a6868a573d26bbf1c596ae8aa41dbc8933a1c02888c0f3b756de7e0",
+      "bytes": 396
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary-driver.log.gz": {
+      "sha256": "43890845e4db15d23650c157ae81cc75de4e57b3ac14175ee22e74270820d568",
+      "bytes": 73
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary-runtime-after.json": {
+      "sha256": "4e7b4412a3e1755a6707e22fe9d038c7c95799cbfc58ca3d4ebe98d99b20c3c9",
+      "bytes": 104266
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary-runtime-before.json": {
+      "sha256": "4e7b4412a3e1755a6707e22fe9d038c7c95799cbfc58ca3d4ebe98d99b20c3c9",
+      "bytes": 104266
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.IntegrationTests.log.gz": {
+      "sha256": "15dbd8c1f4449d6c59bdcbe781dc700e2bc7f7fcd3f443a046e4b347b6b12f6e",
+      "bytes": 2655
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.IntegrationTests.xml": {
+      "sha256": "324d3d5db13a68683c0da8da2f1f693f1289bc6ba677506ab73b3b29f8f97051",
+      "bytes": 734254
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.PropertyTests.log.gz": {
+      "sha256": "a4fc1270f39e9d8099a1fbe0e04760f6e7d8c8e157fcf611a92982347ab172f0",
+      "bytes": 256
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.PropertyTests.xml": {
+      "sha256": "fd12c7b7f63e1a5cf3e37fe81621335c4631d158661165ce8cdc778bbab9b529",
+      "bytes": 3967
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.UnitTests.log.gz": {
+      "sha256": "05c5e41ad2e59540d82529313365d51139ce2bf542f3429406ea418c676d1004",
+      "bytes": 237
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/Hexalith.Works.UnitTests.xml": {
+      "sha256": "c1306283fc380282cfdda4edb947b35b649b37608b3118efcc419223943ac67c",
+      "bytes": 378389
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/results.json": {
+      "sha256": "3bd35ad4bec0f1be58549672fb8a7ab6fda00640d41ff63c1d4d4c2bcfd610d1",
+      "bytes": 1973
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/ordinary/summary.json": {
+      "sha256": "df9d1921ee9e2335bff9b9d0d80b87c3b86bb092fd715724e57eed09cc5e4ed3",
+      "bytes": 1518
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-captured-startup.txt.gz": {
+      "sha256": "3d3c9c251cd06a0028a8dbeb31845e6934c1095833b1e05e63d53f087ee4c1a0",
+      "bytes": 943
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/events.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/events.stdout": {
+      "sha256": "ba26d813978b9a418b565a4ed33a08cd9ce0151a531698c36882374742376271",
+      "bytes": 7336
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/inspect.stderr": {
+      "sha256": "d7c17186c41362df894b4bebebea328ecd554f4de0196a6869cfc099861cd2fb",
+      "bytes": 112
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/inspect.stdout": {
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "bytes": 1
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/scope-and-results.json": {
+      "sha256": "3a6c9c4a9764a1b9d891b18398a9145914ea25bd301cc26d922b451a44e91d18",
+      "bytes": 1432
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/stdout.stderr": {
+      "sha256": "d7c17186c41362df894b4bebebea328ecd554f4de0196a6869cfc099861cd2fb",
+      "bytes": 112
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/placement-diagnostic/stdout.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/architecture-release-after-force.log.gz": {
+      "sha256": "acce94adf3e4022e0058ea34b8cf9c3ad28eb7bc5740489cf2382f2fb8b6610a",
+      "bytes": 244
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/architecture-release-after-force.xml": {
+      "sha256": "abea7cc9abfefb937af9e3adceec77859a638e405738c0284068b6ce8b7c7659",
+      "bytes": 279484
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/architecture-release.log.gz": {
+      "sha256": "a27d1f9586c07723b4667fdc84577ac7a60a1f45dd5aa77f3546f5ceb71f87bf",
+      "bytes": 856
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/architecture-release.xml": {
+      "sha256": "2fd9511b78c0355a588b7d2ac3427f3f1bc7b3c1e61a170500520a3ff9cff3ea",
+      "bytes": 281747
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/commands-and-results.json": {
+      "sha256": "50e5350f413eeccf8b451228273421b170fc4d394514bfff7f0406183cdebff5",
+      "bytes": 1956
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/forced-release-restore.log.gz": {
+      "sha256": "28622495f039e4f2fd0857dd488ac49460dc458646c710c8bfe23c5aa783d784",
+      "bytes": 355
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/inputs-before.json": {
+      "sha256": "629f5d1a005cf033baa56eb33c3ca53c4c97830c080c348cd3bdf0905454e00e",
+      "bytes": 3017
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/marker-byte-audit.json": {
+      "sha256": "2724b46e87a71b7a48d8b1b28ab05eafbba28f286ae766b13a807c3fabc58939",
+      "bytes": 1450
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/marker-green.log.gz": {
+      "sha256": "2150831082d07250e641c6de9522b24862e596af00baa6d92f056d9d58959da9",
+      "bytes": 241
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/marker-green.xml": {
+      "sha256": "c126ee5c3522197a2b4454930c13c456a694435179fc4b54186c0acca1915486",
+      "bytes": 1949
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/marker-red.log.gz": {
+      "sha256": "84f27b72c82a040c4aebd4958dcde560519277e1a676f70d7bf3a9e0b2ad4cf5",
+      "bytes": 759
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/marker-red.xml": {
+      "sha256": "8fdf6e6e9cb84661c2d0f12c26f8a54055bd66e7efd0e2115bc7cd2197c09637",
+      "bytes": 3171
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/parallel-release-build.log.gz": {
+      "sha256": "1a11841ccdc5e64f69967e41a4934ba93660ef3b4d5ba4f64a526391e331c5ec",
+      "bytes": 574
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/release-restore.log.gz": {
+      "sha256": "40dc25cfb946316ff51f58c679507f3ab0f93f8d756efa4f26b5941f5fcc6ff1",
+      "bytes": 83
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/restore-freshness-after.json": {
+      "sha256": "ec26f66990c4364fbe70b173bc9c6e017c9171b954d9e461f4d4dbb529e7639f",
+      "bytes": 1328
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/readiness/restore-freshness-before.json": {
+      "sha256": "010c7d73aca013c3ac73d6d4fd188c85881894844630c118375004cf2f2c0a8e",
+      "bytes": 915
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/run-ordinary.py": {
+      "sha256": "90436bd7f9b11345b7c3c3f01595a0fddd122c29d7f2550ad553ea95cc63bdf0",
+      "bytes": 1691
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v2-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v2/scope.json": {
+      "sha256": "7182186e30b4ca71da07763b7245ab2a9d438235c18fbd2a54087a29fb49cc6b",
+      "bytes": 909
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/admitted.jsonl.gz": {
+      "sha256": "52f9937119d91a35b3dc3da30b5c3c48049f8926f6df221de6213470b559a6e9",
+      "bytes": 536
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/disappearances.jsonl.gz": {
+      "sha256": "b89699b10af5695e7efaa30389231124214ea645370ecc7bf5f3fa3459b51e81",
+      "bytes": 364
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/events.jsonl.gz": {
+      "sha256": "cca28cbed3abda3ee07fcc65926660e6609b7c07437ba3ab509cd0d2ef110589",
+      "bytes": 3132
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/observations.jsonl.gz": {
+      "sha256": "e1c4ebaf4b51b05d133bf6631b4251afdec5da924f9356d547a3a153f2aac74d",
+      "bytes": 1634
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/scope.json": {
+      "sha256": "841601ba9a263b11af0e670d6121ee6aeeb984597397551c3e9f54fe7fedbe09",
+      "bytes": 909
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/startup-stdout.jsonl.gz": {
+      "sha256": "f766ad63d08a998215d4d3ba248275c92ba1371c6829161da6fff1eccbfe6ee8",
+      "bytes": 5396
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer-v3/summary.json": {
+      "sha256": "2281861d809aa35b2471a93753a97cc2c430ada74570bd3c273ba204301ec95f",
+      "bytes": 186
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-current-inputs-2026-10-26/sentry-observer/scope.json": {
+      "sha256": "d2de1b0e8e3e3b00be55078568b17348b242780a178a1cddb8f3297e84d2819b",
+      "bytes": 869
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/README.md": {
+      "sha256": "0193b24ac4bb83b732bf6b321ccc46c74fbb7d854b74e3b6105a605403d4a4f8",
+      "bytes": 4948
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/build-packet.py": {
+      "sha256": "4b602682dd9fb2942e8fbae3d984cdeb21e1c79989954bfce851920ed4934e22",
+      "bytes": 7201
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/captured-inputs.json": {
+      "sha256": "99a0ba1684ec760cee0da31181f2dbcfc7d67efb7c6d1b747eb6a143fa528500",
+      "bytes": 22868
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/command.json": {
+      "sha256": "b974c1f6820a62e3374f61101896ddccc4fb0d7a35c466d3d042247deaef26e0",
+      "bytes": 912
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/admitted.jsonl.gz": {
+      "sha256": "34a4b3af69df5fa5a2d7d68889b6ce09611429510915660e2bb9b7e4f29a74ce",
+      "bytes": 1900
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/aspire-describe.jsonl.gz": {
+      "sha256": "dd14b565b46dd45932122433e8d37957a8c212cfa979bdc2aa97de66e6478021",
+      "bytes": 699
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/disappearances.jsonl.gz": {
+      "sha256": "6f938e81f58f4fa70aac5581991e4469119fe1754726c0c85df4bea6290d9326",
+      "bytes": 747
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/events.jsonl.gz": {
+      "sha256": "e62b74bb213b4a6ce91f77d6ab9cfc132772f5f24e98d690f171971c09455677",
+      "bytes": 4950
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/namespace-helpers.jsonl.gz": {
+      "sha256": "86386c9c8a801eb4af1258de8c7749481b7d198f86958d7b9f8734471f7170b7",
+      "bytes": 9725
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/native-tool-limitations.jsonl.gz": {
+      "sha256": "d0c8b346cab454cd11b523bfa5af084fa59095b01ce40f2e17e85888bc2dc457",
+      "bytes": 1194
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/observations.jsonl.gz": {
+      "sha256": "1d9abb6bef94af24777693ffbab0106859c0d2b357a2bdc3bcb681562985dbf4",
+      "bytes": 16249
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/scope-periodic.json": {
+      "sha256": "20c51674087eee65dce6a2fb2a135f3ce49d6f2ae23e3c4a3d44a0d36d07876e",
+      "bytes": 1215
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/scope.json": {
+      "sha256": "4e7b0f5b1a1e57f3152a4090075106a60a1cd3f8df3ba3eb3a9325ca9e2fa6c7",
+      "bytes": 1353
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/stdout.jsonl.gz": {
+      "sha256": "0da58e3489bed8d21e53e4639b5b2f388a2f6fe113ae666989a01abf79af3cfc",
+      "bytes": 42262
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/control-plane-observer/summary.json": {
+      "sha256": "9994bb452e7333a0dbb2f8b7e30df71f7e4f89c315ddbc75a5957da9d607d106",
+      "bytes": 207
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer/admitted-apis.jsonl.gz": {
+      "sha256": "eb9a85d488c092b984811bfe1830c5a7c4ab0ece82d2294e6573f84ec388c163",
+      "bytes": 344
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer/scope.json": {
+      "sha256": "31f8630ed091e269050658c6944d4636d1dc4e532f1ecd7bff3078be995de5a9",
+      "bytes": 580
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer/service-logs.jsonl.gz": {
+      "sha256": "8a2eeb396ca9688037dd00357a6e67f8d424d6bf9b068ba318832d3a93efae6a",
+      "bytes": 2250
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer/snapshots.jsonl.gz": {
+      "sha256": "cd923586f8eb2f2d16d27f835dfa6b0c5975dc958d52f306170564589ad4a95b",
+      "bytes": 7585
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/dcp-observer/summary.json": {
+      "sha256": "44b48b7087c38f46049753fe2abd03b265738e4210d260ba339835050b61f2de",
+      "bytes": 140
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/diagnostic-summary.json": {
+      "sha256": "ebc7de2ef797e5ac6943a3105bcd8ab2b17f47f4694be842a13dc559dfc12206",
+      "bytes": 3373
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/driver.log.gz": {
+      "sha256": "2adb6437d7595921e62ca11c3147ef826aac63c055676dfef2f60f04c8c73307",
+      "bytes": 458
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/finished.json": {
+      "sha256": "ff9a83f9e0c7094043e3e17851247f5ea5d4bd4796004a74b306eeacdc84987e",
+      "bytes": 841
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/isolated-daprd/binding.json": {
+      "sha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "bytes": 264
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/isolated-daprd/launches.jsonl.gz": {
+      "sha256": "2a9c346d1c459ed52d0595c0b3cce16677e2d04a1fc48f40044f2861d8d6be29",
+      "bytes": 2154
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/manifest.json": {
+      "sha256": "2aae6aeab4b4c774c2a0a8fa88b73f73d24b7cd4fb52f79b4bcfcdadee27d476",
+      "bytes": 17797
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observe-control-plane-periodic.py": {
+      "sha256": "524669bf71159b1c22110d5d2ea8d111736c8b0961596067af889120920b4dc8",
+      "bytes": 13832
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observe-control-plane.py": {
+      "sha256": "3fdc89692276307191976c37d230bc246e65378d2cf3b43907fa64f7afc75481",
+      "bytes": 16124
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observe-dcp.py": {
+      "sha256": "5f93c47e6079ea4a6f5c441f78345b2fb2c28b1c9f8e9048c35eb51660a18d08",
+      "bytes": 6038
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observer-change-only-driver.log.gz": {
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "bytes": 20
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observer-driver.log.gz": {
+      "sha256": "d1eeab6149df9b904538ab619b0445ee95c3fa68682be5286b5ad221433cd7be",
+      "bytes": 242
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/observer-rate-transition.json": {
+      "sha256": "e232fbccbce93b8b50f66dd704d5c7da539af7447ffbc01ec4c1ee812f3ef1cb",
+      "bytes": 396
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/preparation/focused-preparation-argument-refused.log.gz": {
+      "sha256": "e7dc04a3165e251bfee25eef8007ef470da9702f0f56e2dd2e8d9bfc076594d5",
+      "bytes": 386
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/preparation/focused-preparation.log.gz": {
+      "sha256": "5a26ce0058a2756d9a9b8d7393e6ceb2c55f9ee40ff41dea61b2afa89736a87d",
+      "bytes": 89
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/preparation/prepare-focus-argument-refused.py": {
+      "sha256": "a2113b108a53834e6592ff2908cca1dc77a7f514d2baa18e23e92d0c0b3ff94c",
+      "bytes": 2832
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/preparation/prepare-focus.py": {
+      "sha256": "29019d5b7c5b1dd3075c3d5f5bbb6a24b23366577e76ea30415c5ec1a2b40eeb",
+      "bytes": 2837
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/result.log.gz": {
+      "sha256": "54bc169c53a8289b503f51e57c2417f3998e32ce2e2c796f0faea0849ec05b20",
+      "bytes": 242
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/result.xml": {
+      "sha256": "dace844f6a092444eb3640bf1cecee55df6a922e29d9d8ab1d8a6ab41497b762",
+      "bytes": 1763
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/run-focus.py": {
+      "sha256": "197ac397d3d336300e30f219bb24ec7ae5fa48f9f53fb573a88580954572687a",
+      "bytes": 2008
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/runtime-after.json": {
+      "sha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "bytes": 196120
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/runtime-before.json": {
+      "sha256": "68424a93951b9f36e665e54b82c33e003a28c568a6d9627cc803df3c220f35d9",
+      "bytes": 196120
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/runtime-environment.json": {
+      "sha256": "40d6ba28826017ae14eff675aeb32e5ffd229c4b7a7a9481ef49c144ba8ee295",
+      "bytes": 2923
+    },
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/ci-build-focused-restart-diagnostic-2026-10-26/summarize.py": {
+      "sha256": "2f59d5151d0388a821b99cfae468b13271ec548f8a488868a10e4d533424391d",
+      "bytes": 3195
+    },
+    "_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md": {
+      "sha256": "504af893213f5e839a5bd44cd22c1cf3f7091cdd0adf5aa01daf5c11e473f643",
+      "bytes": 186382
+    },
+    "docs/boundary-decision-record.md": {
+      "sha256": "24b09a2dae99a3fcf818af3f57b27f4ba13009e555a8bcd9edeb16b84fcbf8a7",
+      "bytes": 47206
+    },
+    "docs/eventstore-api-surface-constraints.md": {
+      "sha256": "70be6d50dada8b288484f739f438dcdfc3306ac1c9f04f3a54e05f4b0b12a50c",
+      "bytes": 40427
+    },
+    "scripts/tests/test_transitive_project_reference_globals.py": {
+      "sha256": "c09ec6b69394068f6fcc3a49aded75fdbc40ec750cde589b1c984f98c0149654",
+      "bytes": 4769
+    },
+    "references/Hexalith.Platform/docs/works-host-parity.md": {
+      "sha256": "e470feca328088a2c132f9e66f155580f7f079ff25608f1347b196706e60aac5",
+      "bytes": 40135
+    },
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": {
+      "sha256": "b3f8b31583b1e8c3ff0a409774fe9eab33b6dd86b07ebf3520d0b1a00974776e",
+      "bytes": 95933
+    },
+    "references/Hexalith.Platform/eng/test_verify_works_producer.py": {
+      "sha256": "04c6a680b26ba79348bc84bb09d8b2724b07118dd38b7fa52b405708fd5df65a",
+      "bytes": 17225
+    },
+    "references/Hexalith.Platform/eng/verify_works_host.py": {
+      "sha256": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+      "bytes": 98567
+    },
+    "references/Hexalith.Platform/eng/verify_works_producer.py": {
+      "sha256": "469cdda858d75b26c02db8112642186edd078fe601e2e05904a44fe46fcc7ed4",
+      "bytes": 11492
+    }
+  },
+  "requestedSourceHashes": {
+    "Directory.Build.targets": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+    ".github/workflows/ci.yml": "5cf062de4dfe030fb05bcaef27b0cc30f95a9be22d3109f315699934d0f6cdbe",
+    "scripts/tests/test_transitive_project_reference_globals.py": "c09ec6b69394068f6fcc3a49aded75fdbc40ec750cde589b1c984f98c0149654",
+    "references/Hexalith.Platform/eng/verify_works_producer.py": "469cdda858d75b26c02db8112642186edd078fe601e2e05904a44fe46fcc7ed4",
+    "references/Hexalith.Platform/eng/test_verify_works_producer.py": "04c6a680b26ba79348bc84bb09d8b2724b07118dd38b7fa52b405708fd5df65a",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": "b3f8b31583b1e8c3ff0a409774fe9eab33b6dd86b07ebf3520d0b1a00974776e",
+    "references/Hexalith.Platform/docs/works-host-parity.md": "e470feca328088a2c132f9e66f155580f7f079ff25608f1347b196706e60aac5"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "helperSha256": "cbf1be0c617a6c646c7e6ac3254ced72d93ec2af0a099f9aab31e13296f60567",
+  "status": "read-only diagnostic; no parity credit",
+  "dockerCommandAllowlist": [
+    "ps",
+    "inspect",
+    "logs",
+    "events"
+  ],
+  "namespaceHelpers": 0,
+  "containerExec": false,
+  "admission": "Sentry exact owned read-only config source; peers exact shared credential mount and DCP creator PID/start/group labels",
+  "roots": [
+    "/tmp/story49-final-20261026T195205Z/full1/workspace/platform/DaprComponents",
+    "/tmp/story49-final-20261026T195205Z/full1/gate/retained-works-source"
+  ],
+  "limits": {
+    "seconds": 1900,
+    "containers": 60,
+    "observations": 1400,
+    "pollSeconds": 5,
+    "logBytesPerContainer": 1048576
+  },
+  "excluded": [
+    "environments",
+    "credential contents",
+    "foreign resources"
+  ]
+}

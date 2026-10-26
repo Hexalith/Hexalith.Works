@@ -1,0 +1,22 @@
+{
+  "references/Hexalith.Builds/Props/Directory.Packages.props": {
+    "mtimeNs": 1793035761897008386,
+    "sha256": "c31f6ca3fb021992e054b9eda7828fada0247fbd7be6cc53ac95e28cbdee5b9a"
+  },
+  "src/Hexalith.Works.Contracts/obj/project.assets.json": {
+    "mtimeNs": 1793035732655618881,
+    "sha256": "093651acba6224760a46d7224e0002352f52633662294738753d0a813c94e7d0"
+  },
+  "src/Hexalith.Works.Server/obj/project.assets.json": {
+    "mtimeNs": 1793035732671619615,
+    "sha256": "5676a8adff34ef68f07d587362115769c1b2058765d1bef6c07551a73c87d9ea"
+  },
+  "src/Hexalith.Works.Projections/obj/project.assets.json": {
+    "mtimeNs": 1793035732655618881,
+    "sha256": "05ec30f715fda87748f183c70c5ebe86e098220de3ac0a65bffdf9e3644674d9"
+  },
+  "src/Hexalith.Works.Reactor/obj/project.assets.json": {
+    "mtimeNs": 1793035732671619615,
+    "sha256": "502ec52fda0db7dee5c5e36caf551b2a491ce58918491d62953f8472ae9b0a21"
+  }
+}

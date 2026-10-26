@@ -1990,3 +1990,7 @@ CI/build and scripts group, Works `18e94d3..ab020fa`. Both entries predate this 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26C-A4 — Decide whether the Platform parity job must be a required merge check on `main` (low; repository setting).
   evidence: release.yml verify-source requires a successful push CI run, so parity blocks release; `main` has no branch protection or rules, so a red parity job does not block merges.
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: Define and validate empty per-aggregate rebuild histories separately from empty tenant inventories and rejected-only histories.
+  evidence: BuildEpoch retains each supplied aggregate as membership and parking, but ValidateHistory accepts Events=[] and the fold emits no roll-up. The same loop and zero-event behavior exist in pre-cutover 696781961155d764ed805843f55b40dc5882e887. Verify the supported capture contract and reject malformed existing-aggregate emptiness without breaking legitimate absence/rejection-only cases.

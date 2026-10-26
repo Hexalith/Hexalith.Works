@@ -1,0 +1,27 @@
+{
+  "priorEvidenceRoot": "/tmp/story49-group2-current-20261026T182217Z",
+  "differences": {
+    "Hexalith.Works.UnitTests": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        "Hexalith.Works.UnitTests.deps.json"
+      ]
+    },
+    "Hexalith.Works.PropertyTests": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        "Hexalith.Works.PropertyTests.deps.json"
+      ]
+    },
+    "Hexalith.Works.IntegrationTests": {
+      "added": [],
+      "removed": [],
+      "changed": [
+        "Hexalith.Works.deps.json"
+      ]
+    }
+  },
+  "identical": false
+}

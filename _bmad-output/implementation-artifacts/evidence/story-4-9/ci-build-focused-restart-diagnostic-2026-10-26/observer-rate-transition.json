@@ -1,0 +1,9 @@
+{
+  "observedAtUtc": 1793042529.85717,
+  "oldHelper": "observe-control-plane-periodic.py",
+  "oldScope": "control-plane-observer/scope-periodic.json",
+  "priorHelpers": 55,
+  "ownedHelpersActiveAtTransition": 0,
+  "newPolicy": "one baseline per new admitted container; then health changes/failures or explicit diagnostic trigger; reuse prior baselines",
+  "sourceRuntimeLauncherChanged": false
+}

@@ -1,0 +1,230 @@
+{
+  "status": "passed",
+  "frozenIntentByteIdenticalToFinalSourceCapture": true,
+  "frozenIntentSHA256": "de1c74eee26581eab23b760d595d93951471cad0074b3b57eb45a35058f7ef5d",
+  "localFullGate": "/tmp/story49-final-20261026T195205Z/full2/gate/ledger.json",
+  "localFullStatus": "passed-disposable-synthetic-parity-and-rollback",
+  "rows": [
+    {
+      "scenario": "Migration gate",
+      "facts": [
+        "ArchivedTopologyReachesHealthyReadiness",
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ],
+      "sourceAssertions": [
+        "Real coordinator refusal tests preserve incomplete bootstrap and reject missing row/proof/rollback/public qualification",
+        "Byte-bound retained archive reaches healthy readiness and the complete stopped fleet is restored before retained-host query and exact receipt replay"
+      ],
+      "sources": [
+        "scripts/tests/test_platform_parity_ci.py",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRetainedHostPreflightTests.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs"
+      ],
+      "localExecutedCoverage": {
+        "ArchivedTopologyReachesHealthyReadiness": {
+          "type": "Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/retained-preflight.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        }
+      },
+      "sourceSHA256": {
+        "scripts/tests/test_platform_parity_ci.py": "cf8a5d4d059c81af991883a2a2ca64dda0fe707eda280822d20f052184e4251e",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRetainedHostPreflightTests.cs": "96be32c1b3ee3215f68be0beab0ddfdd8ab5f21b58b42632514596774232f6a8",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs": "49818bd9af615fa9e6e13b50cb6aa1838139e8b1bd922d21591dc3ce4a193161"
+      },
+      "hostedExecutedCoverage": {
+        "ArchivedTopologyReachesHealthyReadiness": {
+          "xml": "retained-preflight.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        }
+      },
+      "hostedCoverageStatus": "passed"
+    },
+    {
+      "scenario": "Shared rebuild",
+      "facts": [
+        "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily",
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart"
+      ],
+      "sourceAssertions": [
+        "Captured and staged generations retain the original complete logical family and delegated stale read",
+        "A real new source event is committed during capture; automatic catch-up after Commit reaches its position and independently folded complete-family digest",
+        "Repeated delivery preserves generation/digest/checkpoints; conflicting delivery persists one durable quarantine and returns degraded/unavailable query metadata"
+      ],
+      "sources": [
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs"
+      ],
+      "localExecutedCoverage": {
+        "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": {
+          "type": "Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-projection.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        }
+      },
+      "sourceSHA256": {
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs": "48db59b18b6bfd0681e6b57310be9dea6558d3cd5850f18f806e5486209bd72e",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs": "b2f3a8b0bf7134c6f2b329198810be3719282bb5cb3faa693add9ba6ecc7c011"
+      },
+      "hostedExecutedCoverage": {
+        "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily": {
+          "xml": "platform-projection.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        }
+      },
+      "hostedCoverageStatus": "passed"
+    },
+    {
+      "scenario": "Redelivery/restart",
+      "facts": [
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ],
+      "sourceAssertions": [
+        "Actual callbacks register date-resume reminder kind/target/due time while periodic workers are disabled",
+        "Persisted expiry/cancel/resume counts remain one across stop/restart, lost firing, reissue and complete retained restore",
+        "Exact trusted-effect receipt replay is NoOp; conflicting semantic digest persists attributed collision without a second logical resume"
+      ],
+      "sources": [
+        "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs"
+      ],
+      "localExecutedCoverage": {
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        },
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": {
+          "type": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-ha.xml",
+          "result": "Pass"
+        }
+      },
+      "sourceSHA256": {
+        "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "97ba91b4478b0f662fd0e62fe6a8356ab6c71b1ff180fe9b640a6612c3e2b4f0",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs": "59fdbedbed87708ee8bed68db6750de7ce734f11c476bfa3e9be478da4127ed3",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs": "49818bd9af615fa9e6e13b50cb6aa1838139e8b1bd922d21591dc3ce4a193161"
+      },
+      "hostedExecutedCoverage": {
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        },
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": {
+          "xml": "platform-ha.xml",
+          "result": "Pass"
+        }
+      },
+      "hostedCoverageStatus": "passed"
+    },
+    {
+      "scenario": "Unauthorized request",
+      "facts": [
+        "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart",
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery",
+        "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process",
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect"
+      ],
+      "sourceAssertions": [
+        "Wrong tenant/actor/origin and direct application port are refused; foreign detail is not found and accepted family digest remains unchanged",
+        "Wrong-purpose/tenant/aggregate operations record actual receiver refusals and preserve disposition generation/checkpoint/pending plan/audit count",
+        "Conflicting semantic digest refuses an existing effect identity, persists quarantine and preserves one logical effect",
+        "Authenticated configured-root mTLS server refuses missing and foreign-CA certificates; identity mismatch is rejected by the probe"
+      ],
+      "sources": [
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformOperationsChecks.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustChecks.cs"
+      ],
+      "localExecutedCoverage": {
+        "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": {
+          "type": "Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-historical.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        },
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": {
+          "type": "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-recovery.xml",
+          "result": "Pass"
+        },
+        "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process": {
+          "type": "Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-mtls.xml",
+          "result": "Pass"
+        },
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": {
+          "type": "Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests",
+          "xml": "/tmp/story49-final-20261026T195205Z/full2/gate/platform-ha.xml",
+          "result": "Pass"
+        }
+      },
+      "sourceSHA256": {
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs": "9ebb19cff9af79b80e5972c4f8738ed93d57fe4c304cc1cbb73e963d11dcc9f0",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformOperationsChecks.cs": "9248246c30adfa0593fc8c16441e5a10a184d2ba88054a09d171829bc8fa4b4a",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs": "49818bd9af615fa9e6e13b50cb6aa1838139e8b1bd922d21591dc3ce4a193161",
+        "tests/Hexalith.Works.IntegrationTests/WorksPlatformTrustChecks.cs": "024ef711768beebd1e3623f3d08a37aa3e5a2e14a18ac789e4bf48616e32b1d0"
+      },
+      "hostedExecutedCoverage": {
+        "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart": {
+          "xml": "platform-historical.xml",
+          "result": "Pass"
+        },
+        "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        },
+        "SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery": {
+          "xml": "platform-recovery.xml",
+          "result": "Pass"
+        },
+        "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process": {
+          "xml": "platform-mtls.xml",
+          "result": "Pass"
+        },
+        "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect": {
+          "xml": "platform-ha.xml",
+          "result": "Pass"
+        }
+      },
+      "hostedCoverageStatus": "passed"
+    }
+  ],
+  "limits": "Success requires this successor's complete audit; independent workflow reviews remain separate."
+}

@@ -1,0 +1,44 @@
+{
+  "scope": "read-only diagnostic within nonqualifying final canonical run; no parity credit",
+  "admittedContainers": 15,
+  "admittedKinds": {
+    "sentry": 5,
+    "placement": 5,
+    "scheduler": 5
+  },
+  "nativeObservations": 336,
+  "dcpSnapshots": 107,
+  "ownedDcpApis": 5,
+  "extraHelperContainers": 0,
+  "containerExecCalls": 0,
+  "failedPlacement": {
+    "id": "55f91a726b3f8b05b69acd73ff0a74fed465ea1e01de77055dbe3c03972ec200",
+    "samples": 33,
+    "firstAt": "2026-10-26T20:14:33.119954+00:00",
+    "lastAt": "2026-10-26T20:17:27.054245+00:00",
+    "nativeStatuses": {
+      "running": 33
+    },
+    "publishedHealthOutcomes": {
+      "ConnectionRefusedError": 33
+    },
+    "dcpProxySnapshots": 26,
+    "proxyOutcomes": {
+      "TimeoutError": 52,
+      "ConnectionRefusedError": 26
+    },
+    "nativeStdoutFacts": [
+      "Healthz server is listening on [::]:8080",
+      "Security is initialized successfully",
+      "Node id=dapr-placement-0 has acquired leadership"
+    ],
+    "remainingGap": "No same-interval direct container-network HTTP response; listener startup logs do not prove continuing internal health. An exact-ID post-cleanup Docker inspect could not recover its bridge address.",
+    "dcpContainerHealthStatuses": {
+      "Healthy": 27
+    },
+    "dcpHealthServiceStates": {
+      "Ready": 26
+    }
+  },
+  "observationPolicy": "No runtime/launcher/source/assertion/deadline changes; no container creation, exec, host changes or foreign resource mutations"
+}

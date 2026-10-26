@@ -1,0 +1,23 @@
+{
+  "total": 4,
+  "passed": 4,
+  "failed": 0,
+  "errors": 0,
+  "skipped": 0,
+  "not-run": 0,
+  "seconds": 768.525,
+  "phases": 26,
+  "starts": 6,
+  "runtimeFiles": 909,
+  "helperAttempts": 0,
+  "qualification": "diagnostic only; no full credit; failure did not recur; same-interval internal/public gap remains",
+  "admittedKinds": {
+    "sentry": 6,
+    "placement": 6,
+    "scheduler": 6
+  },
+  "nativeSamples": 391,
+  "dcpSnapshots": 129,
+  "namespaceHelpersCreated": 0,
+  "containerExecCalls": 0
+}

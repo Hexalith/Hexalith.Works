@@ -1,0 +1,88 @@
+{
+  "observedAtUtc": "2026-10-26T19:28:05.409399+00:00",
+  "scope": "focused diagnostic only; zero complete/full acceptance credit",
+  "result": {
+    "startedAt": "2026-10-26T19:11:20.282873+00:00",
+    "scope": "focused diagnostic only; no complete/full parity credit",
+    "command": [
+      "/tmp/story49-group2-current-20261026T182217Z/full1/gate/consumer/bin/Hexalith.Works.IntegrationTests/release/Hexalith.Works.IntegrationTests",
+      "-noLogo",
+      "-explicit",
+      "on",
+      "-method",
+      "Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
+      "-result-xml",
+      "/tmp/story49-group2-current-20261026T182217Z/focused-restart-1/result.xml"
+    ],
+    "cwd": "/tmp/story49-group2-current-20261026T182217Z/works",
+    "exitCode": 0,
+    "runtimeLauncherBytesUnchanged": true,
+    "changedRuntimeFiles": [],
+    "sourceRuntimeArchiveInputClosureAfter": true,
+    "finishedAt": "2026-10-26T19:22:56.409705+00:00"
+  },
+  "persistedPhases": 20,
+  "successfulFleetStarts": 5,
+  "observedControlContainers": 13,
+  "observedContainerKinds": {
+    "sentry": 5,
+    "placement": 4,
+    "scheduler": 4
+  },
+  "nativeObservations": 312,
+  "namespaceHelpers": 56,
+  "helperInternalHttpStatuses": {
+    "200": 55
+  },
+  "publishedHttp": {
+    "200": 310,
+    "ConnectionResetError": 1
+  },
+  "dcpSnapshots": 78,
+  "ownedDcpApis": 4,
+  "localhostProxyHttp": {
+    "200": 216
+  },
+  "helperRateHistory": {
+    "observedAtUtc": 1793042529.85717,
+    "oldHelper": "observe-control-plane-periodic.py",
+    "oldScope": "control-plane-observer/scope-periodic.json",
+    "priorHelpers": 55,
+    "ownedHelpersActiveAtTransition": 0,
+    "newPolicy": "one baseline per new admitted container; then health changes/failures or explicit diagnostic trigger; reuse prior baselines",
+    "sourceRuntimeLauncherChanged": false
+  },
+  "helperCleanup": [
+    {
+      "command": [
+        "docker",
+        "ps",
+        "--all",
+        "--filter",
+        "label=hexalith.works.health-observer=focus-5c1e3aaa65e74b20bd58cc2297dd8ff0",
+        "--format",
+        "{{.ID}}"
+      ],
+      "exitCode": 0,
+      "remainingIds": []
+    },
+    {
+      "command": [
+        "docker",
+        "ps",
+        "--all",
+        "--filter",
+        "label=hexalith.works.health-observer=focus-a2b9a1917b344f4384e0409bc60d9945",
+        "--format",
+        "{{.ID}}"
+      ],
+      "exitCode": 0,
+      "remainingIds": []
+    }
+  ],
+  "allHelperContainersAndScratchVolumesAbsent": true,
+  "remainingEvidenceGap": "The original failed Placement interval has no simultaneous internal/Docker-published/DCP-proxy health capture; the unchanged focused fact did not reproduce the startup failure. Server readiness versus published-port/proxy failure cannot be attributed from these passing observations.",
+  "observedException": "One published Scheduler ConnectionResetError was immediately followed by Docker refusing a helper join because that exact target had exited; no canonical readiness failure occurred in this focused run.",
+  "cliLimitation": "Testing host was not registered with the Aspire CLI backchannel; exact creator-owned local DCP API supplied sanitized UID-matched status/endpoint/proxy evidence.",
+  "qualifyingRunConstraint": "No extra namespace-helper containers in a qualifying full run."
+}

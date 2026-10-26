@@ -1,0 +1,44 @@
+{
+  "observedAtUtc": "2026-10-26T18:50:00.937896+00:00",
+  "scope": "only failed owned Placement ID captured in canonical startup log; environment/credentials excluded",
+  "commands": [
+    {
+      "command": [
+        "docker",
+        "inspect",
+        "--type",
+        "container",
+        "--format",
+        "{\"id\":{{json .Id}},\"name\":{{json .Name}},\"image\":{{json .Config.Image}},\"status\":{{json .State.Status}},\"running\":{{json .State.Running}},\"exitCode\":{{json .State.ExitCode}},\"oomKilled\":{{json .State.OOMKilled}},\"startedAt\":{{json .State.StartedAt}},\"finishedAt\":{{json .State.FinishedAt}},\"health\":{{json (index .State \"Health\")}},\"ports\":{{json .NetworkSettings.Ports}},\"mounts\":{{json .Mounts}}}",
+        "badb58fa5b9ee101ef754a6a113d0ea8e53ef6c066cd473438a37bf89bd3d574"
+      ],
+      "exitCode": 1
+    },
+    {
+      "command": [
+        "docker",
+        "logs",
+        "--timestamps",
+        "--tail",
+        "120",
+        "badb58fa5b9ee101ef754a6a113d0ea8e53ef6c066cd473438a37bf89bd3d574"
+      ],
+      "exitCode": 1
+    },
+    {
+      "command": [
+        "docker",
+        "events",
+        "--since",
+        "2026-10-26T18:45:10Z",
+        "--until",
+        "2026-10-26T18:48:40Z",
+        "--filter",
+        "container=badb58fa5b9ee101ef754a6a113d0ea8e53ef6c066cd473438a37bf89bd3d574",
+        "--format",
+        "{{json .}}"
+      ],
+      "exitCode": 0
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-26T20:17:36.631521+00:00",
+  "command": [
+    "docker",
+    "inspect",
+    "--type",
+    "container",
+    "--format",
+    "{\"id\":{{json .Id}},\"running\":{{json .State.Running}},\"networks\":{{json .NetworkSettings.Networks}},\"creatorPid\":{{json (index .Config.Labels \"com.microsoft.developer.usvc-dev.creatorProcessId\")}},\"resourceUid\":{{json (index .Config.Labels \"com.microsoft.developer.usvc-dev.uid\")}}}",
+    "55f91a726b3f8b05b69acd73ff0a74fed465ea1e01de77055dbe3c03972ec200"
+  ],
+  "admissionId": "55f91a726b3f8b05b69acd73ff0a74fed465ea1e01de77055dbe3c03972ec200",
+  "scope": "read-only exact-owned bridge address health; no exec/helpers/mutations; zero parity credit",
+  "exitCode": 1,
+  "probes": [],
+  "stderr": "Error response from daemon: No such container: 55f91a726b3f8b05b69acd73ff0a74fed465ea1e01de77055dbe3c03972ec200\n"
+}

@@ -1,0 +1,86 @@
+{
+  "at": "2026-10-26T23:03:15.481484+00:00",
+  "rows": [
+    {
+      "finding": "R5B1: complete review diff needs a bounded scope",
+      "verdict": "false",
+      "route": "reject",
+      "evidence": "The rendered workflow requires all changes from the preserved baseline, including untracked files. The indexed full diff, byte-identical evidence-filtered navigation view and separate proof manifests were provided; the reports explicitly limit their targeted semantic coverage instead of claiming every historical binary/skill was inspected. Changing the preserved baseline or silently dropping content would not correct the requested review."
+    },
+    {
+      "finding": "R5B2: empty aggregate history can produce membership without a roll-up",
+      "verdict": "medium",
+      "route": "defer",
+      "evidence": "ValidateHistory loops zero times for Events=[]; AccumulateAsync retains that aggregate and finalization can emit membership/parking without a roll-up. The same validation loop and zero-event folding behavior exist in pre-cutover 696781961155d764ed805843f55b40dc5882e887 and in the baseline builder. This is a pre-existing malformed-capture boundary; settle explicit empty-stream versus empty-tenant/rejection-only handling in the owning rebuild follow-up."
+    },
+    {
+      "finding": "R5B3: current tenant-index validation permits contradictory collections",
+      "verdict": "medium",
+      "route": "defer, carried; no new entry",
+      "evidence": "carried R4B3: the current validator still checks schema and non-null collections without cross-collection membership/sequence/identity consistency. The same location and retained-membership claim keep their existing pre-cutover verdict and follow-up; no duplicate deferral or runtime patch."
+    },
+    {
+      "finding": "R5B4: parent audit stamps passed matrix coverage after a missing fact",
+      "verdict": "medium",
+      "route": "patch, corrected and verified",
+      "evidence": "require() accumulates a missing hosted method error, but the following matrix assignment writes result Pass and the overall passed label unconditionally before returning failure. A reader of that standalone matrix JSON can therefore receive a false success on refused input; the successor must emit failed/missing coverage and publish success only after its checks pass.",
+      "verification": "The successor records Missing/Fail/Ambiguous truthfully and refuses matrix success. The parent missing-method replay exits 1, with Missing in the failed row and matrix."
+    },
+    {
+      "finding": "R5B5: retained execution scripts are not a standalone portable replay tool",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "The scripts record exact native /tmp/source paths, and the packet documents private/generated originals and the absence of uploaded CI binaries. Retained XML, proof, source-binding and ZIP bytes remain available and were independently checked. A new portable reconstruction CLI would add parameters/loading behavior beyond a direct correction for an uncommon historical replay workflow; no self-contained binary/fleet replay capability is claimed."
+    },
+    {
+      "finding": "R5B6: parent audit imports an evaluator without checking its current file bytes",
+      "verdict": "medium",
+      "route": "patch, corrected and verified",
+      "evidence": "The retained audit imports the live Platform helper after comparing only recorded local/hosted maps. Those maps alone do not bind a later replay to the evaluator actually imported. Verify the current evaluator and required helper file hashes against the recorded maps before import; the qualified current source content itself is unchanged.",
+      "verification": "The successor hash-checks the evaluator and all 25 recorded helpers before importing private copies; mismatch-before-import and poisoned-cache controls pass."
+    },
+    {
+      "finding": "R5B7: parent audit does not directly bind extracted inputs back to the verified ZIP",
+      "verdict": "medium",
+      "route": "patch, corrected and verified",
+      "evidence": "The script checks original ZIP digests, then reads a separate extracted tree. A packet can consistently copy an altered extracted tree, so comparing that tree to the packet is not an independent ZIP-member binding. Compare all consumed extracted bytes to members of the verified original archive before evaluating them.",
+      "verification": "The successor binds extracted bytes directly to verified ZIP members and consumes verified private copies; altered, missing and extra extraction controls refuse."
+    },
+    {
+      "finding": "R5B8: absent declared artifact digest is recorded as matched",
+      "verdict": "low",
+      "route": "patch, corrected and verified",
+      "evidence": "download-artifact.py explicitly accepts a None digest and subsequently writes declaredDigestMatched=true. The current two API responses do contain matching digests, so their qualification remains valid; the successor must distinguish unavailable metadata from a supplied matching digest and cover that branch.",
+      "verification": "The successor records unavailable metadata as null/unavailable and requires a supplied matching digest for true; absent, matching, empty and mismatching controls pass offline."
+    },
+    {
+      "finding": "R5B9: hosted packet summary can state unverified hard-coded ancillary results",
+      "verdict": "medium",
+      "route": "patch, corrected and verified",
+      "evidence": "build-packet.py guards overall CI success but writes fixed Commitlint/CodeQL, ordinary-count and compilation statements without deriving or checking those values in that generator. Current retained native responses/TRX/logs substantiate them; the successor must derive or explicitly validate each such claim before emitting a successful summary.",
+      "verification": "The successor checks same-head native run/job responses, derives TRX counts/exclusion coverage, and checks compilation and zero-warning/error claims against the verified original log. Unsupported claims refuse; parent replay derives the supported summary."
+    },
+    {
+      "finding": "R5B10: graph regression should add a distinct version and full child-build probe",
+      "verdict": "low",
+      "route": "reject",
+      "evidence": "The native SDK fixture deterministically fails all four cases when late forwarding is removed and checks each selected configuration/property; the current Release contract permits only the committed SDK pin. The fresh actual parallel solution and hosted build additionally show one compilation each for all three affected source dependencies. No admitted current wrong-context result survives these checks; another parameterized build fixture adds complexity beyond a direct correction for the proposed future coverage extension."
+    }
+  ],
+  "verificationGapFindings": 0,
+  "edgeCaseFindings": 0,
+  "patches": 5,
+  "newDeferrals": 1,
+  "carried": 1,
+  "rejected": 3,
+  "status": "complete; all five patches independently verified",
+  "successorManifestSha256": "a98b9e5aedbe1afd6a3e2d598511d164925809d0398fc665c3b155bc35f186fc",
+  "parentReplay": {
+    "positive": "passed",
+    "negativeMissingMethod": "expected exit 1; Missing, failed row/matrix",
+    "summary": "passed",
+    "controlsNormal": 24,
+    "controlsOptimized": 24
+  },
+  "coverageLimit": "Targeted semantic review of relevant behavior and acceptance paths; no exhaustive decoding of historical binary artifacts or unrelated upstream/skill history."
+}

@@ -1,0 +1,20 @@
+--- previous/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.deps.json
++++ final/Hexalith.Works.PropertyTests/Hexalith.Works.PropertyTests.deps.json
+@@ -6,7 +6,7 @@
+   "compilationOptions": {},
+   "targets": {
+     ".NETCoreApp,Version=v10.0": {
+-      "Hexalith.Works.PropertyTests/1.0.3-preview.0.53": {
++      "Hexalith.Works.PropertyTests/1.0.3-preview.0.54": {
+         "dependencies": {
+           "FsCheck": "3.6.0",
+           "Hexalith.Works.Contracts": "1.0.0",
+@@ -800,7 +800,7 @@
+     }
+   },
+   "libraries": {
+-    "Hexalith.Works.PropertyTests/1.0.3-preview.0.53": {
++    "Hexalith.Works.PropertyTests/1.0.3-preview.0.54": {
+       "type": "project",
+       "serviceable": false,
+       "sha512": ""

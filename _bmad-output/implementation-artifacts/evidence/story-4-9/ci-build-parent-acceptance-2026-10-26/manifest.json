@@ -1,0 +1,50 @@
+{
+  "createdAtUtc": "2026-10-26T22:34:21.613146+00:00",
+  "scope": "Parent acceptance audit; independent reviews remain outstanding",
+  "files": {
+    "full2-parent-audit.json": {
+      "sha256": "8899a4e4e18e8ee93e7026ebb901217702cbd295eca7e20fce913dc68b7cab21",
+      "bytes": 33022,
+      "source": "/tmp/story49-final-full2-parent-audit.json"
+    },
+    "hosted-parent-audit.json": {
+      "sha256": "cb7cb8c4c1d38120fcbbd37829f5726ff7f7abb65feb3a4fa7ef1cd3352ac1b7",
+      "bytes": 1060,
+      "source": "/tmp/story49-hosted-parent-audit.json"
+    },
+    "frozen-matrix-parent-audit.json": {
+      "sha256": "b02c915695d09c2b4a0aac67656837bdbbd9055206223575de5236f4b996bfa9",
+      "bytes": 12488,
+      "source": "/tmp/story49-matrix-parent-audit.json"
+    },
+    "publication-record.json": {
+      "sha256": "a8812daf0c3836992a66d9e3fc9e7af099a12b1a1af58b3998654bbab19ec6bd",
+      "bytes": 2512,
+      "source": "/tmp/story49-publication-record.json"
+    },
+    "audit-full2.py": {
+      "sha256": "ee5ea15c16cd5dfc6c11a9778e13e219eeff3b828b381e44100b3bda55ab65df",
+      "bytes": 5107,
+      "source": "/tmp/story49-audit-full2.py"
+    },
+    "audit-hosted.py": {
+      "sha256": "7456e4c7fa7d79a75dca95022ae4d47be6f8ab81e739a67780874e1091d25169",
+      "bytes": 8523,
+      "source": "/tmp/story49-audit-hosted-parent.py"
+    },
+    "audit-matrix.py": {
+      "sha256": "2008456c2b5d8338dcd6b712208087dff4446f49c90e1396317290364d84859d",
+      "bytes": 5608,
+      "source": "/tmp/story49-matrix-parent-audit.py"
+    },
+    "initial-hosted-audit-roots.json": {
+      "sha256": "b372f2ef6d6daa2f1fd27b07e890079b14a1bd11e6fa1610a975153951afc289",
+      "bytes": 12546,
+      "source": "/tmp/story49-hosted-parent-audit-initial-roots.json"
+    },
+    "README.md": {
+      "sha256": "518b7c5ea62d5aa12446b5e764abf18fa4c813c79e50ef5d61bc2aa510eabf48",
+      "bytes": 2893
+    }
+  }
+}

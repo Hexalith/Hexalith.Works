@@ -1,0 +1,29 @@
+{
+  "scope": "starting-revisions-plus-exact-owned-overlays; externally advancing workspace excluded",
+  "worksRevision": "ae61f84d2ee2fdb8a0e60439b80cf060c59b045d",
+  "rootDependencies": {
+    "references/Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "references/Hexalith.Builds": "f9142d8a845a16e54ee060e6a0250c773d00e0ba",
+    "references/Hexalith.Chatbot": "179f94f7f370505feb2e7b41ae242616ac4a5734",
+    "references/Hexalith.Commons": "1663028fb6d9f46a0bf17919edeb21bb99be1587",
+    "references/Hexalith.Conversations": "772f7af574504492da77efe467293ccd2261906e",
+    "references/Hexalith.EventStore": "c5d1c280d8c1c1a207cd159d817f614e93c93130",
+    "references/Hexalith.FrontComposer": "3fd62e497ed9e1ae13811af813487fb97e4adc16",
+    "references/Hexalith.McpCli": "3196d3d268c1a4203a238ab5fe61cd6239cebd94",
+    "references/Hexalith.Parties": "664b99c67e90a14c8a1cc4d9663a25fa44c47c9a",
+    "references/Hexalith.Platform": "2c261d2517692ac45721099fcccf822f3821509e",
+    "references/Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "references/Hexalith.Projects": "0e4cfcc41b3255f4340929d34cc5c27709128626",
+    "references/Hexalith.Tenants": "3b60914ace5201a711fb51c1036d3679e0512ec8"
+  },
+  "overlays": {
+    "Directory.Solution.props": "374a0763f2935179c05ea881d5b8b688b1a4796b38a86b7d578421a987aad9ea",
+    "scripts/tests/test_platform_parity_ci.py": "cf8a5d4d059c81af991883a2a2ca64dda0fe707eda280822d20f052184e4251e",
+    "scripts/tests/test_release_build_policy.py": "5ddc8e32c3f8f9abecef59bdfad09b871cdb9d60ffa369e78308bdd92964fb29",
+    "scripts/tests/test_story415_sdk_verifier.py": "ece8f996311eb7f287e9b76ccf8ab6cbd31280ddc9683da543fea34c17766598",
+    "scripts/verify-story415-sdk-candidate.sh": "fa3b10dd55f5fe130024da7bdc4a7962bfc241d19d929ed30863e8ea73a10ab0",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "169404b38e5fdb47f2e964e4d9d1f85772a733f85a06ce380c75da1ef061537c",
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": "13fc9d774ab024d5fb068dc1363ef0cdd637f186d75ed37ed13a87252679066b",
+    "references/Hexalith.Platform/docs/works-host-parity.md": "547e35c5f222eee0f77bad5c7900ad1db583df56708560359065453f32638809"
+  }
+}

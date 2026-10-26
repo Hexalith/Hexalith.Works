@@ -1,0 +1,22 @@
+{
+  "scope": "starting-revisions-plus-exact-owned-overlays",
+  "cwd": "/tmp/story49-group2-20261026T173247Z/works",
+  "commands": [
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet restore Hexalith.Works.slnx -p:Configuration=Release -m:1 -v:minimal",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build Hexalith.Works.slnx --configuration Release --no-restore -m -v:minimal",
+    "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll -noLogo -result-xml ../architecture-release.xml"
+  ],
+  "parallelBuild": {
+    "passed": true,
+    "warnings": 0,
+    "errors": 0,
+    "elapsed": "00:02:45.20"
+  },
+  "architecture": {
+    "passed": 398,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "notRun": 0
+  }
+}
