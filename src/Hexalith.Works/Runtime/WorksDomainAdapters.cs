@@ -31,8 +31,8 @@ internal static class WorksDomainAdapters
         _ = services.AddOptions<WorksProjectionOptions>()
             .Bind(configuration.GetSection(WorksProjectionOptions.SectionName))
             .Validate(static options => options.UseSdkDelivery, "Works requires SDK projection delivery.")
-            .Validate(static options => options.MaxUndecodableEventDispatchesBeforeParking > 0,
-                "MaxUndecodableEventDispatchesBeforeParking must be positive.")
+            .Validate(static options => options.MaxUndecodableEventDispatchesBeforeParking is > 0 and <= 1000,
+                "MaxUndecodableEventDispatchesBeforeParking must be between 1 and 1000.")
             .ValidateOnStart();
         _ = services.AddOptions<WorksQueryOptions>()
             .Bind(configuration.GetSection(WorksQueryOptions.SectionName))

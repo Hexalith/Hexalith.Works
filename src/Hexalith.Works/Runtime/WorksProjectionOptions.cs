@@ -19,7 +19,8 @@ public sealed class WorksProjectionOptions
     /// How many consecutive dispatches may fail to decode the same state-affecting event before the aggregate is
     /// parked. Decoding stays fail-closed for every attempt up to this bound, so a transient cause still retries;
     /// once reached, the dispatch is acknowledged with a distinct log event and the aggregate is no longer
-    /// redispatched.
+    /// redispatched. The supported range is 1 through 1000, matching the SDK coordinator; host startup
+    /// rejects values outside that range.
     /// </summary>
     public int MaxUndecodableEventDispatchesBeforeParking { get; init; } = DefaultMaxUndecodableEventDispatchesBeforeParking;
 }

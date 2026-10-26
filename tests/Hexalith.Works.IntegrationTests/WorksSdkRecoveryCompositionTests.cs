@@ -218,12 +218,27 @@ public sealed class WorksSdkRecoveryCompositionTests
     [InlineData("Works:Recovery:MaxStreamPagesPerAggregate", "-1", "The stream page budget must be positive.")]
     [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "0", "The stream page budget must be positive.")]
     [InlineData("Works:Recovery:MaxStreamPagesPerTenant", "-1", "The stream page budget must be positive.")]
-    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "0", "MaxUndecodableEventDispatchesBeforeParking must be positive.")]
+    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "0", "MaxUndecodableEventDispatchesBeforeParking must be between 1 and 1000.")]
+    [InlineData("Works:Projection:MaxUndecodableEventDispatchesBeforeParking", "1001", "MaxUndecodableEventDispatchesBeforeParking must be between 1 and 1000.")]
     public async Task InvalidRecoveryBudgetsRefuseStartup(string key, string value, string violation)
     {
         await using var app = WorksHost.Build([$"--{key}={value}", "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"]);
         OptionsValidationException refused = await Should.ThrowAsync<OptionsValidationException>(() => app.StartAsync(TestContext.Current.CancellationToken));
         refused.Failures.ShouldContain(violation);
+    }
+
+    /// <summary>The actual host accepts both endpoints of the SDK parking retry range.</summary>
+    /// <param name="limit">The supported parking retry limit.</param>
+    [Theory]
+    [InlineData(1)]
+    [InlineData(1000)]
+    public async Task ProjectionParkingBudgetBoundariesAreAccepted(int limit)
+    {
+        await using var app = WorksHost.Build([
+            $"--Works:Projection:MaxUndecodableEventDispatchesBeforeParking={limit}",
+            "--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"]);
+        app.Services.GetRequiredService<IOptions<WorksProjectionOptions>>().Value
+            .MaxUndecodableEventDispatchesBeforeParking.ShouldBe(limit);
     }
 
     /// <summary>The historical alias keeps its documented precedence over the aggregate budget.</summary>
