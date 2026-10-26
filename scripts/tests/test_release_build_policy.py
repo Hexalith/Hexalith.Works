@@ -89,15 +89,26 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
                                       f"-p:HexalithEventStoreVersion={PIN}-story415.policy", *arguments)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
-    def test_invalid_candidate_switch_and_false_admission_are_refused(self):
-        for value in ("false", "yes", "on", "1"):
-            with self.subTest(value=value):
-                result = self.msbuild(
-                    "-t:ValidateHexalithDependencyMode", "-p:Configuration=Release",
-                    "-p:HexalithEventStoreVersion=0.0.1", f"-p:WorksAllowLocalEventStoreCandidate={value}",
-                )
-                self.assertNotEqual(0, result.returncode)
-                self.assertIn("HXW0003", result.stdout)
+    def test_false_candidate_admission_does_not_allow_pin_drift(self):
+        result = self.msbuild(
+            "-t:ValidateHexalithDependencyMode", "-p:Configuration=Release",
+            "-p:HexalithEventStoreVersion=0.0.1", "-p:WorksAllowLocalEventStoreCandidate=false",
+        )
+        self.assertNotEqual(0, result.returncode)
+        self.assertIn("Release requires the committed EventStore pin", result.stdout)
+
+    def test_invalid_candidate_switch_refuses_with_the_committed_pin_in_both_configurations(self):
+        for configuration in ("Release", "Debug"):
+            for value in ("yes", "on", "1"):
+                with self.subTest(configuration=configuration, value=value):
+                    result = self.msbuild(
+                        "-t:ValidateHexalithDependencyMode", f"-p:Configuration={configuration}",
+                        f"-p:HexalithEventStoreVersion={PIN}", f"-p:WorksAllowLocalEventStoreCandidate={value}",
+                    )
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("HXW0003", result.stdout)
+                    self.assertIn("WorksAllowLocalEventStoreCandidate must be exactly true or false", result.stdout)
+                    self.assertNotIn("Release requires the committed EventStore pin", result.stdout)
 
     def test_candidate_feeds_require_opt_in_and_preserve_explicit_sources(self):
         for story in ("story-4-14", "story-4-15"):

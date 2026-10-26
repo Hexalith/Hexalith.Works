@@ -304,6 +304,62 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
     def test_accepts_the_complete_canonical_result(self):
         self.assertEqual(self.require(self.ledger), self.ledger)
 
+    def main_fixture(self):
+        origin = self.artifacts / "platform-origin"
+        selected = self.artifacts / "platform-selected"
+        for platform, digest in ((origin, "f" * 64), (selected, RUNTIME)):
+            (platform / "config").mkdir(parents=True)
+            (platform / "config/works-proof-toolchain.json").write_text(
+                json.dumps({"linuxAmd64DaprdSha256": digest}))
+        record = {
+            "status": "bootstrap-validated; parity-incomplete",
+            "coordinatorSha256": PARITY.coordinator_hashes(),
+            "platformOrigin": str(origin),
+            "platformRoot": str(selected),
+            "platformSourceFiles": {"source.cs": "original"},
+        }
+        snapshot = Mock()
+        snapshot.origin_files.return_value = record["platformSourceFiles"]
+        bootstrap = self.artifacts / "bootstrap.json"
+        bootstrap.write_text(json.dumps(record, indent=2) + "\n")
+        return record, snapshot, bootstrap
+
+    def test_main_refuses_incomplete_profile_or_runtime_ledgers_without_stamping_bootstrap(self):
+        record, snapshot, bootstrap = self.main_fixture()
+        original = bootstrap.read_bytes()
+        for mutation, message in (
+            (lambda ledger: ledger.update(status="preparation-passed; parity-incomplete"), "rollback did not pass"),
+            (lambda ledger: ledger["profile"].update(name="full"), "Release/package CI profile"),
+            (lambda ledger: ledger["qualifiedToolchain"].update(runtimeSha256="f" * 64),
+             "Platform-qualified Dapr runtime"),
+        ):
+            with self.subTest(message=message):
+                ledger = copy.deepcopy(self.ledger)
+                mutation(ledger)
+                (self.gate / "ledger.json").write_text(json.dumps(ledger))
+                with (
+                    patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
+                    patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+                    patch.object(PARITY.subprocess, "run"),
+                    self.assertRaisesRegex(ValueError, message),
+                ):
+                    PARITY.main()
+                self.assertEqual(bootstrap.read_bytes(), original)
+
+    def test_main_accepts_complete_gate_using_the_bootstrapped_platform_pin(self):
+        record, snapshot, bootstrap = self.main_fixture()
+        (self.gate / "ledger.json").write_text(json.dumps(self.ledger))
+        with (
+            patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
+            patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+            patch.object(PARITY.subprocess, "run") as run,
+        ):
+            PARITY.main()
+        run.assert_called_once_with(["canonical-gate"], env={}, check=True)
+        self.assertEqual(json.loads(bootstrap.read_text())["status"],
+                         "passed-disposable-synthetic-parity-and-rollback")
+        snapshot.origin_files.assert_called_once_with(Path(record["platformOrigin"]))
+
     def test_missing_skipped_unexecuted_or_failed_required_lane_refuses(self):
         for lane in PARITY.REQUIRED_CHECKS:
             for mutation in ("missing", "skipped", "unexecuted", "failed"):
@@ -361,7 +417,7 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
             self.require(self.ledger)
 
     def test_full_or_misreported_ci_profile_cannot_qualify_ci(self):
-        for configuration in ("full", "debug-check", "debug-agents", "absent"):
+        for configuration in ("full", "debug-check", "debug-agents", "debug-consumers", "absent"):
             ledger = copy.deepcopy(self.ledger)
             if configuration == "full":
                 ledger["profile"]["name"] = "full"
@@ -369,6 +425,8 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
                 ledger["checks"]["Debug"] = ledger["checks"]["Release"]
             elif configuration == "debug-agents":
                 ledger["profile"]["agentsConfiguration"] = "Debug"
+            elif configuration == "debug-consumers":
+                ledger["profile"]["consumerConfigurations"] = ["Debug", "Release"]
             else:
                 del ledger["profile"]
             with self.assertRaisesRegex(ValueError, "Release/package CI profile"):

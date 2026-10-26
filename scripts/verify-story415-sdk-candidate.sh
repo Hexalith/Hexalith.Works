@@ -12,12 +12,14 @@ import xml.etree.ElementTree as ET
 print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithEventStoreVersion'))
 PY
 )"
-parties_version="$(python3 - "$repository_root/Directory.Packages.props" <<'PY'
-import sys
-import xml.etree.ElementTree as ET
-print(ET.parse(sys.argv[1]).findtext('PropertyGroup/HexalithPartiesVersion'))
-PY
-)"
+# Resolve the imported catalog exactly as the integration consumer's assembly metadata does.
+parties_version="$(dotnet msbuild \
+    "$repository_root/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" \
+    -nologo -p:Configuration=Release -getProperty:HexalithPartiesVersion)"
+if [[ -z "${parties_version//[[:space:]]/}" ]]; then
+    echo "Effective HexalithPartiesVersion is empty; refusing SDK verification." >&2
+    exit 1
+fi
 verification_feed="$repository_root/.artifacts/story-4-15/feed"
 if [[ "$sdk_version" != *-* ]]; then
     verification_feed="$fixture/public-feed"
