@@ -2,7 +2,7 @@
 title: 'Migrate Works Hosting to the Platform Boundary'
 type: 'feature'
 created: '2026-09-22'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '18e94d388ab0abd8be363b361d0b2fee762359e7'
 route: 'dispatch'
 review_loop_iteration: 1
@@ -257,6 +257,111 @@ Rejected (35):
 - R26C-E15 — **low**; edge-case-hunter: CI checks out exact gitlinks, and Platform records the Works commit.
 - R26C-E16 — **low**; edge-case-hunter: CI passes `$RUNNER_TEMP`, and the coordinator requires a new directory.
 - R26C-E17 — **low**; edge-case-hunter: same as R26C-B16.
+
+#### Review 2026-10-27 — Platform live proofs and harness (group 3A)
+
+Scope: Works `18e94d388ab0abd8be363b361d0b2fee762359e7..986b56f1f36db1252e4f4d863ab4cab0e53b06ba`, restricted to the 40 group-3A files under `tests/Hexalith.Works.IntegrationTests/`: `WorksPlatform*`, `WorksAppHost*`, `WorksMtlsAuthorizationSmokeTests.cs`, `ObservedSchedulerVolumeProbe.cs` and `StartupHook.cs`. The range is +6,888/-1,697 (8,827 diff lines). This is the third agreed review group. Integration families 3B–3E, the docs/contracts/unit-test group and the submodule internals remain separate groups. The commit narrative for these paths was supplied only to the Edge Case Hunter. All four layers returned and none failed: Blind Hunter (18 compound findings), Edge Case Hunter (38), Verification Gap Reviewer (3 gaps and 2 other findings) and Acceptance Auditor (8). No build, test or live parity rerun is claimed by this review.
+
+Thirty of the 40 files already existed at pre-cutover `6967819` (Story 4.16 proof code), and 22 of those are unchanged since. Per the agreed cut-off, findings against code present there are rejected when low, or deferred as pre-existing when real and medium. Verdicts were assigned to each finding individually, after compound findings were split, and before grouping. Outcome from 83 normalized findings: 0 decision-needed, 7 patch (19 findings), 3 defer (4 findings) and 60 rejected.
+
+- [ ] [Review][Patch] R27A-V2: Test the isolation rewrite that every launched sidecar receives [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:96] — **medium**; verification-gap+blind-hunter (R27A-B17a).
+  - The gap: `IsolateApplicationPorts` has no deterministic test, although Story 4.9 extended it with the Platform control-plane port, Placement/Scheduler address, runtime-path and Scheduler broadcast rewrites. It is still the only thing that gives each sidecar its isolated `Config`: the run-owned SQLite `nameResolution` registry plus the Sentry address.
+  - Why nothing catches a regression: `WorksAppHostDiscoveryIsolationTests` exercises only `Render` on fixed strings. Platform's `isolated_daprd.verify` compares recorded `(appId, config, configSha256)` with the launches but never reads the content, and the Platform shim rewrites `--sentry-address` itself. So dropping `Config = Isolated(...)` at `:146` passes every test and the live gate, while the sidecars fall back to mDNS and can round-robin to another local session's `eventstore`/`works`.
+  - Fix: make the rewrite testable internally, with selection and ports passed in rather than read from process environment. Compose a builder with Dapr sidecars in the `WorksPlatformCompositionGuardTests.Composed` style and assert:
+    - every rewritten `Config` lies under the start's `works-sdk416-discovery-*` directory and parses to a `nameResolution.component: sqlite` block sharing one registry;
+    - the selected Sentry, Placement and Scheduler ports and the broadcast argument are applied.
+- [ ] [Review][Patch] R27A-V3: Test the Platform-path start/teardown waits against the owned proof volume and run-owned ports [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:61] — **low**; verification-gap+acceptance-auditor (R27A-A6d).
+  - What the waits do on Platform: they now probe the caller's `works-sdk416-*` Scheduler volume (or skip when it is null, `:945`) and the `WORKS_PLATFORM_*_PORT` control-plane ports.
+  - What the tests cover instead: only the retired defaults. `Scheduler_volume_probe_includes_stopped_containers` asserts `volume=hexalith-works-dapr-scheduler` (`WorksAppHostSmokeHarnessTests.cs:326`), and the two control-plane wait tests hard-code 50001 (`:366`, `:391`). That default volume (`WorksAppHostSelection.cs:34`) names the deleted Works AppHost's Scheduler. Every non-Platform start now refuses in `EntryPoint()`.
+  - Why nothing catches a regression: reverting the owner probe to the default volume, or the ports to `(50001, 51005, 51006)`, keeps every test green. On Platform, teardown would then stop waiting for the proof Scheduler and the run-owned ports, so restart facts would fail intermittently as bind errors instead of the `[teardown]` diagnostic.
+  - Fix:
+    - Add `CreateSchedulerVolumeProbeStartInfo("works-sdk416-…")` and owned-port cases through an internal overload that takes the ports and the volume.
+    - Retire the dead default volume once no test depends on it.
+- [ ] [Review][Patch] R27A-B5: Remove the dead Works-host fallback leftovers in the live harness [tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs:251] — **low**; blind-hunter+acceptance-auditor+edge-case-hunter (R27A-A6a, R27A-A6c, R27A-E8, R27A-A6e, R27A-B6a, R27A-E38). Story 4.9's Platform-only selection left five leftovers:
+  - **Unreachable returns in `PrerequisiteGapAsync`.** After the new `!IsPlatform` early return, `IsPlatform` is always true, so the `return gap;` and `return exception.Message;` paths (`:255-256`, `:265-266`) can never run. Make both throws unconditional.
+  - **Unreachable bound-metadata branch.** The `WORKS_APPHOST_BOUND_METADATA_STARTUP` branch (`:364-374`) needs `configure is null`. `RequireOwnedPlatformFixture` refuses that on Platform, and `EntryPoint()` refuses every non-Platform start, so no caller can reach it. Its comment still cites "legacy reminder/process registrations". Delete the branch.
+  - **Stale test doc.** `WorksAppHostSelectionTests.cs:37` still says the unselected lane "retains its original entry point", but its test asserts refusal. Correct the comment.
+  - **Unused code after the helper removal.** In `WorksAppHostTestReadiness.cs`, the `Hexalith.Works.Projections`/`Hexalith.Works.Reminders` usings (`:7-8`) and the `s_web` field (`:21`) lost their only users. Delete them, together with the double blank line.
+- [ ] [Review][Patch] R27A-B1: Refuse Sentry host port 65535 in discovery isolation [tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolation.cs:37] — **low**; blind-hunter+edge-case-hunter+acceptance-auditor+verification-gap (R27A-E10, R27A-A7, R27A-V-O1). The Story 4.9 `Render` port check refuses only `> 65535`. `ResolveControlPlanePorts` refuses 65535, which Platform's selector excludes as the Docker boundary port (the round-1 correction), and its test pins that. The two boundary contracts disagree, and `UnsafeSentryPortsAreRefused` has no 65535 row. Change the check to `>= 65535` and add the row.
+- [ ] [Review][Patch] R27A-B14: Make the mTLS denial's no-disclosure assertions discriminating [tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs:98] — **low**; blind-hunter. Story 4.9 added `deniedBody.ShouldNotContain(tenant / authorizedItem / "mTLS authorization proof")`, but the denied request body is `{}`. A denial that echoes its request therefore still passes. Send a denied payload carrying the tenant, item and marker, so the R10 wrong-app evidence proves that nothing is echoed or disclosed. Keep the 403, unchanged-digest and unchanged-checkpoint checks.
+- [ ] [Review][Patch] R27A-B13: Fail the mTLS projection-checkpoint wait on overshoot instead of spinning to timeout [tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs:71] — **low**; blind-hunter+edge-case-hunter (R27A-E23). The new wait loops `while (... OwnerSequenceNumber != 1)`. A duplicate or extra application past 1 therefore spins for 2 minutes and surfaces as an untagged `OperationCanceledException`, not as an assertion on the defect. Loop while the value is below 1, then assert it equals 1.
+- [ ] [Review][Patch] R27A-A4: Raise the harness Dapr runtime floor to the qualified 1.18.7 [tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs:20] — **low**; acceptance-auditor. `MinimumDaprRuntimeVersion` still admits 1.18.3. The 2026-10-21 decision showed that 1.18.3 accepts the wrong-origin negative, and the round-2 decision moved every authority to 1.18.7. A 1.18.3 sidecar is still reported "compatible" until the live negative fails. The coordinator's hash pin keeps 1.18.3 out of the gate, so this is a stale third floor with a misleading diagnostic. Set the floor to 1.18.7.
+- [x] [Review][Defer] R27A-A1: R10 lacks AD-24's wrong-trust-domain, forged-high-sequence and ordinary-user SpawnChild negatives [tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs:92] — **medium**; acceptance-auditor. Deferred as pre-existing and outside this story's code:
+  - **What exists:** the historical lane submits `SpawnChild` with the ordinary dev JWT and requires `Completed`. The trust probes use only the `public` trust domain. The projection forgery injects sequence 0. Platform `PROOFS["R10"]` (`verify_works_host.py:744`) requires none of these negatives.
+  - **Why it predates 4.9:** the proofs exist at `6967819`.
+  - **What blocks a fix:** ordinary-user SpawnChild refusal depends on the AD-21/AD-23 registry-authorized child creation, which is still a target state.
+  - **What would settle it:** record R10's current narrowing to the historical-lane equivalence (AC3), or add the three negatives when AD-21/AD-23 are storied, plus the Platform R10 proof entries.
+- [x] [Review][Defer] R27A-A3: AC2's failure branch has only an in-memory proof [tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs:184] — **medium**; acceptance-auditor. Deferred as pre-existing:
+  - **What exists:** the live Platform projection lane drives Begin→Accumulate→Finalize→Stage→Commit only. Abort or failed capture under concurrent delivery is proven only by `WorksSdkProjectionQueryTests.Aborted_concurrent_rebuild_keeps_old_generation_and_allows_live_delivery_afterward` over `InMemoryReadModelStore`.
+  - **Why this is a gap and not a violation:** the frozen Always rule names capture-through-Commit for the live rerun.
+  - **Why it predates 4.9:** the live lane is unchanged since `6967819`.
+  - **What would settle it:** a live abort-under-concurrent-delivery check at the next Platform requalification that asserts the served generation and catch-up convergence on the real state store.
+- [x] [Review][Defer] R27A-V1: Test the telemetry collector's label and shape refusals [tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryCollector.cs:233] — **medium**; verification-gap+blind-hunter (R27A-B17b). Deferred as pre-existing: the collector and its tests are unchanged since `6967819`.
+  - **The gap:** the live recovery facts rely on `telemetry.Failures.ShouldBeEmpty()` as the oracle that no forbidden label or shape is exported. No test sends a well-formed point the collector must refuse: a forbidden attribute, a non-allowlisted reason, a reason label on `alert`, an unlabeled reason gauge, or a non-gauge recovery instrument.
+  - **Consequence:** inverting the check at `:233` keeps every test green.
+  - **Fix:** add an exporter-driven theory in the existing supporting class.
+
+Rejected (60):
+- R27A-B2 — **low**; blind-hunter: the hash-then-`LoadFrom` window and the unhashed sibling dependencies require a local writer racing the verifier's own build output. Platform's runtime/launcher closure binds the selected artifacts, every gate start exercises the accepting path, and holding handles or re-hashing adds complexity.
+- R27A-B3 — **low**; blind-hunter: round 1 rejected "every Platform start needs the retained-host env" because the verifier always supplies it. Loading the retained assembly reads only its metadata and entry type, and no load conflict was shown.
+- R27A-B4 — **false**; blind-hunter: the isolated daprd shim records each launch's config hash with Python's lowercase hexdigest, and `isolated_daprd.verify` (Platform `eng/isolated_daprd.py:88-101`) requires equality with `sidecarLaunches`. The lowercase is deliberate, and the binding is made during the run, before the directory is removed.
+- R27A-B6b — **low**; blind-hunter: with Scheduler-backed reminders, a 2xx Dapr reminder DELETE has already removed the job, so the lost firing exists before the primary stops. The flow is pre-existing, and a 404 poll adds a loop.
+- R27A-B7 — **low**; blind-hunter: a new live class missing from the list either fails loudly in ordinary runs (`failSkips`) or is not selected. Reflection-based discovery is more than a direct correction.
+- R27A-B8 — **low**; blind-hunter: `WorksPlatformFleetRestoreTests` (unchanged since `6967819`) is a Docker-backed Platform `SUPPORTING_CLASSES` lane. Supported runners have Docker and hosted ordinary runs pass; reclassifying lanes is a policy change.
+- R27A-B9 — **false**; blind-hunter: the verifier runs the retained preflight in its own process (`verify_works_host.py:1316`), and every live fact is `Explicit`, so it never runs beside another live topology.
+- R27A-B10a — **low**; blind-hunter: the composition guard is an environment-key guard by design. The fixture's argument, mount and sidecar-option changes are the disposable-fleet isolation round 1 accepted, unchanged since `6967819`.
+- R27A-B10b — **low**; blind-hunter: accepting any loopback HTTP OTLP endpoint matters only if the fixture itself redirects elsewhere. The code is unchanged since `6967819`, and binding the collector instance adds a parameter.
+- R27A-B11 — **low**; blind-hunter: the tracked-key set is the verifier's comparison contract, and hook/hosting-startup ordering is guarded in-process; unchanged since `6967819`.
+- R27A-B12a — **false**; blind-hunter: `primaryStoppedBeforeDue` refuses loudly when a slow host cannot prove the precondition, rather than passing vacuously. The qualified HA lane completes in about 90 seconds, including startup.
+- R27A-B12b — **low**; blind-hunter: the callback probe records after the SDK handler returned 200. Once resumed, the item is no longer Suspended, so a late stale resume cannot append a second `WorkItemResumed`. The flow is pre-existing.
+- R27A-B12c — **false**; blind-hunter: the verifier requires a `works-ha` runtime module and binds every module entry to its runtime artifact hash (`verify_works_host.py:398-432`), so a different Works build is refused.
+- R27A-B12d — **low**; blind-hunter: the replica mirrors Platform's own commented wait removal (`WorksPreviewModel.cs:195-199`); the finding concerns only a missing comment.
+- R27A-B13b — **low**; blind-hunter: the remaining exact-equality waits in pre-existing HA, historical, projection and operations checks still fail on a defect (by timeout), only with weaker diagnostics.
+- R27A-B14b — **low** (maybe-false); blind-hunter: an app-level 403 requires the ACL to admit `eventstore-admin` and the app to answer 403 rather than 401 without a workload token. The status-only check predates the cutover.
+- R27A-B14c — **low**; blind-hunter: `identity.Calls >= 3` ignores its baseline in pre-existing historical code, and the refusals it accompanies are asserted separately.
+- R27A-B15 — **false**; blind-hunter: each family digest is compared only with the same helper's earlier value in the same phase; there is no cross-phase comparison.
+- R27A-B16 — **low**; blind-hunter: a renamed proof volume is refused loudly by both checks, so a shared constant is cosmetic.
+- R27A-B17c — **low**; blind-hunter: the other untested helpers are exercised by every qualified live lane, and no defect or regression path was shown. They are the hosting-evidence read, effective environment, timeout parsing, startup logs, binary snapshot, app-channel tokens and identity-fixture refusals.
+- R27A-B18 — **low**; blind-hunter: appending startup logs to body failures is pre-existing diagnostic noise; the phase tag and inner exception are preserved.
+- R27A-V-O2 — **low**; verification-gap: each `Composed()` call leaves one empty-project temporary directory; unchanged since `6967819`; negligible.
+- R27A-A2 — **low**; acceptance-auditor: query refusals assert the exact bounded `QueryAdapterFailureReason.Forbidden`, and the other refusals prove no effect through unchanged digests. No refusal was shown to disclose data, and adding body assertions across pre-existing checks is more than a direct correction.
+- R27A-A5 — **low**; acceptance-auditor: the HA replica is a disposable test fleet, a class round 1 rejected. Platform has no HA topology to own, the verifier compares the replica's tracked environment and binds its runtime module, and removing the still-composed SDK switches fails loudly.
+- R27A-A6b — **low** (maybe-false); acceptance-auditor: whether any start still needs the dapr-init Redis on 6379 was not settled (Platform's committed components name `localhost:6379`). An unneeded probe only refuses a runner without `dapr init`, which CI performs.
+- R27A-A8 — **low** (maybe-false); acceptance-auditor: the startup hook runs only with `WORKS_SDK_PROOF=1`, live hosts run from complete build outputs, and the verifier requires each host's own SDK assemblies. Settle by recording resolver hits if a masked dependency is ever suspected.
+- R27A-E1 — **low**; edge-case-hunter: a throwing fixture callback already fails the fact, and the leaked, unbuilt builder starts no resource; pre-existing.
+- R27A-E2 — **low**; edge-case-hunter: a fault fixture whose Works host fails to start still fails, after the startup budget; pre-existing.
+- R27A-E3 — **low**; edge-case-hunter: round 1 rejected the silent Scheduler broadcast rewrite, because a mismatch fails loudly as a startup timeout.
+- R27A-E4 — **false**; edge-case-hunter: Platform composes every sidecar `Config` as an absolute path (`WorksPreviewModel.cs:68-80`, `PlatformAppModel.cs:310`).
+- R27A-E5 — **low**; edge-case-hunter: same as R27A-B3.
+- R27A-E6 — **false**; edge-case-hunter: hosts write their hosting record during startup, so after readiness the read returns at once. The 30-second wait occurs only when a record is missing, which already refuses verification.
+- R27A-E7 — **low**; edge-case-hunter: Linux reads raise no sharing violations, and a partial record is already retried as `JsonException`.
+- R27A-E9 — **low**; edge-case-hunter: Platform's renderer does not produce mixed CRLF/LF policies, and normalization adds a branch.
+- R27A-E11 — **low**; edge-case-hunter: the gate runs only on Linux, and a Windows path refuses loudly; pre-existing.
+- R27A-E12 — **low**; edge-case-hunter: same as R27A-B2.
+- R27A-E13 — **low**; edge-case-hunter: the verifier supplies the root, and a mismatch refuses loudly; pre-existing.
+- R27A-E14 — **low**; edge-case-hunter: same as R27A-B10b.
+- R27A-E15 — **low**; edge-case-hunter: same as R27A-B10b.
+- R27A-E16 — **false**; edge-case-hunter: every tracked key (`WorksPlatformTrackedEnvironment.cs:8-11`) is a string literal in Platform's composition, so no reference-typed tracked value reaches `as string`.
+- R27A-E17 — **low**; edge-case-hunter: a crash between create and write leaves a token file that later starts refuse loudly; pre-existing.
+- R27A-E18 — **false**; edge-case-hunter: nothing calls `GetCompactedAsync` through the fault store. The SDK and Works have no caller; only the interface default and two store implementations exist.
+- R27A-E19 — **low**; edge-case-hunter: double disposal and a failed temporary-directory delete affect only test cleanup; pre-existing.
+- R27A-E20 — **low**; edge-case-hunter: restore targets the verifier's disposable build outputs, and the post-restore digest check refuses mismatches; pre-existing.
+- R27A-E21 — **low**; edge-case-hunter: same as R27A-B13b.
+- R27A-E22 — **low**; edge-case-hunter: the sidecar health wait follows a successful stop command and is bounded by the runner token; pre-existing.
+- R27A-E24 — **low**; edge-case-hunter: same as R27A-B13b.
+- R27A-E25 — **low**; edge-case-hunter: same as R27A-B13b.
+- R27A-E26 — **low**; edge-case-hunter: the projection lane completes in about 156 seconds, and an expired assertion refuses loudly; pre-existing.
+- R27A-E27 — **low**; edge-case-hunter: same as R27A-E26.
+- R27A-E28 — **low**; edge-case-hunter: an evidence-write failure on the timeout path still fails the fact; pre-existing.
+- R27A-E29 — **low**; edge-case-hunter: a store fault during the probe's write is an infrastructure fault outside the HA scenario; pre-existing.
+- R27A-E30 — **low**; edge-case-hunter: the longest lane (recovery) finishes in about 13 minutes, well inside the 30-minute bearer, and expiry would refuse loudly; pre-existing.
+- R27A-E31 — **low** (maybe-false); edge-case-hunter: no lane approaches 32,768 recovery points; pre-existing.
+- R27A-E32 — **low**; edge-case-hunter: a probe-deadline cancellation still fails the fact; only the inconclusive classification is lost.
+- R27A-E33 — **false**; edge-case-hunter: `Directory.CreateTempSubdirectory` creates the probe directory with owner-only (0700) permissions on Unix, and the directory is deleted in `finally`.
+- R27A-E34 — **low**; edge-case-hunter: an undersized candidate page fails loudly in the ownership check that follows; pre-existing.
+- R27A-E35 — **low**; edge-case-hunter: a derived exception type would change only an evidence flag; pre-existing.
+- R27A-E36 — **low**; edge-case-hunter: the pre-existing historical condition reads use the outer token, which the runner timeout still bounds.
+- R27A-E37 — **low**; edge-case-hunter: same as R27A-V-O2.
 
 ## Implementation Notes
 

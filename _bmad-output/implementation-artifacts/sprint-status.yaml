@@ -1,5 +1,5 @@
 # generated: 2026-06-15T18:47:50+02:00
-# last_updated: 2026-10-27 (Story 4.9: current-source full and hosted CI passed; final independent review and artifact-tool corrections verified; spec done, sprint review)
+# last_updated: 2026-10-27 (Story 4.9: group 3A Platform live-proof review recorded 7 patch action items and 3 medium deferrals; integration 3B–3E, docs/contracts and submodule groups remain; in-progress)
 # project: works
 # project_key: NOKEY
 # tracking_system: file-system
@@ -79,7 +79,7 @@ development_status:
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
-  4-9-migrate-works-hosting-to-the-platform-boundary: review
+  4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
   # 2026-10-27: all six R26C patches and final review corrections verified; current full and hosted CI passed.
   # 2026-10-26: R26-E1 fixed and 85 focused checks passed; deferred medium findings and review groups remain.
   # 2026-10-26: CI/build review group done; six patches (R26C) remain open as action items, two deferred.

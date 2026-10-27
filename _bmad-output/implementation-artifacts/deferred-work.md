@@ -1994,3 +1994,19 @@ CI/build and scripts group, Works `18e94d3..ab020fa`. Both entries predate this 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Define and validate empty per-aggregate rebuild histories separately from empty tenant inventories and rejected-only histories.
   evidence: BuildEpoch retains each supplied aggregate as membership and parking, but ValidateHistory accepts Events=[] and the fold emits no roll-up. The same loop and zero-event behavior exist in pre-cutover 696781961155d764ed805843f55b40dc5882e887. Verify the supported capture contract and reject malformed existing-aggregate emptiness without breaking legitimate absence/rejection-only cases.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-27, Platform live proofs and harness group 3A)
+
+Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harness integration tests. All three entries concern proof code already present at pre-cutover `6967819`.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R27A-A1 — R10 lacks AD-24's wrong-trust-domain, forged-high-sequence and ordinary-user SpawnChild negatives (medium; pre-existing; AD-21/AD-23 target).
+  evidence: The historical lane (`WorksPlatformHistoricalPipelineSmokeTests.cs:92`) submits SpawnChild with the ordinary dev JWT and requires Completed. The trust probes use only the `public` trust domain, and the projection forgery injects sequence 0. Platform `PROOFS["R10"]` (`verify_works_host.py:744`) requires none of these negatives. Either record R10's narrowing to historical-lane equivalence (AC3), or add the negatives and their Platform proof entries once registry-authorized child creation (AD-21/AD-23) is storied.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R27A-A3 — AC2's shared-rebuild failure branch has only an in-memory proof (medium; pre-existing).
+  evidence: `WorksPlatformProjectionChecks.cs:184` drives Begin→Commit only. Abort under concurrent delivery is proven only by `WorksSdkProjectionQueryTests.Aborted_concurrent_rebuild_keeps_old_generation_and_allows_live_delivery_afterward` over `InMemoryReadModelStore`. At the next Platform requalification, add a live abort-under-concurrent-delivery check asserting the served generation and catch-up convergence on the real state store.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R27A-V1 — Test the Platform telemetry collector's label and shape refusals (medium; pre-existing).
+  evidence: The live recovery facts use `telemetry.Failures.ShouldBeEmpty()` as their forbidden-label oracle. `WorksPlatformTelemetryCollectorTests` never sends a well-formed point the collector must refuse: a forbidden attribute, a non-allowlisted reason, a reason label on `alert`, an unlabeled reason gauge, or a non-gauge instrument. Inverting `WorksPlatformTelemetryCollector.cs:233` keeps every test green. Add an exporter-driven theory in that supporting class.
