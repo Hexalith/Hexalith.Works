@@ -68,8 +68,10 @@ public sealed class WorksMtlsAuthorizationSmokeTests
             using (var projectionDeadline = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
                 projectionDeadline.CancelAfter(TimeSpan.FromMinutes(2));
-                while ((await coordinator.GetCheckpointAsync(scope, authorizedItem, projectionDeadline.Token).ConfigureAwait(false))?.OwnerSequenceNumber != 1)
+                SharedProjectionCheckpoint? checkpoint;
+                while (((checkpoint = await coordinator.GetCheckpointAsync(scope, authorizedItem, projectionDeadline.Token).ConfigureAwait(false))?.OwnerSequenceNumber ?? 0) < 1)
                     await Task.Delay(200, projectionDeadline.Token).ConfigureAwait(false);
+                checkpoint.ShouldNotBeNull().OwnerSequenceNumber.ShouldBe(1);
             }
             string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
                 WorksReadModelKeys.RuntimeRollUpKey(authorizedItem), WorksReadModelKeys.RuntimeHistoryKey(authorizedItem), WorksReadModelKeys.RuntimeParkingKey(authorizedItem)];
@@ -95,7 +97,7 @@ public sealed class WorksMtlsAuthorizationSmokeTests
                 "EventStore Admin");
             using var request = new HttpRequestMessage(HttpMethod.Post, "/v1.0/invoke/works/method/process")
             {
-                Content = JsonContent.Create(new { }),
+                Content = JsonContent.Create(new { TenantId = tenant, WorkItemId = authorizedItem, Obligation = "mTLS authorization proof" }),
             };
             using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             requestCts.CancelAfter(TimeSpan.FromSeconds(30));

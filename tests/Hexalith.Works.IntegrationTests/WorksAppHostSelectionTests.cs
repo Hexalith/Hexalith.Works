@@ -34,7 +34,7 @@ public sealed class WorksAppHostSelectionTests
     public void UnsafeControlPlanePortSelectionIsRefused(string? sentry, string? placement, string? scheduler)
         => Should.Throw<InvalidOperationException>(() => WorksAppHostSelection.ResolveControlPlanePorts(sentry, placement, scheduler));
 
-    /// <summary>The unselected historical lane retains its original entry point.</summary>
+    /// <summary>An unselected lane refuses startup because the live host belongs to Platform.</summary>
     [Fact]
     public void UnselectedLaneRequiresPlatformHost()
         => Should.Throw<InvalidOperationException>(() => WorksAppHostSelection.ResolveEntryPoint(null, null, null));

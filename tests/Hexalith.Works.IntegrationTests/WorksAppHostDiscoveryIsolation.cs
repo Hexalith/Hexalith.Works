@@ -34,7 +34,7 @@ internal static class WorksAppHostDiscoveryIsolation
         string[] lines = committed.Split(newline);
         if (sentryPort is not null)
         {
-            if (sentryPort is < 1024 or > 65535)
+            if (sentryPort is < 1024 or >= 65535)
                 throw new InvalidOperationException("The isolated Sentry host port must be unprivileged.");
             int[] addresses = [.. lines.Select((line, index) => (line, index))
                 .Where(item => item.line.TrimStart().StartsWith("sentryAddress:", StringComparison.Ordinal)).Select(item => item.index)];
