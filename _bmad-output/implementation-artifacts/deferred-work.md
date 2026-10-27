@@ -2010,3 +2010,14 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R27A-V1 — Test the Platform telemetry collector's label and shape refusals (medium; pre-existing).
   evidence: The live recovery facts use `telemetry.Failures.ShouldBeEmpty()` as their forbidden-label oracle. `WorksPlatformTelemetryCollectorTests` never sends a well-formed point the collector must refuse: a forbidden attribute, a non-allowlisted reason, a reason label on `alert`, an unlabeled reason gauge, or a non-gauge instrument. Inverting `WorksPlatformTelemetryCollector.cs:233` keeps every test green. Add an exporter-driven theory in that supporting class.
+
+
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: G3A-B1 — Validate effective OTLP endpoint/protocol in the existing Platform fixture-composition guard.
+  evidence: The fresh-assembly reflection probe accepts effective https://foreign.example:4318/grpc because IsOwnedTelemetry checks preliminary fixtureWrites. The complete guard is normalized-byte-identical to pre-cutover696781961155d764ed805843f55b40dc5882e887. Validate combined values while retaining the requirement that the fixture redirects both keys, and add a conditional-callback refusal control. Parent probe and source lineage are retained in the group3A packet.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: G3A-B3 — Bind the existing phase-local recovery alert-clear wait to the exporter observation time after settledAt.
+  evidence: The receipt-only predicate predates cutover. Canonical acceptance already refuses an exported clear older than the fresh raise; the narrower phase-local boundary can still accept a delayed after-raise/pre-settled zero. Add that delayed-point control without weakening the canonical after-last-raise ordering or changing domain deadlines.
+- source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: G3A-B7 — Replace optimization-removable asserts in the legacy Story4.15 isolated package-proof HASHES block.
+  evidence: All four assert checks are present before cutover. The exact block, with an invalid project graph, exits1 normally but exits0 with isolatedPackageProof:[] under python -O. Replace graph/version/archive/count assertions with explicit failures and add optimized-environment controls; this is an intermediate-block repro, not a claim that the complete shell helper or canonical gate passed invalid inputs.
