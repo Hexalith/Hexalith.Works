@@ -29,10 +29,6 @@ internal static class WorksAppHostSelection
     /// <summary>Whether this process was explicitly assigned the Platform target.</summary>
     internal static bool IsPlatform => Environment.GetEnvironmentVariable("WORKS_PLATFORM_APPHOST_ASSEMBLY") is not null;
 
-    /// <summary>The persistent Scheduler volume owned by the selected host, or null for Platform.</summary>
-    /// <remarks>Platform binds each run's Scheduler to a private run directory, so only a proof volume can have owners.</remarks>
-    internal static string? SchedulerVolumeName => IsPlatform ? null : "hexalith-works-dapr-scheduler";
-
     /// <summary>Returns the entry point, refusing a missing or changed Platform artifact without falling back.</summary>
     internal static Type EntryPoint()
         => ResolveEntryPoint(Environment.GetEnvironmentVariable("WORKS_PLATFORM_APPHOST_ASSEMBLY"),

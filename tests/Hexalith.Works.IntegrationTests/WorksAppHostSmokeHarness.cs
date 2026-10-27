@@ -54,17 +54,6 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>How long a terminated Docker probe may take to exit before teardown continues.</summary>
     private static readonly TimeSpan DockerProbeTerminationWait = TimeSpan.FromSeconds(5);
 
-    /// <summary>The persistent Scheduler volume that must have exactly one owner at a time, or null for Platform.</summary>
-    private static string? SchedulerVolumeName => WorksAppHostSelection.SchedulerVolumeName;
-
-    /// <summary>The fixed local ports owned by the mTLS Sentry, placement, and scheduler resources.</summary>
-    private static (int Port, string Name)[] ControlPlanePorts =>
-    [
-        (WorksAppHostSelection.ControlPlanePorts.Sentry, "dapr-sentry"),
-        (WorksAppHostSelection.ControlPlanePorts.Placement, "dapr-placement-mtls"),
-        (WorksAppHostSelection.ControlPlanePorts.Scheduler, "dapr-scheduler-mtls"),
-    ];
-
     /// <summary>Both loopback address families that must be free before a fixed-port topology starts.</summary>
     private static readonly IPAddress[] ControlPlaneLoopbacks = [IPAddress.Loopback, IPAddress.IPv6Loopback];
 
@@ -93,10 +82,22 @@ internal static class WorksAppHostSmokeHarness
             })];
     }
 
-    private static void IsolateApplicationPorts(IDistributedApplicationTestingBuilder builder, string discovery)
+    /// <summary>Isolates every sidecar's discovery, application endpoints and selected Platform control plane.</summary>
+    /// <param name="builder">The composed topology; no resources are started by this rewrite.</param>
+    /// <param name="discovery">The private discovery directory owned by this start.</param>
+    /// <param name="platform">Whether the selected topology uses the Platform control plane.</param>
+    /// <param name="controlPlanePorts">The selected Sentry, Placement and Scheduler host ports.</param>
+    /// <param name="runtimePath">The qualified runtime directory, or null to retain each sidecar's runtime.</param>
+    internal static void IsolateApplicationPorts(
+        IDistributedApplicationBuilder builder,
+        string discovery,
+        bool platform,
+        (int Sentry, int Placement, int Scheduler) controlPlanePorts,
+        string? runtimePath)
     {
-        (int sentryPort, int placementPort, int schedulerPort) = WorksAppHostSelection.ControlPlanePorts;
-        if (WorksAppHostSelection.IsPlatform)
+        ArgumentNullException.ThrowIfNull(builder);
+        (int sentryPort, int placementPort, int schedulerPort) = controlPlanePorts;
+        if (platform)
         {
             foreach ((string name, int port) in new[] { ("dapr-sentry", sentryPort), ("dapr-placement-mtls", placementPort), ("dapr-scheduler-mtls", schedulerPort) })
                 builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == name)
@@ -124,7 +125,7 @@ internal static class WorksAppHostSmokeHarness
                 isolated = Path.Combine(discovery, isolatedConfigurations.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
                     + "-" + Path.GetFileName(configuration));
                 File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(File.ReadAllText(configuration), registry,
-                    WorksAppHostSelection.IsPlatform ? sentryPort : null));
+                    platform ? sentryPort : null));
                 isolatedConfigurations[configuration] = isolated;
             }
 
@@ -144,10 +145,9 @@ internal static class WorksAppHostSmokeHarness
                 AppPort = null, DaprHttpPort = null, DaprGrpcPort = null,
                 DaprInternalGrpcPort = null, MetricsPort = null,
                 Config = Isolated(annotation.Options.Config),
-                RuntimePath = WorksAppHostSelection.IsPlatform
-                    ? Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH") ?? annotation.Options.RuntimePath : annotation.Options.RuntimePath,
-                PlacementHostAddress = WorksAppHostSelection.IsPlatform ? "localhost:" + placementPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.PlacementHostAddress,
-                SchedulerHostAddress = WorksAppHostSelection.IsPlatform ? "localhost:" + schedulerPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.SchedulerHostAddress,
+                RuntimePath = platform ? runtimePath ?? annotation.Options.RuntimePath : annotation.Options.RuntimePath,
+                PlacementHostAddress = platform ? "localhost:" + placementPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.PlacementHostAddress,
+                SchedulerHostAddress = platform ? "localhost:" + schedulerPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.SchedulerHostAddress,
             }));
             string cliName = dapr.Sidecar.Name + "-cli";
             builder.CreateResourceBuilder(project).WithEnvironment(context =>
@@ -252,8 +252,7 @@ internal static class WorksAppHostSmokeHarness
         if (!await IsPortReachableAsync(DaprInitRedisPort, cancellationToken).ConfigureAwait(false))
         {
             string gap = $"the dapr-init Redis on :{DaprInitRedisPort} is not reachable. Start Docker and run `dapr init`";
-            if (WorksAppHostSelection.IsPlatform) throw new InvalidOperationException("Platform parity cannot skip: " + gap);
-            return gap;
+            throw new InvalidOperationException("Platform parity cannot skip: " + gap);
         }
 
         try
@@ -262,8 +261,7 @@ internal static class WorksAppHostSmokeHarness
         }
         catch (Exception exception) when (exception is TimeoutException or InvalidOperationException)
         {
-            if (WorksAppHostSelection.IsPlatform) throw new InvalidOperationException("Platform parity cannot skip: " + exception.Message, exception);
-            return exception.Message;
+            throw new InvalidOperationException("Platform parity cannot skip: " + exception.Message, exception);
         }
 
         return null;
@@ -361,17 +359,6 @@ internal static class WorksAppHostSmokeHarness
                 startupCts.Token)
             .ConfigureAwait(true);
 
-        // Explicit legacy diagnostic fixture: bound only advisory startup metadata, preserving all
-        // production authentication and legacy reminder/process registrations.
-        if (configure is null && Environment.GetEnvironmentVariable("WORKS_APPHOST_BOUND_METADATA_STARTUP") == "1")
-        {
-            string assembly = typeof(WorksSdkProofHostingStartup).Assembly.Location;
-            builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore"))
-                .WithEnvironment("DOTNET_STARTUP_HOOKS", assembly)
-                .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", typeof(WorksSdkProofHostingStartup).Assembly.GetName().Name!)
-                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "metadata-only")
-                .WithEnvironment("Version", WorksSdkProofProducer.Version);
-        }
         // On an actual Platform start, capture Platform's own composition before the fixture configures the builder,
         // and the fixture's additions immediately after, before the harness adds its isolation and evidence wiring.
         Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
@@ -400,7 +387,8 @@ internal static class WorksAppHostSmokeHarness
 
             // Created only inside this try, so the cleanup below always removes it.
             discoveryDirectory = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
-            IsolateApplicationPorts(builder, discoveryDirectory);
+            IsolateApplicationPorts(builder, discoveryDirectory, WorksAppHostSelection.IsPlatform,
+                WorksAppHostSelection.ControlPlanePorts, Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"));
             Dictionary<string, string> hostingEvidence = WorksAppHostSelection.IsPlatform
                 ? AssignHostingEvidence(builder, discoveryDirectory) : [];
             if (WorksAppHostSelection.IsPlatform)
@@ -481,7 +469,7 @@ internal static class WorksAppHostSmokeHarness
                     sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(hostAssembly))),
                     directory = builder.AppHostDirectory,
                     role = useRetainedHost ? "retained-rollback" : "platform-target",
-                    schedulerVolume = schedulerVolumeName ?? WorksAppHostSelection.SchedulerVolumeName,
+                    schedulerVolume = schedulerVolumeName,
                     controlPlanePorts = new { sentry = WorksAppHostSelection.ControlPlanePorts.Sentry,
                         placement = WorksAppHostSelection.ControlPlanePorts.Placement, scheduler = WorksAppHostSelection.ControlPlanePorts.Scheduler },
                     dependencyBuildsSuppressed = Environment.GetEnvironmentVariable("BuildProjectReferences") == "false",
@@ -854,10 +842,12 @@ internal static class WorksAppHostSmokeHarness
         string? schedulerVolumeName = null)
         => await WaitForControlPlaneResourcesReleasedAsync(
             boundary,
+            WorksAppHostSelection.ControlPlanePorts,
+            schedulerVolumeName,
             ControlPlaneReleaseWait,
             TimeSpan.FromSeconds(1),
             IsPortAvailableForExclusiveBind,
-            token => SchedulerVolumeOwnersAsync(token, schedulerVolumeName),
+            static (volume, token) => SchedulerVolumeOwnersAsync(token, volume),
             static (delay, token) => Task.Delay(delay, token),
             cancellationToken).ConfigureAwait(false);
 
@@ -865,6 +855,8 @@ internal static class WorksAppHostSmokeHarness
     /// Waits for the fixed control-plane resources using the supplied probes and bounded retry policy.
     /// </summary>
     /// <param name="boundary">The diagnostic name for the start or teardown boundary.</param>
+    /// <param name="controlPlanePorts">The selected Sentry, Placement and Scheduler host ports.</param>
+    /// <param name="schedulerVolumeName">The owned proof volume, or null when no volume is selected.</param>
     /// <param name="releaseWait">The total time allowed for resources to settle.</param>
     /// <param name="retryDelay">The delay between observations.</param>
     /// <param name="portAvailable">Returns whether one address and port can be bound exclusively.</param>
@@ -873,10 +865,12 @@ internal static class WorksAppHostSmokeHarness
     /// <param name="cancellationToken">Cancels the wait.</param>
     internal static async Task WaitForControlPlaneResourcesReleasedAsync(
         string boundary,
+        (int Sentry, int Placement, int Scheduler) controlPlanePorts,
+        string? schedulerVolumeName,
         TimeSpan releaseWait,
         TimeSpan retryDelay,
         Func<IPAddress, int, bool> portAvailable,
-        Func<CancellationToken, Task<IReadOnlyList<string>>> schedulerVolumeOwners,
+        Func<string, CancellationToken, Task<IReadOnlyList<string>>> schedulerVolumeOwners,
         Func<TimeSpan, CancellationToken, Task> delayAsync,
         CancellationToken cancellationToken)
     {
@@ -891,7 +885,12 @@ internal static class WorksAppHostSmokeHarness
         while (true)
         {
             var occupied = new List<string>();
-            foreach ((int port, string name) in ControlPlanePorts)
+            foreach ((int port, string name) in new[]
+            {
+                (controlPlanePorts.Sentry, "dapr-sentry"),
+                (controlPlanePorts.Placement, "dapr-placement-mtls"),
+                (controlPlanePorts.Scheduler, "dapr-scheduler-mtls"),
+            })
             {
                 foreach (IPAddress address in ControlPlaneLoopbacks)
                 {
@@ -904,7 +903,8 @@ internal static class WorksAppHostSmokeHarness
 
             try
             {
-                IReadOnlyList<string> owners = await schedulerVolumeOwners(cancellationToken).ConfigureAwait(false);
+                IReadOnlyList<string> owners = schedulerVolumeName is null ? []
+                    : await schedulerVolumeOwners(schedulerVolumeName, cancellationToken).ConfigureAwait(false);
                 occupied.AddRange(owners.Select(static owner => $"scheduler volume owner {owner}"));
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -939,10 +939,8 @@ internal static class WorksAppHostSmokeHarness
         }
     }
 
-    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken, string? schedulerVolumeName = null)
+    private static async Task<IReadOnlyList<string>> SchedulerVolumeOwnersAsync(CancellationToken cancellationToken, string schedulerVolumeName)
     {
-        // Platform owns no persistent Scheduler volume; without a proof volume there is nothing to own.
-        if ((schedulerVolumeName ?? SchedulerVolumeName) is null) return [];
         ProcessStartInfo startInfo = CreateSchedulerVolumeProbeStartInfo(schedulerVolumeName);
 
         ISchedulerVolumeProbe probe;
@@ -1149,8 +1147,10 @@ internal static class WorksAppHostSmokeHarness
     }
 
     /// <summary>Builds the Docker command that includes running and stopped Scheduler-volume owners.</summary>
-    internal static ProcessStartInfo CreateSchedulerVolumeProbeStartInfo(string? schedulerVolumeName = null)
+    /// <param name="schedulerVolumeName">The exact owned proof volume to inspect.</param>
+    internal static ProcessStartInfo CreateSchedulerVolumeProbeStartInfo(string schedulerVolumeName)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(schedulerVolumeName);
         var startInfo = new ProcessStartInfo("docker")
         {
             CreateNoWindow = true,
@@ -1161,7 +1161,7 @@ internal static class WorksAppHostSmokeHarness
         startInfo.ArgumentList.Add("ps");
         startInfo.ArgumentList.Add("--all");
         startInfo.ArgumentList.Add("--filter");
-        startInfo.ArgumentList.Add($"volume={schedulerVolumeName ?? SchedulerVolumeName}");
+        startInfo.ArgumentList.Add($"volume={schedulerVolumeName}");
         startInfo.ArgumentList.Add("--format");
         startInfo.ArgumentList.Add("{{.ID}} {{.Names}}");
         return startInfo;

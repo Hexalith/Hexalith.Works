@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
 
@@ -13,6 +14,89 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 public sealed class WorksAppHostSmokeHarnessTests
 {
+    private const string SchedulerVolume = "works-sdk416-harness-probe";
+    private static readonly (int Sentry, int Placement, int Scheduler) SelectedPorts = (61001, 61005, 61006);
+
+    /// <summary>Both lifecycle boundaries wait on the selected ports and the caller's owned Scheduler volume.</summary>
+    /// <param name="boundary">The start or teardown diagnostic boundary.</param>
+    [Theory]
+    [InlineData("startup boundary")]
+    [InlineData("teardown boundary")]
+    public async Task SelectedControlPlaneAndOwnedSchedulerVolumeMustBothBeReleased(string boundary)
+    {
+        bool released = false;
+        int delays = 0;
+        var observedPorts = new HashSet<(IPAddress Address, int Port)>();
+        var observedVolumes = new List<string>();
+        await WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
+            boundary, SelectedPorts, SchedulerVolume, TimeSpan.FromSeconds(1), TimeSpan.Zero,
+            (address, port) =>
+            {
+                observedPorts.Add((address, port));
+                return released || port != SelectedPorts.Placement;
+            },
+            (volume, _) =>
+            {
+                observedVolumes.Add(volume);
+                return Task.FromResult<IReadOnlyList<string>>(released ? [] : ["proof-scheduler"]);
+            },
+            (_, _) =>
+            {
+                released = true;
+                delays++;
+                return Task.CompletedTask;
+            }, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        delays.ShouldBe(1);
+        observedVolumes.ShouldBe([SchedulerVolume, SchedulerVolume]);
+        observedPorts.ShouldBe(new[] { IPAddress.Loopback, IPAddress.IPv6Loopback }
+            .SelectMany(address => new[] { SelectedPorts.Sentry, SelectedPorts.Placement, SelectedPorts.Scheduler }
+                .Select(port => (address, port))), ignoreOrder: true);
+    }
+
+    /// <summary>A Platform boundary without a selected proof volume probes its ports without invoking Docker.</summary>
+    [Fact]
+    public async Task MissingProofVolumeSkipsOnlyTheSchedulerOwnershipProbe()
+    {
+        int portProbes = 0;
+        await WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
+            "prerequisite", SelectedPorts, null, TimeSpan.Zero, TimeSpan.Zero,
+            (_, _) => { portProbes++; return true; },
+            static (_, _) => throw new InvalidOperationException("No Docker probe is permitted without an owned volume."),
+            static (_, _) => Task.CompletedTask, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        portProbes.ShouldBe(6);
+    }
+
+    /// <summary>Sidecar readiness refuses the historically unsafe runtime and accepts the qualified floor numerically.</summary>
+    /// <param name="runtimeVersion">The runtime advertised by the sidecar.</param>
+    /// <param name="accepted">Whether it reaches the qualified minimum.</param>
+    [Theory]
+    [InlineData("1.18.3", false)]
+    [InlineData("1.18.6", false)]
+    [InlineData("1.18.7", true)]
+    [InlineData("1.18.10", true)]
+    public async Task ActorReadinessRequiresTheQualifiedDaprRuntime(string runtimeVersion, bool accepted)
+    {
+        using var handler = new WorksSdkHttpEvidenceHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(new
+            {
+                runtimeVersion, actors = new[] { new { type = "WorksSdkReminderActor" } },
+                actorRuntime = new { runtimeStatus = "RUNNING", hostReady = true, placement = "connected" },
+                scheduler = new { connected_addresses = new[] { "localhost:61006" } },
+            }),
+        }));
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1/") };
+        if (accepted)
+            await WorksAppHostTestReadiness.WaitForWorksActorRuntimeAsync(client, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        else
+        {
+            InvalidOperationException refusal = await Should.ThrowAsync<InvalidOperationException>(() =>
+                WorksAppHostTestReadiness.WaitForWorksActorRuntimeAsync(client, TestContext.Current.CancellationToken)).ConfigureAwait(true);
+            refusal.Message.ShouldContain("[startup/readiness]");
+            refusal.Message.ShouldContain("runtime 1.18.7 or newer is required");
+        }
+    }
+
     /// <summary>Real redirected pipe reads settle when the production probe terminates its child.</summary>
     /// <param name="cancelCaller">Whether the caller cancels instead of the probe budget expiring.</param>
     [Theory]
@@ -325,7 +409,7 @@ public sealed class WorksAppHostSmokeHarnessTests
     [Fact]
     public void Scheduler_volume_probe_includes_stopped_containers()
     {
-        ProcessStartInfo startInfo = WorksAppHostSmokeHarness.CreateSchedulerVolumeProbeStartInfo();
+        ProcessStartInfo startInfo = WorksAppHostSmokeHarness.CreateSchedulerVolumeProbeStartInfo(SchedulerVolume);
 
         startInfo.FileName.ShouldBe("docker");
         startInfo.CreateNoWindow.ShouldBeTrue();
@@ -337,7 +421,7 @@ public sealed class WorksAppHostSmokeHarnessTests
             "ps",
             "--all",
             "--filter",
-            "volume=hexalith-works-dapr-scheduler",
+            "volume=" + SchedulerVolume,
             "--format",
             "{{.ID}} {{.Names}}",
         ]);
@@ -350,10 +434,12 @@ public sealed class WorksAppHostSmokeHarnessTests
 
         await WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
             "test boundary",
+            SelectedPorts,
+            SchedulerVolume,
             TimeSpan.FromSeconds(1),
             TimeSpan.Zero,
             static (_, _) => true,
-            _ => ++probeCount == 1
+            (_, _) => ++probeCount == 1
                 ? Task.FromException<IReadOnlyList<string>>(new TimeoutException("probe timed out"))
                 : Task.FromResult<IReadOnlyList<string>>([]),
             static (_, _) => Task.CompletedTask,
@@ -370,12 +456,14 @@ public sealed class WorksAppHostSmokeHarnessTests
 
         await WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
             "test boundary",
+            SelectedPorts,
+            SchedulerVolume,
             TimeSpan.FromSeconds(1),
             TimeSpan.Zero,
-            (address, port) => address.Equals(IPAddress.Loopback) && port == 50001
+            (address, port) => address.Equals(IPAddress.Loopback) && port == SelectedPorts.Sentry
                 ? ++targetProbeCount > 1
                 : true,
-            static _ => Task.FromResult<IReadOnlyList<string>>([]),
+            static (_, _) => Task.FromResult<IReadOnlyList<string>>([]),
             (_, _) =>
             {
                 delayCount++;
@@ -393,14 +481,16 @@ public sealed class WorksAppHostSmokeHarnessTests
         TimeoutException exception = await Should.ThrowAsync<TimeoutException>(
             () => WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
                 "test boundary",
+                SelectedPorts,
+                SchedulerVolume,
                 TimeSpan.Zero,
                 TimeSpan.Zero,
-                static (address, port) => !address.Equals(IPAddress.Loopback) || port != 50001,
-                static _ => Task.FromResult<IReadOnlyList<string>>([]),
+                static (address, port) => !address.Equals(IPAddress.Loopback) || port != SelectedPorts.Sentry,
+                static (_, _) => Task.FromResult<IReadOnlyList<string>>([]),
                 static (_, _) => Task.CompletedTask,
                 TestContext.Current.CancellationToken)).ConfigureAwait(true);
 
-        exception.Message.ShouldContain("dapr-sentry on 127.0.0.1:50001");
+        exception.Message.ShouldContain("dapr-sentry on 127.0.0.1:61001");
     }
 
     [Fact]
@@ -409,10 +499,12 @@ public sealed class WorksAppHostSmokeHarnessTests
         TimeoutException exception = await Should.ThrowAsync<TimeoutException>(
             () => WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
                 "test boundary",
+                SelectedPorts,
+                SchedulerVolume,
                 TimeSpan.Zero,
                 TimeSpan.Zero,
                 static (_, _) => true,
-                static _ => Task.FromException<IReadOnlyList<string>>(
+                static (_, _) => Task.FromException<IReadOnlyList<string>>(
                     new InvalidOperationException("docker unavailable")),
                 static (_, _) => Task.CompletedTask,
                 TestContext.Current.CancellationToken)).ConfigureAwait(true);
@@ -433,10 +525,12 @@ public sealed class WorksAppHostSmokeHarnessTests
             = await Should.ThrowAsync<SchedulerVolumeProbeCleanupException>(
                 () => WorksAppHostSmokeHarness.WaitForControlPlaneResourcesReleasedAsync(
                     "test boundary",
+                    SelectedPorts,
+                    SchedulerVolume,
                     TimeSpan.FromSeconds(1),
                     TimeSpan.Zero,
                     static (_, _) => true,
-                    _ =>
+                    (_, _) =>
                     {
                         probeCount++;
                         return Task.FromException<IReadOnlyList<string>>(cleanupFailure);

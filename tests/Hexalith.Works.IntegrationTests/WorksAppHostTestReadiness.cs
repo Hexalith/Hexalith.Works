@@ -4,9 +4,6 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 
-using Hexalith.Works.Projections;
-using Hexalith.Works.Reminders;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -17,8 +14,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// </summary>
 internal static class WorksAppHostTestReadiness
 {
-    private static readonly Version MinimumDaprRuntimeVersion = new(1, 18, 3);
-    private static readonly JsonSerializerOptions s_web = new(JsonSerializerDefaults.Web);
+    private static readonly Version MinimumDaprRuntimeVersion = new(1, 18, 7);
 
     /// <summary>Keeps expected AppHost/Dapr diagnostics from flooding the in-process runner.</summary>
     public static void ConfigureHarnessLogging(IDistributedApplicationTestingBuilder builder)
@@ -294,8 +290,6 @@ internal static class WorksAppHostTestReadiness
             "[startup/readiness] Works Dapr sidecar did not advertise a compatible, scheduler/placement-connected "
             + $"{actorTypeName} host within 60 seconds. {lastDiagnostic}");
     }
-
-
 
     /// <summary>
     /// Returns whether the sidecar's placement status token is exactly "connected".
