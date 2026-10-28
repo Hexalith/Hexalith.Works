@@ -1545,6 +1545,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
   summary: Publish the approved corrected upstream EventStore/Platform artifacts and update Works to publicly restorable pins before merge or release.
+  status: done 2026-10-28
+  resolution: Historical public-producer prerequisite resolved by the retained public 3.125.1/3.126.0 SDK packages and qualified Platform host. Platform hosting/test adapters retain their documented source ownership. The repeated reminder-publication prerequisite is an alias, counted once. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: B9 and carried R2-B7; clean CI does not generate or retrieve ignored local candidate identities. Local source/candidate validation is authorized; public publication is not. The accepted delivery gate remains unresolved.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
@@ -1609,6 +1611,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: "Supply published corrected EventStore producers or an approved exact-artifact CI feed before Story 4.16 public-producer acceptance."
+  status: done 2026-10-28
+  resolution: Alias of the corrected public-producer prerequisite above, counted once. The 2026-10-16 public 3.123.0 resolution and subsequent public 3.125.1/3.126.0 packets supersede the recorded unpublished 3.122.0 prerequisite. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: "RB6-6: the baseline already selected unpublished Story 4.14 candidates; the latest public EventStore 3.122.0 lacks IReminderTargetCatalog. Local .10 package/source/live proofs pass, but ignored local feeds are absent on clean CI runners. Publication remains a separate frozen-intent gate."
 
 ## Resolution evidence: Story 4.15 publication (2026-10-16)
@@ -1717,6 +1721,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Publish the create-only receipt-conflict correction and requalify the default EventStore pin.
+  status: done 2026-10-28
+  resolution: Correction 216b790628574d39802adcc8f4fea0d4034ef9f0 is in the qualified official 3.125.1 producer; retained real-store focused rebuild and later public 3.126.0 parity/rollback qualify journal closeout. This closes the historical publication/default-pin gate without claiming a fresh current-pin live run. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: `Directory.Packages.props:6` keeps public 3.124.0 by default, and `review-fixes-2026-10-18/implementation.md` records that public 3.124.0 leaves the shared-projection date head at journal position 11 with six pending entries. Story 4.15 acceptance uses source plus unpublished `3.124.1-story415.20261018.1`. The correction is SDK `216b7906` on `origin/main` (rebased from verified `b9e2d2aa`). Publication and pin qualification are separate frozen-intent gates. Story 4.16 currently verifies Platform parity on 3.124.0 without this defect as an input; requalify it against the first published release that contains the correction.
 
 
@@ -1732,6 +1738,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Requalify Works live source Debug restart and callback on the final recovery decoder and the current upstream SDK source.
+  status: done 2026-10-28
+  resolution: The retained 2026-10-18 exact-v3.125.1 source Debug lane3 executes restart and callback with zero skips; its ten persisted restart phases bind the final decoder at that historical qualification. Later SDK/consumer changes keep their own qualification scope. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: The last restart/callback runs bind SDK `216b7906` and the pre-patch `WorksRecoveryEventDecoder`; the decoder then changed three times (post-reopen patches, P18-B1, uniform payload `Sequence` presence), the contextual reader added two lifecycle refusals (RP-B5 repeated creation, closeout-review reschedule-before-creation) and the SDK gitlink moved to `1aaa1737` (28 `src` files, including `AggregateActor`, `EventPersister`, `EventPublisher`, `DaprLogicalEventReader`) and then `f43b121c` on `84bb115a` (five upstream Server commits). `post-reopen-review/report.json` records `currentSourceLiveRerun: false`. The user accepted deterministic-only closure: decoder tightening cannot reject real payloads (no default-value omission), and the lifecycle refusals cannot reject real histories because `WorkItemAggregate` never emits a second creation or a pre-creation reschedule; live requalification on the current upstream SDK is a Story 4.16 input under the approved scope rule. Settle with source Debug restart and callback runs at the gitlink Story 4.16 qualifies.
 
 ## Resolution evidence: Story 4.16 public 3.125.1 qualification (2026-10-18)
@@ -1808,9 +1816,13 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Public EventStore 3.126.0 is available on nuget.org, while this story still qualifies the 3.125.1 producer its spec keeps.
+  status: done 2026-10-28
+  resolution: The retained 2026-10-19 owner decision selects public 3.126.0 and its canonical qualification passes all R1-R11 rows/44 proof kinds plus complete rollback. This historical version-selection prerequisite is superseded; current 3.128.3 selection remains distinct. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: The NuGet registration lists 3.126.0 for Server, Contracts, Client, DomainService, Aspire and ServiceDefaults (Server published 2026-10-18T21:00:06Z). Platform's Builds catalog (`references/Hexalith.Builds`, 4aaeed8) and both Works props still select 3.125.1, and the spec's iteration 1 and 2 KEEP lists retain the 3.125.1 qualification. Selecting 3.126.0 needs an owner decision, a Builds submodule update and a fresh producer qualification. That work is outside this iteration's no-submodule scope.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: The executor-visible twelfth recovery source needs a retuned synthetic process profile: 1.9-second operations and a 56-second source quantum.
+  status: done 2026-10-28
+  resolution: The final retained-host source Debug recovery class passes 4/4 with twelve sources. Fresh actual Aspire-environment/Works-registration controls validate the unchanged finite profile through the SDK, refuse the previous twelve-source budget and insufficient effect/population budgets. See [producer/recovery reconciliation](spec-five-deferred-producer-recovery-qualification.md).
   evidence: The Executor view shows only its own Assigned and the Queued work, and the eleven existing recovery sources all end terminal or `InProgress`, so delegated restart and rollback queries need one Assigned source. Under the previous profile (two-second operations, 60-second quantum) SDK validation cannot fit twelve sources in the 30-minute window. A five-effect envelope also needs a quantum of at least 29 operation timeouts. The retune is fixture-only and recorded in `docs/sdk-reminder-process-adoption.md`. If review prefers the original profile, the alternative is a separate executor-only fleet or a narrower rollback query proof.
 
 ## Resolution evidence: Story 4.16 review iteration 3 corrections (2026-10-19)

@@ -848,15 +848,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 if (identity is not null)
                     target.WithEnvironment("Works__Query__PartiesGatewayBaseAddress", identity.Endpoint.AbsoluteUri)
                         .WithEnvironment("Works__Query__PartiesGatewayBearerToken", identity.ServiceBearer);
-                target.WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:02")
-                    .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:10")
-                    .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
-                    .WithEnvironment("EventStore__Processes__RetryLimit", "10")
-                    .WithEnvironment("EventStore__Processes__SupportedCandidateCount", SupportedCandidates.ToString(System.Globalization.CultureInfo.InvariantCulture))
-                    .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:01.9000000")
-                    .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
-                    .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:00:56")
-                    .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
+                ConfigureRecoveryProfile(target);
             }
             else
             {
@@ -868,6 +860,22 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     .WithEnvironment("EventStore__IdempotencyAdmission__DigestKeys__story415", digestKey);
             }
         }
+    }
+
+    /// <summary>Applies the finite twelve-source synthetic recovery profile to each Works fixture host.</summary>
+    /// <param name="target">The primary or replica Works resource receiving the fixture profile.</param>
+    internal static void ConfigureRecoveryProfile(IResourceBuilder<ProjectResource> target)
+    {
+        ArgumentNullException.ThrowIfNull(target);
+        target.WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:02")
+            .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:10")
+            .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
+            .WithEnvironment("EventStore__Processes__RetryLimit", "10")
+            .WithEnvironment("EventStore__Processes__SupportedCandidateCount", SupportedCandidates.ToString(System.Globalization.CultureInfo.InvariantCulture))
+            .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:01.9000000")
+            .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
+            .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:00:56")
+            .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
     }
 
     /// <summary>Appends a value to a composed list variable without replacing what the selected host composed.</summary>

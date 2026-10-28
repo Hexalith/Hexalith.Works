@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "checks": [
+    {
+      "command": "python3 verify-history.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "history-verification.log.gz",
+      "sha256": "faa46633b84420994a5a843e1f42ced9e13ba45d20bb1c1ebab2ae4d41a0a811"
+    },
+    {
+      "command": "python3 -O verify-history.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "history-optimized-verification.log.gz",
+      "sha256": "faa46633b84420994a5a843e1f42ced9e13ba45d20bb1c1ebab2ae4d41a0a811"
+    },
+    {
+      "command": "python3 verify-history-mutations.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "history-controls-verification.log.gz",
+      "sha256": "93302596ce1a1468bf21e39a013c98747db175873945fa2a4260615f1cca918a"
+    },
+    {
+      "command": "python3 verify-fresh.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "fresh-verification.log.gz",
+      "sha256": "3455ddb7cae91eadb0627fb00a43b5e83350521c0988f1a6920bbb1a4ea87381"
+    },
+    {
+      "command": "python3 -O verify-fresh.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "fresh-optimized-verification.log.gz",
+      "sha256": "3455ddb7cae91eadb0627fb00a43b5e83350521c0988f1a6920bbb1a4ea87381"
+    },
+    {
+      "command": "python3 verify-fresh-mutations.py",
+      "workingDirectory": "repository root; use the packet-relative script path shown in README",
+      "exitCode": 0,
+      "log": "fresh-controls-verification.log.gz",
+      "sha256": "472a1a20013fee5fe692f7177b3bb6f44f897cd16a21b67b29f7b35a9aa2edf9"
+    }
+  ],
+  "review": "All ten original findings patched and independently rechecked; none deferred.",
+  "finalArtifactsSha256": {
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-producer-recovery-2026-10-28/verify-history.py": "ce5908a9375a42957cd690b3edeba3b00f85fbe832509a46a26a4cf75e84ebe5",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-producer-recovery-2026-10-28/verify-fresh.py": "d34faa0eb2270358bfa29e17e79ac00b341d609712805b63612a6c51176613ba",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-producer-recovery-2026-10-28/verify-history-mutations.py": "ac55d3b5ca1ed3777ceb244b33cd98a65f8bd3926763a46e4403631ebcd8cf8a",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-producer-recovery-2026-10-28/verify-fresh-mutations.py": "404b937a098f4ab0c3856c71a305178e49c31cf0257e87df83e8f5f5922d1c96",
+    "_bmad-output/implementation-artifacts/evidence/five-deferred-producer-recovery-2026-10-28/README.md": "c1c52d421b2838f743fb28ebd9a2fdbb15ebe55eb3c96f6149c1fb2d1c43e49e",
+    "_bmad-output/implementation-artifacts/spec-five-deferred-producer-recovery-qualification.md": "c0627b1617e93d70dc837c9acbeea710e74e20bf99873e1857bed17041170f3c"
+  }
+}

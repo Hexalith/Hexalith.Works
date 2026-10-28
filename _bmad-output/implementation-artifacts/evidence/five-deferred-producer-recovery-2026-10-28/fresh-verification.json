@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "baseline": "2773039ef77fc36df287527bef70040926efaf9e",
+  "scope": "Fresh deterministic source Debug checks only; no live requalification or current public-feed authentication.",
+  "commands": [
+    {
+      "name": "initial-build",
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+      "exitCode": 1,
+      "log": "initial-build.log.gz",
+      "sha256": "2d9f673ceacfc0aaa06ac99e68b7d468b230c45751e131e985c83957b199d962"
+    },
+    {
+      "name": "build",
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+      "exitCode": 0,
+      "log": "build.log.gz",
+      "sha256": "be7e7bb7e1f7abcc8a0773cfe0608aa27d63dcd80d36773e886e48b6a01cee5c"
+    },
+    {
+      "name": "focused",
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkRecoveryProfileTests' -class '*WorksSdkRecoveryCompositionTests' -class '*WorksPlatformHostingCompositionTests' -class '*WorksPlatformCompositionGuardTests' -result-xml /tmp/works-five-producer-focused-reviewed.xml",
+      "exitCode": 0,
+      "log": "focused.log.gz",
+      "sha256": "63e635f8c310a46c1170c15a3cc0f2048fb46d9a15d8d76a7d81b73042207283"
+    },
+    {
+      "name": "format-existing",
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet format whitespace tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs",
+      "exitCode": 2,
+      "log": "format-existing.log.gz",
+      "sha256": "fd6149eeddcef24dfdcb34a9e9856d88729e50a872d17ed4156178183ac49d78"
+    },
+    {
+      "name": "format-new",
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet format whitespace tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs",
+      "exitCode": 0,
+      "log": "format-new.log.gz",
+      "sha256": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b"
+    }
+  ],
+  "counts": {
+    "total": 85,
+    "passed": 85,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "not-run": 0
+  },
+  "xmlSha256": "4779f6717dc0d93f69f390f0148687ecad29d16c3fb3e0a4f81623b15ca3008e",
+  "sourcesSha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs": "1f293b2764fa0ed8c29ca65443b6a6798825d0f948c6fe3701b844c897022fe9",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs": "dd5a5ec1c5393d4ffcca233f66722c478544b11e6a735aef437e8baa3559f574",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs": "e7797a943bcf7ca788fe119a558fb76fc9e11ed7dca2992ff0917c5b51a2a2ae",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformHostingCompositionTests.cs": "654ca882ff64d22c47419f9f51fa9e3812bc5db2422532d2633401c1dae91269",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuardTests.cs": "ac6541f644bfcd50b4046c66b59aceb96660306d7ac5478eb27f1776d475990c",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuard.cs": "ed4294a17d3b6809d6688571fdcdf4da6aa284a8d935ffe54021952d395b0579",
+    "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj": "93460c9d513e70ce04c9029dcbf12b79534be584c2c163cf7ef0595cfe30f4ce",
+    "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs": "60fa7d61062690e03d581ecc2f0fa5ce257fced1e06021b5b389a3d7f5315bf4",
+    "references/Hexalith.EventStore/src/Hexalith.EventStore.DomainService/EventStoreProcessOptions.cs": "fffca79129520b50047c8a7ae023c9797947a314bbd3315c27bba48b933e5bf0",
+    "Directory.Build.props": "59c9fb827d1936fbd39d1e2b738a9d3cb6852b44df15c5761b7edcd56775f318",
+    "Directory.Build.targets": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+    "Directory.Packages.props": "ff47dc36f79fd1e425fe3c31feee7ae2155561abfe0b7e9bcd6a85a6a6c99899",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7",
+    "xunit.runner.json": "3aaf68ea8927dce2c9ee5404088745084d709c1ff2d00bf41c90d9406d31b8a1",
+    "docs/sdk-reminder-process-adoption.md": "f9a34cd48a0152c8846e5a3064cc8e448d95f12af817fb394622e673c44d8b94",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "7c72efbdceac1c87efcb57d450fdd953f994a12fbc93325607ffad8bf80a4a4e"
+  },
+  "localBuildArtifactsSha256": {
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "d0333bfd7c35d7a79023098c768671d8009ba77aaf61c3261a6527ca97e6bbfc",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.deps.json": "2350b8cbb78c74f8f2ff5d645417e58a2eb6588072546b22f5a2178a31e3507e",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.DomainService.dll": "06dbe90a548889c8e43332ed4d563778948270f78df228f21b5515387c31815c",
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.EventStore.Client.dll": "95388ed03b64398e6fe45f6b8604be465558e3ab7d72b537d7904494f3ecadd3"
+  },
+  "debugDependencyRevisions": {
+    "Hexalith.EventStore": {
+      "checkout": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+      "gitlink": "36c78f3435d2d492a73f1b0707cf865c8735d740"
+    },
+    "Hexalith.Platform": {
+      "checkout": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+      "gitlink": "8de90958bc41b7fd01b7ed22b8ab364447a800e4"
+    },
+    "Hexalith.Builds": {
+      "checkout": "81ab049208678bd6616828824729c0ddac02f7d1",
+      "gitlink": "81ab049208678bd6616828824729c0ddac02f7d1"
+    }
+  }
+}
