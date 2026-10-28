@@ -25,6 +25,18 @@ the canonical registration and purpose mapping.
 
 Use the [Platform recovery runbook](../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations) for `/ready` status, bounded `eventstore.domain.recovery.*` metrics, alerts and protected, audited `POST /work/processes/revalidate`. Current production authorization and audit providers remain required. [Cutover and rollback](platform-hosting-cutover.md) describes complete-fleet restore; changing a configuration switch cannot restore the archived host.
 
+## Reminder failure recovery
+
+A failed scheduler arm retains that await as `Pending` with `arm-failed`; independent awaits continue. Indexed reconciliation retries it after reconstruction. This is retained retry work, with no finite attempt budget or automatic dead-letter transition. Pending work keeps reminder readiness degraded until repaired. Submission uncertainty instead retains a `Retrying` witness and uses `RetryInitialDelay`/`RetryMaxDelay` backoff. A repeated callback inside that interval must not submit again.
+
+A fired reminder is released only after a matching durable target receipt, a persisted disposition audit and successful scheduler cancellation. The SDK accepts `Success`, `Rejection` and `NoOp` as terminal target dispositions; a domain rejection is recorded and settled. A lost response, absent receipt, wrong effect identifier, undefined disposition or failed cancellation retains the witness. After backoff, a retry uses the same effect identity and can replay the target receipt across reconstruction.
+
+For due-now submission failures, SDK event `200219` records the actor digest, reminder name and exception type. Event `200203` records the retry reason and attempt count. These identify the retained witness without raw tenant/item IDs, payloads, tokens or exception messages. An interrupted indexed pass retains its cursor and incomplete flag; completing only the resumed tail cannot clear an earlier failure. A later complete successful sweep restores readiness.
+
+Projection parking requires the explicit covering repair described in [projection capacity recovery](sdk-projection-query-adoption.md#ordinary-growth-and-capacity-recovery). Rebuild promotion alone retains the parking audit and keeps discovery incomplete. Through the SDK repair API, `SharedProjectionEpochCoordinator.ResolveDeliveryConflictsAsync(scope, operationId)` resolves covered evidence only after that newer authoritative rebuild is promoted and drained. This is an SDK maintenance procedure; this qualification adds no operator HTTP endpoint. Once resolved, the real Works catalog can rediscover the suspended stream and reconcile its reminder.
+
+The [five-item qualification packet](../_bmad-output/implementation-artifacts/evidence/five-deferred-reminder-outcomes-2026-10-28/README.md) binds executing consumer controls over serialized SDK state and controlled external adapters. It does not qualify live Dapr scheduler transport or an upstream public-package release.
+
 ## Historical Story 4.15 migration qualification
 
 The remaining sections preserve exact earlier modes, candidates, commands and qualification limits. References to the legacy default, opt-in SDK mode or a retained local AppHost describe those historical inputs. They are not instructions for the current canonical executable. The current public SDK pin is 3.128.0, selected by the Builds catalog; Story 4.9 removed the transitional projects after complete Platform qualification.

@@ -801,6 +801,8 @@ archived: 2026-10-23
 
 <a id="story-4-8-canonical-unpark-replay"></a>
 - No unpark, delete, or operator replay path for `projection:works:parked:{tenant}:{id}` (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:596-650`). Parking's intended terminal disposition is the Error log plus "needs operator action"; an unpark/replay tool is a new ops feature, not an in-band 4.8 fix.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-reminder-outcomes.md` — Current SDK repair is qualified end to end: actual terminal parking blocks discovery; a newer covering authoritative rebuild promotes but retains the unresolved parking audit; explicit SDK ResolveDeliveryConflictsAsync resolves covered evidence, after which reconstructed Works discovery and reconciliation persist and arm the reminder. This supplies an SDK maintenance procedure, not a new operator HTTP endpoint.
 - Shared rebuild never emits operations for pending-date-await index/registry or parking keys (`src/Hexalith.Works/Projections/SharedRebuild/`). Re-observed; already recorded 2026-09-07 against `spec-shared-rollup-reconciliation.md`.
 - Index durability window + one-shot empty-registry success + retired tenant-wide scan (`src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:41-51`, `ReminderReconciliationService.cs:37-61`). Re-observed; already recorded 2026-09-07 (blind window / no backfill, and the ~5 s give-up).
 - Equal-sequence `PersistRollUpAsync` can overwrite a concurrently merged child set (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:452-454`). Roll-up child-reconciliation / F-PROJ-1 is out of Story 4.8 scope (DW-84 / shared-rebuild).
@@ -884,6 +886,8 @@ archived: 2026-10-23
 
 <a id="story-4-8-canonical-scheduler-exhaustion"></a>
 - A permanently failing date-reminder scheduler has no terminal disposition: `WorkItemSuspendedReminderHandler` warns 4609 and rethrows, so a scheduler that always fails wedges that `work.events` delivery indefinitely with no budget, park, or dead-letter route — unlike the sibling `/project` path, which has a parking budget. The same `foreach` also means the first failing await of a multi-date suspension permanently prevents the remaining awaits from registering. spec-5's matrix freezes the rethrow and its Never list forbids a new exhaustion policy, so both halves need their own spec. [src/Hexalith.Works/Reminders/WorkItemSuspendedReminderHandler.cs:63-81]
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-reminder-outcomes.md` — The legacy fail-fast handler is retired. Current SDK isolates each scheduler arm, retains the failed await as Pending/arm-failed across repeated reconstructed passes, and arms its healthy sibling. Repair arms the retained await without duplicating the sibling. Supported disposition is durable retry with degraded readiness, not a finite attempt budget or automatic dead-lettering.
 - `deferred-work.md` still carries the reserved-tenant command-envelope entry and the reminder recovery/scheduling entry as open (the latter recorded twice, the second with `source_spec: none`) although the 2026-09-16 bundles implement them. The precedent for closing is the `Resolution 2026-09-15` sub-bullet on defect (4). Left open so a sweep does not reschedule finished work without a human confirming the mapping. [_bmad-output/implementation-artifacts/deferred-work.md:924]
 - No non-reminder EventId 4603 call site pins whether its record carries an exception. `ReminderReconciliationService` is now the only one of seven callers that omits it, so one event id has two payload shapes; the six cascade/child-completion/actor callers are unpinned either way. Belongs with the existing bounded-recovery-telemetry item for 4604/4606. Settled by whichever way the open 4603 decision in the story resolves. [src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs:31]
   - Resolution 2026-09-17 (`spec-4-8-register-and-reconcile-date-reminders-durably-7.md`): closed as stale on insertion. Commit `06d64b0`, which appended this line, also restored `ReminderReconciliationService`'s exception argument, so all seven 4603 call sites already shared the structured-exception shape. The focused hosted-service tests pin the reminder caller; this record supplies no remaining behavioral gap for Story 4.8.
@@ -898,8 +902,12 @@ archived: 2026-10-23
 - `CascadeRecoveryService` keeps the loose cancellation filter that the 2026-09-16 bundle replaced in its structural twin, and no test reads that path. `CascadeRecoveryService.cs:25` still reads `catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)` and swallows a genuine dependency fault as shutdown with no log at all, where `ReminderReconciliationService.cs:44-46` now requires the exact stopping token and otherwise logs 4603 with the cause; `CascadeRecoveryReconciler.cs:89` has the same filter and aborts the remaining index entries instead of continuing. Grepping `tests/` returns only two DI-descriptor assertions for `CascadeRecoveryService` and no behavioral test of `ExecuteAsync`. The existing 4603 ledger item covers exception *attachment* only, so the cancellation-filter non-adoption is untracked. Outside spec-6's frozen scope. [src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs:25]
 <a id="story-4-8-canonical-due-now-telemetry"></a>
 - The recovery submit branch has no bounded failure telemetry while its sibling scheduler branch does. `DateReminderReconciler.cs:119` is a bare `await _submitter.SubmitAsync(submission, cancellationToken)`, so a submit fault during startup recovery escapes carrying no tenant, work item, or reminder name — it reaches EventId 4603 with the gateway exception attached, but `EventStoreGatewayWorkCommandSubmitter` is a thin gateway wrapper whose exceptions carry HTTP-shaped detail and no Works identity. The sibling branch at `:135-156` logs bounded 4609 with the structured cause before rethrowing. Either branch throwing mid-loop also skips `DateRemindersReconciled` (`:167`) for that tenant, so partial `tenantReissued`/`tenantRescheduled` progress is lost and the remaining tenants are never processed. Deferred 2026-09-17 (human): a `DateResumeIssueFailed` EventId would be new operator surface with no execution task and no Code Map entry in spec-6, and it belongs with the two open items in this same family — the permanently failing scheduler with no terminal disposition, and the first failing await of a multi-date suspension blocking its siblings — so one future spec should decide 4610, exhaustion policy, and per-await ordering together. The 2026-09-17 review rewrote the 4605 runbook row so the shipped operator documentation no longer promises evidence that no event emits. [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:119]
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-reminder-outcomes.md` — Actual due-now SDK reconciliation records digest-only 200219 failure and 200203 retry diagnostics without private exception/payload evidence. A failed submission retains its witness while its due sibling completes; reconstructed recovery retries with the same effect identity and settles the retained work.
 <a id="story-4-8-canonical-in-tenant-cancellation"></a>
 - The in-tenant cancellation ordering remains open by decision. `IndexedPendingDateAwaitSource`'s three exact-token filters (`:82`, `:139`, `:181`) bare-`throw;`, so a non-cancellation candidate failure followed by an exact-caller `OperationCanceledException` inside the same tenant scan still discards that tenant's accumulated `pending` and counts — `ScanTenantAsync` holds them as locals. The 2026-09-17 review closed only the between-tenant leak at `:69` (Option A); closing this one costs five sites and reverses the 2026-09-16 ratified exact-token policy. Recorded in the class doc rather than fixed. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:82]
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-reminder-outcomes.md` — The retired in-memory tenant scanner is replaced by SDK durable traversal. An earlier candidate failure followed by exact caller cancellation retains the incomplete flag and cursor across reconstruction. Completing the resumed tail stays degraded; a fresh complete successful sweep revisits the failure and restores readiness without losing candidates.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-7.md`
   summary: Decide whether exact caller cancellation after the next tenant scan starts may discard evidence collected from earlier tenants.
@@ -920,6 +928,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md`
   summary: Decide whether exact caller cancellation inside a tenant scan should retain that tenant's local partial results and failure evidence.
+  status: done 2026-10-28
+  resolution: Alias of the [canonical finding](#story-4-8-canonical-in-tenant-cancellation), qualified by `spec-five-deferred-reminder-outcomes.md`; counted once.
   evidence: An exact cancellation unwinds `ScanTenantAsync` before its local result is returned, delaying already collected current-tenant evidence until another startup pass; this behavior predates spec-8 and its frozen scope leaves all three in-tenant filters unchanged.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md`
@@ -1021,26 +1031,36 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Provide a supported unpark or replay path for parked aggregates that still need date-reminder recovery.
+  status: done 2026-10-28
+  resolution: Alias of the [canonical finding](#story-4-8-canonical-unpark-replay), qualified by `spec-five-deferred-reminder-outcomes.md`; counted once.
   evidence: `IndexedPendingDateAwaitSource` cleanly skips a durable parking record without reading the authoritative stream, so a stale or erroneous park can suppress an overdue resume indefinitely; this is pre-existing projection-recovery behavior.
   - Canonical entry: [2026-09-08 Group 1 unpark/replay finding](#story-4-8-canonical-unpark-replay); this close-out row is a later re-observation, not a second work item.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Preserve in-tenant partial reminder-scan evidence when exact caller cancellation follows an earlier candidate failure.
+  status: done 2026-10-28
+  resolution: Alias of the [canonical finding](#story-4-8-canonical-in-tenant-cancellation), qualified by `spec-five-deferred-reminder-outcomes.md`; counted once.
   evidence: The parking and stream exact-token catches rethrow immediately and discard that tenant's local partials/counts; the source remarks explicitly retain this prior human-decided limitation.
   - Canonical entry: [2026-09-16 in-tenant cancellation finding](#story-4-8-canonical-in-tenant-cancellation); this row preserves the later review provenance only.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Define per-await failure isolation and exhaustion for steady-state registration and startup reconciliation.
+  status: done 2026-10-28
+  resolution: Alias of the [canonical finding](#story-4-8-canonical-scheduler-exhaustion), qualified by `spec-five-deferred-reminder-outcomes.md`; counted once.
   evidence: Both `WorkItemSuspendedReminderHandler` and `DateReminderReconciler` fail fast on the first persistent await failure, allowing it to starve later valid awaits across every retry; the behavior predates the final harness increment.
   - Canonical entries: [2026-09-16 scheduler exhaustion finding](#story-4-8-canonical-scheduler-exhaustion) and [due-now recovery telemetry finding](#story-4-8-canonical-due-now-telemetry); this row does not create another starvation task.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add bounded identity-bearing telemetry for due-now resume submission failures during reminder reconciliation.
+  status: done 2026-10-28
+  resolution: Alias of the [canonical finding](#story-4-8-canonical-due-now-telemetry), qualified by `spec-five-deferred-reminder-outcomes.md`; counted once.
   evidence: The due-now branch has only the eventual generic 4603 exception, unlike scheduler EventId 4609, so operators cannot identify the tenant, work item, or reminder that stopped the pass.
   - Canonical entry: [2026-09-16 due-now recovery telemetry finding](#story-4-8-canonical-due-now-telemetry); this row is retained only as close-out review history.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Retain or retry a fired date reminder until its submitted resume command reaches an acceptable terminal outcome.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-reminder-outcomes.md` — Executing callback controls retain and back off witnesses for lost responses, absent/mismatched/undefined receipts and failed scheduler cancellation. Reconstructed retries replay one persisted target receipt with the same identity; Success, Rejection and NoOp settle only with a durable audit and successful cancellation.
   evidence: The gateway submitter returns an accepted response without polling terminal command status, after which `DateReminderActor` removes its durable registration; a later rejected, publish-failed, or timed-out command has no in-process retry trigger.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`

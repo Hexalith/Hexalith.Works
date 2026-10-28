@@ -22,6 +22,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NSubstitute;
 
@@ -430,10 +433,325 @@ public sealed class WorksDateReminderSchedulingTests
         AssertWitnesses(store, item, s_start.AddMinutes(2)).ShouldBe(persisted);
     }
 
+    /// <summary>A persistent arm failure retains its witness without starving a sibling, then repairs through indexed recovery.</summary>
+    [Fact]
+    public async Task FailedArmDoesNotStarveSiblingAndRepairsAfterReconstruction()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "isolated-arm-failure";
+        var target = new ReminderTarget(Tenant, "work", item);
+        TimeProvider clock = Substitute.For<TimeProvider>();
+        clock.GetUtcNow().Returns(s_start);
+        var store = new InMemoryReadModelStore();
+        var pages = new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [item] = Page(item, s_start.AddMinutes(1), s_start.AddMinutes(2)),
+        };
+        WorksReminderSchedulerProxy scheduler = Scheduler();
+        string failedName;
+        string siblingName;
+        using (ServiceProvider provider = Services(store, clock, pages))
+        using (IServiceScope scope = provider.CreateScope())
+        {
+            ReminderIntent[] intents = [.. await scope.ServiceProvider.GetRequiredService<IReminderIntentSource>()
+                .GetCurrentIntentsAsync(target, ct)];
+            failedName = ReminderIdentityCodec.ComputeReminderName(intents[0]);
+            siblingName = ReminderIdentityCodec.ComputeReminderName(intents[1]);
+            scheduler.ArmFailure = name => name == failedName ? new IOException("private-scheduler-detail") : null;
+            ReminderConvergenceResult result = await ConvergeAsync(scope.ServiceProvider, target, scheduler, ct);
+            result.Armed.ShouldBe(1);
+            result.Unresolved.ShouldBe(1);
+        }
+        scheduler.Held.ShouldHaveSingleItem().ShouldBe(siblingName);
+        JsonElement failed = Witness(store, item, failedName);
+        failed.GetProperty("status").GetString().ShouldBe("Pending");
+        failed.GetProperty("lastReasonCode").GetString().ShouldBe("arm-failed");
+        string sibling = Witness(store, item, siblingName).GetRawText();
+        var schedulers = new Dictionary<string, WorksReminderSchedulerProxy> { [item] = scheduler };
+        for (int pass = 0; pass < 3; pass++)
+        {
+            using ServiceProvider restarted = Services(store, clock, pages, schedulers);
+            object result = await InvokeAsync(restarted.GetRequiredService(SdkType("ReminderReconciler")), "RunPassAsync", ct);
+            Property<int>(result, "Unresolved").ShouldBe(1);
+            HealthCheckResult health = await HealthAsync(restarted, ct);
+            health.Status.ShouldBe(HealthStatus.Degraded);
+            health.Data["passCompleted"].ShouldBe(true);
+            health.Data["unresolved"].ShouldBe(1);
+            Witness(store, item, failedName).GetProperty("lastReasonCode").GetString().ShouldBe("arm-failed");
+            Witness(store, item, siblingName).GetRawText().ShouldBe(sibling);
+            scheduler.Held.ShouldHaveSingleItem().ShouldBe(siblingName);
+        }
+        scheduler.ArmFailure = null;
+        using (ServiceProvider restarted = Services(store, clock, pages, schedulers))
+        {
+            object result = await InvokeAsync(restarted.GetRequiredService(SdkType("ReminderReconciler")), "RunPassAsync", ct);
+            Property<int>(result, "Armed").ShouldBe(1);
+            Property<int>(result, "Unresolved").ShouldBe(0);
+            (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
+        }
+        scheduler.Held.Order(StringComparer.Ordinal).ShouldBe(new[] { failedName, siblingName }.Order(StringComparer.Ordinal));
+        scheduler.Arms.Count.ShouldBe(2);
+        _ = AssertWitnesses(store, item, s_start.AddMinutes(1), s_start.AddMinutes(2));
+    }
+
+    /// <summary>A due submission fault emits digest-only diagnostics and retains one retry while its sibling completes.</summary>
+    [Fact]
+    public async Task DueNowSubmissionFailureRetainsWitnessAndBoundedDiagnosticsAcrossRecovery()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "due-submission-failure";
+        const string canary = "private-submission-token-and-payload";
+        var receiptWrites = new Dictionary<string, int>(StringComparer.Ordinal);
+        DateTimeOffset now = s_start;
+        TimeProvider clock = Substitute.For<TimeProvider>();
+        clock.GetUtcNow().Returns(_ => now);
+        var store = new InMemoryReadModelStore();
+        var pages = new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [item] = Page(item, s_start.AddMinutes(1), s_start.AddMinutes(2)),
+        };
+        var target = new ReminderTarget(Tenant, "work", item);
+        WorksReminderSchedulerProxy scheduler = Scheduler();
+        var logs = new WorksReminderRecoveryLogCapture();
+        var submissions = new List<TrustedEffectSubmission>();
+        bool failing = true;
+        ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
+        submitter.SubmitAsync(Arg.Any<TrustedEffectSubmission>(), Arg.Any<TrustedEffectContext>(), Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                TrustedEffectSubmission submission = call.Arg<TrustedEffectSubmission>();
+                submissions.Add(submission);
+                ResumeWorkItem command = JsonSerializer.Deserialize<ResumeWorkItem>(submission.CommandPayload).ShouldNotBeNull();
+                if (failing && command.AwaitCondition.ShouldNotBeNull().Instant == s_start.AddMinutes(1))
+                    throw new HttpRequestException(canary, new IOException(canary));
+                string effectId = EffectIdentityCodec.ComputeEffectId(submission.Identity);
+                string key = "synthetic-target-receipt:" + effectId;
+                TrustedEffectResult? prior = store.Snapshot<TrustedEffectResult>("statestore", key);
+                if (prior is not null) return prior with { Replayed = true };
+                var receipt = new TrustedEffectResult(effectId, TrustedEffectDisposition.Success, false, null);
+                await store.SaveAsync("statestore", key, receipt, call.Arg<CancellationToken>()).ConfigureAwait(false);
+                receiptWrites[effectId] = receiptWrites.GetValueOrDefault(effectId) + 1;
+                return receipt;
+            });
+        IReminderDelegationTokenProvider delegation = Delegation();
+        using (ServiceProvider initial = Services(store, clock, pages, submitter: submitter, delegation: delegation))
+        using (IServiceScope scope = initial.CreateScope())
+            (await ConvergeAsync(scope.ServiceProvider, target, scheduler, ct)).Armed.ShouldBe(2);
+        now = s_start.AddMinutes(3);
+        var schedulers = new Dictionary<string, WorksReminderSchedulerProxy> { [item] = scheduler };
+        using (ServiceProvider restarted = Services(store, clock, pages, schedulers, submitter, delegation, logs))
+        {
+            object result = await InvokeAsync(restarted.GetRequiredService(SdkType("ReminderReconciler")), "RunPassAsync", ct);
+            Property<int>(result, "Candidates").ShouldBe(1);
+            Property<int>(result, "Submitted").ShouldBe(1);
+            Property<int>(result, "Unresolved").ShouldBe(1);
+            Property<int>(result, "Incomplete").ShouldBe(0);
+        }
+        var warning = logs.Entries.Single(entry => entry.EventId == 200219);
+        warning.Exception.ShouldBeNull();
+        warning.Properties.Keys.Order(StringComparer.Ordinal)
+            .ShouldBe(new[] { "ActorId", "ReminderName", "ExceptionType", "{OriginalFormat}" }.Order(StringComparer.Ordinal));
+        warning.Properties["ActorId"].ShouldBe(ReminderIdentityCodec.ComputeActorId(Tenant, item));
+        warning.Properties["ExceptionType"].ShouldBe(nameof(HttpRequestException));
+        string name = (string)warning.Properties["ReminderName"]!;
+        var retryLog = logs.Entries.Single(entry => entry.EventId == 200203);
+        retryLog.Properties["ActorId"].ShouldBe(warning.Properties["ActorId"]);
+        retryLog.Properties["ReminderName"].ShouldBe(name);
+        retryLog.Properties["ReasonCode"].ShouldBe("submission-uncertain");
+        retryLog.Properties["Attempts"].ShouldBe(1);
+        JsonElement retained = Witness(store, item, name);
+        retained.GetProperty("status").GetString().ShouldBe("Retrying");
+        retained.GetProperty("lastReasonCode").GetString().ShouldBe("submission-uncertain");
+        retained.GetProperty("attempts").GetInt32().ShouldBe(1);
+        scheduler.Held.ShouldHaveSingleItem().ShouldBe(name);
+        foreach (var entry in logs.Entries)
+        {
+            entry.Exception.ShouldBeNull();
+            foreach (string value in entry.Properties.Values.Select(value => value?.ToString() ?? string.Empty).Append(entry.Message))
+            {
+                value.ShouldNotContain(canary);
+                value.ShouldNotContain(Tenant);
+                value.ShouldNotContain(item);
+            }
+        }
+        submissions.Count.ShouldBe(2);
+        failing = false;
+        now = now.AddSeconds(31);
+        using (ServiceProvider restarted = Services(store, clock, pages, schedulers, submitter, delegation))
+        {
+            object result = await InvokeAsync(restarted.GetRequiredService(SdkType("ReminderReconciler")), "RunPassAsync", ct);
+            Property<int>(result, "Submitted").ShouldBe(2);
+            Property<int>(result, "Unresolved").ShouldBe(0);
+        }
+        // The synthetic source still reports both awaits, so convergence also replays the sibling receipt.
+        TrustedEffectSubmission[] retries = [.. submissions.Where(submission =>
+            JsonSerializer.Deserialize<ResumeWorkItem>(submission.CommandPayload)!.AwaitCondition.ShouldNotBeNull().Instant == s_start.AddMinutes(1))];
+        retries.Length.ShouldBe(2);
+        AssertSameSubmission(retries[0], retries[1]);
+        AssertSubmittedAudit(store, item, name, EffectIdentityCodec.ComputeEffectId(retries[0].Identity), false);
+        TrustedEffectSubmission[] siblings = [.. submissions.Where(submission =>
+            JsonSerializer.Deserialize<ResumeWorkItem>(submission.CommandPayload)!.AwaitCondition.ShouldNotBeNull().Instant == s_start.AddMinutes(2))];
+        siblings.Length.ShouldBe(2);
+        AssertSameSubmission(siblings[0], siblings[1]);
+        string siblingEffect = EffectIdentityCodec.ComputeEffectId(siblings[0].Identity);
+        string siblingName;
+        using (ServiceProvider provider = Services(store, clock, pages, submitter: submitter, delegation: delegation))
+        using (IServiceScope scope = provider.CreateScope())
+            siblingName = ReminderIdentityCodec.ComputeReminderName((await scope.ServiceProvider.GetRequiredService<IReminderIntentSource>()
+                .GetCurrentIntentsAsync(target, ct)).Single(intent => intent.DueUtc == s_start.AddMinutes(2)));
+        AssertSubmittedAudit(store, item, siblingName, siblingEffect, true);
+        receiptWrites.Count.ShouldBe(2);
+        receiptWrites.Values.ShouldAllBe(count => count == 1);
+        store.SnapshotRaw("statestore", StateKey(item)).ShouldBeNull();
+        scheduler.Held.ShouldBeEmpty();
+    }
+
+    /// <summary>Uncertain receipts and failed cancellation retain a fired witness until a durable replay is safely released.</summary>
+    /// <param name="failure">The uncertain response or scheduler boundary.</param>
+    /// <param name="disposition">The authoritative target disposition, including rejection and no-op.</param>
+    [Theory]
+    [InlineData("lost-response", TrustedEffectDisposition.Success)]
+    [InlineData("wrong-effect", TrustedEffectDisposition.Success)]
+    [InlineData("invalid-disposition", TrustedEffectDisposition.Success)]
+    [InlineData("missing-receipt", TrustedEffectDisposition.Success)]
+    [InlineData("cancel-failed", TrustedEffectDisposition.Success)]
+    [InlineData("cancel-response-lost", TrustedEffectDisposition.Success)]
+    [InlineData("audit-unavailable", TrustedEffectDisposition.Success)]
+    [InlineData("lost-response", TrustedEffectDisposition.Rejection)]
+    [InlineData("lost-response", TrustedEffectDisposition.NoOp)]
+    public async Task FiredReminderWaitsForDurableReceiptAndSchedulerReleaseAfterRestart(string failure, TrustedEffectDisposition disposition)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "uncertain-fired-reminder";
+        DateTimeOffset now = s_start;
+        TimeProvider clock = Substitute.For<TimeProvider>();
+        clock.GetUtcNow().Returns(_ => now);
+        var store = new InMemoryReadModelStore();
+        var auditStore = new WorksReminderAuditFaultStore(store);
+        var pages = new Dictionary<string, StreamReadPage>(StringComparer.Ordinal) { [item] = Page(item, s_start.AddMinutes(1)) };
+        var target = new ReminderTarget(Tenant, "work", item);
+        WorksReminderSchedulerProxy scheduler = Scheduler();
+        var submissions = new List<TrustedEffectSubmission>();
+        bool failing = true;
+        int receiptWrites = 0;
+        ITrustedEffectSubmitter submitter = Substitute.For<ITrustedEffectSubmitter>();
+        submitter.SubmitAsync(Arg.Any<TrustedEffectSubmission>(), Arg.Any<TrustedEffectContext>(), Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                TrustedEffectSubmission submission = call.Arg<TrustedEffectSubmission>();
+                submissions.Add(submission);
+                string effectId = EffectIdentityCodec.ComputeEffectId(submission.Identity);
+                string key = "synthetic-target-receipt:" + effectId;
+                TrustedEffectResult? prior = store.Snapshot<TrustedEffectResult>("statestore", key);
+                var receipt = prior is null ? new TrustedEffectResult(effectId, disposition, false, null) : prior with { Replayed = true };
+                if (prior is null)
+                {
+                    await store.SaveAsync("statestore", key, receipt, call.Arg<CancellationToken>()).ConfigureAwait(false);
+                    receiptWrites++;
+                }
+                if (!failing) return receipt;
+                return failure switch
+                {
+                    "lost-response" => throw new HttpRequestException("synthetic lost response"),
+                    "wrong-effect" => receipt with { EffectId = "wrong-effect" },
+                    "invalid-disposition" => receipt with { Disposition = (TrustedEffectDisposition)99 },
+                    "missing-receipt" => null!,
+                    _ => receipt,
+                };
+            });
+        IReminderDelegationTokenProvider delegation = Delegation();
+        string name;
+        using (ServiceProvider initial = Services(store, clock, pages, submitter: submitter, delegation: delegation, reminderStore: auditStore))
+        using (IServiceScope scope = initial.CreateScope())
+        {
+            (await ConvergeAsync(scope.ServiceProvider, target, scheduler, ct)).Armed.ShouldBe(1);
+            name = scheduler.Held.ShouldHaveSingleItem();
+        }
+        byte[] registrationAudit = store.SnapshotRaw("statestore", StateKey(item) + ":disposition:" + name).ShouldNotBeNull();
+        now = s_start.AddMinutes(1);
+        scheduler.CancelFailure = failure == "cancel-failed" ? new IOException("synthetic cancellation failure") : null;
+        scheduler.CancelResponseFailure = failure == "cancel-response-lost" ? new IOException("synthetic lost cancellation response") : null;
+        auditStore.RejectAudit = failure == "audit-unavailable";
+        string actor = ReminderIdentityCodec.ComputeActorId(Tenant, item);
+        using (ServiceProvider restarted = Services(store, clock, pages, submitter: submitter, delegation: delegation, reminderStore: auditStore))
+        using (IServiceScope scope = restarted.CreateScope())
+            ((ReminderDisposition)await InvokeAsync(scope.ServiceProvider.GetRequiredService(SdkType("ReminderCoordinator")),
+                "HandleCallbackAsync", actor, name, scheduler, ct)).ShouldBe(ReminderDisposition.Retrying);
+        JsonElement retained = Witness(store, item, name);
+        retained.GetProperty("status").GetString().ShouldBe("Retrying");
+        retained.GetProperty("lastReasonCode").GetString().ShouldBe(failure switch
+        {
+            "lost-response" => "submission-uncertain",
+            "cancel-failed" or "cancel-response-lost" => "cancel-failed",
+            "audit-unavailable" => "audit-unavailable",
+            _ => "receipt-mismatch",
+        });
+        retained.GetProperty("attempts").GetInt32().ShouldBe(1);
+        scheduler.Held.ShouldHaveSingleItem().ShouldBe(name);
+        scheduler.Arms[^1].DueTime.ShouldBe(TimeSpan.FromSeconds(30));
+        auditStore.RefusedAuditWrites.ShouldBe(failure == "audit-unavailable" ? 1 : 0);
+        scheduler.LostCancellationResponses.ShouldBe(failure == "cancel-response-lost" ? 1 : 0);
+        if (failure == "audit-unavailable")
+            store.SnapshotRaw("statestore", StateKey(item) + ":disposition:" + name).ShouldBe(registrationAudit);
+        byte[] pending = store.SnapshotRaw("statestore", StateKey(item)).ShouldNotBeNull();
+        now = now.AddSeconds(30).AddTicks(-1);
+        using (ServiceProvider restarted = Services(store, clock, pages, submitter: submitter, delegation: delegation, reminderStore: auditStore))
+        using (IServiceScope scope = restarted.CreateScope())
+            ((ReminderDisposition)await InvokeAsync(scope.ServiceProvider.GetRequiredService(SdkType("ReminderCoordinator")),
+                "HandleCallbackAsync", actor, name, scheduler, ct)).ShouldBe(ReminderDisposition.Retrying);
+        submissions.Count.ShouldBe(1);
+        store.SnapshotRaw("statestore", StateKey(item)).ShouldBe(pending);
+        failing = false;
+        scheduler.CancelFailure = null;
+        scheduler.CancelResponseFailure = null;
+        auditStore.RejectAudit = false;
+        now = now.AddTicks(1);
+        using (ServiceProvider restarted = Services(store, clock, pages, submitter: submitter, delegation: delegation, reminderStore: auditStore))
+        using (IServiceScope scope = restarted.CreateScope())
+            ((ReminderDisposition)await InvokeAsync(scope.ServiceProvider.GetRequiredService(SdkType("ReminderCoordinator")),
+                "HandleCallbackAsync", actor, name, scheduler, ct)).ShouldBe(ReminderDisposition.Submitted);
+        submissions.Count.ShouldBe(2);
+        AssertSameSubmission(submissions[0], submissions[1]);
+        receiptWrites.ShouldBe(1);
+        store.Snapshot<TrustedEffectResult>("statestore", "synthetic-target-receipt:" + EffectIdentityCodec.ComputeEffectId(submissions[0].Identity))
+            .ShouldNotBeNull().Disposition.ShouldBe(disposition);
+        using JsonDocument audit = JsonDocument.Parse(store.SnapshotRaw("statestore", StateKey(item) + ":disposition:" + name).ShouldNotBeNull());
+        audit.RootElement.GetProperty("disposition").GetString().ShouldBe("Submitted");
+        audit.RootElement.GetProperty("targetDisposition").GetString().ShouldBe(disposition.ToString());
+        audit.RootElement.GetProperty("replayed").GetBoolean().ShouldBeTrue();
+        store.SnapshotRaw("statestore", StateKey(item)).ShouldBeNull();
+        scheduler.Held.ShouldBeEmpty();
+    }
+
+    private static void AssertSameSubmission(TrustedEffectSubmission original, TrustedEffectSubmission replay)
+    {
+        replay.Identity.ShouldBe(original.Identity);
+        replay.MessageId.ShouldBe(original.MessageId);
+        replay.IdempotencyKey.ShouldBe(original.IdempotencyKey);
+        replay.CommandType.ShouldBe(original.CommandType);
+        replay.CommandPayload.ShouldBe(original.CommandPayload);
+    }
+
+    private static Task<HealthCheckResult> HealthAsync(IServiceProvider services, CancellationToken ct)
+        => services.GetRequiredService<IOptions<HealthCheckServiceOptions>>().Value.Registrations
+            .Single(registration => registration.Name == "eventstore-reminders-unresolved").Factory(services)
+            .CheckHealthAsync(new HealthCheckContext(), ct);
+
+    private static string StateKey(string item)
+        => "eventstore:reminders:v1:" + ActorType + ":item:" + ReminderIdentityCodec.ComputeActorId(Tenant, item);
+
+    private static JsonElement Witness(InMemoryReadModelStore store, string item, string name)
+    {
+        using JsonDocument document = JsonDocument.Parse(store.SnapshotRaw("statestore", StateKey(item)).ShouldNotBeNull());
+        return document.RootElement.GetProperty("entries").EnumerateArray()
+            .Single(entry => entry.GetProperty("reminderName").GetString() == name).Clone();
+    }
+
     private static ServiceProvider Services(InMemoryReadModelStore store, TimeProvider clock,
         IReadOnlyDictionary<string, StreamReadPage> pages,
         IReadOnlyDictionary<string, WorksReminderSchedulerProxy>? schedulers = null,
-        ITrustedEffectSubmitter? submitter = null, IReminderDelegationTokenProvider? delegation = null)
+        ITrustedEffectSubmitter? submitter = null, IReminderDelegationTokenProvider? delegation = null,
+        WorksReminderRecoveryLogCapture? logs = null, IReadModelStore? reminderStore = null)
     {
         IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
@@ -441,11 +759,18 @@ public sealed class WorksDateReminderSchedulingTests
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
             ["EventStore:Reminders:ActorTypeName"] = ActorType,
+            ["APP_API_TOKEN"] = "synthetic-callback-token",
         }).Build();
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
-        services.AddLogging();
-        services.AddSingleton<IReadModelStore>(store);
+        services.AddLogging(builder =>
+        {
+            if (logs is not null) builder.AddProvider(logs);
+        });
+        IHostEnvironment environment = Substitute.For<IHostEnvironment>();
+        environment.EnvironmentName.Returns(Environments.Production);
+        services.AddSingleton(environment);
+        services.AddSingleton<IReadModelStore>(reminderStore ?? store);
         services.AddSingleton<IReadModelConditionalEraser>(store);
         services.AddSingleton(clock);
         services.AddWorksReminderAndCascadeRecovery(configuration);

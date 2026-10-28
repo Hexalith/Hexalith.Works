@@ -17,6 +17,18 @@ public class WorksReminderSchedulerProxy : DispatchProxy
     /// <summary>Gets or sets the action performed before a scheduler lookup completes.</summary>
     internal Action? BeforeLookup { get; set; }
 
+    /// <summary>Gets or sets the failure selected before an arm operation mutates scheduler state.</summary>
+    internal Func<string, Exception?>? ArmFailure { get; set; }
+
+    /// <summary>Gets or sets the failure returned before a cancellation releases scheduler state.</summary>
+    internal Exception? CancelFailure { get; set; }
+
+    /// <summary>Gets or sets a failure returned after cancellation removed the external registration.</summary>
+    internal Exception? CancelResponseFailure { get; set; }
+
+    /// <summary>Gets the number of successful cancellations whose responses were lost.</summary>
+    internal int LostCancellationResponses { get; private set; }
+
     /// <inheritdoc/>
     protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
     {
@@ -26,6 +38,7 @@ public class WorksReminderSchedulerProxy : DispatchProxy
         switch (targetMethod.Name)
         {
             case "ArmAsync":
+                if (ArmFailure?.Invoke(name) is { } armFailure) return Task.FromException(armFailure);
                 Arms.Add((name, (TimeSpan)args[1]!));
                 _ = Held.Add(name);
                 AfterArm?.Invoke();
@@ -34,7 +47,13 @@ public class WorksReminderSchedulerProxy : DispatchProxy
                 BeforeLookup?.Invoke();
                 return Task.FromResult(Held.Contains(name));
             case "CancelAsync":
-                _ = Held.Remove(name);
+                if (CancelFailure is { } cancelFailure) return Task.FromException(cancelFailure);
+                bool removed = Held.Remove(name);
+                if (CancelResponseFailure is { } responseFailure)
+                {
+                    if (removed) LostCancellationResponses++;
+                    return Task.FromException(responseFailure);
+                }
                 return Task.CompletedTask;
             default:
                 throw new NotSupportedException(targetMethod.Name);

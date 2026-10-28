@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 
+using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Reminders;
@@ -226,6 +227,217 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
     }
 
+    /// <summary>An earlier candidate failure survives exact caller cancellation and requires a fresh successful sweep after restart.</summary>
+    [Fact]
+    public async Task EarlierFailureSurvivesExactCallerCancellationAndResumesAfterRestart()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        using var caller = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var store = new InMemoryReadModelStore();
+        var logs = new WorksReminderRecoveryLogCapture();
+        ReminderTarget[] targets = [.. new[] { "ordered-a", "ordered-b", "ordered-c", "ordered-d" }
+            .Select(item => new ReminderTarget(Tenant, "work", item))
+            .OrderBy(target => ReminderIdentityCodec.ComputeActorId(target.Tenant, target.Aggregate), StringComparer.Ordinal)];
+        IReminderRegistrar registrar = Substitute.For<IReminderRegistrar>();
+        var attempted = new List<ReminderTarget>();
+        registrar.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            ReminderTarget target = call.Arg<ReminderTarget>();
+            attempted.Add(target);
+            if (target == targets[0])
+                return Task.FromException<ReminderConvergenceResult>(new IOException("private-dependency-secret"));
+            if (target != targets[2]) return Task.FromResult(new ReminderConvergenceResult(1, 0, 0, 0, 0));
+            caller.Cancel();
+            return Task.FromException<ReminderConvergenceResult>(new OperationCanceledException(caller.Token));
+        });
+        using (ServiceProvider services = Services(store, registrar, logs))
+        {
+            foreach (ReminderTarget target in targets) await IndexAsync(services, target, ct);
+            OperationCanceledException cancelled = await Should.ThrowAsync<OperationCanceledException>(() => RunPassAsync(services, caller.Token));
+            cancelled.CancellationToken.ShouldBe(caller.Token);
+            attempted.ShouldBe(targets[..3]);
+            HealthCheckResult health = await HealthAsync(services, ct);
+            health.Status.ShouldBe(HealthStatus.Degraded);
+            health.Data["passPending"].ShouldBe(true);
+        }
+        JsonElement retained = Discovery(store, "indexed");
+        retained.GetProperty("complete").GetBoolean().ShouldBeFalse();
+        retained.GetProperty("isIncomplete").GetBoolean().ShouldBeTrue();
+        retained.GetProperty("reasonCode").GetString().ShouldBe("catalog-unavailable");
+        retained.GetProperty("afterKey").GetString().ShouldBe(Tenant + "\0" + ReminderIdentityCodec.ComputeActorId(Tenant, targets[1].Aggregate));
+        var failure = logs.Entries.Single(entry => entry.EventId == 200211);
+        failure.Properties["ActorId"].ShouldBe(ReminderIdentityCodec.ComputeActorId(Tenant, targets[0].Aggregate));
+        failure.Properties["ExceptionType"].ShouldBe("IOException");
+        logs.Entries.ShouldNotContain(entry => entry.EventId == 200210);
+        AssertSafeDiagnostics(logs);
+        byte[] candidates = store.SnapshotRaw("statestore", Prefix + ":tenant:" + Tenant + ":candidates").ShouldNotBeNull();
+
+        IReminderRegistrar healthy = Substitute.For<IReminderRegistrar>();
+        var recovered = new List<ReminderTarget>();
+        healthy.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            recovered.Add(call.Arg<ReminderTarget>());
+            return Task.FromResult(new ReminderConvergenceResult(1, 0, 0, 0, 0));
+        });
+        using ServiceProvider restarted = Services(store, healthy, new());
+        (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Degraded);
+        object resumed = await RunPassAsync(restarted, ct);
+        recovered.ShouldBe(targets[2..]);
+        Property<int>(resumed, "Candidates").ShouldBe(2);
+        Property<int>(resumed, "Incomplete").ShouldBeGreaterThan(0);
+        Discovery(store, "indexed").GetProperty("isIncomplete").GetBoolean().ShouldBeTrue();
+        (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Degraded);
+        recovered.Clear();
+        object fresh = await RunPassAsync(restarted, ct);
+        recovered.ShouldBe(targets);
+        Property<int>(fresh, "Candidates").ShouldBe(4);
+        Property<int>(fresh, "Incomplete").ShouldBe(0);
+        Discovery(store, "indexed").GetProperty("complete").GetBoolean().ShouldBeTrue();
+        Discovery(store, "indexed").GetProperty("isIncomplete").GetBoolean().ShouldBeFalse();
+        (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
+        store.SnapshotRaw("statestore", Prefix + ":tenant:" + Tenant + ":candidates").ShouldBe(candidates);
+    }
+
+    /// <summary>Only an explicitly resolved covering rebuild restores reminder discovery after terminal projection parking.</summary>
+    [Fact]
+    public async Task CoveringAuthoritativeRepairRestoresParkedReminderDiscoveryAfterRestart()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "parked-suspension";
+        const string operation = "repair-parked-suspension";
+        var store = new InMemoryReadModelStore();
+        AwaitCondition date = AwaitCondition.DateReached(s_now.AddDays(1));
+        IEventPayload[] facts = [new WorkItemCreated(item, 1, new TenantId(Tenant), new WorkItemId(item), new Obligation("parked recovery")),
+            new WorkItemSuspended(item, 2, new TenantId(Tenant), new WorkItemId(item), [date])];
+        StreamReadPage page = Story48Streams.Page(Tenant, item, facts);
+        await BackfillAsync(store, item, facts[..1], ct);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions
+        {
+            UseSdkDelivery = true,
+            MaxUndecodableEventDispatchesBeforeParking = 1,
+        }));
+        SharedProjectionScope family = handler.CreateScope(Tenant);
+        SharedProjectionLease lease = await coordinator.RegisterWriterAsync(family, handler.OrdinaryWriterId, ct);
+        var poison = new SharedProjectionDelivery(item, 2, [0x7b], JsonSerializer.SerializeToUtf8Bytes(2),
+            new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
+        (await coordinator.JournalAsync(family, lease, poison, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        (await coordinator.CatchUpAsync(family, (delivery, generation, token) =>
+            handler.FoldCatchUpAsync(delivery, generation, coordinator, token), ct)).ShouldBe(1);
+        SharedProjectionEpochStatus parked = await coordinator.GetStatusAsync(family, ct);
+        parked.IsDegraded.ShouldBeTrue();
+        parked.ParkingEvidence.ShouldHaveSingleItem().ResolvedByOperationId.ShouldBeNull();
+        (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(family, parked.ActiveGeneration,
+            WorksReadModelKeys.RuntimeParkingKey(item), ct)).Value.ShouldNotBeNull().As<WorkItemProjectionParking>().Parked.ShouldBeTrue();
+        string actorId = ReminderIdentityCodec.ComputeActorId(Tenant, item);
+        string witnessKey = Prefix + ":item:" + actorId;
+        var scheduler = (WorksReminderSchedulerProxy)DispatchProxy.Create(SdkType("IReminderScheduler"), typeof(WorksReminderSchedulerProxy));
+        IReminderRegistrar registrar = Substitute.For<IReminderRegistrar>();
+        ServiceProvider? current = null;
+        registrar.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>()).Returns(async call =>
+        {
+            using IServiceScope scope = current!.CreateScope();
+            return (ReminderConvergenceResult)await InvokeAsync(scope.ServiceProvider.GetRequiredService(SdkType("ReminderCoordinator")),
+                "ConvergeAsync", actorId, call.Arg<ReminderTarget>(), scheduler, call.Arg<CancellationToken>()).ConfigureAwait(false);
+        });
+        using (ServiceProvider blocked = Services(store, registrar, new(), page))
+        {
+            current = blocked;
+            using IServiceScope scope = blocked.CreateScope();
+            var catalog = await scope.ServiceProvider.GetRequiredService<IReminderTargetCatalog>().ListAsync(null, 256, ct);
+            catalog.IsIncomplete.ShouldBeTrue();
+            catalog.Sources.ShouldBeEmpty();
+            Property<int>(await RunPassAsync(blocked, ct), "Incomplete").ShouldBeGreaterThan(0);
+            (await HealthAsync(blocked, ct)).Status.ShouldBe(HealthStatus.Degraded);
+        }
+        scheduler.Arms.ShouldBeEmpty();
+        store.SnapshotRaw("statestore", witnessKey).ShouldBeNull();
+        const string insufficientOperation = "repair-without-parked-source";
+        const string unrelatedItem = "unrelated-source";
+        IEventPayload[] unrelatedFacts = [new WorkItemCreated(unrelatedItem, 1, new TenantId(Tenant),
+            new WorkItemId(unrelatedItem), new Obligation("unrelated repair inventory"))];
+        await RebuildAsync(store, unrelatedItem, insufficientOperation, unrelatedFacts, ct, async staged =>
+        {
+            InvalidOperationException premature = await Should.ThrowAsync<InvalidOperationException>(() =>
+                staged.ResolveDeliveryConflictsAsync(family, insufficientOperation, ct)).ConfigureAwait(false);
+            premature.Message.ShouldBe("The shared rebuild operation or phase does not match the durable epoch.");
+            SharedProjectionEpochStatus retained = await new SharedProjectionEpochCoordinator(store, store).GetStatusAsync(family, ct).ConfigureAwait(false);
+            retained.IsBuilding.ShouldBeTrue();
+            retained.IsDegraded.ShouldBeTrue();
+            retained.ParkingEvidence.ShouldBe(parked.ParkingEvidence);
+            using ServiceProvider beforePromotion = Services(store, registrar, new(), page);
+            current = beforePromotion;
+            Property<int>(await RunPassAsync(beforePromotion, ct).ConfigureAwait(false), "Incomplete").ShouldBeGreaterThan(0);
+            Discovery(store, "catalog").GetProperty("isIncomplete").GetBoolean().ShouldBeTrue();
+            scheduler.Arms.ShouldBeEmpty();
+            store.SnapshotRaw("statestore", witnessKey).ShouldBeNull();
+        });
+        var insufficient = new SharedProjectionEpochCoordinator(store, store);
+        InvalidOperationException uncovered = await Should.ThrowAsync<InvalidOperationException>(() =>
+            insufficient.ResolveDeliveryConflictsAsync(family, insufficientOperation, ct));
+        uncovered.Message.ShouldBe("The authoritative rebuild does not cover retained parking evidence.");
+        SharedProjectionEpochStatus omitted = await new SharedProjectionEpochCoordinator(store, store).GetStatusAsync(family, ct);
+        omitted.IsBuilding.ShouldBeFalse();
+        omitted.IsDegraded.ShouldBeTrue();
+        omitted.ParkingEvidence.ShouldBe(parked.ParkingEvidence);
+        using (ServiceProvider omittedSource = Services(store, registrar, new(), page))
+        {
+            current = omittedSource;
+            Property<int>(await RunPassAsync(omittedSource, ct), "Incomplete").ShouldBeGreaterThan(0);
+            Discovery(store, "catalog").GetProperty("isIncomplete").GetBoolean().ShouldBeTrue();
+        }
+        scheduler.Arms.ShouldBeEmpty();
+        store.SnapshotRaw("statestore", witnessKey).ShouldBeNull();
+        await RebuildAsync(store, item, operation, facts, ct);
+        var promoted = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionEpochStatus unresolved = await promoted.GetStatusAsync(family, ct);
+        unresolved.ActiveGeneration.ShouldBeGreaterThan(parked.ActiveGeneration);
+        unresolved.ParkingEvidence.ShouldHaveSingleItem().ShouldBe(parked.ParkingEvidence[0]);
+        unresolved.IsDegraded.ShouldBeTrue();
+        using (ServiceProvider stillBlocked = Services(store, registrar, new(), page))
+        {
+            current = stillBlocked;
+            Property<int>(await RunPassAsync(stillBlocked, ct), "Incomplete").ShouldBeGreaterThan(0);
+        }
+        scheduler.Arms.ShouldBeEmpty();
+        store.SnapshotRaw("statestore", witnessKey).ShouldBeNull();
+        await promoted.ResolveDeliveryConflictsAsync(family, operation, ct);
+        var repaired = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionEpochStatus resolved = await repaired.GetStatusAsync(family, ct);
+        resolved.ParkingEvidence.ShouldHaveSingleItem().ResolvedByOperationId.ShouldBe(operation);
+        resolved.IsDegraded.ShouldBeFalse();
+        (await repaired.ReadAsync<WorksRuntimeDocument>(family, WorksReadModelKeys.RuntimeParkingKey(item), ct))
+            .Value.ShouldNotBeNull().As<WorkItemProjectionParking>().Parked.ShouldBeFalse();
+        using (ServiceProvider recovered = Services(store, registrar, new(), page))
+        {
+            current = recovered;
+            using IServiceScope scope = recovered.CreateScope();
+            var catalog = await scope.ServiceProvider.GetRequiredService<IReminderTargetCatalog>().ListAsync(null, 256, ct);
+            catalog.IsIncomplete.ShouldBeFalse();
+            catalog.Sources.ShouldHaveSingleItem().Aggregate.ShouldBe(item);
+            object pass = await RunPassAsync(recovered, ct);
+            Property<int>(pass, "Armed").ShouldBe(1);
+            Property<int>(pass, "Incomplete").ShouldBe(0);
+            (await HealthAsync(recovered, ct)).Status.ShouldBe(HealthStatus.Healthy);
+        }
+        var arm = scheduler.Arms.ShouldHaveSingleItem();
+        arm.DueTime.ShouldBe(TimeSpan.FromDays(1));
+        byte[] witness = store.SnapshotRaw("statestore", witnessKey).ShouldNotBeNull();
+        using JsonDocument state = JsonDocument.Parse(witness);
+        JsonElement entry = state.RootElement.GetProperty("entries").EnumerateArray().ShouldHaveSingleItem();
+        entry.GetProperty("reminderName").GetString().ShouldBe(arm.Name);
+        entry.GetProperty("dueUtc").GetDateTimeOffset().ShouldBe(date.Instant!.Value);
+        entry.GetProperty("sourceSequence").GetInt64().ShouldBe(2);
+        entry.GetProperty("status").GetString().ShouldBe("Armed");
+        using (ServiceProvider restarted = Services(store, registrar, new(), page))
+        {
+            current = restarted;
+            Property<int>(await RunPassAsync(restarted, ct), "Incomplete").ShouldBe(0);
+        }
+        scheduler.Arms.Count.ShouldBe(1);
+        store.SnapshotRaw("statestore", witnessKey).ShouldBe(witness);
+    }
+
     /// <summary>An initially empty sweep cannot strand a suspension whose projection membership arrives later.</summary>
     [Fact]
     public async Task EmptyRegistryIsRevisitedAfterProjectionBackfillWithoutEventWakeup()
@@ -359,6 +571,53 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
                 .ConfigureAwait(false)).ShouldBe(1);
             lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct).ConfigureAwait(false);
         }
+    }
+
+    private static async Task RebuildAsync(InMemoryReadModelStore store, string item, string operation, IEventPayload[] facts,
+        CancellationToken cancellationToken, Func<SharedProjectionEpochCoordinator, Task>? beforeCommit = null)
+    {
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var services = new ServiceCollection();
+        services.AddSingleton<IReadModelStore>(store);
+        services.AddSingleton<IReadModelBatchStore>(store);
+        services.AddSingleton<IReadModelBatchStagingStore>(store);
+        services.AddSingleton(coordinator);
+        services.AddScoped<IAsyncDomainProjectionHandler>(_ => handler);
+        using ServiceProvider provider = services.BuildServiceProvider();
+        var dispatchOptions = new ProjectionDispatchOptions();
+        var hostIdentity = new DomainProjectionIdentityOptions { AppId = "works-test", ServiceVersion = "v1" };
+        string catalog = AdminOperationalIndexMetadata.Create(new DiscoveryResult([], []), ["work"], [], [handler],
+            hostIdentity.AppId, hostIdentity.ServiceVersion, dispatchOptions, ["work"]).CatalogFingerprint!;
+        var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", WorksReadModelKeys.RuntimeFamily, operation, catalog);
+        ProjectionEventDto[] history = [.. facts.Select((fact, index) => new ProjectionEventDto(fact.GetType().Name,
+            JsonSerializer.SerializeToUtf8Bytes(fact, fact.GetType()), "json", index + 1, s_now, "parked-repair", GlobalPosition: index + 1))];
+        _ = await coordinator.RegisterWriterAsync(handler.CreateScope(Tenant), handler.OrdinaryWriterId, cancellationToken).ConfigureAwait(false);
+        async Task<DomainSharedProjectionRebuildResponse> DispatchAsync(DomainSharedProjectionRebuildRequest request)
+        {
+            DomainSharedProjectionRebuildResponse response = await DomainSharedProjectionRebuildDispatcher.DispatchAsync(
+                provider, request, dispatchOptions, hostIdentity, cancellationToken).ConfigureAwait(false);
+            response.Status.ShouldNotBe(ProjectionDispatchStatus.Failed);
+            return response;
+        }
+        _ = await DispatchAsync(new(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Begin, identity,
+            SourceHighWatermarks: new Dictionary<string, long> { [item] = facts.Length },
+            CaptureInventoryFingerprint: DomainSharedProjectionRebuildFingerprint.AppendInventory(
+                DomainSharedProjectionRebuildFingerprint.EmptyInventory, 0,
+                DomainSharedProjectionRebuildFingerprint.ComputeHistory(item, false, history)))).ConfigureAwait(false);
+        DomainSharedProjectionRebuildResponse accumulated = await DispatchAsync(new(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Accumulate, identity, 0, item, Events: history)).ConfigureAwait(false);
+        accumulated.AcceptedAggregateCount.ShouldBe(1);
+        DomainSharedProjectionRebuildResponse finalized = await DispatchAsync(new(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Finalize, identity, ExpectedAggregateCount: accumulated.AcceptedAggregateCount,
+            ExpectedInventoryFingerprint: accumulated.InventoryFingerprint)).ConfigureAwait(false);
+        finalized.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Finalized);
+        (await DispatchAsync(new(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Stage, identity)).ConfigureAwait(false)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Prepared);
+        if (beforeCommit is not null) await beforeCommit(coordinator).ConfigureAwait(false);
+        (await DispatchAsync(new(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Commit, identity)).ConfigureAwait(false)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
     }
 
     private static async Task IndexAsync(IServiceProvider services, ReminderTarget target, CancellationToken ct)

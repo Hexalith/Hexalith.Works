@@ -1,0 +1,92 @@
+{
+  "baseline": "427d1ddbc560a81a0e1e7fc36ad9f1275f4bde5b",
+  "date": "2026-10-28",
+  "scope": "Five canonical reminder recovery findings, consumer source Debug qualification; no live Platform or public-package requalification.",
+  "source_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/WorksDateReminderSchedulingTests.cs": "0601cd2b11fe4f099cbb26aeb33eb37896f781fd046aa605f1a42a466e9831e5",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkReminderRecoveryPolicyTests.cs": "cc23b9e9651fb3bb5db33ea327a258332577f02d7990b432dfdaf8d17119385d",
+    "tests/Hexalith.Works.IntegrationTests/WorksReminderSchedulerProxy.cs": "34f52b63630c2b3ea5a26ffc16c96b7ebad88bca628bd211385c7cfdddfc7e62",
+    "tests/Hexalith.Works.IntegrationTests/WorksReminderAuditFaultStore.cs": "2ebcfeb98499af37960743b27ede9fda510e8b8519a8b96ed3397600f31a8755",
+    "docs/sdk-reminder-process-adoption.md": "1baac53432622593ed5950f17c186db8246d7c32540e7ff56be5857c52d2110a",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "52b0b4a6cbc05796252ea247aba9447792a1ed74da68e53a90d62b2b7ed9c5eb"
+  },
+  "assembly_sha256": {
+    "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll": "dc83955fdf26d2d82438c7fe9056a8dece65a7ce34ad0fbb5986986c8daa91da"
+  },
+  "dependency_commits": {
+    "Hexalith.EventStore": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "Hexalith.Platform": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+    "Hexalith.Builds": "81ab049208678bd6616828824729c0ddac02f7d1",
+    "Hexalith.Parties": "9239c531f3b0cbb4a998c419e537463b597ff14b",
+    "Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0"
+  },
+  "evidence_sha256": {
+    "commitlint.log.gz": "ef595e89cc03eeb7b394c1b4e806e91b9a19334c199629707d5443f0918d8c3d",
+    "debug-build.log.gz": "e3bd9494d8a2eecf2616e3b53eaefa13f0cb52722648a1d71971ae4292c2d74a",
+    "deterministic.log.gz": "09ad124596dc457af58b7d8fb1b72b2ec6408ae12ce875ac1c15b479bbca3c7a",
+    "deterministic.xml.gz": "4b6ad56fe7439c4dc13f099eae502c40aa8522d4ae4851f7c7a5e3ce13702b7f",
+    "fetch.log.gz": "93f37cd6b6e09494d48323597ff06b0f1277188813bd38ff3dd27864ee157680",
+    "focused.log.gz": "e2ebdbd433b4d9acbe3d38f924fe8e9fbf0da57edae0f97ceca8ab32b01ef4a1",
+    "focused.xml.gz": "28df18475053ed62dad243c05a58bea2e09456a9a1e6546019472d2ac8c86a4a",
+    "format.log.gz": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+    "platform-baseline.log.gz": "c35b4f3dbbe99072e162a153781e619e12e7f3b3c2c13c1f4d0ad6f937405f50"
+  },
+  "tests": {
+    "focused": [
+      {
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "total": "29",
+        "passed": "29",
+        "failed": "0",
+        "errors": "0",
+        "skipped": "0",
+        "not-run": "0"
+      }
+    ],
+    "deterministic": [
+      {
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "total": "1028",
+        "passed": "1028",
+        "failed": "0",
+        "errors": "0",
+        "skipped": "0",
+        "not-run": "0"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "command": "npm run commitlint -- --edit /tmp/works-reminder-outcomes-commit.txt",
+      "exit": 0
+    },
+    {
+      "command": "git fetch origin main; git rev-list --left-right --count HEAD...origin/main",
+      "exit": 0,
+      "result": "0 0 before commit"
+    },
+    {
+      "command": "aspire start --non-interactive --apphost /home/administrator/projects/hexalith/works/references/Hexalith.Platform/apphost.cs --format Json",
+      "exit": 2,
+      "result": "Pre-existing NU1605 Dapr hosting and EventStore Aspire/ServiceDefaults downgrades"
+    },
+    {
+      "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 --nologo",
+      "exit": 0,
+      "result": "Zero warnings/errors"
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksDateReminderSchedulingTests' -class '*WorksSdkReminderRecoveryPolicyTests' -result-xml /tmp/works-reminder-outcomes-focused.xml",
+      "exit": 0
+    },
+    {
+      "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-reminder-outcomes-deterministic.xml",
+      "exit": 0
+    },
+    {
+      "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksDateReminderSchedulingTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkReminderRecoveryPolicyTests.cs tests/Hexalith.Works.IntegrationTests/WorksReminderSchedulerProxy.cs tests/Hexalith.Works.IntegrationTests/WorksReminderAuditFaultStore.cs",
+      "exit": 0,
+      "result": "Generic workspace-load warning; no formatting changes required"
+    }
+  ]
+}
