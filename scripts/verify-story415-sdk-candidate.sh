@@ -106,27 +106,32 @@ import hashlib, json, pathlib, sys, urllib.request
 fixture, feed = map(pathlib.Path, sys.argv[1:3])
 version = sys.argv[3]
 assets = json.loads((fixture / 'obj/project.assets.json').read_text())
-assert not any(item['type'] == 'project' for item in assets['libraries'].values()), 'Project reference in package-only proof'
+if any(item['type'] == 'project' for item in assets['libraries'].values()):
+    raise SystemExit('Project reference in package-only proof')
 matched = []
 for identity, item in assets['libraries'].items():
     name, restored_version = identity.split('/')
     if not name.startswith('Hexalith.EventStore.'):
         continue
-    assert restored_version == version, identity
+    if restored_version != version:
+        raise SystemExit(f'Unexpected restored SDK version: {identity}; expected {version}')
     intended = feed / f'{name}.{version}.nupkg'
     restored = fixture / 'packages' / name.lower() / version.lower() / f'{name.lower()}.{version.lower()}.nupkg'
     if '-' in version:
         archive_source = str(intended)
     else:
         archive_source = f'https://api.nuget.org/v3-flatcontainer/{name.lower()}/{version.lower()}/{name.lower()}.{version.lower()}.nupkg'
-        assert not intended.exists(), f'Public verification archive already exists: {intended}'
+        if intended.exists():
+            raise SystemExit(f'Public verification archive already exists: {intended}')
         with urllib.request.urlopen(archive_source, timeout=30) as response:
             intended.write_bytes(response.read())
     intended_hash = hashlib.sha256(intended.read_bytes()).hexdigest()
     restored_hash = hashlib.sha256(restored.read_bytes()).hexdigest()
-    assert restored_hash == intended_hash, f'Restored archive differs from selected source: {identity}'
+    if restored_hash != intended_hash:
+        raise SystemExit(f'Restored archive differs from selected source: {identity}')
     matched.append({'identity': identity, 'source': archive_source, 'sourceSha256': intended_hash, 'isolatedCacheSha256': restored_hash})
-assert len(matched) >= 5, 'Incomplete SDK package graph'
+if len(matched) < 5:
+    raise SystemExit('Incomplete SDK package graph')
 print(json.dumps({'isolatedPackageProof': matched}, sort_keys=True))
 HASHES
 

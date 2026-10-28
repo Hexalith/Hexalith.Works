@@ -837,6 +837,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Register a production `IProjectionChangeNotifier` for the Works host or explicitly retain the projection seam as inactive.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-contract-and-proof-integrity.md` explicitly retains notification as inactive in the canonical host. Current adoption, queue and boundary documentation distinguish active SDK persistence/query serving from the pure change result/token and historical deferred notifier contract. No transport was selected or registered.
   evidence: `AddEventStoreDomainService` uses Client registrations, `WorksHost` resolves the notifier optionally, and no production Works registration supplies an implementation; this predates the projection hardening patch and needs a transport/dependency decision.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
@@ -1298,6 +1300,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Carry the `EventStore__Reminders__Workload` requirement into the Story 4.15 Works adoption spec.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-contract-and-proof-integrity.md` adds the workload handoff to Story 4.15 implementation notes and current configuration docs. `AddWorksReminderAndCascadeRecovery` already sets resolved reminder workload `works` and both effect purposes; existing scheduling/recovery-policy facts verify those options. The canonical host needs no redundant environment override; frozen intent is unchanged.
   evidence: Story 4.11 delta review C21-BH5 (2026-10-10), medium. The requirement lives only in EventStore `docs/guides/typed-reminders.md` (the Story 4.15 handoff list) and this spec's C19 record. `spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md` (draft) never mentions it, and the Works AppHost calls `AddEventStoreDomainModule(…, "works", …)` (`src/Hexalith.Works.AppHost/Program.cs:141`) without it. Without the override, Works reminder submissions fail before HTTP as `delegation-failed` or `delegation-unavailable`, or at the gateway as `403`. Set it to `works` in the 4.15 acceptance criteria unless C21-BH4 is fixed at the source first.
 
 ## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C27)
@@ -1613,6 +1617,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Remove unused issue and pull-request write grants from release publication authority after governance alignment.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-contract-and-proof-integrity.md` removes both unused grants from the inlined caller-owned job, preserving contents/OIDC/actions authority. Executed locked GitHub success/failure hooks use committed configuration and a client refusing issue/PR API access; re-enabled-hook controls hit that boundary. The tooling CI job installs locked npm dependencies for this regression. No publication was dispatched.
   evidence: BR7-8: release.yml grants issues: write and pull-requests: write while .releaserc.json disables success/failure comments and labels; installed @semantic-release/github skips those writes. This is independent publication-authority work, which the frozen adoption intent leaves as a separate gate.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -1951,6 +1957,8 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Correct the existing public query summaries to distinguish absence from projection unavailability.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-contract-and-proof-integrity.md` corrects both handler XML summaries: an available projection can yield NotFound/empty results; missing, invalid or unavailable required projection documents yield projection-unavailable metadata. Recorded parked members remain omitted from successful degraded queue results. Existing SDK query regressions pass with unchanged runtime behavior.
   evidence: GetWorkItemQueryHandler and WhatsNextQueryHandler XML summaries still promise NotFound/empty results for unavailability, although the pre-existing SDK paths return projection-unavailable failures; both mismatch and behavior are present at pre-cutover6967819.
 
 ## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-26)
@@ -1999,6 +2007,8 @@ CI/build and scripts group, Works `18e94d3..ab020fa`. Both entries predate this 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26C-B5 — Drop release `issues`/`pull-requests: write` scopes no longer required after inlining (low; pre-existing).
+  status: done 2026-10-28
+  resolution: Duplicate of the owning release-authority item above; corrected and locally verified by `spec-five-deferred-contract-and-proof-integrity.md`, counted once. A future authorized release remains the live publication check; this batch did not publish.
   evidence: release.yml:54-55 keeps scopes that 4ef0217 added only for the reusable workflow's declaration; 640c8b5 (pre-cutover 6967819) inlined the job, and .releaserc.json disables fail/success comments and labels. contents: write already dominates; verify removal with the next authorized release.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2042,6 +2052,8 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
   resolution: `spec-five-deferred-telemetry-boundaries.md` — The phase requires both exporter timestamp and collector receipt after settlement; delayed/equal exporter observations are refused by deterministic controls. Canonical after-last-raise ordering is unchanged.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: G3A-B7 — Replace optimization-removable asserts in the legacy Story4.15 isolated package-proof HASHES block.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-contract-and-proof-integrity.md` replaces every HASHES assert with an explicit failure. The production heredoc is executed on valid public/candidate graphs and project/version/hash/count/preexisting-archive refusals under optimization levels 0, 1 and 2. Invalid inputs emit no qualifying proof; the pre-correction optimized controls failed as expected.
   evidence: All four assert checks are present before cutover. The exact block, with an invalid project graph, exits1 normally but exits0 with isolatedPackageProof:[] under python -O. Replace graph/version/archive/count assertions with explicit failures and add optimized-environment controls; this is an intermediate-block repro, not a claim that the complete shell helper or canonical gate passed invalid inputs.
 
 ## Deferred from: review of spec-five-deferred-telemetry-boundaries (2026-10-28)

@@ -196,8 +196,10 @@ point-in-time evidence before Story 1.5's additive three contracts; the current 
   catalog type — the catalog stayed 37 at Story 4.4 completion (fitness-asserted) and the golden corpus is byte-compatible. The
   notifier requirement is met by **referencing** the substrate seam
   `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore
-  owns the SignalR broadcast); the live query/notifier runtime is the deferred Aspire wiring (Stories
-  4.5/4.6), and **no web shell, DataGrid, MCP, chatbot, or email surface** ships in v1.
+  owns the SignalR broadcast). That was the deferred Story 4.4 contract: current SDK persistence and
+  `/query` serving are active, while projection-change notification remains inactive in the canonical
+  Works host, with no notifier registered or called. See the [current notification status](sdk-projection-query-adoption.md#projection-change-notification-status).
+  **No web shell, DataGrid, MCP, chatbot, or email surface** ships in v1.
 - **Story 4.5 (historical command/event pipeline proof under Aspire).** The runnable host
   (`src/Hexalith.Works`) and former Works AppHost were an **adapter-edge runtime proof only** — they consume the deferred Story 4.4 seams,
   they do not move behavior into the kernel. The boundary stays exactly as the EventStore row above states:

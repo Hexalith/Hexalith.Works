@@ -19,8 +19,10 @@ namespace Hexalith.Works.Queries;
 /// tenant-scoped index written by the SDK projection delivery adapter, applies the pure
 /// <see cref="WhatsNextOrdering"/> (Priority → earliest Due Date → identity) and the pure
 /// <see cref="WhatsNextQueryAuthorization"/> tenant filter using <see cref="QueryEnvelope.TenantId"/>, and
-/// returns the ordered, authorized result as payload bytes only. It is fail-closed: a missing/unavailable read
-/// model returns a bounded empty result rather than fabricating freshness.
+/// returns the ordered, authorized result as payload bytes with projection metadata. An available projection
+/// with no eligible authorized items returns an empty queue. Missing, invalid, or unavailable required
+/// projection documents instead return a <c>projection-unavailable</c> failure with unavailable metadata.
+/// Recorded parked members are omitted from a successful degraded queue carrying <c>works-runtime-parked</c>.
 /// </summary>
 public sealed class WhatsNextQueryHandler : IDomainQueryHandler
 {

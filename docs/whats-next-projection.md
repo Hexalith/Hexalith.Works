@@ -6,6 +6,11 @@ work items, ordered, so assigned and claimable work can be presented without a r
 aggregate continues to own only synchronous `WorkItemState`; consumers that need the claimable pool read
 this projection's read model (`WhatsNextItem`) instead.
 
+The pure projection contracts below remain available. Current persistence, rebuilds and authenticated
+queries use the [canonical SDK runtime](sdk-projection-query-adoption.md#current-query-authority-and-recovery-discovery).
+Descriptions explicitly labeled historical refer to the pre-SDK `/project` adapter, separate document
+writes and schema-v2 fallback; those paths are not the current host's delivery or read selection.
+
 ## Eligible set
 
 `WhatsNext(tenant)` returns **only** items whose current derived `Status` is `Queued` or `Assigned` for
@@ -62,7 +67,7 @@ available": pass an optional roll-up lookup
 `WorkItemRollUpProjection` read model; leave it null to return them empty. Reinventing the roll-up tree
 walk here is the anti-pattern this avoids.
 
-At the runtime `/project` boundary, the supplied lookup is sanitized before composition. Because each dispatch
+**Historical `/project` adapter:** the supplied lookup was sanitized before composition. Because each dispatch
 contains only one aggregate stream, a roll-up with `ExposedChildCount > 0` cannot reconcile later child
 progress and supplies `RolledRemaining: null` plus an empty `RolledRemainingByUnit` instead of a spawn-time total.
 The same refusal applies when the request names a `ChildSpawned` event that cannot be decoded or accepted, because
@@ -72,7 +77,7 @@ the same refusal policy within a dispatch; those separate writes are not an atom
 their locally complete rolled values. This is substrate unavailability, not corrupt-event degradation: own
 effort, status, structure, diagnostics, tenant, and freshness remain intact.
 
-The operator shared-rebuild path is the co-available counterpart: EventStore supplies the sealed authoritative
+**Historical pre-SDK shared rebuild:** EventStore supplies the sealed authoritative
 tenant histories, Works reconstructs both parent-link encodings through one roll-up/queue graph, and Stage keeps
 the live legacy view unchanged. Commit atomically exposes a schema-v2 membership index plus all rebuilt item
 documents and deletes candidate-known legacy keys. Queries prefer that v2 index once present and filter both
@@ -96,8 +101,9 @@ Two **distinct controls**, defense-in-depth:
    keeps them apart).
 2. **Query-side authorization filter (`WhatsNextQueryAuthorization`).** A pure filter (mirroring
    `Hexalith.Projects` `ProjectQueryTenantFilter`) that re-applies an **authoritative tenant id** check on
-   top of the projection's scoping, plus an optional caller-supplied authorization predicate — the seam a
-   future `IDomainQueryHandler` fills from `QueryEnvelope.UserId`. It is **fail-closed**: a null/empty
+   top of the projection's scoping, plus an optional authorization predicate. Current `IDomainQueryHandler`
+   adapters supply that predicate after authenticated gateway and Parties identity resolution;
+   `QueryEnvelope.UserId` alone grants no access. It is **fail-closed**: a null/empty
    authoritative tenant returns an empty result. `AuthorityLevel` stays carried-not-enforced (D1/FR-19);
    no `IExecutorRouter` impl, eligibility scoring, or routing input is involved.
 
@@ -121,7 +127,7 @@ projection-change notification. The per-item `WorkItemRollUp` and `get-work-item
 the nullable opaque `ConversationCorrelationId`; `WhatsNextItem` deliberately does not copy dialogue or
 add a routing input. Duplicate and out-of-order link deliveries converge through the same sorted fold.
 
-The persisted tenant index retains `LastSequences[workItemId]` even after an item becomes ineligible. Inside
+**Historical pre-SDK index writer:** the persisted tenant index retains `LastSequences[workItemId]` even after an item becomes ineligible. Inside
 the ETag retry transform, a strictly greater retained sequence refuses an older eligible or ineligible replay;
 an equal sequence may refresh the deterministic item document or tombstone. During additive rollout, an
 eligible legacy `Items[workItemId].LatestAcceptedSourceSequence` supplies the comparison when the new map is
@@ -136,13 +142,19 @@ atomic two-key transaction.
 
 ## Notifier seam and deferred runtime (DC1 / AC #4)
 
+**Current runtime status (2026-10-28):** SDK projection persistence and authenticated `/query` serving
+are active. Projection-change notification remains inactive: the canonical Works host neither registers
+nor calls `IProjectionChangeNotifier`, and does not promise SignalR refresh. The pure result/token below
+remain available. The following adapter flow records the historical deferred contract, rather than
+current executable wiring; see the [current SDK adoption status](sdk-projection-query-adoption.md#projection-change-notification-status).
+
 `Project(delivery)` returns a `WhatsNextProjectionChange(Changed, TenantId)`: did this delivery change the
 tenant's what's-next **eligibility set** or **ordering**? The signature compares the ordered list of each
 eligible item's ordering key (id + priority rank + due-date key), so membership and ordering-input changes
 flip it while binding- or remaining-only updates do not. The pure kernel ships this decision plus a stable
 `projectionType` token, `"works-whats-next"`.
 
-Live notification is the **deferred runtime wiring** (Stories 4.5/4.6): the adapter calls
+The historical **deferred runtime wiring** (Stories 4.5/4.6) specifies an adapter that calls
 `IProjectionChangeNotifier.NotifyProjectionChangedAsync("works-whats-next", tenantId, …)` (EventStore.Client)
 only when `Changed` is set **and** the tenant-index ordering guard accepted this replay's write. A refused
 stale replay did not move the tenant index, so it announces nothing even if the independently guarded roll-up
@@ -172,7 +184,7 @@ model `WhatsNextItem` in `Hexalith.Works.Contracts`), referencing only Works con
 `EventStore.Contracts`). They do not read EventStore, repositories, files, clocks, Dapr, runtime
 configuration, UI, routing, LLM, or cost-governance services. Story 4.4 added **no** event, command, or
 rejection type; its completion count of 37 is historical. Story 1.5's additive link contracts make the
-current v1 catalog **40**, while all pre-existing golden bytes remain byte-compatible (DC3). The live
-`IDomainQueryHandler` / `/query` endpoint, `IReadModelStore` persistence, and the
-`IProjectionChangeNotifier` / SignalR broadcast are the deferred runtime adapters (Stories 4.5/4.6), gated
-on the EventStore projection-model reconciliation.
+current v1 catalog **40**, while all pre-existing golden bytes remain byte-compatible (DC3). Current
+`IDomainQueryHandler` / `/query` serving and projection persistence use the SDK runtime. The
+`IProjectionChangeNotifier` / SignalR broadcast remains an inactive seam; the historical deferred
+adapter contract above does not activate it.

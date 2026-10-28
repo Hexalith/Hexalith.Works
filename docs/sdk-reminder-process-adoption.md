@@ -4,6 +4,15 @@
 
 Works now requires the canonical SDK runtime. `Works:Recovery:UseSdkRuntime` and `Works:Projection:UseSdkDelivery` default to `true`; explicitly setting either to `false` rejects startup. Platform owns the topology and service defaults; EventStore owns reminder registration, periodic reconciliation, process leases, checkpoints, receipts, retry, quarantine and readiness. Initialize the [root source dependencies](../README.md#local-debug-development), including the Platform and Parties test inputs, before building locally.
 
+Works reminder effects require workload identity `works`. `AddWorksReminderAndCascadeRecovery`
+sets `EventStoreReminderOptions.Workload` explicitly to `WorksEffectPurposes.Workload` (`works`)
+and maps date-resume and expiry purposes. The canonical host therefore needs no
+`EventStore__Reminders__Workload` override. A host composing the SDK without that Works registration
+must provide the equivalent workload through `EventStore:Reminders:Workload` (environment key
+`EventStore__Reminders__Workload`) or its options registration; do not infer the effect workload from
+the executable name. The resolved-options assertions in `WorksDateReminderSchedulingTests` verify
+the canonical registration and purpose mapping.
+
 `Works:Recovery:MaxStreamPagesPerAggregate`, `MaxContextBytes` and `ContextReadTimeout` still bound Works contextual reads. The deprecated `MaxStreamPagesPerTenant` alias still overrides the per-aggregate page setting when supplied. The five settings below are retained for configuration compatibility and explicitly obsolete in `WorksRecoveryOptions`; SDK recovery ignores them:
 
 | Historical `Works:Recovery` setting | Supported SDK configuration and semantic limits |
