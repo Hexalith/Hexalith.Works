@@ -243,6 +243,29 @@ public sealed class WorksAppHostSmokeHarnessTests
         }
     }
 
+    /// <summary>The production timer cancels a pending connection while the caller remains active.</summary>
+    [Fact]
+    public async Task TcpPrerequisiteProbeAppliesItsOwnTimerToAPendingConnection()
+    {
+        WorksAppHostSmokeHarness.TcpProbeWait.ShouldBe(TimeSpan.FromSeconds(2));
+        CancellationToken observed = default;
+        int invocations = 0;
+        var elapsed = Stopwatch.StartNew();
+        bool reachable = await WorksAppHostSmokeHarness.IsPortReachableAsync(SelectedPorts.Sentry, (port, token) =>
+        {
+            invocations++;
+            port.ShouldBe(SelectedPorts.Sentry);
+            observed = token;
+            return Task.Delay(Timeout.InfiniteTimeSpan, token);
+        }, TestContext.Current.CancellationToken)
+            .WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        reachable.ShouldBeFalse();
+        invocations.ShouldBe(1);
+        observed.IsCancellationRequested.ShouldBeTrue();
+        elapsed.Elapsed.ShouldBeGreaterThanOrEqualTo(TimeSpan.FromMilliseconds(1900));
+    }
+
     /// <summary>A cancelled caller must leave the TCP prerequisite as cancellation, even when the port is reachable.</summary>
     [Fact]
     public async Task TcpPrerequisiteProbePreservesCallerCancellation()

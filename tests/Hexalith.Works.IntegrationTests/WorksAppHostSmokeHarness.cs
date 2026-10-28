@@ -42,6 +42,9 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
 
+    /// <summary>How long a TCP prerequisite connection may wait before it is unavailable.</summary>
+    internal static readonly TimeSpan TcpProbeWait = TimeSpan.FromSeconds(2);
+
     /// <summary>How long a control-plane resource may still be held by a previous fact's teardown before it counts as foreign.</summary>
     private static readonly TimeSpan ControlPlaneReleaseWait = TimeSpan.FromSeconds(60);
 
@@ -1430,11 +1433,25 @@ internal static class WorksAppHostSmokeHarness
     {
         cancellationToken.ThrowIfCancellationRequested();
         using var client = new TcpClient();
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         return await IsPortReachableAsync(
-            token => client.ConnectAsync("localhost", port, token).AsTask(),
-            cancellationToken,
-            timeout.Token).ConfigureAwait(false);
+            port,
+            (selectedPort, token) => client.ConnectAsync("localhost", selectedPort, token).AsTask(),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>Applies the production deadline mechanism to a prerequisite connection.</summary>
+    /// <param name="port">The local prerequisite port.</param>
+    /// <param name="connectAsync">The connection operation receiving the selected port and linked cancellation token.</param>
+    /// <param name="cancellationToken">The caller's original cancellation token.</param>
+    /// <returns>Whether the connection succeeds before the probe deadline.</returns>
+    internal static async Task<bool> IsPortReachableAsync(
+        int port,
+        Func<int, CancellationToken, Task> connectAsync,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using var timeout = new CancellationTokenSource(TcpProbeWait);
+        return await IsPortReachableAsync(token => connectAsync(port, token), cancellationToken, timeout.Token).ConfigureAwait(false);
     }
 
     /// <summary>Preserves caller cancellation across connection completion, socket failure and probe timeout races.</summary>

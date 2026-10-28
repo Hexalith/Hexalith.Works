@@ -103,9 +103,12 @@ public sealed class WorksSdkProjectionQueryTests
         legacy.ShouldBeNull("The canonical /project fallback must have no legacy Works handler capable of echoing computed state.");
     }
 
-    /// <summary>Stale named redelivery reports its durable outcome without echoing an unpersisted older view.</summary>
-    [Fact]
-    public async Task StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState()
+    /// <summary>Stale named redelivery cannot replace a newer view or resurrect a terminal queue entry.</summary>
+    /// <param name="terminal">Whether a terminal event removed the work item from the queue.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task StaleNamedRedeliveryReturnsExplicitOutcomeAndPreservesAuthoritativeQueryState(bool terminal)
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         var store = new InMemoryReadModelStore();
@@ -121,9 +124,13 @@ public sealed class WorksSdkProjectionQueryTests
             [Dto(new WorkItemCreated(Aggregate, 1, tenant, item, new Obligation("authoritative query")), 1)]);
         ProjectionRequest queued = new(Tenant, "work", Aggregate,
             [Dto(new WorkItemQueued(Aggregate, 2, tenant, item), 2)]);
+        ProjectionRequest cancelled = new(Tenant, "work", Aggregate,
+            [Dto(new WorkItemCancelled(Aggregate, 3, tenant, item), 3)]);
+        WorkItemStatus expectedStatus = terminal ? WorkItemStatus.Cancelled : WorkItemStatus.Queued;
+        long expectedSequence = terminal ? 3 : 2;
         using (ServiceProvider provider = NamedProjectionProvider(store, store, coordinator, handler))
         {
-            foreach (ProjectionRequest request in new[] { created, queued })
+            foreach (ProjectionRequest request in terminal ? new[] { created, queued, cancelled } : new[] { created, queued })
             {
                 ProjectionDispatchResponse response = await DomainProjectionDispatcher.DispatchAsync(provider,
                     new ProjectionDispatchRequest(request, [WorksReadModelKeys.RuntimeFamily], $"seed-{request.Events[0].SequenceNumber}", fingerprint),
@@ -134,14 +141,26 @@ public sealed class WorksSdkProjectionQueryTests
             }
         }
         var before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct);
-        before.Value.ShouldNotBeNull().As<WorkItemRollUp>().Status.ShouldBe(WorkItemStatus.Queued);
+        before.Value.ShouldNotBeNull().As<WorkItemRollUp>().Status.ShouldBe(expectedStatus);
         string persisted = before.Value.Value.GetRawText();
+        var queueBefore = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct);
+        string persistedQueue = queueBefore.Value.ShouldNotBeNull().Value.GetRawText();
+        var historyBefore = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeHistoryKey(Aggregate), ct);
+        int pageCount = historyBefore.Value.ShouldNotBeNull().As<WorksRuntimeHistoryManifest>().PageCount;
+        pageCount.ShouldBeGreaterThan(0);
+        string[] familyKeys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(Aggregate),
+            WorksReadModelKeys.RuntimeTopologyKey, WorksReadModelKeys.RuntimePendingDateKey,
+            WorksReadModelKeys.RuntimeParkingKey(Aggregate), WorksReadModelKeys.RuntimeHistoryKey(Aggregate),
+            .. Enumerable.Range(0, pageCount).Select(page => WorksReadModelKeys.RuntimeHistoryPageKey(Aggregate, page))];
+        var familyBefore = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, familyKeys, ct);
+        familyBefore.IsAvailable.ShouldBeTrue();
+        familyBefore.Value.ShouldNotBeNull().Values.ShouldAllBe(document => document != null);
 
         var restarted = new SharedProjectionEpochCoordinator(store, store);
         var restartedHandler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
         using ServiceProvider restartedProvider = NamedProjectionProvider(store, store, restarted, restartedHandler);
         ProjectionDispatchResponse replay = await DomainProjectionDispatcher.DispatchAsync(restartedProvider,
-            new ProjectionDispatchRequest(created, [WorksReadModelKeys.RuntimeFamily], "older-history-after-restart", fingerprint),
+            new ProjectionDispatchRequest(terminal ? queued : created, [WorksReadModelKeys.RuntimeFamily], "older-history-after-restart", fingerprint),
             new ProjectionDispatchOptions(), identity, ct);
         ProjectionDispatchOutcome duplicate = replay.Outcomes.ShouldHaveSingleItem();
         duplicate.Status.ShouldBe(ProjectionDispatchStatus.AlreadyCompleted);
@@ -149,15 +168,33 @@ public sealed class WorksSdkProjectionQueryTests
         var after = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct);
         after.Generation.ShouldBe(before.Generation);
         after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(persisted);
-        (await restarted.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull().Position.ShouldBe(2);
+        (await restarted.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull().Position.ShouldBe(expectedSequence);
+        var queueAfter = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct);
+        queueAfter.Generation.ShouldBe(queueBefore.Generation);
+        queueAfter.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(persistedQueue);
+        WorksWhatsNextTenantIndex index = queueAfter.Value.As<WorksWhatsNextTenantIndex>();
+        index.Items.ContainsKey(Aggregate).ShouldBe(!terminal);
+        index.LastSequences[Aggregate].ShouldBe(expectedSequence);
+        index.MemberWorkItemIds.ShouldContain(Aggregate);
+        var familyAfter = await restarted.ReadManyAsync<WorksRuntimeDocument>(scope, familyKeys, ct);
+        familyAfter.IsAvailable.ShouldBeTrue();
+        familyAfter.Generation.ShouldBe(familyBefore.Generation);
+        foreach (string key in familyKeys)
+        {
+            familyAfter.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText()
+                .ShouldBe(familyBefore.Value[key]!.Value.GetRawText());
+        }
         var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
             Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        QueryResult queue = await new WhatsNextQueryHandler(policy, restarted).ExecuteAsync(CoordinatorQuery("scheduler"), ct);
+        queue.Success.ShouldBeTrue();
+        queue.GetPayload().GetArrayLength().ShouldBe(terminal ? 0 : 1);
         QueryResult result = await new GetWorkItemQueryHandler(policy, restarted).ExecuteAsync(
             CoordinatorQuery("scheduler") with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ct);
         result.Success.ShouldBeTrue();
         WorkItemView view = result.GetPayload().Deserialize<WorkItemView>(s_web).ShouldNotBeNull();
         view.Found.ShouldBeTrue();
-        view.Status.ShouldBe(WorkItemStatus.Queued);
+        view.Status.ShouldBe(expectedStatus);
     }
 
     [Fact]

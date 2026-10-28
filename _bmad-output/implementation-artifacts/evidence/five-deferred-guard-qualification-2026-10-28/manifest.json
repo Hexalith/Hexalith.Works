@@ -1,0 +1,273 @@
+{
+  "created_utc": "2026-10-28T11:09:38.036604+00:00",
+  "working_directory": "/home/administrator/projects/hexalith/works",
+  "works_baseline_revision": "e53439bf08b87ea8041e5147a18a706055ad30db",
+  "root_declared_submodule_revisions": {
+    "Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "Hexalith.Builds": "81ab049208678bd6616828824729c0ddac02f7d1",
+    "Hexalith.Chatbot": "3e1f6e10c57d8ef9ef9fed3d82d18049fa8e6557",
+    "Hexalith.Commons": "3edfbdafc7d4fa915286dce8a37dc4cc7c06085a",
+    "Hexalith.Conversations": "861f13a2e728c3847a191b0688070762b1bfa29e",
+    "Hexalith.EventStore": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "Hexalith.FrontComposer": "5f665c4d38afb2255a7dde4620330e09824a40a1",
+    "Hexalith.McpCli": "2d7311cbbcc592c0ea0348463037389251d1cb4b",
+    "Hexalith.Parties": "9239c531f3b0cbb4a998c419e537463b597ff14b",
+    "Hexalith.Platform": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+    "Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "Hexalith.Projects": "0e45105476902fcfce1f8dbd8416d7234bb16b41",
+    "Hexalith.Tenants": "7ddb864cda5e942925b056391617eae4895c1253"
+  },
+  "selected_items": [
+    "DW-60",
+    "DW-72",
+    "DW-74",
+    "DW-83",
+    "Story 4.9 transitive external MSBuild node identity"
+  ],
+  "source_sha256": {
+    "scripts/tests/test_transitive_project_reference_globals.py": "646a241b75a4f3f6c5f9ef64bbe875c6308da74321f99b04fc3402cbfaf9c349",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicyTests.cs": "e36847590644b425dd87fe850fbc6c7f93d5c8ca69508db7204189f378ef8e36",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/DependencyDirectionTests.cs": "1b2cab0388b4dee2e5a0631ae840617961681059793350b022d12ffbe8aae0b9",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/RuntimeAdapterGovernanceTests.cs": "983f1cacf4d94c77c7f2b6fe8520cac0ea06d1a2509871b0538c62a7bcb8f5f6",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildRuntimeTests.cs": "e96d9a0458e3389889a882bc9b8f84456305412a6fa250ccbf457e71df817c76",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/MsBuildProjectEvaluation.cs": "cd8fc493250e1f2e1e7e034d3bedbf190cda34eb42d593b37915314e7800e4be",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/KernelDependencyPolicy.cs": "c0533552edf836ca9ecdad50ca343909b93bcbb85ebdf9cb9144b66afc387ead",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs": "fb3a8b7c3601c8d4b76112cfdbd5ae4419f975d9498415bf7f057a9418f16087",
+    "tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs": "fbbb234e7f4e809f4447b8b6f078b82d7a5741b83faab4b198ce8c172e6893b6",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "415065265292a9ba8ed05638bf7e188828f35aa6899575b4f87623a945d28886",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "52347f6c91a680544984238cc28c6d0d57247a149c56f78324ab51b6abc7b295",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkPartitionedRebuildTests.cs": "9bad0613e56e2a23a3fe5e78e7d97b159bdfe0039d539188cc2a1baf45598790",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRebuildAdmissionTests.cs": "aacdce03e32428c424c096c632c6d7087b28c763758df50ce82f1dd8b994149d",
+    "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHandler.cs": "758ed005b513ab3865741dd45a43babcfceef3ba896de98113c233d06a7ddaae",
+    "src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs": "25847ec0f560e3d040d4d5acb0053f45d2ca146308b044a837bd2dcaf4ad4a5a",
+    "Directory.Build.props": "59c9fb827d1936fbd39d1e2b738a9d3cb6852b44df15c5761b7edcd56775f318",
+    "Directory.Build.targets": "05d8b80cc34c8af6f8b1a2a22140331cbc5aa3f1649152f4db63afa0a98c13f7",
+    "Directory.Packages.props": "ff47dc36f79fd1e425fe3c31feee7ae2155561abfe0b7e9bcd6a85a6a6c99899",
+    "global.json": "4d68d33fed8fe6c461c285b1e8c6db3c58c7cd951a61c0c8e26f60fc0da507c7"
+  },
+  "scope": "Current root safeguard qualification; not a complete Platform source-closure attestation or live requalification.",
+  "commands": [
+    {
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1",
+        "--nologo"
+      ],
+      "exit_code": 0,
+      "log": "integration-build.log.gz"
+    },
+    {
+      "argv": [
+        "dotnet",
+        "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "-class",
+        "*WorksAppHostSmokeHarnessTests",
+        "-class",
+        "*WorksSdkProjectionQueryTests",
+        "-class",
+        "*WorkItemSharedProjectionRebuildHandlerTests",
+        "-class",
+        "*WorksSdkPartitionedRebuildTests",
+        "-class",
+        "*WorksSdkRebuildAdmissionTests",
+        "-result-xml",
+        "/tmp/works-five-guards-integration-reviewed.xml"
+      ],
+      "exit_code": 0,
+      "log": "integration.log.gz",
+      "xml": "integration.xml.gz"
+    },
+    {
+      "argv": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1",
+        "--nologo"
+      ],
+      "exit_code": 0,
+      "log": "architecture-build.log.gz"
+    },
+    {
+      "argv": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-class",
+        "*KernelDependencyPolicyTests",
+        "-class",
+        "*DependencyDirectionTests",
+        "-class",
+        "*RuntimeAdapterGovernanceTests",
+        "-class",
+        "*MsBuildRuntimeTests",
+        "-result-xml",
+        "/tmp/works-five-guards-architecture.xml"
+      ],
+      "exit_code": 0,
+      "log": "architecture.log.gz",
+      "xml": "architecture.xml.gz"
+    },
+    {
+      "argv": [
+        "aspire",
+        "start",
+        "--non-interactive",
+        "--apphost",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.Platform/apphost.cs",
+        "--format",
+        "Json"
+      ],
+      "exit_code": 2,
+      "log": "platform-baseline.log.gz"
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests"
+      ],
+      "exit_code": 0,
+      "log": "tooling.log.gz"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "lint:scripts"
+      ],
+      "exit_code": 0,
+      "log": "script-lint.log.gz"
+    },
+    {
+      "argv": [
+        "uv",
+        "tool",
+        "run",
+        "--from",
+        "ruff==0.13.2",
+        "ruff",
+        "check",
+        "scripts/tests/test_transitive_project_reference_globals.py"
+      ],
+      "exit_code": 0,
+      "log": "ruff.log.gz"
+    },
+    {
+      "argv": [
+        "npm",
+        "run",
+        "commitlint",
+        "--",
+        "--edit",
+        "/tmp/works-five-guards-commit.txt"
+      ],
+      "exit_code": 0,
+      "log": "commitlint.log.gz"
+    }
+  ],
+  "assemblies": {
+    "integration": {
+      "path": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "sha256_before": "2bb715c8959658bf599d0a8e40243b5c506f98e476359cff0bc46e40dcc3fd81",
+      "sha256_after": "2bb715c8959658bf599d0a8e40243b5c506f98e476359cff0bc46e40dcc3fd81",
+      "passed": 149,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "not_run": 0,
+      "class_counts": {
+        "Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests": 28,
+        "Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarnessTests": 62,
+        "Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests": 4,
+        "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests": 47,
+        "Hexalith.Works.IntegrationTests.WorksSdkRebuildAdmissionTests": 8
+      }
+    },
+    "architecture": {
+      "path": "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "sha256_before": "784c0acd06a9eeb29ed3de6bb08f794d4b393a8f601a8a5b61636928d6219c9a",
+      "sha256_after": "784c0acd06a9eeb29ed3de6bb08f794d4b393a8f601a8a5b61636928d6219c9a",
+      "passed": 274,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0,
+      "not_run": 0,
+      "class_counts": {
+        "Hexalith.Works.ArchitectureTests.FitnessTests.DependencyDirectionTests": 67,
+        "Hexalith.Works.ArchitectureTests.FitnessTests.KernelDependencyPolicyTests": 174,
+        "Hexalith.Works.ArchitectureTests.FitnessTests.MsBuildRuntimeTests": 6,
+        "Hexalith.Works.ArchitectureTests.FitnessTests.RuntimeAdapterGovernanceTests": 27
+      }
+    }
+  },
+  "tooling_passed": 98,
+  "raw_evidence": {
+    "platform-baseline.log.gz": {
+      "sha256": "00b03b47edfc7a558f0834f262571bf2935f8709b5295df70f1644aaed3f4a1a",
+      "raw_sha256": "8a05b01c2f34eb44fa09251212f9e4c9b2b541684b88c8477cc7e58598edb8ee",
+      "raw_bytes": 3648
+    },
+    "integration-build.log.gz": {
+      "sha256": "ebfda3ff6b4f1d817494c67d800f12e38431c77ec40c70346e63c73042cbdccc",
+      "raw_sha256": "342943efa636010b2eccc568c326c5b40a8c2609332e7f99ed837a785966173f",
+      "raw_bytes": 5306
+    },
+    "integration.log.gz": {
+      "sha256": "f4ef9cdcf93176140ef4b8badf820e08f76c8a9dbd53b1dba0af98ec1499ddaf",
+      "raw_sha256": "b4574e8edb87ad54f72d298c4d6eef7856f0802d29e6eb85b16f3abb4de418fa",
+      "raw_bytes": 1618
+    },
+    "integration.xml.gz": {
+      "sha256": "54b0e7709a77b68e769423673655d40267d2d455d12e0a7388b60f113c9929fa",
+      "raw_sha256": "a72b35a5e02b4118e3a606738b6f460cfd73b249ec17b84186c47eef0977d555",
+      "raw_bytes": 100457
+    },
+    "architecture-build.log.gz": {
+      "sha256": "e312cc71fc53af0d1414d6d3ae10ea8f400ae61b9c9d63a7ae29ab7c7d3b5c17",
+      "raw_sha256": "8900f835f62191675100b71c793dc7fe874fe71832facf84466b79693e9e9f83",
+      "raw_bytes": 1563
+    },
+    "architecture.log.gz": {
+      "sha256": "f98b24db0ca267ac686244c0e5a7e617e9e44407ecce1acd2e2d21ea96c5ec2b",
+      "raw_sha256": "36bc146a92700acd6955d0eaf1828028f865c0706d6cbf35619ea8ed040c187a",
+      "raw_bytes": 477
+    },
+    "architecture.xml.gz": {
+      "sha256": "61b7fa61b44c26bbf405ccc066e866b58612e927662e1aabca5b63c3a0109b84",
+      "raw_sha256": "cf326cf54572e64fd5c37bec44d6956354b33669c4ffd4892d18ac754e684916",
+      "raw_bytes": 191814
+    },
+    "tooling.log.gz": {
+      "sha256": "d0cff51fcbc9dcae70518a9d68ea6bf2dc9e7e28f4f60784090031fb2b2c39e3",
+      "raw_sha256": "2cf3a31657432904a72e6066fe6fd200f90299f2d5a3f698f56f99122f9b06d5",
+      "raw_bytes": 508
+    },
+    "script-lint.log.gz": {
+      "sha256": "70089b405b9498beb2522d9bac050b847384e822df57e5d5a1b0db90963b74df",
+      "raw_sha256": "7961889c0463c7e33a5290584654b60f2f57431e032e3917b8bba3ca24eec85c",
+      "raw_bytes": 212
+    },
+    "ruff.log.gz": {
+      "sha256": "f3af4d142827f5aad2eb0c72d556d325488a57fb6219aac10afeb51085667d53",
+      "raw_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "raw_bytes": 19
+    },
+    "commitlint.log.gz": {
+      "sha256": "b37daff0c811d71ca804223fa223c041dee1ab86a8aa85f5edc0122056bac994",
+      "raw_sha256": "68f381efda41e5cfa7d83fd848d15bae6e7f696ab25cfd63802eb55bdbd45ee3",
+      "raw_bytes": 121
+    }
+  },
+  "review": "Independent runtime/discovery audits; Blind Hunter findings patched and independently rechecked; no new material code defect or deferred work."
+}

@@ -503,7 +503,8 @@ location: n/a
 source_spec: `spec-probe-cancellation-propagation.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260828-191811-dea9; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-10-28
+resolution: Independent current-harness review and executing timer/caller-race controls completed by `spec-five-deferred-guard-qualification.md`. The shared harness retains caller-token precedence and the two-second production TCP budget; deterministic tests now exercise the real timer outside the SmokeTests exclusion. Historical review evidence is preserved.
 
 ### DW-61: Three untouched contract-flow test summaries still describe camelCase Web JSON as the real EventStore write path, contradicting the corrected claims this bundle landed elsewhere.
 
@@ -602,7 +603,8 @@ location: n/a
 source_spec: `spec-projection-write-ordering-guard.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-10-28
+resolution: Independent review of the current SDK ordering replacement completed by `spec-five-deferred-guard-qualification.md`. Stale create/queued replays after reconstruction preserve exact persisted roll-up and queue bytes, terminal queue absence, retained ordering membership and checkpoint. Legacy projection dispatch is refused; current conflict/gap/concurrency regressions pass. This closes the review recommendation, not the separate no-op-write or retention-policy items.
 
 ### DW-73: The pending-date-await index and tenant registry stay unversioned and are neither rebuilt nor pruned by the shared reconciliation, so a work item dropped from a tenant's authoritative membership can r
 
@@ -618,7 +620,8 @@ location: n/a
 source_spec: `spec-shared-rollup-reconciliation.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-10-28
+resolution: Independent review of current SDK family reconciliation completed by `spec-five-deferred-guard-qualification.md`. Executing current rebuild/query/partition controls cover authoritative child membership, malformed/foreign/cyclic refusal, atomic visibility, abort/retry, tenant collisions and topology retention after reconstruction. The retired dispatcher retention heuristic is absent; SDK rollback documents remain intentionally retained. Separate real-store/performance follow-ups remain open.
 
 ### DW-75: Hexalith source-consumption project discovery remains constrained by the Hexalith.Works*.csproj filename glob.
 
@@ -690,7 +693,8 @@ location: n/a
 source_spec: `spec-msbuild-dependency-discovery.md`
 severity: low
 reason: The follow-up-review damping cap (limits.max_followup_reviews = 1) was spent with the story finalized (status: done, verify green) while the review pass still recommended an independent follow-up. The work was committed by bmad-loop run 20260829-091730-0d52; this entry preserves the lingering recommendation for a deliberate later review.
-status: open
+status: done 2026-10-28
+resolution: Independent current MSBuild-discovery review completed by `spec-five-deferred-guard-qualification.md`. Imported/configuration/platform/framework dependencies, canonical identities, freshness and provenance controls pass. The child-import control now executes both GlobalPropertiesToRemove and UndefineProperties. This closes the review recommendation without claiming separate Platform source-closure work.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-02)
 
@@ -1907,6 +1911,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Prove no duplicate MSBuild nodes across transitive external reference chains (unverified medium).
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-guard-qualification.md` adds actual package-free parallel .slnx diamond builds in Debug/Release with default/explicit SDK selection. All six canonical projects execute once with the selected globals and produce assemblies; removing only the temporary transitive-forwarding target reproduces duplicate nodes and is rejected by the same oracle. Production targets are unchanged.
   evidence: `P0_SolutionReferencesKeepOneGlobalPropertySetPerWorksProject` checks only first-hop ProjectReference global properties; hosted run 39674116771 and parallel local Release/Debug builds pass, but the original failure was intermittent. Settle with a graph-build or binlog node-identity assertion over Release and Debug solution builds.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`

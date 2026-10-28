@@ -1592,8 +1592,11 @@ public sealed class KernelDependencyPolicyTests
     /// <summary>
     /// Verifies referenced projects are evaluated with the effective global properties declared on their ProjectReference.
     /// </summary>
-    [Fact]
-    public void ProjectReferenceGlobalPropertiesSelectChildImportClosure()
+    /// <param name="removalMetadata">The supported metadata spelling that removes an inherited global property.</param>
+    [Theory]
+    [InlineData("GlobalPropertiesToRemove")]
+    [InlineData("UndefineProperties")]
+    public void ProjectReferenceGlobalPropertiesSelectChildImportClosure(string removalMetadata)
     {
         DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.KernelDependencyPolicyTests-");
         try
@@ -1624,7 +1627,7 @@ public sealed class KernelDependencyPolicyTests
                                       AdditionalProperties="Flavor=Enabled"
                                       SetConfiguration="Configuration=Special"
                                       SetPlatform="Platform=x64"
-                                      GlobalPropertiesToRemove="DesignTimeBuild" />
+                                      {removalMetadata}="DesignTimeBuild" />
                   </ItemGroup>
                 </Project>
                 """);
