@@ -1,0 +1,19 @@
+# DAPR Access Control Configuration for the Admin.Server sidecar
+# ================================================================================
+# WARNING: Local development only.
+# Loaded only by the eventstore-admin sidecar; governs which CALLERS may invoke Admin.Server through Dapr
+# service invocation. The Admin.UI is not composed in this Works preview, so no caller is allow-listed and the
+# deny default refuses every Dapr invocation of Admin.Server.
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: accesscontrol-eventstore-admin
+spec:
+  mtls:
+    enabled: true
+    sentryAddress: "127.0.0.1:50001"
+    controlPlaneTrustDomain: "localhost"
+  accessControl:
+    defaultAction: deny
+    trustDomain: "public"
+    policies: []

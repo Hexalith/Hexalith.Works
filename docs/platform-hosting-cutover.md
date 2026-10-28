@@ -14,6 +14,21 @@ Parties authority acquisition uses a two-second budget through the SDK deadline 
 
 Hexalith.Platform owns its file AppHost, Dapr components and mTLS control plane, SDK readiness, recovery telemetry, RFC 9457 HTTP errors and the declarative `work.events` subscription with native `deadletter.work.events`. Works has no active AppHost, Aspire or ServiceDefaults project, root Aspire configuration, hosting SDK pin, direct Dapr package, local event dispatcher or reminder/cascade runtime. Architecture guards reject reintroduced host projects (including nested/renamed projects), generic runtime mechanics and topology references. Platform's production preview still refuses admission; synthetic recovery authority remains explicitly Development/test only.
 
+The 2026-10-28 [host-migration qualification](../_bmad-output/implementation-artifacts/spec-five-deferred-host-migration-qualification.md)
+reconciles five older deferred findings with their current replacement contracts:
+
+| Retired finding | Current contract and qualification |
+| --- | --- |
+| Story 4.8 Works-owned placement/Scheduler path was unverified. | That active topology is retired. `PlatformHostingBoundaryTests` rejects its return, and `WorksAppHostSelectionTests` requires an explicitly selected Platform artifact and owned fixture. The immutable pre/post-cutover packets above retain the historical live replacement evidence. |
+| Configuration and per-caller ACL trust domains were not pinned. | `WorksSdkDaprConfigCopyTests.PlatformAndFixturePoliciesPinEveryTrustDomain` parses all four selected Platform configurations and their fixture copies. The control-plane trust domain is `localhost`; workload ACL and caller-policy trust domains are `public`. Exact caller identities and multiplicity prevent missing or duplicated policies from passing vacuously. These scopes intentionally differ. |
+| Command/cascade lanes bypassed shared startup and teardown handling. | The historical command/cascade/reminder classes are retired. All six current live classes use `WorksAppHostSmokeHarness.WithAppHostAsync`, including retained-host preflight; the seven explicit facts are discovered across the entire assembly by `LiveFactsRequireExplicitSelection`. Harness tests cover selected-port and owned-Scheduler-volume settling at both lifecycle boundaries. |
+| Works Release AppHost mixed package and source Operations dependencies. | The active Works AppHost and its Operations edge are retired. `P0_ExternalHexalithDependenciesUseDebugSourceAndReleasePackages` evaluates the current production executable with no external source edges in Release. Integration tests retain the documented source-only Platform Identity/Composition adapters; this is not a claim that every test dependency is a package. |
+| The transitional Works host violated the SDK startup route inventory. | The actual thin `WorksHost` starts through `UseEventStoreDomainService`; protected HTTP tests exercise named projection, event delivery and actor discovery. Negative controls reintroducing unprotected projection, discovery, actor and topic-bearing subscription endpoints require startup refusal by the SDK inventory. |
+
+This reconciliation adds deterministic regression evidence. It does not qualify a fresh live Platform
+run, prove that every shared-host readiness race is fixed, or open production admission. The separate
+control-plane-health, scheduler-exposure and production-policy deferred items retain their scope.
+
 For the root-submodule layout initialized in the README, run the existing Works bootstrap. It selects Platform's complete Release/package CI profile and supplies the required isolated dependencies and source binding:
 
 ```bash

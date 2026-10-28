@@ -727,11 +727,15 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Complete deterministic and live verification for the concurrent Story 4.8 AppHost-owned Dapr placement/scheduler path.
+  status: done 2026-10-28
+  resolution: Superseded by removal of the active Works topology after historical Story 4.9 parity/rollback qualification. Current boundary and explicit-host-selection checks qualify replacement ownership; this closes the retired owned-path requirement, not separate live readiness findings. See [host-migration qualification](spec-five-deferred-host-migration-qualification.md).
   evidence: The default branch composes placement and scheduler on ports 51005/51006, but the topology test forces external endpoints and command/cascade/reminder prerequisites still require the superseded 50005/50006 or 6050/6060 services, so the owned path can remain unasserted or skip.
   audit: 2026-10-23: See the [concurrent-review reconciliation](#story-4-8-concurrent-review-audit) for superseded deterministic claims and current Platform ownership; original evidence and status are preserved.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Pin configuration- and policy-level Dapr ACL trust domains in the concurrent Story 4.8 topology tests.
+  status: done 2026-10-28
+  resolution: The historical absence claim was already superseded by the concurrent-review audit. New parsed-YAML regressions pin all four selected Platform configurations and fixture copies: localhost control-plane trust, public workload/caller trust, and exact caller-policy counts. See [host-migration qualification](spec-five-deferred-host-migration-qualification.md).
   evidence: All four YAML files changed those values to `localhost`, while deterministic tests assert only `spec.mtls.controlPlaneTrustDomain`; restoring `public` on an allow policy would leave tests green and deny the intended Sentry identity.
   audit: 2026-10-23: See the [concurrent-review reconciliation](#story-4-8-concurrent-review-audit) for superseded deterministic claims and current Platform ownership; original evidence and status are preserved.
 
@@ -957,6 +961,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Route the remaining live AppHost integration files through `WorksAppHostSmokeHarness` so the control-plane port settling repair covers every restart boundary.
+  status: done 2026-10-28
+  resolution: The named legacy classes are retired. All six current live classes use the common harness; seven explicit facts require host selection, and focused harness controls qualify selected-port and owned-volume settling at startup and teardown. This does not close the separate control-plane-health race. See [host-migration qualification](spec-five-deferred-host-migration-qualification.md).
   evidence: The spec repaired start/teardown port settling inside `WorksAppHostSmokeHarness`, but only `WorksMtlsAuthorizationSmokeTests` and `WorksReminderRecoveryPipelineSmokeTests` consume it. `WorksCascadeRecoveryPipelineSmokeTests` declares its own `WithAppHostAsync` whose `finally` disposes and returns without waiting for ports 50001/51005/51006 [tests/Hexalith.Works.IntegrationTests/WorksCascadeRecoveryPipelineSmokeTests.cs:576-580], while `WorksCommandPipelineSmokeTests` starts the AppHost directly and has the same teardown gap. Restart-based facts in those two live files remain exposed to the race the spec set out to close; `WorksDomainEventSubscriptionTests` and `WorksRecoveryOptionsTests` do not start an AppHost and are not part of this item.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
@@ -975,6 +981,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Resolve that the Release AppHost graph is not purely package-based because EventStore Operations is unpublishable.
+  status: done 2026-10-28
+  resolution: Superseded by removal of the active Works AppHost and its Operations source edge. The evaluated current production executable has no external source edges in Release; intentional source-only Platform test adapters remain separately governed. See [host-migration qualification](spec-five-deferred-host-migration-qualification.md).
   evidence: Verified 2026-09-19 from `src/Hexalith.Works.AppHost/bin/Release/net10.0/Hexalith.Works.AppHost.deps.json`: `Hexalith.EventStore.Aspire/3.106.0 package` coexists with `Hexalith.EventStore.Contracts/3.106.0 project`, `Hexalith.EventStore.ServiceDefaults/3.106.0 project` and `Hexalith.EventStore.Admin.Abstractions/3.106.0 project` pulled transitively through the retained Operations `ProjectReference`. Operations is `IsPackable=false` upstream with no `PackageVersion` entry, so the split is forced rather than accidental, but it means the Release lane does not exercise the packaged EventStore graph it is described as validating, and it keeps a submodule checkout as a hard Release prerequisite. Resolving it needs an upstream packaging decision or an explicit documented exception.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
@@ -1316,6 +1324,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Make the transitional Works host pass the EventStore Story 5.5 startup route inventory, which sibling-source Debug builds already enforce.
+  status: done 2026-10-28
+  resolution: The current thin SDK host passes actual startup and protected HTTP checks for named projection, event delivery and actor discovery. New negative controls prove unprotected canonical projection and sidecar-discovery endpoints fail the SDK startup inventory. See [host-migration qualification](spec-five-deferred-host-migration-qualification.md).
   evidence: Story 4.11 delta review C15-BH1b (2026-10-09), high. Works Debug defaults `UseHexalithProjectReferences=true`, so `WorksHost` compiles against EventStore source, which has carried Story 5.5 since Works `dcd90e7` pinned `07d1e23a`. With `xUnit1051` demoted (the Debug integration-test build otherwise fails on 19 such analyzer errors), `WorksDomainEventSubscriptionTests.WorksHostExposesOneDeliveryRouteAndOneDiscoveryRoute` fails with "route inventory violates the internal trust boundary". The violations are `/project` (the bespoke `MapPost` lacks `.RequireEventStoreDomainServicePolicy("/project")`), `/work/events` (`MapWorksDomainEvents()` lacks `.RequireEventStoreSidecarChannel()`), and `/dapr/config` plus `/actors/*` (bare `MapActorsHandlers()` after `UseEventStoreDomainService`). Package mode is unaffected until the `3.114.0` pin moves to ≥3.117. Pre-existing; not caused by the C13/C14 patches.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`

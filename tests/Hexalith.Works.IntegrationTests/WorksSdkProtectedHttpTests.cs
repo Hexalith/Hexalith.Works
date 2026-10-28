@@ -812,6 +812,25 @@ public sealed class WorksSdkProtectedHttpTests
         foreignOrigin.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
+    /// <summary>The actual Works host refuses unprotected legacy routes before accepting requests.</summary>
+    /// <param name="route">An SDK operation, discovery, actor or subscription route without its required policy.</param>
+    /// <param name="topic">Whether the endpoint receives pub/sub deliveries.</param>
+    [Theory]
+    [InlineData("/project", false)]
+    [InlineData("/dapr/config", false)]
+    [InlineData("/actors/WorksSdkReminderActor/test/method/ScheduleResumeAsync", false)]
+    [InlineData("/work/events", true)]
+    public async Task UnprotectedLegacyRoutesFailTheSdkStartupInventory(string route, bool topic)
+    {
+        await using WebApplication app = BuildProtectedHost(new InMemoryReadModelStore(), "http://127.0.0.1:8999");
+        RouteHandlerBuilder endpoint = app.MapPost(route, () => Results.NoContent());
+        if (topic) endpoint.WithTopic("pubsub", "work.events");
+        InvalidOperationException refusal = await Should.ThrowAsync<InvalidOperationException>(() =>
+            app.StartAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
+        refusal.Message.ShouldContain("route inventory violates the internal trust boundary");
+        refusal.Message.ShouldContain(route);
+    }
+
     [Fact]
     public async Task Event_delivery_and_actor_callbacks_require_the_sidecar_channel()
     {

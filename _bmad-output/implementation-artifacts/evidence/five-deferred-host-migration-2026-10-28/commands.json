@@ -1,0 +1,957 @@
+[
+  {
+    "name": "review-analyzer-build-failure",
+    "argv": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "--no-restore",
+      "-m:1"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "qualifying": false
+  },
+  {
+    "name": "final-integration-build",
+    "argv": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "--no-restore",
+      "-m:1"
+    ],
+    "exit_code": 0,
+    "env_overrides": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    }
+  },
+  {
+    "name": "integration-build-corrected",
+    "argv": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "--no-restore",
+      "-m:1"
+    ],
+    "exit_code": 0,
+    "env_overrides": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    }
+  },
+  {
+    "name": "integration-build",
+    "argv": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--configuration",
+      "Debug",
+      "--no-restore",
+      "-m:1"
+    ],
+    "exit_code": 0,
+    "env_overrides": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    }
+  },
+  {
+    "name": "initial-host-inventory-http",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*UnprotectedLegacyRoutesFailTheSdkStartupInventory",
+      "-method",
+      "*Event_delivery_and_actor_callbacks_require_the_sidecar_channel",
+      "-method",
+      "*Query_and_named_projection_require_channel_and_exact_operation_assertions",
+      "-xml",
+      "/tmp/works-host-migration-20261028/host-inventory-http.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "2b925863-5869-4e77-8432-6be1d607d69b",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:16:07",
+        "start-rtf": "2026-10-28T15:16:07.6126436+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:16:09.2427301+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "1.630",
+        "time-rtf": "00:00:01.6299999",
+        "total": "4"
+      }
+    ],
+    "qualifying": false
+  },
+  {
+    "name": "integration-focused",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkDaprConfigCopyTests",
+      "-class",
+      "*WorksAppHostSelectionTests",
+      "-class",
+      "*WorksAppHostSmokeHarnessTests",
+      "-class",
+      "*WorksAppHostDiscoveryIsolationTests",
+      "-xml",
+      "/tmp/works-host-migration-20261028/integration-focused.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "a7e8d2ea-8630-4354-9b42-6d042f773a75",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:17:55",
+        "start-rtf": "2026-10-28T15:17:55.5940362+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:17:59.3652397+00:00",
+        "not-run": "0",
+        "passed": "121",
+        "skipped": "0",
+        "time": "3.772",
+        "time-rtf": "00:00:03.7720000",
+        "total": "121"
+      }
+    ]
+  },
+  {
+    "name": "host-inventory-http",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*UnprotectedLegacyRoutesFailTheSdkStartupInventory",
+      "-method",
+      "*Event_delivery_and_actor_callbacks_require_the_sidecar_channel",
+      "-method",
+      "*Query_and_named_projection_require_channel_and_exact_operation_assertions",
+      "-xml",
+      "/tmp/works-host-migration-20261028/host-inventory-http.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "92a3d616-735f-4099-9c99-24b86d4c9bc2",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:17:59",
+        "start-rtf": "2026-10-28T15:17:59.6317908+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:18:01.3287201+00:00",
+        "not-run": "0",
+        "passed": "4",
+        "skipped": "0",
+        "time": "1.700",
+        "time-rtf": "00:00:01.7000000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "architecture-build",
+    "argv": [
+      "dotnet",
+      "build",
+      "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+      "--configuration",
+      "Debug",
+      "--no-restore",
+      "-m:1"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {}
+  },
+  {
+    "name": "architecture-focused",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-class",
+      "*PlatformHostingBoundaryTests",
+      "-xml",
+      "/tmp/works-host-migration-20261028/architecture-focused.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "b60d8c80-54a6-428c-bd9c-4a7f801b1451",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:03",
+        "start-rtf": "2026-10-28T15:18:03.6124453+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:18:04.1574873+00:00",
+        "not-run": "0",
+        "passed": "39",
+        "skipped": "0",
+        "time": "0.545",
+        "time-rtf": "00:00:00.5450000",
+        "total": "39"
+      }
+    ]
+  },
+  {
+    "name": "dependency-mode",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-method",
+      "*P0_ExternalHexalithDependenciesUseDebugSourceAndReleasePackages",
+      "-xml",
+      "/tmp/works-host-migration-20261028/dependency-mode.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "8f910cd0-b9ce-49dc-9a18-b50f561b3617",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:04",
+        "start-rtf": "2026-10-28T15:18:04.4462165+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:18:14.7997309+00:00",
+        "not-run": "0",
+        "passed": "1",
+        "skipped": "0",
+        "time": "10.354",
+        "time-rtf": "00:00:10.3539999",
+        "total": "1"
+      }
+    ]
+  },
+  {
+    "name": "architecture-all",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "-xml",
+      "/tmp/works-host-migration-20261028/architecture-all.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "8db5e600-ce21-411e-b8fc-602d816a02d6",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:15",
+        "start-rtf": "2026-10-28T15:18:15.2011436+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:18:37.0028232+00:00",
+        "not-run": "0",
+        "passed": "403",
+        "skipped": "0",
+        "time": "21.803",
+        "time-rtf": "00:00:21.8030000",
+        "total": "404"
+      }
+    ]
+  },
+  {
+    "name": "mutation-control-plane",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/mutation-control-plane.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-control-plane"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "45c3c677-9caf-4095-ac5a-57ab48fcdad3",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:37",
+        "start-rtf": "2026-10-28T15:18:37.2938459+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:18:37.4577313+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.164",
+        "time-rtf": "00:00:00.1640000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "mutation-acl",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/mutation-acl.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-acl"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "34f96a04-9bb7-442b-8c36-b3f323141f9d",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:37",
+        "start-rtf": "2026-10-28T15:18:37.8416088+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:18:37.9959112+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.154",
+        "time-rtf": "00:00:00.1540000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "mutation-caller",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/mutation-caller.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-caller"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "3fc31282-51b5-4ac3-a319-a55ed9807182",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:18:38",
+        "start-rtf": "2026-10-28T15:18:38.2477773+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:18:38.4015570+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.155",
+        "time-rtf": "00:00:00.1550000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "fixture-mutation-control-plane",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/fixture-mutation-control-plane.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-control-plane/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "87e25e70-a5b0-4a44-892c-2c0a2ab81dc0",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:19:14",
+        "start-rtf": "2026-10-28T15:19:14.6979333+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:19:14.8490327+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.151",
+        "time-rtf": "00:00:00.1510000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "fixture-mutation-acl",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/fixture-mutation-acl.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-acl/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "295176d7-5ffa-4302-9462-a0f758bb35d5",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:19:15",
+        "start-rtf": "2026-10-28T15:19:15.0987087+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:19:15.2396254+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.141",
+        "time-rtf": "00:00:00.1409999",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "fixture-mutation-caller",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/fixture-mutation-caller.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-caller/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "4039d836-ccfb-4f37-8a0b-a1e7098be7fe",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:19:15",
+        "start-rtf": "2026-10-28T15:19:15.5040338+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:19:15.6364262+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.133",
+        "time-rtf": "00:00:00.1330000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-integration-focused",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-class",
+      "*WorksSdkDaprConfigCopyTests",
+      "-class",
+      "*WorksAppHostSelectionTests",
+      "-class",
+      "*WorksAppHostSmokeHarnessTests",
+      "-class",
+      "*WorksAppHostDiscoveryIsolationTests",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-integration-focused.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "aaeb6a04-9053-4f17-ad32-18e980db7626",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:05",
+        "start-rtf": "2026-10-28T15:31:05.0494287+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:31:08.9681835+00:00",
+        "not-run": "0",
+        "passed": "121",
+        "skipped": "0",
+        "time": "3.919",
+        "time-rtf": "00:00:03.9190000",
+        "total": "121"
+      }
+    ]
+  },
+  {
+    "name": "final-host-inventory-http",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*UnprotectedLegacyRoutesFailTheSdkStartupInventory",
+      "-method",
+      "*Event_delivery_and_actor_callbacks_require_the_sidecar_channel",
+      "-method",
+      "*Query_and_named_projection_require_channel_and_exact_operation_assertions",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-host-inventory-http.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {},
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "d8a6ef57-0e91-458e-bdd3-aa93fcadf2a4",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:09",
+        "start-rtf": "2026-10-28T15:31:09.2254476+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:31:11.4208837+00:00",
+        "not-run": "0",
+        "passed": "6",
+        "skipped": "0",
+        "time": "2.196",
+        "time-rtf": "00:00:02.1960000",
+        "total": "6"
+      }
+    ]
+  },
+  {
+    "name": "final-valid-configured-copy",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-valid-configured-copy.xml"
+    ],
+    "exit_code": 0,
+    "expected_exit": 0,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/valid-copy"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "4148c83d-a8a7-4c5f-a90f-f44d41574845",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:11",
+        "start-rtf": "2026-10-28T15:31:11.6609179+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "0",
+        "finish-rtf": "2026-10-28T15:31:11.7807172+00:00",
+        "not-run": "0",
+        "passed": "4",
+        "skipped": "0",
+        "time": "0.120",
+        "time-rtf": "00:00:00.1200000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-mutation-control-plane",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-mutation-control-plane.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-control-plane"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "a3927313-f36c-4981-a32d-45d8ceee6b1c",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:12",
+        "start-rtf": "2026-10-28T15:31:12.0323565+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:12.2145223+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.182",
+        "time-rtf": "00:00:00.1820000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-fixture-mutation-control-plane",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-fixture-mutation-control-plane.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-control-plane/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "f715a466-e5c2-4ed5-b685-711344403e78",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:12",
+        "start-rtf": "2026-10-28T15:31:12.5856509+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:12.7987768+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.214",
+        "time-rtf": "00:00:00.2140000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-mutation-acl",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-mutation-acl.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-acl"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "4f0c865e-363a-4b72-9bd1-3a1566f9f758",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:13",
+        "start-rtf": "2026-10-28T15:31:13.0909957+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:13.3170985+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.228",
+        "time-rtf": "00:00:00.2280000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-fixture-mutation-acl",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-fixture-mutation-acl.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-acl/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "89ae6cbc-58f3-4fea-8392-74d90b4ea305",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:13",
+        "start-rtf": "2026-10-28T15:31:13.7526051+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:14.0685584+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.316",
+        "time-rtf": "00:00:00.3160000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-mutation-caller",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-mutation-caller.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-caller"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "db3e6c04-a21c-4f90-b4c3-e7d1926098d1",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:14",
+        "start-rtf": "2026-10-28T15:31:14.5089378+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:14.7110993+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.203",
+        "time-rtf": "00:00:00.2030000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-fixture-mutation-caller",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-fixture-mutation-caller.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-caller/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "c588eaeb-1eca-4a7d-97b2-4a8d18d94961",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:15",
+        "start-rtf": "2026-10-28T15:31:15.1485511+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:15.3886568+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.240",
+        "time-rtf": "00:00:00.2400000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-mutation-caller-identity",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-mutation-caller-identity.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_PLATFORM_ROOT": "/tmp/works-host-migration-20261028/mutation-caller-identity"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "f4ec23e3-aded-4efa-a688-e5175a16b419",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:15",
+        "start-rtf": "2026-10-28T15:31:15.7947850+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:15.9747214+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.180",
+        "time-rtf": "00:00:00.1800000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "final-fixture-mutation-caller-identity",
+    "argv": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-method",
+      "*PlatformAndFixturePoliciesPinEveryTrustDomain",
+      "-xml",
+      "/tmp/works-host-migration-20261028/final-fixture-mutation-caller-identity.xml"
+    ],
+    "exit_code": 1,
+    "expected_exit": 1,
+    "env_overrides": {
+      "WORKS_SDK_PROOF_DAPR_CONFIG_DIRECTORY": "/tmp/works-host-migration-20261028/mutation-caller-identity/DaprComponents"
+    },
+    "assemblies": [
+      {
+        "environment": "64-bit (x64) .NET 10.0.13 [collection-per-class, parallel (collections, 14 threads)]",
+        "id": "e278bdf9-8eef-48d7-b88d-69919f31a071",
+        "name": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "run-date": "2026-10-28",
+        "run-time": "15:31:16",
+        "start-rtf": "2026-10-28T15:31:16.3419839+00:00",
+        "test-framework": "xUnit.net v3 4.0.2+0c7aa4991f",
+        "target-framework": ".NETCoreApp,Version=v10.0",
+        "errors": "0",
+        "failed": "1",
+        "finish-rtf": "2026-10-28T15:31:16.5030247+00:00",
+        "not-run": "0",
+        "passed": "3",
+        "skipped": "0",
+        "time": "0.166",
+        "time-rtf": "00:00:00.1660000",
+        "total": "4"
+      }
+    ]
+  },
+  {
+    "name": "format",
+    "argv": [
+      "dotnet",
+      "format",
+      "whitespace",
+      "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+      "--no-restore",
+      "--verify-no-changes",
+      "--include",
+      "tests/Hexalith.Works.IntegrationTests/WorksSdkDaprConfigCopyTests.cs",
+      "tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs",
+      "tests/Hexalith.Works.IntegrationTests/WorksAppHostSelectionTests.cs"
+    ],
+    "exit_code": 0,
+    "env_overrides": {
+      "HexalithBuildsRoot": "/home/administrator/projects/hexalith/works/references/Hexalith.Builds"
+    }
+  }
+]

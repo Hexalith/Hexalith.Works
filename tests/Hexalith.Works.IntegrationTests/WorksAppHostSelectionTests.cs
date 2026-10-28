@@ -43,12 +43,10 @@ public sealed class WorksAppHostSelectionTests
     [Fact]
     public void LiveFactsRequireExplicitSelection()
     {
-        Type[] types = [typeof(WorksSdkRecoveryPipelineSmokeTests), typeof(WorksPlatformHistoricalPipelineSmokeTests),
-            typeof(WorksPlatformHaPipelineSmokeTests), typeof(WorksPlatformProjectionPipelineSmokeTests), typeof(WorksMtlsAuthorizationSmokeTests), typeof(WorksPlatformRetainedHostPreflightTests)];
         string[] live = ["SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery", "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
             "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart", "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
             "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily", "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process", "ArchivedTopologyReachesHealthyReadiness"];
-        var facts = types.SelectMany(type => type.GetMethods()).Select(method => (method.Name,
+        var facts = typeof(WorksAppHostSelectionTests).Assembly.GetTypes().SelectMany(type => type.GetMethods()).Select(method => (method.Name,
             Fact: method.GetCustomAttributes(typeof(FactAttribute), inherit: false).Cast<FactAttribute>().SingleOrDefault()))
             .Where(item => item.Fact is not null).ToArray();
         facts.Where(item => item.Fact!.Explicit).Select(item => item.Name).Order().ShouldBe(live.Order());

@@ -1,0 +1,50 @@
+[
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs",
+    "shared_harness_call_lines": [
+      51
+    ],
+    "direct_factory_calls": []
+  },
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs",
+    "shared_harness_call_lines": [
+      46
+    ],
+    "direct_factory_calls": []
+  },
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs",
+    "shared_harness_call_lines": [
+      79,
+      224
+    ],
+    "direct_factory_calls": []
+  },
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs",
+    "shared_harness_call_lines": [
+      45
+    ],
+    "direct_factory_calls": []
+  },
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksPlatformRetainedHostPreflightTests.cs",
+    "shared_harness_call_lines": [
+      28
+    ],
+    "direct_factory_calls": []
+  },
+  {
+    "source": "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs",
+    "shared_harness_call_lines": [
+      136,
+      269,
+      363,
+      494,
+      585,
+      657
+    ],
+    "direct_factory_calls": []
+  }
+]

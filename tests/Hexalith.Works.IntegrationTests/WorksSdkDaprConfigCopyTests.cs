@@ -7,6 +7,41 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Protects the optional live-fixture copies from YAML scope changes to committed ACL and mTLS policy.</summary>
 public sealed class WorksSdkDaprConfigCopyTests
 {
+    /// <summary>Control-plane and workload trust domains remain distinct at every committed and copied ACL scope.</summary>
+    /// <param name="fileName">The configuration selected by one Platform sidecar.</param>
+    /// <param name="callers">The exact caller identities in that configuration.</param>
+    [Theory]
+    [InlineData("accesscontrol.yaml", "works,eventstore-admin")]
+    [InlineData("accesscontrol.works.yaml", "eventstore,eventstore-operations,eventstore-admin")]
+    [InlineData("accesscontrol.eventstore-admin.yaml", "")]
+    [InlineData("accesscontrol.eventstore-operations.yaml", "eventstore-admin")]
+    public void PlatformAndFixturePoliciesPinEveryTrustDomain(string fileName, string callers)
+    {
+        ArgumentNullException.ThrowIfNull(callers);
+        string[] expectedCallers = callers.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        string[] committed = ReadCommittedLines(fileName);
+        foreach (string[] lines in new[] { committed, ReadCopyLines(fileName, committed) })
+        {
+            var yaml = new YamlStream();
+            yaml.Load(new StringReader(string.Join(Environment.NewLine, lines)));
+            var root = (YamlMappingNode)yaml.Documents.Single().RootNode;
+            var spec = (YamlMappingNode)root.Children[new YamlScalarNode("spec")];
+            var mtls = (YamlMappingNode)spec.Children[new YamlScalarNode("mtls")];
+            mtls.Children[new YamlScalarNode("enabled")].ToString().ShouldBe("true", fileName);
+            mtls.Children[new YamlScalarNode("controlPlaneTrustDomain")].ToString().ShouldBe("localhost", fileName);
+            var acl = (YamlMappingNode)spec.Children[new YamlScalarNode("accessControl")];
+            acl.Children[new YamlScalarNode("trustDomain")].ToString().ShouldBe("public", fileName);
+            var policies = (YamlSequenceNode)acl.Children[new YamlScalarNode("policies")];
+            policies.Children.Cast<YamlMappingNode>().Select(policy => policy.Children[new YamlScalarNode("appId")].ToString())
+                .ShouldBe(expectedCallers, ignoreOrder: true, customMessage: fileName);
+            foreach (YamlMappingNode policy in policies.Children.Cast<YamlMappingNode>())
+            {
+                policy.Children[new YamlScalarNode("trustDomain")].ToString().ShouldBe("public",
+                    fileName + ": " + policy.Children[new YamlScalarNode("appId")]);
+            }
+        }
+    }
+
     /// <summary>The unchanged configuration and the exact component-watch opt-out retain every original policy line.</summary>
     /// <param name="fileName">The committed configuration shared with one live sidecar.</param>
     [Theory]
