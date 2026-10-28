@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
@@ -33,6 +34,19 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksSdkRecoveryPipelineSmokeTests
 {
+    /// <summary>Absent and idle lifecycle rows may be disposed; a delivery or erase row may not.</summary>
+    [Fact]
+    public void NamedProjectionLifecycleIdleRecognizesTheAbsentBaselineAndAPersistedIdlePhase()
+    {
+        IsAbsentOrIdleLifecycle("").ShouldBeTrue();
+        IsAbsentOrIdleLifecycle("null").ShouldBeTrue();
+        IsAbsentOrIdleLifecycle("""{"phase":0}""").ShouldBeTrue();
+        IsAbsentOrIdleLifecycle("""{"Phase":"Idle"}""").ShouldBeTrue();
+        IsAbsentOrIdleLifecycle("""{"phase":3}""").ShouldBeFalse();
+        IsAbsentOrIdleLifecycle("""{"phase":"Delivering"}""").ShouldBeFalse();
+        IsAbsentOrIdleLifecycle("""{"phase":1}""").ShouldBeFalse();
+    }
+
     /// <summary>A store that ignores cancellation cannot hold the retained-plan helper after its linked deadline is cancelled.</summary>
     [Fact]
     public async Task RetainedPlanWaitBoundsNonCooperativeStoreAcquisition()
@@ -323,6 +337,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             effect.Kind.ShouldBe(EffectKindCatalog.CascadeExpire);
             JsonSerializer.Deserialize<ExpireWorkItem>(effect.CommandPayload)!.ExpiryWitness.ShouldBeNull();
             await EvidenceAsync("cascade-expiry-target-commit-before-checkpoint", new { expiryCascadeEffect, childScheduledExpiry, checkpoint, childExpired }, token).ConfigureAwait(false);
+            await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, sidecar, token) =>
@@ -453,6 +468,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             checkpoint.Checkpoint.ShouldBeLessThan(7);
             checkpoint.PendingPlan!.Effects.Count.ShouldBe(5);
             await EvidenceAsync("cascade-target-commit-before-checkpoint", new { committedEffect, checkpoint, childCancelled }, token).ConfigureAwait(false);
+            await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
@@ -543,6 +559,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             if (WorksAppHostSelection.IsPlatform)
                 await EvidenceAsync("paged-process-candidates-pre-restart",
                     await WorksPlatformRecoveryChecks.RepackCandidatePagesAsync(store, tenant, recoveryGrants, token).ConfigureAwait(false), token).ConfigureAwait(false);
+            await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _sidecar, token) =>
@@ -593,6 +610,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 telemetry!.Failures.ShouldBeEmpty();
                 await EvidenceAsync("durable-recovery-alert-export-and-clear", telemetry.Points, token).ConfigureAwait(false);
             }
+
+            await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
 
         if (WorksAppHostSelection.IsPlatform)
@@ -922,6 +941,82 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         await WaitAsync(() => Task.FromResult((raised = telemetry.Points.FirstOrDefault(point => point.Name == "eventstore.domain.recovery.alert"
             && point.Value == 1 && point.ReceivedAt > degradedObservedAt && point.UnixTimeNanoseconds > observedNanoseconds)) is not null), token).ConfigureAwait(false);
         return raised!;
+    }
+
+    /// <summary>
+    /// Waits until named <c>works-runtime-v3</c> delivery has released every lifecycle row for
+    /// <paramref name="sources"/>. Disposal while a row is <c>Delivering</c> leaves the five-minute
+    /// lease in the retained state store, and the next host then stays readiness-degraded until that
+    /// lease expires. The platform gate's startup budget is shorter than the lease.
+    /// </summary>
+    /// <param name="app">The running topology whose EventStore sidecar owns the lifecycle actors.</param>
+    /// <param name="tenant">The tenant that owns the sources.</param>
+    /// <param name="sources">The aggregates whose delivery leases must be absent or idle.</param>
+    /// <param name="token">The test cancellation token.</param>
+    private static async Task WaitForNamedProjectionLifecycleIdleAsync(
+        DistributedApplication app,
+        string tenant,
+        IReadOnlyList<ProcessSource> sources,
+        CancellationToken token)
+    {
+        ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
+        using HttpClient actorState = WorksAppHostTestReadiness.CreateDaprClient(gateway, "EventStore");
+        string[] actorIds = [.. sources.Select(source => $"{tenant}:work:{source.Aggregate}:works-runtime-v3").Distinct(StringComparer.Ordinal)];
+        int consecutiveIdle = 0;
+        try
+        {
+            await WaitAsync(async () =>
+            {
+                foreach (string actorId in actorIds)
+                {
+                    using HttpResponseMessage response = await actorState.GetAsync(
+                        $"v1.0/actors/ProjectionLifecycleActor/{Uri.EscapeDataString(actorId)}/state/projection-lifecycle", token).ConfigureAwait(false);
+                    if (response.StatusCode is HttpStatusCode.NoContent or HttpStatusCode.NotFound)
+                        continue;
+                    if ((int)response.StatusCode is 500 or 503)
+                    {
+                        consecutiveIdle = 0;
+                        return false;
+                    }
+
+                    string body = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
+                    if (response.StatusCode != HttpStatusCode.OK)
+                        throw new InvalidOperationException($"Projection lifecycle read for '{actorId}' failed {(int)response.StatusCode}: {body}");
+                    if (!IsAbsentOrIdleLifecycle(body))
+                    {
+                        consecutiveIdle = 0;
+                        return false;
+                    }
+                }
+
+                consecutiveIdle++;
+                return consecutiveIdle >= 5;
+            }, token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (!token.IsCancellationRequested)
+        {
+            await EvidenceAsync("named-projection-lifecycle-not-idle-before-restart", new { tenant, actorIds, consecutiveIdle }, token).ConfigureAwait(false);
+            throw;
+        }
+    }
+
+    /// <summary>A missing row is the idle baseline. A persisted idle phase is also safe to dispose.</summary>
+    private static bool IsAbsentOrIdleLifecycle(string body)
+    {
+        if (string.IsNullOrWhiteSpace(body) || body == "null")
+            return true;
+        using JsonDocument document = JsonDocument.Parse(body);
+        JsonElement root = document.RootElement;
+        if (root.ValueKind != JsonValueKind.Object)
+            return false;
+        if (!root.TryGetProperty("phase", out JsonElement phase) && !root.TryGetProperty("Phase", out phase))
+            return false;
+        return phase.ValueKind switch
+        {
+            JsonValueKind.Number => phase.GetInt32() == 0,
+            JsonValueKind.String => phase.GetString() is "0" or "Idle",
+            _ => false,
+        };
     }
 
     private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token)
