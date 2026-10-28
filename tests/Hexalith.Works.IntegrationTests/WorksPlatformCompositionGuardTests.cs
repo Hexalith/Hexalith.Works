@@ -180,6 +180,68 @@ public sealed class WorksPlatformCompositionGuardTests
         partialRefusals.ShouldHaveSingleItem().ShouldContain("OTEL_METRIC_EXPORT_INTERVAL");
     }
 
+    /// <summary>The effective redirect must remain loopback HTTP/protobuf even when a fixture behaves differently over Platform values.</summary>
+    [Theory]
+    [InlineData("valid")]
+    [InlineData("endpoint")]
+    [InlineData("protocol")]
+    [InlineData("both")]
+    [InlineData("remove-endpoint")]
+    [InlineData("remove-protocol")]
+    public async Task ConditionalTelemetryRedirectMustValidateTheCombinedEnvironment(string mutation)
+    {
+        IDistributedApplicationBuilder builder = Composed(out IResourceBuilder<ProjectResource> works);
+        works.WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:18889")
+            .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc");
+        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> platform = WorksPlatformCompositionGuard.Capture(builder);
+        works.WithEnvironment(context =>
+        {
+            bool composed = context.EnvironmentVariables.ContainsKey("DOTNET_ENVIRONMENT");
+            context.EnvironmentVariables["OTEL_EXPORTER_OTLP_ENDPOINT"] = composed && (mutation is "endpoint" or "both")
+                ? "https://foreign.example:4318" : "http://127.0.0.1:41234";
+            context.EnvironmentVariables["OTEL_EXPORTER_OTLP_PROTOCOL"] = composed && (mutation is "protocol" or "both") ? "grpc" : "http/protobuf";
+            if (composed && mutation == "remove-endpoint") context.EnvironmentVariables.Remove("OTEL_EXPORTER_OTLP_ENDPOINT");
+            if (composed && mutation == "remove-protocol") context.EnvironmentVariables.Remove("OTEL_EXPORTER_OTLP_PROTOCOL");
+        });
+
+        if (mutation == "valid")
+        {
+            Dictionary<string, object> evidence = await WorksPlatformCompositionGuard.VerifyAsync(
+                builder, platform, WorksPlatformCompositionGuard.Capture(builder), TestContext.Current.CancellationToken);
+            System.Text.Json.JsonSerializer.Serialize(evidence["works"]).ShouldContain("redirects-otlp-export-to-owned-loopback-collector");
+        }
+        else
+        {
+            InvalidOperationException refused = await Should.ThrowAsync<InvalidOperationException>(() => WorksPlatformCompositionGuard.VerifyAsync(
+                builder, platform, WorksPlatformCompositionGuard.Capture(builder), TestContext.Current.CancellationToken));
+            refused.Message.ShouldContain("does not redirect OTLP export to an owned loopback collector");
+        }
+    }
+
+    /// <summary>Unchanged Platform telemetry cannot legitimize invalid fixture declarations or a different effective collector.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EffectiveRedirectMustMatchTheFixtureOwnedCollector(bool differentLoopback)
+    {
+        IDistributedApplicationBuilder builder = Composed(out IResourceBuilder<ProjectResource> works);
+        works.WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "http://127.0.0.1:18889")
+            .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf");
+        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> platform = WorksPlatformCompositionGuard.Capture(builder);
+        works.WithEnvironment(context =>
+        {
+            if (!context.EnvironmentVariables.ContainsKey("DOTNET_ENVIRONMENT"))
+            {
+                context.EnvironmentVariables["OTEL_EXPORTER_OTLP_ENDPOINT"] = differentLoopback ? "http://127.0.0.1:41234" : "dummy";
+                context.EnvironmentVariables["OTEL_EXPORTER_OTLP_PROTOCOL"] = differentLoopback ? "http/protobuf" : "dummy";
+            }
+        });
+
+        (await Should.ThrowAsync<InvalidOperationException>(() => WorksPlatformCompositionGuard.VerifyAsync(
+            builder, platform, WorksPlatformCompositionGuard.Capture(builder), TestContext.Current.CancellationToken)))
+            .Message.ShouldContain("does not redirect OTLP export to an owned loopback collector");
+    }
+
     // The fixture's writes applied over Platform's values, as the guard's combined evaluation produces them.
     private static Dictionary<string, object> Combined(IReadOnlyDictionary<string, object> platform, IReadOnlyDictionary<string, object> writes)
     {

@@ -134,7 +134,7 @@ internal static class WorksPlatformCompositionGuard
 
             if (TelemetryRedirect.Contains(key, StringComparer.Ordinal))
             {
-                if (combined.TryGetValue(key, out object? telemetry) && telemetry is string setting && IsOwnedTelemetry(key, setting, fixtureWrites))
+                if (combined.TryGetValue(key, out object? telemetry) && telemetry is string setting && IsOwnedTelemetry(key, setting, fixtureWrites, combined))
                 {
                     permitted.Add((key, "redirects-otlp-export-to-owned-loopback-collector"));
                     continue;
@@ -172,11 +172,14 @@ internal static class WorksPlatformCompositionGuard
     }
 
     // The fixture itself must redirect both the endpoint (an owned loopback HTTP collector) and the protocol together.
-    private static bool IsOwnedTelemetry(string key, string value, IReadOnlyDictionary<string, object> fixtureWrites)
+    private static bool IsOwnedTelemetry(string key, string value, IReadOnlyDictionary<string, object> fixtureWrites,
+        IReadOnlyDictionary<string, object> combined)
     {
         bool owned = fixtureWrites.TryGetValue("OTEL_EXPORTER_OTLP_ENDPOINT", out object? endpoint) && endpoint is string uri
             && Uri.TryCreate(uri, UriKind.Absolute, out Uri? collector) && collector.Scheme == Uri.UriSchemeHttp && collector.IsLoopback
-            && fixtureWrites.TryGetValue("OTEL_EXPORTER_OTLP_PROTOCOL", out object? protocol) && protocol as string == "http/protobuf";
+            && fixtureWrites.TryGetValue("OTEL_EXPORTER_OTLP_PROTOCOL", out object? protocol) && protocol as string == "http/protobuf"
+            && combined.TryGetValue("OTEL_EXPORTER_OTLP_ENDPOINT", out object? effectiveEndpoint) && Equals(endpoint, effectiveEndpoint)
+            && combined.TryGetValue("OTEL_EXPORTER_OTLP_PROTOCOL", out object? effectiveProtocol) && Equals(protocol, effectiveProtocol);
         return owned && (key != "OTEL_METRIC_EXPORT_INTERVAL"
             || int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int interval)
                 && interval is > 0 and <= 60000);

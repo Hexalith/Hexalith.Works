@@ -16,6 +16,7 @@ using Hexalith.Works.Queries;
 using Hexalith.Works.Recovery;
 using Hexalith.Works.Runtime;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using NSubstitute;
@@ -27,6 +28,74 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksQueryPolicyDeadlineTests
 {
+    /// <summary>Authority failure logs contain bounded metadata and finite categories, never private exception evidence.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task IdentityFailureDiagnosticsExcludePrivateEvidence(bool detail, bool timeout)
+    {
+        string canary = Convert.ToHexString(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+        Exception failure = timeout ? new TimeoutException(canary) : new IOException(canary, new Exception(canary));
+        failure.Data["private"] = canary;
+        IPartiesIdentityClient parties = Substitute.For<IPartiesIdentityClient>();
+        parties.ResolvePartyIdentityAsync(Arg.Any<string>(), Arg.Any<ResolvePartyIdentity>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<PartyIdentityResult>(failure));
+        IReadModelStore store = Substitute.For<IReadModelStore, IReadModelBatchStore, IReadModelBulkStore>();
+        var logger = new Story48RecordingLogger<WorksQueryPolicy>();
+        var policy = new WorksQueryPolicy(parties, Options.Create(new WorksQueryOptions()), logger);
+        QueryEnvelope query = Query(detail) with
+        {
+            TenantId = new string('t', 64),
+            CorrelationId = "correlation\r\u2029" + new string('c', 200),
+        };
+
+        AssertDenied(await ExecuteAsync(detail, store, policy, TestContext.Current.CancellationToken, query), store);
+
+        var entry = logger.Entries.ShouldHaveSingleItem();
+        entry.EventId.Id.ShouldBe(4512);
+        entry.Level.ShouldBe(LogLevel.Warning);
+        entry.Exception.ShouldBeNull();
+        entry.Properties.Keys.Order(StringComparer.Ordinal)
+            .ShouldBe(["CorrelationId", "FailureCategory", "TenantId", "{OriginalFormat}"]);
+        entry.Properties["FailureCategory"].ShouldBe(timeout ? "timeout" : "dependency-unavailable");
+        entry.Properties["TenantId"].ShouldBe(query.TenantId);
+        ((string)entry.Properties["CorrelationId"]!).Length.ShouldBe(128);
+        foreach (string value in entry.Properties.Values.Cast<string>().Append(entry.Message))
+        {
+            value.ShouldNotContain(canary);
+            value.Any(char.IsControl).ShouldBeFalse();
+            value.ShouldNotContain("\u2028");
+            value.ShouldNotContain("\u2029");
+        }
+    }
+
+    /// <summary>Failures in either logger stage cannot turn denied authority into an unhandled query error.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task IdentityFailureRemainsDeniedWhenDiagnosticsThrow(bool detail, bool throwsFromIsEnabled)
+    {
+        IPartiesIdentityClient parties = Substitute.For<IPartiesIdentityClient>();
+        parties.ResolvePartyIdentityAsync(Arg.Any<string>(), Arg.Any<ResolvePartyIdentity>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<PartyIdentityResult>(new IOException("private authority outage")));
+        IReadModelStore store = Substitute.For<IReadModelStore, IReadModelBatchStore, IReadModelBulkStore>();
+        ILogger<WorksQueryPolicy> logger;
+        if (throwsFromIsEnabled)
+        {
+            logger = Substitute.For<ILogger<WorksQueryPolicy>>();
+            logger.IsEnabled(Arg.Any<LogLevel>()).Returns(_ => throw new IOException("diagnostic filter outage"));
+        }
+        else logger = new ThrowingDiagnosticLogger<WorksQueryPolicy>();
+        var policy = new WorksQueryPolicy(parties, Options.Create(new WorksQueryOptions()), logger);
+
+        AssertDenied(await ExecuteAsync(detail, store, policy, TestContext.Current.CancellationToken), store);
+        _ = parties.Received(1).ResolvePartyIdentityAsync(Arg.Any<string>(), Arg.Any<ResolvePartyIdentity>(), Arg.Any<CancellationToken>());
+    }
+
     /// <summary>An unresponsive authority cannot exhaust the outer invocation budget or expose state.</summary>
     [Theory]
     [InlineData(false)]
@@ -355,12 +424,12 @@ public sealed class WorksQueryPolicyDeadlineTests
                 true, false, false, 2, observed, "observation", binding));
     }
 
-    private static Task<QueryResult> ExecuteAsync(bool detail, IReadModelStore store, WorksQueryPolicy policy, CancellationToken token)
+    private static Task<QueryResult> ExecuteAsync(bool detail, IReadModelStore store, WorksQueryPolicy policy, CancellationToken token, QueryEnvelope? query = null)
     {
         var coordinator = new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store);
         return detail
-            ? new GetWorkItemQueryHandler(policy, coordinator).ExecuteAsync(Query(detail), token)
-            : new WhatsNextQueryHandler(policy, coordinator).ExecuteAsync(Query(detail), token);
+            ? new GetWorkItemQueryHandler(policy, coordinator).ExecuteAsync(query ?? Query(detail), token)
+            : new WhatsNextQueryHandler(policy, coordinator).ExecuteAsync(query ?? Query(detail), token);
     }
 
     private static QueryEnvelope Query(bool detail)

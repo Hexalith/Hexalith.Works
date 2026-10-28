@@ -5,6 +5,7 @@ using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.Parties.Client.Abstractions;
 using Hexalith.Parties.Contracts.Queries;
 using Hexalith.Parties.Contracts.ValueObjects;
+using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -74,7 +75,7 @@ public sealed class WorksQueryPolicy(
         }
         catch (Exception exception)
         {
-            _logger.LogWarning(exception, "Parties identity resolution failed for tenant {TenantId}; denying the query.", query.TenantId);
+            WorksFailureDiagnostics.AuthorizationDenied(_logger, query.TenantId, query.CorrelationId, exception);
             return new WorksQueryAuthority(false, false, null);
         }
     }

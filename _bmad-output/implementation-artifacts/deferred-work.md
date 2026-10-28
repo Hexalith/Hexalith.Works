@@ -1926,10 +1926,14 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Sanitize identity-provider failure logging in WorksQueryPolicy.
   evidence: The complete exception is passed to LogWarning at the authorization boundary, bypassing bounded diagnostic categories; the same call exists in pre-cutover6967819. Verify a generated private canary never reaches logging.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-telemetry-boundaries.md` — EventId 4512 records finite categories and bounded tenant/correlation metadata without raw exceptions; both query handlers have private-canary regressions.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Contain authorization logger failures so an identity outage still returns a fail-closed denial.
   evidence: WorksQueryPolicy logs inside its provider-error catch without shielding sink exceptions; both query handlers await that policy outside their read-error catch, unchanged from pre-cutover6967819. Exercise a throwing logger at this boundary.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-telemetry-boundaries.md` — The bounded authorization diagnostic contains IsEnabled and Log exceptions; both query handlers retain Forbidden with zero Works state reads under throwing sinks.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Apply consistent retained-membership validation to current-generation query manifests.
@@ -1956,6 +1960,8 @@ Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These e
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B1 — Sanitize Parties identity-provider failure logging (medium; existing follow-up).
   evidence: WorksQueryPolicy.cs:77 passes the complete exception to LogWarning; the same call exists at pre-cutover6967819 and is already recorded in the 2026-10-25 publication-resume follow-ups. Verify a private exception canary never enters logging; do not duplicate the owning correction.
+  status: done 2026-10-28
+  resolution: Duplicate of the owning identity-provider logging item above; resolved by `spec-five-deferred-telemetry-boundaries.md`, counted once.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B3 — Apply required scalar-member validation to projection evidence (medium; pre-existing).
@@ -2020,14 +2026,26 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R27A-V1 — Test the Platform telemetry collector's label and shape refusals (medium; pre-existing).
   evidence: The live recovery facts use `telemetry.Failures.ShouldBeEmpty()` as their forbidden-label oracle. `WorksPlatformTelemetryCollectorTests` never sends a well-formed point the collector must refuse: a forbidden attribute, a non-allowlisted reason, a reason label on `alert`, an unlabeled reason gauge, or a non-gauge instrument. Inverting `WorksPlatformTelemetryCollector.cs:233` keeps every test green. Add an exporter-driven theory in that supporting class.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-telemetry-boundaries.md` — Real OTLP HTTP/protobuf exporter theories exercise forbidden attributes, unknown reasons, reason on alert, unlabeled reason, and nongauge instruments, asserting refusal and no accepted points.
 
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: G3A-B1 — Validate effective OTLP endpoint/protocol in the existing Platform fixture-composition guard.
   evidence: The fresh-assembly reflection probe accepts effective https://foreign.example:4318/grpc because IsOwnedTelemetry checks preliminary fixtureWrites. The complete guard is normalized-byte-identical to pre-cutover696781961155d764ed805843f55b40dc5882e887. Validate combined values while retaining the requirement that the fixture redirects both keys, and add a conditional-callback refusal control. Parent probe and source lineage are retained in the group3A packet.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-telemetry-boundaries.md` — The guard validates combined endpoint/protocol values while requiring both explicit fixture keys; actual conditional-callback tests cover foreign endpoint, grpc protocol, removals, and a valid redirect.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: G3A-B3 — Bind the existing phase-local recovery alert-clear wait to the exporter observation time after settledAt.
   evidence: The receipt-only predicate predates cutover. Canonical acceptance already refuses an exported clear older than the fresh raise; the narrower phase-local boundary can still accept a delayed after-raise/pre-settled zero. Add that delayed-point control without weakening the canonical after-last-raise ordering or changing domain deadlines.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-telemetry-boundaries.md` — The phase requires both exporter timestamp and collector receipt after settlement; delayed/equal exporter observations are refused by deterministic controls. Canonical after-last-raise ordering is unchanged.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: G3A-B7 — Replace optimization-removable asserts in the legacy Story4.15 isolated package-proof HASHES block.
   evidence: All four assert checks are present before cutover. The exact block, with an invalid project graph, exits1 normally but exits0 with isolatedPackageProof:[] under python -O. Replace graph/version/archive/count assertions with explicit failures and add optimized-environment controls; this is an intermediate-block repro, not a claim that the complete shell helper or canonical gate passed invalid inputs.
+
+## Deferred from: review of spec-five-deferred-telemetry-boundaries (2026-10-28)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-telemetry-boundaries.md`
+  summary: Assess telemetry admission when a Platform project composes no OTLP keys (unverified medium).
+  evidence: The pre-existing composition guard checks affected Platform-owned keys only; fixture-only OTLP keys are outside its overlap inventory and can bypass pair validation. The current canonical Platform capture lacking both keys was not demonstrated. Reproduce against an actual supported Platform composition with absent OTLP settings before broadening the guard from overlap protection to fixture-wide telemetry admission.

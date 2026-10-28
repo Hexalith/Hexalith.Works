@@ -34,6 +34,26 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksSdkRecoveryPipelineSmokeTests
 {
+    /// <summary>A delayed clear sampled before or at settlement cannot satisfy the phase, even when received afterward.</summary>
+    [Fact]
+    public void AlertClearRequiresAnExporterObservationStrictlyAfterSettlement()
+    {
+        DateTimeOffset settledAt = DateTimeOffset.UnixEpoch.AddDays(1);
+        ulong settledNanoseconds = checked((ulong)(settledAt - DateTimeOffset.UnixEpoch).Ticks * 100UL);
+        var fresh = new WorksPlatformMetricPoint("eventstore.domain.recovery.alert", 0, null, settledNanoseconds + 100, settledAt.AddSeconds(1));
+        IsAlertClearAfter(fresh, settledAt).ShouldBeTrue();
+        IsAlertClearAfter(fresh with { UnixTimeNanoseconds = settledNanoseconds - 100 }, settledAt).ShouldBeFalse();
+        IsAlertClearAfter(fresh with { UnixTimeNanoseconds = settledNanoseconds }, settledAt).ShouldBeFalse();
+        IsAlertClearAfter(fresh with { ReceivedAt = settledAt }, settledAt).ShouldBeFalse();
+        IsAlertClearAfter(fresh with { Value = 1 }, settledAt).ShouldBeFalse();
+        IsAlertClearAfter(fresh with { Name = "eventstore.domain.recovery.ready" }, settledAt).ShouldBeFalse();
+    }
+
+    /// <summary>Requires both exporter observation and collector receipt to follow the phase's settlement.</summary>
+    private static bool IsAlertClearAfter(WorksPlatformMetricPoint point, DateTimeOffset settledAt)
+        => point.Name == "eventstore.domain.recovery.alert" && point.Value == 0 && point.ReceivedAt > settledAt
+            && point.UnixTimeNanoseconds > checked((ulong)(settledAt - DateTimeOffset.UnixEpoch).Ticks * 100UL);
+
     /// <summary>Absent and idle lifecycle rows may be disposed; a delivery or erase row may not.</summary>
     [Fact]
     public void NamedProjectionLifecycleIdleRecognizesTheAbsentBaselineAndAPersistedIdlePhase()
@@ -606,9 +626,11 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, identity, executorItem,
                         recoveryGrants.Length, token).ConfigureAwait(false), token).ConfigureAwait(false);
                 DateTimeOffset settledAt = DateTimeOffset.UtcNow;
-                await WaitAsync(() => Task.FromResult(telemetry!.Points.Any(point => point.Name == "eventstore.domain.recovery.alert" && point.Value == 0 && point.ReceivedAt > settledAt)), token).ConfigureAwait(false);
+                WorksPlatformMetricPoint? clear = null;
+                await WaitAsync(() => Task.FromResult((clear = telemetry!.Points.FirstOrDefault(point => IsAlertClearAfter(point, settledAt))) is not null), token).ConfigureAwait(false);
                 telemetry!.Failures.ShouldBeEmpty();
                 await EvidenceAsync("durable-recovery-alert-export-and-clear", telemetry.Points, token).ConfigureAwait(false);
+                await EvidenceAsync("recovery-alert-post-settlement-clear", new { settledAt, clear }, token).ConfigureAwait(false);
             }
 
             await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);

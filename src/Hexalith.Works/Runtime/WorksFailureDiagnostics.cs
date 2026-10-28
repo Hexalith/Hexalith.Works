@@ -27,6 +27,13 @@ internal static partial class WorksFailureDiagnostics
         catch (Exception) { /* Diagnostics must not suppress healthy-tenant progress or retry. */ }
     }
 
+    /// <summary>Records an authority dependency failure without exposing private evidence or changing denial.</summary>
+    internal static void AuthorizationDenied(ILogger logger, string tenantId, string correlationId, Exception exception)
+    {
+        try { IdentityResolutionFailed(logger, Bound(tenantId), Bound(correlationId), Category(exception)); }
+        catch (Exception) { /* Diagnostics must not replace the fail-closed authorization result. */ }
+    }
+
     /// <summary>Maps an exception to a finite diagnostic category without retaining private error details.</summary>
     internal static string Category(Exception exception) => exception switch
     {
@@ -48,6 +55,10 @@ internal static partial class WorksFailureDiagnostics
                     ? '?' : source[index];
         });
     }
+
+    [LoggerMessage(EventId = 4512, Level = LogLevel.Warning,
+        Message = "Works identity resolution failed (tenant {TenantId}, correlation {CorrelationId}, category {FailureCategory}); query denied.")]
+    private static partial void IdentityResolutionFailed(ILogger logger, string tenantId, string correlationId, string failureCategory);
 
     [LoggerMessage(EventId = 4510, Level = LogLevel.Warning,
         Message = "Works projection query {QueryType} unavailable (tenant {TenantId}, correlation {CorrelationId}, category {FailureCategory}).")]
