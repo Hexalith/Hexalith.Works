@@ -1566,11 +1566,19 @@ public sealed class WorksSdkProjectionQueryTests
 
     /// <summary>Both query adapters retain safe unavailable responses and bounded diagnostics for corrupt persisted documents.</summary>
     [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(true, true)]
-    public async Task QueryFailureDiagnosticsAreBoundedAndExcludePrivateEvidence(bool detail, bool invalidMembership)
+    [InlineData(false, "document")]
+    [InlineData(true, "document")]
+    [InlineData(false, "null-members")]
+    [InlineData(true, "null-members")]
+    [InlineData(false, "omitted-item")]
+    [InlineData(true, "omitted-item")]
+    [InlineData(false, "omitted-sequence")]
+    [InlineData(true, "omitted-sequence")]
+    [InlineData(false, "duplicate")]
+    [InlineData(true, "duplicate")]
+    [InlineData(false, "blank")]
+    [InlineData(true, "blank")]
+    public async Task QueryFailureDiagnosticsAreBoundedAndExcludePrivateEvidence(bool detail, string failure)
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         var store = new InMemoryReadModelStore();
@@ -1579,9 +1587,23 @@ public sealed class WorksSdkProjectionQueryTests
         var scope = projection.CreateScope(Tenant);
         var lease = await coordinator.RegisterWriterAsync(scope, projection.OrdinaryWriterId, ct);
         const string secret = "private-document-and-bearer-secret";
+        bool invalidMembership = failure != "document";
+        var omittedItem = new WhatsNextItem(new TenantId(Tenant), new WorkItemId(Aggregate), WorkItemStatus.Queued,
+            null, null, null, null, null, [], [], 1);
         var corrupt = invalidMembership
             ? WorksRuntimeDocument.From(new WorksWhatsNextTenantIndex
-            { SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion, MemberWorkItemIds = null! })
+            {
+                SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion,
+                MemberWorkItemIds = failure switch
+                {
+                    "null-members" => null!,
+                    "duplicate" => [Aggregate, Aggregate],
+                    "blank" => [" "],
+                    _ => [],
+                },
+                Items = failure == "omitted-item" ? new() { [Aggregate] = omittedItem } : new(),
+                LastSequences = failure == "omitted-sequence" ? new() { [Aggregate] = 1 } : new(),
+            })
             : new WorksRuntimeDocument(typeof(WorksWhatsNextTenantIndex).FullName!, JsonSerializer.SerializeToElement(secret));
         _ = await coordinator.JournalAsync(scope, lease, new SharedProjectionDelivery("diagnostic-fault", 1, [1], [1]), ct);
         _ = await coordinator.CatchUpAsync(scope, (_, _, _) => Task.FromResult<IReadOnlyList<ReadModelBatchOperation>>([

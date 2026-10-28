@@ -23,6 +23,71 @@ public sealed class WorksSourceStreamReaderTests
     private const string Tenant = "tenant-415";
     private const string Item = "work-415";
 
+    /// <summary>No state-changing catalog event is admissible before the first creation.</summary>
+    [Fact]
+    public void EveryStateChangingEventRequiresCreation()
+    {
+        IEventPayload[] facts = [.. WorkItemV1Catalog.All.OfType<IEventPayload>()
+            .Where(payload => payload is not WorkItemCreated and not IRejectionEvent)];
+        facts.Length.ShouldBe(14);
+        foreach (IEventPayload fact in facts)
+            Should.Throw<InvalidOperationException>(() => new WorksExpiryEvidence().Apply(fact, "tenant-alpha", "work-001"));
+    }
+
+    /// <summary>A later creation and page boundaries cannot hide a suspension's corrupt prefix.</summary>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task SuspensionBeforeCreationCannotProduceReminderIntents(bool laterCreation, bool paged)
+    {
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        IEventPayload[] facts = laterCreation
+            ? [new WorkItemSuspended(Item, 1, tenant, item, [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)]),
+                new WorkItemCreated(Item, 2, tenant, item, new Obligation("late creation"))]
+            : [new WorkItemSuspended(Item, 1, tenant, item, [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)])];
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            long from = call.Arg<StreamReadRequest>().FromSequence;
+            var page = Story48Streams.PageAt(Tenant, Item, from + 1, paged && laterCreation && from == 0,
+                paged ? [facts[(int)from]] : facts);
+            return page with { Metadata = page.Metadata with { LatestSequence = facts.Length } };
+        });
+        var source = new Hexalith.Works.Reminders.WorksReminderIntentSource(
+            new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+        var error = await Should.ThrowAsync<InvalidOperationException>(() => source.GetCurrentIntentsAsync(
+            new Hexalith.EventStore.Contracts.Reminders.ReminderTarget(Tenant, "work", Item), TestContext.Current.CancellationToken));
+        error.Message.ShouldContain("before creation");
+    }
+
+    /// <summary>Command refusals remain valid before creation and never synthesize a reminder themselves.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RejectionOnlyAndCreationAfterRejectionRemainSupported(bool created)
+    {
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Item);
+        IEventPayload rejection = new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(
+            tenant, item, WorkItemStatus.Created, "invalid-act");
+        IEventPayload[] facts = created
+            ? [rejection, new WorkItemCreated(Item, 1, tenant, item, new Obligation("created after refusal")),
+                new WorkItemSuspended(Item, 2, tenant, item, [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch)])]
+            : [rejection];
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(Story48Streams.Page(Tenant, Item, facts));
+        var source = new Hexalith.Works.Reminders.WorksReminderIntentSource(
+            new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+        var intents = await source.GetCurrentIntentsAsync(new Hexalith.EventStore.Contracts.Reminders.ReminderTarget(Tenant, "work", Item),
+            TestContext.Current.CancellationToken);
+        intents.Count.ShouldBe(created ? 1 : 0);
+        if (created) intents[0].SourceSequence.ShouldBe(3);
+    }
+
     /// <summary>Every state-changing contract requires a positive domain ordinal under both retained JSON casings.</summary>
     [Theory]
     [InlineData(0, false)]

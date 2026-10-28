@@ -14,6 +14,8 @@ internal sealed class WorksExpiryEvidence
     internal void Apply(IEventPayload payload, string tenant, string aggregate)
     {
         Validate(payload, tenant, aggregate);
+        if (!_created && payload is not WorkItemCreated and not IRejectionEvent and not WorkItemRescheduled)
+            throw new InvalidOperationException("The persisted Works source changes state before creation.");
         switch (payload)
         {
             case WorkItemCreated created:

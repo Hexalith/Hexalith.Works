@@ -176,6 +176,8 @@ internal static class WorkItemSharedRebuildManifestBuilder
 
     private static void ValidateHistory(WorkItemSharedRebuildAggregateHistory history)
     {
+        if (history.Events.Length == 0)
+            throw new InvalidOperationException("The Works runtime aggregate history contains no committed evidence.");
         long expected = 1;
         foreach (ProjectionEventDto? envelope in history.Events)
         {

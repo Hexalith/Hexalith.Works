@@ -1934,6 +1934,8 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Apply consistent retained-membership validation to current-generation query manifests.
   evidence: The unchanged IsValidCurrent validator accepts Items/LastSequences keys omitted from MemberWorkItemIds; SDK query readers can return absence while WorksProcessSourceCatalog rejects that contradictory persisted shape. Verify malformed persisted manifests explicitly; no new partial-write cause was established.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-history-admission.md` — Shared current-generation validation refuses omitted item/watermark membership, duplicate members and blank members; both query adapters retain unavailable responses and exact persisted bytes.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Establish projection-store cancellation bounds for SDK query reads (unverified medium).
@@ -1958,14 +1960,20 @@ Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These e
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B3 — Apply required scalar-member validation to projection evidence (medium; pre-existing).
   evidence: WorkItemSharedRebuildManifestBuilder.cs:59 uses WorkItemProjectionEventDecoder, whose ordinary deserializer accepts a missing ReEstimated.Estimated as zero; WorksRecoveryEventDecoder rejects the same missing member. The decoder/call exist at18e94d3. Verify corrupt-member refusal and legitimate historical payload compatibility before choosing the owning parser correction.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-history-admission.md` — Projection and recovery share required scalar-member checks, with catalog-wide omission/nonpositive-sequence regressions and frozen writer/compatibility corpus controls.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B4 — Establish and enforce the supported projection discriminator set (medium; pre-existing).
   evidence: WorkItemProjectionEventDecoder.SimpleTypeName resolves Foreign.Namespace.WorkItemCancelled to the Works cancellation type; recovery checks the exact full or short Works name. This behavior exists at18e94d3. Establish legitimate historical aliases and verify corrupt foreign aliases cannot change a projection before tightening admission.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-history-admission.md` — Projection admission now requires the exact catalog short or full name; foreign namespace aliases are refused while frozen historical payloads remain readable.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B5 — Require creation evidence before deriving state-changing recovery reminders (medium; pre-existing).
   evidence: WorksSourceStreamReader.cs:112 applies WorksExpiryEvidence, which rejects pre-creation rescheduling but accepts an initial WorkItemSuspended; WorksReminderIntentSource can derive a date reminder from that corrupt history. The paths exist at pre-cutover6967819. Preserve rejection-only histories while verifying whole-history creation ordering and no reminder registration on corrupt evidence.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-history-admission.md` — Every state-changing recovery event requires preceding creation; rejection-only histories remain supported. Actual SDK convergence retains no reminder witness/candidate or scheduler arm for an initial suspension.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B6 — Measure what's-next query cost over retained terminal membership (maybe-false; unverified medium).
@@ -1994,6 +2002,8 @@ CI/build and scripts group, Works `18e94d3..ab020fa`. Both entries predate this 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Define and validate empty per-aggregate rebuild histories separately from empty tenant inventories and rejected-only histories.
   evidence: BuildEpoch retains each supplied aggregate as membership and parking, but ValidateHistory accepts Events=[] and the fold emits no roll-up. The same loop and zero-event behavior exist in pre-cutover 696781961155d764ed805843f55b40dc5882e887. Verify the supported capture contract and reject malformed existing-aggregate emptiness without breaking legitimate absence/rejection-only cases.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-history-admission.md` — The domain rebuild handler refuses null/empty aggregate evidence separately from empty inventory; rejection-only history retains membership and source bytes without a roll-up. SDK lifecycle refusal preserves the prior committed generation and served documents after reconstruction.
 
 ## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-27, Platform live proofs and harness group 3A)
 

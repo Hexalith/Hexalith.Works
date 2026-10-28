@@ -19,10 +19,11 @@ internal static class WorksRecoveryEventDecoder
             && !string.Equals(eventType, payload.GetType().FullName, StringComparison.Ordinal))
             throw new InvalidOperationException("Works source evidence has a foreign event type.");
         // State-changing payloads declare Sequence; command-rejection payloads do not.
-        if (payload.GetType().GetProperty(nameof(WorkItemCreated.Sequence)) is { } sequence
-            && (!HasProperty(bytes, nameof(WorkItemCreated.Sequence))
-                || sequence.GetValue(payload) is not long ordinal || ordinal <= 0))
+        using JsonDocument document = JsonDocument.Parse(bytes);
+        if (!WorksEventScalarMembers.HasPositiveSequence(payload, document.RootElement))
             throw new InvalidOperationException("Works source evidence requires a positive domain sequence.");
+        if (!WorksEventScalarMembers.HasRequiredMembers(payload, document.RootElement))
+            throw new InvalidOperationException("Works source evidence has missing required members.");
         bool valid = payload switch
         {
             WorkItemCreated fact => fact.Obligation is not null,
@@ -30,39 +31,21 @@ internal static class WorksRecoveryEventDecoder
             WorkItemRescheduled fact => fact.Schedule is not null,
             WorkItemAssigned fact => fact.Binding is not null,
             WorkItemClaimed fact => fact.Binding is not null,
-            ProgressReported fact => fact.Unit is not null && HasProperty(bytes, nameof(ProgressReported.DoneDelta)),
-            ReEstimated fact => fact.Unit is not null && HasProperty(bytes, nameof(ReEstimated.Estimated)),
+            ProgressReported fact => fact.Unit is not null,
+            ReEstimated fact => fact.Unit is not null,
             ConversationLinked fact => fact.ConversationCorrelationId is not null,
             WorkItemSuspended fact => fact.AwaitConditions is { Count: > 0 },
-            WorkItemRejected => HasBooleanProperty(bytes, nameof(WorkItemRejected.Requeue)),
             WorkItemInitialEffortRejected fact => fact.Done != 0,
             WorkItemCannotReferenceParentFromAnotherTenant fact => fact.Parent is not null,
             WorkItemCannotReferenceSecondParent fact => fact.ExistingParent is not null && fact.ProposedParent is not null,
             WorkItemConversationLinkRejected fact => fact.ExistingConversationCorrelationId is not null && fact.ProposedConversationCorrelationId is not null,
             WorkItemTreeCycleRejected fact => fact.ProposedParent is not null && fact.CycleWorkItemId is not null,
-            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null && fact.ResultingDepth > fact.MaxDepth
-                && HasProperty(bytes, nameof(WorkItemTreeDepthExceeded.MaxDepth)),
+            WorkItemTreeDepthExceeded fact => fact.ProposedParent is not null && fact.ResultingDepth > fact.MaxDepth,
             WorkItemProgressRejected fact => fact.Reason is not null,
             WorkItemReEstimateRejected fact => fact.Reason is not null,
-            WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus)
-                && HasProperty(bytes, nameof(WorkItemTransitionRejected.FromStatus)),
+            WorkItemTransitionRejected fact => fact.AttemptedAct is not null && Enum.IsDefined(fact.FromStatus),
             _ => true,
         };
         return valid ? payload : throw new InvalidOperationException("Works source evidence has missing required members.");
-    }
-
-    private static bool HasProperty(byte[] bytes, string name)
-    {
-        using JsonDocument document = JsonDocument.Parse(bytes);
-        return document.RootElement.EnumerateObject().Any(property => string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static bool HasBooleanProperty(byte[] bytes, string name)
-    {
-        using JsonDocument document = JsonDocument.Parse(bytes);
-        JsonValueKind kind = JsonValueKind.Undefined;
-        foreach (JsonProperty property in document.RootElement.EnumerateObject())
-            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase)) kind = property.Value.ValueKind;
-        return kind is JsonValueKind.True or JsonValueKind.False;
     }
 }

@@ -599,7 +599,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         candidate = await handler.AccumulateAsync(
             identity,
             candidate,
-            new ProjectionRequest(Tenant, "work", ParentId, null!),
+            new ProjectionRequest(Tenant, "work", ParentId, ParentHistory(Tenant)),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
 
         using (JsonDocument document = JsonDocument.Parse(candidate.State))
@@ -696,6 +696,8 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData("conflicting-duplicate")]
     [InlineData("gap")]
     [InlineData("reordered")]
+    [InlineData("foreign-type")]
+    [InlineData("missing-estimate")]
     public async Task InvalidHistoryCannotPublishPartialProjection(string failure)
     {
         ProjectionEventDto[] valid = ParentHistory(Tenant);
@@ -705,11 +707,54 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "duplicate" => [valid[0], valid[0]],
             "conflicting-duplicate" => [valid[0], valid[1] with { SequenceNumber = 1 }],
             "gap" => [valid[0], valid[1] with { SequenceNumber = 3, GlobalPosition = 3 }],
+            "foreign-type" => [valid[0], valid[1] with { EventTypeName = "Foreign.Namespace.WorkItemAssigned" }],
+            "missing-estimate" => [.. valid, MissingEstimate()],
             _ => [valid[1], valid[0]],
         };
         await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant,
             "refused-evidence-" + failure, [(ParentId, history)],
-            invalidEnvelopePositions: failure != "unknown").ConfigureAwait(true);
+            invalidEnvelopePositions: failure is "duplicate" or "conflicting-duplicate" or "gap" or "reordered").ConfigureAwait(true);
+
+        static ProjectionEventDto MissingEstimate()
+        {
+            ProjectionEventDto dto = Dto(new ReEstimated(ParentId, 3, new TenantId(Tenant), new WorkItemId(ParentId), 0m, Hour), 3);
+            var json = System.Text.Json.Nodes.JsonNode.Parse(dto.Payload)!.AsObject();
+            json.Remove("Estimated").ShouldBeTrue();
+            return dto with { Payload = JsonSerializer.SerializeToUtf8Bytes(json) };
+        }
+    }
+
+    /// <summary>An existing aggregate cannot be captured without evidence; persisted command refusals remain a valid history.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EmptyAggregateHistoryIsRefusedWhileRejectionOnlyHistoryIsRetained(bool nullEvents)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var identity = Identity(Tenant, "empty-aggregate");
+        var candidate = await handler.CreateEmptyCandidateAsync(identity, ct);
+        candidate = await handler.AccumulateAsync(identity, candidate,
+            new ProjectionRequest(Tenant, "work", ParentId, nullEvents ? null! : []), ct);
+        (await Should.ThrowAsync<InvalidOperationException>(() => handler.FinalizeAsync(identity, candidate, ct)))
+            .Message.ShouldContain("no committed evidence");
+
+        var rejection = new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(
+            new TenantId(Tenant), new WorkItemId(ParentId), WorkItemStatus.Created, "invalid-act");
+        var store = new InMemoryReadModelStore();
+        await RebuildAsync(store, Tenant, "rejection-only", [(ParentId, [Dto(rejection, 1)])]);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var scope = handler.CreateScope(Tenant);
+        var index = await ReadCurrentIndexAsync(store, Tenant);
+        index.MemberWorkItemIds.ShouldBe([ParentId]);
+        index.LastSequences[ParentId].ShouldBe(0);
+        index.Items.ShouldBeEmpty();
+        var rollUp = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(ParentId), ct);
+        rollUp.IsAvailable.ShouldBeTrue();
+        rollUp.Value.ShouldBeNull();
+        (await WorkItemRuntimeHistoryStore.ReadAsync(coordinator, scope, rollUp.Generation, ParentId, ct))
+            .Events.ShouldHaveSingleItem().EventTypeName.ShouldBe(rejection.GetType().Name);
+        await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant, "empty-aggregate-lifecycle", [(ParentId, [])]);
     }
 
     private static DomainSharedProjectionRebuildRequest Accumulate(
@@ -970,8 +1015,10 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         {
             current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(false);
             current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
-            current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
-            current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
+            bool emptyAggregate = histories.Any(history => history.Events.Length == 0);
+            current.Status.ShouldBe(emptyAggregate ? ProjectionDispatchStatus.Failed : ProjectionDispatchStatus.Indeterminate);
+            current.ReasonCode.ShouldBe(emptyAggregate
+                ? ProjectionDispatchReasonCodes.DeliveryIdentityConflict : ProjectionDispatchReasonCodes.HandlerFailure);
         }
 
         // The refused capture promoted nothing: the active generation and every served document are unchanged.

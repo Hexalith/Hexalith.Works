@@ -114,8 +114,10 @@ public sealed class WorksSdkProcessRecoveryTests
         const string item = "source-415";
         var tenantId = new TenantId(tenant);
         var itemId = new WorkItemId(item);
-        StreamReadPage enumerated = Story48Streams.Page(tenant, item, new WorkItemCancelled(item, 1, tenantId, itemId));
-        StreamReadEvent committed = enumerated.Events[0];
+        StreamReadPage enumerated = Story48Streams.Page(tenant, item,
+            new WorkItemCreated(item, 1, tenantId, itemId, new Obligation("terminal context")),
+            new WorkItemCancelled(item, 2, tenantId, itemId));
+        StreamReadEvent committed = enumerated.Events[1];
         committed = difference switch
         {
             "message-id" => committed with { MessageId = "different-committed-message" },
@@ -123,7 +125,7 @@ public sealed class WorksSdkProcessRecoveryTests
             "payload" => committed with
             {
                 Payload = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(
-                new WorkItemCancelled(item, 2, tenantId, itemId))
+                new WorkItemCancelled(item, 3, tenantId, itemId))
             },
             _ => committed,
         };
@@ -141,7 +143,7 @@ public sealed class WorksSdkProcessRecoveryTests
         });
         IEventStoreGatewayClient contextGateway = Substitute.For<IEventStoreGatewayClient>();
         contextGateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
-            .Returns(enumerated with { Events = [committed] });
+            .Returns(enumerated with { Events = [enumerated.Events[0], committed] });
         var store = new InMemoryReadModelStore();
         var options = Options.Create(new EventStoreProcessOptions());
         var source = new ProcessSource(tenant, "work", item);
@@ -154,13 +156,13 @@ public sealed class WorksSdkProcessRecoveryTests
         bool matching = difference == "matching";
         ProcessRunResult result = await runner.RunAsync(source, TestContext.Current.CancellationToken);
         result.Status.ShouldBe(matching ? ProcessSourceStatus.Active : ProcessSourceStatus.Quarantined);
-        result.Checkpoint.ShouldBe(matching ? 1 : 0);
+        result.Checkpoint.ShouldBe(matching ? 2 : 1);
         ProcessSourceState durable = await checkpoints.GetAsync(source, TestContext.Current.CancellationToken);
         durable.Status.ShouldBe(result.Status);
         durable.Checkpoint.ShouldBe(result.Checkpoint);
         if (!matching)
         {
-            durable.FailureSequence.ShouldBe(1);
+            durable.FailureSequence.ShouldBe(2);
             durable.ReasonCode.ShouldBe("invalid-evidence");
         }
         durable.PendingPlan.ShouldBeNull();

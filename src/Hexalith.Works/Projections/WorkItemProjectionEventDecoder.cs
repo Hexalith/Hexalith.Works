@@ -44,7 +44,9 @@ internal static partial class WorkItemProjectionEventDecoder
             return new WorkItemProjectionEventDecodeResult(null, false, false);
         }
 
-        if (!s_eventTypesByName.TryGetValue(simpleName, out Type? eventType))
+        if (!s_eventTypesByName.TryGetValue(simpleName, out Type? eventType)
+            || (!string.Equals(dto.EventTypeName, eventType.Name, StringComparison.Ordinal)
+                && !string.Equals(dto.EventTypeName, eventType.FullName, StringComparison.Ordinal)))
         {
             LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
             return new WorkItemProjectionEventDecodeResult(null, false, false);
@@ -70,6 +72,14 @@ internal static partial class WorkItemProjectionEventDecoder
             }
 
             if (payload is ConversationLinked { ConversationCorrelationId: null })
+            {
+                LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
+                return new WorkItemProjectionEventDecodeResult(null, true, true);
+            }
+
+            using JsonDocument document = JsonDocument.Parse(dto.Payload);
+            if (!WorksEventScalarMembers.HasPositiveSequence(payload, document.RootElement)
+                || !WorksEventScalarMembers.HasRequiredMembers(payload, document.RootElement))
             {
                 LogSkipped(logger, simpleName, workItemId.Value, tenantId.Value, correlationId);
                 return new WorkItemProjectionEventDecodeResult(null, true, true);

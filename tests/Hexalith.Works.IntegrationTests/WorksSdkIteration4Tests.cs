@@ -74,10 +74,13 @@ public sealed class WorksSdkIteration4Tests
         else if (kind == "suspended-empty") json[field] = new JsonArray();
         else if (kind == "rejected-string") json[field] = "false";
         else json[field] = null;
-        StreamReadPage page = Story48Streams.Page(Tenant, "item", payload);
-        page = page with { Events = [page.Events[0] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
+        IEventPayload[] prefix = payload is not WorkItemCreated and not IRejectionEvent ? [Created()] : [];
+        int target = prefix.Length;
+        StreamReadPage page = Story48Streams.Page(Tenant, "item", [.. prefix, payload]);
+        page = page with { Events = [.. page.Events.Take(target), page.Events[target] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };
         var gateway = Substitute.For<IEventStoreGatewayClient>();
-        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>())
+            .Returns(call => Tail(page, call.Arg<StreamReadRequest>()));
         var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
         await Should.ThrowAsync<InvalidOperationException>(() => streams.ReadAsync(Tenant, "item", TestContext.Current.CancellationToken));
         var store = new InMemoryReadModelStore();
@@ -87,8 +90,8 @@ public sealed class WorksSdkIteration4Tests
         var source = new ProcessSource(Tenant, "work", "item");
         (await runner.RunAsync(source, TestContext.Current.CancellationToken)).Status.ShouldBe(ProcessSourceStatus.Quarantined);
         var state = await new ProcessCheckpointStore(store, options, TimeProvider.System).GetAsync(source, TestContext.Current.CancellationToken);
-        state.Checkpoint.ShouldBe(0);
-        state.FailureSequence.ShouldBe(1);
+        state.Checkpoint.ShouldBe(target);
+        state.FailureSequence.ShouldBe(target + 1);
         state.ReasonCode.ShouldBe("invalid-evidence");
         state.PendingPlan.ShouldBeNull();
         submitter.ReceivedCalls().ShouldBeEmpty();
@@ -184,8 +187,8 @@ public sealed class WorksSdkIteration4Tests
         JsonNode? value = json[field]?.DeepClone();
         json.Remove(field);
         if (present) json[char.ToLowerInvariant(field[0]) + field[1..]] = value;
-        // A reschedule is valid committed history only after its item's creation.
-        IEventPayload[] prefix = payload is WorkItemRescheduled ? [Created()] : [];
+        // Every state-changing event requires its item's creation; command refusals remain independent.
+        IEventPayload[] prefix = payload is not WorkItemCreated and not IRejectionEvent ? [Created()] : [];
         int target = prefix.Length;
         StreamReadPage page = Story48Streams.Page(Tenant, "item", [.. prefix, payload]);
         page = page with { Events = [.. page.Events.Take(target), page.Events[target] with { Payload = Encoding.UTF8.GetBytes(json.ToJsonString()) }] };

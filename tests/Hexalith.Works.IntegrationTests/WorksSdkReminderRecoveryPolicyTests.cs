@@ -37,6 +37,30 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
     private const string Prefix = "eventstore:reminders:v1:" + ActorType;
     private static readonly DateTimeOffset s_now = new(2030, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    /// <summary>Actual SDK convergence refuses an initial suspension before any durable reminder state or scheduler operation.</summary>
+    [Fact]
+    public async Task SuspensionWithoutCreationCannotPersistOrScheduleAReminder()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "corrupt-initial-suspension";
+        var store = new InMemoryReadModelStore();
+        var page = Story48Streams.Page(Tenant, item, new WorkItemSuspended(item, 1,
+            new TenantId(Tenant), new WorkItemId(item), [AwaitCondition.DateReached(s_now.AddDays(1))]));
+        var scheduler = (WorksReminderSchedulerProxy)DispatchProxy.Create(SdkType("IReminderScheduler"), typeof(WorksReminderSchedulerProxy));
+        using ServiceProvider services = Services(store, Substitute.For<IReminderRegistrar>(), new(), page);
+        using IServiceScope scope = services.CreateScope();
+        string actorId = ReminderIdentityCodec.ComputeActorId(Tenant, item);
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => InvokeAsync(
+            scope.ServiceProvider.GetRequiredService(SdkType("ReminderCoordinator")), "ConvergeAsync",
+            actorId, new ReminderTarget(Tenant, "work", item), scheduler, ct));
+        exception.Message.ShouldContain("before creation");
+        store.SnapshotRaw("statestore", Prefix + ":item:" + actorId).ShouldBeNull();
+        store.SnapshotRaw("statestore", Prefix + ":tenant:" + Tenant + ":candidates").ShouldBeNull();
+        store.SnapshotRaw("statestore", Prefix + ":control:tenants").ShouldBeNull();
+        scheduler.Arms.ShouldBeEmpty();
+        scheduler.Held.ShouldBeEmpty();
+    }
+
     /// <summary>Six failed passes do not exhaust recovery; the same hosted worker recovers without a restart.</summary>
     [Fact]
     public async Task PeriodicRecoveryContinuesPastLegacyAttemptBudgetAndRecoversReadiness()
