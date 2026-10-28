@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "3b28359c6d3c633999aa6992aab01479eaee19d8",
+  "deferredItemsClosed": 5,
+  "duplicateObservationsCountedOnce": true,
+  "reviewFindingsPatched": 7,
+  "reviewFindingsDeferred": 1,
+  "results": {
+    "integration": {
+      "passed": 157,
+      "failed": 0,
+      "skipped": 0,
+      "notRun": 0
+    },
+    "architecture": {
+      "passed": 66,
+      "failed": 0,
+      "skipped": 0,
+      "notRun": 0
+    },
+    "toolingBeforeReview": {
+      "passed": 87
+    },
+    "changedToolingModuleAfterReview": {
+      "passed": 11
+    }
+  },
+  "platformBaseline": {
+    "exitCode": 2,
+    "reason": "NU1605 package downgrades; no AppHost started",
+    "freshParityQualified": false
+  },
+  "sourceSha256": {
+    "scripts/tests/test_release_build_policy.py": "48be724a54169a0f0c519598fadf865c1acbc72a61918e2fc8df86bd21d5ded4",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs": "8e4373c20840e2e87df538c32e01cb08b69b4b1c2bb9c5f4018439fb98eb0f76",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "daf300ea20703df714ce61c9c8c4518eb15dab1eac9da47026363731e06e4f82",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedisHashSnapshot.cs": "e8e8fe52c2b0ba7b4f54e6338f771d0088deb430e6ada0fabd5e394b779631a3",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs": "e7797a943bcf7ca788fe119a558fb76fc9e11ed7dca2992ff0917c5b51a2a2ae",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs": "edd2e88c796c17347248035dd2a0d41742d8ed9cfc34bd4b259be7aa948adfe4",
+    "tests/Hexalith.Works.IntegrationTests/WorksSourceStreamReaderTests.cs": "b488be8e7bc4e5485742e254b7b0c118be997839bdcca070f04d3373db1f9436"
+  },
+  "artifactSha256": {
+    "architecture-build.log.gz": "c252f28634762d14bd01c321964b649e0bbbb9d2bb47ec3c6b88bdadc1cdf52e",
+    "architecture.log.gz": "54f6c2d5f6d938ae95d70fedd8e04348b37fff766d8f0d749ec1d1bb3638bf7e",
+    "architecture.xml.gz": "e14b34ff0fd15e557e20154296dc7e6797c59bbafcedce52b1395f9c8ffe4e4c",
+    "baseline.log.gz": "8f06645fcc23bcbfb1611d449d4ef68b6da2e9a6d4f41d8607531a9a269c5b4a",
+    "commitlint.log.gz": "e908d128a249e24ae45591b9efb68d8a181b08ae9eec95bebffe3b9154187209",
+    "final-build.log.gz": "52919202ed41b6568487dcadc2f5daade0df1406843d7fe3f1bd88d2e8b0be25",
+    "final-policy.log.gz": "9a3ca977fa0ee343cbed8b1ab9ff31a5da78b0748c29972d25fdd1e31a825aa1",
+    "final.log.gz": "cd269d59852c83acf461034aae13beec676b14593f625064962a3d3743130652",
+    "final.xml.gz": "d2e0e89570dfbfac07d3ce9e7dcc8587802389bb818d2a936834feb7511fb41c",
+    "inventory-diagnostic.log.gz": "bd00419e457643e7f13bf09673be66ba3abce769b485b79653c68b7d34bc1667",
+    "red.log.gz": "b7068b7427a718a26442b2d7a7a83228b3aa5111b8c9271d5880c2126a69cbb0",
+    "red.xml.gz": "415abcf39d621fbc1df137fe0ade6cfd8581f66a434ce4c3c496bc706f2fe077",
+    "tooling.log.gz": "be960b41337d1eb830914b86ec5cf85336d5886b1944f866c25420d68e6a1483"
+  }
+}

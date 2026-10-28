@@ -1554,6 +1554,8 @@ These four items were reconfirmed on the current production code. They do not op
 ## Deferred from: code review of spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works (2026-10-16)
 
 - `PackageVersion Remove` for Hexalith.EventStore.Contracts is gated on UseHexalithProjectReferences only (Directory.Packages.props:16-21); medium if true, unverified. Settle by a Debug restore with HexalithEventStoreFromSource=false and checking for NU1010.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — The conditional removal no longer exists. Executing Restore controls in both configurations and both inconsistent source/package directions refuse with HXW0001 before package resolution, with no NU1010. The later src/scripts observation below is the same item, counted once.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: "Supply published corrected EventStore producers or an approved exact-artifact CI feed before Story 4.16 public-producer acceptance."
@@ -1569,10 +1571,14 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - Legacy-to-SDK runtime handoff (outstanding Dapr date reminders, cascade checkpoints) when `UseSdkRuntime` flips; unverified medium — settle in Story 4.16 rollback proof.
 - `MapActorsHandlers()` skipped under SDK mode; unverified medium — confirm SDK maps actor endpoints.
 - `WorksProcessSourceCatalog` `sources.Add` duplicate-key `ArgumentException` outside per-tenant try; unverified medium — check control index duplicate/case-variant tenants.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — Executing real SDK control-index reads refuse duplicate, uppercase and case-paired tenant rows before the Works merge, retain the corrupt persisted evidence, and recover both healthy families after index repair. Existing per-family duplicate controls continue to retain incomplete scope while admitting a healthy tenant. No duplicate-suppression policy was introduced.
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src/scripts chunk 8679d7d..e7f67cd)
 
 - `WorksSourceStreamReader` raw-field budget pre-check omits `ProtectionMetadata`; unverified medium — confirm upstream envelope bound.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — The reader already applies SDK TryValidate before serialization and charges the entire serialized envelope to its cumulative budget. Six metadata field/count boundary controls refuse oversized input; a valid-metadata envelope succeeds at its exact encoded byte count and refuses one byte below it.
 - Partitioned rebuild accepts ordinal gaps in the partition inventory; unverified medium — confirm SDK contiguity guarantee.
   status: done 2026-10-23
   resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — SDK dispatch validates all authoritative ordinals and omits partitions for erased owners. An executing erased ordinal zero/live ordinal one rebuild commits only the surviving authoritative history; requiring contiguous Works partition ordinals would reject this valid SDK contract.
@@ -1580,7 +1586,11 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
   status: done 2026-10-23
   resolution: [spec-five-deferred-rebuild-admission.md](spec-five-deferred-rebuild-admission.md) — Both partition preparation APIs already call the bounded history serializer. Executing tests admit exactly 4 MiB as 64 complete pages and refuse one byte beyond that limit before finalization; SDK accumulation also preserves the accepted inventory, creates no owner scratch keys and retains the previous readable generation on refusal.
 - `WorksDomainEventProcessor` ignores `ProcessSource.Validate` ArgumentException (possible endless redelivery); unverified medium.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — The processor was removed at the SDK cutover. Current wakeup identity/source validation precedes persistence and does not catch ArgumentException. Nine foreign/reserved/malformed-context cases leave the actual store empty and reminders untouched; composition and architecture guards verify the retired processor remains absent. No transport retry policy changed.
 - `Directory.Packages.props` Contracts PackageVersion removal lacks `HexalithEventStoreFromSource` condition (possible NU1010); unverified medium — restore in mixed mode.
+  status: done 2026-10-28
+  resolution: Duplicate observation of the mixed-mode restore item above, counted once; see [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md). Current mixed modes fail explicitly with HXW0001 and the conditional PackageVersion removal no longer exists.
 - `Directory.Solution.targets` ignores `Targets`/`BuildProjectInSolution` metadata and may double-build; unverified low-medium — binlog.
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src-only pass)
@@ -1664,6 +1674,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Story 4.16 fleet-restore verification must account for captured Redis hash fields expiring before restore or verification.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — Capture retains exact hash fields and absolute deadlines. An atomic server-clock observation verifies only still-live captured fields, accepts disappearance when the last field expires, and retains exact bytes/deadlines and key/type/extra-field refusal. Real isolated Redis controls expire partial and complete hashes before restore and after restore, then reject changed, removed, deadline-altered, resurrected and wrong-type values. Both positive cases failed against the original helper. This focused helper qualification does not claim a fresh Platform parity run.
   evidence: P18-E2; WorksSdkProofRedis.RedisValueFingerprintAsync records exact hash members and HPEXPIRETIME deadlines, but VerifyRestoredRedisAsync skips only expired whole keys. A field legitimately expiring after capture changes the expected logical fingerprint and makes faithful restore fail. Only the explicit Platform branch and WorksPlatformFleetRestoreTests call this helper. Preserve still-live field bytes/deadlines and corruption detection while testing field expiration across capture/restore; Platform parity is a separate frozen-intent gate.
 
 ## Deferred from: code review of spec-4-15 (2026-10-18, post-review-patch delta)
@@ -2061,3 +2073,9 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 - source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-telemetry-boundaries.md`
   summary: Assess telemetry admission when a Platform project composes no OTLP keys (unverified medium).
   evidence: The pre-existing composition guard checks affected Platform-owned keys only; fixture-only OTLP keys are outside its overlap inventory and can bypass pair validation. The current canonical Platform capture lacking both keys was not demonstrated. Reproduce against an actual supported Platform composition with absent OTLP settings before broadening the guard from overlap protection to fixture-wide telemetry admission.
+
+## Deferred from: review of spec-five-deferred-recovery-admission (2026-10-28)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-recovery-admission.md`
+  summary: Qualify synthetic Redis capture when the last hash field expires during key acquisition (unverified medium).
+  evidence: Existing capture enumerates keys before separate DUMP/TTL/type reads. If the last field expires before DUMP or type acquisition, capture may refuse before the atomic hash observation. The selected P18-E2 correction qualifies fields present at capture that expire before restore or verification; it preserves fail-closed capture refusal. A deterministic command-gated real Redis control at those acquisition boundaries would establish whether expiry-aware capture retry or atomic whole-key acquisition is needed. No false capture pass or restored-state corruption was demonstrated.

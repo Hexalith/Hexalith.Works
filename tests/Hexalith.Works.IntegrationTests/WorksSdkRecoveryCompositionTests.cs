@@ -262,6 +262,11 @@ public sealed class WorksSdkRecoveryCompositionTests
     [InlineData("foreign-tenant")]
     [InlineData("foreign-aggregate")]
     [InlineData("reserved-tenant")]
+    [InlineData("blank-tenant")]
+    [InlineData("uppercase-tenant")]
+    [InlineData("blank-aggregate")]
+    [InlineData("invalid-aggregate")]
+    [InlineData("oversized-aggregate")]
     public async Task ForeignWakeupIdentityIsRefusedBeforeDiscovery(string scenario)
     {
         var store = new InMemoryReadModelStore();
@@ -270,8 +275,17 @@ public sealed class WorksSdkRecoveryCompositionTests
         var handler = new WorksRecoveryWakeupHandler<WorkItemCreated>(processes, reminders);
         string tenant = scenario == "reserved-tenant" ? "tenants" : "tenant-49";
         var created = new WorkItemCreated("work-49", 1, new TenantId(tenant), new WorkItemId("work-49"), new Obligation("synthetic"));
-        var context = new EventStoreDomainEventContext(scenario == "foreign-tenant" ? "foreign-tenant" : tenant,
-            scenario == "foreign-aggregate" ? "other-work" : "work-49", "01ARZ3NDEKTSV4RRFFQ69G5FAV", 1,
+        string contextTenant = scenario switch
+        {
+            "foreign-tenant" => "foreign-tenant", "blank-tenant" => "", "uppercase-tenant" => tenant.ToUpperInvariant(), _ => tenant,
+        };
+        string contextAggregate = scenario switch
+        {
+            "foreign-aggregate" => "other-work", "blank-aggregate" => "", "invalid-aggregate" => "invalid:aggregate",
+            "oversized-aggregate" => new string('x', 1_024), _ => "work-49",
+        };
+        var context = new EventStoreDomainEventContext(contextTenant,
+            contextAggregate, "01ARZ3NDEKTSV4RRFFQ69G5FAV", 1,
             DateTimeOffset.UnixEpoch, "correlation-49") { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
         await Should.ThrowAsync<InvalidOperationException>(() => handler.HandleAsync(created, context, TestContext.Current.CancellationToken));
         store.Count.ShouldBe(0);

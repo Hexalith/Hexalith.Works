@@ -62,6 +62,36 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
                 result = self.msbuild("-t:ValidateHexalithDependencyMode", "-p:Configuration=Release", *arguments)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
+    def test_restore_refuses_mixed_source_modes_before_package_resolution(self):
+        self.project = self.root / "Hexalith.Works.MixedMode.csproj"
+        self.project.write_text(
+            '<Project Sdk="Microsoft.NET.Sdk"><ItemGroup>'
+            '<PackageReference Remove="MinVer" />'
+            '<PackageReference Include="Works.Deliberately.Missing" Version="0.0.0" />'
+            '</ItemGroup></Project>')
+        feed = self.root / "empty-feed"
+        feed.mkdir()
+        for configuration in ("Debug", "Release"):
+            for source in ("true", "false"):
+                with self.subTest(configuration=configuration, source=source):
+                    opposite = "false" if source == "true" else "true"
+                    result = self.msbuild(
+                        "-t:Restore", f"-p:Configuration={configuration}",
+                        f"-p:UseHexalithProjectReferences={source}", f"-p:UseNuGetDeps={opposite}",
+                        f"-p:HexalithEventStoreFromSource={opposite}", "-p:NuGetAudit=false",
+                        f"-p:RestoreSources={feed}")
+                    self.assertNotEqual(0, result.returncode, result.stdout + result.stderr)
+                    self.assertIn("HXW0001", result.stdout)
+                    self.assertIn("HexalithEventStoreFromSource must agree", result.stdout)
+                    self.assertNotIn("NU1010", result.stdout + result.stderr)
+                    self.assertNotIn("NU1101", result.stdout + result.stderr)
+        control = self.msbuild("-t:Restore", "-p:Configuration=Debug", "-p:NuGetAudit=false",
+                               f"-p:RestoreSources={feed}")
+        self.assertNotEqual(0, control.returncode)
+        self.assertIn("NU1101", control.stdout + control.stderr)
+        self.assertIn("Works.Deliberately.Missing", control.stdout + control.stderr)
+        self.assertNotIn("HXW0001", control.stdout + control.stderr)
+
     def test_release_refuses_ambient_and_command_line_drift(self):
         for version in ("0.0.1", f"{PIN}-unqualified"):
             for ambient in (True, False):

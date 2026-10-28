@@ -3,6 +3,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Contracts.Events;
+using Hexalith.EventStore.Contracts.Security;
 using Hexalith.EventStore.Contracts.Streams;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
@@ -22,6 +23,101 @@ public sealed class WorksSourceStreamReaderTests
 {
     private const string Tenant = "tenant-415";
     private const string Item = "work-415";
+
+    /// <summary>Metadata has bounded fields before encoding and spends the complete serialized context budget.</summary>
+    [Theory]
+    [InlineData("scheme")]
+    [InlineData("alias")]
+    [InlineData("hint")]
+    [InlineData("flags")]
+    [InlineData("flag-key")]
+    [InlineData("flag-value")]
+    [InlineData("valid")]
+    public async Task ProtectionMetadataIsBoundedBeforeContextAdmission(string scenario)
+    {
+        var metadata = EventStorePayloadProtectionMetadata.Unprotected() with
+        { Scheme = "bounded-scheme", KeyAlias = "bounded-alias", ContentHint = "application/json" };
+        metadata = scenario switch
+        {
+            "scheme" => metadata with { Scheme = new string('x', EventStorePayloadProtectionMetadata.MaxSchemeLength + 1) },
+            "alias" => metadata with { KeyAlias = new string('x', EventStorePayloadProtectionMetadata.MaxKeyAliasLength + 1) },
+            "hint" => metadata with { ContentHint = new string('x', EventStorePayloadProtectionMetadata.MaxContentHintLength + 1) },
+            "flags" => metadata with { CompatibilityFlags = Enumerable.Range(0, EventStorePayloadProtectionMetadata.MaxCompatibilityFlagCount + 1)
+                .ToDictionary(index => "flag" + index, _ => "value") },
+            "flag-key" => metadata with { CompatibilityFlags = new Dictionary<string, string>
+                { [new string('x', EventStorePayloadProtectionMetadata.MaxCompatibilityFlagKeyLength + 1)] = "value" } },
+            "flag-value" => metadata with { CompatibilityFlags = new Dictionary<string, string>
+                { ["flag"] = new string('x', EventStorePayloadProtectionMetadata.MaxCompatibilityFlagValueLength + 1) } },
+            _ => metadata,
+        };
+        StreamReadPage page = Story48Streams.Page(Tenant, Item,
+            new WorkItemCreated(Item, 1, new TenantId(Tenant), new WorkItemId(Item), new Obligation("proof")));
+        page = page with { Events = [page.Events[0] with { ProtectionMetadata = metadata }] };
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
+        int encodedBytes = JsonSerializer.SerializeToUtf8Bytes(page.Events[0]).Length;
+        var options = new WorksRecoveryOptions { MaxContextBytes = encodedBytes };
+        if (scenario != "valid")
+        {
+            (await Should.ThrowAsync<InvalidOperationException>(() => new WorksSourceStreamReader(gateway, Options.Create(options))
+                .ReadAsync(Tenant, Item, TestContext.Current.CancellationToken))).Message.ShouldContain("protection metadata");
+            return;
+        }
+        (await new WorksSourceStreamReader(gateway, Options.Create(options)).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken))
+            .ShouldHaveSingleItem().Envelope.ProtectionMetadata.ShouldBe(metadata);
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions { MaxContextBytes = encodedBytes - 1 }))
+            .ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>An oversized dictionary is refused by count before a serializer can enumerate its contents.</summary>
+    [Fact]
+    public async Task OversizedProtectionMetadataIsNeverEnumeratedForSerialization()
+    {
+        var flags = Substitute.For<IReadOnlyDictionary<string, string>>();
+        flags.Count.Returns(EventStorePayloadProtectionMetadata.MaxCompatibilityFlagCount + 1);
+        flags.GetEnumerator().Returns(_ => throw new InvalidOperationException("Metadata was enumerated before admission."));
+        StreamReadPage page = Story48Streams.Page(Tenant, Item,
+            new WorkItemCreated(Item, 1, new TenantId(Tenant), new WorkItemId(Item), new Obligation("proof")));
+        page = page with { Events = [page.Events[0] with
+            { ProtectionMetadata = EventStorePayloadProtectionMetadata.Unprotected() with { CompatibilityFlags = flags } }] };
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(page);
+        (await Should.ThrowAsync<InvalidOperationException>(() => new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions())).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken)))
+            .Message.ShouldBe("Works source protection metadata is unsupported.");
+    }
+
+    /// <summary>Every encoded envelope spends one cumulative budget across same-page and multi-page evidence.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ProtectionMetadataSpendsCumulativeBudgetAcrossEnvelopesAndPages(bool paged)
+    {
+        var metadata = EventStorePayloadProtectionMetadata.Unprotected() with { Scheme = "bounded-scheme", KeyAlias = "bounded-alias" };
+        StreamReadPage combined = Story48Streams.Page(Tenant, Item,
+            new WorkItemCreated(Item, 1, new TenantId(Tenant), new WorkItemId(Item), new Obligation("proof")),
+            new WorkItemQueued(Item, 2, new TenantId(Tenant), new WorkItemId(Item)));
+        combined = combined with { Events = [.. combined.Events.Select(envelope => envelope with { ProtectionMetadata = metadata })] };
+        var gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            if (!paged) return combined;
+            bool first = call.Arg<StreamReadRequest>().FromSequence == 0;
+            return combined with
+            {
+                Events = [combined.Events[first ? 0 : 1]],
+                Metadata = combined.Metadata with
+                { FromSequence = first ? 0 : 1, EventCount = 1, LastSequenceReturned = first ? 1 : 2, IsTruncated = first },
+            };
+        });
+        int total = combined.Events.Sum(envelope => JsonSerializer.SerializeToUtf8Bytes(envelope).Length);
+        combined.Events.All(envelope => JsonSerializer.SerializeToUtf8Bytes(envelope).Length < total - 1).ShouldBeTrue();
+        var exact = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions { MaxContextBytes = total }));
+        (await exact.ReadAsync(Tenant, Item, TestContext.Current.CancellationToken)).Count.ShouldBe(2);
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(() => new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions { MaxContextBytes = total - 1 })).ReadAsync(Tenant, Item, TestContext.Current.CancellationToken));
+    }
 
     /// <summary>No state-changing catalog event is admissible before the first creation.</summary>
     [Fact]

@@ -9,6 +9,71 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Actual isolated Redis restore preserves complete values, expiry and captured authority.</summary>
 public sealed class WorksPlatformFleetRestoreTests
 {
+    /// <summary>Captured hash fields may expire before restore or verification without hiding live-field corruption.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task HashFieldExpirationAcrossRestorePreservesLiveEvidence(bool expireBeforeRestore)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        WorksSdkProofRedis fixture = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
+        await using var ownedFixture = fixture.ConfigureAwait(true);
+        using ConnectionMultiplexer connection = await ConnectionMultiplexer.ConnectAsync(fixture.RedisEndpoint).ConfigureAwait(true);
+        IDatabase database = connection.GetDatabase();
+        await database.HashSetAsync("partial-expiry", [new("short", "expires"), new("persistent", new byte[] { 0, 128, 255 }),
+            new("long", "retained")]).ConfigureAwait(true);
+        await database.HashSetAsync("complete-expiry", "short", "expires").ConfigureAwait(true);
+        long deadline = DateTimeOffset.UtcNow.AddSeconds(8).ToUnixTimeMilliseconds();
+        long retainedDeadline = deadline + 1_800_000;
+        await database.StringSetAsync("whole-expiry", "expires", TimeSpan.FromSeconds(8)).ConfigureAwait(true);
+        await database.ExecuteAsync("HPEXPIREAT", "partial-expiry", deadline, "FIELDS", 1, "short").ConfigureAwait(true);
+        await database.ExecuteAsync("HPEXPIREAT", "complete-expiry", deadline, "FIELDS", 1, "short").ConfigureAwait(true);
+        await database.ExecuteAsync("HPEXPIREAT", "partial-expiry", retainedDeadline, "FIELDS", 1, "long").ConfigureAwait(true);
+        await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+        (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeTrue("Capture must retain the short-lived field.");
+        if (!expireBeforeRestore)
+        {
+            await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+            (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeTrue("This case must restore before expiration.");
+        }
+        TimeSpan wait = DateTimeOffset.FromUnixTimeMilliseconds(deadline).AddMilliseconds(100) - DateTimeOffset.UtcNow;
+        if (wait > TimeSpan.Zero) await Task.Delay(wait, ct).ConfigureAwait(true);
+        if (expireBeforeRestore) await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+        await fixture.VerifyRestoredRedisAsync(ct).ConfigureAwait(true);
+        (await database.KeyExistsAsync("whole-expiry").ConfigureAwait(true)).ShouldBeFalse();
+        (await database.HashGetAllAsync("complete-expiry").ConfigureAwait(true)).ShouldBeEmpty();
+        (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeFalse();
+        (await database.HashGetAsync("partial-expiry", "persistent").ConfigureAwait(true)).ShouldBe((RedisValue)new byte[] { 0, 128, 255 });
+        foreach (string mutation in new[] { "value", "removed", "deadline", "resurrected", "resurrected-key", "type" })
+        {
+            await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+            switch (mutation)
+            {
+                case "value": await database.HashSetAsync("partial-expiry", "persistent", "corrupt").ConfigureAwait(true); break;
+                case "removed": await database.HashDeleteAsync("partial-expiry", "long").ConfigureAwait(true); break;
+                case "deadline": await database.ExecuteAsync("HPERSIST", "partial-expiry", "FIELDS", 1, "long").ConfigureAwait(true); break;
+                case "resurrected": await database.HashSetAsync("partial-expiry", "short", "expires").ConfigureAwait(true); break;
+                case "resurrected-key": await database.HashSetAsync("complete-expiry", "unexpected", "resurrected").ConfigureAwait(true); break;
+                case "type":
+                    await database.KeyDeleteAsync("partial-expiry").ConfigureAwait(true);
+                    await database.StringSetAsync("partial-expiry", "wrong-type").ConfigureAwait(true);
+                    break;
+            }
+            await Should.ThrowAsync<InvalidOperationException>(() => fixture.VerifyRestoredRedisAsync(ct)).ConfigureAwait(true);
+        }
+    }
+
+    /// <summary>Captured fields retain Redis 7.4's inclusive visibility at their exact read deadline.</summary>
+    [Fact]
+    public void HashFieldDeadlineEqualityPreservesCapturedVisibility()
+    {
+        const long deadline = 1_000;
+        var snapshot = new WorksSdkProofRedisHashSnapshot("hash", deadline - 1,
+            [(new HashEntry("field", "value"), deadline), (new HashEntry("persistent", "kept"), -1)]);
+        snapshot.LiveFieldsAt(deadline).Select(field => field.Entry.Name).ShouldBe([(RedisValue)"field", "persistent"]);
+        snapshot.LiveFieldsAt(deadline + 1).ShouldHaveSingleItem().Entry.ShouldBe(new HashEntry("persistent", "kept"));
+    }
+
     /// <summary>Initial component capture binds only Platform's synthetic Redis endpoint.</summary>
     [Fact]
     public void InitialComponentCapturePreservesTextAndBindsOnlyTheSelectedEndpoint()

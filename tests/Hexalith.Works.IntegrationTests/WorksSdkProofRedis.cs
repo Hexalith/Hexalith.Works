@@ -12,6 +12,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     private bool _redisStarted;
     private bool _volumeCreated;
     private Dictionary<string, (byte[] Dump, DateTimeOffset? ExpiresAt, string Fingerprint)>? _snapshot;
+    private readonly Dictionary<string, WorksSdkProofRedisHashSnapshot> _hashSnapshots = new(StringComparer.Ordinal);
     private Dictionary<string, byte[]>? _files;
     private Dictionary<string, UnixFileMode>? _fileModes;
     private string? _schedulerInventory;
@@ -199,13 +200,24 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
         IDatabase database = redis.GetDatabase();
         _snapshot = new(StringComparer.Ordinal);
+        _hashSnapshots.Clear();
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
         {
             byte[] dump = await database.KeyDumpAsync(key).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("The stopped synthetic fleet changed during capture.");
             TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
+            string fingerprint;
+            if (await database.KeyTypeAsync(key).ConfigureAwait(false) == RedisType.Hash)
+            {
+                WorksSdkProofRedisHashSnapshot hash = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
+                if (hash.Type == "none") continue; // Every field expired during capture.
+                if (hash.Type != "hash") throw new InvalidOperationException("The stopped synthetic hash changed type during capture.");
+                _hashSnapshots.Add(key.ToString(), hash);
+                fingerprint = HashFingerprint(hash.Fields);
+            }
+            else fingerprint = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
             _snapshot.Add(key.ToString(), (dump, remaining is null ? null : DateTimeOffset.UtcNow + remaining,
-                await RedisValueFingerprintAsync(database, key).ConfigureAwait(false)));
+                fingerprint));
         }
         _files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(directory, path), File.ReadAllBytes, StringComparer.Ordinal);
@@ -307,9 +319,20 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (expiresAt <= DateTimeOffset.UtcNow) continue;
-            string actual = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
+            string expected = fingerprint;
+            string actual;
+            if (_hashSnapshots.TryGetValue(key, out WorksSdkProofRedisHashSnapshot? captured))
+            {
+                WorksSdkProofRedisHashSnapshot observed = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
+                var live = captured.LiveFieldsAt(observed.ObservedAt);
+                if (live.Length == 0 && observed.Type == "none") continue;
+                if (observed.Type != "hash") throw new InvalidOperationException("A restored synthetic hash changed type or disappeared.");
+                expected = HashFingerprint(live);
+                actual = HashFingerprint(observed.Fields);
+            }
+            else actual = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
             if (expiresAt <= DateTimeOffset.UtcNow) continue;
-            if (actual != fingerprint)
+            if (actual != expected)
                 throw new InvalidOperationException("A restored synthetic value or type differs from its backup; key SHA256="
                     + Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key))));
             TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
@@ -318,43 +341,46 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
                 throw new InvalidOperationException("A restored synthetic expiry differs from its backup.");
         }
         HashSet<string> actualKeys = redis.GetServer(RedisEndpoint).Keys().Select(key => key.ToString()).ToHashSet(StringComparer.Ordinal);
-        foreach (string key in actualKeys.ToArray())
-            if (_snapshot.TryGetValue(key, out var entry) && entry.ExpiresAt <= DateTimeOffset.UtcNow
-                && !await database.KeyExistsAsync(key).ConfigureAwait(false)) actualKeys.Remove(key);
-        HashSet<string> expectedKeys = _snapshot.Where(pair => pair.Value.ExpiresAt is null || pair.Value.ExpiresAt > DateTimeOffset.UtcNow)
+        HashSet<string> expectedKeys = _snapshot.Where(pair => pair.Value.ExpiresAt is null || pair.Value.ExpiresAt >= DateTimeOffset.UtcNow)
             .Select(pair => pair.Key).ToHashSet(StringComparer.Ordinal);
+        foreach ((string key, WorksSdkProofRedisHashSnapshot captured) in _hashSnapshots)
+        {
+            WorksSdkProofRedisHashSnapshot observed = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
+            if (captured.LiveFieldsAt(observed.ObservedAt).Length != 0) continue;
+            expectedKeys.Remove(key);
+            // Redis can retain an empty physical hash until active field-expiry cleanup. Re-observe
+            // its logical contents; never suppress a resurrected field, wrong type or unknown key.
+            if (observed.Type == "none" || (observed.Type == "hash" && observed.Fields.Length == 0)) actualKeys.Remove(key);
+        }
+        // The hash observations await Redis. Use one later clock observation for both whole-key
+        // inventories so a TTL crossing those round trips cannot leave a stale expected key.
+        DateTimeOffset inventoryObservedAt = DateTimeOffset.UtcNow;
+        expectedKeys.RemoveWhere(key => _snapshot[key].ExpiresAt <= inventoryObservedAt);
+        foreach (string key in actualKeys.ToArray())
+            if (_snapshot.TryGetValue(key, out var entry) && entry.ExpiresAt <= inventoryObservedAt
+                && !await database.KeyExistsAsync(key).ConfigureAwait(false)) actualKeys.Remove(key);
         if (!actualKeys.SetEquals(expectedKeys) || await database.KeyExistsAsync("story416:post-snapshot-sentinel").ConfigureAwait(false))
-            throw new InvalidOperationException("The full synthetic Redis restore did not reproduce its key inventory.");
+            throw new InvalidOperationException("The full synthetic Redis restore did not reproduce its key inventory. Missing key SHA256: "
+                + string.Join(",", expectedKeys.Except(actualKeys).Select(key => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key)))))
+                + "; unexpected key SHA256: "
+                + string.Join(",", actualKeys.Except(expectedKeys).Select(key => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key))))));
     }
 
     /// <summary>Hashes all exact value bytes, canonicalizing only unordered Redis hashes and sets.</summary>
     internal static async Task<string> RedisValueFingerprintAsync(IDatabase database, RedisKey key)
     {
         RedisType type = await database.KeyTypeAsync(key).ConfigureAwait(false);
+        if (type == RedisType.Hash)
+        {
+            WorksSdkProofRedisHashSnapshot hash = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
+            if (hash.Type != "hash") throw new InvalidOperationException("A synthetic hash expired or changed type during observation.");
+            return HashFingerprint(hash.Fields);
+        }
         using var bytes = new MemoryStream();
         using (var writer = new BinaryWriter(bytes, System.Text.Encoding.UTF8, leaveOpen: true))
         {
             writer.Write(type.ToString());
-            if (type == RedisType.Hash)
-            {
-                HashEntry[] entries = [.. (await database.HashGetAllAsync(key).ConfigureAwait(false))
-                    .OrderBy(entry => Convert.ToBase64String((byte[])entry.Name!), StringComparer.Ordinal)];
-                object[] arguments = new object[entries.Length + 3];
-                arguments[0] = key;
-                arguments[1] = "FIELDS";
-                arguments[2] = entries.Length;
-                for (int index = 0; index < entries.Length; index++) arguments[index + 3] = entries[index].Name;
-                RedisResult[] deadlines = (RedisResult[]?)await database.ExecuteAsync("HPEXPIRETIME", arguments).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException("Redis did not report captured hash-field deadlines.");
-                if (deadlines.Length != entries.Length) throw new InvalidOperationException("The captured hash changed during expiry inspection.");
-                for (int index = 0; index < entries.Length; index++)
-                {
-                    WriteValue(writer, entries[index].Name);
-                    WriteValue(writer, entries[index].Value);
-                    writer.Write((long)deadlines[index]);
-                }
-            }
-            else if (type == RedisType.Set)
+            if (type == RedisType.Set)
             {
                 RedisValue[] members = await database.SetMembersAsync(key).ConfigureAwait(false);
                 foreach (RedisValue member in members.OrderBy(member => Convert.ToBase64String((byte[])member!), StringComparer.Ordinal))
@@ -371,6 +397,58 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             }
         }
         return Convert.ToHexString(SHA256.HashData(bytes.ToArray()));
+    }
+
+    private static string HashFingerprint(IEnumerable<(HashEntry Entry, long ExpiresAt)> fields)
+    {
+        using var bytes = new MemoryStream();
+        using (var writer = new BinaryWriter(bytes, System.Text.Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write(RedisType.Hash.ToString());
+            foreach (var field in fields.OrderBy(field => Convert.ToBase64String((byte[])field.Entry.Name!), StringComparer.Ordinal))
+            {
+                WriteValue(writer, field.Entry.Name);
+                WriteValue(writer, field.Entry.Value);
+                writer.Write(field.ExpiresAt);
+            }
+        }
+        return Convert.ToHexString(SHA256.HashData(bytes.ToArray()));
+    }
+
+    private static async Task<WorksSdkProofRedisHashSnapshot> ReadHashSnapshotAsync(IDatabase database, RedisKey key)
+    {
+        // Redis freezes expiry time for a script. The values, deadlines and server clock therefore
+        // describe one observation even when a field expires at this boundary.
+        const string script = """
+            local t = redis.call('TIME')
+            local kind = redis.call('TYPE', KEYS[1]).ok
+            local result = {kind, t[1] * 1000 + math.floor(t[2] / 1000)}
+            if kind == 'hash' then
+                local fields = redis.call('HGETALL', KEYS[1])
+                for i = 1, #fields, 2 do
+                    local expiry = redis.call('HPEXPIRETIME', KEYS[1], 'FIELDS', 1, fields[i])[1]
+                    -- Redis 7.4 listpack expiry lookup reports missing at equality although
+                    -- HGETALL retains that field. Atomic visibility pins its deadline to now.
+                    if expiry == -2 then expiry = result[2] end
+                    table.insert(result, fields[i])
+                    table.insert(result, fields[i + 1])
+                    table.insert(result, expiry)
+                end
+            end
+            return result
+            """;
+        RedisResult[] result = (RedisResult[]?)await database.ExecuteAsync("EVAL", script, 1, key).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Redis did not report an atomic hash snapshot.");
+        if (result.Length < 2 || (result.Length - 2) % 3 != 0)
+            throw new InvalidOperationException("Redis reported an invalid hash snapshot.");
+        var fields = new (HashEntry Entry, long ExpiresAt)[(result.Length - 2) / 3];
+        for (int index = 0; index < fields.Length; index++)
+        {
+            int offset = 2 + index * 3;
+            fields[index] = (new HashEntry((byte[])result[offset]!, (byte[])result[offset + 1]!), (long)result[offset + 2]);
+            if (fields[index].ExpiresAt < -1) throw new InvalidOperationException("A synthetic hash field expired during atomic observation.");
+        }
+        return new WorksSdkProofRedisHashSnapshot((string)result[0]!, (long)result[1], fields);
     }
 
     private static void WriteValue(BinaryWriter writer, RedisValue value)

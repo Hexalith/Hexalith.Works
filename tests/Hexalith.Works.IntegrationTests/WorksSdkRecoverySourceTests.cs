@@ -35,6 +35,41 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Exercises recovery sources against the SDK-owned runtime family and control index.</summary>
 public sealed class WorksSdkRecoverySourceTests
 {
+    /// <summary>The SDK refuses malformed global membership before duplicate source keys can escape.</summary>
+    [Theory]
+    [InlineData("duplicate")]
+    [InlineData("uppercase")]
+    [InlineData("case-pair")]
+    public async Task InvalidControlIndexTenantsAreRefusedBeforeCatalogMerge(string corruption)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "member", Suspended(TenantA, "member"));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        string key = "shared-control-index:" + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeControlIndex)));
+        var original = (await store.GetAsync<Dictionary<string, JsonElement>>(WorksReadModelKeys.StateStoreName, key, ct)).Value!;
+        string[] tenants = corruption switch
+        {
+            "duplicate" => [TenantA, TenantA, TenantB],
+            "uppercase" => [TenantA.ToUpperInvariant(), TenantB],
+            _ => [TenantA, TenantA.ToUpperInvariant(), TenantB],
+        };
+        var invalid = new Dictionary<string, JsonElement>(original)
+        { ["tenantIds"] = JsonSerializer.SerializeToElement(tenants) };
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, invalid, ct);
+        var error = await Should.ThrowAsync<InvalidOperationException>(() =>
+            new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(store, store)).ListAsync(null, 256, ct));
+        error.Message.ShouldContain("control-index state is invalid");
+        (await store.GetAsync<Dictionary<string, JsonElement>>(WorksReadModelKeys.StateStoreName, key, ct)).Value!["tenantIds"]
+            .GetRawText().ShouldBe(invalid["tenantIds"].GetRawText());
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, original, ct);
+        var repaired = await new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(store, store)).ListAsync(null, 256, ct);
+        repaired.IsIncomplete.ShouldBeFalse();
+        repaired.Sources.Select(source => source.Tenant).ShouldBe([TenantA, TenantB]);
+    }
+
     /// <summary>New SDK catalogs retain partial evidence across conflict/parking while healthy tenants advance after reconstruction.</summary>
     [Theory]
     [InlineData(false)]
