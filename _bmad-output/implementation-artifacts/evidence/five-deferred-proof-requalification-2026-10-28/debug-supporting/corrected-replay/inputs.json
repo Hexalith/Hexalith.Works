@@ -1,0 +1,30 @@
+{
+  "replaySha256": "2859b141b37b909dd294591fa402a3c5ad03986785856344870c7fe7fb58729b",
+  "selectorSha256": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+  "classes": [
+    "WorksSdkPartitionedRebuildTests",
+    "WorksSdkProjectionQueryTests",
+    "WorkItemSharedProjectionRebuildHandlerTests",
+    "WorksSdkProtectedHttpTests",
+    "WorksQueryPolicyDeadlineTests",
+    "WorksSdkProofRedisOwnershipTests",
+    "WorksPlatformDispositionProbeTests",
+    "WorksPlatformSelectedSdkPathsTests",
+    "WorksPlatformFleetRestoreTests",
+    "WorksAppHostDiscoveryIsolationTests",
+    "WorksPlatformHostingCompositionTests",
+    "WorksPlatformTelemetryCollectorTests",
+    "WorksPlatformIdentityFixtureTests",
+    "WorksPlatformCompositionGuardTests",
+    "WorksAppHostSelectionTests",
+    "WorksSdkPackageContractTests"
+  ],
+  "method": "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests.PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied",
+  "sourceFlags": [
+    "-p:UseHexalithProjectReferences=true",
+    "-p:UseNuGetDeps=false",
+    "-p:HexalithEventStoreFromSource=true",
+    "-p:HexalithPolymorphicSerializationsFromSource=true"
+  ],
+  "originalSourceSha256": "7c6392201cc942bfdb50ead0a97aa66dd6cff35f61dfbf95f972cba3c884cee8"
+}

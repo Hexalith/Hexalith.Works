@@ -1,0 +1,28 @@
+{
+  "integration": {
+    "total": "379",
+    "passed": "379",
+    "failed": "0",
+    "skipped": "0",
+    "not-run": "0",
+    "time": "144.322"
+  },
+  "selectedClassCount": 21,
+  "architecture": 43,
+  "tooling": 96,
+  "platformInputControls": 19,
+  "inputControlMethods": 9,
+  "reviewFindingsPatched": 10,
+  "newReviewDeferrals": 0,
+  "platformStartup": {
+    "exitCode": 2,
+    "blocker": "NU1605 package downgrades"
+  },
+  "correctedDebugReplay": {
+    "supportingPassed": 345,
+    "baselineMethodPassed": 1,
+    "mutantExpectedFailure": 1,
+    "ordinaryOutputEntriesUnchanged": 562,
+    "xmlPathControlsPassed": 3
+  }
+}

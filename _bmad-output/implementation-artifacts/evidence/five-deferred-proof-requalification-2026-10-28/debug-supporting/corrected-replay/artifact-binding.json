@@ -1,0 +1,8 @@
+{
+  "ordinaryFiles": 515,
+  "ordinaryDirectories": 47,
+  "ordinaryInventorySha256": "1b94d1fcd27955d776ac2e31c5a2e5768a3992bf1c354fe9fd84d1bc6d1c953a",
+  "baselineAssemblySha256": "b2bb6d16965865a29bcec7d4a4a4d0bcd201a84845613556c30463a4bfefab16",
+  "mutantAssemblySha256": "1932e824b689458029bd463d07187c647b4bd426a56286aa72bf2e4502ec7c8b",
+  "replaySha256": "2859b141b37b909dd294591fa402a3c5ad03986785856344870c7fe7fb58729b"
+}

@@ -1,0 +1,21 @@
+{
+  "command": [
+    "dotnet",
+    "build",
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "--configuration",
+    "Debug",
+    "--artifacts-path",
+    "/tmp/works-five-proof-debug-corrected-replay-2/mutation-artifacts",
+    "-m:1",
+    "--nologo",
+    "-p:UseHexalithProjectReferences=true",
+    "-p:UseNuGetDeps=false",
+    "-p:HexalithEventStoreFromSource=true",
+    "-p:HexalithPolymorphicSerializationsFromSource=true",
+    "-p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+    "-p:HexalithPolymorphicSerializationsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+    "-p:CustomAfterMicrosoftCommonTargets=/tmp/works-five-proof-debug-corrected-replay-2/mutation.targets"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works"
+}

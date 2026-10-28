@@ -1,0 +1,47 @@
+{
+  "supporting": {
+    "total": 345,
+    "passed": 345,
+    "failed": 0,
+    "skipped": 0,
+    "notRun": 0,
+    "seconds": "149.385",
+    "startedAt": "2026-10-28T10:20:40.6016653+00:00",
+    "finishedAt": "2026-10-28T10:23:09.9783731+00:00",
+    "classCounts": {
+      "Hexalith.Works.IntegrationTests.WorkItemSharedProjectionRebuildHandlerTests": 28,
+      "Hexalith.Works.IntegrationTests.WorksAppHostDiscoveryIsolationTests": 20,
+      "Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests": 27,
+      "Hexalith.Works.IntegrationTests.WorksPlatformCompositionGuardTests": 13,
+      "Hexalith.Works.IntegrationTests.WorksPlatformDispositionProbeTests": 34,
+      "Hexalith.Works.IntegrationTests.WorksPlatformFleetRestoreTests": 21,
+      "Hexalith.Works.IntegrationTests.WorksPlatformHostingCompositionTests": 13,
+      "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests": 1,
+      "Hexalith.Works.IntegrationTests.WorksPlatformSelectedSdkPathsTests": 9,
+      "Hexalith.Works.IntegrationTests.WorksPlatformTelemetryCollectorTests": 7,
+      "Hexalith.Works.IntegrationTests.WorksQueryPolicyDeadlineTests": 23,
+      "Hexalith.Works.IntegrationTests.WorksSdkPackageContractTests": 2,
+      "Hexalith.Works.IntegrationTests.WorksSdkPartitionedRebuildTests": 4,
+      "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests": 46,
+      "Hexalith.Works.IntegrationTests.WorksSdkProofRedisOwnershipTests": 6,
+      "Hexalith.Works.IntegrationTests.WorksSdkProtectedHttpTests": 91
+    },
+    "assemblySha256AtLaunch": "1997c1476064e57b1f9922b36de4bbfdc0d2c9f5fc34a1ed2d893e8f313a5037",
+    "ordinaryOutputUpdatedAfterRunAt": "2026-10-28T10:23:55.405687+00:00",
+    "ordinaryOutputUpdatedAfterRunSha256": "b1d031b480c9740e59de3aa98b5c35fbc05512b3817a73fa7f9e8419cf6dc23f"
+  },
+  "mutation": {
+    "buildExitCode": 0,
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "testExitCode": 1,
+    "total": 1,
+    "failed": 1,
+    "skipped": 0,
+    "notRun": 0,
+    "method": "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests.PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied",
+    "marker": "controlled-debug-runtime-mutation",
+    "scope": "Existing assertion replaced only under #if DEBUG; temporary source and MSBuild Compile replacement; separate artifacts root."
+  },
+  "claims": "Focused Debug supporting runtime qualification and sensitivity only; no fresh complete Platform parity run and no change to upstream canonical gate requirements. Baseline outputs were subsequently replaced by parent final source build, after the supporting run ended; this subtask did not rebuild or mutate ordinary outputs."
+}

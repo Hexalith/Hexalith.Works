@@ -1,0 +1,18 @@
+{
+  "command": [
+    "dotnet",
+    "build",
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "--configuration",
+    "Debug",
+    "--artifacts-path",
+    "/tmp/works-five-proof-debug-corrected-replay/baseline-artifacts",
+    "-m:1",
+    "--nologo",
+    "-p:UseHexalithProjectReferences=true",
+    "-p:UseNuGetDeps=false",
+    "-p:HexalithEventStoreFromSource=true",
+    "-p:HexalithPolymorphicSerializationsFromSource=true"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works"
+}

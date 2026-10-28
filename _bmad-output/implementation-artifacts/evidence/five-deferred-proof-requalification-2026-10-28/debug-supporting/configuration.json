@@ -1,0 +1,8 @@
+{
+  "Properties": {
+    "DefineConstants": "TRACE;DEBUG",
+    "UseHexalithProjectReferences": "true",
+    "UseNuGetDeps": "false",
+    "HexalithEventStoreFromSource": "true"
+  }
+}

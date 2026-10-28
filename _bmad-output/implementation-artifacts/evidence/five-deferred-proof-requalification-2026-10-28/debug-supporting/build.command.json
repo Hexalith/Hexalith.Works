@@ -1,0 +1,15 @@
+{
+  "command": [
+    "dotnet",
+    "build",
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "--configuration",
+    "Debug",
+    "--artifacts-path",
+    "/tmp/works-five-proof-debug-mutation/artifacts",
+    "-m:1",
+    "--nologo",
+    "-p:CustomAfterMicrosoftCommonTargets=/tmp/works-five-proof-debug-mutation/mutation.targets"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works"
+}

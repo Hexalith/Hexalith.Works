@@ -1,0 +1,42 @@
+using System.Net;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
+
+using Hexalith.EventStore.Contracts.Queries;
+using Hexalith.Parties.Client;
+using Hexalith.Parties.Contracts.Queries;
+using Hexalith.Parties.Contracts.ValueObjects;
+
+using Shouldly;
+
+namespace Hexalith.Works.IntegrationTests;
+
+/// <summary>Checks the synthetic authority over real HTTP using the published Parties client.</summary>
+public sealed class WorksPlatformIdentityFixtureTests
+{
+    /// <summary>Only an authenticated exact current subject is resolved through the published transport.</summary>
+    [Fact]
+    public async Task PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied()
+    {
+        const string tenant = "sdk416-identity-fixture";
+        const string party = "party-416-executor";
+        const string actor = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
+        WorksPlatformIdentityFixture fixture = await WorksPlatformIdentityFixture.StartAsync(tenant, party, actor, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        await using var cleanup = fixture.ConfigureAwait(true);
+        using HttpClient authenticated = new() { BaseAddress = fixture.Endpoint };
+        authenticated.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", fixture.ServiceBearer);
+        var client = new HttpPartiesIdentityClient(authenticated);
+        var result = await client.ResolvePartyIdentityAsync(tenant, new ResolvePartyIdentity(tenant, party, actor), TestContext.Current.CancellationToken);
+        result.Outcome.ShouldBe(PartyIdentityOutcome.Resolved);
+        result.Evidence.ShouldNotBeNull().HumanBinding.ShouldNotBeNull().ActorId.ShouldBe(actor);
+        result.Evidence.TenantId.ShouldBe(tenant);
+        result.Evidence.PartyId.ShouldBe(party);
+        fixture.Calls.ShouldBe(1);
+        using HttpClient anonymous = new() { BaseAddress = fixture.Endpoint };
+        using HttpResponseMessage denied = await anonymous.PostAsJsonAsync("api/v1/queries", new SubmitQueryRequest(tenant, "party", party,
+            typeof(ResolvePartyIdentity).FullName!, Payload: JsonSerializer.SerializeToElement(new ResolvePartyIdentity(tenant, party, actor))), TestContext.Current.CancellationToken);
+        denied.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
+        fixture.Calls.ShouldBe(1);
+    }
+}

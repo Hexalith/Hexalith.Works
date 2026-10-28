@@ -150,3 +150,11 @@ Property 3/3; non-smoke Integration 287/287; topology 14/14; reminder live class
 no skips; command live 1/1 in 105.366 seconds; cascade class 18/18 in 332.959 seconds, no skips.
 `dapr --version` reported CLI 1.18.0/runtime 1.18.3, and
 `aspire ps --format Json --non-interactive` returned `[]` after the live runs.
+
+## Deferred-work reconciliation — 2026-10-28
+
+The frozen `catalog 37` constraint and original verification bullet describe this story's historical starting catalog; they are not the current catalog count. Concurrent Story 1.5 added three types, bringing `WorkItemV1Catalog.Count` to 40. Story 4.8 added no durable polymorphic types. Current catalog guidance in `docs/eventstore-api-surface-constraints.md` already states 40 and a zero Story 4.8 delta; its deferred correction is superseded by that wording.
+
+The current Platform policies distinguish the control-plane trust domain `localhost` from the workload/access-control trust domain `public`, including every allowed caller policy. The existing notes and B12 review correction above already record that distinction. Applying `localhost` to every workload ACL would contradict the implemented policy. Hosting and policy ownership now belong to Platform; this reconciliation does not change that policy or claim a new live mTLS run.
+
+Current catalog/golden-corpus and runtime-governance checks are recorded in `spec-five-deferred-proof-requalification.md` and its retained evidence packet. The original frozen intent and historical results above are preserved.

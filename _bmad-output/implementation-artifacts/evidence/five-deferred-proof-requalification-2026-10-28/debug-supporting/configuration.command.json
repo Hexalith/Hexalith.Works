@@ -1,0 +1,14 @@
+{
+  "command": [
+    "dotnet",
+    "msbuild",
+    "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
+    "-p:Configuration=Debug",
+    "-p:CustomAfterMicrosoftCommonTargets=/tmp/works-five-proof-debug-mutation/mutation.targets",
+    "-getProperty:DefineConstants",
+    "-getProperty:UseHexalithProjectReferences",
+    "-getProperty:UseNuGetDeps",
+    "-getProperty:HexalithEventStoreFromSource"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works"
+}

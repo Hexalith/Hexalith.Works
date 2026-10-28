@@ -1,0 +1,20 @@
+[
+  {
+    "original": "/source/single'quote/WorksPlatformIdentityFixtureTests.cs",
+    "mutated": "/temporary/single'quote/WorksPlatformIdentityFixtureTests.cs",
+    "xml": "<Project><Target Name=\"ApplyControlledWorksDebugMutation\" BeforeTargets=\"CoreCompile\" Condition=\"'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'\"><ItemGroup><Compile Remove=\"WorksPlatformIdentityFixtureTests.cs\" /><Compile Remove=\"/source/single'quote/WorksPlatformIdentityFixtureTests.cs\" /><Compile Include=\"/temporary/single'quote/WorksPlatformIdentityFixtureTests.cs\" Link=\"WorksPlatformIdentityFixtureTests.cs\" /></ItemGroup></Target></Project>\n",
+    "passed": true
+  },
+  {
+    "original": "/source/double\"quote/WorksPlatformIdentityFixtureTests.cs",
+    "mutated": "/temporary/double\"quote/WorksPlatformIdentityFixtureTests.cs",
+    "xml": "<Project><Target Name=\"ApplyControlledWorksDebugMutation\" BeforeTargets=\"CoreCompile\" Condition=\"'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'\"><ItemGroup><Compile Remove=\"WorksPlatformIdentityFixtureTests.cs\" /><Compile Remove=\"/source/double&quot;quote/WorksPlatformIdentityFixtureTests.cs\" /><Compile Include=\"/temporary/double&quot;quote/WorksPlatformIdentityFixtureTests.cs\" Link=\"WorksPlatformIdentityFixtureTests.cs\" /></ItemGroup></Target></Project>\n",
+    "passed": true
+  },
+  {
+    "original": "/source/both'\"and&<tags>/WorksPlatformIdentityFixtureTests.cs",
+    "mutated": "/temporary/both'\"and&<tags>/WorksPlatformIdentityFixtureTests.cs",
+    "xml": "<Project><Target Name=\"ApplyControlledWorksDebugMutation\" BeforeTargets=\"CoreCompile\" Condition=\"'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'\"><ItemGroup><Compile Remove=\"WorksPlatformIdentityFixtureTests.cs\" /><Compile Remove=\"/source/both'&quot;and&amp;&lt;tags&gt;/WorksPlatformIdentityFixtureTests.cs\" /><Compile Include=\"/temporary/both'&quot;and&amp;&lt;tags&gt;/WorksPlatformIdentityFixtureTests.cs\" Link=\"WorksPlatformIdentityFixtureTests.cs\" /></ItemGroup></Target></Project>\n",
+    "passed": true
+  }
+]

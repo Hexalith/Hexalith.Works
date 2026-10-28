@@ -1,0 +1,14 @@
+--- /home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs
++++ /tmp/works-five-proof-debug-mutation/WorksPlatformIdentityFixtureTests.cs
+@@ -30,7 +30,11 @@
+         var result = await client.ResolvePartyIdentityAsync(tenant, new ResolvePartyIdentity(tenant, party, actor), TestContext.Current.CancellationToken);
+         result.Outcome.ShouldBe(PartyIdentityOutcome.Resolved);
+         result.Evidence.ShouldNotBeNull().HumanBinding.ShouldNotBeNull().ActorId.ShouldBe(actor);
++#if DEBUG
++        result.Evidence.TenantId.ShouldBe("controlled-debug-runtime-mutation");
++#else
+         result.Evidence.TenantId.ShouldBe(tenant);
++#endif
+         result.Evidence.PartyId.ShouldBe(party);
+         fixture.Calls.ShouldBe(1);
+         using HttpClient anonymous = new() { BaseAddress = fixture.Endpoint };

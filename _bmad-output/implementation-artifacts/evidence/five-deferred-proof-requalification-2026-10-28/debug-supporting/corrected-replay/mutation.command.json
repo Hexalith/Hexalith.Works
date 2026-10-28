@@ -1,0 +1,12 @@
+{
+  "command": [
+    "dotnet",
+    "/tmp/works-five-proof-debug-corrected-replay-2/mutation-artifacts/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests.PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied",
+    "-result-xml",
+    "/tmp/works-five-proof-debug-corrected-replay-2/mutation.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works"
+}

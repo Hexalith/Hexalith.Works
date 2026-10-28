@@ -1,0 +1,13 @@
+{
+  "command": [
+    "dotnet",
+    "/tmp/works-five-proof-debug-mutation/artifacts/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll",
+    "-noLogo",
+    "-method",
+    "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests.PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied",
+    "-result-xml",
+    "/tmp/works-five-proof-debug-mutation/mutation.xml"
+  ],
+  "cwd": "/home/administrator/projects/hexalith/works",
+  "assemblySha256": "eecf6088ff9e216d3b8d112c923ac73c8151c36fd9618e7b4c31b308ef4504ab"
+}

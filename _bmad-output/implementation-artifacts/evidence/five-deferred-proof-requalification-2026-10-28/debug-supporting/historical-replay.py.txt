@@ -1,0 +1,103 @@
+"""Replay Debug conformance and one isolated Debug-only mutation without editing sources.
+
+Usage: python3 replay.py <works-root> <new-temporary-output-directory>
+An existing Debug Integration assembly is required. The mutation build uses its
+own artifacts directory and preserves the ordinary build outputs.
+"""
+
+import ast
+import hashlib
+import json
+import subprocess
+import sys
+import time
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from xml.sax.saxutils import escape
+
+
+def sha256(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run(root, output, label, command, expected=0):
+    (output / (label + ".command.json")).write_text(
+        json.dumps({"command": command, "cwd": str(root)}, indent=2) + "\n"
+    )
+    started = time.monotonic()
+    with (output / (label + ".log")).open("w") as log:
+        completed = subprocess.run(
+            command, cwd=root, stdout=log, stderr=subprocess.STDOUT, timeout=600
+        )
+    (output / (label + ".result.json")).write_text(
+        json.dumps(
+            {"exitCode": completed.returncode, "durationSeconds": time.monotonic() - started},
+            indent=2,
+        ) + "\n"
+    )
+    if completed.returncode != expected:
+        raise RuntimeError(label + " returned " + str(completed.returncode))
+
+
+def main():
+    root, output = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
+    packet = Path(__file__).resolve().parent
+    output.mkdir(parents=True, exist_ok=False)
+    selector = root / "references/Hexalith.Platform/eng/verify_works_host.py"
+    module = ast.parse(selector.read_text())
+    classes = next(
+        ast.literal_eval(node.value) for node in module.body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "SUPPORTING_CLASSES" for target in node.targets)
+    )
+    if list(classes) != json.loads((packet / "supporting-classes.json").read_text()):
+        raise RuntimeError("Current verifier supporting classes differ from this packet")
+    dll = root / "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll"
+    initial = sha256(dll)
+    command = ["dotnet", str(dll), "-noLogo", "-explicit", "off"]
+    for name in classes:
+        command += ["-class", "Hexalith.Works.IntegrationTests." + name]
+    command += ["-result-xml", str(output / "supporting.xml")]
+    run(root, output, "supporting", command)
+    assembly = ET.parse(output / "supporting.xml").getroot().find("assembly")
+    selected = {"Hexalith.Works.IntegrationTests." + name for name in classes}
+    actual = {test.attrib["type"] for test in assembly.iter("test")}
+    if actual != selected or any(assembly.attrib[name] != "0" for name in ("errors", "failed", "skipped", "not-run")):
+        raise RuntimeError("The complete supporting selection did not pass")
+    original = root / "tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs"
+    if sha256(original) != sha256(packet / "original-source.cs.txt"):
+        raise RuntimeError("Mutation source changed; reassess the control before replay")
+    mutated = output / original.name
+    mutated.write_bytes((packet / "mutated-source.cs.txt").read_bytes())
+    targets = output / "mutation.targets"
+    targets.write_text(
+        '<Project><Target Name="ApplyControlledWorksDebugMutation" BeforeTargets="CoreCompile" '
+        'Condition="\'$(MSBuildProjectName)\' == \'Hexalith.Works.IntegrationTests\'">'
+        '<ItemGroup><Compile Remove="WorksPlatformIdentityFixtureTests.cs" />'
+        '<Compile Remove="' + escape(str(original)) + '" />'
+        '<Compile Include="' + escape(str(mutated)) + '" Link="WorksPlatformIdentityFixtureTests.cs" />'
+        '</ItemGroup></Target></Project>\n'
+    )
+    run(root, output, "build", [
+        "dotnet", "build", str(root / "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"),
+        "--configuration", "Debug", "--artifacts-path", str(output / "artifacts"), "-m:1", "--nologo",
+        "-p:CustomAfterMicrosoftCommonTargets=" + str(targets),
+    ])
+    mutant_dll = output / "artifacts/bin/Hexalith.Works.IntegrationTests/debug/Hexalith.Works.IntegrationTests.dll"
+    method = json.loads((packet / "inputs.json").read_text())["method"]
+    run(root, output, "mutation", [
+        "dotnet", str(mutant_dll), "-noLogo", "-method", method,
+        "-result-xml", str(output / "mutation.xml"),
+    ], expected=1)
+    failed = ET.parse(output / "mutation.xml").getroot().find("assembly")
+    if failed.attrib["total"] != "1" or failed.attrib["failed"] != "1":
+        raise RuntimeError("Mutation did not fail exactly the selected method")
+    if "controlled-debug-runtime-mutation" not in (output / "mutation.xml").read_text():
+        raise RuntimeError("Mutation failure was unrelated to the Debug-only assertion")
+    if initial != sha256(dll):
+        raise RuntimeError("Ordinary Debug assembly changed during replay")
+    print("Complete Debug supporting selection passed; isolated Debug-only mutation was detected.")
+
+
+if __name__ == "__main__":
+    main()

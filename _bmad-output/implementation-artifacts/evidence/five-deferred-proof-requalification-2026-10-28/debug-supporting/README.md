@@ -1,0 +1,9 @@
+# Debug supporting conformance evidence
+
+The [corrected isolated replay](corrected-replay/README.md) is the current evidence: two fresh Debug/source builds, **345 passing supporting tests** across all sixteen verifier classes, the exact selected method passing in the isolated baseline and failing only in the isolated Debug mutation, and a complete unchanged ordinary-output inventory of **562 entries**. The XML target writer also passed three quote/metacharacter parse controls. Both builds completed with zero warnings/errors.
+
+Run `python3 replay.py <works-root> <new-temporary-output-directory>` to repeat the proof. The script compiles its own baseline and mutant in separate artifact roots; it compares every ordinary Integration output file/directory and all file bytes before and after. A preexisting ordinary assembly is not executed by replay.
+
+The original top-level **345/345** observations remain historical records. That first run executed a preexisting Debug assembly and the first replay helper checked only one ordinary DLL, so those records do not establish the stronger fresh-baseline or complete-output-preservation claims. Original command/results/XML/logs are retained unchanged. The former script and README are preserved as `historical-replay.py.txt` and `historical-README.md.txt`; `historical-manifest.json` preserves their original hash ledger, with those two names mapped to their retained historical copies. The ordinary build was subsequently replaced by the parent after that first run ended, as recorded in the original summary.
+
+`manifest.json` binds every current retained file recursively. `corrected-replay/replay.py.txt` is the byte-exact corrected script that was executed. Focused Debug conformance and mutation sensitivity do not change Platform's admission contract or qualify a fresh complete live Platform parity run.

@@ -1,0 +1,9 @@
+{
+  "original": "/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs",
+  "originalSha256": "7c6392201cc942bfdb50ead0a97aa66dd6cff35f61dfbf95f972cba3c884cee8",
+  "mutation": "/tmp/works-five-proof-debug-mutation/WorksPlatformIdentityFixtureTests.cs",
+  "mutationSha256": "649f7afdd19a7837d246c8a38a0a743fa221a74ce02ed13813bdaab214e3c09e",
+  "targetsSha256": "8af37abf7c140201fe15223109320176cb500cb0ab3f6d6328e8dea815e139f4",
+  "method": "Hexalith.Works.IntegrationTests.WorksPlatformIdentityFixtureTests.PublishedClientReadsCurrentSyntheticEvidenceAndAnonymousTransportIsDenied",
+  "expectedFailure": "controlled-debug-runtime-mutation"
+}

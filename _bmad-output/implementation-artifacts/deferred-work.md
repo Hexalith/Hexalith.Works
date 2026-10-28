@@ -733,6 +733,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Reconcile the concurrent Story 4.8 specification with its current localhost trust domain and the 40-type catalog baseline.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — Appended a dated reconciliation outside the frozen historical intent. Starting catalog 37, current catalog 40 and Story 4.8 zero delta are explicit; current Platform policies use localhost for the control plane and public for workload/access-control trust domains, matching the existing corrected notes. Repeated catalog observations count as one work item.
   evidence: Its implementation note still recommends `controlPlaneTrustDomain: "public"`, and its frozen constraint/verification still says catalog 37 even though the concurrent code uses `localhost` and Story 1.5 makes the current catalog 40.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
@@ -787,6 +789,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-2.md`
   summary: Reconcile the Story 4.8 catalog sentence in `docs/eventstore-api-surface-constraints.md` with current count 40.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — Superseded: the current constraints document already states catalog 40 and Story 4.8 delta zero. The companion Story 4.8 reconciliation preserves the historical 37-type baseline and confirms current source/golden-corpus governance; counted with the repeated catalog item, not separately.
   evidence: Lines 301-302 still say the catalog was 37 at Story 4.8 completion and that Story 1.5 came later; this close-out did not touch that file, and sprint already has Story 1.5 done with `WorkItemV1Catalog.Count` 40.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-08, Group 1)
@@ -1813,6 +1817,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-16-prove-platform-works-parity-and-rollback.md`
   summary: Compare complete Platform consumer source membership at the end of a verifier run, and make the packet input recheck's scope claim match what it compares (review T241).
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — Current Platform already compares full source membership, qualified by 19 input-mutation controls. The new root `scripts/recheck-platform-proof-inputs.py` supersedes the recorded-key-only packet helper, with CLI add/change/remove and auxiliary-input refusal controls. An adjacent correction narrows the original packet scope without rewriting its historical results.
   evidence: The end-of-run loop at `P/eng/verify_works_host.py:1029-1031` re-hashes only the paths recorded at `:875-878`, so a Platform `src/**/*.cs` added after that baseline compiles into self-consistent DLL hashes without being bound; iteration 7 rejected the same gap as T225. The review6 `tools/bind_inputs.py:26-29,44-45` also re-hashes recorded keys only, while `input-binding.json` calls it a "complete" comparison with Works source "membership". Fold into the T222 end-of-pipeline extraction; the verifier's Works consumer end check already compares the full inventory.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1853,6 +1859,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Assess Debug-only runtime coverage of Works supporting conformance facts (unverified medium).
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — All 16 current supporting selector classes execute against Debug source-mode output (345 passed initially). An isolated existing method with an injected Debug-only assertion fails as expected after a zero-warning build. Exact commands, selectors, hashes, logs, XML and mutation inputs are retained; upstream full-gate requirements are unchanged.
   evidence: Review R2B8: the pre-existing full gate builds the Debug Works consumer and runs 114 Platform Debug tests, but executes the 255 supporting Works facts only in Release. No current source-only runtime defect is identified. Execute those methods against Debug plus a controlled Debug-only failing mutation to settle whether this omission hides behavior before changing the declared requirement.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2072,10 +2080,14 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-telemetry-boundaries.md`
   summary: Assess telemetry admission when a Platform project composes no OTLP keys (unverified medium).
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — Actual supported `WorksPreviewModel.Compose` supplies both OTLP keys via Aspire callbacks, even though its source has no explicit OTLP writes. The executing composition test asserts both keys and refuses a foreign fixture redirect. The proposed absent-key path was not reachable in this supported composition; existing admission rules are retained.
   evidence: The pre-existing composition guard checks affected Platform-owned keys only; fixture-only OTLP keys are outside its overlap inventory and can bypass pair validation. The current canonical Platform capture lacking both keys was not demonstrated. Reproduce against an actual supported Platform composition with absent OTLP settings before broadening the guard from overlap protection to fixture-wide telemetry admission.
 
 ## Deferred from: review of spec-five-deferred-recovery-admission (2026-10-28)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-five-deferred-recovery-admission.md`
   summary: Qualify synthetic Redis capture when the last hash field expires during key acquisition (unverified medium).
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-proof-requalification.md` — A behavior-preserving per-key acquisition extraction supports real-Redis command gates before DUMP, type and atomic hash observation. Natural server-time-qualified expiry either refuses acquisition, skips the absent key, or captures an atomically empty logical hash; no expired field qualifies as live evidence and corruption controls remain enforced. No expiry retry or broader capture admission is needed for this contract.
   evidence: Existing capture enumerates keys before separate DUMP/TTL/type reads. If the last field expires before DUMP or type acquisition, capture may refuse before the atomic hash observation. The selected P18-E2 correction qualifies fields present at capture that expire before restore or verification; it preserves fail-closed capture refusal. A deterministic command-gated real Redis control at those acquisition boundaries would establish whether expiry-aware capture retry or atomic whole-key acquisition is needed. No false capture pass or restored-state corruption was demonstrated.

@@ -203,21 +203,11 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         _hashSnapshots.Clear();
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
         {
-            byte[] dump = await database.KeyDumpAsync(key).ConfigureAwait(false)
-                ?? throw new InvalidOperationException("The stopped synthetic fleet changed during capture.");
-            TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
-            string fingerprint;
-            if (await database.KeyTypeAsync(key).ConfigureAwait(false) == RedisType.Hash)
-            {
-                WorksSdkProofRedisHashSnapshot hash = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
-                if (hash.Type == "none") continue; // Every field expired during capture.
-                if (hash.Type != "hash") throw new InvalidOperationException("The stopped synthetic hash changed type during capture.");
-                _hashSnapshots.Add(key.ToString(), hash);
-                fingerprint = HashFingerprint(hash.Fields);
-            }
-            else fingerprint = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
-            _snapshot.Add(key.ToString(), (dump, remaining is null ? null : DateTimeOffset.UtcNow + remaining,
-                fingerprint));
+            var captured = await CaptureKeyAsync(database, key).ConfigureAwait(false);
+            if (captured is null) continue;
+            var entry = captured.Value;
+            if (entry.Hash is not null) _hashSnapshots.Add(key.ToString(), entry.Hash);
+            _snapshot.Add(key.ToString(), (entry.Dump, entry.ExpiresAt, entry.Fingerprint));
         }
         _files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(directory, path), File.ReadAllBytes, StringComparer.Ordinal);
@@ -239,6 +229,30 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             .Select(pair => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(pair.Key))) + ":" + pair.Value.Fingerprint));
         hashes["redis-logical-value-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(logicalInventory)));
         return hashes;
+    }
+
+    /// <summary>Acquires one enumerated key, refusing an inconsistent expiry boundary before hash observation.</summary>
+    /// <param name="database">The owned Redis database.</param>
+    /// <param name="key">The previously enumerated key.</param>
+    /// <returns>Captured bytes and logical evidence, or null if the atomic hash observation proves expiry.</returns>
+    internal static async Task<(byte[] Dump, DateTimeOffset? ExpiresAt, string Fingerprint, WorksSdkProofRedisHashSnapshot? Hash)?> CaptureKeyAsync(
+        IDatabase database, RedisKey key)
+    {
+        ArgumentNullException.ThrowIfNull(database);
+        byte[] dump = await database.KeyDumpAsync(key).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The stopped synthetic fleet changed during capture.");
+        TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
+        string fingerprint;
+        WorksSdkProofRedisHashSnapshot? hash = null;
+        if (await database.KeyTypeAsync(key).ConfigureAwait(false) == RedisType.Hash)
+        {
+            hash = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
+            if (hash.Type == "none") return null; // Every field expired during capture.
+            if (hash.Type != "hash") throw new InvalidOperationException("The stopped synthetic hash changed type during capture.");
+            fingerprint = HashFingerprint(hash.Fields);
+        }
+        else fingerprint = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
+        return (dump, remaining is null ? null : DateTimeOffset.UtcNow + remaining, fingerprint, hash);
     }
 
     /// <summary>The capture-only inventory of original DUMP bytes, which a re-observation cannot reproduce.</summary>

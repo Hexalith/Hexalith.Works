@@ -1,0 +1,25 @@
+{
+  "baseCommit": "a1a87ca685d2a1f7db3ddd35ef1256eb0b348e80",
+  "dependencies": {
+    "Hexalith.Platform": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+    "Hexalith.EventStore": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "Hexalith.Builds": "81ab049208678bd6616828824729c0ddac02f7d1",
+    "Hexalith.Parties": "9239c531f3b0cbb4a998c419e537463b597ff14b",
+    "Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0"
+  },
+  "sha256": {
+    "scripts/recheck-platform-proof-inputs.py": "075fada1a808afb428d3ae71a0a67e3be1697927d1409778f36eb3c13250dac7",
+    "scripts/tests/test_platform_proof_inputs.py": "e7d3a5ba481f3df2b3f3ba6ad189f0e98eec1e96e49a90a563233bd33152c6fc",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs": "7779020a3417265dd1be59885c0906fb3555e2ef4ad11c55f0aec5955148a431",
+    "tests/Hexalith.Works.IntegrationTests/WorksRedisCaptureAcquisitionTests.cs": "94e943e8bbe33f37871e2b8889d71db62cfe2726cae5926b36e532297b345ff7",
+    "tests/Hexalith.Works.IntegrationTests/WorksPlatformTelemetryAdmissionTests.cs": "1189c532f940076ecb2a356b08debbff952ee6776d72e7b54ca0866b87a10341",
+    "tests/Hexalith.Works.IntegrationTests/WorkItemV1Catalog.cs": "81a100ba49b8fd48262bc549fac97e65c1d8ba7df2a6b363f5c357b3114eb350",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "f0d17fd76e1912b81087c40bf09ada3f6fcfd5d7e774de1443684f7008cda6ce",
+    "references/Hexalith.Platform/eng/test_works_verifier_inputs.py": "605cfe68bfd16c845ecec8fa08aa108eb6aead8523dff9a83350c025fad6bbcd",
+    "references/Hexalith.Platform/src/Hexalith.Platform.Composition/WorksPreviewModel.cs": "951c669125ab8800e6a42435e1edef49bc885ed7502a8934074be967a41eb5fb",
+    "references/Hexalith.Platform/DaprComponents/accesscontrol.eventstore-operations.yaml": "157c01878405f7e29d418b3225b84ff4fedc17929533455746d83fb8ea275963",
+    "references/Hexalith.Platform/DaprComponents/accesscontrol.works.yaml": "750d940c5d3019e930183bcf405a18534eeb563c371a8da27e4fa522f28d84b7",
+    "references/Hexalith.Platform/DaprComponents/accesscontrol.yaml": "c6076e9d8454dc10891db90b74d813c5959cf9a98e862d837223cd106017e0b8",
+    "references/Hexalith.Platform/DaprComponents/accesscontrol.eventstore-admin.yaml": "f8db9ef9ed77525c29c57df29b2e098f9585ab998da074bd99aa9cab2fde07ce"
+  }
+}

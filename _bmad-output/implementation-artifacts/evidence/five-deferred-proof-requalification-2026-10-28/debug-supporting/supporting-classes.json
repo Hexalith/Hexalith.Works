@@ -1,0 +1,18 @@
+[
+  "WorksSdkPartitionedRebuildTests",
+  "WorksSdkProjectionQueryTests",
+  "WorkItemSharedProjectionRebuildHandlerTests",
+  "WorksSdkProtectedHttpTests",
+  "WorksQueryPolicyDeadlineTests",
+  "WorksSdkProofRedisOwnershipTests",
+  "WorksPlatformDispositionProbeTests",
+  "WorksPlatformSelectedSdkPathsTests",
+  "WorksPlatformFleetRestoreTests",
+  "WorksAppHostDiscoveryIsolationTests",
+  "WorksPlatformHostingCompositionTests",
+  "WorksPlatformTelemetryCollectorTests",
+  "WorksPlatformIdentityFixtureTests",
+  "WorksPlatformCompositionGuardTests",
+  "WorksAppHostSelectionTests",
+  "WorksSdkPackageContractTests"
+]

@@ -1,0 +1,10 @@
+<Project>
+  <Target Name="ApplyControlledWorksDebugMutation" BeforeTargets="CoreCompile" Condition="'$(MSBuildProjectName)' == 'Hexalith.Works.IntegrationTests'">
+    <ItemGroup>
+      <Compile Remove="WorksPlatformIdentityFixtureTests.cs" />
+      <Compile Remove="/home/administrator/projects/hexalith/works/tests/Hexalith.Works.IntegrationTests/WorksPlatformIdentityFixtureTests.cs" />
+      <Compile Include="/tmp/works-five-proof-debug-mutation/WorksPlatformIdentityFixtureTests.cs" Link="WorksPlatformIdentityFixtureTests.cs" />
+    </ItemGroup>
+    <Message Importance="High" Text="Controlled mutation input: @(Compile)" />
+  </Target>
+</Project>
