@@ -145,8 +145,11 @@ internal static class WorksAppHostSmokeHarness
             dapr.Sidecar.Annotations.Remove(annotation);
             dapr.Sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(annotation.Options with
             {
-                AppPort = null, DaprHttpPort = null, DaprGrpcPort = null,
-                DaprInternalGrpcPort = null, MetricsPort = null,
+                AppPort = null,
+                DaprHttpPort = null,
+                DaprGrpcPort = null,
+                DaprInternalGrpcPort = null,
+                MetricsPort = null,
                 Config = Isolated(annotation.Options.Config),
                 RuntimePath = platform ? runtimePath ?? annotation.Options.RuntimePath : annotation.Options.RuntimePath,
                 PlacementHostAddress = platform ? "localhost:" + placementPort.ToString(System.Globalization.CultureInfo.InvariantCulture) : annotation.Options.PlacementHostAddress,
@@ -362,22 +365,40 @@ internal static class WorksAppHostSmokeHarness
                 startupCts.Token)
             .ConfigureAwait(true);
 
-        // On an actual Platform start, capture Platform's own composition before the fixture configures the builder,
-        // and the fixture's additions immediately after, before the harness adds its isolation and evidence wiring.
-        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
-            ? WorksPlatformCompositionGuard.Capture(builder) : null;
-        configure?.Invoke(builder);
-        Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? fixtureComposition = platformComposition is null
-            ? null : WorksPlatformCompositionGuard.Capture(builder);
-        WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
+        await WithCreatedAppHostAsync(builder, cancellationToken, startupCts.Token, body, configure,
+            actorTypeName, expectWorksReadinessDegraded, schedulerVolumeName, useRetainedHost).ConfigureAwait(true);
+    }
+
+    /// <summary>Owns a created testing builder through configuration, execution and bounded cleanup.</summary>
+    internal static async Task WithCreatedAppHostAsync(
+        IDistributedApplicationTestingBuilder builder,
+        CancellationToken cancellationToken,
+        CancellationToken startupToken,
+        Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body,
+        Action<IDistributedApplicationTestingBuilder>? configure = null,
+        string actorTypeName = "WorksSdkReminderActor",
+        bool expectWorksReadinessDegraded = false,
+        string? schedulerVolumeName = null,
+        bool useRetainedHost = false,
+        Func<CancellationToken, Task>? waitForRelease = null,
+        Action<Exception>? reportCleanupFailure = null)
+    {
         DistributedApplication? app = null;
         Exception? primaryException = null;
         string? discoveryDirectory = null;
         try
         {
+            // On an actual Platform start, capture Platform's own composition before the fixture configures the builder,
+            // and the fixture's additions immediately after, before the harness adds its isolation and evidence wiring.
+            Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
+                ? WorksPlatformCompositionGuard.Capture(builder) : null;
+            configure?.Invoke(builder);
+            Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? fixtureComposition = platformComposition is null
+                ? null : WorksPlatformCompositionGuard.Capture(builder);
+            WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
             // Refuses, before any resource is built, a fixture that set a key Platform composed for that resource.
             Dictionary<string, object>? compositionGuard = platformComposition is null ? null
-                : await WorksPlatformCompositionGuard.VerifyAsync(builder, platformComposition, fixtureComposition!, startupCts.Token).ConfigureAwait(true);
+                : await WorksPlatformCompositionGuard.VerifyAsync(builder, platformComposition, fixtureComposition!, startupToken).ConfigureAwait(true);
             if (schedulerVolumeName is not null)
             {
                 if (!schedulerVolumeName.StartsWith("works-sdk416-", StringComparison.Ordinal))
@@ -401,10 +422,10 @@ internal static class WorksAppHostSmokeHarness
                     builder.AppHostAssembly?.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
                     WorksAppHostSelection.RetainedEntryPoint().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration);
             }
-            app = await builder.BuildAsync(startupCts.Token).ConfigureAwait(true);
+            app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try
             {
-                await app.StartAsync(startupCts.Token).ConfigureAwait(true);
+                await app.StartAsync(startupToken).ConfigureAwait(true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
@@ -425,41 +446,41 @@ internal static class WorksAppHostSmokeHarness
             }
 
             _ = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "dapr-sentry", startupCts.Token, cancellationToken)
+                .WaitForResourceHealthyAsync(app, "dapr-sentry", startupToken, cancellationToken)
                 .ConfigureAwait(true);
             _ = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "dapr-placement-mtls", startupCts.Token, cancellationToken)
+                .WaitForResourceHealthyAsync(app, "dapr-placement-mtls", startupToken, cancellationToken)
                 .ConfigureAwait(true);
             _ = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "dapr-scheduler-mtls", startupCts.Token, cancellationToken)
+                .WaitForResourceHealthyAsync(app, "dapr-scheduler-mtls", startupToken, cancellationToken)
                 .ConfigureAwait(true);
             _ = await WorksAppHostTestReadiness
-                .WaitForResourceHealthyAsync(app, "eventstore", startupCts.Token, cancellationToken)
+                .WaitForResourceHealthyAsync(app, "eventstore", startupToken, cancellationToken)
                 .ConfigureAwait(true);
             ResourceEvent worksResource;
             if (expectWorksReadinessDegraded)
             {
                 // A fault fixture deliberately disables periodic writers and must assert Degraded itself.
                 // Preserve the target readiness annotation; its status is never replaced with liveness.
-                await app.ResourceNotifications.WaitForResourceAsync("works", KnownResourceStates.Running, startupCts.Token).ConfigureAwait(true);
+                await app.ResourceNotifications.WaitForResourceAsync("works", KnownResourceStates.Running, startupToken).ConfigureAwait(true);
                 app.ResourceNotifications.TryGetCurrentState("works", out ResourceEvent? running).ShouldBeTrue();
                 worksResource = running.ShouldNotBeNull();
             }
             else
             {
                 worksResource = await WorksAppHostTestReadiness
-                    .WaitForResourceHealthyAsync(app, "works", startupCts.Token, cancellationToken)
+                    .WaitForResourceHealthyAsync(app, "works", startupToken, cancellationToken)
                     .ConfigureAwait(true);
             }
 
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
             await WorksAppHostTestReadiness
-                .WaitForEventStoreCommandRuntimeAsync(client, startupCts.Token)
+                .WaitForEventStoreCommandRuntimeAsync(client, startupToken)
                 .ConfigureAwait(true);
             using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
             await WorksAppHostTestReadiness
-                .WaitForWorksActorRuntimeAsync(sidecarClient, startupCts.Token,
+                .WaitForWorksActorRuntimeAsync(sidecarClient, startupToken,
                     actorTypeName)
                 .ConfigureAwait(true);
             if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_PLATFORM_HOST_EVIDENCE") is { Length: > 0 } hostEvidence)
@@ -473,16 +494,24 @@ internal static class WorksAppHostSmokeHarness
                     directory = builder.AppHostDirectory,
                     role = useRetainedHost ? "retained-rollback" : "platform-target",
                     schedulerVolume = schedulerVolumeName,
-                    controlPlanePorts = new { sentry = WorksAppHostSelection.ControlPlanePorts.Sentry,
-                        placement = WorksAppHostSelection.ControlPlanePorts.Placement, scheduler = WorksAppHostSelection.ControlPlanePorts.Scheduler },
+                    controlPlanePorts = new
+                    {
+                        sentry = WorksAppHostSelection.ControlPlanePorts.Sentry,
+                        placement = WorksAppHostSelection.ControlPlanePorts.Placement,
+                        scheduler = WorksAppHostSelection.ControlPlanePorts.Scheduler
+                    },
                     dependencyBuildsSuppressed = Environment.GetEnvironmentVariable("BuildProjectReferences") == "false",
                     daprdRuntimePath = Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"),
                     sidecarLaunches = builder.Resources.OfType<ProjectResource>().SelectMany(project =>
                         project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation =>
                         {
                             DaprSidecarOptions options = annotation.Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options;
-                            return new { appId = options.AppId ?? project.Name, config = options.Config,
-                                configSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(options.Config!))).ToLowerInvariant() };
+                            return new
+                            {
+                                appId = options.AppId ?? project.Name,
+                                config = options.Config,
+                                configSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(options.Config!))).ToLowerInvariant()
+                            };
                         })).ToArray(),
                     // Written only after every startup probe above passed. An expectWorksReadinessDegraded start
                     // waited for Works to reach Running, not Healthy, so its readiness did not pass; that fixture
@@ -501,10 +530,15 @@ internal static class WorksAppHostSmokeHarness
                     sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()
                         .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location) && assembly.GetName().Name!.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))
                         .OrderBy(assembly => assembly.GetName().Name, StringComparer.Ordinal)
-                        .Select(assembly => new { name = assembly.GetName().Name, version = assembly.GetName().Version?.ToString(),
-                            path = assembly.Location, sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location))) })
+                        .Select(assembly => new
+                        {
+                            name = assembly.GetName().Name,
+                            version = assembly.GetName().Version?.ToString(),
+                            path = assembly.Location,
+                            sha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(assembly.Location)))
+                        })
                         .ToArray(),
-                }) + Environment.NewLine, startupCts.Token).ConfigureAwait(false);
+                }) + Environment.NewLine, startupToken).ConfigureAwait(false);
             }
             try
             {
@@ -561,8 +595,10 @@ internal static class WorksAppHostSmokeHarness
         {
             try
             {
-                await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token, schedulerVolumeName)
-                    .ConfigureAwait(true);
+                if (waitForRelease is null)
+                    await WaitForControlPlaneResourcesReleasedAsync("teardown boundary", teardownCts.Token, schedulerVolumeName).ConfigureAwait(true);
+                else
+                    await waitForRelease(teardownCts.Token).ConfigureAwait(true);
             }
             catch (Exception exception)
             {
@@ -585,9 +621,11 @@ internal static class WorksAppHostSmokeHarness
         {
             foreach (Exception cleanupFailure in cleanupFailures)
             {
-                TestContext.Current.SendDiagnosticMessage(
-                    "Live AppHost cleanup also failed after the primary acceptance failure: {0}",
-                    cleanupFailure);
+                if (reportCleanupFailure is null)
+                    TestContext.Current.SendDiagnosticMessage(
+                        "Live AppHost cleanup also failed after the primary acceptance failure: {0}", cleanupFailure);
+                else
+                    reportCleanupFailure(cleanupFailure);
             }
 
             ExceptionDispatchInfo.Capture(primaryException).Throw();

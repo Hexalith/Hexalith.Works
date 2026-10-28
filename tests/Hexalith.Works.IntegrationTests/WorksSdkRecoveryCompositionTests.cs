@@ -1,6 +1,7 @@
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.Client.Subscriptions;
+using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Reminders;
 using Hexalith.EventStore.DomainService;
 using Hexalith.EventStore.Testing.Fakes;
@@ -10,6 +11,7 @@ using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 using NSubstitute;
@@ -30,8 +32,10 @@ public sealed class WorksSdkRecoveryCompositionTests
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Works:Recovery:UseSdkRuntime"] = "true", ["Works:Projection:UseSdkDelivery"] = "true",
-            ["DAPR_HTTP_ENDPOINT"] = dapr, ["EventStore:CommandGateway:BaseAddress"] = gateway,
+            ["Works:Recovery:UseSdkRuntime"] = "true",
+            ["Works:Projection:UseSdkDelivery"] = "true",
+            ["DAPR_HTTP_ENDPOINT"] = dapr,
+            ["EventStore:CommandGateway:BaseAddress"] = gateway,
         }).Build();
         var services = new ServiceCollection().AddLogging();
         services.AddSingleton<Microsoft.Extensions.Configuration.IConfiguration>(configuration);
@@ -52,7 +56,8 @@ public sealed class WorksSdkRecoveryCompositionTests
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Works:Recovery:UseSdkRuntime"] = "true", ["Works:Projection:UseSdkDelivery"] = "true",
+            ["Works:Recovery:UseSdkRuntime"] = "true",
+            ["Works:Projection:UseSdkDelivery"] = "true",
             ["EventStore:Processes:MaxEffectsPerEnvelope"] = "6",
         }).Build();
         var services = new ServiceCollection().AddLogging();
@@ -104,6 +109,79 @@ public sealed class WorksSdkRecoveryCompositionTests
             scope.ServiceProvider.GetServices(service).ShouldHaveSingleItem().ShouldNotBeNull()
                 .GetType().ShouldBe(typeof(WorksRecoveryWakeupHandler<>).MakeGenericType(eventType));
         }
+    }
+
+    /// <summary>Each terminal fact uses the registered adapter to retain SDK recovery membership across reconstruction.</summary>
+    /// <param name="terminal">The terminal event whose concrete registration is required.</param>
+    /// <param name="existingCheckpoint">Whether to preserve an already persisted nonzero process checkpoint.</param>
+    [Theory]
+    [InlineData("cancelled", false)]
+    [InlineData("expired", false)]
+    [InlineData("completed", false)]
+    [InlineData("cancelled", true)]
+    [InlineData("expired", true)]
+    [InlineData("completed", true)]
+    public async Task TerminalWakeupsPersistRecoveryMembershipThroughHostRegistration(string terminal, bool existingCheckpoint)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string tenant = "tenant-terminal-wakeup";
+        const string aggregate = "terminal-work";
+        var store = new InMemoryReadModelStore();
+        IReminderRegistrar reminders = Substitute.For<IReminderRegistrar>();
+        reminders.ConvergeAsync(Arg.Any<ReminderTarget>(), Arg.Any<CancellationToken>())
+            .Returns(new ReminderConvergenceResult(0, 0, 0, 0, 0));
+        await using var app = WorksHost.Build(["--Works:Query:PartiesGatewayBaseAddress=http://127.0.0.1:8999"],
+            configureServices: services =>
+            {
+                services.RemoveAll<Hexalith.EventStore.Client.Projections.IReadModelStore>();
+                services.AddSingleton<Hexalith.EventStore.Client.Projections.IReadModelStore>(store);
+                services.RemoveAll<IReminderRegistrar>();
+                services.AddSingleton(reminders);
+            });
+        var context = new EventStoreDomainEventContext(tenant, aggregate, "01ARZ3NDEKTSV4RRFFQ69G5FAV", 2,
+            DateTimeOffset.UnixEpoch, "terminal-wakeup")
+        { Domain = "work" };
+        using IServiceScope scope = app.Services.CreateScope();
+        var processSource = new ProcessSource(tenant, "work", aggregate);
+        ProcessCheckpointStore processes = scope.ServiceProvider.GetRequiredService<ProcessCheckpointStore>();
+        ProcessSourceState? before = null;
+        if (existingCheckpoint)
+        {
+            await processes.EnsureCandidateAsync(processSource, cancellationToken: ct);
+            ProcessSourceState owned = (await processes.AcquireAsync(processSource, ct)).ShouldNotBeNull();
+            owned = await processes.UpdateOwnedAsync(owned, state => state with { Checkpoint = 1 }, ct);
+            await processes.ReleaseAsync(owned, ct);
+            before = await processes.GetAsync(processSource, ct);
+        }
+        async Task DeliverAsync<TEvent>(TEvent fact) where TEvent : IEventPayload
+        {
+            IEventStoreDomainEventHandler<TEvent> handler = scope.ServiceProvider
+                .GetServices<IEventStoreDomainEventHandler<TEvent>>().ShouldHaveSingleItem();
+            handler.GetType().ShouldBe(typeof(WorksRecoveryWakeupHandler<TEvent>));
+            await handler.HandleAsync(fact, context, ct).ConfigureAwait(true);
+            await handler.HandleAsync(fact, context, ct).ConfigureAwait(true);
+        }
+        var tenantId = new TenantId(tenant);
+        var itemId = new WorkItemId(aggregate);
+        switch (terminal)
+        {
+            case "cancelled": await DeliverAsync(new WorkItemCancelled(aggregate, 2, tenantId, itemId)); break;
+            case "expired": await DeliverAsync(new WorkItemExpired(aggregate, 2, tenantId, itemId)); break;
+            case "completed": await DeliverAsync(new WorkItemCompleted(aggregate, 2, tenantId, itemId)); break;
+            default: throw new InvalidOperationException("Unknown terminal control.");
+        }
+        var reconstructed = new ProcessCheckpointStore(store,
+            scope.ServiceProvider.GetRequiredService<IOptions<EventStoreProcessOptions>>(), TimeProvider.System);
+        var source = new ProcessSource(tenant, "work", aggregate);
+        ProcessSourceState retained = await reconstructed.GetAsync(source, ct);
+        retained.Source.ShouldBe(source);
+        retained.Checkpoint.ShouldBe(existingCheckpoint ? 1 : 0);
+        retained.Status.ShouldBe(ProcessSourceStatus.Active);
+        if (before is not null) retained.ShouldBe(before);
+        (await reconstructed.ContainsCandidateAsync(source, ct)).ShouldBeTrue();
+        (await reconstructed.ReadCandidateTailAsync(tenant, ct)).ShouldBe(0);
+        (await reconstructed.ReadCandidatePageAsync(tenant, 0, ct)).ShouldNotBeNull().Entries.ShouldHaveSingleItem().ShouldBe(source);
+        await reminders.Received(2).ConvergeAsync(new ReminderTarget(tenant, "work", aggregate), ct);
     }
 
     /// <summary>Partial, blank and inconsistent gateway identities fail before query authority can disagree.</summary>
@@ -277,16 +355,23 @@ public sealed class WorksSdkRecoveryCompositionTests
         var created = new WorkItemCreated("work-49", 1, new TenantId(tenant), new WorkItemId("work-49"), new Obligation("synthetic"));
         string contextTenant = scenario switch
         {
-            "foreign-tenant" => "foreign-tenant", "blank-tenant" => "", "uppercase-tenant" => tenant.ToUpperInvariant(), _ => tenant,
+            "foreign-tenant" => "foreign-tenant",
+            "blank-tenant" => "",
+            "uppercase-tenant" => tenant.ToUpperInvariant(),
+            _ => tenant,
         };
         string contextAggregate = scenario switch
         {
-            "foreign-aggregate" => "other-work", "blank-aggregate" => "", "invalid-aggregate" => "invalid:aggregate",
-            "oversized-aggregate" => new string('x', 1_024), _ => "work-49",
+            "foreign-aggregate" => "other-work",
+            "blank-aggregate" => "",
+            "invalid-aggregate" => "invalid:aggregate",
+            "oversized-aggregate" => new string('x', 1_024),
+            _ => "work-49",
         };
         var context = new EventStoreDomainEventContext(contextTenant,
             contextAggregate, "01ARZ3NDEKTSV4RRFFQ69G5FAV", 1,
-            DateTimeOffset.UnixEpoch, "correlation-49") { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
+            DateTimeOffset.UnixEpoch, "correlation-49")
+        { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
         await Should.ThrowAsync<InvalidOperationException>(() => handler.HandleAsync(created, context, TestContext.Current.CancellationToken));
         store.Count.ShouldBe(0);
         reminders.ReceivedCalls().ShouldBeEmpty();
@@ -310,7 +395,8 @@ public sealed class WorksSdkRecoveryCompositionTests
         var handler = new WorksRecoveryWakeupHandler<WorkItemCreated>(processes, reminders);
         var created = new WorkItemCreated(source.Aggregate, 1, new TenantId(source.Tenant), new WorkItemId(source.Aggregate), new Obligation("synthetic"));
         var context = new EventStoreDomainEventContext(source.Tenant, source.Aggregate, "01ARZ3NDEKTSV4RRFFQ69G5FAV", 2,
-            DateTimeOffset.UnixEpoch, "correlation-49") { Domain = "work" };
+            DateTimeOffset.UnixEpoch, "correlation-49")
+        { Domain = "work" };
         await handler.HandleAsync(created, context, TestContext.Current.CancellationToken);
         await handler.HandleAsync(created, context, TestContext.Current.CancellationToken);
         (await processes.GetAsync(source, TestContext.Current.CancellationToken)).ShouldBe(before);

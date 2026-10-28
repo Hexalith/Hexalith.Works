@@ -837,6 +837,8 @@ archived: 2026-10-23
 - The production Dapr event marker's `TryAcquireAsync` does not persist an in-progress lease, so concurrent delivery of one message can execute handlers twice (`src/Hexalith.Works/Runtime/Events/WorksDomainEventProcessor.cs:62`). Requires the EventStore marker protocol/cross-repository ownership rather than a Story 4.8 patch.
 - A hand-crafted `/project` request with mixed-case `TENANTS` passes the raw ordinal reserved-id check and is then canonicalized to `tenants` (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:114`). Pre-existing direct-endpoint-only issue already recorded by the prior 2026-09-15 review.
 - Deterministic host composition does not pin the three terminal-event handlers registered for cancellation, expiry, and completion (`tests/Hexalith.Works.IntegrationTests/WorksDomainEventSubscriptionTests.cs:109`). Story 4.7 registration coverage, outside the reminder slice.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-sdk-boundary-verification.md](spec-five-deferred-sdk-boundary-verification.md) — Actual host registrations now explicitly execute cancellation, expiry and completion, including duplicate delivery. Reconstructed SDK persistence retains the exact process source with its new or retained checkpoint unchanged, and the correct reminder target converges. The old three bespoke terminal handlers are replaced by the registered generic Works adapter.
 - `global.json` pins SDK 10.0.401 while the architecture fitness test still asserts 10.0.400 (`tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:16`). Unrelated SDK/tooling drift already tracked outside Story 4.8.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
@@ -1191,11 +1193,15 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Determine whether projection parking failures must reset after an intervening healthy replay at the same sequence.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-sdk-boundary-verification.md](spec-five-deferred-sdk-boundary-verification.md) — Current SDK failure accounting belongs to the retained immutable delivery. A controlled transient fold failure survives reconstruction; a successful real Works fold removes it, identical receipt replay does not refold, and the next delivery starts at one. No aggregate-wide counter reset is needed; corrupt immutable evidence still requires the existing covering repair.
   evidence: The durable counter is not reset on the healthy path, but the decoder is deterministic for an immutable stream; establish whether the projection contract or a supported upgrade/rollback can produce a successful delivery between two failures at the same sequence before changing the persistence policy.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably.md (2026-09-22, incremental f1f377f)
 
 - `WorksAppHostTopologyTests` never disposes `IDistributedApplicationTestingBuilder` (no `await using`) in any topology fact, including the new Keycloak credential fact; each undisposed builder retains its host configuration sources. Pre-existing file-wide pattern; fix all facts together. [tests/Hexalith.Works.IntegrationTests/WorksAppHostTopologyTests.cs:246]
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-sdk-boundary-verification.md](spec-five-deferred-sdk-boundary-verification.md) — The old topology test was removed at Platform cutover. Its shared live-harness replacement disposes application and builder; this change also moves composition capture, fixture configuration and logging inside its cleanup boundary so preparation failure cannot bypass builder disposal.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-13-publish-eventstore-trusted-effect-submission.md`
   summary: Define a trusted-effect HTTP status contract that separates collision (409), denial (403), unavailable or unconfigured policy (503), and transient failure, and keep that distinction across Dapr actor remoting.
@@ -1634,6 +1640,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 - Trusted-origin identity (target/causation/digest) not compared to envelope in `WorkItemEventStoreAggregate.Handle(ExpireWorkItem)`; unverified medium — confirm SDK boundary enforces it.
 - Legacy-to-SDK runtime handoff (outstanding Dapr date reminders, cascade checkpoints) when `UseSdkRuntime` flips; unverified medium — settle in Story 4.16 rollback proof.
 - `MapActorsHandlers()` skipped under SDK mode; unverified medium — confirm SDK maps actor endpoints.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-sdk-boundary-verification.md](spec-five-deferred-sdk-boundary-verification.md) — The actual canonical SDK host advertises WorksSdkReminderActor in authenticated Dapr discovery and maps its protected actor deactivation route. Missing/wrong app-channel tokens refuse before dispatch; the valid token reaches the mapped actor route without a real sidecar.
 - `WorksProcessSourceCatalog` `sources.Add` duplicate-key `ArgumentException` outside per-tenant try; unverified medium — check control index duplicate/case-variant tenants.
   status: done 2026-10-28
   resolution: [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md) — Executing real SDK control-index reads refuse duplicate, uppercase and case-paired tenant rows before the Works merge, retain the corrupt persisted evidence, and recover both healthy families after index repair. Existing per-family duplicate controls continue to retain incomplete scope while admitting a healthy tenant. No duplicate-suppression policy was introduced.
@@ -1667,6 +1675,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 
 - Source-built `eventstore` stamped `Version=3.124.0` unconditionally in the SDK smoke fixture and bound-metadata startup (`WorksSdkRecoveryPipelineSmokeTests.cs:660`, `WorksAppHostSmokeHarness.cs:254`); unverified medium — confirm whether DCP builds project resources with these environment values as MSBuild properties and whether the stamp reaches evidence. Update 2026-10-18 (post-reopen delta review): the fixture now stamps `WorksSdkProofProducer.Version` (`WorksSdkRecoveryPipelineSmokeTests.cs:678,685,729`, `WorksAppHostSmokeHarness.cs:254`), which resolves to public 3.124.0 in source Debug while the source-built hosts carry the unpublished correction and three post-3.124.0 SDK commits; the retained `review-fixes-2026-10-18/raw/candidate-startup-mismatch-fail--*` run confirms these environment values reach child builds.
 - Commit 99976bb's `QueryWindowStore.Observe` starts at the same point the old `ClearReceivedCalls` ran (`WorksSdkProtectedHttpTests.cs:387`), so post-start hosted-service reads would still fail the denial check; unverified medium — identify the post-start store reader or loop the test under CPU load.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-sdk-boundary-verification.md](spec-five-deferred-sdk-boundary-verification.md) — Actual HTTP query middleware now has a gated concurrent background-read regression: a denied request counts no Works store access while 32 post-start background reads execute; an authorized request positively exercises the same counter. AsyncLocal request ownership isolates the observations.
 - Platform host-evidence wording, for Story 4.16 (`WorksAppHostSmokeHarness.cs:352`, `references/Hexalith.Platform/eng/verify_works_host.py:75,88`): the verifier's `readinessPassed` check can never fail because the harness writes a start record only after every startup probe passes, and its "loaded SDK assemblies" error refers to the top-level list, which holds the test runner's assemblies (hosts are bound per module in `runtimeModules`). Not a false pass; Works-side comments landed in the 4.15 review. Reason deferred: changing the record shape mid-4.16 would invalidate the 52 captured start files, so rename (`worksReadiness`, `runnerSdkAssemblies`) when 4.16 next re-captures its live facts.
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, resumed independent review)

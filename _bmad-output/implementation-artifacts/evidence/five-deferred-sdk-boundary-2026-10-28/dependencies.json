@@ -1,0 +1,30 @@
+{
+  "references/Hexalith.EventStore": {
+    "revision": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "status": ""
+  },
+  "references/Hexalith.Platform": {
+    "revision": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+    "status": ""
+  },
+  "references/Hexalith.Builds": {
+    "revision": "81ab049208678bd6616828824729c0ddac02f7d1",
+    "status": ""
+  },
+  "references/Hexalith.Parties": {
+    "revision": "9239c531f3b0cbb4a998c419e537463b597ff14b",
+    "status": ""
+  },
+  "references/Hexalith.PolymorphicSerializations": {
+    "revision": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "status": ""
+  },
+  "references/Hexalith.Commons": {
+    "revision": "3edfbdafc7d4fa915286dce8a37dc4cc7c06085a",
+    "status": ""
+  },
+  "references/Hexalith.Tenants": {
+    "revision": "7ddb864cda5e942925b056391617eae4895c1253",
+    "status": ""
+  }
+}

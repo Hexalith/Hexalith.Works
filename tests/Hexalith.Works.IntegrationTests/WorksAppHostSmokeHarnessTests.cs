@@ -5,6 +5,9 @@ using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
 
+using Aspire.Hosting.Testing;
+
+using NSubstitute;
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -16,6 +19,49 @@ public sealed class WorksAppHostSmokeHarnessTests
 {
     private const string SchedulerVolume = "works-sdk416-harness-probe";
     private static readonly (int Sentry, int Placement, int Scheduler) SelectedPorts = (61001, 61005, 61006);
+
+    /// <summary>Fixture failure disposes the owned builder without starting resources, masking the primary error or losing cleanup diagnostics.</summary>
+    /// <param name="releaseFails">Whether the resource release probe also fails.</param>
+    /// <param name="disposalFails">Whether the testing builder's actual disposal call fails.</param>
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task FixtureConfigurationFailureDisposesTheCreatedBuilder(bool releaseFails, bool disposalFails)
+    {
+        IDistributedApplicationTestingBuilder builder = Substitute.For<IDistributedApplicationTestingBuilder>();
+        var disposalFailure = new IOException("synthetic builder disposal failed");
+        var releaseFailure = new IOException("synthetic release failed");
+        builder.DisposeAsync().Returns(_ => disposalFails ? ValueTask.FromException(disposalFailure) : ValueTask.CompletedTask);
+        var diagnostics = new List<Exception>();
+        var sentinel = new InvalidOperationException("synthetic fixture configuration failed");
+        bool bodyCalled = false;
+        int releaseCalls = 0;
+        InvalidOperationException actual = await Should.ThrowAsync<InvalidOperationException>(() =>
+            WorksAppHostSmokeHarness.WithCreatedAppHostAsync(builder, TestContext.Current.CancellationToken,
+                TestContext.Current.CancellationToken, (_, _, _, _) =>
+                {
+                    bodyCalled = true;
+                    return Task.CompletedTask;
+                }, configure: _ => throw sentinel, useRetainedHost: true, waitForRelease: token =>
+                {
+                    token.IsCancellationRequested.ShouldBeFalse();
+                    releaseCalls++;
+                    if (releaseFails) throw releaseFailure;
+                    return Task.CompletedTask;
+                }, reportCleanupFailure: diagnostics.Add)).ConfigureAwait(true);
+        actual.ShouldBeSameAs(sentinel);
+        bodyCalled.ShouldBeFalse();
+        releaseCalls.ShouldBe(1);
+        builder.ReceivedCalls().Count(call => call.GetMethodInfo().Name == nameof(IAsyncDisposable.DisposeAsync)).ShouldBe(1);
+        _ = builder.DidNotReceive().BuildAsync(Arg.Any<CancellationToken>());
+        diagnostics.Count.ShouldBe((disposalFails ? 1 : 0) + (releaseFails ? 1 : 0));
+        if (disposalFails)
+            diagnostics.Single(error => ReferenceEquals(error.InnerException, disposalFailure)).Message.ShouldContain("testing builder disposal failed");
+        if (releaseFails)
+            diagnostics.Single(error => ReferenceEquals(error.InnerException, releaseFailure)).Message.ShouldContain("control-plane resources did not settle");
+    }
 
     /// <summary>Both lifecycle boundaries wait on the selected ports and the caller's owned Scheduler volume.</summary>
     /// <param name="boundary">The start or teardown diagnostic boundary.</param>
@@ -80,7 +126,8 @@ public sealed class WorksAppHostSmokeHarnessTests
         {
             Content = JsonContent.Create(new
             {
-                runtimeVersion, actors = new[] { new { type = "WorksSdkReminderActor" } },
+                runtimeVersion,
+                actors = new[] { new { type = "WorksSdkReminderActor" } },
                 actorRuntime = new { runtimeStatus = "RUNNING", hostReady = true, placement = "connected" },
                 scheduler = new { connected_addresses = new[] { "localhost:61006" } },
             }),

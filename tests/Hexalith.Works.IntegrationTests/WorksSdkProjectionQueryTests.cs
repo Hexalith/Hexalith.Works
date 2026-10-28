@@ -779,6 +779,88 @@ public sealed class WorksSdkProjectionQueryTests
                 .ConfigureAwait(true)).ConfigureAwait(true);
     }
 
+    /// <summary>Successful immutable replay removes its failed attempt and duplicate receipts never refold or revive it.</summary>
+    [Fact]
+    public async Task SuccessfulReplayClearsDeliveryFailureAndNewFailuresStartIndependently()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        SharedProjectionScope scope = handler.CreateScope(Tenant);
+        SharedProjectionLease lease = await coordinator.RegisterWriterAsync(scope, handler.OrdinaryWriterId, ct);
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(Aggregate);
+        SharedProjectionDelivery created = Delivery(new WorkItemCreated(Aggregate, 1, tenant, item, new Obligation("Replay")), 1);
+        (await coordinator.JournalAsync(scope, lease, created, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        // Controlled transient fold failure at the SDK seam; the domain payload remains byte-identical throughout.
+        Task<IReadOnlyList<ReadModelBatchOperation>> FailAsync(SharedProjectionDelivery delivery, long _, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+            throw new SharedProjectionFoldFailureException(delivery.SourceStream, delivery.EnvelopePosition, 5,
+                _ => throw new InvalidOperationException("A retryable attempt must not request parking mutations."));
+        }
+        SharedProjectionRetryableFoldException failed = await Should.ThrowAsync<SharedProjectionRetryableFoldException>(() =>
+            coordinator.CatchUpAsync(scope, FailAsync, ct));
+        failed.Failure.FailureCount.ShouldBe(1);
+        coordinator = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionEpochStatus pending = await coordinator.GetStatusAsync(scope, ct);
+        pending.PendingFoldFailures.ShouldHaveSingleItem().FailureCount.ShouldBe(1);
+        pending.PendingDeliveryCount.ShouldBe(1);
+        pending.ParkingEvidence.ShouldBeEmpty();
+        int folds = 0;
+        async Task<IReadOnlyList<ReadModelBatchOperation>> FoldAsync(SharedProjectionDelivery delivery, long generation, CancellationToken token)
+        {
+            folds++;
+            return await handler.FoldCatchUpAsync(delivery, generation, coordinator, token).ConfigureAwait(true);
+        }
+        (await coordinator.CatchUpAsync(scope, FoldAsync, ct)).ShouldBe(1);
+        folds.ShouldBe(1);
+        coordinator = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionEpochStatus complete = await coordinator.GetStatusAsync(scope, ct);
+        complete.PendingFoldFailures.ShouldBeEmpty();
+        complete.PendingDeliveryCount.ShouldBe(0);
+        complete.ParkingEvidence.ShouldBeEmpty();
+        complete.IsDegraded.ShouldBeFalse();
+        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeHistoryKey(Aggregate),
+            WorksReadModelKeys.RuntimeRollUpKey(Aggregate), WorksReadModelKeys.RuntimeParkingKey(Aggregate),
+            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey];
+        var before = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, ct);
+        before.IsAvailable.ShouldBeTrue();
+        before.Value.ShouldNotBeNull()[WorksReadModelKeys.RuntimeParkingKey(Aggregate)]!.As<WorkItemProjectionParking>()
+            .FailureCount.ShouldBe(0);
+        lease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct);
+        (await coordinator.JournalAsync(scope, lease, created, ct)).ShouldBe(SharedProjectionJournalResult.AlreadyJournaled);
+        (await coordinator.CatchUpAsync(scope, FoldAsync, ct)).ShouldBe(0);
+        folds.ShouldBe(1);
+        var after = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, ct);
+        after.IsAvailable.ShouldBeTrue();
+        after.Generation.ShouldBe(before.Generation);
+        foreach (string key in keys)
+            after.Value.ShouldNotBeNull()[key]!.Value.GetRawText().ShouldBe(before.Value[key]!.Value.GetRawText());
+        (await coordinator.GetStatusAsync(scope, ct)).PendingFoldFailures.ShouldBeEmpty();
+        (await coordinator.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull().Position.ShouldBe(1);
+        (await coordinator.JournalAsync(scope, lease, Delivery(new WorkItemQueued(Aggregate, 2, tenant, item), 2), ct))
+            .ShouldBe(SharedProjectionJournalResult.Journaled);
+        _ = await Should.ThrowAsync<SharedProjectionRetryableFoldException>(() => coordinator.CatchUpAsync(scope, FailAsync, ct));
+        coordinator = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionFailureStatus next = (await coordinator.GetStatusAsync(scope, ct)).PendingFoldFailures.ShouldHaveSingleItem();
+        next.SourcePosition.ShouldBe(2);
+        next.FailureCount.ShouldBe(1);
+        SharedProjectionEpochStatus retryable = await coordinator.GetStatusAsync(scope, ct);
+        retryable.ActiveGeneration.ShouldBe(after.Generation);
+        retryable.ParkingEvidence.ShouldBeEmpty();
+        foreach (string key in keys)
+            (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, after.Generation, key, ct)).Value
+                .ShouldNotBeNull().Value.GetRawText().ShouldBe(after.Value![key]!.Value.GetRawText());
+        (await coordinator.CatchUpAsync(scope, FoldAsync, ct)).ShouldBe(1);
+        coordinator = new SharedProjectionEpochCoordinator(store, store);
+        (await coordinator.GetStatusAsync(scope, ct)).PendingFoldFailures.ShouldBeEmpty();
+        (await coordinator.GetStatusAsync(scope, ct)).ParkingEvidence.ShouldBeEmpty();
+        (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct))
+            .Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>().Items[Aggregate].Status.ShouldBe(WorkItemStatus.Queued);
+    }
+
     /// <summary>Unknown and gapped ordinary deliveries park without publishing partial state or source watermarks.</summary>
     /// <param name="unknown">Whether to inject an unknown event instead of a missing source sequence.</param>
     /// <param name="defaultPolicy">Whether to qualify every retry of the default parking policy.</param>

@@ -40,6 +40,8 @@ using Hexalith.Works.Runtime;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -122,6 +124,81 @@ public sealed class WorksSdkProtectedHttpTests
         store.Observe = true;
         await ExerciseAllAsync(counted: false).ConfigureAwait(true);
         store.Operations.ShouldBe(5);
+    }
+
+    /// <summary>Post-start background store traffic cannot contaminate a denied query; authorized HTTP reads still count.</summary>
+    [Fact]
+    public async Task BackgroundReadsDuringDeniedHttpQueryStayOutsideRequestObservation()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        int restricted = 1;
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await using WebApplication parties = BuildPartiesGateway((request, _) =>
+        {
+            AssertIdentityRequest(request);
+            PartyIdentityResult identity = CurrentIdentity();
+            return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(identity with
+            { Evidence = identity.Evidence! with { IsRestricted = Volatile.Read(ref restricted) != 0 } })));
+        });
+        parties.Use(async (context, next) =>
+        {
+            entered.TrySetResult();
+            await release.Task.WaitAsync(ct).ConfigureAwait(false);
+            await next(context).ConfigureAwait(false);
+        });
+        await parties.StartAsync(ct).ConfigureAwait(true);
+        var inner = new InMemoryReadModelStore();
+        var store = new QueryWindowStore(inner);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        await using WebApplication app = BuildProtectedHost(store, Address(parties), coordinator,
+            [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}"]);
+        await app.StartAsync(ct).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        store.Observe = true;
+        QueryEnvelope query = ExecutorQuery() with { CallerAuthority = new QueryCallerAuthority("authenticated-caller", [], []) };
+        using var requestLifetime = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        HttpResponseMessage? response = null;
+        Exception? primaryFailure = null;
+        Task<HttpResponseMessage> pending = client.SendAsync(Request("/query", query, channel: true,
+            assertion: Assertion("domain-service:query", "eventstore", query)), requestLifetime.Token);
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(5), ct).ConfigureAwait(true);
+            await Task.Run(async () =>
+            {
+                for (int i = 0; i < 32; i++)
+                    _ = await app.Services.GetRequiredService<IReadModelStore>()
+                        .GetAsync<string>("statestore", "background-read", ct).ConfigureAwait(false);
+            }, ct).ConfigureAwait(true);
+            store.Operations.ShouldBe(0);
+        }
+        catch (Exception exception)
+        {
+            primaryFailure = exception;
+            throw;
+        }
+        finally
+        {
+            release.TrySetResult();
+            if (primaryFailure is not null) await requestLifetime.CancelAsync().ConfigureAwait(true);
+            try { response = await pending.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(true); }
+            catch when (primaryFailure is not null) { }
+            if (primaryFailure is not null) response?.Dispose();
+        }
+        using HttpResponseMessage denied = response.ShouldNotBeNull();
+        denied.StatusCode.ShouldBe(HttpStatusCode.OK);
+        QueryResult refusal = (await denied.Content.ReadFromJsonAsync<QueryResult>(ct).ConfigureAwait(true)).ShouldNotBeNull();
+        refusal.Success.ShouldBeFalse();
+        refusal.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
+        store.Operations.ShouldBe(0);
+        Volatile.Write(ref restricted, 0);
+        using HttpResponseMessage allowed = await client.SendAsync(Request("/query", query, channel: true,
+            assertion: Assertion("domain-service:query", "eventstore", query)), ct).ConfigureAwait(true);
+        allowed.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await allowed.Content.ReadFromJsonAsync<QueryResult>(ct).ConfigureAwait(true)).ShouldNotBeNull().Success.ShouldBeTrue();
+        store.Operations.ShouldBeGreaterThan(0);
     }
 
     [Fact]
@@ -853,7 +930,27 @@ public sealed class WorksSdkProtectedHttpTests
             .Get<IServerAddressesFeature>().ShouldNotBeNull().Addresses.Single();
         using var client = new HttpClient { BaseAddress = new Uri(address) };
 
-        foreach ((HttpMethod method, string route) in new[] { (HttpMethod.Post, "/work/events"), (HttpMethod.Get, "/dapr/config") })
+        using var discovery = new HttpRequestMessage(HttpMethod.Get, "/dapr/config");
+        discovery.Headers.Add(DaprAppChannelToken.HeaderName, ChannelToken);
+        using HttpResponseMessage discovered = await client.SendAsync(discovery, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        discovered.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using JsonDocument config = await JsonDocument.ParseAsync(await discovered.Content.ReadAsStreamAsync(TestContext.Current.CancellationToken)
+            .ConfigureAwait(true), cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
+        config.RootElement.GetProperty("entities").EnumerateArray().Select(entity => entity.GetString())
+            .ShouldContain("WorksSdkReminderActor");
+
+        RouteEndpoint[] actorRoutes = [.. app.Services.GetRequiredService<EndpointDataSource>().Endpoints.OfType<RouteEndpoint>()
+            .Where(endpoint => endpoint.RoutePattern.RawText?.Contains("actors/", StringComparison.Ordinal) == true)];
+        foreach (string suffix in new[] { "/method/{methodName}", "/method/remind/{reminderName}" })
+        {
+            RouteEndpoint endpoint = actorRoutes.Single(endpoint => endpoint.RoutePattern.RawText!.EndsWith(suffix, StringComparison.Ordinal));
+            endpoint.Metadata.GetMetadata<HttpMethodMetadata>().ShouldNotBeNull().HttpMethods.ShouldContain("PUT");
+            endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Select(data => data.Policy)
+                .ShouldContain(EventStoreDomainServicePolicies.SidecarChannel);
+        }
+
+        foreach ((HttpMethod method, string route) in new[] { (HttpMethod.Post, "/work/events"), (HttpMethod.Get, "/dapr/config"),
+            (HttpMethod.Delete, "/actors/WorksSdkReminderActor/unused-synthetic-actor") })
         {
             using var missing = new HttpRequestMessage(method, route);
             using HttpResponseMessage missingResponse = await client.SendAsync(missing,
@@ -872,6 +969,7 @@ public sealed class WorksSdkProtectedHttpTests
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
             validResponse.StatusCode.ShouldNotBe(HttpStatusCode.Unauthorized, route);
             validResponse.StatusCode.ShouldNotBe(HttpStatusCode.Forbidden, route);
+            if (method == HttpMethod.Delete) validResponse.StatusCode.ShouldBe(HttpStatusCode.OK, route);
         }
     }
 

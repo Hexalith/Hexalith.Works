@@ -1,0 +1,211 @@
+[
+  {
+    "id": "baseline-list",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "aspire ps --format Json",
+    "exit_code": 0,
+    "qualifying": false,
+    "stdout": "[]\n"
+  },
+  {
+    "id": "baseline-start",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "aspire start --non-interactive --apphost /home/administrator/projects/hexalith/works/references/Hexalith.Platform/apphost.cs --format Json",
+    "exit_code": 2,
+    "qualifying": false,
+    "log": "baseline.log.gz"
+  },
+  {
+    "id": "initial-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug -m:1",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "build.log.gz"
+  },
+  {
+    "id": "second-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "build-final.log.gz"
+  },
+  {
+    "id": "focused-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "focused-build.log.gz"
+  },
+  {
+    "id": "build2",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "build2.log.gz"
+  },
+  {
+    "id": "build3",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "build3.log.gz"
+  },
+  {
+    "id": "review-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "review-build.log.gz"
+  },
+  {
+    "id": "review-build2",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "review-build2.log.gz"
+  },
+  {
+    "id": "review-build3",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -p:BuildProjectReferences=false",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "review-build3.log.gz"
+  },
+  {
+    "id": "new",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*TerminalWakeupsPersistRecoveryMembershipThroughHostRegistration' -method '*FixtureConfigurationFailureDisposesTheCreatedBuilder' -method '*BackgroundReadsDuringDeniedHttpQueryStayOutsideRequestObservation' -method '*Event_delivery_and_actor_callbacks_require_the_sidecar_channel' -method '*SuccessfulReplayClearsDeliveryFailureAndNewFailuresStartIndependently' -result-xml /tmp/works-five-sdk-boundary-new.xml",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "new.log.gz"
+  },
+  {
+    "id": "new2",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*TerminalWakeupsPersistRecoveryMembershipThroughHostRegistration' -method '*FixtureConfigurationFailureDisposesTheCreatedBuilder' -method '*BackgroundReadsDuringDeniedHttpQueryStayOutsideRequestObservation' -method '*Event_delivery_and_actor_callbacks_require_the_sidecar_channel' -method '*SuccessfulReplayClearsDeliveryFailureAndNewFailuresStartIndependently' -result-xml /tmp/works-five-sdk-boundary-new2.xml",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "new2.log.gz"
+  },
+  {
+    "id": "review-new",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*TerminalWakeupsPersistRecoveryMembershipThroughHostRegistration' -method '*FixtureConfigurationFailureDisposesTheCreatedBuilder' -method '*BackgroundReadsDuringDeniedHttpQueryStayOutsideRequestObservation' -method '*Event_delivery_and_actor_callbacks_require_the_sidecar_channel' -method '*SuccessfulReplayClearsDeliveryFailureAndNewFailuresStartIndependently' -result-xml /tmp/works-five-sdk-boundary-review-new.xml",
+    "exit_code": 1,
+    "qualifying": false,
+    "log": "review-new.log.gz"
+  },
+  {
+    "id": "query",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -method '*BackgroundReadsDuringDeniedHttpQueryStayOutsideRequestObservation' -result-xml /tmp/works-five-sdk-boundary-query.xml",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "query.log.gz"
+  },
+  {
+    "id": "architecture-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj --configuration Debug --no-restore -m:1",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "architecture-build.log.gz"
+  },
+  {
+    "id": "architecture",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll -result-xml /tmp/works-five-sdk-boundary-architecture.xml",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "architecture.log.gz"
+  },
+  {
+    "id": "focused",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class '*WorksSdkRecoveryCompositionTests' -class '*WorksAppHostSmokeHarnessTests' -class '*WorksSdkProtectedHttpTests' -class '*WorksSdkProjectionQueryTests' -result-xml /tmp/works-five-sdk-boundary-focused.xml",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "focused.log.gz"
+  },
+  {
+    "id": "full-debug-build",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "final-full-build.log.gz"
+  },
+  {
+    "id": "initial-format",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "exit_code": 2,
+    "qualifying": false,
+    "log": "format.log.gz"
+  },
+  {
+    "id": "format-fix",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --include tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "exit_code": 0,
+    "qualifying": false,
+    "log": "format-fix.log.gz"
+  },
+  {
+    "id": "format-final",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "format-final.log.gz"
+  },
+  {
+    "id": "final-format",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet format whitespace Hexalith.Works.slnx --no-restore --verify-no-changes --include tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryCompositionTests.cs",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "final-format.log.gz"
+  },
+  {
+    "id": "commitlint",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "npm run commitlint -- --edit /tmp/works-five-sdk-boundary-commit.txt",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "commitlint.log.gz",
+    "validated_message": "test: close five deferred SDK boundary verification gaps"
+  },
+  {
+    "id": "fetch",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "git fetch origin",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "fetch.log.gz"
+  },
+  {
+    "id": "deterministic",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class- '*SmokeTests' -class- '*Platform*' -result-xml /tmp/works-five-sdk-boundary-deterministic.xml",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "deterministic.log.gz"
+  },
+  {
+    "id": "whitespace",
+    "cwd": "/home/administrator/projects/hexalith/works",
+    "command": "git -c core.whitespace=cr-at-eol diff --check",
+    "exit_code": 0,
+    "qualifying": true,
+    "log": "whitespace.log.gz"
+  }
+]
