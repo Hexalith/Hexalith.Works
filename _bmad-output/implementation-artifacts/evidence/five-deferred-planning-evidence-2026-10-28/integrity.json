@@ -1,0 +1,40 @@
+{
+  "_bmad-output/implementation-artifacts/epic-4-context.md": {
+    "baselineSha256": "4f149c17e800bd3dd1ca219fd7b1ee7ca2f0a9912575b36ae1191f32a97e7aab",
+    "frozenIntentUnchanged": true
+  },
+  "_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md": {
+    "baselineSha256": "5e896a616fe247a89989cb0bd0d2fb54df8662645866a23380b63059030af659",
+    "frozenIntentUnchanged": true
+  },
+  "_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md": {
+    "baselineSha256": "00048e357e39e8508fef544302fe5f24b039f52ffab58be90e851df0a35c72a9",
+    "frozenIntentUnchanged": true
+  },
+  "_bmad-output/implementation-artifacts/deferred-work.md": {
+    "baselineSha256": "52b0b4a6cbc05796252ea247aba9447792a1ed74da68e53a90d62b2b7ed9c5eb",
+    "frozenIntentUnchanged": true
+  },
+  "ledger": {
+    "canonicalClosures": 5,
+    "aggregateAliases": 1,
+    "insertedLines": 12,
+    "originalBytesPreserved": true
+  },
+  "preExistingArchitectureFailure": {
+    "docs/eventstore-api-surface-constraints.md": {
+      "unchangedFromBaseline": true,
+      "sha256": "8218401841ad72274f9a3d511539bc22542f148613f0e098b01e6c3b8d7f8414"
+    },
+    "docs/boundary-decision-record.md": {
+      "unchangedFromBaseline": true,
+      "sha256": "f441bfc4019dc9f906988935b6c612369ebd195f5b2ac7efb14889a8c193ec4f"
+    },
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/EventStoreApiSurfaceCharacterizationTests.cs": {
+      "unchangedFromBaseline": true,
+      "sha256": "621736e1296fb3291acb06dbe1482a767f70fbce32362633016792c46596ae94"
+    },
+    "baselineGitlink": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "baselineMarker": "39a3d4dc98b786244e732d628a0828b9d19ad96e"
+  }
+}

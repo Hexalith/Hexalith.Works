@@ -209,7 +209,7 @@ Cleanup precedence is deliberate: caller cancellation wins after cleanup; otherw
 - Run the Unit, Property, and Architecture test binaries directly -- expected: all pass with zero skips.
 - Run the four Story 4.8 reminder/mTLS Tier-3 facts when prerequisites are available, then `aspire describe --format json` -- expected: live facts pass without skips and no AppHost remains; otherwise record the exact prerequisite or runtime blocker without claiming live credit.
 
-**Observed 2026-09-20 (final reviewed tree):**
+**Observed 2026-09-20 (historical spec-10 checkpoint):**
 - Release build: passed, 0 warnings and 0 errors (`TMPDIR=/var/tmp/story48-root/tmp`).
 - `WorksAppHostSmokeHarnessTests`: 33/33 passed, 0 skipped.
 - Non-smoke Integration: 526/526 passed, 0 skipped.
@@ -218,6 +218,16 @@ Cleanup precedence is deliberate: caller cancellation wins after cleanup; otherw
 - Architecture: 268/268 passed, 0 skipped.
 - Story 4.8 reminder/mTLS Tier-3 aggregate: 4/4 passed, 0 skipped, 1020.742s.
 - `aspire describe --format Json --non-interactive`: no running AppHost found after the final live run.
+
+**Superseding evidence (2026-09-21; reconciled 2026-10-28):**
+The observations above qualify only that historical spec-10 checkpoint. The later
+[spec-11 closeout](spec-4-8-register-and-reconcile-date-reminders-durably-11.md)
+records harness **41/41**, non-smoke Integration **534/534**, Unit **568/568**,
+Property **3/3**, and Architecture **268/268**, all with zero skips. Spec-11 did not
+repeat the Tier-3 aggregate; its parent closeout retains the preceding 0/4 attempt
+as the latest live result at that checkpoint and claims no fresh live acceptance credit.
+The earlier 4/4 result above remains historical evidence. Neither checkpoint qualifies
+the current repository tree; later qualification records retain their own source bindings.
 
 ### Review Findings (2026-09-20, bmad-code-review, spec-10 close-out `c4c925b...HEAD`)
 

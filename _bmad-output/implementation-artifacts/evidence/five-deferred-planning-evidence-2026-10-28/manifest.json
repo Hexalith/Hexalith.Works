@@ -1,0 +1,292 @@
+{
+  "baseline": "2e331b01237a15686a7722a867a8edb956042dc3",
+  "canonicalFindings": 5,
+  "aggregateAliasNotCounted": true,
+  "configuration": "Debug/source",
+  "sources": {
+    "_bmad-output/implementation-artifacts/epic-4-context.md": "3e83f4373b8c3fbd229eb0b6575ebb3c3f091b485735747c8537244b33971a13",
+    "_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md": "c5fc71d17604fc59889092199bccdbf78911a7a2131265bf8fb6660271f80645",
+    "_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md": "34621ecbf25a27a7d99b8f68683de182b2a88b647a0499bc7906ec4896dc600d",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "534ae910c1459175737c04878a03fa4ff1ebd2661addc961e004d162c7908a8d",
+    "tests/Hexalith.Works.ArchitectureTests/FitnessTests/PlanningEvidenceDocumentationTests.cs": "d9be023ccc492ed194e84057cea21c2212bffa0b92f764f88d818ea9cd0f22a4"
+  },
+  "assemblies": {
+    "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll": "c4ad3616a8671250029e5a7a2c1ef8780d3e660f1abcc90312457f988da887aa",
+    "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll": "33a78b2093b8f3c38cb2be1ca64bbfd487a8d7d40f0d1dd7fe9daf38db5524a1"
+  },
+  "results": {
+    "before": {
+      "total": "5",
+      "passed": "0",
+      "failed": "5",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    },
+    "after": {
+      "total": "5",
+      "passed": "5",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    },
+    "lifecycle": {
+      "total": "144",
+      "passed": "144",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    },
+    "architecture": {
+      "total": "404",
+      "passed": "403",
+      "failed": "1",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    },
+    "final-focused": {
+      "total": "5",
+      "passed": "5",
+      "failed": "0",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    },
+    "final-architecture": {
+      "total": "404",
+      "passed": "403",
+      "failed": "1",
+      "skipped": "0",
+      "not-run": "0",
+      "errors": "0"
+    }
+  },
+  "artifacts": {
+    "build-initial.log.gz": "5b1ce9ecd3a9adb3c8462f1d7d7f363ecee00c44539ab0df74d853ceb27a98fa",
+    "before.log.gz": "25eb5c6513b2d9914d7c5bc410ca5a9cd99c9b1e44cda420bbee01b209b851f1",
+    "before.xml.gz": "513c46fb2c75e530c797ce597b894685851985cd0385909c9474a0ddbd3975cf",
+    "after.log.gz": "d25a9cc61f7512864834014f61ea96104529a77df4ad5dcd806be6b3624f71d5",
+    "after.xml.gz": "5c035e85a649f15aff6d921b515e2d796051c50786aef79bf42095ca23b83e0a",
+    "unit-build.log.gz": "beb4716f46b3e5cfd32c5ee8925829c8e792a22a180fc662539f1db612b54eb0",
+    "lifecycle.log.gz": "2fa83cc587744be497c304311543d506b10b394ce8529d4ae40061d8808decd3",
+    "lifecycle.xml.gz": "3f2ba4367fcd2217dd4fe6534a72980608b4d4a05880090d6fd7e0060602241d",
+    "architecture.log.gz": "155bb34fa7eaa5ea4762292f42975e9df1e792baf3d240f7e8b35dbb33678872",
+    "architecture.xml.gz": "5ef30af448945f99e2f4c2a08fd77e0ea41e5028e504573a12c236e56f6b4d01",
+    "format.log.gz": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+    "commitlint.log.gz": "98a3b3863713de5ac9443e91a65ef395d56def16794a6a17ab2476d3836fa36c",
+    "final-build.log.gz": "a344d7d636ea506e7802a6fd5015b99bccb50e724463357c1a026ab42ec8d3b9",
+    "final-focused.log.gz": "ebc82b942db1714ed306d5784aea044b0b5fa740572592545319a55dd841df5a",
+    "final-focused.xml.gz": "e888ef81e1fd953f111d3e0800dd64763ca4e137de2434be6370d4e61465cb0f",
+    "final-architecture.log.gz": "206159590e1dfe52ccaa4a30522d48afc5bfc012528be87948781184af1d7f0a",
+    "final-architecture.xml.gz": "2bc7c03ab2070a098a5d0f4297ebea944ea3b376d200505813726ca2a1e35e67",
+    "final-format.log.gz": "b008d210d8e1dc298c43511548c0be5a662cc8fd4920972a30f270ab9ae0b42b",
+    "integrity.json": "b446629de43f1091af0914e20db580c7f23e808a7e1f88e5bc44aee1b888be77",
+    "verify.py": "e0f135185929e361c4fe4bcc15917de768923f680d52d6fcfd2d5f86a3255178",
+    "review.md": "a611218c9c49f5ff0e9a9bd96136cc5bbb6ab87b3058ab720614584960ab9993",
+    "README.md": "61c46660d2a98c7fb136152cca327e0e6d877cb23e23b87cb9d7221735d9b2b9",
+    "integrity-final.log.gz": "38e4e44bdaf41ec89cc05792a99ed1f5b185b29f92a5b11ff0f9602d7aefbf8d"
+  },
+  "rootDeclaredGitlinks": {
+    "references/Hexalith.AI.Tools": "3f194e17174994d308ec84af9ee2b5aa68674d0d",
+    "references/Hexalith.Builds": "81ab049208678bd6616828824729c0ddac02f7d1",
+    "references/Hexalith.Chatbot": "3e1f6e10c57d8ef9ef9fed3d82d18049fa8e6557",
+    "references/Hexalith.Commons": "3edfbdafc7d4fa915286dce8a37dc4cc7c06085a",
+    "references/Hexalith.Conversations": "861f13a2e728c3847a191b0688070762b1bfa29e",
+    "references/Hexalith.EventStore": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+    "references/Hexalith.FrontComposer": "5f665c4d38afb2255a7dde4620330e09824a40a1",
+    "references/Hexalith.McpCli": "2d7311cbbcc592c0ea0348463037389251d1cb4b",
+    "references/Hexalith.Parties": "9239c531f3b0cbb4a998c419e537463b597ff14b",
+    "references/Hexalith.Platform": "8de90958bc41b7fd01b7ed22b8ab364447a800e4",
+    "references/Hexalith.PolymorphicSerializations": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+    "references/Hexalith.Projects": "0e45105476902fcfce1f8dbd8416d7234bb16b41",
+    "references/Hexalith.Tenants": "7ddb864cda5e942925b056391617eae4895c1253"
+  },
+  "initialExecutionAssemblySha256": "f009f6a8bd01051f2101f27cb8263057c2d97c96640271f838897974059ecbe2",
+  "initialTestSourceSha256": "f22cea7ade8ca5d63cb723592db5d931427039eebef17650e09a07c79bdfa3bf",
+  "commands": [
+    {
+      "lane": "build-initial",
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1"
+      ],
+      "exitCode": 0,
+      "log": "build-initial.log.gz",
+      "result": null
+    },
+    {
+      "lane": "before",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-class",
+        "*PlanningEvidenceDocumentationTests",
+        "-result-xml",
+        "/tmp/works-five-planning-before.xml"
+      ],
+      "exitCode": 1,
+      "log": "before.log.gz",
+      "result": "before.xml.gz"
+    },
+    {
+      "lane": "after",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-class",
+        "*PlanningEvidenceDocumentationTests",
+        "-result-xml",
+        "/tmp/works-five-planning-after.xml"
+      ],
+      "exitCode": 0,
+      "log": "after.log.gz",
+      "result": "after.xml.gz"
+    },
+    {
+      "lane": "unit-build",
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.UnitTests/Hexalith.Works.UnitTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1"
+      ],
+      "exitCode": 0,
+      "log": "unit-build.log.gz",
+      "result": null
+    },
+    {
+      "lane": "lifecycle",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+        "-class",
+        "*WorkItemLifecycleTests",
+        "-result-xml",
+        "/tmp/works-five-planning-lifecycle.xml"
+      ],
+      "exitCode": 0,
+      "log": "lifecycle.log.gz",
+      "result": "lifecycle.xml.gz"
+    },
+    {
+      "lane": "architecture",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-result-xml",
+        "/tmp/works-five-planning-architecture.xml"
+      ],
+      "exitCode": 1,
+      "log": "architecture.log.gz",
+      "result": "architecture.xml.gz"
+    },
+    {
+      "lane": "format",
+      "command": [
+        "dotnet",
+        "format",
+        "whitespace",
+        "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+        "--no-restore",
+        "--verify-no-changes",
+        "--include",
+        "tests/Hexalith.Works.ArchitectureTests/FitnessTests/PlanningEvidenceDocumentationTests.cs"
+      ],
+      "exitCode": 0,
+      "log": "format.log.gz",
+      "result": null
+    },
+    {
+      "lane": "commitlint",
+      "command": [
+        "npm",
+        "run",
+        "commitlint",
+        "--",
+        "--edit",
+        "/tmp/works-five-planning-commit.txt"
+      ],
+      "exitCode": 0,
+      "log": "commitlint.log.gz",
+      "result": null
+    },
+    {
+      "lane": "final-build",
+      "command": [
+        "dotnet",
+        "build",
+        "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1"
+      ],
+      "exitCode": 0,
+      "log": "final-build.log.gz",
+      "result": null
+    },
+    {
+      "lane": "final-focused",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-class",
+        "*PlanningEvidenceDocumentationTests",
+        "-result-xml",
+        "/tmp/works-five-planning-final-focused.xml"
+      ],
+      "exitCode": 0,
+      "log": "final-focused.log.gz",
+      "result": "final-focused.xml.gz"
+    },
+    {
+      "lane": "final-architecture",
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-result-xml",
+        "/tmp/works-five-planning-final-architecture.xml"
+      ],
+      "exitCode": 1,
+      "log": "final-architecture.log.gz",
+      "result": "final-architecture.xml.gz"
+    },
+    {
+      "lane": "final-format",
+      "command": [
+        "dotnet",
+        "format",
+        "whitespace",
+        "tests/Hexalith.Works.ArchitectureTests/Hexalith.Works.ArchitectureTests.csproj",
+        "--no-restore",
+        "--verify-no-changes",
+        "--include",
+        "tests/Hexalith.Works.ArchitectureTests/FitnessTests/PlanningEvidenceDocumentationTests.cs"
+      ],
+      "exitCode": 0,
+      "log": "final-format.log.gz",
+      "result": null
+    },
+    {
+      "lane": "integrity-final",
+      "command": [
+        "python3",
+        "_bmad-output/implementation-artifacts/evidence/five-deferred-planning-evidence-2026-10-28/verify.py"
+      ],
+      "exitCode": 0,
+      "log": "integrity-final.log.gz",
+      "result": null
+    }
+  ]
+}

@@ -1118,7 +1118,11 @@ archived: 2026-10-23
 ## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-11.md (2026-09-21)
 
 - Spec-10 Verification Observed is still titled “final reviewed tree” and lists harness 33/33, Integration 526/526, and live 4/4, which can be read as current against spec-11’s 41/534 and no-new-live-credit evidence. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md:212]
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md) — Labeled spec-10 observations historical, retained all original counts and linked superseding spec-11 41/534 evidence, its preceding 0/4 attempt and no fresh live acceptance credit. Neither checkpoint qualifies the current tree. Five section-scoped architecture regressions reproduce all five omissions before correction; commands, results and independent review are retained in [the evidence packet](evidence/five-deferred-planning-evidence-2026-10-28/README.md).
 - The dated 2026-09-20 spec-10 five-patch close-out File List still omits `spec-4-8-register-and-reconcile-date-reminders-durably-10.md`, unlike earlier dated blocks that include their implementing specs. Deferred: pre-existing spec-10 BH-12 inventory gap, not one of spec-11’s six named patches. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:711]
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md) — Added the implementing spec-10 path to its exact dated parent File List; original inventory entries and review findings remain intact. Five section-scoped architecture regressions reproduce all five omissions before correction; commands, results and independent review are retained in [the evidence packet](evidence/five-deferred-planning-evidence-2026-10-28/README.md).
 
 ## Deferred from: final bmad-build review of Story 4.8 (2026-09-21)
 
@@ -1304,6 +1308,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore the explicit runtime persisted-end-state and recovery evidence requirement in the next Epic 4 context refresh.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md) — Restored persisted end-state plus platform-hosted lifecycle/recovery, restart and retry evidence in the context requirements; API/mock observations alone cannot qualify runtime correctness (epics NFR15). Five section-scoped architecture regressions reproduce all five omissions before correction; commands, results and independent review are retained in [the evidence packet](evidence/five-deferred-planning-evidence-2026-10-28/README.md).
   evidence: Story 4.11 continuation review C12-BH9 (2026-10-08). The earlier context refresh dropped that sentence while retaining Tier-1 isolation. Story 4.11 itself retains executed persisted-state evidence for all five frozen matrix rows; the omission affects future context-guided stories.
 
 ## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-09, C15)
@@ -1348,12 +1354,16 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore the terminal-work mutation and defined no-op rule in the Epic 4 context.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md) — Restored terminal mutation rejection with defined duplicate no-ops for all four terminal statuses, linking the authoritative permitted pairs and non-requeue Reject condition. Five section-scoped architecture regressions reproduce all five omissions before correction; commands, results and independent review are retained in [the evidence packet](evidence/five-deferred-planning-evidence-2026-10-28/README.md).
   evidence: Story 4.11 review C27-EC8 (2026-10-10), low. The refreshed `epic-4-context.md` omits the rule, although `docs/lifecycle-transition-matrix.md:196` requires terminal invalidity to reject except for defined idempotent no-ops. Agent-context changes are deferred by the build workflow.
 
 ## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-10-10, C29)
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Restore the distinct idempotent no-op outcome in Epic 4 headless experience guidance.
+  status: done 2026-10-28
+  resolution: [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md) — Restored the fifth outcome class and distinguished unchanged work from newly accepted work (epics UX-DR1/18). Five section-scoped architecture regressions reproduce all five omissions before correction; commands, results and independent review are retained in [the evidence packet](evidence/five-deferred-planning-evidence-2026-10-28/README.md).
   evidence: Story 4.11 review C29-BH4 (2026-10-10), low. `epic-4-context.md:48` lists four outcome classes but omits the distinct idempotent no-op required by `epics.md:182`; future surfaces could report a no-op as accepted work. This is an agent-context correction.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
@@ -1366,6 +1376,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Apply the eight queued Epic 4 context corrections in one `epic-4-context.md` refresh before the next Epic 4 story is drafted.
+  status: done 2026-10-28
+  resolution: Aggregate alias, not an additional finding. Five constituent corrections were closed by `spec-five-deferred-epic-context.md` on 2026-10-23; the remaining C12-BH9, C27-EC8 and C29-BH4 corrections are closed by [spec-five-deferred-planning-evidence.md](spec-five-deferred-planning-evidence.md). All eight are now represented; counted only through their canonical entries.
   evidence: Story 4.11 review C30-BH11 (2026-10-10), low. The eight one-line corrections are C3-BH9, C12-BH7, C12-BH9, C27-BH6, C27-BH7, C27-EC8, C29-BH4, and C29-BH5 (`deferred-work.md:1195-1262`). They sit under three review headings with no owner or trigger, and each delta review raises them again (C29 carried six). This is an agent-context correction.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`

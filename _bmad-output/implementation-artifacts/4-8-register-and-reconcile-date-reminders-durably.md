@@ -1016,6 +1016,7 @@ claude-opus-4-8 (Claude Code dev-story workflow).
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs`
 - `tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarnessTests.cs`
 - `tests/Hexalith.Works.IntegrationTests/HangingSchedulerVolumeProbe.cs`
+- `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-10.md`
 - `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
 - `_bmad-output/implementation-artifacts/deferred-work.md`
 - `_bmad-output/implementation-artifacts/sprint-status.yaml`
