@@ -1,0 +1,339 @@
+{
+  "status": "passed",
+  "configuration": "Debug",
+  "mode": "source-debug",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-01.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "ls-files",
+        "--stage",
+        "--",
+        "references/Hexalith.EventStore"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-02.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-03.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-04.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--binary",
+        "--no-renames",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-05.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "-z"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-06.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-07.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "ls-files",
+        "--stage",
+        "--",
+        "references/Hexalith.PolymorphicSerializations"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-08.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-09.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-10.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--binary",
+        "--no-renames",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-11.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "-z"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-12.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-13.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "dotnet",
+        "msbuild",
+        "/home/administrator/projects/hexalith/works/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj",
+        "-nologo",
+        "-p:HexalithBuildsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.Builds",
+        "-p:Configuration=Release",
+        "-p:UseHexalithProjectReferences=false",
+        "-p:UseNuGetDeps=true",
+        "-p:HexalithEventStoreFromSource=false",
+        "-p:HexalithPolymorphicSerializationsFromSource=false",
+        "-getProperty:HexalithEventStoreVersion,HexalithPolymorphicSerializationsVersion"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-14.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "dotnet",
+        "restore",
+        "/home/administrator/projects/hexalith/works/Hexalith.Works.slnx",
+        "-p:Configuration=Debug",
+        "-p:HexalithBuildsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.Builds",
+        "-p:UseHexalithProjectReferences=true",
+        "-p:UseNuGetDeps=false",
+        "-p:HexalithEventStoreFromSource=true",
+        "-p:HexalithPolymorphicSerializationsFromSource=true",
+        "-p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "-p:HexalithPolymorphicSerializationsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations"
+      ],
+      "timeoutSeconds": 1800,
+      "log": "command-15.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "dotnet",
+        "build",
+        "/home/administrator/projects/hexalith/works/Hexalith.Works.slnx",
+        "--configuration",
+        "Debug",
+        "--no-restore",
+        "-m:1",
+        "-p:HexalithBuildsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.Builds",
+        "-p:UseHexalithProjectReferences=true",
+        "-p:UseNuGetDeps=false",
+        "-p:HexalithEventStoreFromSource=true",
+        "-p:HexalithPolymorphicSerializationsFromSource=true",
+        "-p:HexalithEventStoreRoot=/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "-p:HexalithPolymorphicSerializationsRoot=/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations"
+      ],
+      "timeoutSeconds": 1800,
+      "log": "command-16.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--binary",
+        "--no-renames",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-17.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "-z"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-18.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-19.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--binary",
+        "--no-renames",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-20.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "-z"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-21.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/home/administrator/projects/hexalith/works/references/Hexalith.PolymorphicSerializations",
+        "rev-parse",
+        "HEAD"
+      ],
+      "timeoutSeconds": 60,
+      "log": "command-22.log",
+      "exitCode": 0
+    }
+  ],
+  "dependencies": {
+    "references/Hexalith.EventStore": {
+      "sourceRevision": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+      "releaseProperty": "HexalithEventStoreVersion",
+      "releaseVersion": "3.128.3"
+    },
+    "references/Hexalith.PolymorphicSerializations": {
+      "sourceRevision": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "releaseProperty": "HexalithPolymorphicSerializationsVersion",
+      "releaseVersion": "1.19.5"
+    }
+  },
+  "sourceOverlays": {
+    "references/Hexalith.EventStore": {
+      "revision": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+      "trackedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untrackedFiles": {}
+    },
+    "references/Hexalith.PolymorphicSerializations": {
+      "revision": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "trackedDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "untrackedFiles": {}
+    }
+  },
+  "gitlinkSurface": "index"
+}

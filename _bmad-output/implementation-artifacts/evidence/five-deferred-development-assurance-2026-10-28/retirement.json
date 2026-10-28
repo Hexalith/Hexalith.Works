@@ -1,0 +1,102 @@
+{
+  "status": "passed",
+  "ownerRevision": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+  "retirementRevision": "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+  "parentRevision": "b7ba9bb1fdff85fb47817d35506bd6ca81b23d70",
+  "retiredPaths": {
+    "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/consumer/Consumer.csproj": "58a8bab61dab098137e9a0674be1f4b3e4534598",
+    "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v3109/Probe.csproj": "0820d77ddaadfcb8dcfb85e15fcd7fbd7c00e7c8",
+    "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v370/Probe.csproj": "a868b2f067c524fa279bcba83eeeff046dd2e137",
+    "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/verify_public_packages.py": "0a962bf97d34f2505010cf1f7a0b8fb8276ffcf1",
+    "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/Program.cs": "d506a6a853683311f45b1ae65f5b115a5f87cf9d"
+  },
+  "commands": [
+    {
+      "arguments": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdout": "36c78f3435d2d492a73f1b0707cf865c8735d740\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "rev-parse",
+        "--show-toplevel"
+      ],
+      "exitCode": 0,
+      "stdout": "/home/administrator/projects/hexalith/works/references/Hexalith.EventStore\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "rev-parse",
+        "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961^"
+      ],
+      "exitCode": 0,
+      "stdout": "b7ba9bb1fdff85fb47817d35506bd6ca81b23d70\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "merge-base",
+        "--is-ancestor",
+        "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+        "36c78f3435d2d492a73f1b0707cf865c8735d740"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "ls-tree",
+        "-r",
+        "b7ba9bb1fdff85fb47817d35506bd6ca81b23d70",
+        "--",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/consumer/Consumer.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v3109/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v370/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/verify_public_packages.py",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/Program.cs"
+      ],
+      "exitCode": 0,
+      "stdout": "100644 blob 58a8bab61dab098137e9a0674be1f4b3e4534598\t_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/consumer/Consumer.csproj\n100644 blob d506a6a853683311f45b1ae65f5b115a5f87cf9d\t_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/Program.cs\n100644 blob 0820d77ddaadfcb8dcfb85e15fcd7fbd7c00e7c8\t_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v3109/Probe.csproj\n100644 blob a868b2f067c524fa279bcba83eeeff046dd2e137\t_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v370/Probe.csproj\n100644 blob 0a962bf97d34f2505010cf1f7a0b8fb8276ffcf1\t_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/verify_public_packages.py\n",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "ls-tree",
+        "-r",
+        "6a0b6441f6d78a3007678a1d0ec336e9cb8ff961",
+        "--",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/consumer/Consumer.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v3109/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v370/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/verify_public_packages.py",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/Program.cs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "arguments": [
+        "ls-tree",
+        "-r",
+        "36c78f3435d2d492a73f1b0707cf865c8735d740",
+        "--",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/consumer/Consumer.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v3109/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/v370/Probe.csproj",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/verify_public_packages.py",
+        "_bmad-output/implementation-artifacts/evidence/6-1-p1r-3109/rollback-probe/Program.cs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "scope": "Retirement only; no current public-package/runtime qualification"
+}

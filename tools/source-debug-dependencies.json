@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "dependencies": {
+    "references/Hexalith.EventStore": {
+      "sourceRevision": "36c78f3435d2d492a73f1b0707cf865c8735d740",
+      "releaseProperty": "HexalithEventStoreVersion",
+      "releaseVersion": "3.128.3"
+    },
+    "references/Hexalith.PolymorphicSerializations": {
+      "sourceRevision": "221ac4592ba908ae7661ba1fa9e2d1fcc23baee0",
+      "releaseProperty": "HexalithPolymorphicSerializationsVersion",
+      "releaseVersion": "1.19.5"
+    }
+  }
+}

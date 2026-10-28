@@ -1,0 +1,10 @@
+5ba68b2b71f7d610fe7619e0a930ac9d2a24980b3a721e6becdd825fa0430630  ../../../../.github/workflows/ci.yml
+e668d1f46dab3600d6f80b5e9b7b7ad88ee35a62bc98721a0a2d4ca5cd0059ba  ../../../../README.md
+622309d5f47186a69774b90190ad956b75bb5bde0f05b1b34e609e91e9b16222  ../../../../scripts/verify-source-debug.py
+c03b47fbe3f69750ef2df8acf3d0467f030e61a2da9016b169c95ad4a966ff68  ../../../../scripts/tests/test_source_debug_verification.py
+4d8e145ece002e834289a8a8c3235f3ac7493013c2a9344b054237956f5e6373  ../../../../tools/source-debug-dependencies.json
+4bf10cb7700476db01f2225301a132de3cb3d7f81ac29ad697ab687deb1b773f  ../../../../docs/development-assurance.md
+e15819727deb22051003e5a926581d914d5891f7b6fd7bc76d7f8714ab08ab60  ../../../../docs/eventstore-api-surface-constraints.md
+269254e2bc76e757fedf8e1d408c13210152e83fada4a2ea55943449565ea9b4  ../../../../docs/boundary-decision-record.md
+2ed381dc8f2d54f911b8cb210c02947fbd6d92972d6df8f5818d971c3ec56be3  ../../../../_bmad-output/implementation-artifacts/deferred-work.md
+1b817c02807633cc53e13a5463941055e4c0fc06ed3c108a20feb35d0770d377  ../../../../_bmad-output/implementation-artifacts/spec-five-deferred-development-assurance.md

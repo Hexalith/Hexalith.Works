@@ -1,0 +1,205 @@
+{
+  "baselineRevision": "3becf19a7470530c5a68ea3e84b832472769d431",
+  "status": "passed",
+  "canonicalDeferredClosures": 5,
+  "retirementClosures": 3,
+  "verificationChanges": 2,
+  "tests": {
+    "architecture": {
+      "total": 404,
+      "passed": 404,
+      "failed": 0,
+      "skipped": 0,
+      "runDate": "2026-10-28",
+      "runTime": "19:25:50",
+      "assembly": "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+      "sha256": "bbe6af60e6ff41aa532c83ea96115d127fe8eec9976d543adb375b05951b3f06",
+      "assemblyModifiedUtc": "2026-10-28T19:23:46.476116+00:00"
+    },
+    "unit": {
+      "total": 597,
+      "passed": 597,
+      "failed": 0,
+      "skipped": 0,
+      "runDate": "2026-10-28",
+      "runTime": "19:25:50",
+      "assembly": "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+      "sha256": "28adc93939bd3604c7d1cd8391165aea0a31e335f94381dc2d64ddac7109bb09",
+      "assemblyModifiedUtc": "2026-10-28T19:25:18.691971+00:00"
+    },
+    "property": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "runDate": "2026-10-28",
+      "runTime": "19:25:50",
+      "assembly": "tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+      "sha256": "06b46a0ea737fc4771bc11ebc053e693615c1f54072d45c41e767e51aad1b0c5",
+      "assemblyModifiedUtc": "2026-10-28T19:25:18.447961+00:00"
+    },
+    "integration": {
+      "total": 1043,
+      "passed": 1043,
+      "failed": 0,
+      "skipped": 0,
+      "runDate": "2026-10-28",
+      "runTime": "19:37:55",
+      "assembly": "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "sha256": "f0a3bf69f579ff604d0bd526ae36f0881008847c80f819de2fcabb75835794e5",
+      "assemblyModifiedUtc": "2026-10-28T19:36:01.957085+00:00"
+    },
+    "tooling": {
+      "total": 112,
+      "passed": 112,
+      "failed": 0,
+      "skipped": 0,
+      "retainedLog": "final-tooling-tests.log.gz"
+    }
+  },
+  "totalPassingTests": 2159,
+  "commands": [
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.ArchitectureTests/bin/Debug/net10.0/Hexalith.Works.ArchitectureTests.dll",
+        "-result-xml",
+        "/tmp/works-development-assurance/architecture.xml"
+      ],
+      "exitCode": 0,
+      "retainedLog": "architecture.log.gz",
+      "retainedXml": "architecture.xml.gz"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.UnitTests/bin/Debug/net10.0/Hexalith.Works.UnitTests.dll",
+        "-result-xml",
+        "/tmp/works-development-assurance/unit.xml"
+      ],
+      "exitCode": 0,
+      "retainedLog": "unit.log.gz",
+      "retainedXml": "unit.xml.gz"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.PropertyTests/bin/Debug/net10.0/Hexalith.Works.PropertyTests.dll",
+        "-result-xml",
+        "/tmp/works-development-assurance/property.xml"
+      ],
+      "exitCode": 0,
+      "retainedLog": "property.log.gz",
+      "retainedXml": "property.xml.gz"
+    },
+    {
+      "command": [
+        "dotnet",
+        "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+        "-class-",
+        "*SmokeTests",
+        "-class-",
+        "*Platform*",
+        "-result-xml",
+        "/tmp/works-development-assurance/integration-final.xml"
+      ],
+      "exitCode": 0,
+      "retainedLog": "integration.log.gz",
+      "retainedXml": "integration.xml.gz"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify-source-debug.py",
+        "--artifacts-path",
+        "/tmp/works-development-assurance/reviewed-source-debug"
+      ],
+      "exitCode": 0,
+      "result": "source-debug/result.json"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/verify-source-debug.py",
+        "--check-only",
+        "--artifacts-path",
+        "/tmp/works-development-assurance/reviewed-ci-preflight"
+      ],
+      "exitCode": 0,
+      "result": "ci-preflight/result.json"
+    },
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests"
+      ],
+      "exitCode": 0,
+      "retainedLog": "final-tooling-tests.log.gz"
+    },
+    {
+      "command": [
+        "uvx",
+        "--from",
+        "ruff==0.13.2",
+        "ruff",
+        "check",
+        "scripts/verify-source-debug.py",
+        "scripts/tests/test_source_debug_verification.py",
+        "_bmad-output/implementation-artifacts/evidence/five-deferred-development-assurance-2026-10-28/verify-retirement.py"
+      ],
+      "exitCode": 0,
+      "retainedLog": "ruff.log.gz"
+    },
+    {
+      "command": [
+        "/tmp/works-actionlint-cr5qkmdf/actionlint",
+        ".github/workflows/ci.yml"
+      ],
+      "exitCode": 0,
+      "retainedLog": "actionlint.log.gz"
+    },
+    {
+      "command": [
+        "node_modules/.bin/commitlint",
+        "--edit",
+        "/tmp/works-development-assurance/commit-message.txt"
+      ],
+      "exitCode": 0,
+      "retainedLog": "commitlint.log.gz"
+    },
+    {
+      "command": [
+        "git",
+        "-c",
+        "core.whitespace=cr-at-eol",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "reviewFindings": 8,
+  "reviewFindingsCorrected": 8,
+  "newDeferrals": 0,
+  "expectedFailingAdmissionMutations": 6,
+  "scope": "Local Debug/source compilation, CI Release/package identity preflight, deterministic tests and owner retirement. No fresh live Platform parity or current public-package authentication.",
+  "preliminaryInvocation": {
+    "command": [
+      "dotnet",
+      "tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll",
+      "-notclass",
+      "*SmokeTests",
+      "-notclass",
+      "*Platform*",
+      "-result-xml",
+      "/tmp/works-development-assurance/integration.xml"
+    ],
+    "exitCode": 3,
+    "error": "unknown option: -notclass",
+    "scope": "Argument parsing only; corrected -class- command qualifies Integration."
+  }
+}

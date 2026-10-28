@@ -1,0 +1,19 @@
+{
+  "baselineRevision": "3becf19a7470530c5a68ea3e84b832472769d431",
+  "baselineLedgerSha256": "7c72efbdceac1c87efcb57d450fdd953f994a12fbc93325607ffad8bf80a4a4e",
+  "currentLedgerSha256": "2ed381dc8f2d54f911b8cb210c02947fbd6d92972d6df8f5818d971c3ec56be3",
+  "removedAnnotations": [
+    "  status: done 2026-10-28",
+    "  resolution: `spec-five-deferred-development-assurance.md` \u2014 The local gate compares evaluated Release pins with explicit reviewed EventStore/PolymorphicSerializations source-version pairs and root gitlink/checkout identities before source compilation. Current API/boundary markers are reconciled through the existing independent drift/source-characterization controls. Different source/package producers remain explicit; no equivalence or live parity is claimed.",
+    "  status: done 2026-10-28",
+    "  resolution: `spec-five-deferred-development-assurance.md` \u2014 A reproducible local gate restores and compiles the complete solution with explicit Debug/source settings and retained failures/results. This is the current-policy replacement for the historical CI-Debug proposal: the required Hexalith baseline keeps CI Release/package-only. Hosted Debug CI and live parity are not claimed.",
+    "  status: done 2026-10-28",
+    "  resolution: `spec-five-deferred-development-assurance.md` \u2014 Superseded by upstream retirement 6a0b6441f6d78a3007678a1d0ec336e9cb8ff961: all three historical evidence projects are absent in the consumed owner source. Parent/retirement/current Git trees and ancestry are replay-verified; the obsolete exemption list is gone. This closes retired machinery, not current public compatibility qualification.",
+    "  status: done 2026-10-28",
+    "  resolution: `spec-five-deferred-development-assurance.md` \u2014 Superseded by the same upstream retirement: the exact historical verify_public_packages.py is deleted and has no current executable path. Parent/retirement/current Git trees and ancestry are replay-verified; no deleted replay is rerun or relabeled.",
+    "  status: done 2026-10-28",
+    "  resolution: `spec-five-deferred-development-assurance.md` \u2014 Superseded by the same upstream retirement: the exact rollback-probe/Program.cs and probe projects are deleted. Parent/retirement/current Git trees and ancestry are replay-verified; no historical URI-safety or current runtime requalification is claimed."
+  ],
+  "restoresExactBaseline": true,
+  "canonicalClosures": 5
+}

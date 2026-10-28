@@ -973,10 +973,14 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Reconcile the centrally pinned Hexalith package versions with the checked-out submodule commits, or gate the drift.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-development-assurance.md` — The local gate compares evaluated Release pins with explicit reviewed EventStore/PolymorphicSerializations source-version pairs and root gitlink/checkout identities before source compilation. Current API/boundary markers are reconciled through the existing independent drift/source-characterization controls. Different source/package producers remain explicit; no equivalence or live parity is claimed.
   evidence: Verified 2026-09-19: `git describe --tags` in `references/Hexalith.EventStore` reports `v3.106.0-15-g9de3fc77` while `references/Hexalith.Builds/Props/Directory.Packages.props:9` pins `HexalithEventStoreVersion` 3.106.0 (same shape for PolymorphicSerializations at 1.19.3). Debug compiles against source 15 commits ahead of the packages Release packs and publishes against. No fitness test compares the two; grepping the test tree for `3.106`, `HexalithEventStoreVersion` and `1.19.3` returns nothing. Whether drift should fail the build is a policy decision the frozen intent does not settle.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Add a Debug source-mode compile tier so the local development lane is actually verified.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-development-assurance.md` — A reproducible local gate restores and compiles the complete solution with explicit Debug/source settings and retained failures/results. This is the current-policy replacement for the historical CI-Debug proposal: the required Hexalith baseline keeps CI Release/package-only. Hosted Debug CI and live parity are not claimed.
   evidence: Verified 2026-09-19: `references/Hexalith.Builds/.github/workflows/domain-ci.yml:349` is the only build step and is `--configuration Release`; every `dotnet test` invocation there is `--configuration Release --no-build`, and `domain-release.yml:342` is Release-only too. The three Debug-aware fitness tests (`DependencyDirectionTests.cs:422,440` and the Debug/Release loop in `RuntimeAdapterGovernanceTests.cs`) all go through `MsBuildProjectEvaluation.TryEvaluate`, which builds a `Microsoft.Build.Evaluation.Project` and reads items without ever compiling. Nothing compiles the solution in Debug, so the sibling-source graph the dual-mode switch exists to serve can break while CI is fully green. Adding a Debug tier expands the CI contract beyond the spec's frozen description.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
@@ -1234,12 +1238,18 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Exclude the Story 6.1 P1R 3.109 version-pinned evidence projects from the shared consumer-package authority validator.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-development-assurance.md` — Superseded by upstream retirement 6a0b6441f6d78a3007678a1d0ec336e9cb8ff961: all three historical evidence projects are absent in the consumed owner source. Parent/retirement/current Git trees and ancestry are replay-verified; the obsolete exemption list is gone. This closes retired machinery, not current public compatibility qualification.
   evidence: Review findings R1-EC10 and R1-BH1. The three tracked `6-1-p1r-3109` evidence projects intentionally use exact public package versions and disable central package management, but `ContractsPackageDependencyTests._standaloneEvidenceProbeProjects` lists only the earlier 3.108.1 evidence. The broad Contracts binary confirms 18 deterministic validator errors. This is unrelated post-baseline Story 6.1 work.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Bound every external command in the Story 6.1 public-package evidence replay.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-development-assurance.md` — Superseded by the same upstream retirement: the exact historical verify_public_packages.py is deleted and has no current executable path. Parent/retirement/current Git trees and ancestry are replay-verified; no deleted replay is rerun or relabeled.
   evidence: Review finding R1-EC11. Network downloads use a 90-second timeout, but `verify_public_packages.py` invokes `git`, `dotnet nuget verify`, and the package validator through `subprocess.run` without a timeout, so a stalled tool can hang evidence replay indefinitely. This is unrelated post-baseline Story 6.1 work.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: URI-escape Story 6.1 rollback-probe state keys before placing them in Dapr state-read paths.
+  status: done 2026-10-28
+  resolution: `spec-five-deferred-development-assurance.md` — Superseded by the same upstream retirement: the exact rollback-probe/Program.cs and probe projects are deleted. Parent/retirement/current Git trees and ancestry are replay-verified; no historical URI-safety or current runtime requalification is claimed.
   evidence: Review finding R1-EC12. The probe writes the caller-supplied prefix as a JSON state key but interpolates it raw into the read URI. Documented evidence uses safe prefixes, yet reserved characters can select another path or query. This is unrelated post-baseline Story 6.1 work.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Establish whether an approved restore can contain reminder item state while omitting both its tenant registry and candidate index entries.

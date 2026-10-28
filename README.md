@@ -15,6 +15,27 @@ dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
 
 Do not use recursive submodule initialization.
 
+Run the local source verification tier after initializing these dependencies:
+
+```bash
+python3 scripts/verify-source-debug.py --artifacts-path /tmp/works-source-debug
+```
+
+It checks the reviewed EventStore and PolymorphicSerializations source/Release-version pairs in
+`tools/source-debug-dependencies.json`, then restores and compiles the full solution in explicit
+Debug/source mode. A changed package pin, gitlink or checkout requires reviewing that pairing; the
+gate never updates dependencies. It hashes Git-visible tracked/untracked source edits and checks their contents again after compilation,
+so changed inputs cannot retain a passing result. Logs and `result.json` retain failed
+commands as well as successful compilation. CI runs the same identity preflight with `--check-only`,
+using Release/package evaluation without restoring or compiling the Debug graph. The local tier
+complements CI's required Release/package validation; it does not run live Platform parity or authenticate package archives.
+
+The current EventStore source is six commits beyond `v3.128.3`; PolymorphicSerializations source is
+exactly `v1.19.5`. These are explicitly reviewed development pairings, not a claim that the Debug
+and Release producers have identical behavior. Re-run source characterization and the local gate
+when changing the pairings. See the [development assurance closure](docs/development-assurance.md)
+for the historical tooling retirements and validation boundaries.
+
 The deterministic certificate-refusal integration controls require Linux and the `openssl` executable
 on `PATH`. Other providers remain inconclusive in the live proof; the native tests explicitly report
 unsupported runners, and the repository's `failSkips` setting keeps those runs from qualifying.

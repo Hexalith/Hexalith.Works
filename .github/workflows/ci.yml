@@ -124,8 +124,10 @@ jobs:
         run: pipx install ruff==0.13.2
       - name: Lint release and validation scripts
         run: bash scripts/lint-scripts.sh
-      - name: Initialize root helpers and Builds history for tooling tests
-        run: git submodule update --init -- references/Hexalith.Platform references/Hexalith.Builds
+      - name: Initialize root helpers and reviewed source identities for tooling tests
+        run: >-
+          git submodule update --init -- references/Hexalith.Platform references/Hexalith.Builds
+          references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
@@ -134,5 +136,16 @@ jobs:
           node-version: '24'
       - name: Install locked release tooling for hook permission checks
         run: npm ci --ignore-scripts
+      - name: Check reviewed source and Release package identities
+        run: >-
+          python3 scripts/verify-source-debug.py --check-only
+          --artifacts-path "${{ runner.temp }}/works-source-pairs"
+      - name: Preserve source identity checks
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: works-source-pairs
+          if-no-files-found: error
+          path: ${{ runner.temp }}/works-source-pairs/
       - name: Run release tooling regression tests
         run: python3 -m unittest discover -s scripts/tests
