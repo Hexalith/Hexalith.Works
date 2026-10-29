@@ -2171,3 +2171,19 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
   status: done 2026-10-28
   resolution: `spec-five-deferred-proof-requalification.md` — A behavior-preserving per-key acquisition extraction supports real-Redis command gates before DUMP, type and atomic hash observation. Natural server-time-qualified expiry either refuses acquisition, skips the absent key, or captures an atomically empty logical hash; no expired field qualifies as live evidence and corruption controls remain enforced. No expiry retry or broader capture admission is needed for this contract.
   evidence: Existing capture enumerates keys before separate DUMP/TTL/type reads. If the last field expires before DUMP or type acquisition, capture may refuse before the atomic hash observation. The selected P18-E2 correction qualifies fields present at capture that expire before restore or verification; it preserves fail-closed capture refusal. A deterministic command-gated real Redis control at those acquisition boundaries would establish whether expiry-aware capture retry or atomic whole-key acquisition is needed. No false capture pass or restored-state corruption was demonstrated.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-29, projection/rebuild/query group 3B)
+
+Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query integration tests.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29B-D1 — Show which AD-20 R-row proves staged-family restart with concurrent delivery on a durable store (unverified medium).
+  evidence: The Dapr/Redis restart fact was deleted and the five restart tests are in-memory only; `WORKS_SDK_DAPR_GRPC_ENDPOINT` no longer exists. The projection smoke is `Explicit` and run by `eng/verify_works_host.py`. Settled by naming the covering R-row proof.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29B-D2 — Map scenarios from the retired legacy-dispatcher tests to surviving tests (unverified medium).
+  evidence: About 2k lines of query-handler, adapter and generation tests and three post-commit dispatch tests were deleted. Watermark under rejection, mixed-unit and effortless-child refusals, and post-commit new-aggregate admission were not shown to survive. Settled by a scenario-to-test map.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29B-D3 — Confirm `WorksSdkRebuildBatchObserver` observes staged batches (unverified medium).
+  evidence: It wraps `IReadModelBatchStore` only. If the SDK stages through `IReadModelBatchStagingStore`, the ceiling assertion misses those batches. Settled by inspecting the SDK write path.

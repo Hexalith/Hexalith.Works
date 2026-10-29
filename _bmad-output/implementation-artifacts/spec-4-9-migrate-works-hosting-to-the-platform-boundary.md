@@ -2,7 +2,7 @@
 title: 'Migrate Works Hosting to the Platform Boundary'
 type: 'feature'
 created: '2026-09-22'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '18e94d388ab0abd8be363b361d0b2fee762359e7'
 route: 'dispatch'
 review_loop_iteration: 1
@@ -366,6 +366,28 @@ Rejected (60):
 - R27A-E35 — **low**; edge-case-hunter: a derived exception type would change only an evidence flag; pre-existing.
 - R27A-E36 — **low**; edge-case-hunter: the pre-existing historical condition reads use the outer token, which the runner timeout still bounds.
 - R27A-E37 — **low**; edge-case-hunter: same as R27A-V-O2.
+
+#### Review 2026-10-29 — projection, rebuild and query integration tests (group 3B)
+
+Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the 12 `tests/Hexalith.Works.IntegrationTests` files matching `*Projection*`, `*Rebuild*` and `*Query*` (+1,831/-2,424; 4,947 diff lines). Four layers ran in `full` mode; they raised 10 (blind-hunter), 20 (edge-case-hunter), 4 (acceptance-auditor) and 1+2 (verification-gap) findings. Verdicts were assigned per finding after checking the cited code, before grouping. Outcome: 0 decision-needed, 2 patch, 3 defer, 25 rejected.
+
+- [ ] [Review][Patch] R29B-V1: Test that `get-work-item` exposes only the opaque conversation correlation id [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs] — **medium**; verification-gap+blind-hunter+edge-case-hunter.
+  - The gap: deleting `GetWorkItemQueryHandlerTests.cs` removed the only default-run assertions that `WorkItemView.ConversationCorrelationId` is returned and that the serialized view carries only `conversationCorrelationId.value`. Verified: the only remaining reference alongside the handler is `WorksPlatformProjectionChecks.cs:349`, reached only by an `Explicit` fact; `WorkItemConversationProjectionTests` stops at the roll-up.
+  - Demonstration: removing the initializer at `src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs:244` fails no default-run test.
+  - Fix: add a fact beside the existing SDK-fold helpers (`WorkItemSharedProjectionRebuildHandlerTests.cs:910` already builds `GetWorkItemQueryHandler`) covering create-time conversation and `ConversationLinked` followed by a null link, asserting the view and its JSON shape.
+- [ ] [Review][Patch] R29B-A1: Pin the intended cause in the `UseSdkDelivery=false` host-discovery case [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs:49] — **low**; blind-hunter+edge-case-hunter+verification-gap.
+  - `Should.Throw<InvalidOperationException>` passes on any startup `InvalidOperationException`. The intended throw is `WorksRecoveryExtensions.cs:24-26` ("Works hosting requires SDK projection, reminder and process runtimes."), which runs before the omitted `PartiesGatewayBaseAddress` and `RunReconciliationOnStartup` settings matter. Assert that message.
+- [x] [Review][Defer] R29B-D1: Real-store restart, staged-family recovery and concurrent delivery now rest on Explicit Platform lanes only [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs] — deferred: unverified medium; acceptance-auditor+edge-case-hunter+verification-gap+blind-hunter. `Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled` was deleted, the five restart tests now use only `InMemoryReadModelStore` (the `WORKS_SDK_DAPR_GRPC_ENDPOINT` branch is gone from the repository), and `WorksPlatformProjectionPipelineSmokeTests` is `Explicit`. `eng/verify_works_host.py` does run that smoke class, which matches the spec's recorded finding that every live fact is `Explicit`. Settled by showing which AD-20 R-row proof covers staged-family restart combined with concurrent delivery on a durable store.
+- [x] [Review][Defer] R29B-D2: Map each deleted legacy-dispatcher scenario to a surviving test [tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs] — deferred: unverified medium; blind-hunter+edge-case-hunter+acceptance-auditor. `GetWorkItemQueryHandlerTests`, `WorkItemProjectionQueryAdapterTests`, `WorkItemReadModelGenerationQueryTests` (~2k lines) and three post-commit dispatch tests were retired with the dispatcher, which is gone from `src`. Some scenarios have plausible homes (cross-tenant hidden read in `WorksPlatformHistoricalPipelineSmokeTests`; legacy payloads in the schema golden corpus); watermark-under-rejection, mixed-unit and effortless-child roll-up refusals, and post-commit new-aggregate admission were not shown to survive. Settled by a scenario-to-test map for the deleted tests.
+- [x] [Review][Defer] R29B-D3: Confirm the batch-ceiling observer sees staged batches [tests/Hexalith.Works.IntegrationTests/WorksSdkRebuildBatchObserver.cs] — deferred: unverified medium; edge-case-hunter. The observer wraps `IReadModelBatchStore` only; if the SDK stages batches through `IReadModelBatchStagingStore`, the operation-ceiling assertion would not see them. Settled by checking the SDK's rebuild write path or asserting every written batch was observed.
+
+##### Rejected (group 3B)
+
+- Blind-hunter: three-test removal, spoofing-prefix breadth, dead `historyBytes` branch, 10,000-owner row runtime, reflection coupling to `ReadModelBatchFingerprint`, import order, brace and `ConfigureAwait` style, `Options(web)` allocation — **low**; developer-only, no named harm, or the fix adds guards. The reflection helper fails loudly at type load.
+- Blind-hunter and edge-case-hunter: `DrainProviderSlotsAsync` can hang (**false**: the 4 s `AuthoritativeStreamReadDeadline` ends the loop with a failing exception) and its literal 16 (**low**: a capacity change fails the sibling exhaustion test loudly).
+- Edge-case-hunter: unwrapped `TargetInvocationException`, negative padding length, multi-aggregate `invalidEnvelopePositions`, default-options construction, missing golden file context, record equality with collection members, missing control characters (tab, U+0085, surrogates), untested same-sequence redelivery (**low**: `Restart_recovers_checkpoint_and_rejects_conflicting_redelivery` covers conflicting redelivery), catalog exhaustiveness guards — **low**.
+- Blind-hunter and edge-case-hunter: timing-sensitive 1 s/4 s waits — **low**, no demonstrated flake.
+- Edge-case-hunter and acceptance-auditor: `Explicit` smoke demotion — **false** as a defect (`eng/verify_works_host.py` runs the class; see R29B-D1). Edge-case-hunter: commit titles overstate additive coverage — informational.
 
 ## Implementation Notes
 
