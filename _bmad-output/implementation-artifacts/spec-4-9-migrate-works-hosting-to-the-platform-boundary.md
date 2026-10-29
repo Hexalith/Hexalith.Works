@@ -371,11 +371,11 @@ Rejected (60):
 
 Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the 12 `tests/Hexalith.Works.IntegrationTests` files matching `*Projection*`, `*Rebuild*` and `*Query*` (+1,831/-2,424; 4,947 diff lines). Four layers ran in `full` mode; they raised 10 (blind-hunter), 20 (edge-case-hunter), 4 (acceptance-auditor) and 1+2 (verification-gap) findings. Verdicts were assigned per finding after checking the cited code, before grouping. Outcome: 0 decision-needed, 2 patch, 3 defer, 25 rejected.
 
-- [ ] [Review][Patch] R29B-V1: Test that `get-work-item` exposes only the opaque conversation correlation id [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs] — **medium**; verification-gap+blind-hunter+edge-case-hunter.
+- [x] [Review][Patch] R29B-V1: Test that `get-work-item` exposes only the opaque conversation correlation id [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs] — **medium**; verification-gap+blind-hunter+edge-case-hunter.
   - The gap: deleting `GetWorkItemQueryHandlerTests.cs` removed the only default-run assertions that `WorkItemView.ConversationCorrelationId` is returned and that the serialized view carries only `conversationCorrelationId.value`. Verified: the only remaining reference alongside the handler is `WorksPlatformProjectionChecks.cs:349`, reached only by an `Explicit` fact; `WorkItemConversationProjectionTests` stops at the roll-up.
   - Demonstration: removing the initializer at `src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs:244` fails no default-run test.
   - Fix: add a fact beside the existing SDK-fold helpers (`WorkItemSharedProjectionRebuildHandlerTests.cs:910` already builds `GetWorkItemQueryHandler`) covering create-time conversation and `ConversationLinked` followed by a null link, asserting the view and its JSON shape.
-- [ ] [Review][Patch] R29B-A1: Pin the intended cause in the `UseSdkDelivery=false` host-discovery case [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs:49] — **low**; blind-hunter+edge-case-hunter+verification-gap.
+- [x] [Review][Patch] R29B-A1: Pin the intended cause in the `UseSdkDelivery=false` host-discovery case [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs:49] — **low**; blind-hunter+edge-case-hunter+verification-gap.
   - `Should.Throw<InvalidOperationException>` passes on any startup `InvalidOperationException`. The intended throw is `WorksRecoveryExtensions.cs:24-26` ("Works hosting requires SDK projection, reminder and process runtimes."), which runs before the omitted `PartiesGatewayBaseAddress` and `RunReconciliationOnStartup` settings matter. Assert that message.
 - [x] [Review][Defer] R29B-D1: Real-store restart, staged-family recovery and concurrent delivery now rest on Explicit Platform lanes only [tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs] — deferred: unverified medium; acceptance-auditor+edge-case-hunter+verification-gap+blind-hunter. `Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled` was deleted, the five restart tests now use only `InMemoryReadModelStore` (the `WORKS_SDK_DAPR_GRPC_ENDPOINT` branch is gone from the repository), and `WorksPlatformProjectionPipelineSmokeTests` is `Explicit`. `eng/verify_works_host.py` does run that smoke class, which matches the spec's recorded finding that every live fact is `Explicit`. Settled by showing which AD-20 R-row proof covers staged-family restart combined with concurrent delivery on a durable store.
 - [x] [Review][Defer] R29B-D2: Map each deleted legacy-dispatcher scenario to a surviving test [tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs] — deferred: unverified medium; blind-hunter+edge-case-hunter+acceptance-auditor. `GetWorkItemQueryHandlerTests`, `WorkItemProjectionQueryAdapterTests`, `WorkItemReadModelGenerationQueryTests` (~2k lines) and three post-commit dispatch tests were retired with the dispatcher, which is gone from `src`. Some scenarios have plausible homes (cross-tenant hidden read in `WorksPlatformHistoricalPipelineSmokeTests`; legacy payloads in the schema golden corpus); watermark-under-rejection, mixed-unit and effortless-child roll-up refusals, and post-commit new-aggregate admission were not shown to survive. Settled by a scenario-to-test map for the deleted tests.
@@ -390,6 +390,12 @@ Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the
 - Edge-case-hunter and acceptance-auditor: `Explicit` smoke demotion — **false** as a defect (`eng/verify_works_host.py` runs the class; see R29B-D1). Edge-case-hunter: commit titles overstate additive coverage — informational.
 
 ## Implementation Notes
+
+### Current group-3B patch verification (2026-10-29)
+
+Both R29B patches are implemented. The default-run SDK rebuild/query theory covers create-time conversation correlation and a later `ConversationLinked`, asserts the returned view and exact public JSON shape (`conversationCorrelationId` has only `value`), then proves a null link is refused with `Indeterminate`/`HandlerFailure` while the last committed query retains its correlation and accepted watermark. The legacy-switch host-discovery case now requires the exact SDK-runtime refusal message.
+
+The focused source-backed Debug integration build passes with zero warnings/errors, and both affected classes pass 78/78 with zero failures, skips or not-run cases. Private-source mutation controls fail as intended: removing the view initializer fails both conversation cases; substituting an unrelated startup diagnostic fails the false-switch case while the true/default controls pass. Original compile/fixture failures and isolated mutation-build setup failures remain preserved. Exact commands, compressed logs/XML, mutation inputs and hashes are in the [bounded verification record](evidence/story-4-9/group3b-2026-10-29/verification.json). No production source or dependency changed. These are focused in-memory SDK checks, not new live parity or full/CI qualification; prior packets retain their exact-input limits. Story and sprint remain `in-progress` for the remaining review groups and recorded deferred work.
 
 ### Current group-3A checkpoint (2026-10-27; qualified and reviewed)
 
@@ -657,6 +663,18 @@ All three same-capability context-free review layers completed before classifica
 
 Outcome: three pre-cutover follow-ups are appended to the owning ledger. Existing carried routes remain unchanged, and no current implementation patch or loopback is required. The qualified compiled inputs are unchanged, so the completed full 606/CI 462, ordinary 2,031, Python 82 and owner 15 checks remain applicable. The broad captured-baseline solution-build blocker and earlier failed attempts remain explicitly recorded.
 
+
+### Group 3B correction review (2026-10-29)
+
+Scope: the two R29B test corrections since resume HEAD `4b23968`, not the remaining historical review groups. All three independent layers completed: Blind Hunter returned three findings; Edge Case Hunter and Verification Gap Reviewer returned none.
+
+| Finding | Verdict | Route | Evidence |
+| --- | --- | --- | --- |
+| G3B-B1: Begin/Accumulate results are discarded before the null-link refusal | low | patch, fixed | The new test did not distinguish setup failure from the intended Finalize refusal. It now requires Completed/Accumulating after both earlier actions. The changed class passes 30/30 and the parent rerun of both classes passes 78/78. |
+| G3B-B2: add equivalent ordinary-delivery conversation cases | low | reject | This correction pins the query mapping and JSON boundary through committed SDK generations. Ordinary and rebuild folds use the shared manifest builder; the existing live projection proof checks conversation query output. No diverging ordinary-delivery behavior was demonstrated; another delivery fixture is optional coverage expansion. |
+| G3B-B3: add initially-unlinked query plus malformed-link case | low | reject | Both required establishment paths and preservation after null-link refusal are covered. Existing projection tests cover null-link watermark refusal; no defect in the optional null query contract was demonstrated. The proposed additional state variant is optional coverage expansion. |
+
+The final source-backed Debug build has zero warnings/errors. Parent execution after the review patch passes 78/78 with no failures, errors, skips or not-run cases. Evidence hashes and source bindings are recorded in the [group 3B packet](evidence/story-4-9/group3b-2026-10-29/verification.json). Mutation results retain their pre-review source binding; the review patch only adds earlier success assertions. No new deferral or live/full/CI qualification is claimed. The two patch findings are closed; story and sprint remain in-progress because review groups 3C–3E, 4 and 5 and recorded deferred work remain outstanding.
 
 ## Verification
 

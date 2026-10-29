@@ -46,7 +46,8 @@ public sealed class WorksSdkProjectionQueryTests
     {
         if (sdkMode == false)
         {
-            Should.Throw<InvalidOperationException>(() => WorksHost.Build(["--Works:Projection:UseSdkDelivery=false"]));
+            Should.Throw<InvalidOperationException>(() => WorksHost.Build(["--Works:Projection:UseSdkDelivery=false"]))
+                .Message.ShouldBe("Works hosting requires SDK projection, reminder and process runtimes.");
             return;
         }
         await using WebApplication app = WorksHost.Build([

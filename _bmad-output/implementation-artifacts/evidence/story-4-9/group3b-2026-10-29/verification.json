@@ -1,0 +1,228 @@
+{
+  "date": "2026-10-29",
+  "scope": [
+    "R29B-V1",
+    "R29B-A1"
+  ],
+  "status": "implemented-and-focused-verified",
+  "storyStatus": "in-progress",
+  "sourceHashes": {
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "eaf4b932bec171c7dd99d63f505eea3479d57f9a2ba69b35c864507d3f8b9448",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "ffb720e9d5235fa0bee7c0e74e842dc6755730371be76f43611bafff4663ad1c",
+    "src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs": "e75f5e723cacd775e5be27d07c2ca90359b494577f6275f0ca0688f85ced25a7",
+    "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs": "60fa7d61062690e03d581ecc2f0fa5ce257fced1e06021b5b389a3d7f5315bf4"
+  },
+  "validation": {
+    "build": {
+      "configuration": "Debug",
+      "dependencyMode": "source",
+      "warnings": 0,
+      "errors": 0,
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj --configuration Debug --no-restore -m:1 -v:minimal"
+    },
+    "tests": {
+      "total": 78,
+      "passed": 78,
+      "failed": 0,
+      "skipped": 0,
+      "notRun": 0,
+      "command": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet tests/Hexalith.Works.IntegrationTests/bin/Debug/net10.0/Hexalith.Works.IntegrationTests.dll -class \"*WorkItemSharedProjectionRebuildHandlerTests\" -class \"*WorksSdkProjectionQueryTests\" -result-xml /tmp/story49-group3b-tests-final.xml"
+    },
+    "mutations": [
+      {
+        "change": "Remove GetWorkItemQueryHandler.ToView conversation initializer in private source copy",
+        "total": 2,
+        "failed": 2,
+        "cause": "view.ConversationCorrelationId is null"
+      },
+      {
+        "change": "Replace legacy-switch refusal diagnostic with Unrelated startup failure. in private source copy",
+        "total": 3,
+        "failed": 1,
+        "passed": 2,
+        "cause": "Exact diagnostic assertion; true/default controls remain passing"
+      }
+    ]
+  },
+  "mutationMethod": {
+    "buildCommand": "HexalithBuildsRoot=\"$PWD/references/Hexalith.Builds\" dotnet build src/Hexalith.Works/Hexalith.Works.csproj --configuration Debug --no-restore -m:1 -v:minimal -p:BuildProjectReferences=false -p:CustomAfterMicrosoftCommonTargets=/tmp/story49-group3b-mutations/{mutation,message}.targets -p:OutputPath=/tmp/story49-group3b-mutations/bin/ -p:IntermediateOutputPath=/tmp/story49-group3b-mutations/obj/ -p:ProjectAssetsFile=\"$PWD/src/Hexalith.Works/obj/project.assets.json\"",
+    "dependencyBinding": "Existing built Hexalith dependency DLLs copied to private bin/ and obj/ref/ after initial output-global reference resolution failures. No project reference rebuilt. Mutated Works.dll copied into private copy of integration output.",
+    "testCommands": [
+      "dotnet /tmp/story49-group3b-mutations/tests/Hexalith.Works.IntegrationTests.dll -method \"*GetWorkItemExposesOnlyOpaqueConversationCorrelationAndPreservesItAfterNullLink\" -result-xml /tmp/story49-group3b-mutations/result.xml",
+      "dotnet /tmp/story49-group3b-mutations/tests/Hexalith.Works.IntegrationTests.dll -method \"*HostDiscoveryPreservesSharedRebuildAndAdvertisesOnlySelectedOrdinaryWriter\" -result-xml /tmp/story49-group3b-mutations/message-result.xml"
+    ]
+  },
+  "preservedFailures": [
+    "Initial new theory compile: two xUnit1030 diagnostics; corrected test awaits to ConfigureAwait(true).",
+    "Initial new theory expected malformed null-link capture to commit: 76/78 passed. Corrected fixture to require Indeterminate/HandlerFailure and unchanged committed query.",
+    "First two optional isolated mutation builds: 11 then 5 missing reference errors from forwarded output globals; existing dependency assemblies supplied privately for successful diagnostic builds."
+  ],
+  "limits": [
+    "No production source, dependency, topology, or assertion weakened.",
+    "Focused in-memory SDK query/rebuild tests; no new durable live or complete full/CI qualification claimed.",
+    "Earlier full/CI packets retain their exact-input scope; remaining review groups and deferred findings remain open."
+  ],
+  "files": [
+    {
+      "file": "story49-group3b-build.log.gz",
+      "sha256": "2d53ccd890608d36a164476074e1492418ad876992004ca1dbce0dd38b27cac6",
+      "decodedSha256": "ae1afa9dda603aab3e350885f2ea7b7a411e753346887f32d1739a4587c02077",
+      "originalPath": "/tmp/story49-group3b-build.log"
+    },
+    {
+      "file": "story49-group3b-build-green.log.gz",
+      "sha256": "42aea4b6900911325af3205618a756fd26ff6e6202994054b3ba1877d3af7f6d",
+      "decodedSha256": "bf641b2b92ff539371385c5406f6a3444950d27128ffb3d4b7ef56acec425f58",
+      "originalPath": "/tmp/story49-group3b-build-green.log"
+    },
+    {
+      "file": "story49-group3b-build-final.log.gz",
+      "sha256": "5cd29ce6e884fcc5113a9a968cfcad7b967618907e723f68a81f0e3aa36a0216",
+      "decodedSha256": "30c1e7fb78d73d4723a6e6c021326ffb4e57b0780d76fb013aac01c338dc75b8",
+      "originalPath": "/tmp/story49-group3b-build-final.log"
+    },
+    {
+      "file": "story49-group3b-tests.log.gz",
+      "sha256": "33987fddf62e09864db4c1e03b760ab9f3af47f2fc6bd9abdecc812629c6ec17",
+      "decodedSha256": "17731412e325d32abdbe6c68ad5d85864241131650ed06eef6b99c9f5a60f8e1",
+      "originalPath": "/tmp/story49-group3b-tests.log"
+    },
+    {
+      "file": "story49-group3b-tests.xml.gz",
+      "sha256": "6916284d10f887cff33ae4a474be0e1b2943e6bbba0140059cd7a46b9e540314",
+      "decodedSha256": "ce743b314f0c17c34b3b0840c31f7dbc2801869c0b5c28ea885c1a8a682674a8",
+      "originalPath": "/tmp/story49-group3b-tests.xml"
+    },
+    {
+      "file": "story49-group3b-tests-final.log.gz",
+      "sha256": "44d361e72eeb80ca740ae7ba56dcf66c0f37a2e9a5dcca440a59a7c4d997c6c3",
+      "decodedSha256": "d4324859550616d4c65ccba1fa2ef590d531397f6f7cf4f30568766b9c62bcc4",
+      "originalPath": "/tmp/story49-group3b-tests-final.log"
+    },
+    {
+      "file": "story49-group3b-tests-final.xml.gz",
+      "sha256": "e040dc976450c20c51b221a61ee024840c9b61c97e7049f38e5811ff6b0073ca",
+      "decodedSha256": "c56d86e42c5850c2acdcaa530cce07b270099599d3e71c116815350ff349cb71",
+      "originalPath": "/tmp/story49-group3b-tests-final.xml"
+    },
+    {
+      "file": "mutation-build.log.gz",
+      "sha256": "c7902385ebe3fcc587719daadd9012d3a0c4d79d6159099987402082e9869f92",
+      "decodedSha256": "a305d7933a22a9581b9ab4c45b06707f90767f573cdb3c7c1ff0fa7451153d44",
+      "originalPath": "/tmp/story49-group3b-mutations/build.log"
+    },
+    {
+      "file": "mutation-build-retry.log.gz",
+      "sha256": "320c6c75e80fe4373bb6a021219a792eb75874ca635d975e1ee713f61f5fbc8e",
+      "decodedSha256": "e66bdc310a257986dd60e719028eb35087d5b9e3d8941a969669b407362adf36",
+      "originalPath": "/tmp/story49-group3b-mutations/build-retry.log"
+    },
+    {
+      "file": "mutation-build-bound-references.log.gz",
+      "sha256": "870da1f19486e1aa15613f0bbb40d63ccd8a4064f1e10c2adbe00e1668ae15dc",
+      "decodedSha256": "5acc88ed4a96d9bd5f8544e7f59264d31b2dfdf0785882b04b2c52cc6db87cff",
+      "originalPath": "/tmp/story49-group3b-mutations/build-bound-references.log"
+    },
+    {
+      "file": "mutation-build-message.log.gz",
+      "sha256": "ac0b71fe057ad4a21dd6a97e79606bc130ac748bef3817df668d11feb50f41aa",
+      "decodedSha256": "822999c94b8c3a5ab3dd7f4fb4fe94d55af83eba1516954d0ff727a22f4d27d9",
+      "originalPath": "/tmp/story49-group3b-mutations/build-message.log"
+    },
+    {
+      "file": "mutation-result.log.gz",
+      "sha256": "2e34fc4e07831da10ed0cb1450e35851def95177ecd4c962c06926b0a8f54e6b",
+      "decodedSha256": "e7ab7115df34e275dd2b3e5ba77a882d3b710ae2ad0a8f211bc4dfaa3923ca47",
+      "originalPath": "/tmp/story49-group3b-mutations/result.log"
+    },
+    {
+      "file": "mutation-result.xml.gz",
+      "sha256": "32bbe371c9bdce8a2df7bc82caabce496402c3b8c12372f3e5bc07df845500a7",
+      "decodedSha256": "b3b150a674dae14bdaa8422aacfcfbcdcf9821b4c1f5d41744295e7124777b57",
+      "originalPath": "/tmp/story49-group3b-mutations/result.xml"
+    },
+    {
+      "file": "mutation-message-result.log.gz",
+      "sha256": "9ac67bbd0d9ca6f4cdf1caf00d5a27c3caaa64cd1fe708447a7525dc17bc8499",
+      "decodedSha256": "7d068add27a9ef29fb4602d47f494c050b239037d09378c3fafaefa2586eb003",
+      "originalPath": "/tmp/story49-group3b-mutations/message-result.log"
+    },
+    {
+      "file": "mutation-message-result.xml.gz",
+      "sha256": "c557b5c46c200ef5be240539b959e14fe1bae41677bad89f6ede8f9d3fce2061",
+      "decodedSha256": "607718655a349d03d5ef19f2fb2e598a54eef836cca8e815bdb3ca7a17ae9d1f",
+      "originalPath": "/tmp/story49-group3b-mutations/message-result.xml"
+    },
+    {
+      "file": "mutation-GetWorkItemQueryHandler.cs.gz",
+      "sha256": "68569706b759d6b3d854699c649722ffecf9cb1d46d06365fddde2e856cf9b27",
+      "decodedSha256": "cac1a90b9756b08dfd4e2a6d3bf8f24de92cc6dc739214e242f44e7c10107822",
+      "originalPath": "/tmp/story49-group3b-mutations/GetWorkItemQueryHandler.cs"
+    },
+    {
+      "file": "mutation-WorksRecoveryExtensions.cs.gz",
+      "sha256": "f6c14b2c8a375343ceb7f3bede6aa99fde6c68ba3ac725f10274a0a8a6a3750b",
+      "decodedSha256": "787b68b51500685189dd13891543bcf4d967a2c19c403b25f677c16429f154ec",
+      "originalPath": "/tmp/story49-group3b-mutations/WorksRecoveryExtensions.cs"
+    },
+    {
+      "file": "mutation-mutation.targets.gz",
+      "sha256": "81930e631ee15d88f91ed39f7c4063eaa4e050d97728da2b398fc588dba2f3b4",
+      "decodedSha256": "1c3448e1486915dbbaa470ffe20ca088a075ab4f620f9b30065146e76077a8aa",
+      "originalPath": "/tmp/story49-group3b-mutations/mutation.targets"
+    },
+    {
+      "file": "mutation-message.targets.gz",
+      "sha256": "f534b07d66e94944833d84371c0384d898009f614f2d495e95efb38101915a9a",
+      "decodedSha256": "c8fe1c41dd1b70767bf6505d0c9857a2988f396c609ae7cfe101e46a7d6a53ba",
+      "originalPath": "/tmp/story49-group3b-mutations/message.targets"
+    },
+    {
+      "file": "story49-group3b-review-fix-build.log.gz",
+      "sha256": "c3283cf9f8d0969161f37020ca1856a9d08cc3d1af412cfa69201ca12bbc22f7",
+      "decodedSha256": "4b0e7c606fdadd91aa7094276c98bc391d860e32d01769593066202b6c00de76",
+      "originalPath": "/tmp/story49-group3b-review-fix-build.log"
+    },
+    {
+      "file": "story49-group3b-review-fix-tests.log.gz",
+      "sha256": "12a49be37b55c58339f2fad6b95b68ddf0fdd459a2d038fb4d678c02feed41f2",
+      "decodedSha256": "7057e15c903537068917c13ba982a312d2de0b6afb3e5273450ff659d217308d",
+      "originalPath": "/tmp/story49-group3b-review-fix-tests.log"
+    },
+    {
+      "file": "story49-group3b-review-fix-tests.xml.gz",
+      "sha256": "0a4b112f173cbd91eaa766ffd154941f1938a3d34daef72b2a5b043b60e8343e",
+      "decodedSha256": "8951405d0cbe0c7f45ab929f3250c9504c7a11c0928ff71b7283e9c20cf11947",
+      "originalPath": "/tmp/story49-group3b-review-fix-tests.xml"
+    },
+    {
+      "file": "story49-group3b-parent-final.log.gz",
+      "sha256": "85e1d484ec7b8cdf1e53aa46d8d42b64f1d85ffc63afa0c066665c24696efe9e",
+      "decodedSha256": "022af30dd924579ea6d395929dc059e9abfaa7688672f4d29eb21a799a16ca0b",
+      "originalPath": "/tmp/story49-group3b-parent-final.log"
+    },
+    {
+      "file": "story49-group3b-parent-final.xml.gz",
+      "sha256": "2d372b440cbc8f5bcfaebf75e9f49bef9bd875724f89543ccfc57c33569da210",
+      "decodedSha256": "2def9708ae46871aeda162baa9f82a3da7322e7fa03a898faa6a7f4f3dcac75b",
+      "originalPath": "/tmp/story49-group3b-parent-final.xml"
+    }
+  ],
+  "preReviewSourceHashes": {
+    "tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs": "f94c8d4696804a2f9bdcbd97d799cb955e06d7106ac062e0bcd184b163580d3d",
+    "tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs": "ffb720e9d5235fa0bee7c0e74e842dc6755730371be76f43611bafff4663ad1c",
+    "src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs": "e75f5e723cacd775e5be27d07c2ca90359b494577f6275f0ca0688f85ced25a7",
+    "src/Hexalith.Works/Runtime/WorksRecoveryExtensions.cs": "60fa7d61062690e03d581ecc2f0fa5ce257fced1e06021b5b389a3d7f5315bf4"
+  },
+  "review": {
+    "scope": "Two R29B correction files since resume HEAD 4b23968; historical full baseline diff retained separately, no remaining-group review claimed.",
+    "layers": {
+      "blind-hunter": 3,
+      "edge-case-hunter": 0,
+      "verification-gap": 0
+    },
+    "resolution": "One low patch adds Begin/Accumulate success and phase assertions. Two optional coverage expansions rejected as low; no new deferrals.",
+    "postReviewVerification": "Debug build 0 warnings/errors; changed class 30/30; parent reran both affected classes 78/78, zero errors/failures/skips/not-run.",
+    "mutationLimit": "Mutation controls were run before the additional Begin/Accumulate assertions; their exact original source hashes remain under preReviewSourceHashes."
+  }
+}

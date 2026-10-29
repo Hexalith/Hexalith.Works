@@ -39,6 +39,62 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     private static readonly Unit Hour = new("hour");
     private static readonly JsonSerializerOptions Web = new(JsonSerializerDefaults.Web);
 
+    /// <summary>The SDK-backed item query returns only the opaque conversation id and retains it after a null link.</summary>
+    /// <param name="linkedAtCreation">Whether creation establishes the correlation instead of a later link event.</param>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task GetWorkItemExposesOnlyOpaqueConversationCorrelationAndPreservesItAfterNullLink(bool linkedAtCreation)
+    {
+        var store = new InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var item = new WorkItemId(ParentId);
+        var conversation = new ConversationCorrelationId("conversation-opaque-456");
+        ProjectionEventDto[] history =
+        [
+            Dto(new WorkItemCreated(ParentId, 1, tenant, item, new Obligation("Conversation query"),
+                ConversationCorrelationId: linkedAtCreation ? conversation : null), 1),
+            .. linkedAtCreation ? Array.Empty<ProjectionEventDto>() :
+                [Dto(new ConversationLinked(ParentId, 2, tenant, item, conversation), 2)],
+        ];
+
+        await RebuildAsync(store, Tenant, "conversation-query", [(ParentId, history)]).ConfigureAwait(true);
+        await AssertConversationViewAsync().ConfigureAwait(true);
+
+        long nextSequence = history.Length + 1;
+        history = [.. history, Dto(new ConversationLinked(ParentId, nextSequence, tenant, item, null!), nextSequence)];
+        var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions()));
+        using ServiceProvider provider = BuildProvider(store, handler);
+        DomainSharedProjectionRebuildIdentity identity = Identity(Tenant, "conversation-null-link");
+        DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider,
+            Begin(identity, [(ParentId, history)])).ConfigureAwait(true);
+        current.Status.ShouldBe(ProjectionDispatchStatus.Completed);
+        current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Accumulating);
+        current = await DispatchAsync(provider, Accumulate(identity, 0, ParentId, history)).ConfigureAwait(true);
+        current.Status.ShouldBe(ProjectionDispatchStatus.Completed);
+        current.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Accumulating);
+        current = await DispatchAsync(provider, Finalize(identity, current)).ConfigureAwait(true);
+        current.Status.ShouldBe(ProjectionDispatchStatus.Indeterminate);
+        current.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.HandlerFailure);
+        current.Phase.ShouldNotBe(DomainSharedProjectionRebuildPhase.Committed);
+        await AssertConversationViewAsync().ConfigureAwait(true);
+
+        async Task AssertConversationViewAsync()
+        {
+            JsonElement payload = await QueryWorkItemPayloadAsync(store, Tenant, ParentId).ConfigureAwait(true);
+            WorkItemView view = payload.Deserialize<WorkItemView>(Web).ShouldNotBeNull();
+            view.Found.ShouldBeTrue();
+            view.ConversationCorrelationId.ShouldBe(conversation);
+            view.LatestAcceptedSourceSequence.ShouldBe(linkedAtCreation ? 1 : 2);
+            payload.EnumerateObject().Select(property => property.Name).Order(StringComparer.Ordinal).ShouldBe(
+                new[] { "conversationCorrelationId", "done", "estimated", "found", "latestAcceptedSourceSequence",
+                    "parent", "remaining", "status", "tenantId", "unit", "workItemId" });
+            JsonProperty correlation = payload.GetProperty("conversationCorrelationId").EnumerateObject().ShouldHaveSingleItem();
+            correlation.Name.ShouldBe("value");
+            correlation.Value.GetString().ShouldBe(conversation.Value);
+        }
+    }
+
     [Fact]
     public async Task Sdk_rebuild_stages_without_visibility_then_atomically_converges_and_preserves_rollback_keys()
     {
@@ -906,13 +962,20 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         IReadModelStore store,
         string tenantId,
         string aggregateId)
+        => (await QueryWorkItemPayloadAsync(store, tenantId, aggregateId).ConfigureAwait(false))
+            .Deserialize<WorkItemView>(Web).ShouldNotBeNull();
+
+    private static async Task<JsonElement> QueryWorkItemPayloadAsync(
+        IReadModelStore store,
+        string tenantId,
+        string aggregateId)
     {
         var handler = new GetWorkItemQueryHandler(policy: CoordinatorPolicy(),
             coordinator: new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store));
         QueryResult result = await handler.ExecuteAsync(
             new QueryEnvelope(tenantId, "work", aggregateId, GetWorkItemQueryHandler.GetWorkItemQueryType, [], "corr-1", "user-1") { AuthenticatedWorkloadId = "sdk-test" },
             TestContext.Current.CancellationToken).ConfigureAwait(false);
-        return result.GetPayload().Deserialize<WorkItemView>(Web).ShouldNotBeNull();
+        return result.GetPayload();
     }
 
     private static async Task<WorksWhatsNextTenantIndex> ReadCurrentIndexAsync(
