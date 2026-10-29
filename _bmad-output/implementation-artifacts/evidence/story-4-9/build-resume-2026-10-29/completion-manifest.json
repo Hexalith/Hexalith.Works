@@ -1,0 +1,194 @@
+{
+  "status": "Verified final evidence prepared for the local Works commit",
+  "specStatus": "done",
+  "sprintStatus": "review",
+  "qualification": "full-and-actual-CI-passed",
+  "parentAudit": "passed",
+  "directXmlFacts": {
+    "full": 659,
+    "ci": 512
+  },
+  "rowsPerProfile": 11,
+  "proofsPerProfile": 44,
+  "phasesPerProfile": 33,
+  "startsPerProfile": 11,
+  "runtimeArtifactsPerProfile": 441,
+  "individualFindingRows": 26,
+  "newDeferredEntries": 10,
+  "frozenIntentSha256": "de1c74eee26581eab23b760d595d93951471cad0074b3b57eb45a35058f7ef5d",
+  "retainedArchiveHashes": {
+    "manifest.json": "b8cbf1bb6490b6fc6bb8ad7aa12842c202fb95a9877afd7a0a5fa1caf79caca8",
+    "works-source.tar.gz": "5ce3247ded7ab59ff70d5b25896fed1826b8d78b0728a2d1a4c1f2dceb7ae696"
+  },
+  "existingArchiveMembersVerified": 272,
+  "boundManifests": {
+    "failed-attempt-1-manifest.json": "1ef2c67fe7d0b2c68fe13bc02062fabdf940deeb5779fc286db53ecb9432e32f",
+    "failed-attempt-2-manifest.json": "ade859b72427fd95702108c97e4a7e5cf285c67fd5f3ce66ed180e416945fa6e",
+    "failed-attempt-3-manifest.json": "a4abfb581a2182e99136bf3fc96c797b39692be940627e6cdf13ceb06c339128",
+    "ha-focus-manifest.json": "961bc38b24998d44e1816f9029f01ec3aaaff4ea23b5c6ce3a28d16c5d714f37",
+    "preparation-manifest.json": "4f11e191b61f95ce259d12746b03f0e38b12184447787e2fc5857c452dcb8e34",
+    "qualification-manifest.json": "4439b819f456cad15b6905ad0e49a2703d6f33683bf406d6901098c992420c8c",
+    "recovery-focus-manifest.json": "071e018ca18795d58da9ccfca7cc86f995b256031e07439fd35f4f58dd500621"
+  },
+  "platformCommit": "aeed05caf65cca6f6e2ff1acca9f40a5b88444e6",
+  "parentPointerCommit": "262c5563e42331ceb37fbff6b8581b1dd1487301",
+  "finalWorksCommit": "Created after this manifest; see Git history",
+  "currentFileHashes": {
+    "_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md": "3ca7cb73c4c0b342bff8719308640d7cb5d752b71be5452623d60e44c57a6dd8",
+    "_bmad-output/implementation-artifacts/sprint-status.yaml": "c7206f03dca76e438c1ce145a9f085f989531ac400ed8dd98797f323d0a3890b",
+    "_bmad-output/implementation-artifacts/deferred-work.md": "15965cebc75ef294f9699d130dedb8390b2ba24d754514d48cb45987927ac88f",
+    "docs/sdk-projection-query-adoption.md": "41f9c35feee94b3132054aea8581c4a0a67ddfa49dab200b00be997d02e439d2",
+    "docs/sdk-reminder-process-adoption.md": "9e78c5b35026a5903dc9b32787dfdf16cfbebb14382131d67ae8e64cf2800849",
+    "_bmad-output/implementation-artifacts/evidence/story-4-9/build-resume-2026-10-29/README.md": "6dd799d38e9cb304a4846305005e472d9e12db3f2babd893c132cf455bed9a0e",
+    "references/Hexalith.Platform/apphost.cs": "1141c58768f684833fc170c944a6ea46919a12ead3614d03bf277f41e4d15b0b",
+    "references/Hexalith.Platform/eng/test_verify_works_host.py": "25c440716d4ff6b2f8d9d8648ea85c6faea25194235d03237bb6147b9983bfa6",
+    "references/Hexalith.Platform/eng/test_works_toolchain.py": "52096325511fccf7480614ae2ecb78d8134a5c6589ff9650254353e3586b61a4",
+    "references/Hexalith.Platform/eng/verify_works_host.py": "b33f0e8cb4729b5cc96226cf4d6e8dc4a136015bf599919c78318cd867cb842e",
+    "references/Hexalith.Platform/eng/works_toolchain.py": "2281e2ef82c9ff049eb3a417ad3cabcab698d02ecd1ae9f019215770a9c8cabd",
+    "references/Hexalith.Platform/src/Hexalith.Platform.Composition/WorksPreviewModel.cs": "b7d4ed36b156201e05771c31cce8b4a8c4c1f318cf55c6fad77a69950988f932",
+    "references/Hexalith.Platform/tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTests.cs": "03b5a402b1f8f104d8f995741239aefccc645258eb549019f9411a333f2d98bc",
+    "references/Hexalith.Platform/tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs": "0591693b6d3b4aa59005a22e98dbac03059e7a0ca2d292b2436b95eb4543e0a5"
+  },
+  "files": [
+    {
+      "path": "completion/complete-notes.py.gz",
+      "sha256": "742ff43dc72b3c99ac5dc43576ebc20f0760d43a9b637c18e283fb80086b8e41",
+      "nativePath": "/tmp/story49-build-20261029-complete-notes.py",
+      "nativeSha256": "d73d45a5379205a53a462689b84db47aa61deaa4f46bf0168f055f5f914d15bf",
+      "nativeBytes": 9657
+    },
+    {
+      "path": "completion/capture-diff.py.gz",
+      "sha256": "fdae42d77f4b8768f66cbbaf96acb346adc327c722d41d0d3bcf9a5d36475f03",
+      "nativePath": "/tmp/story49-build-20261029-capture-diff.py",
+      "nativeSha256": "84d787311ee0d81dff17b8a5dd060207c1a6ed91c0b13eec7cc4f9d61269986e",
+      "nativeBytes": 2088
+    },
+    {
+      "path": "completion/platform-final.diff.gz",
+      "sha256": "eb5c406bccb2fbbc722237280ee628a51bbc7ae7e24de5f81fd77be1e636406a",
+      "nativePath": "/tmp/story49-build-20261029-platform-final.diff",
+      "nativeSha256": "11c58ad32c94f525682154a36b8d09f46be7095b3bccfd3a7bf2e31e5eef2af2",
+      "nativeBytes": 16328
+    },
+    {
+      "path": "completion/works-docs-final.diff.gz",
+      "sha256": "c6bc69c0c945f02431929a821fe1e3bc8b146a8996cd1ac48ceafe741784d4b1",
+      "nativePath": "/tmp/story49-build-20261029-works-docs-final.diff",
+      "nativeSha256": "72723d6bf670c7669aad5856b0379e664a949a6bccde2bfccfd262412eff577d",
+      "nativeBytes": 9807
+    },
+    {
+      "path": "completion/platform-commit-message.txt.gz",
+      "sha256": "3f3f9daa2983cb933455a6632d11a301c96e916079b0d3bd03df82c39845b145",
+      "nativePath": "/tmp/story49-build-20261029-platform-commit-message.txt",
+      "nativeSha256": "1734c40cb7ad8ace5a051aea3ca142101822d7b792c46a6ae8507bfd1d1b4073",
+      "nativeBytes": 296
+    },
+    {
+      "path": "completion/pointer-commit-message.txt.gz",
+      "sha256": "1fc2c591855d413e090eecf7dfd545dc12682abde6d786a57149bb1e4e2abcca",
+      "nativePath": "/tmp/story49-build-20261029-pointer-commit-message.txt",
+      "nativeSha256": "da6cb1d71b143ffb338a875daa323d8cc1e162d02d615d0a4e2bb5340b7967df",
+      "nativeBytes": 168
+    },
+    {
+      "path": "completion/works-commit-message.txt.gz",
+      "sha256": "79aab22d9189ff62d680044378eaa1d68ea379848b9264b77ae943738ed5d50c",
+      "nativePath": "/tmp/story49-build-20261029-works-commit-message.txt",
+      "nativeSha256": "c39165aa323bf5c6834e65bda1a9ea52664083e9bc4814844ed998670981ce60",
+      "nativeBytes": 313
+    },
+    {
+      "path": "completion/platform-commitlint.log.gz",
+      "sha256": "6d6b6f07bd58d116ab39a1d4d38dd6b4937eef715e1dd259f6affad51dcd4220",
+      "nativePath": "/tmp/story49-build-20261029-platform-commitlint.log",
+      "nativeSha256": "ccb6637dcc4313d12f5667babe400494c2d10f1254976c6e08bfe55c7eb84a88",
+      "nativeBytes": 351
+    },
+    {
+      "path": "completion/pointer-commitlint.log.gz",
+      "sha256": "e7e341bad8e68e119bfceae7b68a0de3e6d8ee13c384617b52f0f6220562a364",
+      "nativePath": "/tmp/story49-build-20261029-pointer-commitlint.log",
+      "nativeSha256": "954875862704fb0347a4854fb185ddf74091ec1ef07039615df6bd2a80be058e",
+      "nativeBytes": 223
+    },
+    {
+      "path": "completion/works-commitlint.log.gz",
+      "sha256": "650e43278a695183c0233b2eace470c897535001dd1556a906ab8facdcd918e1",
+      "nativePath": "/tmp/story49-build-20261029-works-commitlint.log",
+      "nativeSha256": "4298d0bf22bd635917eec7b49da3030e9207c75f9475d34e19733dd6ce442eb2",
+      "nativeBytes": 368
+    },
+    {
+      "path": "completion/platform-final-diff-check.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-build-20261029-platform-final-diff-check.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "completion/works-final-diff-check.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-build-20261029-works-final-diff-check.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "completion/platform-commit.log.gz",
+      "sha256": "f696f912e74c865dd8e4bc504eead558b6a21d6dc6ca516b81417680503c6951",
+      "nativePath": "/tmp/story49-build-20261029-platform-commit.log",
+      "nativeSha256": "ce3ee62bd04d4bca7c1614cdca45529a94d6e5ad4bf320cc2f4cad883e73dba3",
+      "nativeBytes": 117
+    },
+    {
+      "path": "completion/pointer-commit.log.gz",
+      "sha256": "2bdbfeb0a8b6c6a4231e665248e9627ffc1871748b0b12d3859f0b5f76cf3d93",
+      "nativePath": "/tmp/story49-build-20261029-pointer-commit.log",
+      "nativeSha256": "5e4120f2b7a5818477d80670a3c2f45ebc60c95c04893da93463cf37e92df14e",
+      "nativeBytes": 110
+    },
+    {
+      "path": "completion/platform-commit.json.gz",
+      "sha256": "5415ba8d1db1a2a76868c6b2447752f24e048bd436f35be937756b5d1b7479f5",
+      "nativePath": "/tmp/story49-build-20261029-platform-commit.json",
+      "nativeSha256": "a85942337061ccaf396ddee77dcd192b98f98078c642e37d30d2a52b84e75250",
+      "nativeBytes": 750
+    },
+    {
+      "path": "completion/pointer-commit.json.gz",
+      "sha256": "afffc4d6c25c37ba39ca5fd636fdd090c1668d862e5349919ee84135e5675496",
+      "nativePath": "/tmp/story49-build-20261029-pointer-commit.json",
+      "nativeSha256": "433537a1d7758b223069bd0ce836d298e1cccbfadf9d16f08ea4cf034e3aa066",
+      "nativeBytes": 471
+    },
+    {
+      "path": "completion/diff-before-present.json.gz",
+      "sha256": "5f59947d4eeafc6fdcfb158a78c71909ee2534badf17055ecd95a2b8433f079f",
+      "nativePath": "/tmp/story49-build-20261029-diff-before-present.json",
+      "nativeSha256": "2b9955e7554cbd14fb05c5b53b4f9962fc1fb3c0a16610af4acbf6abb0835782",
+      "nativeBytes": 442
+    },
+    {
+      "path": "completion/content-equivalence.py.gz",
+      "sha256": "61f88655ab67e74568853143be25aa55092f5e8e20f245d5accd2f99f8050c10",
+      "nativePath": "/tmp/story49-build-20261029-content-equivalence.py",
+      "nativeSha256": "7d3e9202e1e14636bf33c614aa38d323ddf6d06062ddee1966454e4cad4a85c7",
+      "nativeBytes": 4169
+    },
+    {
+      "path": "completion/completion.py.gz",
+      "sha256": "bec372e7cd331445cb5327a57a306d3943dbba2e47cd933d2e7694250d167afa",
+      "nativePath": "/tmp/story49-build-20261029-completion.py",
+      "nativeSha256": "189f66a15d4e2f393af04a067941722bee24c6a9e151d23d05baa63dcfeac6e8",
+      "nativeBytes": 6165
+    },
+    {
+      "path": "completion/post-commit-content-equivalence.json.gz",
+      "sha256": "920d5f7117583b99327312d8da8720773b2ce9fbbebf11fae86e1310cf66793e",
+      "nativePath": "/tmp/story49-build-20261029-oe7n1gwt/post-commit-content-equivalence.json",
+      "nativeSha256": "f41e99334dc14da7d6b04f0bf1e9b9ee86cc627e1619d4ed0f3b7138da861946",
+      "nativeBytes": 1533
+    }
+  ]
+}

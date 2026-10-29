@@ -1,0 +1,76 @@
+{
+  "status": "nonqualifying; live lanes and CI not run",
+  "cause": "Platform file-host Dapr adapter 13.6.1-beta.935 differs from catalog 13.6.2-beta.959",
+  "files": [
+    {
+      "path": "failed-attempt-1/invocation.json.gz",
+      "sha256": "66caefc1ca4f89c0507316f42ee069156d3347d695fdc6d77adb75f485b2b271",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/invocation.json",
+      "nativeSha256": "8fddf671baa0dcb94b16a86265d7c3bd5b4c4b899ed23be2ad3ad1512f7a47f3",
+      "nativeBytes": 761
+    },
+    {
+      "path": "failed-attempt-1/result.json.gz",
+      "sha256": "55285a5a87fb05762380d92d29ffc18d92619c58baba8c244eee561af2f60e12",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/result.json",
+      "nativeSha256": "03b9b2fcf57897cc22393e00f86cd6362983a724927f7d9f65f6923239504ecc",
+      "nativeBytes": 828
+    },
+    {
+      "path": "failed-attempt-1/full-driver.log.gz",
+      "sha256": "07a445933539edad0aa6d73ba43999d88e62b8e1d8588107e3015621bb84ce07",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full-driver.log",
+      "nativeSha256": "a75a982f9c5f3e4e05f94fbfafeffc8550f91f9c4f121c8b6c69f229433fd0f8",
+      "nativeBytes": 428
+    },
+    {
+      "path": "failed-attempt-1/full/bootstrap.json.gz",
+      "sha256": "a6535160e31cdc57124db0c0d04b441ff5633846145c439e7561da549e504ccf",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/bootstrap.json",
+      "nativeSha256": "176d28e67e1b2abf1ca9bec25d17489ad0384e27d2a88264cd0f9fcf1de67b53",
+      "nativeBytes": 174297
+    },
+    {
+      "path": "failed-attempt-1/full/platform-source-binding.json.gz",
+      "sha256": "6b17832ab4a0a05f4792388ea856f46adb111078a792ae89be97f733104acdb8",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/platform-source-binding.json",
+      "nativeSha256": "e23707bcfaedab181cf16cdb514152fe3105581bf634966f37f1f76a443ba2ce",
+      "nativeBytes": 349621
+    },
+    {
+      "path": "failed-attempt-1/full/gate/ledger.json.gz",
+      "sha256": "7bc6d34ee47b7c331f7cc402a53a581a23432fe55eb316171827c6df16f2ed06",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/gate/ledger.json",
+      "nativeSha256": "e7ea116a3425f1a59bc921b745e2d60a608836a42bb3e81f02d1035113c32f39",
+      "nativeBytes": 1603739
+    },
+    {
+      "path": "failed-attempt-1/full/gate/evidence-gate-tests.log.gz",
+      "sha256": "b083248ac85e306efda7acb0b371299e6f7bc0cc798d2e44be878427230ca140",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/gate/evidence-gate-tests.log",
+      "nativeSha256": "fc095765c824face99b83b3c5805743f4a55df48155d3ed9c5c1dc66576c6b1e",
+      "nativeBytes": 15090
+    },
+    {
+      "path": "failed-attempt-1/full/gate/component-evidence-gate-tests.log.gz",
+      "sha256": "aef27cd2b63da85ad0660dbc4efccd10089329072459b6be45e3f306de84f1b0",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/gate/component-evidence-gate-tests.log",
+      "nativeSha256": "b4cd2494d3a5a42cfde6ce3673faed4d2a1cb4f505591fba86685cffa5c8d262",
+      "nativeBytes": 548
+    },
+    {
+      "path": "failed-attempt-1/full/gate/agents-full-refusal.log.gz",
+      "sha256": "42fb93889aa4c91bf14dd6989333abf5b51ec33e1d34359bf512adabab0443ab",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/gate/agents-full-refusal.log",
+      "nativeSha256": "9b4b235196b7636ddd7335d0aca32c990d374d79f6eb7f77ac6a62af10a97974",
+      "nativeBytes": 114
+    },
+    {
+      "path": "failed-attempt-1/full/workspace/platform/apphost.cs.gz",
+      "sha256": "2c199c8b9ec431f64b22be305ddf69464c4c680b0479f7a3f11c6be0ff265892",
+      "nativePath": "/tmp/story49-build-20261029-p21ho_qu/full/workspace/platform/apphost.cs",
+      "nativeSha256": "d4d25b8c15581140703066463815fe4d7bc7d171ab768c683a02689152ca9ec2",
+      "nativeBytes": 838
+    }
+  ]
+}

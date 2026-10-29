@@ -2187,3 +2187,47 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29B-D3 — Confirm `WorksSdkRebuildBatchObserver` observes staged batches (unverified medium).
   evidence: It wraps `IReadModelBatchStore` only. If the SDK stages through `IReadModelBatchStagingStore`, the ceiling assertion misses those batches. Settled by inspecting the SDK write path.
+
+## Deferred from: Story 4.9 Build resume review (2026-10-29)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29R-B1 — Qualify whether unbound gateway query assertions can carry forged caller identity outside the trusted issuer path (unverified high).
+  evidence: Works trusts workload/actor envelope fields when the SDK receives neither CallerAuthority nor its digest claim. Those exact admission conditions predate cutover in Works 696781961155d764ed805843f55b40dc5882e887 and SDK b16be63521e8b784fc68828e0267f892b8e45924. Current canonical gateway queries capture authenticated caller authority, and possession of an authorized generic gateway assertion by an unauthorized caller was not demonstrated. Trace a legitimate assertion mint path and execute protected HTTP missing-binding/workload/actor mutation controls before changing compatibility; no unauthenticated bypass is claimed.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29R-B2 — Reconcile child-completion process admission for a supported Parent-only CreateWorkItem with the reciprocal ChildSpawned requirement.
+  evidence: The aggregate accepts a Parent-only create and emits WorkItemCreated, while WorksProcessTranslator.ChildResumeAsync refuses a parent's history without ChildSpawned. The translator is byte-identical after newline normalization to pre-cutover 696781961155d764ed805843f55b40dc5882e887. Add the parented-create completion case and settle the owning relationship authority rather than weakening the refusal incidentally during hosting migration.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29R-B3 — Resolve a parent suspension that begins after its child completion was checkpointed with no effects.
+  evidence: The unchanged pre-cutover child-completion translator returns no effect when the parent has no current child await; later wakeups enroll only their own aggregate, so a subsequently committed parent await has no demonstrated reactivation path for the already checkpointed child completion. Add completion-before-suspension coverage and an owning reconciliation decision.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29R-B8 — Prevent proof-input recheck reports from overwriting any inspected source or auxiliary input.
+  evidence: A disposable fixture executed scripts/recheck-platform-proof-inputs.py with output equal to its inspected Works src/Works/Work.cs and reproduced exit 0, no mismatches and replaced source bytes. The helper was introduced separately by e53439bf08b87ea8041e5147a18a706055ad30db and is not the canonical story gate. Protect inspected source/configuration/helper paths and their aliases before success or refusal writes; retain an executing CLI regression.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29R-V1 — Add a real --list-codes CLI JSON contract test during the next BMAD party-mode skill refresh.
+  evidence: The independent verification-gap layer read TestCodeMap and searched CLI consumers: tests call code_map directly, while create-party instructions consume main/CLI JSON keys codes and installed_agents_resolved. Removing the args.list_codes branch leaves helper assertions green. This is separate agent-context tooling; no repository skill inside references was loaded or changed.
+
+## Deferred from: Story 4.9 submodule implementation review (2026-10-29)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29S-B2 — Re-enumerate complete live runtime artifact membership at final canonical closure.
+  evidence: require_unchanged_inputs compares only existing runtimeArtifacts entries, allowing added files to escape its final dictionary check. The exact recorded-path loop already exists in pre-cutover Platform a9ac6640944efd8c581aaad70b335b7117b932b5. Add owning membership-addition/removal controls across every recorded runtime directory; do not transfer this limitation into claims of exhaustive executable influence.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29S-B3 — Determine whether the selected SDK global.json can influence actual canonical compiler selection without source closure detecting it (unverified medium).
+  evidence: verify_works_producer.py omits global.json from BUILD_FILES in both pre-cutover Platform a9ac6640944efd8c581aaad70b335b7117b932b5 and current source. Current commands run from bound Works/Platform roots, so the claimed active SDK-selection drift was not demonstrated. Execute an SDK-selection control before extending producer qualification to that file.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29S-B7 — Scope custody blocked-operation release checks to the relevant identity as well as HoldId.
+  evidence: ReleasedBlock checks Witness.Pins globally by HoldId; an unrelated other-tenant pin with the same label can retain a target's old BlockedByPin result after its own hold is removed. This independent custody path comes from cd702594989a513749cdb8e446cd78d3a421bc49 and was not changed by the migration's analyzer corrections. Add cross-tenant reused-hold coverage in its owner.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29S-B8 — Replace ambiguous U+001F-joined custody identity keys with an injective identity representation.
+  evidence: CustodyComponentStore.DekKey and CustodyOutsideWitness.Key concatenate free identity fields using U+001F while CustodyKeyLifecycleActor.ValidText permits that character within nonblank fields. Distinct valid identities can alias retention/destruction entries; identity-AAD still protects ciphertext, and plaintext disclosure was not demonstrated. The encoding is independent custody code from fda37d598e4e908a9b20137e88aa5f2e3fb6e70b. Add explicit separator-collision controls to the owning identity/storage contract.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R29S-B10/R29S-V1 — Verify successful concrete multi-target custody destruction through its actual provider.
+  evidence: Independent reviewers found successful CustodyComponentMatrixTests, AtomicDeletionManifestBindingTests and lifecycle-binding cases use one target; the two-target refusal stops before TryCut, and thousand-target tests exercise the symbolic model. Add a valid ordered unpinned provider cut checking every receipt, destruction of all selected keys, an unselected survivor, and exact retry/lookup/restore behavior. This is pre-existing independent custody verification, outside the hosting migration's bounded null/static prerequisites.

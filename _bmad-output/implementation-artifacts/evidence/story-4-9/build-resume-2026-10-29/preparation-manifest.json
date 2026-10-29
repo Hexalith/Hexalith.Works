@@ -1,0 +1,146 @@
+{
+  "status": "focused checks passed; fresh full/CI qualification pending",
+  "files": [
+    {
+      "path": "preparation/story49-resume-doc-checks.json.gz",
+      "sha256": "e59c9babc0e4f4006903eff8573240a5b98d2a5d8006f86bd36a1d9a67af79bc",
+      "nativePath": "/tmp/story49-resume-doc-checks.json",
+      "nativeSha256": "195450b67b54f1c8af0959bb2203e45d04967a8816b2fd9191d1600608327c2c",
+      "nativeBytes": 411
+    },
+    {
+      "path": "preparation/story49-resume-qualification-start.json.gz",
+      "sha256": "fdc5af9785014a1ad1e027791db85eacba0036f6b28b17c2c7864ef62ae136a8",
+      "nativePath": "/tmp/story49-resume-qualification-start.json",
+      "nativeSha256": "4aa21b8118729924564f2a967256657e0f2dbd777823071f5a94af62a5a1d50e",
+      "nativeBytes": 433
+    },
+    {
+      "path": "preparation/story49-submodule-implementation.json.gz",
+      "sha256": "a6df9d3060a6c7158dcf13976384084aa261b419801f352e59b7477b8b380f7f",
+      "nativePath": "/tmp/story49-submodule-implementation.json",
+      "nativeSha256": "b94bc79b60471f3f8b9687d420546005029501644b13f069bfce64aafb3f3c53",
+      "nativeBytes": 3146
+    },
+    {
+      "path": "preparation/story49-platform-owner-red-python.log.gz",
+      "sha256": "46a7b0b1d761f0a6245cddee8ec521119726f90e175177397d849f17218a1dd1",
+      "nativePath": "/tmp/story49-platform-owner-red-python.log",
+      "nativeSha256": "d1b4d014b0eafbd673ceeac98adae50a13ad8edf879c8d9e09875cb70591e2ee",
+      "nativeBytes": 6275
+    },
+    {
+      "path": "preparation/story49-platform-owner-red-build.log.gz",
+      "sha256": "3245de2e1e2d0fc3d2ecc14c64c26e7b73c9a1517933cbaef29e9b8693ce4d5a",
+      "nativePath": "/tmp/story49-platform-owner-red-build.log",
+      "nativeSha256": "011fcbf31daa1df246efba30543621ae5597b5cc95b6a01caed33635688fc10c",
+      "nativeBytes": 10175
+    },
+    {
+      "path": "preparation/story49-platform-preview-focus.targets.gz",
+      "sha256": "be675c71f293d2a335558dd3bd2bf34084d0bea8fda44ab29678f00a51f32759",
+      "nativePath": "/tmp/story49-platform-preview-focus.targets",
+      "nativeSha256": "8aa9fd84c9dc83af5f8f3cd01940a915997bb5d0e2c1a63af796f0b5a5551f0b",
+      "nativeBytes": 401
+    },
+    {
+      "path": "preparation/story49-platform-preview-red-build.log.gz",
+      "sha256": "e1042fae4e49bfb1a8ec102061a3f3e775c8bf564ec31284b73ed7ee8fea8698",
+      "nativePath": "/tmp/story49-platform-preview-red-build.log",
+      "nativeSha256": "6a57ba81349402f52e2aebd926c73325c6b208e101db80e995dede0af6019c1e",
+      "nativeBytes": 2614
+    },
+    {
+      "path": "preparation/story49-platform-preview-red.xml.gz",
+      "sha256": "793c001714af257643ff50b174e3ce0f13b21763b4899b8eacfdf8ce2badc6bf",
+      "nativePath": "/tmp/story49-platform-preview-red.xml",
+      "nativeSha256": "c8c27d49e71c5b8dc41fbf16467305d289daff7be3ac0171119b68b094bfaedb",
+      "nativeBytes": 7979
+    },
+    {
+      "path": "preparation/story49-platform-preview-red-tests.log.gz",
+      "sha256": "5eafbaf04b1ced4c8dfce38d396f949225127cc7c8832e0e309eeab07a0e15da",
+      "nativePath": "/tmp/story49-platform-preview-red-tests.log",
+      "nativeSha256": "78f3e0b2bd73973e595fa95cd906689838e063e51447010fc5d56fe38bd59358",
+      "nativeBytes": 5101
+    },
+    {
+      "path": "preparation/story49-platform-owner-green-build.log.gz",
+      "sha256": "1c7993cd08b8e77aaa6bcbf5b2913e90cf72c469ea3c8054ee589deeef45714a",
+      "nativePath": "/tmp/story49-platform-owner-green-build.log",
+      "nativeSha256": "f1d43d48544180a523a50b3fb9b53726185b045b1743b1fe247ffdb916c92870",
+      "nativeBytes": 2614
+    },
+    {
+      "path": "preparation/story49-platform-owner-final-build.log.gz",
+      "sha256": "458b25014032c9dbc0c6f6b070b4a214a418a994cd451b8b1b588d84465d9a50",
+      "nativePath": "/tmp/story49-platform-owner-final-build.log",
+      "nativeSha256": "9e940a5f3b756c6bbefe386da307bc74596b0eebbbb3db5de8d2795227ed8a15",
+      "nativeBytes": 444
+    },
+    {
+      "path": "preparation/story49-platform-owner-green-python.log.gz",
+      "sha256": "f2c0dbad41135b0d85e9821b75dcaa42b246772cdaf97d2acdaa5a403ed35b9a",
+      "nativePath": "/tmp/story49-platform-owner-green-python.log",
+      "nativeSha256": "14c40632598cd5d6b66a54e1edae8a9994ec1791bfff6f8646f55c2558f03384",
+      "nativeBytes": 15009
+    },
+    {
+      "path": "preparation/story49-platform-owner-final.xml.gz",
+      "sha256": "70e1f5b4a338baf862c65f284176835c2ad2e3be031837021b706ea1f66277a9",
+      "nativePath": "/tmp/story49-platform-owner-final.xml",
+      "nativeSha256": "df9729ca68843fb01f727d583ac047a3b2cd13c750ccc9aec8906d4cfa3af550",
+      "nativeBytes": 93116
+    },
+    {
+      "path": "preparation/story49-platform-owner-final-tests.log.gz",
+      "sha256": "ffcbf86b260e66ccdba18dc2ddaaaf7e764ed673e329b577333b2fba4394c359",
+      "nativePath": "/tmp/story49-platform-owner-final-tests.log",
+      "nativeSha256": "e4a33429652e86a2a51e0162933948c8cca6a822e10aaed39ad784a3bdc0ccfb",
+      "nativeBytes": 461
+    },
+    {
+      "path": "preparation/story49-platform-consumer-root-evaluation.json.gz",
+      "sha256": "1d2b918510f813f104840904e590da485af7c338ab16df8494e82474df6a3763",
+      "nativePath": "/tmp/story49-platform-consumer-root-evaluation.json",
+      "nativeSha256": "ab8f3081f64dcec78d2ddb86930d7a18246d10f49ff13dc0b73966c35b86edc5",
+      "nativeBytes": 340188
+    },
+    {
+      "path": "preparation/story49-build-20261029-qualify.py.gz",
+      "sha256": "ac4a86da5cd5aa37aafb17b20d24c9bcc2569fa1f27ba5a190ca908d348b39c2",
+      "nativePath": "/tmp/story49-build-20261029-qualify.py",
+      "nativeSha256": "6ee699fb6029d9b94d928be47ba549754a3dd30e7ae27e67bb3e7f46f07b0f38",
+      "nativeBytes": 3307
+    },
+    {
+      "path": "preparation/platform-fixes.diff.gz",
+      "sha256": "eb5c406bccb2fbbc722237280ee628a51bbc7ae7e24de5f81fd77be1e636406a",
+      "nativeSha256": "11c58ad32c94f525682154a36b8d09f46be7095b3bccfd3a7bf2e31e5eef2af2",
+      "nativeBytes": 16328,
+      "command": [
+        "git",
+        "diff",
+        "--no-ext-diff",
+        "--submodule=short",
+        "--"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/works/references/Hexalith.Platform"
+    },
+    {
+      "path": "preparation/works-doc-fixes.diff.gz",
+      "sha256": "c6bc69c0c945f02431929a821fe1e3bc8b146a8996cd1ac48ceafe741784d4b1",
+      "nativeSha256": "72723d6bf670c7669aad5856b0379e664a949a6bccde2bfccfd262412eff577d",
+      "nativeBytes": 9807,
+      "command": [
+        "git",
+        "diff",
+        "--no-ext-diff",
+        "--",
+        "docs/sdk-projection-query-adoption.md",
+        "docs/sdk-reminder-process-adoption.md"
+      ],
+      "cwd": "/home/administrator/projects/hexalith/works"
+    }
+  ]
+}

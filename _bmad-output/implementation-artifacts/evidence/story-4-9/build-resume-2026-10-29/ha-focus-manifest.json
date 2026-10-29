@@ -1,0 +1,72 @@
+{
+  "status": "single HA fact passed on unchanged runtime/consumer bytes; no complete qualification credit",
+  "runtimeAndConsumerFiles": 908,
+  "runtimeUnchangedAfter": true,
+  "nativeObserverCoverage": "zero admitted processes; first observer did not attach to detached resource processes",
+  "historicalCause": "unestablished; timeout did not recur",
+  "files": [
+    {
+      "path": "ha-focus/invocation.json.gz",
+      "sha256": "d4bd44b70cc3f0bc3947a514011216361654fc69242bf1dd8e007b8b55c8e7c3",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/invocation.json",
+      "nativeSha256": "1e452d916d425674dc4dbeb4ee02ee1f8dcadbdcbf0ef8be985a3636e9b4d4b1",
+      "nativeBytes": 892
+    },
+    {
+      "path": "ha-focus/result.json.gz",
+      "sha256": "5cf79256f83e48e1c85fb2459464072189b1d9ef4d97c1e76f050f531ac3e181",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/result.json",
+      "nativeSha256": "aa5aaeab44ebf509b3c04dc108d77e734e5cc1620719695f518ce079a6f722dc",
+      "nativeBytes": 1404
+    },
+    {
+      "path": "ha-focus/result.xml.gz",
+      "sha256": "6c81125e20a75a3d13271339253bca4887ad9715cfee40eb2c7f1ca05e8b0252",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/result.xml",
+      "nativeSha256": "c4bfee98df92b0c7dfba74ae73f25978a9aeb662ee7a39721d72613d0431db79",
+      "nativeBytes": 1744
+    },
+    {
+      "path": "ha-focus/test.log.gz",
+      "sha256": "6f59acff4280e59a09b954eec6d84f966fbdf07be841316d880de6982af177bb",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/test.log",
+      "nativeSha256": "269cf87c591175b4d9212cedc0ecdcf7607c60deaf710840e8f4b7eaf9247a5b",
+      "nativeBytes": 399
+    },
+    {
+      "path": "ha-focus/host-starts.jsonl.gz",
+      "sha256": "9b4f56dfe398c658bc04170b4618a15f09da86b50a2f207237bd33e627980532",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/host-starts.jsonl",
+      "nativeSha256": "9a5531f49df47624a2cd6c778df7a541c12304b999b181001c0ec8eb994f9147",
+      "nativeBytes": 25498
+    },
+    {
+      "path": "ha-focus/persisted-states.jsonl.gz",
+      "sha256": "81e2a35f8fa6c6f634becaf64480e590052f9ccc89fb56274e30d63700a2d142",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/persisted-states.jsonl",
+      "nativeSha256": "1975ba912922abea3ec35035645890999c24e51b5af7a12202f604e017195d09",
+      "nativeBytes": 1770
+    },
+    {
+      "path": "ha-focus/process-observations.jsonl.gz",
+      "sha256": "06bc1f4fe771ded076c65c9ea074b06b12811778ec1cd35482ddbe310eaa1114",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/process-observations.jsonl",
+      "nativeSha256": "b342bdfa1c5c77c5b2376c13af7ed728d6d16686cd84f881651cef6701a67d5e",
+      "nativeBytes": 2276
+    },
+    {
+      "path": "ha-focus/isolated-daprd/binding.json.gz",
+      "sha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/isolated-daprd/binding.json",
+      "nativeSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "nativeBytes": 264
+    },
+    {
+      "path": "ha-focus/isolated-daprd/launches.jsonl.gz",
+      "sha256": "83aa658dc2d101522df84bc56dcaf25e6fce881f50157aa57ee0ed5aa6441288",
+      "nativePath": "/tmp/story49-ha-focus-20261029-3butzgbb/isolated-daprd/launches.jsonl",
+      "nativeSha256": "ee399e7ab4474f0cddb1beee0b4dba747f4d9cfdac81ee98dc6c3e9634747a2f",
+      "nativeBytes": 2863
+    }
+  ]
+}

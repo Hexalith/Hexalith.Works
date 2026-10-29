@@ -79,7 +79,9 @@ development_status:
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
-  4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
+  4-9-migrate-works-hosting-to-the-platform-boundary: review
+  # 2026-10-29 build resume: full 659/CI 512, all 11 rows/44 proofs and complete rollback pass; parent audit and three review layers complete; 10 new follow-ups deferred.
+  # Earlier dated notes below retain their historical checkpoints.
   # 2026-10-29: group 3B patches verified/reviewed (78 tests); 3 medium defers retained; groups 3C–3E, 4 and 5 remain.
   # 2026-10-27: all six R26C patches and final review corrections verified; current full and hosted CI passed.
   # 2026-10-26: R26-E1 fixed and 85 focused checks passed; deferred medium findings and review groups remain.

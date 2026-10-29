@@ -1,0 +1,167 @@
+{
+  "status": "passed focused recovery only; no complete qualification credit",
+  "facts": 1,
+  "runtimeFilesUnchanged": 908,
+  "persistedPhases": 21,
+  "hostStarts": 5,
+  "observedPlatformSentryContainers": 4,
+  "dcpApis": 4,
+  "controlSamples": 327,
+  "dcpSamples": 90,
+  "publishedHealthResults": {
+    "{'status': 200}": 287
+  },
+  "observerScope": "Exact selected Platform config mount; retained-host config is outside that observer admission. Bridge IP probes did not connect and do not prove internal HTTP state. IPv6 proxy refusal alone is not a defect. No recorded outcome diagnoses the previous failed startup.",
+  "mutations": 0,
+  "helperContainers": 0,
+  "containerExecCalls": 0,
+  "files": [
+    {
+      "path": "recovery-focus/control-observations.jsonl.gz",
+      "sha256": "ef193fd19e43969e872d2708a43b7c5b36348f0d2e29490d54513919a1d7d12f",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/control-observations.jsonl",
+      "nativeSha256": "e27ab7eb3f9b69655485cd86021328dd9753f83c29e26a4800b9b16dd46a180b",
+      "nativeBytes": 374672
+    },
+    {
+      "path": "recovery-focus/control-observer-binding.json.gz",
+      "sha256": "828aa42f585dce12ba225466efff25195529f8a70b307f583627a98b899da923",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/control-observer-binding.json",
+      "nativeSha256": "d72a3d03edc72dbe8cdd17837eef2f7462e97afc719d00043ef1c08ba8c865ba",
+      "nativeBytes": 262
+    },
+    {
+      "path": "recovery-focus/control-observer-summary.json.gz",
+      "sha256": "20b99eae7c6ced33489837f31059f3c9729f969de2e73fc0b10280a57bb60296",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/control-observer-summary.json",
+      "nativeSha256": "87638600b227498488186a2d5670ed82dbb1b377d9d4985e4cb87014e7d6f212",
+      "nativeBytes": 491
+    },
+    {
+      "path": "recovery-focus/dcp-observer/admitted-apis.jsonl.gz",
+      "sha256": "7f3aadc3c3f35ccea0bfd57d08d7de9969c1afb8da2e26403b9843b80b61bad9",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/admitted-apis.jsonl",
+      "nativeSha256": "1de28c79af882012aded155e560f2f5c6c741663975af9fdcb460bdaafa0c80f",
+      "nativeBytes": 1144
+    },
+    {
+      "path": "recovery-focus/dcp-observer/executable-logs.jsonl.gz",
+      "sha256": "c38f06126ab342bfc708735ebc96e1b01cde92b4f83fa39cd4ffec14f908252c",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/executable-logs.jsonl",
+      "nativeSha256": "b130b287a957e6cf28a23d69d67aae020a3e3e77717818531438383d8933a99c",
+      "nativeBytes": 15093648
+    },
+    {
+      "path": "recovery-focus/dcp-observer/scope.json.gz",
+      "sha256": "8c4975ed8182884ff39ed5554e7320f287919c36787b987e62caf90f72d3c6f7",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/scope.json",
+      "nativeSha256": "b03d98248385d07908becb50ebc7e25526e7a2e335e98757d2e44ee814ec8089",
+      "nativeBytes": 594
+    },
+    {
+      "path": "recovery-focus/dcp-observer/service-logs.jsonl.gz",
+      "sha256": "bc6df2b1fea692d1c8bc20eb61c0505e138371ed8211d26afb3ae4eba292360e",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/service-logs.jsonl",
+      "nativeSha256": "d55539994cda3cd359a222b1bffc659cb27fe47495118106fcb1a503c3aa61a7",
+      "nativeBytes": 11328
+    },
+    {
+      "path": "recovery-focus/dcp-observer/snapshots.jsonl.gz",
+      "sha256": "403b4cc69b7930ac03c0fd8637fdf7f2dfd072a00c642e67f4b874e31cfb107e",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/snapshots.jsonl",
+      "nativeSha256": "deb4a5cac3b8463c7494831949d895430120f3d8206bd8a66fa9df9b533e3cab",
+      "nativeBytes": 861056
+    },
+    {
+      "path": "recovery-focus/dcp-observer/summary.json.gz",
+      "sha256": "c32fc6ac178604fed5e2e290d70cd7324ce2e162e19c3e042a84daba7e2ed97c",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/dcp-observer/summary.json",
+      "nativeSha256": "657d297f795eefca3e879d73323d0e1e7a79e4650b320227c29037b7e953ee99",
+      "nativeBytes": 140
+    },
+    {
+      "path": "recovery-focus/host-starts.jsonl.gz",
+      "sha256": "ec9e6adda64c853fe1e6e8111c39c667036ee9e99176f9125e7d8fa8dc391cc0",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/host-starts.jsonl",
+      "nativeSha256": "ddb0aa708d029a6f2292e217164cd2d92eef1336ece511fca29d7912b7677417",
+      "nativeBytes": 103609
+    },
+    {
+      "path": "recovery-focus/invocation.json.gz",
+      "sha256": "68bcbdfdaad264ca6f5415515af9462c5f04e53b69fdc8e4b6465deb002cc218",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/invocation.json",
+      "nativeSha256": "056ef7795e6638b19391dbb9fbff4efc8dd5b6bc0def1d29e57016b03de8df6b",
+      "nativeBytes": 998
+    },
+    {
+      "path": "recovery-focus/isolated-daprd/binding.json.gz",
+      "sha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/isolated-daprd/binding.json",
+      "nativeSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "nativeBytes": 264
+    },
+    {
+      "path": "recovery-focus/isolated-daprd/launches.jsonl.gz",
+      "sha256": "dbb5450829a347ee3c3b9d42251e775c57264029974918ea46fae1e2dac935cb",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/isolated-daprd/launches.jsonl",
+      "nativeSha256": "669387be066790b540a694bc445da578ba6369c1431ec7901745f5cf8d89dc78",
+      "nativeBytes": 11505
+    },
+    {
+      "path": "recovery-focus/persisted-states.jsonl.gz",
+      "sha256": "da5241996c5bddafd54524697ee8e6b818f6536d72fe23e38979ba40792b2e95",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/persisted-states.jsonl",
+      "nativeSha256": "fae1d83185aeadba6e1e5ade20e92fd7ab7c8be7a55027f24a1d859f1737073e",
+      "nativeBytes": 3386080
+    },
+    {
+      "path": "recovery-focus/result.json.gz",
+      "sha256": "fb6b306ae667a7fec9c4e512ce51e6c432a2d7cc26b430c7bba1394d28a39971",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/result.json",
+      "nativeSha256": "401c1da2198647cac1e8023af233a5a9f93ddb7194cd895f332e25377258a1c1",
+      "nativeBytes": 1490
+    },
+    {
+      "path": "recovery-focus/result.xml.gz",
+      "sha256": "b1e983732f18dbc9d851065a86c641e214b5edc526f61fe17bd06d9cdd2ec905",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/result.xml",
+      "nativeSha256": "09374724299ec6c457c138dc67d6701b6dc9457b9e64f61ea834e49ba99771ac",
+      "nativeBytes": 1747
+    },
+    {
+      "path": "recovery-focus/test.log.gz",
+      "sha256": "02b031574495d56a8fb5f7546ae682474e0bc6c021f600dc99e3a4c70795efb2",
+      "nativePath": "/tmp/story49-recovery-focus-20261029-3in7s8es/test.log",
+      "nativeSha256": "f8ed041bcff122f214bc9ac9e94fa4159f63c76d8d03a9bab95d4201db5ede19",
+      "nativeBytes": 400
+    },
+    {
+      "path": "recovery-focus/tools/story49-build-20261029-recovery-diagnostic.py.gz",
+      "sha256": "008437c5ae9c1d7e87e249308b6752d290e42e139b2b64fd3ba3a165d86ac252",
+      "nativePath": "/tmp/story49-build-20261029-recovery-diagnostic.py",
+      "nativeSha256": "1e3b1073f978660e882469404c940eecedd7928d057dc3e39c8e9251702609a2",
+      "nativeBytes": 4699
+    },
+    {
+      "path": "recovery-focus/tools/story49-build-20261029-control-observe.py.gz",
+      "sha256": "9aeda488d116cfea1e093e88768d057d360c10ca48bcdc0415b7daa0ef633174",
+      "nativePath": "/tmp/story49-build-20261029-control-observe.py",
+      "nativeSha256": "a2ee8d738ecce4ef671072cb467a85d4579fa22ac7523d4adb159808c4f1c297",
+      "nativeBytes": 3889
+    },
+    {
+      "path": "recovery-focus/tools/story49-build-20261029-dcp-observe.py.gz",
+      "sha256": "540f848c2b04d66f880a1a073acbfd0e64c869af93d26aace968acf98dd3ed13",
+      "nativePath": "/tmp/story49-build-20261029-dcp-observe.py",
+      "nativeSha256": "c989e48a352c031345dbf95f8187d8a9fd62e9ea6021c4b8d2c00bf7dfd0c988",
+      "nativeBytes": 9117
+    },
+    {
+      "path": "recovery-focus/tools/story49-build-20261029-package-focus.py.gz",
+      "sha256": "04ad845b4a5036e4c49f78877188ea81225e43ad624e4f8fd488ef276df84f6d",
+      "nativePath": "/tmp/story49-build-20261029-package-focus.py",
+      "nativeSha256": "c46833d13ad2b5b4fd59379b0bacd20e967bf57de6f59e88cddde882ac255152",
+      "nativeBytes": 3096
+    }
+  ]
+}

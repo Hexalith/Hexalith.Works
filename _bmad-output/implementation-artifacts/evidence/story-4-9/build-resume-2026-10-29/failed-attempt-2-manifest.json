@@ -1,0 +1,290 @@
+{
+  "status": "nonqualifying; HA failed; mTLS/projection/CI/final closure not run",
+  "passed": {
+    "platformDebug": 147,
+    "platformRelease": 147,
+    "supporting": 354,
+    "retainedPreflight": 1,
+    "recovery": 6,
+    "historical": 1
+  },
+  "failed": {
+    "ha": 1
+  },
+  "cause": "HA did not resume within the existing three-minute deadline after primary stop; original cause unestablished",
+  "files": [
+    {
+      "path": "failed-attempt-2/invocation.json.gz",
+      "sha256": "ed6ff768fac44a0e28e06122112d652ff57bb5ae6fa4c035fb8984491593859c",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/invocation.json",
+      "nativeSha256": "4943fe83caf2e704765ff183511cc498da004a5cf1100f8b8603855dad487a5d",
+      "nativeBytes": 761
+    },
+    {
+      "path": "failed-attempt-2/result.json.gz",
+      "sha256": "a9c1145bb6934571a8c4a4144d1755ed02d7e3ac35997b16304ecc5467e8bb8e",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/result.json",
+      "nativeSha256": "13debf813dc58d06e6c2b4fa8e726bdd428c2b444228fcf008a3a85851e44144",
+      "nativeBytes": 828
+    },
+    {
+      "path": "failed-attempt-2/full-driver.log.gz",
+      "sha256": "b7833d60fff44a228fbf852bab4de01aafb5a02cd3f6a01ecf2d9038e11e84f1",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full-driver.log",
+      "nativeSha256": "a784870c52a54d01f9b6c707a7f559a93ea5b78d1a5bec443f0336c7220fbf72",
+      "nativeBytes": 2350
+    },
+    {
+      "path": "failed-attempt-2/full/bootstrap.json.gz",
+      "sha256": "7f6bce6530a23c3996b0f0df17844a53849de888090aaa5e7b184dea08981f0f",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/bootstrap.json",
+      "nativeSha256": "bb68e3632c2d38ea369ead29226e1d39d262d8cd803a52746b16a2ef392fff19",
+      "nativeBytes": 174297
+    },
+    {
+      "path": "failed-attempt-2/full/platform-source-binding.json.gz",
+      "sha256": "4a2eba0de9ada3ff707ec2366bbdd07a6771ccfa08b98157206417522f5fac91",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/platform-source-binding.json",
+      "nativeSha256": "070bac66c220dad9e2d23ce92df7bb0ee5cc11cb331077e886848b96bdefd206",
+      "nativeBytes": 349621
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-3.log.gz",
+      "sha256": "74c9aade49fa572e3bdb027a5d3adf7fbfd4563324b1ad0dd3e3bb098f695f5e",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-3.log",
+      "nativeSha256": "e323304ff3fff2ad1aafe76166faef8eb7dd0ff7e649696237061cbfc3da195f",
+      "nativeBytes": 1423
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-tests-build-debug.log.gz",
+      "sha256": "81e6142355a5236c208a2749a66f3bc13c6d818789a0ffac142e51d0cfcb0272",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-tests-build-debug.log",
+      "nativeSha256": "bc137b10ecb73eddcf686ceb9df537def5d9f90bcf02f49958c0d722a71ef3b0",
+      "nativeBytes": 5597
+    },
+    {
+      "path": "failed-attempt-2/full/gate/component-evidence-gate-tests.log.gz",
+      "sha256": "489c8c8b04bc6b365a5aec75862bfd405784e2a6362997c54e7c37eac63984be",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/component-evidence-gate-tests.log",
+      "nativeSha256": "ebddee2c0392c800c6e3fc9a4eeed81910fe0879cf8f06f7a67b0eed20567d69",
+      "nativeBytes": 548
+    },
+    {
+      "path": "failed-attempt-2/full/gate/works-consumer-debug.log.gz",
+      "sha256": "b1697db3e5daf852b33e0b88238233cb284bebbeaa5b6cbf1c0e7f33cd80bc74",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/works-consumer-debug.log",
+      "nativeSha256": "767cbfe0ac624a47d36189e033a622fb45eea6f8a223e1b2878aef4e87792394",
+      "nativeBytes": 9736
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-historical.log.gz",
+      "sha256": "83b772d1390e0a772347111d5de69acd9b5bcf71bd3ae7bc6acb675cf2087cc9",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-historical.log",
+      "nativeSha256": "120bb560d58a6c42e9b002e764dc655b45594349f6ceca4688e436e3e0c0bef6",
+      "nativeBytes": 400
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-tests-release.log.gz",
+      "sha256": "a5f6c935879f015e004411f2eb78528ed97b5c9007a9a852a7b0be18d3353629",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-tests-release.log",
+      "nativeSha256": "24bee39c1ef567d3fb5faa482b8f658807a7469a5f89110ce96c8cead7152561",
+      "nativeBytes": 390
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-1.log.gz",
+      "sha256": "210a2262e2e69d983bde472ba01d742e7e86f3d0b64718c4fac7d36511b4c8a9",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-1.log",
+      "nativeSha256": "7c38bfdfd9a843b600d1331e8ade467e6428c53575ff4b9b0929c748e8c76833",
+      "nativeBytes": 2782
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-tests-debug.log.gz",
+      "sha256": "51d0dd310ec0cfb34435ccfdbd21adc4bf4f8c621c54991a38ceb6fb8bb4e8c9",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-tests-debug.log",
+      "nativeSha256": "3a06b44f829cea79eec69f4c21112d07897b0f35804ec23a8505dc72f170bd68",
+      "nativeBytes": 390
+    },
+    {
+      "path": "failed-attempt-2/full/gate/agents-full-refusal.log.gz",
+      "sha256": "5d63dcb492964e22debd6c3bf5cd2841176ff086ca0a2293e7b4b234a90be9f1",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/agents-full-refusal.log",
+      "nativeSha256": "259c9d1e10aae54a19b5c37ac45461fa15aab94c5da2f804ffb7b754b82d443d",
+      "nativeBytes": 391
+    },
+    {
+      "path": "failed-attempt-2/full/gate/works-consumer-release.log.gz",
+      "sha256": "dd2a3afacc6c4c2a21cdbb44352f22e36c0562da10ee9996862fcfa24071b356",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/works-consumer-release.log",
+      "nativeSha256": "73e4956ced88fe3e78c4fbadda678c3045d56a9cd01a384e2050ca3f9d228c7e",
+      "nativeBytes": 4504
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-0.log.gz",
+      "sha256": "284712dea4d9c5676cfc4f9f7d9ac44bdf6b03379fc04d90ee6df661b3e22646",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-0.log",
+      "nativeSha256": "fd42dfe52d8c7e4e7610497713a311de1ee23fdf4b79a953c0050654ae02f405",
+      "nativeBytes": 1448
+    },
+    {
+      "path": "failed-attempt-2/full/gate/agents-local-scaffold.log.gz",
+      "sha256": "58e62b0090d69d49ffb4c679c948e39e3d4deb40a8a78409beb56edb43e5b16d",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/agents-local-scaffold.log",
+      "nativeSha256": "f223cb1be2b0ae8852aa0f34bfb82d9baf441015fe489e5632d3c0c0318b924d",
+      "nativeBytes": 5027
+    },
+    {
+      "path": "failed-attempt-2/full/gate/evidence-gate-tests.log.gz",
+      "sha256": "55111dc9f4642ce86e62184d93d7aadb42d35c7437d3fa417b96e54715d59958",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/evidence-gate-tests.log",
+      "nativeSha256": "b93c4cb876897e03fc87b8f9486631a5778499ca8f7f84fd1d2c573bc08b7e80",
+      "nativeBytes": 15090
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-5.log.gz",
+      "sha256": "1c8c1ef53271127d52a44b149314e000fa907c7ce64f0ac961d1dcb8078b5c66",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-5.log",
+      "nativeSha256": "86baf75cca346b00f5a306d27ff95a48d2a5405788b511f1ecb11b48d313d1d2",
+      "nativeBytes": 1064
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-ha.log.gz",
+      "sha256": "95841a2188861c91a4c744d011365117c1016873fe4e7953db673cc85e5de3cf",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-ha.log",
+      "nativeSha256": "9be6d900d5afe93fa76ac792c1dbe3053ba14b7cfbb22743e4ad963673489e78",
+      "nativeBytes": 139220
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-2.log.gz",
+      "sha256": "78daf4e80cc4b701ea20ea137ce3f0b6b48d0c9ef2f1a0f6fb61f20136b0ab07",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-2.log",
+      "nativeSha256": "e12fccb252c45672b3ec117fd9d7687fc049ceee24ad0d0fd5d07103a10d2598",
+      "nativeBytes": 1040
+    },
+    {
+      "path": "failed-attempt-2/full/gate/retained-host-preflight.log.gz",
+      "sha256": "6f0b76f2fc6a9b28529149e45531ab176687a771e66ad18ca5434befc292a17a",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/retained-host-preflight.log",
+      "nativeSha256": "3a7d6c8fb108069bf8e9e19b12f03738074fe12e2718de502066677850be5803",
+      "nativeBytes": 399
+    },
+    {
+      "path": "failed-attempt-2/full/gate/works-consumer-supporting.log.gz",
+      "sha256": "91050966a844fbc6a32ca87eeffd99681c810e91fc16eb5d510f8f5422ddd2c6",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/works-consumer-supporting.log",
+      "nativeSha256": "e14c423ecad61b04648c7e90c7aca72ac46bf85e578a9a74cb30f6d43a378743",
+      "nativeBytes": 40017
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-tests-build-release.log.gz",
+      "sha256": "11598c830c1c8979dc73ad18ea9459d9d8b5e5e02d86086c5f7af8c29d2f9e7c",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-tests-build-release.log",
+      "nativeSha256": "0dfba1775649d718737945fc82277349172a2727e62bf017c666b04dcf496c64",
+      "nativeBytes": 2935
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-file-host-release.log.gz",
+      "sha256": "a49059ab198341bfd8a7b0bc1e23dcb67571d671cf790b62e5575a5b750dc647",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-file-host-release.log",
+      "nativeSha256": "5ac76685eecadffbc4c3c8536ed7792174199248cc5166fc4fe110bcb8444ca2",
+      "nativeBytes": 2348
+    },
+    {
+      "path": "failed-attempt-2/full/gate/runtime-release-prebuild-4.log.gz",
+      "sha256": "182bb4f6743594ad976dfba746cef5309d1d148bda4879c9be3836ac3c90c98a",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/runtime-release-prebuild-4.log",
+      "nativeSha256": "43a5a24800f434ae8151a885628725f49c70c44a0435b02d4ac8e529873341f3",
+      "nativeBytes": 447
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-recovery.log.gz",
+      "sha256": "a299e982c414e3f6cdd75d70c1146e6269497532ae94619970b8dd68201c7c41",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-recovery.log",
+      "nativeSha256": "b71f608a7c5d2fb4387aa8f2960fcb296a1ef6600d34ef5ade9676405e9f6b95",
+      "nativeBytes": 400
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-historical.xml.gz",
+      "sha256": "b09d942cdf5f2539d15c461604f4a1a670365b8edb393ae55e5e76c71370fcf4",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-historical.xml",
+      "nativeSha256": "d7c5bdc2e802e8063e1cd3e6f756bbb90a97ea988cc73f4d251f20b50ddc5024",
+      "nativeBytes": 1753
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-release.xml.gz",
+      "sha256": "510cb8c410077133d6fca0fa9a6283999c1dc24a87266227e968309e3786a17a",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-release.xml",
+      "nativeSha256": "83a1612ceb5300344007ed9cad3f31f0ed89fe36522aaeede5befdb6b2bfc9dd",
+      "nativeBytes": 91378
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-debug.xml.gz",
+      "sha256": "1de5b74e2adc972ff514805882c024bcdaa4864aa7e35cb6a16dbb195f7d7813",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-debug.xml",
+      "nativeSha256": "f09f4dfcb734cfa075f964c70ef7ae60ceafe1369197501a324b1fe79a3508af",
+      "nativeBytes": 91366
+    },
+    {
+      "path": "failed-attempt-2/full/gate/works-consumer-supporting.xml.gz",
+      "sha256": "8330ca8b6c182f8dcbd12ff6c48901ce2d55973b054ca6a9a26e6d437147547a",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/works-consumer-supporting.xml",
+      "nativeSha256": "79ce77575549a859aa3de783fda4d75ecd1dd15a952675461f5323ea6a94b91f",
+      "nativeBytes": 236179
+    },
+    {
+      "path": "failed-attempt-2/full/gate/retained-preflight.xml.gz",
+      "sha256": "62a17fa26824c845c06efd86498b6ff2634cc344c1d630c9a4827b76e14eb28b",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/retained-preflight.xml",
+      "nativeSha256": "fef4ac8be81344c95c1e87c4748661ae0915ae03da239fa99139a1f395cb12dd",
+      "nativeBytes": 1836
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-ha.xml.gz",
+      "sha256": "9194bfa3f156b57c099e07a87741ef9c80716c4688667d64af1754a8ab750d95",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-ha.xml",
+      "nativeSha256": "0789f60d5d5a31f42acce9d8c8cc8aaa991be3b27d0262eec153a824af468825",
+      "nativeBytes": 145898
+    },
+    {
+      "path": "failed-attempt-2/full/gate/platform-recovery.xml.gz",
+      "sha256": "4cbf331c96bf18041ee5592c7f39960b54d55809a745f53ae3047349dc6c6e88",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/platform-recovery.xml",
+      "nativeSha256": "c2134e19362d2577cc3382f99f79666d0f423a134823f6b8d636668970fee7fa",
+      "nativeBytes": 4896
+    },
+    {
+      "path": "failed-attempt-2/full/gate/ledger.json.gz",
+      "sha256": "c53223c6401165f070b99f231f010acf3f6ff2e80bc19e0cc8d5067ff6484724",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/ledger.json",
+      "nativeSha256": "e85331183ecf78b219d322972d4252b2bbc845ea047a0d57cfee265133dafbc1",
+      "nativeBytes": 1863398
+    },
+    {
+      "path": "failed-attempt-2/full/gate/host-starts.jsonl.gz",
+      "sha256": "dcc237b376419509f7211cebed12f9e460324edf6a24ec94c2316239d9424d23",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/host-starts.jsonl",
+      "nativeSha256": "4da67a5d943d00caaab0f96f8abd299562022cb34ea8c0d2ec4f719e1bbd5e2f",
+      "nativeBytes": 196181
+    },
+    {
+      "path": "failed-attempt-2/full/gate/persisted-states.jsonl.gz",
+      "sha256": "37fadbf5bdc9b34037e151a924582bc6df5cf2f8a24751e5fa5ee3b8bd288486",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/persisted-states.jsonl",
+      "nativeSha256": "8065c30c439ff0e6af39c9f9323306ad472248b76c69c75d35fd85f5f7442cc3",
+      "nativeBytes": 3365507
+    },
+    {
+      "path": "failed-attempt-2/full/gate/isolated-daprd/binding.json.gz",
+      "sha256": "2368d5c9907d778d5e4749609a832e973edeba1a68fb7c4ee037c8a3a11b232a",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/isolated-daprd/binding.json",
+      "nativeSha256": "8492a4b6b0c383abd4b4a11619906a943d05ed02eebf7346e4d89b3504039857",
+      "nativeBytes": 264
+    },
+    {
+      "path": "failed-attempt-2/full/gate/isolated-daprd/launches.jsonl.gz",
+      "sha256": "7b6869094b4c35bf4735e8add934481aca26753f6a8d76f4e3cc70846d0d9fef",
+      "nativePath": "/tmp/story49-build-20261029-1rj3aawc/full/gate/isolated-daprd/launches.jsonl",
+      "nativeSha256": "0fa2a13bc0b7f59a215af8e3bb9b93aa2baebdcde4aa4a642f30183a04bc9b01",
+      "nativeBytes": 21271
+    }
+  ]
+}
