@@ -2231,3 +2231,15 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29S-B10/R29S-V1 — Verify successful concrete multi-target custody destruction through its actual provider.
   evidence: Independent reviewers found successful CustodyComponentMatrixTests, AtomicDeletionManifestBindingTests and lifecycle-binding cases use one target; the two-target refusal stops before TryCut, and thousand-target tests exercise the symbolic model. Add a valid ordered unpinned provider cut checking every receipt, destruction of all selected keys, an unselected survivor, and exact retry/lookup/restore behavior. This is pre-existing independent custody verification, outside the hosting migration's bounded null/static prerequisites.
+
+## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-30, group 3C)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R30C-D1 — Live SDK callback and cascade/date restart-replay proofs are Explicit-only.
+  evidence: WorksSdkRecoveryPipelineSmokeTests lines 111 and 223 are `[Fact(Explicit = true)]`; Platform `verify_works_host.py` runs them with `-explicit on`; live requalification owned by Story 4.16.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R30C-D2 — Map deleted cascade and date-reminder test scenarios to surviving tests (unverified medium).
+  evidence: Seven test files and three source tests removed; check cascade pacing, deterministic target correlation id, truncated descendant reads and Cancelled/Expired translation against TerminalCascadeTranslatorTests, WorksSourceStreamReaderTests, WorksSdkProcessRecoveryTests.
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
+  summary: R30C-D3 — WaitForNamedProjectionLifecycleIdleAsync may pass vacuously (unverified medium).
+  evidence: Hand-built ProjectionLifecycleActor ids and 204/404-as-idle; settle with a live run observing a real Delivering row or comparing id/key shape with the SDK.

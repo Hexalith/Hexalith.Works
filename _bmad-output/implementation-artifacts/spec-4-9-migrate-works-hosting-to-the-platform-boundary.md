@@ -396,6 +396,25 @@ Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the
 - Blind-hunter and edge-case-hunter: timing-sensitive 1 s/4 s waits — **low**, no demonstrated flake.
 - Edge-case-hunter and acceptance-auditor: `Explicit` smoke demotion — **false** as a defect (`eng/verify_works_host.py` runs the class; see R29B-D1). Edge-case-hunter: commit titles overstate additive coverage — informational.
 
+#### Review 2026-10-30 — recovery, reminder and cascade integration tests (group 3C)
+
+Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the 26 `tests/Hexalith.Works.IntegrationTests` files matching `*recover*`, `*remind*`, `*reconcil*` and `*Cascade*` (+3,946/-4,787; 9,162 diff lines). Four layers ran (blind-hunter, edge-case-hunter, verification-gap, acceptance-auditor); none failed.
+
+- [ ] [Review][Patch] R30C-P1: Make `WorksReminderSchedulerProxy` collections safe for background SDK passes [tests/Hexalith.Works.IntegrationTests/WorksReminderSchedulerProxy.cs] — **low**; blind-hunter+edge-case-hunter
+  - `Held` (`HashSet`), `Arms` (`List`) and the `LostCancellationResponses++` counter are mutated from SDK reconciler threads while the test thread asserts on them (`WorksSdkReminderRecoveryPolicyTests.cs:61,423,493`). Guard mutation and reads with a lock (or concurrent collections) so a pass racing an assertion cannot corrupt state or flake.
+- [ ] [Review][Patch] R30C-P2: Delete unused helpers `PromoteWithoutAsync` and `ParentPage` [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs:464,509] — **low**; edge-case-hunter
+  - Both private statics have no remaining caller in the integration test project after the rewrite.
+- [x] [Review][Defer] R30C-D1: Live callback registration and cascade/date restart replay run only in `Explicit` lanes [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:111,223] — deferred: same posture as R29B-D1; `references/Hexalith.Platform/eng/verify_works_host.py` runs both tests with `-explicit on`, and live requalification belongs to Story 4.16. verification-gap+edge-case-hunter+acceptance-auditor+blind-hunter
+- [x] [Review][Defer] R30C-D2: Map each deleted cascade/date-reminder scenario to a surviving test [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs] — deferred: unverified medium; blind-hunter+acceptance-auditor+edge-case-hunter+verification-gap. Seven files and three source tests were deleted (cascade dispatcher pacing, deterministic cascade target correlation id, fail-closed truncated descendant reads, Cancelled/Expired driving cascade commands). The production types are gone, so most removals are justified; settle by listing each deleted scenario against `TerminalCascadeTranslatorTests`, `WorksSourceStreamReaderTests` and `WorksSdkProcessRecoveryTests`.
+- [x] [Review][Defer] R30C-D3: `WaitForNamedProjectionLifecycleIdleAsync` may pass vacuously [tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs:986] — deferred: unverified medium; acceptance-auditor+edge-case-hunter. Actor ids are hand-built (`{tenant}:work:{aggregate}:works-runtime-v3`) and 204/404 count as idle, so a wrong id shape or key passes after five polls. Settle by a live run that observes a real `Delivering` row, or by comparing the id/key shape with the SDK.
+
+##### Rejected (group 3C)
+
+- Blind-hunter and edge-case-hunter: `args[0]` cast in the scheduler proxy (**false**: every proxied scheduler method takes the reminder name first), `ToDictionary` duplicate keys in the log capture (**false**: structured log state keys are unique per entry), log capture ignoring level/scope/category, `IsAbsentOrIdleLifecycle` non-JSON input, and `(int)properties["Armed"]` cast — **low**, no demonstrated failure.
+- Edge-case-hunter and acceptance-auditor: deleted `WorksRecoveryOptionsTests` leaves the retained properties unvalidated/untested (**false**: they are `[Obsolete]`, documented as ignored in CHANGELOG and `docs/sdk-reminder-process-adoption.md`).
+- Verification-gap: stale `runtimeTokens` in `RuntimeAdapterGovernanceTests` (**false** as a defect: the list is a reintroduction ban for removed types).
+- Blind-hunter and others: fixed 2035 date breadth, wall-clock `dateDue` in an Explicit test, `Task.Delay` polling, reflection coupling to SDK internals, `LegacyRuntimeSelection` testing only `false`, single-assembly removed-type scan, `ProjectionParkingBudgetBoundariesAreAccepted` proving only binding, `IsAlertClearAfter` testing a test-local predicate, style, naming and fixture duplication — **low**, no demonstrated harm and fixes add complexity.
+
 ## Implementation Notes
 
 ### Current Build resume checkpoint (2026-10-29)
