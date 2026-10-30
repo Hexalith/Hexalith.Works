@@ -14,7 +14,7 @@
   <ItemGroup>
     <!-- Architecture-only loader and compile surface; installed SDK supplies MSBuild at runtime. -->
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.11.2" />
-    <PackageVersion Include="Microsoft.Build" Version="18.0.2" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="18.0.2" />
+    <PackageVersion Include="Microsoft.Build" Version="18.9.6" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="18.9.6" />
   </ItemGroup>
 </Project>
