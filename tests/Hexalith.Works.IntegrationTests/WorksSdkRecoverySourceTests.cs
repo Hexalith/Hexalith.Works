@@ -461,64 +461,10 @@ public sealed class WorksSdkRecoverySourceTests
         }
     }
 
-    private static async Task PromoteWithoutAsync(
-        SharedProjectionEpochCoordinator coordinator,
-        string tenantId,
-        IReadOnlyList<string> workItemIds,
-        Func<string, IEventPayload[]> history,
-        string omittedKey)
-    {
-        var handler = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions);
-        SharedProjectionScope scope = handler.CreateScope(tenantId);
-        string operation = "sdk-recovery-rebuild-" + Guid.NewGuid().ToString("N");
-        const string inventory = "sdk-recovery-inventory";
-        _ = await coordinator.BeginAsync(scope, operation, inventory,
-            workItemIds.ToDictionary(static id => id, static _ => 2L, StringComparer.Ordinal),
-            TestContext.Current.CancellationToken).ConfigureAwait(false);
-        var identity = new DomainSharedProjectionRebuildIdentity(tenantId, "work", WorksReadModelKeys.RuntimeFamily,
-            operation, inventory);
-        DomainSharedProjectionRebuildCandidate candidate = await handler.CreateEmptyCandidateAsync(identity,
-            TestContext.Current.CancellationToken).ConfigureAwait(false);
-        foreach (string workItemId in workItemIds)
-        {
-            ProjectionEventDto[] events = [.. history(workItemId).Select((payload, index) =>
-                new ProjectionEventDto(payload.GetType().Name,
-                    JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()), "json", index + 1,
-                    DateTimeOffset.UnixEpoch, "corr-sdk-recovery", GlobalPosition: index + 1))];
-            candidate = await handler.AccumulateAsync(identity, candidate,
-                new ProjectionRequest(tenantId, "work", workItemId, events),
-                TestContext.Current.CancellationToken).ConfigureAwait(false);
-        }
-
-        DomainProjectionRebuildPlan plan = await handler.FinalizeAsync(identity, candidate,
-            TestContext.Current.CancellationToken).ConfigureAwait(false);
-        _ = await coordinator.StageAsync(scope, operation,
-            [.. plan.Operations.Where(item => item.Key != omittedKey)],
-            TestContext.Current.CancellationToken,
-            new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex)).ConfigureAwait(false);
-        await coordinator.CommitAsync(scope, operation, TestContext.Current.CancellationToken).ConfigureAwait(false);
-    }
-
     private static WorkItemCreated Created(string tenantId, string workItemId)
         => new(workItemId, 1, new TenantId(tenantId), new WorkItemId(workItemId), new Obligation("Recovery proof"));
 
     private static WorkItemSuspended Suspended(string tenantId, string workItemId)
         => new(workItemId, 2, new TenantId(tenantId), new WorkItemId(workItemId),
             [AwaitCondition.DateReached(s_instant)]);
-
-    private static StreamReadPage ParentPage(string parentId, params string[] children)
-    {
-        StreamReadEvent[] events = [.. children.Select((child, index) =>
-        {
-            long sequence = index + 1;
-            var spawned = new ChildSpawned(parentId, sequence, new TenantId(TenantA),
-                new WorkItemId(parentId), new WorkItemId(child), new Obligation("Child proof"));
-            return new StreamReadEvent(sequence, typeof(ChildSpawned).FullName!,
-                JsonSerializer.SerializeToUtf8Bytes(spawned, s_web), "json", 1,
-                $"message-{sequence}", $"correlation-{sequence}", null, s_instant, null);
-        })];
-        return new StreamReadPage(TenantA, "work", parentId, events,
-            new StreamReadMetadata(0, null, events.Length, events.Length, events.Length,
-                IsTruncated: false, NextContinuationToken: null));
-    }
 }

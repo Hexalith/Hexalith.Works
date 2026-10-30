@@ -5,6 +5,8 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Adapts the SDK's internal scheduler interface to observable test scheduler operations.</summary>
 public class WorksReminderSchedulerProxy : DispatchProxy
 {
+    private readonly object _gate = new();
+
     /// <summary>Gets the names currently retained by the synthetic scheduler.</summary>
     internal HashSet<string> Held { get; } = new(StringComparer.Ordinal);
 
@@ -39,21 +41,31 @@ public class WorksReminderSchedulerProxy : DispatchProxy
         {
             case "ArmAsync":
                 if (ArmFailure?.Invoke(name) is { } armFailure) return Task.FromException(armFailure);
-                Arms.Add((name, (TimeSpan)args[1]!));
-                _ = Held.Add(name);
+                lock (_gate)
+                {
+                    Arms.Add((name, (TimeSpan)args[1]!));
+                    _ = Held.Add(name);
+                }
+
                 AfterArm?.Invoke();
                 return Task.CompletedTask;
             case "IsArmedAsync":
                 BeforeLookup?.Invoke();
-                return Task.FromResult(Held.Contains(name));
+                lock (_gate)
+                {
+                    return Task.FromResult(Held.Contains(name));
+                }
+
             case "CancelAsync":
                 if (CancelFailure is { } cancelFailure) return Task.FromException(cancelFailure);
-                bool removed = Held.Remove(name);
-                if (CancelResponseFailure is { } responseFailure)
+                bool removed;
+                lock (_gate)
                 {
-                    if (removed) LostCancellationResponses++;
-                    return Task.FromException(responseFailure);
+                    removed = Held.Remove(name);
+                    if (CancelResponseFailure is not null && removed) LostCancellationResponses++;
                 }
+
+                if (CancelResponseFailure is { } responseFailure) return Task.FromException(responseFailure);
                 return Task.CompletedTask;
             default:
                 throw new NotSupportedException(targetMethod.Name);
