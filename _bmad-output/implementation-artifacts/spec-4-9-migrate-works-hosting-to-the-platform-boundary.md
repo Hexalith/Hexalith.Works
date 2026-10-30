@@ -2,7 +2,7 @@
 title: 'Migrate Works Hosting to the Platform Boundary'
 type: 'feature'
 created: '2026-09-22'
-status: 'done'
+status: 'in-progress'
 baseline_commit: '18e94d388ab0abd8be363b361d0b2fee762359e7'
 route: 'dispatch'
 review_loop_iteration: 1
@@ -414,6 +414,22 @@ Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to the
 - Edge-case-hunter and acceptance-auditor: deleted `WorksRecoveryOptionsTests` leaves the retained properties unvalidated/untested (**false**: they are `[Obsolete]`, documented as ignored in CHANGELOG and `docs/sdk-reminder-process-adoption.md`).
 - Verification-gap: stale `runtimeTokens` in `RuntimeAdapterGovernanceTests` (**false** as a defect: the list is a reintroduction ban for removed types).
 - Blind-hunter and others: fixed 2035 date breadth, wall-clock `dateDue` in an Explicit test, `Task.Delay` polling, reflection coupling to SDK internals, `LegacyRuntimeSelection` testing only `false`, single-assembly removed-type scan, `ProjectionParkingBudgetBoundariesAreAccepted` proving only binding, `IsAlertClearAfter` testing a test-local predicate, style, naming and fixture duplication — **low**, no demonstrated harm and fixes add complexity.
+#### Review 2026-10-30 — protected HTTP, security and proof-host integration tests (group 3D)
+
+Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to 15 `tests/Hexalith.Works.IntegrationTests` files: `WorksSdkProtectedHttpTests`, `WorksSdkEndpointCancellationTests`, `WorksSdkProofRedis` + `WorksSdkProofRedisHashSnapshot`, `WorksIngressIdentityTests`, `WorksServerCertificatePurposeTests`, `WorksTlsCertificateRefusalTests`, `WorksSdkIntentTranslationTests`, `WorksRedisCaptureAcquisitionTests`, `WorksSdkDaprConfigCopyTests`, `WorksSdkIteration4Tests`, `WorksSdkPackageContractTests`, `WorksFailureDiagnosticsTests`, `DiagnosticUnavailableReadModelStore`, `ThrowingDiagnosticLogger` (+1,699/-103; 2,337 diff lines). Files already covered by groups 3A (`WorksPlatform*`, mTLS smoke), 3B (`*Rebuild*`, `*Query*`) and 3C were excluded. Four layers ran in `full` mode; none failed. They raised 10 (blind-hunter), 13 (edge-case-hunter), 3 low-confidence notes (acceptance-auditor) and 0 (verification-gap). Verdicts were assigned per finding after checking the cited code. Outcome: 0 decision-needed, 0 patch, 0 defer, 26 rejected — clean review.
+
+##### Rejected (group 3D)
+
+- Edge-case-hunter (two findings): `CaptureKeyAsync` race when the key vanishes between DUMP and TYPE (**false**: a missing key reaches `RedisValueFingerprintAsync`, which throws "A restored or captured synthetic key is missing."; `LastFieldExpiryAtCaptureBoundaryRemainsFailClosed` accepts exactly that message or a proven-empty hash).
+- Edge-case-hunter and blind-hunter: unreachable `ExpiresAt < -1` guard after the Lua `-2 → now` mapping (**low**: a loud, harmless defensive check; no user or developer meets it).
+- Edge-case-hunter: empty/missing `WORKS_PLATFORM_ROOT`, missing YAML `policies`/`trustDomain`, missing `WorksSelectedPartiesVersion` metadata (**false** as defects: each fails loudly in a test helper).
+- Blind-hunter: ACL test never asserts `defaultAction: deny` (**pre-existing**: `6967819` has the same gap; the committed Platform ACLs do set it).
+- Blind-hunter and acceptance-auditor: `/project` has no `cancel-pending` row (**false**: the projection handler is synchronous, so there is no suspended state to cancel).
+- Blind-hunter: no page-count assertion in the paging tests (**false**: page sizes 1/2 over multi-event streams cannot pass without following pagination).
+- Edge-case-hunter: `Sequence = 1` forced onto an envelope at position 2 in `WorksSdkIteration4Tests` (no demonstrated wrong outcome; the valid cases pass because the reader does not cross-check payload sequence against position).
+- Blind-hunter: 5xx for reserved-tenant refusal, missing `ConfigureAwait(true)` on one test, POST-only legacy-route inventory, pinned SDK message strings, timing-sensitive 100/150 ms Redis expiry, `claims.Add` duplicate keys, stderr task not observed on probe failure, `Task.WhenAll` masking a probe fault, `SlicePage` with `pageSize <= 0`, sync-throw in the cancellation gate, NSubstitute fallthrough on an unmatched assertion stub (all **low** or speculative: test-only, loud on failure, and the fix would add guards or branches).
+- Acceptance-auditor: Linux-only TLS refusal control (informational: the CI lane is Linux and this is not a parity-row lane).
+- Blind-hunter: unused-looking diagnostic helpers (**false**: used by `WorksSdkProjectionQueryTests`, `WorksSdkRecoverySourceTests` and `WorksQueryPolicyDeadlineTests`).
 
 ## Implementation Notes
 

@@ -36,7 +36,7 @@
 
 # Original generation instant: 2026-06-15T18:47:50+02:00; normalized below to the validator's minute precision.
 generated: "2026-06-15 18:47"
-last_updated: 2026-10-29
+last_updated: 2026-10-30
 # Story 4.11 reviewed C9/C11 corrections are proven against owner-published 3.117.1; the public-release gate is satisfied.
 # Package-only consumers, all 227 reminder checks, and fresh parent replay passed; C17-C30 review and patch work is complete, with eight Epic 4 context corrections deferred; Story 4.11 is done.
 # correct-course approved 2026-09-05: added Stories 1.5 and 4.9; preserved active Story 4.8 status
@@ -79,7 +79,7 @@ development_status:
   4-6-prove-reminder-and-reactor-recovery: done
   4-7-trigger-reactor-translators-from-the-live-event-stream: done
   4-8-register-and-reconcile-date-reminders-durably: done
-  4-9-migrate-works-hosting-to-the-platform-boundary: review
+  4-9-migrate-works-hosting-to-the-platform-boundary: in-progress
   # 2026-10-29 build resume: full 659/CI 512, all 11 rows/44 proofs and complete rollback pass; parent audit and three review layers complete; 10 new follow-ups deferred.
   # Earlier dated notes below retain their historical checkpoints.
   # 2026-10-29: group 3B patches verified/reviewed (78 tests); 3 medium defers retained; groups 3C–3E, 4 and 5 remain.
