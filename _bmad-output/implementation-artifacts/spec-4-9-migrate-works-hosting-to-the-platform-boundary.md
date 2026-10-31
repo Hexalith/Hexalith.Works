@@ -431,6 +431,29 @@ Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to 15 
 - Acceptance-auditor: Linux-only TLS refusal control (informational: the CI lane is Linux and this is not a parity-row lane).
 - Blind-hunter: unused-looking diagnostic helpers (**false**: used by `WorksSdkProjectionQueryTests`, `WorksSdkRecoverySourceTests` and `WorksQueryPolicyDeadlineTests`).
 
+#### Review 2026-10-31 — retired tests, csproj, schema goldens and projection admission (group 3E)
+
+Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to 31 `tests/Hexalith.Works.IntegrationTests` files not covered by 3A–3D: retired cascade/date-await/domain-event/pipeline/rollback tests and `run-sdk-rollback-restore.sh`, the csproj, `SchemaEvolution/*` goldens + `GoldenCorpusFiles*`, `Story48Streams`, `WorkItemProjection{DecoderTelemetry,EventAdmission}Tests`, `WorkItemV1Catalog`, `WorksSourceStreamReaderTests` and three contract-flow tests (+1,111/-4,541; 6,034 diff lines). Four layers ran in `full` mode; none failed: blind-hunter (11), edge-case-hunter (11), verification-gap (1 gap + 2 other), acceptance-auditor (5). Outcome: 1 decision-needed (resolved as a patch), 0 defer, 22 rejected. No build or test rerun is claimed beyond one Release MSBuild property evaluation.
+
+##### Decision needed (group 3E)
+
+- [x] [Review][Decision→Patch] EventStore version pin split (resolved 2026-10-31, option (b)): `Directory.Build.props:42` defaults `HexalithEventStoreVersion` to 3.128.4 (dependabot `7c6102f`, 2026-10-30) while `Directory.Packages.props:6` and the integration csproj `WorksPinnedEventStoreVersion` (`Hexalith.Works.IntegrationTests.csproj:12`) say 3.128.3 [blind-hunter+edge-case-hunter+verification-gap]. `Directory.Build.props` loads first, so the effective version is 3.128.4 (confirmed by `dotnet msbuild -getProperty`). The Release-only pin check in `Directory.Build.props:110-114` compares it with the version it XPath-reads from `Directory.Packages.props` (3.128.3), so a Release build errors, and `WorksSdkPackageContractTests.ReleaseConsumerLoadsSelectedSdkPackagesAndPartiesContracts` would see selected 3.128.4 != pinned 3.128.3. Debug is unaffected. Resolution: `Directory.Packages.props:5-6` and the csproj `WorksPinnedEventStoreVersion` bumped to 3.128.4 (uncommitted). No Release build or test was rerun, and no other Platform pin file with 3.128.3 was found under `references/Hexalith.Platform`. Release requalification at 3.128.4 (restore, pin check, `WorksSdkPackageContractTests`) and any Platform catalog bump remain open before this counts as qualified.
+
+##### Rejected (group 3E)
+
+- Blind-hunter, edge-case-hunter and acceptance-auditor: ~3.5k lines of deleted tests (index dispatcher, date-await source, child completion, domain-event processor/subscription, command-pipeline smoke, rollback-restore) have no replacement in this diff (**false**: the production classes were removed in the cutover, and `retired-test-replacements.json` plus `docs/sdk-projection-query-adoption.md:113` map each retired lane to a Platform replacement; reviewed in earlier groups).
+- Blind-hunter and edge-case-hunter: `run-sdk-rollback-restore.sh` deletion leaves orphans (**false**: references are only historical; the Round 2 decision (a) already closed the 2026-10-15 deferred entry).
+- Acceptance-auditor: frozen golden fixtures edited (**false** as a defect: the README records the change as no production-contract change and `HistoricalMinimalCreatedWriterPayloadRemainsReadable` keeps the original payload readable).
+- Acceptance-auditor, edge-case-hunter and blind-hunter: AppHost ProjectReference removed while `Aspire.*` and `WorksAppHost*` names remain (**false**/**low**: the files are Platform-driven harnesses by earlier 3A review; a leftover AppHost type use would be a loud compile error).
+- Blind-hunter, edge-case-hunter and verification-gap: `GoldenCorpusFiles.SourceDirectory` path normalisation, missing-directory message and untested default roots (**low**: loud failures in test-only code; fixes add guards or tests).
+- Blind-hunter and edge-case-hunter: `WorksPlatformTestRoot` empty yields an opaque restore path (**low**: fails loudly at restore).
+- Blind-hunter and edge-case-hunter: `Story48Streams` uses literal `"work"` and writer-casing payloads (**low**: test fixture; no demonstrated consumer that diverges).
+- Blind-hunter and edge-case-hunter: `MissingScalarMembersAreMalformed` hand-maintained map; telemetry tests lack item/aggregate identity cases and hard-code event IDs 4504/4505 (**low**: coverage breadth in tests, no wrong outcome).
+- Edge-case-hunter: `ProtectionMetadataIsBoundedBeforeContextAdmission` byte budget uses default serializer; mock indexes `facts[from]` unbounded (**low**: speculative/loud in test).
+- Verification-gap: `(laterCreation:false, paged:true)` theory case duplicates `(false,false)` (**low**: harmless redundancy).
+- Blind-hunter: `WorksSelectedPartiesVersion` metadata unconsumed in this diff (**false**: consumed by `WorksSdkPackageContractTests`), README regeneration wording, using order, redundant `using System.IO`, long comment line, `ExpectationReference` namespace (**low**/cosmetic).
+- Acceptance-auditor: Parties linked-source count of eleven (**false**: current csproj has exactly 11 includes).
+
 ## Implementation Notes
 
 ### Current Build resume checkpoint (2026-10-29)
