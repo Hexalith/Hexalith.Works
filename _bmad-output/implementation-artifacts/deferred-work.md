@@ -2275,3 +2275,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-bound-tenants-bootstrap-command-transport.md`
   summary: Bound bootstrap response-body consumption before HttpClient buffers the complete response.
   evidence: Pre-existing TenantBootstrapHostedService.SendAsync uses ResponseContentRead before the capped rejection probe; oversized bodies can allocate beyond that probe cap. The new finite30-second command budget improves timing but not memory bounds. A separate fix must preserve genuine receipt semantics and cover oversized/stalled bodies.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-tenants-noncanonical-service-fixture.md`
+  summary: Add direct owner-handler observation to the existing noncanonical read-authority denial regression.
+  evidence: Its pre-existing HTTP200/safe-denial/zero source-read assertions can also match dispatcher binding refusal; a handler decorator should prove the rebuilt administrator hint is false while original authority remains denied. Current production source verifies the original signed query before invoking the owner handler.
