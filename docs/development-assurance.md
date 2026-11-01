@@ -14,11 +14,14 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-The current EventStore source is `61e6fa853d81cf822d67d6abfd6a130bdbb14ce2`, three commits after public
-`v3.129.0` (`c02afa0fce310ccdb696232f18829df96cba088e`). Release pins 3.129.0.
-PolymorphicSerializations source is `92ede24cc11129379efe52cfe7fd2c820c567f7f`, two commits after public
-`v1.19.6` (`2e68a028c695d577cd733d0c1e40ec57531c7547`), and Release pins 1.19.6. The current source markers in the API and boundary records bind the consumed
-EventStore checkout; the existing Architecture drift controls verify those markers independently.
+The current EventStore source and public `v3.131.0` producer are
+`7776e64fdb5b9b86d0d180a3a8f47c1f11379466`; Release pins 3.131.0.
+PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
+one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
+Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
+EventStore checkout. All fourteen EventStore and both PolymorphicSerializations public archives
+have verified exact version, owning repository/source metadata and signatures. Current source/package
+identity preflight passes; full current Works source/runtime/parity acceptance remains pending.
 Historical public-producer and live-proof revisions retain their original scope.
 
 The unmapped source entry point explicitly selects Commons (including Http) and McpCli
