@@ -277,3 +277,46 @@ Root CI41304027480 exposes16 Ruff0.13.2 findings and missing official Platform p
 A live npm audit found38 findings (1high/37moderate), all below npm bundled through semantic-release's unconfigured JavaScript publishing plugin. A normal compatible lock update changed nothing. The root release configuration explicitly selects only commit-analyzer, release-notes-generator, exec and github for NuGet publishing. Adopt the same exact semantic-release/@semantic-release/npm alias to @semantic-release/error4.0.0 already used by Memories; direct tooling versions and .releaserc.json bytes are unchanged. This removes the unused npm bundle from the lock without rewriting bundled upstream code or downgrading semantic-release.
 
 Fresh npm11.21.1 ci --ignore-scripts in /tmp/works-root-release-tooling-20261101 succeeds. Its live audit reports0 vulnerabilities. The actual pinned semantic-release25.0.9 configuration loader resolves all4 configured plugins and16 lifecycle steps; no npm publish plugin loads, and the original NuGet release configuration SHA/bytes match exactly. No release lifecycle or external publication is invoked. Receipts /tmp/works-root-release-tooling-audit.json and /tmp/works-root-effective-release-config.json. Root node_modules remains untouched while the SDK owner may use its npm installer. This repair changes only package.json, package-lock.json and this progress record; overall release qualification remains open.
+
+## Release and catalog checkpoint — 2026-11-01 15:25 UTC
+
+Memories3635d938 is pushed after both independent review rounds and normal
+repository hooks. The full affected local checks pass70 publisher,12alignment
+and13linkedcatalog cases with no skips. Qualification41319333058 is green.
+Release41319333034 succeeds and publishes v3.0.14. All10 manifest packages are
+retrieved from public NuGet, bound to exact3635 producer/own repository and
+verified by dotnet nuget verify --all. The broader CI41319333342 remains running
+at this checkpoint; no full current-CI acceptance is inferred. Durable receipt:
+.artifacts/upgrade-release-orchestration-20261101/memories-3.0.14-public/verification.json.
+
+New upstream Commons2.30.10 and Builds4.41.1 are also verified from public
+NuGet:12 and2archives respectively, with exact producer/source metadata and
+valid signatures. Platformv1.1.0 is a genuine package-build catalogue identity,
+not runtime qualification. Its separate unqualified runtime tuple is preserved.
+
+Timesheets8b70017 is pushed after three independent reviews and the two direct
+review test repairs. Its six-path tooling graph repair passes107 tests, audit0,
+317signatures and56attestations; .releaserc.json is unchanged. FreshCI41320496919
+has a passing release-tooling job. Separate actual endpoint-authentication
+migration remains open; no full Timesheets/release acceptance is claimed.
+The authenticated-versus-anonymous metadata behavior question is pending with
+the user; no permissive fake authentication or inventory relaxation is applied.
+
+ChatBotd7986f26 adopts root-declared Builds0b8c3f20 without initializing nested
+checkouts. Its actual Release solution now builds0warnings/errors, resolving
+the Parties SDK131/132 mismatch. The next real architecture refusal is the
+obsolete038f Works gitlink, with duplicate Microsoft.Build declarations.
+Current Works already removed those duplicate declarations. Align its existing
+SDK pins in Directory.Build.props, Directory.Packages.props and integration
+assembly metadata from3.129.0 to verified public3.130.2. Preserve ordinary
+exact-pin/source/candidate admission and all global forwarding semantics.
+Real MSBuild evaluation against selected0b catalogue matches all314 unique
+package identities/versions; no duplicates. Existing release-build policy and
+transitive-global suites pass15/15 in55.337s. These checks grant catalogue/build
+policy evidence only; actual source runtime/Platform parity is still open.
+
+The SDK owner finishes loop7 lifecycle/provider/runtime checks separately in
+its private42aa-based clone. No shared SDK pointer or package has been
+published from that repair. Original immutable historical captures and all
+failed evidence are retained; the missing original30-path review archive is
+not reconstructed or represented as recovered.

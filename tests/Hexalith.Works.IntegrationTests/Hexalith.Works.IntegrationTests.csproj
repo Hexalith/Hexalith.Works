@@ -9,7 +9,7 @@
   <ItemGroup>
     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
     <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />
-    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="3.129.0" />
+    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="3.130.2" />
     <AssemblyMetadata Include="WorksAllowLocalEventStoreCandidate" Value="$(WorksAllowLocalEventStoreCandidate)" />
     <PackageReference Include="Aspire.Hosting.Testing" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
