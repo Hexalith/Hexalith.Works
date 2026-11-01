@@ -2247,3 +2247,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `spec-sync-upgrade-and-release-workspace.md`
   summary: Isolate owned infrastructure subprocess groups so descendants remain terminable after their immediate parent exits.
   evidence: RouteCatalogOwnedProcess captures descendants only in catch; if a parent already exited while descendants retain output pipes, Linux reparents them and CaptureDescendants(parentPid) finds none. This also exists in origin/main, whose output await was unbounded. A child that outlives a normally exiting parent is the regression scenario; any fix must never signal an inherited process group.
+
+- source_spec: `/tmp/works-sdk-finite-compatibility-draft/sdk-prerequisite-claims-in-review.md`
+  summary: The pre-existing public Development topology validator accepts noncanonical native actor path/operation pairs when supplied a self-consistent native witness.
+  evidence: Parent public-entry probe accepts /not-a-native-endpoint and arbitrary-operation; baseline7f has the same omission and the current native-branch change only rejects overlapping HTTP evidence. DevelopmentNativeActorReceiver constrains the generated production geometry, so no new live receiver bypass is demonstrated. Reproduction /tmp/native-geometry-review5-z5hu__ha/Probe.csproj; report /tmp/works-sdk-review5-parent-native-geometry.log.
